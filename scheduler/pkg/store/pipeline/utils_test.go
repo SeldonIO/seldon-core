@@ -10,21 +10,23 @@ import (
 func TestUpdateInputsSteps(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name     string
-		inputs   []string
-		expected []string
+		name         string
+		pipelineName string
+		inputs       []string
+		expected     []string
 	}
 
 	tests := []test{
 		{
-			name:     "test update inputs",
-			inputs:   []string{"a", "a.outputs", "a.inputs", "a.inputs.t1"},
-			expected: []string{"a.outputs", "a.outputs", "a.inputs", "a.inputs.t1"},
+			name:         "test update inputs",
+			pipelineName: "pipeline",
+			inputs:       []string{"a", "a.outputs", "a.inputs", "a.inputs.t1", "pipeline", "pipeline.inputs.t1"},
+			expected:     []string{"a.outputs", "a.outputs", "a.inputs", "a.inputs.t1", "pipeline.inputs", "pipeline.inputs.t1"},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			updated := updateInputSteps(test.inputs)
+			updated := updateInputSteps(test.pipelineName, test.inputs)
 			g.Expect(updated).To(Equal(test.expected))
 		})
 	}
@@ -81,6 +83,44 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
+			name:    "with pipeline input",
+			version: 1,
+			proto: &scheduler.Pipeline{
+				Name: "pipeline",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name:   "a",
+						Inputs: []string{"pipeline"},
+					},
+					{
+						Name:   "b",
+						Inputs: []string{"a"},
+					},
+				},
+				Output: &scheduler.PipelineOutput{
+					Steps: []string{"b"},
+				},
+			},
+			pipeline: &PipelineVersion{
+				Name:    "pipeline",
+				Version: 1,
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name:   "a",
+						Inputs: []string{"pipeline.inputs"},
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+				},
+				Output: &PipelineOutput{
+					Steps: []string{"b"},
+				},
+				State: &PipelineState{},
+			},
+		},
+		{
 			name:    "simple with tensor map",
 			version: 1,
 			proto: &scheduler.Pipeline{
@@ -97,7 +137,8 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &scheduler.PipelineOutput{
-					Steps: []string{"b"},
+					Steps:     []string{"b"},
+					TensorMap: map[string]string{"output1": "output"},
 				},
 			},
 			pipeline: &PipelineVersion{
@@ -115,7 +156,8 @@ func TestCreatePipelineFromProto(t *testing.T) {
 					},
 				},
 				Output: &PipelineOutput{
-					Steps: []string{"b"},
+					Steps:     []string{"b"},
+					TensorMap: map[string]string{"output1": "output"},
 				},
 				State: &PipelineState{},
 			},

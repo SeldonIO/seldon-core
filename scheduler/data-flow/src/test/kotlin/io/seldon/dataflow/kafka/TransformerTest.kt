@@ -60,22 +60,22 @@ internal class TransformerTest {
         fun areTensorsFromSameTopic(): Stream<Arguments> =
             Stream.of(
                 arguments("no sources", false, emptyList<String>()),
-                arguments("no tensors", false, listOf("seldon.namespace.model.outputs")),
-                arguments("single tensor", true, listOf("seldon.namespace.model.outputs.tensorA")),
+                arguments("no tensors", false, listOf("seldon.namespace.model.model1.outputs")),
+                arguments("single tensor", true, listOf("seldon.namespace.model.model1.outputs.tensorA")),
                 arguments(
                     "tensors from same model",
                     true,
                     listOf(
-                        "seldon.namespace.model.outputs.tensorA",
-                        "seldon.namespace.model.outputs.tensorB",
+                        "seldon.namespace.model.model1.outputs.tensorA",
+                        "seldon.namespace.model.model1.outputs.tensorB",
                     ),
                 ),
                 arguments(
                     "tensors from different models",
                     false,
                     listOf(
-                        "seldon.namespace.model1.outputs.tensorA",
-                        "seldon.namespace.model2.outputs.tensorA",
+                        "seldon.namespace.model.model1.outputs.tensorA",
+                        "seldon.namespace.model.model2.outputs.tensorA",
                     ),
                 ),
             )
@@ -87,67 +87,67 @@ internal class TransformerTest {
                 arguments(
                     "single source, no tensors",
                     makeChainerFor(
-                        inputTopic = "seldon.namespace.model.outputs",
+                        inputTopic = "seldon.namespace.model.model1.outputs",
                         tensors = null,
                     ),
-                    listOf("seldon.namespace.model.outputs"),
+                    listOf("seldon.namespace.model.model1.outputs"),
                 ),
                 arguments(
                     "single source, one tensor",
                     makeChainerFor(
-                        inputTopic = "seldon.namespace.model.outputs",
+                        inputTopic = "seldon.namespace.model.model1.outputs",
                         tensors = setOf("tensorA")
                     ),
-                    listOf("seldon.namespace.model.outputs.tensorA"),
+                    listOf("seldon.namespace.model.model1.outputs.tensorA"),
                 ),
                 arguments(
                     "single source, multiple tensors",
                     makeChainerFor(
-                        inputTopic = "seldon.namespace.model.outputs",
+                        inputTopic = "seldon.namespace.model.model1.outputs",
                         tensors = setOf("tensorA", "tensorB")
                     ),
                     listOf(
-                        "seldon.namespace.model.outputs.tensorA",
-                        "seldon.namespace.model.outputs.tensorB",
+                        "seldon.namespace.model.model1.outputs.tensorA",
+                        "seldon.namespace.model.model1.outputs.tensorB",
                     ),
                 ),
                 arguments(
                     "multiple sources, no tensors",
                     makeJoinerFor(
-                        inputTopics = setOf("seldon.namespace.modelA.outputs", "seldon.namespace.modelB.outputs"),
+                        inputTopics = setOf("seldon.namespace.model.modelA.outputs", "seldon.namespace.model.modelB.outputs"),
                         tensorsByTopic = null,
                     ),
                     listOf(
-                        "seldon.namespace.modelA.outputs",
-                        "seldon.namespace.modelB.outputs",
+                        "seldon.namespace.model.modelA.outputs",
+                        "seldon.namespace.model.modelB.outputs",
                     ),
                 ),
                 arguments(
                     "multiple sources, multiple tensors",
                     makeJoinerFor(
                         inputTopics = setOf(
-                            "seldon.namespace.modelA.outputs",
-                            "seldon.namespace.modelB.outputs",
+                            "seldon.namespace.model.modelA.outputs",
+                            "seldon.namespace.model.modelB.outputs",
                         ),
                         tensorsByTopic = mapOf(
-                            "seldon.namespace.modelA.outputs" to setOf("tensor1"),
-                            "seldon.namespace.modelB.outputs" to setOf("tensor2"),
+                            "seldon.namespace.model.modelA.outputs" to setOf("tensor1"),
+                            "seldon.namespace.model.modelB.outputs" to setOf("tensor2"),
                         ),
                     ),
                     listOf(
-                        "seldon.namespace.modelA.outputs.tensor1",
-                        "seldon.namespace.modelB.outputs.tensor2",
+                        "seldon.namespace.model.modelA.outputs.tensor1",
+                        "seldon.namespace.model.modelB.outputs.tensor2",
                     ),
                 ),
                 arguments(
                     "tensors override plain topic",
                     makeChainerFor(
-                        inputTopic = "seldon.namespace.modelA.outputs",
+                        inputTopic = "seldon.namespace.model.modelA.outputs",
                         tensors = setOf("tensorA"),
                     ),
                     listOf(
-                        "seldon.namespace.modelA.outputs.tensorA",
-                        "seldon.namespace.modelA.outputs",
+                        "seldon.namespace.model.modelA.outputs.tensorA",
+                        "seldon.namespace.model.modelA.outputs",
                     ),
                 ),
             )

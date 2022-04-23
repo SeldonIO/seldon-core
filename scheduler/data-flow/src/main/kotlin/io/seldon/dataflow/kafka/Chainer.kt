@@ -26,29 +26,78 @@ class Chainer(
     private val streams: KafkaStreams by lazy {
         val builder = StreamsBuilder()
 
-        if (inputTopic.endsWith("outputs") && outputTopic.endsWith("inputs")) {
-            val s1 = builder
-                .stream(inputTopic, consumerSerde)
-                .filterForPipeline(pipelineName)
-                .unmarshallInferenceV2()
-                .convertToRequests(inputTopic, tensors, tensorRenaming)
-                // handle cases where there are no tensors we want
-                .filter { _, value -> value.inputsList.size != 0}
-                .marshallInferenceV2()
-            addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
-                .to(outputTopic, producerSerde)
-        } else {
-            val s1 = builder
-                .stream(inputTopic, consumerSerde)
-                .filterForPipeline(pipelineName)
-            addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
-                .to(outputTopic, producerSerde)
+        when (ChainType.create(inputTopic, outputTopic)) {
+            ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
+            ChainType.INPUT_INPUT -> buildInputInputStream(builder)
+            ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(builder)
+            ChainType.INPUT_OUTPUT -> buildInputOutputStream(builder)
+            else -> buildPassThroughStream(builder)
         }
 
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
 
         KafkaStreams(builder.build(), properties)
+    }
+
+    private fun buildPassThroughStream(builder: StreamsBuilder) {
+        val s1 = builder
+            .stream(inputTopic, consumerSerde)
+            .filterForPipeline(pipelineName)
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
+    }
+
+    private fun buildInputOutputStream(builder: StreamsBuilder) {
+        val s1 = builder
+            .stream(inputTopic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Request()
+            .convertToResponse(inputTopic, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0}
+            .marshallInferenceV2Response()
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
+    }
+
+    private fun buildOutputOutputStream(builder: StreamsBuilder) {
+        val s1 = builder
+            .stream(inputTopic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Response()
+            .filterResponses(inputTopic, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0}
+            .marshallInferenceV2Response()
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
+    }
+
+    private fun buildOutputInputStream(builder: StreamsBuilder) {
+        val s1 = builder
+            .stream(inputTopic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Response()
+            .convertToRequest(inputTopic, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0}
+            .marshallInferenceV2Request()
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
+    }
+
+    private fun buildInputInputStream(builder: StreamsBuilder) {
+        val s1 = builder
+            .stream(inputTopic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Request()
+            .filterRequests(inputTopic, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0}
+            .marshallInferenceV2Request()
+        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1)
+            .to(outputTopic, producerSerde)
     }
 
     override fun onChange(s1: State, s2: State) {
@@ -64,7 +113,7 @@ class Chainer(
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
-        logger.info("starting for ($inputTopic) -> ($outputTopic) triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
+        logger.info("starting for ($inputTopic) -> ($outputTopic) tensors ${tensors} tensorRenaming ${tensorRenaming} triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
         streams.setStateListener(this)
         streams.start()
         latch.await()

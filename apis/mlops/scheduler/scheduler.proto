@@ -278,6 +278,7 @@ message PipelineOutput {
   repeated string steps = 1;
   uint32 joinWindowMs = 2; // Join window millisecs for output, default 0
   JoinOp stepsJoin = 3;
+  map<string,string> tensorMap = 4; // optional map of tensor name mappings
 }
 
 message LoadPipelineResponse {

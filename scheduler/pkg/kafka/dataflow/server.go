@@ -140,7 +140,7 @@ func (c *ChainerServer) StopSendPipelineEvents() {
 func (c *ChainerServer) createTopicSources(inputs []string, pipelineName string) []string {
 	var sources []string
 	for _, inp := range inputs {
-		source := c.topicNamer.GetModelTopic(inp)
+		source := c.topicNamer.GetModelOrPipelineTopic(pipelineName, inp)
 		sources = append(sources, source)
 	}
 	if len(sources) == 0 {
@@ -149,10 +149,10 @@ func (c *ChainerServer) createTopicSources(inputs []string, pipelineName string)
 	return sources
 }
 
-func (c *ChainerServer) createTriggerSources(inputs []string) []string {
+func (c *ChainerServer) createTriggerSources(inputs []string, pipelineName string) []string {
 	var sources []string
 	for _, inp := range inputs {
-		source := c.topicNamer.GetModelTopic(inp)
+		source := c.topicNamer.GetModelOrPipelineTopic(pipelineName, inp)
 		sources = append(sources, source)
 	}
 	return sources
@@ -163,9 +163,9 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 	for _, step := range pv.Steps {
 		stepUpdate := chainer.PipelineStepUpdate{
 			Sources:   c.createTopicSources(step.Inputs, pv.Name),
-			Triggers:  c.createTriggerSources(step.Triggers),
+			Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
 			Sink:      c.topicNamer.GetModelTopicInputs(step.Name),
-			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(step.TensorMap),
+			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
 		}
 		switch step.InputsJoinType {
 		case pipeline.JoinInner:
@@ -194,8 +194,9 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 	}
 	if pv.Output != nil {
 		stepUpdate := chainer.PipelineStepUpdate{
-			Sources: c.createTopicSources(pv.Output.Steps, pv.Name),
-			Sink:    c.topicNamer.GetPipelineTopicOutputs(pv.Name),
+			Sources:   c.createTopicSources(pv.Output.Steps, pv.Name),
+			Sink:      c.topicNamer.GetPipelineTopicOutputs(pv.Name),
+			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, pv.Output.TensorMap),
 		}
 		switch pv.Output.StepsJoinType {
 		case pipeline.JoinInner:

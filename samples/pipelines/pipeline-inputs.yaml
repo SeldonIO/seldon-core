@@ -1,0 +1,22 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pipeline-inputs
+  namespace: seldon-mesh
+spec:
+  steps:
+  - name: mul10
+    inputs:
+    - pipeline-inputs.inputs.INPUT0
+    tensorMap:
+      pipeline-inputs.inputs.INPUT0: INPUT
+  - name: add10
+    inputs:
+    - pipeline-inputs.inputs.INPUT1
+    tensorMap:
+      pipeline-inputs.inputs.INPUT1: INPUT
+  output:
+    steps:
+    - mul10
+    - add10
+

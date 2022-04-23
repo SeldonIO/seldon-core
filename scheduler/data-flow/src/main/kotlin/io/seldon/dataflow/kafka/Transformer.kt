@@ -135,10 +135,10 @@ fun parseSources(sources: List<TopicName>): SourceProjection {
 }
 
 fun parseSource(source: TopicName): Pair<TopicName, TensorName?> {
-    return when (val last = source.substringAfterLast(".", "")) {
-        "" -> return last to null
-        "inputs", "outputs" -> source to null
-        else -> source.substringBeforeLast(".") to last
+    if (source.split(".").size > 5) {
+        return source.substringBeforeLast(".") to source.substringAfterLast(".", "")
+    } else {
+        return source to null
     }
 }
 

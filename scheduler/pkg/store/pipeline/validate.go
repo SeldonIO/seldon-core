@@ -16,6 +16,9 @@ const (
 )
 
 func validate(pv *PipelineVersion) error {
+	if err := checkStepNameNotPipelineName(pv); err != nil {
+		return err
+	}
 	if err := checkStepReferencesExist(pv); err != nil {
 		return err
 	}
@@ -27,6 +30,15 @@ func validate(pv *PipelineVersion) error {
 	}
 	if err := checkInputsAndTriggersDiffer(pv); err != nil {
 		return err
+	}
+	return nil
+}
+
+func checkStepNameNotPipelineName(pv *PipelineVersion) error {
+	for _, v := range pv.Steps {
+		if v.Name == pv.Name {
+			return &PipelineStepNameEqualsPipelineNameErr{pipeline: pv.Name}
+		}
 	}
 	return nil
 }
@@ -54,10 +66,16 @@ func checkForCyclesFromStep(step *PipelineStep, pv *PipelineVersion, visited map
 	visited[step.Name] = true
 	stepNames := make(map[string]bool)
 	for _, inp := range step.Inputs {
-		stepNames[getStepNameFromInput(inp)] = true
+		stepName := getStepNameFromInput(inp)
+		if stepName != pv.Name {
+			stepNames[stepName] = true
+		}
 	}
 	for _, inp := range step.Triggers {
-		stepNames[getStepNameFromInput(inp)] = true
+		stepName := getStepNameFromInput(inp)
+		if stepName != pv.Name {
+			stepNames[stepName] = true
+		}
 	}
 	for stepName := range stepNames {
 		if _, ok := visited[stepName]; ok {
@@ -94,7 +112,7 @@ func checkStepReferencesExist(pv *PipelineVersion) error {
 	for k, v := range pv.Steps {
 		for _, inp := range v.Inputs {
 			stepName := getStepNameFromInput(inp)
-			if _, ok := pv.Steps[stepName]; !ok {
+			if _, ok := pv.Steps[stepName]; !ok && stepName != pv.Name {
 				return &PipelineStepNotFoundErr{pipeline: pv.Name, step: k, badRef: stepName}
 			}
 		}

@@ -67,6 +67,8 @@ type PipelineOutput struct {
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
 	JoinWindowMs uint32    `json:"joinWindowMs,omitempty"`
 	StepsJoin    *JoinType `json:"stepsJoin,omitempty"`
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
 }
 
 // PipelineStatus defines the observed state of Pipeline
@@ -146,6 +148,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 		output = &scheduler.PipelineOutput{
 			Steps:        p.Spec.Output.Steps,
 			JoinWindowMs: p.Spec.Output.JoinWindowMs,
+			TensorMap:    p.Spec.Output.TensorMap,
 		}
 		if p.Spec.Output.StepsJoin != nil {
 			switch *p.Spec.Output.StepsJoin {

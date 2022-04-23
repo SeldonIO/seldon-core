@@ -54,6 +54,7 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 		protoOutput = &scheduler.PipelineOutput{
 			Steps:        pv.Output.Steps,
 			JoinWindowMs: pv.Output.JoinWindowMs,
+			TensorMap:    pv.Output.TensorMap,
 		}
 		switch pv.Output.StepsJoinType {
 		case JoinInner:
@@ -84,10 +85,10 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 	for _, stepProto := range pipelineProto.Steps {
 		step := &PipelineStep{
 			Name:         stepProto.GetName(),
-			Inputs:       updateInputSteps(stepProto.Inputs),
+			Inputs:       updateInputSteps(pipelineProto.Name, stepProto.Inputs),
 			TensorMap:    stepProto.TensorMap,
 			JoinWindowMs: stepProto.JoinWindowMs,
-			Triggers:     updateInputSteps(stepProto.Triggers),
+			Triggers:     updateInputSteps(pipelineProto.Name, stepProto.Triggers),
 		}
 		switch stepProto.InputsJoin {
 		case scheduler.PipelineStep_INNER:
@@ -120,8 +121,9 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 	var output *PipelineOutput
 	if pipelineProto.Output != nil {
 		output = &PipelineOutput{
-			Steps:        updateInputSteps(pipelineProto.Output.Steps),
+			Steps:        updateInputSteps(pipelineProto.Name, pipelineProto.Output.Steps),
 			JoinWindowMs: pipelineProto.Output.JoinWindowMs,
+			TensorMap:    pipelineProto.Output.TensorMap,
 		}
 		switch pipelineProto.Output.StepsJoin {
 		case scheduler.PipelineOutput_INNER:
@@ -151,7 +153,7 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 	}, nil
 }
 
-func updateInputSteps(inputs []string) []string {
+func updateInputSteps(pipelineName string, inputs []string) []string {
 	if len(inputs) == 0 {
 		return inputs
 	}
@@ -160,7 +162,12 @@ func updateInputSteps(inputs []string) []string {
 		parts := strings.Split(inp, StepNameSeperator)
 		switch len(parts) {
 		case 1:
-			updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepOutputSpecifier))
+			// For pipeline name we default to inputs otherwise as its a previous step being referred to we default to outputs
+			if inp == pipelineName {
+				updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepInputSpecifier))
+			} else {
+				updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepOutputSpecifier))
+			}
 		default:
 			updatedInputs = append(updatedInputs, inp)
 		}

@@ -5,3 +5,4 @@ operator fun Set<TensorName>?.contains(tensor: TensorName): Boolean {
         tensor in this
     } ?: true
 }
+

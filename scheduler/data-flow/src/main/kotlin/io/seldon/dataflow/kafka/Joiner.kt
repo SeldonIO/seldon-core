@@ -47,17 +47,20 @@ class Joiner(
         }
 
         val topic = inputTopics.first()
-        val nextStream = if (outputTopic.endsWith("outputs")) {
-            builder
-                .stream(topic, consumerSerde)
-                .filterForPipeline(pipelineName)
-        } else {
-            builder
-                .stream(topic, consumerSerde)
-                .filterForPipeline(pipelineName)
-                .unmarshallInferenceV2()
-                .convertToRequests(topic, tensorsByTopic?.get(topic), tensorRenaming)
-                .marshallInferenceV2()
+
+        val chainType = ChainType.create(topic, outputTopic)
+        logger.info("Creating stream ${chainType} for ${topic}->${outputTopic}")
+        val nextStream = when (chainType) {
+            ChainType.OUTPUT_INPUT -> buildOutputInputStream(topic, builder)
+            ChainType.INPUT_INPUT -> buildInputInputStream(topic, builder)
+            ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(topic, builder)
+            ChainType.INPUT_OUTPUT -> buildInputOutputStream(topic, builder)
+            else -> buildPassThroughStream(topic, builder)
+        }
+        val payloadJoiner = when(chainType) {
+            ChainType.OUTPUT_INPUT, ChainType.INPUT_INPUT -> ::joinRequests
+            ChainType.OUTPUT_OUTPUT, ChainType.INPUT_OUTPUT -> ::joinResponses
+            else -> throw Exception("Can't join custom data")
         }
 
        when (joinType) {
@@ -65,7 +68,7 @@ class Joiner(
                val nextPending = pending
                    ?.outerJoin(
                        nextStream,
-                       ::joinRequests,
+                       payloadJoiner,
                        //JoinWindows.ofTimeDifferenceAndGrace(Duration.ofMillis(1), Duration.ofMillis(1)),
                        // Required because this "fix" causes outer joins to wait for next record to come in if all streams
                        // don't produce a record during grace period. https://issues.apache.org/jira/browse/KAFKA-10847
@@ -83,7 +86,7 @@ class Joiner(
                val nextPending = pending
                    ?.outerJoin(
                        nextStream,
-                       ::joinRequests,
+                       payloadJoiner,
                        // See above for Any case as this will wait until next record comes in before emitting a result after window
                        JoinWindows.ofTimeDifferenceWithNoGrace(
                            Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
@@ -99,7 +102,7 @@ class Joiner(
                val nextPending = pending
                    ?.join(
                        nextStream,
-                       ::joinRequests,
+                       payloadJoiner,
                        JoinWindows.ofTimeDifferenceWithNoGrace(
                            Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                        ),
@@ -109,6 +112,54 @@ class Joiner(
                return buildTopology(builder, inputTopics.minus(topic), nextPending)
            }
        }
+    }
+
+    private fun buildPassThroughStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        return builder
+            .stream(topic, consumerSerde)
+            .filterForPipeline(pipelineName)
+    }
+
+    private fun buildInputOutputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+       return builder
+            .stream(topic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Request()
+            .convertToResponse(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0}
+            .marshallInferenceV2Response()
+    }
+
+    private fun buildOutputOutputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        return builder
+            .stream(topic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Response()
+            .filterResponses(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0}
+            .marshallInferenceV2Response()
+    }
+
+    private fun buildOutputInputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        return builder
+            .stream(topic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Response()
+            .convertToRequest(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            .marshallInferenceV2Request()
+    }
+
+    private fun buildInputInputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        return builder
+            .stream(topic, consumerSerde)
+            .filterForPipeline(pipelineName)
+            .unmarshallInferenceV2Request()
+            .filterRequests(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0}
+            .marshallInferenceV2Request()
     }
 
     private fun joinRequests(left: ByteArray?, right: ByteArray?): ByteArray {
@@ -130,6 +181,27 @@ class Joiner(
             .addAllRawInputContents(rightRequest.rawInputContentsList)
             .build()
         return request.toByteArray()
+    }
+
+    private fun joinResponses(left: ByteArray?, right: ByteArray?): ByteArray {
+        if (left == null) {
+            return right!!
+        }
+        if (right == null) {
+            return left
+        }
+        val leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
+        val rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
+        val response = V2Dataplane.ModelInferResponse
+            .newBuilder()
+            .setId(leftResponse.id)
+            .putAllParameters(leftResponse.parametersMap)
+            .addAllOutputs(leftResponse.outputsList)
+            .addAllOutputs(rightResponse.outputsList)
+            .addAllRawOutputContents(leftResponse.rawOutputContentsList)
+            .addAllRawOutputContents(rightResponse.rawOutputContentsList)
+            .build()
+        return response.toByteArray()
     }
 
     override fun onChange(s1: KafkaStreams.State, s2: KafkaStreams.State) {

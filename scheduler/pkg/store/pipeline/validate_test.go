@@ -58,6 +58,18 @@ func TestCheckStepReferencesExist(t *testing.T) {
 			err: &PipelineStepNotFoundErr{pipeline: "test", step: "c", badRef: "f"},
 		},
 		{
+			name: "pipeline input reference",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name:   "a",
+						Inputs: []string{"test.inputs"},
+					},
+				},
+			},
+		},
+		{
 			name: "output step does not exist",
 			pipelineVersion: &PipelineVersion{
 				Name: "test",
@@ -321,6 +333,49 @@ func TestCheckInputsAndTriggersDiffer(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := checkInputsAndTriggersDiffer(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}
+
+func TestCheckStepNameNotPipelineName(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "step has same name as pipeline",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"test": {
+						Name: "test",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
+					},
+					"c": {
+						Name:     "c",
+						Inputs:   []string{"b.outputs", "a.outputs"},
+						Triggers: []string{},
+					},
+				},
+			},
+			err: &PipelineStepNameEqualsPipelineNameErr{pipeline: "test"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkStepNameNotPipelineName(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {

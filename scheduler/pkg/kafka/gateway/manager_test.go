@@ -27,7 +27,7 @@ func TestManagerAddModel(t *testing.T) {
 			streamSpec:          nil,
 			expectedInputTopic:  "seldon.default.model.foo.inputs",
 			expectedOutputTopic: "seldon.default.model.foo.outputs",
-			expectedErrorTopic:  "seldon.default.errors.outputs",
+			expectedErrorTopic:  "seldon.default.errors.errors",
 		},
 		{
 			name:      "basic with stream spec",
@@ -38,7 +38,7 @@ func TestManagerAddModel(t *testing.T) {
 			},
 			expectedInputTopic:  "input",
 			expectedOutputTopic: "output",
-			expectedErrorTopic:  "seldon.default.errors.outputs",
+			expectedErrorTopic:  "seldon.default.errors.errors",
 		},
 	}
 	for _, test := range tests {

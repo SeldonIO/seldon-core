@@ -2,6 +2,9 @@ package kafka
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 )
 
 const (
@@ -11,6 +14,7 @@ const (
 	errorsTopic       = "errors"
 	inputsSuffix      = "inputs"
 	outputsSuffix     = "outputs"
+	errorsSuffix      = "errors"
 	TopicErrorHeader  = "seldon-pipeline-errors"
 )
 
@@ -28,7 +32,7 @@ func NewTopicNamer(namespace string) *TopicNamer {
 }
 
 func (tn *TopicNamer) GetModelErrorTopic() string {
-	return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, errorsTopic, outputsSuffix)
+	return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, errorsTopic, errorsSuffix)
 }
 
 func (tn *TopicNamer) GetModelTopicInputs(modelName string) string {
@@ -47,14 +51,26 @@ func (tn *TopicNamer) GetPipelineTopicOutputs(pipelineName string) string {
 	return fmt.Sprintf("%s.%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, pipelineName, outputsSuffix)
 }
 
-func (tn *TopicNamer) GetModelTopic(modelStream string) string {
-	return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, modelStream)
+func (tn *TopicNamer) GetModelOrPipelineTopic(pipelineName string, stepReference string) string {
+	stepName := strings.Split(stepReference, pipeline.StepNameSeperator)[0]
+	if stepName == pipelineName {
+		return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, stepReference)
+	} else {
+		return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, stepReference)
+	}
+
 }
 
-func (tn *TopicNamer) GetFullyQualifiedTensorMap(tin map[string]string) map[string]string {
+func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, tin map[string]string) map[string]string {
 	tout := make(map[string]string)
 	for k, v := range tin {
-		kout := fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
+		stepName := strings.Split(k, pipeline.StepNameSeperator)[0]
+		var kout string
+		if stepName == pipelineName {
+			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
+		} else {
+			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
+		}
 		tout[kout] = v
 	}
 	return tout

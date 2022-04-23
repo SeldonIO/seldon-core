@@ -26,11 +26,11 @@ fun addTriggerTopology(
     val nextStream = builder //TODO possible bug - not all streams will be v2 requests? Maybe v2 responses?
         .stream(topic, consumerSerde)
         .filterForPipeline(pipelineName)
-        .unmarshallInferenceV2()
-        .convertToRequests(topic, tensorsByTopic?.get(topic), emptyMap())
+        .unmarshallInferenceV2Response()
+        .convertToRequest(topic, tensorsByTopic?.get(topic), emptyMap())
         // handle cases where there are no tensors we want
         .filter { _, value -> value.inputsList.size != 0}
-        .marshallInferenceV2()
+        .marshallInferenceV2Request()
 
     when (joinType) {
         ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Any -> {

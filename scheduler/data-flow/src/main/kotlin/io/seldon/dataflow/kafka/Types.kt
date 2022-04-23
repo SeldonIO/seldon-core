@@ -17,3 +17,24 @@ val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(),
 val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray())
 val joinSerde: StreamJoined<RequestId, TRecord, TRecord> =
     StreamJoined.with(Serdes.String(), Serdes.ByteArray(), Serdes.ByteArray())
+
+enum class ChainType {
+    OUTPUT_OUTPUT,
+    INPUT_INPUT,
+    INPUT_OUTPUT,
+    OUTPUT_INPUT,
+    PASSTHROUGH;
+
+    companion object {
+        fun create(input: String, output: String): ChainType {
+            return when (input.substringAfterLast(".") to output.substringAfterLast(".")) {
+                "inputs" to "inputs" -> INPUT_INPUT
+                "inputs" to "outputs" -> INPUT_OUTPUT
+                "outputs" to "outputs" -> OUTPUT_OUTPUT
+                "outputs" to "inputs" -> OUTPUT_INPUT
+                else -> PASSTHROUGH
+            }
+        }
+    }
+}
+

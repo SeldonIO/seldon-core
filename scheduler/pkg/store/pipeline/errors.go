@@ -155,3 +155,11 @@ type PipelineInputAndTriggerErr struct {
 func (psr *PipelineInputAndTriggerErr) Error() string {
 	return fmt.Sprintf("pipeline %s : inputs and triggers must differ, but found %s in both", psr.pipeline, psr.input)
 }
+
+type PipelineStepNameEqualsPipelineNameErr struct {
+	pipeline string
+}
+
+func (psr *PipelineStepNameEqualsPipelineNameErr) Error() string {
+	return fmt.Sprintf("pipeline %s must not have a step name with the same name", psr.pipeline)
+}

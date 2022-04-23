@@ -111,4 +111,5 @@ type PipelineOutput struct {
 	Steps         []string
 	JoinWindowMs  uint32
 	StepsJoinType JoinType
+	TensorMap     map[string]string
 }
