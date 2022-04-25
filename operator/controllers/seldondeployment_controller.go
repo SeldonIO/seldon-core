@@ -780,7 +780,7 @@ func createContainerService(deploy *appsv1.Deployment,
 		}
 	}
 
-	// Add livecycle probe
+	// Add lifecycle probe
 	if con.Lifecycle == nil {
 		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
@@ -816,6 +816,7 @@ func createContainerService(deploy *appsv1.Deployment,
 
 	con.Env = append(con.Env, []corev1.EnvVar{
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		corev1.EnvVar{Name: MLServerModelNameEnv, Value: con.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},

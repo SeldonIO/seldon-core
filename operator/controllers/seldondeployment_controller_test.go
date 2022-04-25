@@ -144,6 +144,18 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			},
 		))
 
+		// Check model's name is in there
+		Expect(containers[0].Env).To(ContainElements(
+			v1.EnvVar{
+				Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_ID,
+				Value: containers[0].Name,
+			},
+			v1.EnvVar{
+				Name:  MLServerModelNameEnv,
+				Value: containers[0].Name,
+			},
+		))
+
 		//Update Deployment as pods not created with test client.
 		depUpdated := depFetched.DeepCopy()
 		depUpdated.Status.AvailableReplicas = replicas
