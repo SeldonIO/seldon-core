@@ -31,9 +31,6 @@ spec:
         - name: SELDON_CORES_COUNT
           value: "4"
         resources:
-          limits:
-            cpu: 4
-            memory: 2G
           requests:
             cpu: 1
             memory: 1G

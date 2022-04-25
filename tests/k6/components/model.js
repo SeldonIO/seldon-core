@@ -157,9 +157,22 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
             }
         }
     }
+
+    // simple one node pipeline
+    const pipeline = {"pipeline": {
+        "name": modelName,
+        "steps": [
+            {"name": modelName}
+        ],
+        "output":{
+            "steps": [modelName] }
+        }
+    }
+
     const inference = getModelInferencePayload(modelType, inferBatchSize)
     return {
         "modelDefn": isProxy ? {"request": model} : model,
+        "pipelineDefn": pipeline, // note that we can only deploy a pipeline with a real scheduler
         "inference": JSON.parse(JSON.stringify(inference))
     }
 }

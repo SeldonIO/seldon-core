@@ -11,6 +11,6 @@ spec:
         - name: TEST_METADATA
           value: "envoy_test"
         - name: INFER_GRPC_ENDPOINT
-          value: "10.59.249.86:80"
+          value: "${ENVOY_ENDPOINT}:9000"
         - name: INFER_HTTP_ENDPOINT
-          value: "http://10.59.249.86:80"
+          value: "http://${ENVOY_ENDPOINT}:9000"

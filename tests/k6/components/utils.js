@@ -1,6 +1,6 @@
 import { sleep } from 'k6';
 import { generateModel } from '../components/model.js';
-import { connectScheduler, disconnectScheduler, loadModel, unloadModel } from '../components/scheduler.js';
+import { connectScheduler, disconnectScheduler, loadModel, unloadModel, loadPipeline, unloadPipeline } from '../components/scheduler.js';
 import {
     connectScheduler as connectSchedulerProxy,
     disconnectScheduler as disconnectSchedulerProxy,
@@ -23,6 +23,7 @@ export function setupBase(config ) {
             const modelName = "model" + i.toString()
             const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
             const modelDefn = model.modelDefn
+            const pipelineDefn = model.pipelineDefn
 
             var loadModelFn = loadModel
             if (config.isSchedulerProxy) {
@@ -30,6 +31,10 @@ export function setupBase(config ) {
             }
 
             loadModelFn(modelName, modelDefn, false)
+
+            if (config.isLoadPipeline) {
+                loadPipeline(modelName, pipelineDefn)  // we use pipeline name as model name
+            }
             
             sleep(1)
         }
@@ -42,11 +47,14 @@ export function setupBase(config ) {
             
             const model = generateModel(config.modelType, modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
 
-            while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
-                sleep(1)
-            }
+            // note: this doesnt work in case of kafa
+            // and in the pipeline gateway doesnt support status endpoint
+            // while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
+            //     sleep(1)
+            // }
 
-            inferHttpLoop(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy)
+            inferHttpLoop(
+                config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.dataflowTag)
         }
 
         var disconnectSchedulerFn = disconnectScheduler
@@ -72,6 +80,11 @@ export function teardownBase(config ) {
 
         for (let i = 0; i < config.maxNumModels; i++) {
             const modelName = "model" + i.toString()
+            // if we have added a pipeline, unloaded it
+            if (config.isLoadPipeline) {
+                unloadPipeline(modelName)  // pipeline name is the model name
+            }
+
             unloadModelFn(modelName, true)
         }
 
@@ -90,9 +103,11 @@ export function doInfer(modelName, modelNameWithVersion, config, isHttp) {
 
     if (config.infer) {
         if (isHttp) {
-            inferHttpLoop(httpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, config.inferHttpIterations, config.isEnvoy)
+            inferHttpLoop(
+                httpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, config.inferHttpIterations, config.isEnvoy, config.dataflowTag)
         } else {
-            inferGrpcLoop(grpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy)
+            inferGrpcLoop(
+                grpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy, config.dataflowTag)
         }
     }
 }

@@ -128,7 +128,7 @@ services:
       - "--log-verbose=${TRITON_LOG_LEVEL:-0}"
     shm_size: 1g
     ulimits:
-      memlock: "-1"
+      memlock: -1
       stack: 67108864
 
   modelgateway:

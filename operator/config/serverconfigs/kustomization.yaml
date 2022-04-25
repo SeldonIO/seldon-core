@@ -13,6 +13,12 @@ images:
 - name: agent
   newName: seldonio/seldon-agent
   newTag: latest
+- name: mlserver
+  newName: seldonio/mlserver
+  newTag: 1.0.1
 - name: rclone
   newName: seldonio/seldon-rclone
   newTag: latest
+- name: triton
+  newName: nvcr.io/nvidia/tritonserver
+  newTag: 21.12-py3

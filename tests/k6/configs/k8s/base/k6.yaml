@@ -19,11 +19,11 @@ spec:
           "1",
           "-i",
           "1",
-          "scenarios/predict_agent_oc.js",
+          "scenarios/predict_agent.js",
           ]
         env:
         - name: SCHEDULER_ENDPOINT
-          value: "10.56.3.22:9004"
+          value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
           value: "1"
         - name: INFER_GRPC_ITERATIONS
@@ -33,7 +33,7 @@ spec:
         - name: MODEL_MEMORY_BYTES
           value: "100000000"
         - name: MAX_NUM_MODELS
-          value: "11"
+          value: "1"
         - name: INFER_BATCH_SIZE
           value: "1"
         - name: GOOGLE_APPLICATION_CREDENTIALS

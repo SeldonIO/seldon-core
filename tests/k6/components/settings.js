@@ -96,6 +96,20 @@ function inferBatchSize() {
     return 1
 }
 
+function isLoadPipeline() {
+    if (__ENV.DATAFLOW_TAG) {
+        return !(__ENV.DATAFLOW_TAG === "")
+    }
+    return false
+}
+
+function dataflowTag() {
+    if (__ENV.DATAFLOW_TAG) {
+        return __ENV.DATAFLOW_TAG
+    }
+    return ""  // empty means that we should not go via kafka
+}
+
 
 export function getConfig() {
     return {
@@ -113,5 +127,7 @@ export function getConfig() {
         "isEnvoy": isEnvoy(),
         "modelMemoryBytes": modelMemoryBytes(),
         "inferBatchSize": inferBatchSize(),
+        "isLoadPipeline": isLoadPipeline(),
+        "dataflowTag": dataflowTag(),
     }
 }

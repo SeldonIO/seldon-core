@@ -5,7 +5,10 @@ import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../component
 export let options = {
     thresholds: {
         'http_req_duration{scenario:default}': [`max>=0`],
+        'http_reqs{scenario:default}': [],
         'grpc_req_duration{scenario:default}': [`max>=0`],
+        'data_received{scenario:default}': [],
+        'data_sent{scenario:default}': [],
     },
     setupTimeout: '600s',
     duration: '30m',

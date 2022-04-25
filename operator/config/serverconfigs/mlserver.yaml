@@ -74,7 +74,7 @@ spec:
         name: mlserver-models
       - name: config-volume
         mountPath: /mnt/config
-    - image: seldonio/mlserver:1.0.0.rc1
+    - image: mlserver:latest
       imagePullPolicy: IfNotPresent
       env:
       - name: MLSERVER_HTTP_PORT
@@ -122,14 +122,6 @@ spec:
       - containerPort: 9000
         name: server-http
         protocol: TCP
-      readinessProbe:
-        failureThreshold: 3
-        initialDelaySeconds: 20
-        periodSeconds: 5
-        successThreshold: 1
-        tcpSocket:
-          port: 9000
-        timeoutSeconds: 1
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models

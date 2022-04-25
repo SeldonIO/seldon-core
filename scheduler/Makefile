@@ -7,7 +7,7 @@ MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG
 PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
 DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
-MLSERVER_IMG ?= seldonio/mlserver:1.0.0.rc1
+MLSERVER_IMG ?= seldonio/mlserver:1.0.1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 KIND_NAME=ansible
 
@@ -532,6 +532,7 @@ deploy:
 	cd k8s/mlserver && kustomize edit set image rclone=${RCLONE_IMG}
 	cd k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
 	cd k8s/pipelinegateway && kustomize edit set image pipelinegateway=${PIPELINEGATEWAY_IMG}
+	cd k8s/dataflow-engine && kustomize edit set image dataflow-engine=${DATAFLOW_IMG}
 	kustomize build k8s/default | kubectl apply -f -
 
 .PHONY: build-push-deploy

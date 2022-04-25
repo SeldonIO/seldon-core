@@ -2,8 +2,13 @@
 
 ## Install
 
-We recommend install [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus#installing) that provides an all-in-one package with the [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator).
+We recommend install [kube-prometheus](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) that provides an all-in-one package with the [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator).
 
+```
+kubectl apply --server-side -f manifests/setup
+until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
+kubectl apply -f manifests/
+```
 
 ### RBAC
 
@@ -33,6 +38,10 @@ Pod monitors were chosen as ports for metrics are not exposed at service level a
 # Reference
 
  * [Prometheus CRDs](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md)
+
+# Access the dashboards
+
+ * Access to dashboards is explained [here](https://github.com/prometheus-operator/kube-prometheus#access-the-dashboards)
 
 # TODO
 

@@ -434,13 +434,13 @@ spec:
                     description: msecs to wait for messages from multiple inputs to arrive before joining the inputs
                     format: int32
                     type: integer
-                  outerJoin:
-                    type: boolean
                   steps:
                     description: Previous step to receive data from
                     items:
                       type: string
                     type: array
+                  stepsJoin:
+                    type: string
                 type: object
               steps:
                 description: The steps of this inference graph pipeline
@@ -462,6 +462,8 @@ spec:
                       items:
                         type: string
                       type: array
+                    inputsJoinType:
+                      type: string
                     joinWindowMs:
                       description: msecs to wait for messages from multiple inputs to arrive before joining the inputs
                       format: int32
@@ -469,13 +471,18 @@ spec:
                     name:
                       description: Name of the step
                       type: string
-                    outerJoin:
-                      type: boolean
                     tensorMap:
                       additionalProperties:
                         type: string
                       description: Map of tensor name conversions to use e.g. output1 -> input1
                       type: object
+                    triggers:
+                      description: Triggers required to activate step
+                      items:
+                        type: string
+                      type: array
+                    triggersJoinType:
+                      type: string
                   required:
                   - name
                   type: object

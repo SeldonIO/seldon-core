@@ -59,5 +59,41 @@ export function unloadModel(modelName, awaitReady = true) {
     }
 }
 
+export function loadPipeline(pipelineName, data, awaitReady=true) {
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/LoadPipeline', data);
+    if (check(response, {'pipeline load success': (r) => r && r.status === grpc.StatusOK})) {
+        if (awaitReady) {
+            awaitPipelineStatus(pipelineName, "PipelineReady")
+        }
+    }
+}
 
+export function getPipelineStatus(pipelineName) {
+    const data = {"name": pipelineName, "allVersions": true}
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/PipelineStatus', data);
+    if (check(response, {'pipeline status success': (r) => r && r.status === grpc.StatusOK})) {
+        const responseData = response.message
+        //console.log(JSON.stringify(response.message));
+        return responseData.versions[responseData.versions.length-1].state.status
+    } else {
+        return ""
+    }
+}
+
+export function awaitPipelineStatus(pipelineName, status) {
+    while (getPipelineStatus(pipelineName) !== status) {
+        sleep(1)
+    }
+}
+
+export function unloadPipeline(pipelineName, awaitReady = true) {
+    const data = {"name": pipelineName}
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/UnloadPipeline', data);
+    console.log(JSON.stringify(response.message));
+    if (check(response, {'pipeline unload success': (r) => r && r.status === grpc.StatusOK})) {
+        if (awaitReady) {
+            awaitPipelineStatus(pipelineName, "PipelineTerminated")
+        }
+    }
+}
 

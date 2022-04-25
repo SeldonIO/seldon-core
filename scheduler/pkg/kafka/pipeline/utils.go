@@ -15,15 +15,13 @@ func createResourceNameFromHeader(header string) (string, bool, error) {
 			return header, true, nil
 		}
 	case 2:
-		parts := strings.Split(header, ".")
-		if len(parts) == 2 {
-			switch parts[1] {
-			case resources.SeldonPipelineHeaderSuffix:
-				return parts[0], false, nil
-			case resources.SeldonModelHeaderSuffix:
-				return parts[0], true, nil
-			}
+		switch parts[1] {
+		case resources.SeldonPipelineHeaderSuffix:
+			return parts[0], false, nil
+		case resources.SeldonModelHeaderSuffix:
+			return parts[0], true, nil
 		}
 	}
-	return "", false, fmt.Errorf("Bad resource name %s", header)
+	return "", false, fmt.Errorf(
+		"Bad or missing header %s %s", resources.SeldonModelHeader, header)
 }

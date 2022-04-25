@@ -646,9 +646,6 @@ spec:
         imagePullPolicy: IfNotPresent
         name: dataflow-engine
         resources:
-          limits:
-            cpu: 4
-            memory: 2G
           requests:
             cpu: 1
             memory: 1G
@@ -716,9 +713,6 @@ spec:
         imagePullPolicy: IfNotPresent
         name: modelgateway
         resources:
-          limits:
-            cpu: 500m
-            memory: 300Mi
           requests:
             cpu: 100m
             memory: 200Mi
@@ -769,9 +763,6 @@ spec:
           name: grpc
           protocol: TCP
         resources:
-          limits:
-            cpu: 500m
-            memory: 300Mi
           requests:
             cpu: 100m
             memory: 200Mi
@@ -822,9 +813,6 @@ spec:
         - containerPort: 9008
           name: dataflow
         resources:
-          limits:
-            cpu: 500m
-            memory: 300Mi
           requests:
             cpu: 100m
             memory: 200Mi
@@ -861,7 +849,7 @@ spec:
         name: mlserver-models
     - env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+        value: alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT
@@ -918,7 +906,7 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
-      image: seldonio/mlserver:1.0.0.rc1
+      image: seldonio/mlserver:1.0.1
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
@@ -940,13 +928,11 @@ spec:
         name: server-http
         protocol: TCP
       readinessProbe:
-        failureThreshold: 3
-        initialDelaySeconds: 20
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        initialDelaySeconds: 5
         periodSeconds: 5
-        successThreshold: 1
-        tcpSocket:
-          port: 9000
-        timeoutSeconds: 1
       resources:
         requests:
           cpu: "0.1"
@@ -1086,13 +1072,11 @@ spec:
       - containerPort: 8002
         name: server-metrics
       readinessProbe:
-        failureThreshold: 3
-        initialDelaySeconds: 20
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        initialDelaySeconds: 5
         periodSeconds: 5
-        successThreshold: 1
-        tcpSocket:
-          port: 9000
-        timeoutSeconds: 1
       resources:
         requests:
           cpu: "0.1"

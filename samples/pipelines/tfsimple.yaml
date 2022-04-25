@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimple
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: tfsimple1
+  output:
+    steps:
+    - tfsimple1
