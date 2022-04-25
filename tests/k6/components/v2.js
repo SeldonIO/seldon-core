@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 import grpc from 'k6/net/grpc';
+import { generatePipelineName } from '../components/model.js';
 
 const v2Client = new grpc.Client();
 v2Client.load(['../../../apis/mlops/v2_dataplane/'], 'v2_dataplane.proto');
@@ -12,7 +13,7 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         'Content-Type': 'application/json',
         'Host': modelName,
         // we add here either .model or .pipeline to test dataflow
-        'seldon-model': (pipelineSuffix=="")?modelName:modelName+"."+pipelineSuffix,
+        'seldon-model': generateDataFlowName(modelName, pipelineSuffix),
     };
     if (viaEnvoy != true) {
         headers['seldon-internal-model'] = modelName
@@ -34,9 +35,8 @@ export function inferHttpLoop(endpoint, modelName, payload, iterations, viaEnvoy
 
 export function inferGrpc(modelName, payload, viaEnvoy, pipelineSuffix) {
     var headers = {
-        'seldon-model' : modelName,
         // we add here either .model or .pipeline to test dataflow
-        'seldon-model': (pipelineSuffix=="")?modelName:modelName+"."+pipelineSuffix,
+        'seldon-model': generateDataFlowName(modelName, pipelineSuffix),
     };
     if (viaEnvoy != true) {
         headers['seldon-internal-model'] = modelName
@@ -84,5 +84,19 @@ export function connectV2Grpc(endpoint) {
 
 export function disconnectV2Grpc() {
     v2Client.close();
+}
+
+export function generateDataFlowName(modelName, suffix) {
+    if (suffix=="") {
+        return modelName
+    } else {
+        if (suffix=="pipeline") {
+            // we add -pipeline to the model name in the case of constructing a pipeline
+            return generatePipelineName(modelName)+"."+suffix
+        } else {
+            // in this dataflow case we access the model directly
+            return modelName+"."+suffix
+        }
+    }
 }
 

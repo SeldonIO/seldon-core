@@ -1,5 +1,5 @@
 import { sleep } from 'k6';
-import { generateModel } from '../components/model.js';
+import { generateModel, generatePipelineName } from '../components/model.js';
 import { connectScheduler, disconnectScheduler, loadModel, unloadModel, loadPipeline, unloadPipeline } from '../components/scheduler.js';
 import {
     connectScheduler as connectSchedulerProxy,
@@ -33,7 +33,7 @@ export function setupBase(config ) {
             loadModelFn(modelName, modelDefn, false)
 
             if (config.isLoadPipeline) {
-                loadPipeline(modelName, pipelineDefn)  // we use pipeline name as model name
+                loadPipeline(generatePipelineName(modelName), pipelineDefn)  // we use pipeline name as model name
             }
             
             sleep(1)
@@ -82,7 +82,7 @@ export function teardownBase(config ) {
             const modelName = "model" + i.toString()
             // if we have added a pipeline, unloaded it
             if (config.isLoadPipeline) {
-                unloadPipeline(modelName)  // pipeline name is the model name
+                unloadPipeline(generatePipelineName(modelName)) 
             }
 
             unloadModelFn(modelName, true)

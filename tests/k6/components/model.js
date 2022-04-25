@@ -160,7 +160,7 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
 
     // simple one node pipeline
     const pipeline = {"pipeline": {
-        "name": modelName,
+        "name": generatePipelineName(modelName),
         "steps": [
             {"name": modelName}
         ],
@@ -175,4 +175,8 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
         "pipelineDefn": pipeline, // note that we can only deploy a pipeline with a real scheduler
         "inference": JSON.parse(JSON.stringify(inference))
     }
+}
+
+export function generatePipelineName(modelName) {
+    return modelName + "-pipeline"
 }
