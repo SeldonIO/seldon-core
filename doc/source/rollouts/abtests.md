@@ -43,7 +43,7 @@ metadata:
 spec:
   predictors:
   - name: baseline
-    traffic: 100    
+    traffic: 100
     graph:
       name: classifier
       modelUri: gs://seldon-models/v1.14.0-dev/sklearn/iris
@@ -83,7 +83,7 @@ spec:
   sampleSize: iter8-seldon/request-count
   type: Gauge
   units: milliseconds
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 ---
 apiVersion: iter8.tools/v2alpha2
 kind: Metric
@@ -99,7 +99,7 @@ spec:
       sum(increase(seldon_api_executor_server_requests_seconds_count{code!='200',seldon_deployment_id='$sid',predictor_name='$predictor',kubernetes_namespace='$ns'}[${elapsedTime}s])) or on() vector(0)
   provider: prometheus
   type: Counter
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query  
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 ---
 apiVersion: iter8.tools/v2alpha2
 kind: Metric
@@ -116,7 +116,7 @@ spec:
   provider: prometheus
   sampleSize: iter8-seldon/request-count
   type: Gauge
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query    
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 ---
 apiVersion: iter8.tools/v2alpha2
 kind: Metric
@@ -134,7 +134,7 @@ spec:
   sampleSize: iter8-seldon/request-count
   type: Gauge
   units: milliseconds
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query      
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 ---
 apiVersion: iter8.tools/v2alpha2
 kind: Metric
@@ -150,7 +150,7 @@ spec:
       sum(increase(seldon_api_executor_client_requests_seconds_sum{seldon_deployment_id='$sid',predictor_name='$predictor',kubernetes_namespace='$ns'}[${elapsedTime}s])) or on() vector(0)
   provider: prometheus
   type: Counter
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 ---
 apiVersion: iter8.tools/v2alpha2
 kind: Metric
@@ -166,7 +166,7 @@ spec:
       sum(increase(seldon_api_executor_server_requests_seconds_count{service='feedback',seldon_deployment_id='$sid',predictor_name='$predictor',kubernetes_namespace='$ns'}[${elapsedTime}s])) or on() vector(0)
   provider: prometheus
   type: Gauge
-  urlTemplate: http://seldon-core-analytics-prometheus-seldon.seldon-system/api/v1/query
+  urlTemplate: http://seldon-monitoring-prometheus.seldon-system.svc:9090/api/v1/
 
 ```
 
@@ -466,7 +466,7 @@ spec:
         kind: VirtualService
         name: routing-rule
         namespace: default
-        fieldPath: .spec.http[0].route[0].weight      
+        fieldPath: .spec.http[0].route[0].weight
       variables:
       - name: ns
         value: ns-baseline
@@ -483,7 +483,7 @@ spec:
         kind: VirtualService
         name: routing-rule
         namespace: default
-        fieldPath: .spec.http[0].route[1].weight      
+        fieldPath: .spec.http[0].route[1].weight
       variables:
       - name: ns
         value: ns-candidate

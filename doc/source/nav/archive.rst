@@ -9,7 +9,6 @@ Archived Docs for Review
     Seldon OpenVino </charts/seldon-openvino.rst>
     Ambassador Circuit Breakers </examples/ambassador_circuit_breakers.nblink>
     Custom Init Containers </examples/custom_init_container.nblink>
-    Custom Metrics </examples/custom_metrics.nblink>
     Drift CIFAR10 </examples/drift_cifar10.nblink>
     DVC </examples/dvc.nblink>
     Graph Metadata </examples/graph-metadata.nblink>

@@ -17,9 +17,14 @@ We have updated the health checks done by Seldon for the model nodes in your inf
 
 By default we have set `executor.fullHealthChecks` to false for 1.14 release as users would need to rebuild their custom python models if they have not implemented the `health_status` method. In future we will default to `true`.
 
-## Request Logger
+### Request Logger
 
 The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+
+### Seldon Core Analytics
+
+In this release we change status of [Seldon Core Analytics](../charts/seldon-core-analytics.html) Helm Chart to example only.
+**This chart will not be further updated.** We recommend to install and configure metrics monitoring using [Prometheus Operator](../analytics/analytics.html#metrics-with-prometheus-operator).
 
 ## Upgrading to 1.13
 

@@ -1,16 +1,17 @@
-VERSION=0.1
 IMAGE_BASE=seldonio/echo-model
-S2I_IMAGE_VERSION := $(shell cat ../../../version.txt)
+VERSION := $(shell cat ../../../version.txt)
+
+KIND_NAME=kind
 
 build_image:
 	s2i build \
-		-E environment_rest \
+		-E environment \
 		.\
-		seldonio/seldon-core-s2i-python37-ubi8:${S2I_IMAGE_VERSION}\
+		seldonio/seldon-core-s2i-python37-ubi8:${VERSION}\
 		${IMAGE_BASE}:${VERSION}
 
 push_image:
 	docker push ${IMAGE_BASE}:${VERSION}
 
 kind_load_image: build_image
-	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION}
+	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION} --name ${KIND_NAME}
