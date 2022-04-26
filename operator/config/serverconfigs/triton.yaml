@@ -31,7 +31,7 @@ spec:
       name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: "dali,fil,onnx,openvino,pytorch,tensorflow,tensorrt,triton-python"
+        value: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt,triton-python"
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT

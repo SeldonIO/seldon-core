@@ -12,16 +12,6 @@ The `steps` list shows three models: `tfsimple1`, `tfsimple2` and `tfsimple3`. T
 
 The output of the Pipeline is the output from the `tfsimple3` model.
 
-## Model Input/Output Naming Conventions
-
-Models inputs are outputs are defined with a dot notation:
-
-```
-<modelName>.<inputs|outputs>.<tensorName>
-```
-
-See the architecture section for more details of how these map to Kafka topics.
-
 ## Detailed Specification
 
 The full GoLang specification for a Pipeline is shown below:

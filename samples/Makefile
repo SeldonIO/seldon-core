@@ -14,3 +14,11 @@ k8s-examples.md: k8s-examples.ipynb
 		--to markdown \
 		--output k8s-examples.md
 	./markdown-transforms.sh k8s-examples.md
+
+pipeline-examples.md: pipeline-examples.ipynb
+	jupyter nbconvert \
+		pipeline-examples.ipynb \
+		--ClearOutputPreprocessor.enabled=False \
+		--to markdown \
+		--output pipeline-examples.md
+	./markdown-transforms.sh pipeline-examples.md

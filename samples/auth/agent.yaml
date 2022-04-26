@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+name: seldon-agent
+data:
+agent.json: |-
+ {
+    "rclone" : {
+        "config_secrets": ["seldon-rclone-gs-public","minio-secret"]
+    },
+ }

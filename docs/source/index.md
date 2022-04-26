@@ -8,7 +8,9 @@
 contents/about/index
 contents/getting-started/index
 contents/tutorials/index
-contents/inference-artifacts/index
+contents/servers/index
+contents/models/index
+contents/pipelines/index
 contents/kubernetes/index
 contents/examples/index
 contents/cli/index

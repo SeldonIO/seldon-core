@@ -14,7 +14,6 @@ We use a simple sklearn iris classification model
 cat ./models/sklearn-iris-gs.yaml
 ```
 ````{collapse} Expand to see output
-```yaml````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -35,8 +34,6 @@ seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
 ```
@@ -47,8 +44,6 @@ Wait for the model to be ready
 ```bash
 seldon model status --model-name iris -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -104,8 +99,6 @@ seldon model infer --model-name iris \
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {
     	"model_name": "iris_1",
@@ -137,8 +130,6 @@ seldon model infer --model-name iris --inference-mode grpc \
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {
       "modelName": "iris_1",
@@ -168,8 +159,6 @@ seldon model unload --model-name iris
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
 ```
@@ -181,7 +170,6 @@ seldon model unload --model-name iris
 cat ./models/tfsimple1.yaml
 ```
 ````{collapse} Expand to see output
-```yaml````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -202,8 +190,6 @@ seldon model load -f ./models/tfsimple1.yaml
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
 ```
@@ -214,8 +200,6 @@ Wait for the model to be ready.
 ```bash
 seldon model status --model-name tfsimple1 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -269,8 +253,6 @@ Do a REST inference call.
 seldon model infer -m tfsimple1 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -341,8 +323,6 @@ Do a gRPC inference call
 seldon model infer -m tfsimple1 --inference-mode grpc \
     '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -422,8 +402,6 @@ seldon model unload --model-name tfsimple1
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
 ```
@@ -437,7 +415,6 @@ We will use two SKlearn Iris classification models to illustrate experiments.
 cat ./experiments/sklearn1.yaml
 ```
 ````{collapse} Expand to see output
-```yaml````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -455,7 +432,6 @@ cat ./experiments/sklearn1.yaml
 cat ./experiments/sklearn2.yaml
 ```
 ````{collapse} Expand to see output
-```yaml````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -477,8 +453,6 @@ seldon model load -f ./experiments/sklearn2.yaml
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
     {}
@@ -491,8 +465,6 @@ Wait for both models to be ready.
 seldon model status --model-name iris | jq -M .
 seldon model status --model-name iris2 | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -587,7 +559,6 @@ Create an experiment that modifies the iris model to add a second model splittin
 cat ./experiments/ab-default-model.yaml 
 ```
 ````{collapse} Expand to see output
-```yaml````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Experiment
@@ -611,8 +582,6 @@ seldon experiment start -f ./experiments/ab-default-model.yaml
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     {}
 ```
@@ -623,8 +592,6 @@ Wait for the experiment to be ready.
 ```bash
 seldon experiment status -e experiment-sample -w | jq -M .
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -647,8 +614,6 @@ seldon model infer --model-name iris -i 50 \
 ```
 ````{collapse} Expand to see output
 ```json
-````{collapse} Expand to see output
-```json
 
     map[iris2_1:22 iris_1:28]
 ```
@@ -659,8 +624,6 @@ Stop the experiment
 ```bash
 seldon experiment stop -e experiment-sample
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 
@@ -674,8 +637,6 @@ Unload both models.
 seldon model unload --model-name iris
 seldon model unload --model-name iris2
 ```
-````{collapse} Expand to see output
-```json
 ````{collapse} Expand to see output
 ```json
 

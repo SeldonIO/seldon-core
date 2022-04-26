@@ -1,0 +1,10 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+  namespace: seldon-mesh
+spec:
+  storageUri: "s3://models/iris"
+  secretName: "minio-secret"
+  requirements:
+  - sklearn

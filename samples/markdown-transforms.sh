@@ -4,6 +4,8 @@
 sed -zi 's/```python\n!/```bash\n/g' $1
 # remove pling from seldon commands
 sed -zri 's/!seldon/seldon/g' $1
+# remove pling from seldon commands
+sed -zri 's/!cat/cat/g' $1
 # remove pling from kubectl commands
 sed -zri 's/!kubectl/kubectl/g' $1
 # After a cat yaml command add a yaml block

@@ -8,6 +8,7 @@ Kubernetes provides the core platform for production use. However, the architect
 
 kafka/index.md
 resources/index.md
+cloud-storage/index.md
 metrics/index.md
 tracing/index.md
 service-meshes/index.md
