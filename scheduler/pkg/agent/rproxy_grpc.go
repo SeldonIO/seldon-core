@@ -10,8 +10,11 @@ import (
 	"sync"
 	"time"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -70,7 +73,7 @@ func (rp *reverseGRPCProxy) Start() error {
 
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
-	opts = append(opts, grpc.UnaryInterceptor(rp.metrics.UnaryServerInterceptor()))
+	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), rp.metrics.UnaryServerInterceptor())))
 	grpcServer := grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(grpcServer, rp)
 

@@ -7,6 +7,10 @@ import (
 	"net/http"
 	"testing"
 
+	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
@@ -64,7 +68,7 @@ func TestRestRequest(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			iw, err := NewInferWorker(ic, logger)
 			g.Expect(err).To(BeNil())
-			err = iw.restRequest(&InferWork{value: test.data}, false)
+			err = iw.restRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}}, false)
 			g.Expect(err).To(BeNil())
 			ic.Stop()
 			g.Expect(httpmock.GetTotalCallCount()).To(Equal(1))
@@ -106,7 +110,7 @@ func TestProcessRequestRest(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			iw, err := NewInferWorker(ic, logger)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(&InferWork{value: test.data})
+			err = iw.processRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}})
 			g.Expect(err).To(BeNil())
 			ic.Stop()
 			g.Eventually(httpmock.GetTotalCallCount).Should(Equal(1))
@@ -169,7 +173,7 @@ func createInferWorkerWithMockConn(
 	modelConfig *KafkaModelConfig) (*InferKafkaGateway, *InferWorker) {
 	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
-	}), grpc.WithInsecure())
+	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	ic, _ := NewInferKafkaGateway(logger, 0, "", modelConfig, serverConfig)
 	iw := &InferWorker{
 		logger:     logger,
@@ -185,7 +189,7 @@ func creatMockServerHealthFunc(grpcServer *mockGRPCMLServer) func() bool {
 	return func() bool {
 		conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return grpcServer.listener.Dial()
-		}), grpc.WithInsecure())
+		}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		client := grpc_health_v1.NewHealthClient(conn)
 		hcr, err := client.Check(context.TODO(), &grpc_health_v1.HealthCheckRequest{})
 		if err != nil || hcr.Status != grpc_health_v1.HealthCheckResponse_SERVING {
@@ -230,7 +234,7 @@ func TestProcessRequestGrpc(t *testing.T) {
 			g.Eventually(check).Should(BeTrue())
 			b, err := proto.Marshal(test.req)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(&InferWork{value: b})
+			err = iw.processRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: b}})
 			g.Expect(err).To(BeNil())
 			g.Eventually(func() int { return mockMLGrpcServer.recv }).Should(Equal(1))
 			g.Eventually(ic.producer.Len).Should(Equal(1))
@@ -283,8 +287,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "empty request is assumed grpc",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   []byte{},
+				msg:     &kafka.Message{Value: []byte{}, Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
@@ -292,8 +295,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "empty json request",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   []byte("{}"),
+				msg:     &kafka.Message{Value: []byte("{}"), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -301,8 +303,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "json request",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -310,8 +311,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "chain json request",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -319,8 +319,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "json request with header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueJsonReq},
-				key:     []byte{},
-				value:   []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -328,8 +327,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "chain json request with header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueJsonRes},
-				key:     []byte{},
-				value:   []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -337,8 +335,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "grpc request without header",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   getProtoBytes(testRequest),
+				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
@@ -346,8 +343,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "grpc request with header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueProtoReq},
-				key:     []byte{},
-				value:   getProtoBytes(testRequest),
+				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
@@ -355,8 +351,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "chained grpc request without header",
 			job: &InferWork{
 				headers: make(map[string]string),
-				key:     []byte{},
-				value:   getProtoBytes(testResponse),
+				msg:     &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
@@ -364,8 +359,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "chained grpc request with header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueProtoRes},
-				key:     []byte{},
-				value:   getProtoBytes(testResponse),
+				msg:     &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
@@ -373,8 +367,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "json request with proto request header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueProtoReq},
-				key:     []byte{},
-				value:   []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error: true,
 		},
@@ -382,8 +375,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "json request with proto response header",
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueProtoRes},
-				key:     []byte{},
-				value:   []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`),
+				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error: true,
 		},
@@ -391,8 +383,7 @@ func TestProcessRequest(t *testing.T) {
 			name: "grpc request with json header treated as json", //TODO maybe fail in this case as it will fail at server
 			job: &InferWork{
 				headers: map[string]string{HeaderKeyType: HeaderValueJsonReq},
-				key:     []byte{},
-				value:   getProtoBytes(testRequest),
+				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -421,7 +412,7 @@ func TestProcessRequest(t *testing.T) {
 			defer ic.Stop()
 			check := creatMockServerHealthFunc(mockMLGrpcServer)
 			g.Eventually(check).Should(BeTrue())
-			err := iw.processRequest(test.job)
+			err := iw.processRequest(context.Background(), test.job)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

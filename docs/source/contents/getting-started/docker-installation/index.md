@@ -34,6 +34,10 @@ This folder will be mounted at `/mnt/models`. You can then specify models as sho
 
 If you have set the local model folder as above then this would be looking at `/home/seldon/models/mlserver/iris`.
 
+## Tracing
+
+The default local install will provide Jaeger tracing at `http://0.0.0.0:16686/search`.
+
 ## Undeploy
 
 From the project root run:

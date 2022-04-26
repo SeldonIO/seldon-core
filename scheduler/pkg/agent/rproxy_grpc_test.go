@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	. "github.com/onsi/gomega"
@@ -112,7 +114,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	// client to proxy
-	conn, err := grpc.Dial(":"+strconv.Itoa(rpPort), grpc.WithInsecure())
+	conn, err := grpc.Dial(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Cannot connect to server (%s)", err)
 	}

@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc/metadata"
 
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
@@ -50,6 +51,7 @@ func (g *GatewayGrpcServer) Start() error {
 	logger.Infof("Starting grpc server on port %d", g.port)
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
+	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	g.grpcServer = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(g.grpcServer, g)
 	return g.grpcServer.Serve(l)
@@ -80,7 +82,7 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	resBytes, err := g.gateway.Infer(resourceName, isModel, b)
+	resBytes, err := g.gateway.Infer(ctx, resourceName, isModel, b)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}

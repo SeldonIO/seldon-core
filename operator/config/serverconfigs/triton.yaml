@@ -50,6 +50,8 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: "triton"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: "seldon-collector.seldon-mesh:4317"        
       - name: POD_NAME
         valueFrom:
           fieldRef:

@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/otel"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/gateway"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
@@ -102,6 +104,13 @@ func main() {
 		if err != nil { //TODO change to Error from Fatal?
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
 		}
+	}
+
+	tracer, err := otel.NewTracer("seldon-modelgateway")
+	if err != nil {
+		logger.WithError(err).Error("Failed to configure otel tracer")
+	} else {
+		defer tracer.Stop()
 	}
 
 	// Start Agent configuration handler

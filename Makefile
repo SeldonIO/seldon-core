@@ -10,6 +10,7 @@ undeploy-local:
 
 .PHONY: deploy-k8s
 deploy-k8s:
+	kubectl create ns seldon-mesh || echo "namespace seldon-mesh already existing"
 	kubectl create -f k8s/seldon-v2-crds.yaml
 	sleep 1
 	kubectl wait --for condition=established --timeout=60s crd/servers.mlops.seldon.io

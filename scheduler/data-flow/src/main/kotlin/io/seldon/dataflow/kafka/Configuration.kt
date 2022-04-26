@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
 
@@ -29,6 +30,9 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = 1
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
+        // Next two setting hardwired for low latency - will need config in future 
+        this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1
+        this[ProducerConfig.LINGER_MS_CONFIG] = 0
     }
 }
 

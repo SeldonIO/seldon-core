@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/otel"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 
 	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -127,6 +129,13 @@ func main() {
 		if err != nil { //TODO change to Error from Fatal?
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
 		}
+	}
+
+	tracer, err := otel.NewTracer("seldon-agent")
+	if err != nil {
+		logger.WithError(err).Error("Failed to configure otel tracer")
+	} else {
+		defer tracer.Stop()
 	}
 
 	// Start Agent configuration handler

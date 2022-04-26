@@ -32,6 +32,9 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "seldon-collector.seldon-mesh:4317"        
         volumeMounts:
         - name: config-volume
           mountPath: /mnt/config

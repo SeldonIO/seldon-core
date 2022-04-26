@@ -30,6 +30,8 @@ spec:
           value: "9008"
         - name: SELDON_CORES_COUNT
           value: "4"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://seldon-collector.seldon-mesh:4317"        
         resources:
           requests:
             cpu: 1

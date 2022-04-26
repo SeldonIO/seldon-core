@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
 const (
@@ -90,6 +91,7 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 
 func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
+	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path("/v2/models/{" + ModelHttpPathVariable + "}/infer").HandlerFunc(g.infer)
 }
 
@@ -115,7 +117,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	res, err := g.gateway.Infer(resourceName, isModel, dataProto)
+	res, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto)
 	if err != nil {
 		logger.WithError(err).Error("Failed to call infer")
 		w.WriteHeader(http.StatusInternalServerError)

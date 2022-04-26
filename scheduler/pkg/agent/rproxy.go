@@ -10,9 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,7 +42,7 @@ func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
 }
 
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
-	return rp.metrics.AddHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
+	return otelhttp.NewHandler(rp.metrics.AddHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
 		rp.rewriteHostHandler(r)
 
 		externalModelName := r.Header.Get(resources.SeldonModelHeader)
@@ -66,7 +67,7 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 			elapsedTime := time.Since(startTime).Seconds()
 			go rp.metrics.AddInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime)
 		}
-	})
+	}), "seldon-rproxy")
 }
 
 func (rp *reverseHTTPProxy) Start() error {

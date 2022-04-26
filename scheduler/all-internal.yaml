@@ -19,6 +19,8 @@ services:
       - type: volume
         source: models-mlserver
         target: /mnt/agent
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
         
   agent-triton:
     ports:
@@ -33,6 +35,8 @@ services:
       - type: volume
         source: models-triton
         target: /mnt/agent
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
   rclone-mlserver:
     ports:
@@ -67,6 +71,8 @@ services:
       - type: volume
         source: models-triton
         target: /mnt/agent
+    depends_on:
+      - agent-triton
 
   scheduler:
     command:
@@ -79,6 +85,8 @@ services:
       - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
       - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
       - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
         
   modelgateway:
@@ -86,6 +94,8 @@ services:
       - type: bind
         source: ./config
         target: /mnt/config
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
   pipelinegateway:
     volumes:
@@ -95,6 +105,8 @@ services:
     ports:
       - "${PIPELINEGATEWAY_HTTP_PORT}:${PIPELINEGATEWAY_HTTP_PORT}"
       - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"      
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
   kafka:
     command: [
@@ -110,7 +122,8 @@ services:
   dataflow:
     environment:
       - SELDON_UPSTREAM_HOST=scheduler
-
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://${OTEL_EXPORTER_OTLP_ENDPOINT}
+      
   envoy:
     ports:
       - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"

@@ -4,3 +4,4 @@
 /mnt/*
 /apis-TEMP
 cover.out
+data-flow/opentelemetry-javaagent.jar

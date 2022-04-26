@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	. "github.com/onsi/gomega"
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -93,7 +95,7 @@ func TestGrpcServer(t *testing.T) {
 			}
 			grpcServer.gateway = mockInferer
 			opts := []grpc.DialOption{
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			}
 			conn, err := grpc.Dial(fmt.Sprintf("0.0.0.0:%d", port), opts...)
 			g.Expect(err).To(BeNil())

@@ -1,11 +1,4 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    control-plane: seldon-scheduler
-  name: seldon-mesh
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-controller-manager
@@ -642,6 +635,8 @@ spec:
           value: "9008"
         - name: SELDON_CORES_COUNT
           value: "4"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://seldon-collector.seldon-mesh:4317
         image: seldonio/seldon-dataflow-engine:latest
         imagePullPolicy: IfNotPresent
         name: dataflow-engine
@@ -709,6 +704,9 @@ spec:
         - --envoy-port=80
         command:
         - /bin/modelgateway
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: seldon-collector.seldon-mesh:4317
         image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
@@ -752,6 +750,9 @@ spec:
         - --config-path=/mnt/config
         command:
         - /bin/pipelinegateway
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: seldon-collector.seldon-mesh:4317
         image: seldonio/seldon-pipelinegateway:latest
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
@@ -868,6 +869,8 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: mlserver
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: seldon-collector.seldon-mesh:4317
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1013,6 +1016,8 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: triton
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: seldon-collector.seldon-mesh:4317
       - name: POD_NAME
         valueFrom:
           fieldRef:

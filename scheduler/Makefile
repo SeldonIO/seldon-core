@@ -511,13 +511,18 @@ start-modelgateway-local:
 start-pipelinegateway-local:
 	./bin/pipelinegateway --config-path ${PWD}/config --log-level debug
 
+data-flow/opentelemetry-javaagent.jar:
+	cd data-flow && wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
+
 .PHONY: start-dataflow-engine-local
-start-dataflow-engine-local:
+start-dataflow-engine-local: data-flow/opentelemetry-javaagent.jar
 	SELDON_UPSTREAM_HOST=localhost \
         SELDON_UPSTREAM_PORT=9008 \
         SELDON_KAFKA_BOOTSTRAP_SERVERS=localhost:9092 \
         SELDON_CORES_COUNT=4 \
-        java -jar ./data-flow/build/libs/dataflow-1.0-SNAPSHOT.jar
+        java -javaagent:./data-flow/opentelemetry-javaagent.jar \
+		-Dotel.resource.attributes=service.name=seldon-dataflow \
+		-jar ./data-flow/build/libs/dataflow-1.0-SNAPSHOT.jar
 
 
 #####################################

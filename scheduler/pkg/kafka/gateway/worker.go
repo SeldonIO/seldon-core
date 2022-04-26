@@ -11,7 +11,14 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/credentials/insecure"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"google.golang.org/grpc/metadata"
@@ -35,8 +42,7 @@ type InferWorker struct {
 
 type InferWork struct {
 	headers map[string]string
-	key     []byte
-	value   []byte
+	msg     *kafka.Message
 }
 
 type V2Error struct {
@@ -53,7 +59,7 @@ func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger) (*Infer
 		logger:     logger.WithField("source", "KafkaInferWorker"),
 		grpcClient: grpcClient,
 		restUrl:    restUrl,
-		httpClient: http.DefaultClient,
+		httpClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		consumer:   consumer,
 	}, nil
 }
@@ -71,9 +77,8 @@ func getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error)
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
 	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
 	}
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
@@ -85,16 +90,24 @@ func getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error)
 
 func getProtoInferRequest(job *InferWork) (*v2.ModelInferRequest, error) {
 	ireq := v2.ModelInferRequest{}
-	err := proto.Unmarshal(job.value, &ireq)
+	err := proto.Unmarshal(job.msg.Value, &ireq)
 	if err != nil {
 		iresp := v2.ModelInferResponse{}
-		err := proto.Unmarshal(job.value, &iresp)
+		err := proto.Unmarshal(job.msg.Value, &iresp)
 		if err != nil {
 			return nil, err
 		}
 		return chainProtoResponseToRequest(&iresp), nil
 	}
 	return &ireq, nil
+}
+
+// Extract tracing context from Kafka message
+func createContextFromKafkaMsg(job *InferWork) context.Context {
+	ctx := context.Background()
+	carrierIn := splunkkafka.NewMessageCarrier(job.msg)
+	ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+	return ctx
 }
 
 func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct{}) {
@@ -104,7 +117,8 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
-			err := iw.processRequest(job)
+			ctx := createContextFromKafkaMsg(job)
+			err := iw.processRequest(ctx, job)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", iw.consumer.modelConfig.ModelName)
 			}
@@ -112,41 +126,42 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 	}
 }
 
-func (iw *InferWorker) processRequest(job *InferWork) error {
+func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error {
 	// Has Type Header
 	if typeValue, ok := job.headers[HeaderKeyType]; ok {
 		switch typeValue {
 		case HeaderValueJsonReq:
-			return iw.restRequest(job, false)
+			return iw.restRequest(ctx, job, false)
 		case HeaderValueJsonRes:
-			return iw.restRequest(job, true)
+			return iw.restRequest(ctx, job, true)
 		case HeaderValueProtoReq:
 			protoRequest, err := getProtoInferRequest(job)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(job, protoRequest)
+			return iw.grpcRequest(ctx, job, protoRequest)
 		case HeaderValueProtoRes:
-			protoRequest, err := getProtoRequestAssumingResponse(job.value)
+			protoRequest, err := getProtoRequestAssumingResponse(job.msg.Value)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(job, protoRequest)
+			return iw.grpcRequest(ctx, job, protoRequest)
 		default:
 			return fmt.Errorf("Header %s with unknown type %s", HeaderKeyType, typeValue)
 		}
 	} else { // Does not have type header - this is the general case to allow easy use
 		protoRequest, err := getProtoInferRequest(job)
 		if err != nil {
-			return iw.restRequest(job, true)
+			return iw.restRequest(ctx, job, true)
 		} else {
-			return iw.grpcRequest(job, protoRequest)
+			return iw.grpcRequest(ctx, job, protoRequest)
 		}
 	}
 }
 
-func (iw *InferWorker) produce(job *InferWork, topic string, b []byte) error {
+func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte) error {
 	logger := iw.logger.WithField("func", "produce")
+
 	var kafkaHeaders []kafka.Header
 	//kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)})
 	if pipelineName, ok := job.headers[resources.SeldonPipelineHeader]; ok {
@@ -157,12 +172,18 @@ func (iw *InferWorker) produce(job *InferWork, topic string, b []byte) error {
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
 	}
 	logger.Infof("Produce response to topic %s", topic)
-	err := iw.consumer.producer.Produce(&kafka.Message{
+
+	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Key:            job.key,
+		Key:            job.msg.Key,
 		Value:          b,
 		Headers:        kafkaHeaders,
-	}, nil)
+	}
+
+	carrierOut := splunkkafka.NewMessageCarrier(msg)
+	otel.GetTextMapPropagator().Inject(ctx, carrierOut)
+
+	err := iw.consumer.producer.Produce(msg, nil)
 	if err != nil {
 		iw.logger.WithError(err).Errorf("Failed to produce response for model %s", topic)
 		return err
@@ -170,12 +191,14 @@ func (iw *InferWorker) produce(job *InferWork, topic string, b []byte) error {
 	return nil
 }
 
-func (iw *InferWorker) restRequest(job *InferWork, maybeConvert bool) error {
+func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
+
+	data := job.msg.Value
 	if maybeConvert {
-		job.value = maybeChainRest(job.value)
+		data = maybeChainRest(job.msg.Value)
 	}
-	req, err := http.NewRequest("POST", iw.restUrl.String(), bytes.NewBuffer(job.value))
+	req, err := http.NewRequestWithContext(ctx, "POST", iw.restUrl.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
@@ -196,26 +219,26 @@ func (iw *InferWorker) restRequest(job *InferWork, maybeConvert bool) error {
 	iw.logger.Infof("v2 server response: %s", b)
 	if response.StatusCode != http.StatusOK {
 		logger.Warnf("Failed infer request with status code %d and payload %s", response.StatusCode, string(b))
-		return iw.produce(job, iw.consumer.modelConfig.ErrorTopic, b)
+		return iw.produce(ctx, job, iw.consumer.modelConfig.ErrorTopic, b)
 	}
-	return iw.produce(job, iw.consumer.modelConfig.OutputTopic, b)
+	return iw.produce(ctx, job, iw.consumer.modelConfig.OutputTopic, b)
 }
 
-func (iw *InferWorker) grpcRequest(job *InferWork, req *v2.ModelInferRequest) error {
+func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
 	//Update req with correct modelName
 	req.ModelName = iw.consumer.modelConfig.ModelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
-	ctx := context.TODO()
+
 	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
 	resp, err := iw.grpcClient.ModelInfer(ctx, req)
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
-		return iw.produce(job, iw.consumer.modelConfig.ErrorTopic, []byte(err.Error()))
+		return iw.produce(ctx, job, iw.consumer.modelConfig.ErrorTopic, []byte(err.Error()))
 	}
 	b, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}
-	return iw.produce(job, iw.consumer.modelConfig.OutputTopic, b)
+	return iw.produce(ctx, job, iw.consumer.modelConfig.OutputTopic, b)
 }

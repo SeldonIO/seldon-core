@@ -7,6 +7,8 @@ import (
 	"math"
 	"time"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/sirupsen/logrus"
@@ -38,7 +40,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, port int) error 
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
 	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}

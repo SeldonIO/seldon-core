@@ -41,6 +41,7 @@ func (ig *InferKafkaGateway) setup() error {
 	var producerConfigMap = kafka.ConfigMap{
 		"bootstrap.servers":   ig.broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
+		"linger.ms":           0,     // To help with low latency - should be configurable in future
 	}
 	logger.Infof("Creating producer with broker %s", ig.broker)
 	ig.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -119,12 +120,12 @@ func (ig *InferKafkaGateway) Serve() {
 
 			switch e := ev.(type) {
 			case *kafka.Message:
+
 				headers := collectHeaders(e.Headers)
 
 				job := InferWork{
+					msg:     e,
 					headers: headers,
-					key:     e.Key,
-					value:   e.Value,
 				}
 				// enqueue a job
 				jobChan <- &job

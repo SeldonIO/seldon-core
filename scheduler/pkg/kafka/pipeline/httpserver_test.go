@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -22,7 +23,7 @@ type fakePipelineInferer struct {
 	data []byte
 }
 
-func (f *fakePipelineInferer) Infer(resourceName string, isModel bool, data []byte) ([]byte, error) {
+func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte) ([]byte, error) {
 	return f.data, f.err
 }
 

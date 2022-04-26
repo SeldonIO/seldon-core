@@ -6,6 +6,8 @@ import (
 	"net"
 	"testing"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -173,7 +175,7 @@ func TestClientCreate(t *testing.T) {
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
-			conn, err := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, err := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn
 			err = client.Start()
@@ -278,7 +280,7 @@ func TestLoadModel(t *testing.T) {
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
 			err := client.Start()
@@ -399,7 +401,7 @@ parameters:
 				client.secretsHandler = s
 			}
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
 			err := client.Start()
@@ -510,7 +512,7 @@ func TestUnloadModel(t *testing.T) {
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient("mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default", rpHTTP, rpGRPC, clientDebug)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithInsecure(), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
 			err := client.Start()

@@ -1,8 +1,12 @@
 package pipeline
 
 import (
+	"context"
 	"fmt"
 	"sync"
+
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	"go.opentelemetry.io/otel"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
@@ -19,7 +23,7 @@ const (
 )
 
 type PipelineInferer interface {
-	Infer(resourceName string, isModel bool, data []byte) ([]byte, error)
+	Infer(ctx context.Context, resourceName string, isModel bool, data []byte) ([]byte, error)
 }
 
 type KafkaManager struct {
@@ -101,6 +105,7 @@ func (km *KafkaManager) recreateProducer() error {
 	var producerConfigMap = kafka.ConfigMap{
 		"bootstrap.servers":   km.broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
+		"linger.ms":           0,     // to ensure low latency - will need configuration in future
 	}
 	km.logger.Infof("Creating producer with broker %s", km.broker)
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -164,7 +169,7 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 	}
 }
 
-func (km *KafkaManager) Infer(resourceName string, isModel bool, data []byte) ([]byte, error) {
+func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte) ([]byte, error) {
 	logger := km.logger.WithField("func", "Infer")
 	km.mu.RLock()
 	defer km.mu.RUnlock()
@@ -188,12 +193,19 @@ func (km *KafkaManager) Infer(resourceName string, isModel bool, data []byte) ([
 	logger.Infof("Produce on topic %s with key %s", outputTopic, key)
 	kafkaHeaders := make([]kafka.Header, 1)
 	kafkaHeaders[0] = kafka.Header{Key: resources.SeldonPipelineHeader, Value: []byte(resourceName)}
-	err = km.producer.Produce(&kafka.Message{
+
+	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &outputTopic, Partition: kafka.PartitionAny},
 		Key:            []byte(key),
 		Value:          data,
 		Headers:        kafkaHeaders,
-	}, nil)
+	}
+
+	// Add trace headers
+	carrier := splunkkafka.NewMessageCarrier(msg)
+	otel.GetTextMapPropagator().Inject(ctx, carrier)
+
+	err = km.producer.Produce(msg, nil)
 	if err != nil {
 		return nil, err
 	}

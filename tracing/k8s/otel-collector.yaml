@@ -1,0 +1,28 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: seldon
+  namespace: seldon-mesh
+spec:
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+    processors:
+      batch:
+
+    exporters:
+      logging:
+        
+      jaeger:
+        endpoint: simplest-collector.seldon-mesh:14250
+        tls:
+          insecure: true
+      
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging, jaeger]
