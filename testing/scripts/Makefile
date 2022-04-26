@@ -79,6 +79,7 @@ install_jaeger:
 		jaegertracing/jaeger-operator \
 		--set rbac.clusterRole=true \
 		--namespace seldon \
+		--version 2.25.0 \
 		--wait --install
 	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
 
