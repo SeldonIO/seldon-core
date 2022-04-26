@@ -9,9 +9,8 @@ from seldon_e2e_utils import (
 )
 
 SELDON_VERSIONS_TO_TEST = [
-    "1.10.0",
-    "1.11.0",
     "1.12.0",
+    "1.13.1",
 ]
 
 
