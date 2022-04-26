@@ -156,6 +156,14 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			},
 		))
 
+		// Check model URI is NOT in env vars
+		Expect(containers[0].Env).ToNot(ContainElement(
+			v1.EnvVar{
+				Name:  MLServerModelURIEnv,
+				Value: DefaultModelLocalMountPath,
+			},
+		))
+
 		//Update Deployment as pods not created with test client.
 		depUpdated := depFetched.DeepCopy()
 		depUpdated.Status.AvailableReplicas = replicas
@@ -249,7 +257,98 @@ var _ = Describe("Create a Seldon Deployment", func() {
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
 	})
+})
 
+var _ = Describe("Create a Seldon Deployment with a model URI", func() {
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	replicas := int32(1)
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		var modelType = machinelearningv1.MODEL
+		key := types.NamespacedName{
+			Name:      "dep",
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier",
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:     "classifier",
+							Type:     &modelType,
+							ModelURI: "s3://foo/my-model",
+						},
+						Replicas: &replicas,
+					},
+				},
+			},
+		}
+
+		//Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, TestTimout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal("dep"))
+
+		// Check deployment created
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, TestTimout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
+
+		// Check port envs have been added
+		containers := depFetched.Spec.Template.Spec.Containers
+		// Check model URI is NOT in env vars
+		Expect(containers[0].Env).To(ContainElement(
+			v1.EnvVar{
+				Name:  MLServerModelURIEnv,
+				Value: DefaultModelLocalMountPath,
+			},
+		))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
 })
 
 var _ = Describe("Create a Seldon Deployment", func() {

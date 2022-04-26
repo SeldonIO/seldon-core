@@ -798,14 +798,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	addPortEnvs(pu, con)
-
-	if pu != nil && len(pu.Parameters) > 0 {
-		paramsEnvVar := corev1.EnvVar{
-			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
-			Value: utils.GetPredictiveUnitAsJson(pu.Parameters),
-		}
-		con.Env = utils.SetEnvVar(con.Env, paramsEnvVar, false)
-	}
+	addModelEnvs(pu, con)
 
 	// Always set the predictive and deployment identifiers
 
@@ -835,6 +828,26 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	return svc
+}
+
+func addModelEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {
+	if len(pu.Parameters) > 0 {
+		// Set V1 env vars
+		paramsEnvVar := corev1.EnvVar{
+			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
+			Value: utils.GetPredictiveUnitAsJson(pu.Parameters),
+		}
+		con.Env = utils.SetEnvVar(con.Env, paramsEnvVar, false)
+	}
+
+	// If storageUri is present, set model URI for V2
+	if len(pu.ModelURI) != 0 {
+		modelURIEnv := corev1.EnvVar{
+			Name:  MLServerModelURIEnv,
+			Value: DefaultModelLocalMountPath,
+		}
+		con.Env = utils.SetEnvVar(con.Env, modelURIEnv, false)
+	}
 }
 
 func addPortEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {
