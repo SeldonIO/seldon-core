@@ -23,7 +23,7 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow"
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
-        this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = params.numCores * 16
+        this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
         this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
 
