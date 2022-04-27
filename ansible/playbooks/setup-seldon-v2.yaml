@@ -1,0 +1,32 @@
+---
+- name: Setup SCV2 Installation
+  hosts: localhost
+  vars:
+    seldon_system_namespace: seldon-mesh
+
+    k8s_manifests_dir: "{{ inventory_dir }}/../k8s"
+  tasks:
+
+  - name: Create SCV2 CRDs
+    kubernetes.core.k8s:
+      state: present
+      template: "{{ k8s_manifests_dir }}/seldon-v2-crds.yaml"
+
+  - name: Sleep for 1s before waiting for CRDs
+    wait_for:
+      timeout: 1
+
+  - name: "Wait for SCV2 CRDs"
+    shell: "kubectl wait --for condition=established --timeout 60s {{ item }}"
+    with_items:
+      - crd/servers.mlops.seldon.io
+      - crd/serverconfigs.mlops.seldon.io
+
+  - name: Create SCV2 Components
+    kubernetes.core.k8s:
+      state: present
+      namespace: "{{ seldon_system_namespace }}"
+      template: "{{ k8s_manifests_dir }}/{{ item }}"
+    with_items:
+      - seldon-v2-components.yaml
+      - seldon-v2-servers.yaml

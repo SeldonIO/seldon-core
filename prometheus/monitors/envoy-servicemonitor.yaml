@@ -2,6 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: envoy
+  namespace: seldon-mesh
 spec:
   selector:
     matchLabels:
@@ -13,5 +14,3 @@ spec:
   - port: admin
     interval: 15s
     path: /stats/prometheus
-
-

@@ -1,0 +1,14 @@
+---
+- name: Create Kind Cluster and Install MetalLB
+  hosts: localhost
+  roles:
+    - seldonio.k8s.kind
+    - seldonio.k8s.metallb
+  vars:
+    kind_cluster_name: ansible
+
+    # For compatible version of image for each kind version please see https://github.com/kubernetes-sigs/kind/releases
+    kind_version: v0.12.0
+    kind_image_version: kindest/node:v1.21.10@sha256:84709f09756ba4f863769bdcabe5edafc2ada72d3c8c44d6515fc581b66b029c
+
+    kind_kubectl_default_namespace: seldon
