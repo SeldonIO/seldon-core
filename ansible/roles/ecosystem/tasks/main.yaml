@@ -1,0 +1,8 @@
+---
+- import_tasks: namespaces.yaml
+
+- name: Install and configure Prometheus Operator
+  import_tasks: prometheus.yaml
+
+- name: Install and configure Strimzi Kafka
+  import_tasks: kafka.yaml

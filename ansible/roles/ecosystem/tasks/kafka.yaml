@@ -1,0 +1,14 @@
+---
+- include_role:
+    name: seldonio.k8s.strimzi_kafka
+  when: install_kafka | bool
+
+
+- name: Create Kafka Cluster
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ kafka_namespace }}"
+    template: "{{ repo_root_dir }}/{{ item }}"
+  with_items:
+    - kafka/strimzi/cluster.yaml
+  when: ecosystem_configure_kafka | bool

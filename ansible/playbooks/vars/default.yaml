@@ -1,0 +1,14 @@
+# Prometheus Operator Configuration
+seldon_monitoring_namespace: seldon-monitoring
+seldon_monitoring_create_default_podmonitor: false
+seldon_monitoring_prometheus_operator_values:
+  fullnameOverride: seldon-monitoring
+  kube-state-metrics:
+    extraArgs:
+      metric-labels-allowlist: pods=[*]
+
+# Strimzi Kafka Configuration
+strimzi_kafka_install_prometheus_operator: false
+strimzi_kafka_create_prometheus_instance: false
+strimzi_kafka_create_cluster: false
+strimzi_kafka_grafana_prometheus_url: "http://seldon-monitoring-prometheus.{{ seldon_monitoring_namespace }}.svc:9090"

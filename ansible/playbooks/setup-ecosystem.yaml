@@ -2,53 +2,18 @@
 - name: Setup SCV2 Ecosystem
   hosts: localhost
   roles:
-    - seldonio.k8s.prometheus
-    - seldonio.k8s.strimzi_kafka
+    - ecosystem
   vars:
-    # Seldon Monitoring Configuration
-    seldon_monitoring_create_default_podmonitor: false
-    seldon_monitoring_prometheus_operator_values:
-      fullnameOverride: seldon-monitoring
-      kube-state-metrics:
-        extraArgs:
-          metric-labels-allowlist: pods=[*]
+    vars_file: vars/default.yaml
 
-    # Strimzi Kafka Configuration
-    strimzi_kafka_install_prometheus_operator: false
-    strimzi_kafka_create_prometheus_instance: false
-    strimzi_kafka_create_cluster: false
-    strimzi_kafka_grafana_prometheus_url: http://seldon-monitoring-prometheus.seldon-system.svc:9090
+    full_install: yes
 
+    install_prometheus: "{{ full_install }}"
+    install_kafka: "{{ full_install }}"
 
-- name: Configure SCV2 Ecosystem
-  hosts: localhost
-  vars:
-    repo_root_dir: "{{ inventory_dir }}/.."
-    seldon_mesh_namespace: seldon-mesh
-    kafka_namespace: kafka
-  tasks:
+    ecosystem_configure_prometheus: "{{ install_prometheus }}"
+    ecosystem_configure_kafka: "{{ install_kafka }}"
 
-  - name: "Create a k8s namespace: {{ seldon_mesh_namespace }}"
-    kubernetes.core.k8s:
-      name: "{{ seldon_mesh_namespace }}"
-      api_version: v1
-      kind: Namespace
-      state: present
-
-  - name: Create Kafka Cluster
-    kubernetes.core.k8s:
-      state: present
-      namespace: "{{ kafka_namespace }}"
-      template: "{{ repo_root_dir }}/{{ item }}"
-    with_items:
-      - kafka/strimzi/cluster.yaml
-
-  - name: Create SCV2 Specific Podmonitors
-    kubernetes.core.k8s:
-      state: present
-      namespace: "{{ seldon_mesh_namespace }}"
-      template: "{{ repo_root_dir }}/{{ item }}"
-    with_items:
-      - prometheus/monitors/agent-podmonitor.yaml
-      - prometheus/monitors/envoy-servicemonitor.yaml
-      - prometheus/monitors/server-podmonitor.yaml
+  pre_tasks:
+  - name: "Load vars from {{ vars_file }}"
+    include_vars: "{{ vars_file }}"

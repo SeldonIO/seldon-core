@@ -1,0 +1,16 @@
+---
+- include_role:
+    name: seldonio.k8s.prometheus
+  when: install_prometheus | bool
+
+
+- name: Create SCV2 Specific Podmonitors
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_mesh_namespace }}"
+    template: "{{ repo_root_dir }}/{{ item }}"
+  with_items:
+    - prometheus/monitors/agent-podmonitor.yaml
+    - prometheus/monitors/envoy-servicemonitor.yaml
+    - prometheus/monitors/server-podmonitor.yaml
+  when: ecosystem_configure_prometheus | bool

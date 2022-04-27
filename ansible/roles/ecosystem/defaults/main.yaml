@@ -1,0 +1,12 @@
+repo_root_dir: "{{ inventory_dir }}/.."
+
+seldon_mesh_namespace: seldon-mesh
+kafka_namespace: kafka
+
+# Installation on/off flags
+install_prometheus: true
+install_kafka: true
+
+# Configuration on/off flags
+ecosystem_configure_prometheus: "{{ install_prometheus }}"
+ecosystem_configure_kafka: "{{ install_kafka }}"
