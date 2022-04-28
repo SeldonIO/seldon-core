@@ -494,29 +494,24 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 	}
 	delete(server.replicas, replicaIdx)
 	//TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
-	if server.expectedReplicas < replicaIdx+1 { // this is a real deletion of a server replica
-		if len(server.replicas) == 0 {
-			delete(m.store.servers, serverName)
-		}
-		var modelNames []string
-		// Find models to reschedule due to this server replica being removed
-		for modelVersionID := range serverReplica.loadedModels {
-			model, ok := m.store.models[modelVersionID.Name]
-			if ok {
-				modelVersion := model.GetVersion(modelVersionID.Version)
-				if modelVersion != nil {
-					delete(modelVersion.replicas, replicaIdx)
-					modelNames = append(modelNames, modelVersionID.Name)
-				} else {
-					logger.Warnf("Can't find model version %s", modelVersionID.String())
-				}
+	if len(server.replicas) == 0 {
+		delete(m.store.servers, serverName)
+	}
+	var modelNames []string
+	// Find models to reschedule due to this server replica being removed
+	for modelVersionID := range serverReplica.loadedModels {
+		model, ok := m.store.models[modelVersionID.Name]
+		if ok {
+			modelVersion := model.GetVersion(modelVersionID.Version)
+			if modelVersion != nil {
+				delete(modelVersion.replicas, replicaIdx)
+				modelNames = append(modelNames, modelVersionID.Name)
+			} else {
+				logger.Warnf("Can't find model version %s", modelVersionID.String())
 			}
 		}
-		return modelNames, nil
-	} else {
-		return []string{}, nil
 	}
-
+	return modelNames, nil
 }
 
 func (m *MemoryStore) ServerNotify(request *pb.ServerNotifyRequest) error {
