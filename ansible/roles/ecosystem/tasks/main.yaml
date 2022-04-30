@@ -6,3 +6,12 @@
 
 - name: Install and configure Strimzi Kafka
   import_tasks: kafka.yaml
+
+- name: Install and configure Cert Manager
+  import_tasks: certmanager.yaml
+
+- name: Install and configure Jaeger Operator
+  import_tasks: jaeger.yaml
+
+- name: Install and configure OpenTelemetry Operator
+  import_tasks: opentelemetry.yaml

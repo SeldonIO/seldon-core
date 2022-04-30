@@ -10,9 +10,12 @@
 
     install_prometheus: "{{ full_install }}"
     install_kafka: "{{ full_install }}"
+    install_certmanager: "{{ full_install }}"
+    install_jaeger: "{{ full_install }}"
 
     ecosystem_configure_prometheus: "{{ install_prometheus }}"
     ecosystem_configure_kafka: "{{ install_kafka }}"
+    ecosystem_configure_jaeger: "{{ install_jaeger }}"
 
   pre_tasks:
   - name: "Load vars from {{ vars_file }}"

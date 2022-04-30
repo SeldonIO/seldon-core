@@ -6,7 +6,12 @@ kafka_namespace: kafka
 # Installation on/off flags
 install_prometheus: true
 install_kafka: true
+install_certmanager: true
+install_jaeger: true
+install_opentelemetry: true
 
 # Configuration on/off flags
 ecosystem_configure_prometheus: "{{ install_prometheus }}"
 ecosystem_configure_kafka: "{{ install_kafka }}"
+ecosystem_configure_jaeger: "{{ install_jaeger }}"
+ecosystem_configure_opentelemetry: "{{ install_opentelemetry }}"

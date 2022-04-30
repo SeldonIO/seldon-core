@@ -1,0 +1,13 @@
+- include_role:
+    name: seldonio.k8s.jaeger
+  when: install_jaeger | bool
+
+
+- name: Configure Jaeger
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_mesh_namespace }}"
+    template: "{{ repo_root_dir }}/{{ item }}"
+  with_items:
+    - tracing/k8s/jaeger.yaml
+  when: ecosystem_configure_jaeger | bool

@@ -1,0 +1,12 @@
+- include_role:
+    name: seldonio.k8s.opentelemetry
+  when: install_opentelemetry | bool
+
+- name: Configure OpenTelemtry
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_mesh_namespace }}"
+    template: "{{ repo_root_dir }}/{{ item }}"
+  with_items:
+    - tracing/k8s/otel-collector.yaml
+  when: ecosystem_configure_opentelemetry | bool
