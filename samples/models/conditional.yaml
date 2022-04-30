@@ -6,4 +6,5 @@ metadata:
 spec:
   storageUri: "gs://seldon-models/triton/conditional"
   requirements:
-  - triton-python
+  - triton
+  - python

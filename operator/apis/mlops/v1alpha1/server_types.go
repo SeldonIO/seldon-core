@@ -32,9 +32,11 @@ const (
 // ServerSpec defines the desired state of Server
 type ServerSpec struct {
 	// Server definition
-	Server ServerDefn `json:"server,omitempty"`
-	// Seldon mesh specifications for multi model servers that can load models dynamically
-	MMS *MultiModelSpec `json:"mms,omitempty"`
+	ServerConfig string `json:"serverConfig"`
+	// The capabilities this server will advertise
+	ExtraCapabilities []string `json:"extraCapabilities,omitempty"`
+	// Image overrides
+	ImageOverrides *ContainerOverrideSpec `json:"imageOverrides,omitempty"`
 	// PodSpec overrides
 	// Slices such as containers would be appended not overridden
 	PodSpec *PodSpec `json:"podSpec,omitempty"`
@@ -42,9 +44,7 @@ type ServerSpec struct {
 	ScalingSpec `json:",inline"`
 }
 
-type MultiModelSpec struct {
-	// The capabilities this server will advertise
-	Capabilities []string `json:"capabilities,omitempty"`
+type ContainerOverrideSpec struct {
 	// The Init container overrides to download preset models
 	Init *v1.Container `json:"init,omitempty"`
 	// The Agent overrides

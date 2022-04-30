@@ -4,7 +4,6 @@ metadata:
   name: mlserver
   namespace: seldon-mesh
 spec:
-  server:
-    config: mlserver
+  serverConfig: mlserver
   replicas: 1
 

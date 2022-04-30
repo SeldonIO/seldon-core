@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -135,7 +136,7 @@ func NewServerReplica(inferenceSvc string,
 		inferenceGrpcPort:    inferenceGrpcPort,
 		replicaIdx:           replicaIdx,
 		server:               server,
-		capabilities:         capabilities,
+		capabilities:         cleanCapabilities(capabilities),
 		memory:               memory,
 		availableMemory:      availableMemory,
 		loadedModels:         loadedModels,
@@ -150,12 +151,20 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		inferenceGrpcPort:    config.GetInferenceGrpcPort(),
 		replicaIdx:           replicaIdx,
 		server:               server,
-		capabilities:         config.GetCapabilities(),
+		capabilities:         cleanCapabilities(config.GetCapabilities()),
 		memory:               config.GetMemoryBytes(),
 		availableMemory:      availableMemoryBytes,
 		loadedModels:         loadedModels,
 		overCommitPercentage: config.GetOverCommitPercentage(),
 	}
+}
+
+func cleanCapabilities(capabilities []string) []string {
+	var cleaned []string
+	for _, cap := range capabilities {
+		cleaned = append(cleaned, strings.TrimSpace(cap))
+	}
+	return cleaned
 }
 
 type ModelState uint32

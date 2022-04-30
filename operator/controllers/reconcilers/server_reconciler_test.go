@@ -57,9 +57,7 @@ func TestServerReconcile(t *testing.T) {
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
-					Server: mlopsv1alpha1.ServerDefn{
-						Config: mlserverConfigName,
-					},
+					ServerConfig: mlserverConfigName,
 				},
 			},
 			expectedSvcNames:        []string{"myserver-0"},
@@ -143,9 +141,7 @@ func TestNewServerReconciler(t *testing.T) {
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
-					Server: mlopsv1alpha1.ServerDefn{
-						Config: "mlserver",
-					},
+					ServerConfig: "mlserver",
 				},
 			},
 		},
@@ -157,9 +153,7 @@ func TestNewServerReconciler(t *testing.T) {
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
-					Server: mlopsv1alpha1.ServerDefn{
-						Config: "mlserver",
-					},
+					ServerConfig: "mlserver",
 				},
 			},
 			error: true,
@@ -188,9 +182,7 @@ func TestNewServerReconciler(t *testing.T) {
 					Namespace: constants.SeldonNamespace,
 				},
 				Spec: mlopsv1alpha1.ServerSpec{
-					Server: mlopsv1alpha1.ServerDefn{
-						Config: "mlserver",
-					},
+					ServerConfig: "mlserver",
 					PodSpec: &mlopsv1alpha1.PodSpec{
 						NodeName: "node",
 					},
@@ -301,6 +293,73 @@ func TestMergePodSpecs(t *testing.T) {
 			podSepc, err := mergePodSpecs(test.serverPodSpec, test.override)
 			g.Expect(err).To(BeNil())
 			g.Expect(equality.Semantic.DeepEqual(podSepc, test.expected)).To(BeTrue())
+		})
+	}
+}
+
+func TestUpdateServerCapabilities(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                 string
+		extraCapabilities    []string
+		podSpec              *v1.PodSpec
+		expectedCapabilities string
+	}
+	tests := []test{
+		{
+			name: "add capability",
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  EnvVarNameCapabilities,
+								Value: "foo",
+							},
+						},
+					},
+				},
+				NodeName: "node",
+			},
+			extraCapabilities:    []string{"bar"},
+			expectedCapabilities: "foo,bar",
+		},
+		{
+			name: "no new capability",
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  EnvVarNameCapabilities,
+								Value: "foo",
+							},
+						},
+					},
+				},
+				NodeName: "node",
+			},
+			extraCapabilities:    []string{},
+			expectedCapabilities: "foo",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			updateCapabilities(test.extraCapabilities, test.podSpec)
+			for _, container := range test.podSpec.Containers {
+				for _, envVar := range container.Env {
+					if envVar.Name == EnvVarNameCapabilities {
+						g.Expect(envVar.Value).To(Equal(test.expectedCapabilities))
+					}
+				}
+			}
 		})
 	}
 }

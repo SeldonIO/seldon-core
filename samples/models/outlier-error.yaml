@@ -6,4 +6,5 @@ metadata:
 spec:
   storageUri: "gs://seldon-models/triton/outlier"
   requirements:
-  - triton-python
+  - triton
+  - python

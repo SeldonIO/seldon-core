@@ -1,6 +1,9 @@
 package reconcilers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/imdario/mergo"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
@@ -9,6 +12,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
+)
+
+const (
+	EnvVarNameCapabilities = "SELDON_SERVER_CAPABILITIES"
 )
 
 type ServerReconciler struct {
@@ -62,9 +69,23 @@ func (s *ServerReconciler) Reconcile() error {
 	return nil
 }
 
+func updateCapabilities(extraCapabilities []string, podSpec *v1.PodSpec) {
+	if len(extraCapabilities) > 0 {
+		for _, container := range podSpec.Containers {
+			for idx, envVar := range container.Env {
+				if envVar.Name == EnvVarNameCapabilities {
+					capabilitiesStr := strings.Join(extraCapabilities, ",")
+					val := fmt.Sprintf("%s,%s", envVar.Value, capabilitiesStr)
+					container.Env[idx] = v1.EnvVar{Name: EnvVarNameCapabilities, Value: val}
+				}
+			}
+		}
+	}
+}
+
 func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server) (*statefulset.StatefulSetReconciler, error) {
 	//Get ServerConfig
-	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.Server.Config, s.Client)
+	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +95,9 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	if err != nil {
 		return nil, err
 	}
+
+	// Update capabilities
+	updateCapabilities(server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
 	statefulSetReconciler := statefulset.NewStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec)

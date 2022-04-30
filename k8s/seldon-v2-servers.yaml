@@ -5,8 +5,7 @@ metadata:
   namespace: seldon-mesh
 spec:
   replicas: 1
-  server:
-    config: mlserver
+  serverConfig: mlserver
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
@@ -14,5 +13,4 @@ metadata:
   name: triton
   namespace: seldon-mesh
 spec:
-  server:
-    config: triton
+  serverConfig: triton

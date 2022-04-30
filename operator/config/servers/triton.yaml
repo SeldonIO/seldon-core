@@ -4,5 +4,5 @@ metadata:
   name: triton
   namespace: seldon-mesh
 spec:
-  server:
-    config: triton
+  serverConfig: triton
+  replicas: 1

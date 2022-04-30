@@ -6,4 +6,5 @@ metadata:
 spec:
   storageUri: "gs://seldon-models/triton/add10"
   requirements:
-  - triton-python
+  - triton
+  - python

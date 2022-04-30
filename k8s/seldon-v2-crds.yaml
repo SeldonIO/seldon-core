@@ -441,6 +441,11 @@ spec:
                     type: array
                   stepsJoin:
                     type: string
+                  tensorMap:
+                    additionalProperties:
+                      type: string
+                    description: Map of tensor name conversions to use e.g. output1 -> input1
+                    type: object
                 type: object
               steps:
                 description: The steps of this inference graph pipeline
@@ -4654,15 +4659,12 @@ spec:
           spec:
             description: ServerSpec defines the desired state of Server
             properties:
-              maxReplicas:
-                description: Max number of replicas - default equal to replicas
-                format: int32
-                type: integer
-              minReplicas:
-                description: Min number of replicas - default equal to replicas
-                format: int32
-                type: integer
-              mms:
+              extraCapabilities:
+                description: The capabilities this server will advertise
+                items:
+                  type: string
+                type: array
+              imageOverrides:
                 description: Seldon mesh specifications for multi model servers that can load models dynamically
                 properties:
                   agent:
@@ -5403,11 +5405,6 @@ spec:
                     required:
                     - name
                     type: object
-                  capabilities:
-                    description: The capabilities this server will advertise
-                    items:
-                      type: string
-                    type: array
                   init:
                     description: The Init container overrides to download preset models
                     properties:
@@ -6885,6 +6882,14 @@ spec:
                     - name
                     type: object
                 type: object
+              maxReplicas:
+                description: Max number of replicas - default equal to replicas
+                format: int32
+                type: integer
+              minReplicas:
+                description: Min number of replicas - default equal to replicas
+                format: int32
+                type: integer
               podSpec:
                 description: PodSpec overrides Slices such as containers would be appended not overridden
                 properties:
@@ -10058,15 +10063,11 @@ spec:
                 description: Number of replicas - default 1
                 format: int32
                 type: integer
-              server:
+              serverConfig:
                 description: Server definition
-                properties:
-                  config:
-                    description: Server config name to match Required
-                    type: string
-                required:
-                - config
-                type: object
+                type: string
+            required:
+            - serverConfig
             type: object
           status:
             description: ServerStatus defines the observed state of Server

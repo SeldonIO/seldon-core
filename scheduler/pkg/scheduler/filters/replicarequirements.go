@@ -1,6 +1,10 @@
 package filters
 
-import "github.com/seldonio/seldon-core/scheduler/pkg/store"
+import (
+	"strings"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+)
 
 type RequirementsReplicaFilter struct{}
 
@@ -12,7 +16,7 @@ func (s RequirementsReplicaFilter) Filter(model *store.ModelVersion, replica *st
 	for _, requirement := range model.GetRequirements() {
 		requirementFound := false
 		for _, capability := range replica.GetCapabilities() {
-			if requirement == capability {
+			if strings.TrimSpace(requirement) == capability {
 				requirementFound = true
 				break
 			}

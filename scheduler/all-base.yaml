@@ -66,7 +66,7 @@ services:
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
       - SELDON_SERVER_TYPE=triton
-      - SELDON_SERVER_CAPABILITIES=triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt,triton-python
+      - SELDON_SERVER_CAPABILITIES=triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt
       
   dataflow:
     build:

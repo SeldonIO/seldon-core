@@ -50,6 +50,12 @@ spec:
                     type: array
                   stepsJoin:
                     type: string
+                  tensorMap:
+                    additionalProperties:
+                      type: string
+                    description: Map of tensor name conversions to use e.g. output1
+                      -> input1
+                    type: object
                 type: object
               steps:
                 description: The steps of this inference graph pipeline
