@@ -7,20 +7,6 @@ services:
       dockerfile: ./Dockerfile.agent
       context: .
     image: "${AGENT_IMAGE_AND_TAG}"
-    command:
-      - "/bin/agent"
-      - "--log-level"
-      - "debug"
-      - "--config-path"
-      - "/mnt/config"
-      - "--rclone-host"
-      - "rclone-mlserver"
-      - "--inference-host"
-      - "mlserver"
-      - "--agent-host"
-      - "agent-mlserver"
-      - "--server-name"
-      - "mlserver"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
       - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_MLSERVER_REVERSE_PROXY_HTTP_PORT}
@@ -39,22 +25,6 @@ services:
       dockerfile: ./Dockerfile.agent
       context: .
     image: "${AGENT_IMAGE_AND_TAG}"
-    command:
-      - "/bin/agent"
-      - "--log-level"
-      - "debug"
-      - "--config-path"
-      - "/mnt/config"
-      - "--rclone-host"
-      - "rclone-triton"
-      - "--rclone-port"
-      - ${RCLONE_TRITON_HTTP_PORT}
-      - "--inference-host"
-      - "triton"
-      - "--agent-host"
-      - "agent-triton"
-      - "--server-name"
-      - "triton"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
       - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_TRITON_REVERSE_PROXY_HTTP_PORT}

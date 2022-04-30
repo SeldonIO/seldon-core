@@ -4,6 +4,16 @@ services:
 
   agent-mlserver:
     network_mode: "host"
+    command:
+      - "/bin/agent"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--server-name"
+      - "mlserver"
+    environment:
+      - SELDON_SCHEDULER_HOST=0.0.0.0
     volumes:
       - type: bind
         source: ./config
@@ -14,6 +24,20 @@ services:
 
   agent-triton:
     network_mode: "host"
+    command:
+      - "/bin/agent"
+      - "--log-level"
+      - "debug"
+      - "--config-path"
+      - "/mnt/config"
+      - "--rclone-port"
+      - ${RCLONE_TRITON_HTTP_PORT}
+      - "--metrics-port"
+      - ${AGENT_TRITON_METRICS_PORT}
+      - "--server-name"
+      - "triton"
+    environment:
+      - SELDON_SCHEDULER_HOST=0.0.0.0
     volumes:
       - type: bind
         source: ./config
@@ -27,14 +51,14 @@ services:
     volumes:
       - type: bind
         source: ${PWD}/mnt/mlserver
-        target: ${PWD}/mnt/mlserver
+        target: /mnt/agent
 
   rclone-triton:
     network_mode: "host"
     volumes:
       - type: bind
         source: ${PWD}/mnt/triton
-        target: ${PWD}/mnt/triton
+        target: /mnt/agent
 
   mlserver:
     network_mode: "host"
