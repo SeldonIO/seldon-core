@@ -40,7 +40,7 @@ setup(
         # Addresses https://github.com/SeldonIO/seldon-core/issues/4017
         "werkzeug < 2.1",
         # Addresses CVE-2020-1971
-        "cryptography >= 3.4, < 3.5",
+        "cryptography >= 3.4, < 37.1",
         # Addresses CVE SNYK-PYTHON-PYYAML-590151
         "PyYAML >= 5.4, < 5.5",
         # Addresses CVE PRISMA-2021-0020
