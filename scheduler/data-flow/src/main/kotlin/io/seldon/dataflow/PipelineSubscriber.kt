@@ -130,6 +130,7 @@ class PipelineSubscriber(
                     it.sink,
                     it.inputJoinTy,
                     it.triggersJoinTy,
+                    it.batch,
                     kafkaProperties,
                     kafkaDomainParams,
                 )

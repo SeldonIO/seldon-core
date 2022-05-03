@@ -1,0 +1,13 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: iris-batch
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: iris
+      batch:
+       size: 2 
+  output:
+    steps:
+    - iris

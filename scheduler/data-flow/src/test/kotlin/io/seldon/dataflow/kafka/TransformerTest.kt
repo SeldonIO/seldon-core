@@ -36,6 +36,7 @@ internal class TransformerTest {
                 defaultSink,
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                ChainerOuterClass.Batch.getDefaultInstance(),
                 baseKafkaProperties,
                 kafkaDomainParams,
             )
@@ -164,6 +165,7 @@ internal class TransformerTest {
                 inputTriggerTopics = emptySet(),
                 triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 triggerTensorsByTopic = emptyMap(),
+                batchProperties = ChainerOuterClass.Batch.getDefaultInstance(),
             )
 
         private fun makeJoinerFor(

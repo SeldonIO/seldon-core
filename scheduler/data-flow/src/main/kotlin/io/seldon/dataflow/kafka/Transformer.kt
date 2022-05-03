@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -22,6 +23,7 @@ fun transformerFor(
     sink: TopicName,
     joinType: PipelineJoinType,
     triggerJoinType: PipelineJoinType,
+    batchProperties: Batch,
     baseKafkaProperties: KafkaProperties,
     kafkaDomainParams: KafkaDomainParams,
 ): Transformer? {
@@ -35,6 +37,7 @@ fun transformerFor(
             null,
             pipelineName,
             tensorMap,
+            batchProperties,
             kafkaDomainParams,
             triggerTopicsToTensors.keys,
             triggerJoinType,
@@ -47,6 +50,7 @@ fun transformerFor(
             result.tensors,
             pipelineName,
             tensorMap,
+            batchProperties,
             kafkaDomainParams,
             triggerTopicsToTensors.keys,
             triggerJoinType,

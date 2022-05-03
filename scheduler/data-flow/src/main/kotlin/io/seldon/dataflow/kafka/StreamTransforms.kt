@@ -1,5 +1,6 @@
 package io.seldon.dataflow.kafka
 
+import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import org.apache.kafka.streams.kstream.KStream
@@ -49,6 +50,17 @@ fun <T> KStream<T, ModelInferResponse>.convertToRequest(
 }
 
 /**
+ * Batch model inference requests based on the strategy defined in the pipeline specification
+ */
+fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KStream<String, ModelInferRequest> {
+    return when (batchProperties.size) {
+        0 -> this
+        else -> this
+            .transform({ BatchProcessor(batchProperties.size) }, BatchProcessor.STATE_STORE_ID)
+    }
+}
+
+/**
  * Convert the output from one model (a response) to the input for another model (a request).
  */
 private fun convertToRequest(
@@ -71,7 +83,8 @@ private fun convertToRequest(
                                 "${inputTopic}.${tensor.name}",
                                 tensor.name,
                             )
-                        val convertedTensor = convertOutputToInputTensor(newName, tensor, response.rawOutputContentsCount>0)
+                        val convertedTensor =
+                            convertOutputToInputTensor(newName, tensor, response.rawOutputContentsCount > 0)
 
                         addInputs(convertedTensor)
                         if (idx < response.rawOutputContentsCount) {
