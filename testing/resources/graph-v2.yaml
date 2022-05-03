@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: graph-test
 spec:
-  protocol: kfserving
+  protocol: v2
   predictors:
     - name: default
       graph:
@@ -16,15 +16,4 @@ spec:
         - spec:
             containers:
               - name: mock-preprocessor
-                image: seldonio/mock-preprocessor:0.1.0
-                securityContext:
-                  # Workaround for multi-user bug in custom images in MLServer:
-                  # https://github.com/SeldonIO/MLServer/issues/388
-                  runAsUser: 1000
-                ports:
-                  - containerPort: 8080
-                    name: http
-                    protocol: TCP
-                  - containerPort: 8081
-                    name: grpc
-                    protocol: TCP
+                image: seldonio/mock-preprocessor:0.2.0
