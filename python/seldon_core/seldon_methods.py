@@ -64,7 +64,7 @@ def handle_raw_custom_metrics(
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
         for metric in metrics:
             metric["tags"] = dict(sorted(metric["tags"].items(), key=lambda item: item[1]))
-        
+
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
     elif isinstance(msg, dict):
