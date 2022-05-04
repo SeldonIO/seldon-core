@@ -40,6 +40,7 @@ class AnchorTabular(ExplainerWrapper):
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
+        np.random.seed(0)
         arr = np.array(inputs)
         # We assume the input has batch dimension
         # but Alibi explainers presently assume no batch

@@ -41,6 +41,7 @@ class AnchorImages(ExplainerWrapper):
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
+        np.random.seed(0)
         arr = np.array(inputs)
         logging.info("Calling explain on image of shape %s", (arr.shape,))
         logging.info("anchor image call with %s", self.kwargs)
