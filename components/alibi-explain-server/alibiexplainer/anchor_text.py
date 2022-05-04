@@ -27,13 +27,11 @@ import spacy
 from alibi.api.interfaces import Explanation
 from alibi.utils.download import spacy_model
 
-
 from alibiexplainer.constants import (
     EXPLAIN_RANDOM_SEED,
     EXPLAIN_RANDOM_SEED_VALUE,
     SELDON_LOGLEVEL,
 )
-import numpy as np
 
 
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
