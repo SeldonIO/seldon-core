@@ -25,7 +25,11 @@ import alibi
 import numpy as np
 from alibi.api.interfaces import Explanation
 
-from alibiexplainer.constants import SELDON_LOGLEVEL
+from alibiexplainer.constants import (
+    EXPLAIN_RANDOM_SEED,
+    EXPLAIN_RANDOM_SEED_VALUE,
+    SELDON_LOGLEVEL,
+)
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
@@ -37,9 +41,13 @@ class AnchorTabular(ExplainerWrapper):
             raise Exception("Anchor images requires a built explainer")
         self.anchors_tabular: alibi.explainers.AnchorTabular = explainer
         self.anchors_tabular = explainer
+        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+            self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
+        if self.seed:
+            np.random.seed(self.seed)
         arr = np.array(inputs)
         # We assume the input has batch dimension
         # but Alibi explainers presently assume no batch
