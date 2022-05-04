@@ -22,10 +22,11 @@ import logging
 from typing import Callable, List, Optional
 
 import alibi
+import numpy as np
 import spacy
 from alibi.api.interfaces import Explanation
 from alibi.utils.download import spacy_model
-import numpy as np
+
 from alibiexplainer.constants import SELDON_LOGLEVEL
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
