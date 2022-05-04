@@ -26,17 +26,16 @@ import numpy as np
 import spacy
 from alibi.api.interfaces import Explanation
 from alibi.utils.download import spacy_model
-<<<<<<< HEAD
+
 
 from alibiexplainer.constants import (
     EXPLAIN_RANDOM_SEED,
     EXPLAIN_RANDOM_SEED_VALUE,
     SELDON_LOGLEVEL,
 )
-=======
 import numpy as np
-from alibiexplainer.constants import SELDON_LOGLEVEL
->>>>>>> 81544b577 (Re-setting numpy random seed to zero on every explain request)
+
+
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
