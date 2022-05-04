@@ -27,7 +27,11 @@ import spacy
 from alibi.api.interfaces import Explanation
 from alibi.utils.download import spacy_model
 
-from alibiexplainer.constants import SELDON_LOGLEVEL
+from alibiexplainer.constants import (
+    EXPLAIN_RANDOM_SEED,
+    EXPLAIN_RANDOM_SEED_VALUE,
+    SELDON_LOGLEVEL,
+)
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
@@ -42,6 +46,8 @@ class AnchorText(ExplainerWrapper):
         **kwargs
     ):
         self.predict_fn = predict_fn
+        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+            self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
         logging.info("Anchor Text args %s", self.kwargs)
         if explainer is None:
@@ -56,6 +62,7 @@ class AnchorText(ExplainerWrapper):
             self.anchors_text = explainer
 
     def explain(self, inputs: List) -> Explanation:
-        np.random.seed(0)
+        if self.seed:
+            np.random.seed(self.seed)
         anchor_exp = self.anchors_text.explain(inputs[0], **self.kwargs)
         return anchor_exp
