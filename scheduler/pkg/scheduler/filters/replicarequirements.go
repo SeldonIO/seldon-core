@@ -1,6 +1,7 @@
 package filters
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
@@ -26,4 +27,8 @@ func (s RequirementsReplicaFilter) Filter(model *store.ModelVersion, replica *st
 		}
 	}
 	return true
+}
+
+func (s RequirementsReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
+	return fmt.Sprintf("model requirements %v replica capabilities %v", model.GetRequirements(), replica.GetCapabilities())
 }
