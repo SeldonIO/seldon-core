@@ -125,3 +125,15 @@ services:
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
+
+  kafka:
+    network_mode: "host"        
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=127.0.0.1:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+      
+  zookeeper:
+    ports:
+      - "2181:2181"

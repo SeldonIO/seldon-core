@@ -1,5 +1,11 @@
 version: "3.9"
 
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+
 services:
 
   agent-mlserver:
@@ -47,7 +53,10 @@ services:
       - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
       - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
       - SELDON_CORES_COUNT=4
-
+    depends_on:
+      - kafka
+      - otel-collector
+      
   envoy:
     build:
       dockerfile: ./Dockerfile.envoy
@@ -120,6 +129,9 @@ services:
       - "envoy"
       - "--envoy-port"
       - ${ENVOY_DATA_PORT}
+    depends_on:
+      - kafka
+      - otel-collector
 
   pipelinegateway:
     build:
@@ -136,19 +148,20 @@ services:
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
-      
-  kafka:
-    image: "${KAFKA_IMAGE_AND_TAG}"
-    command: [
-      "sh", "-c",
-      "./bin/kafka-storage.sh format -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/kraft/server.properties && ./bin/kafka-server-start.sh ./config/kraft/server.properties"
-    ]
-    ports:
-    - "${KAFKA_BROKER_INTERNAL_PORT}:${KAFKA_BROKER_INTERNAL_PORT}"
-    - "${KAFKA_BROKER_EXTERNAL_PORT}:${KAFKA_BROKER_EXTERNAL_PORT}"    
-    environment:
-      LOG_DIR: "/tmp/logs"
+    depends_on:
+      - kafka
+      - otel-collector
 
+  kafka:
+    image: docker.io/bitnami/kafka:3.1
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+      
   jaeger-all-in-one:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -170,4 +183,11 @@ services:
       - "55670:55679" # zpages extension
     depends_on:
       - jaeger-all-in-one
-      
+
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
