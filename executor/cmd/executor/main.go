@@ -81,7 +81,7 @@ var (
 	kafkaWorkers      = flag.Int("kafka_workers", 4, "Number of kafka workers")
 	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
 	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
-	fullHealthChecks = flag.Bool("full_health_checks",false, "Full health checks via chosen protocol API")
+	fullHealthChecks  = flag.Bool("full_health_checks", false, "Full health checks via chosen protocol API")
 	debug             = flag.Bool(
 		"debug",
 		util.GetEnvAsBool(debugEnvVar, debugDefault),
@@ -309,7 +309,7 @@ func main() {
 	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
 
-	logger.Info("Full health checks ","value", fullHealthChecks)
+	logger.Info("Full health checks ", "value", fullHealthChecks)
 
 	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
 	undo, err := maxprocs.Set(maxprocs.Logger(func(format string, a ...interface{}) {
@@ -350,7 +350,7 @@ func main() {
 	}
 
 	//Start Logger Dispacther
-	err = loghandler.StartDispatcher(*logWorkers, *logWorkBufferSize, *logWriteTimeoutMs, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic)
+	err = loghandler.StartDispatcher(*logWorkers, *logWorkBufferSize, *logWriteTimeoutMs, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic, *protocol)
 	if err != nil {
 		log.Fatal("Failed to start log dispatcher", err)
 	}

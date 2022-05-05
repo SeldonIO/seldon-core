@@ -9,10 +9,9 @@ import (
 	"net/url"
 	"testing"
 
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	"github.com/golang/protobuf/jsonpb"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/executor/api"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
@@ -20,6 +19,7 @@ import (
 	"github.com/seldonio/seldon-core/executor/logger"
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 const (
@@ -461,7 +461,7 @@ func TestModelWithLogRequests(t *testing.T) {
 
 	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "", api.ProtocolSeldon)
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -509,7 +509,7 @@ func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
 
 	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "", api.ProtocolSeldon)
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -552,7 +552,7 @@ func TestModelWithLogResponses(t *testing.T) {
 
 	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "", api.ProtocolSeldon)
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{
@@ -606,7 +606,7 @@ func TestModelRequestSkipsLogging(t *testing.T) {
 
 	logf.SetLogger(zap.New())
 	log := logf.Log.WithName("entrypoint")
-	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "", api.ProtocolSeldon)
 
 	model := v1.MODEL
 	graph := &v1.PredictiveUnit{

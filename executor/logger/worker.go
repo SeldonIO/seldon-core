@@ -25,6 +25,7 @@ const (
 	InferenceServiceNameAttr = "inferenceservicename"
 	NamespaceAttr            = "namespace"
 	EndpointAttr             = "endpoint"
+	ProtocolAttr             = "protocol"
 	KafkaTypeHeader          = "type"
 	KafkaContentTypeHeader   = "content-type"
 )
@@ -32,7 +33,7 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) (*Worker, error) {
+func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, protocol string) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
@@ -75,28 +76,30 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		Client: http.Client{
 			Timeout: 60 * time.Second,
 		},
-		CeCtx:         cloudevents.ContextWithEncoding(context.Background(), cloudevents.Binary),
-		SdepName:      sdepName,
-		Namespace:     namespace,
-		PredictorName: predictorName,
-		KafkaTopic:    kafkaTopic,
-		Producer:      producer,
+		CeCtx:           cloudevents.ContextWithEncoding(context.Background(), cloudevents.Binary),
+		SdepName:        sdepName,
+		Namespace:       namespace,
+		PredictorName:   predictorName,
+		KafkaTopic:      kafkaTopic,
+		Producer:        producer,
+		PayloadProtocol: protocol,
 	}, nil
 }
 
 type Worker struct {
-	Log           logr.Logger
-	ID            int
-	Work          chan LogRequest
-	QuitChan      chan bool
-	Client        http.Client
-	CeCtx         context.Context
-	CeTransport   transport.Transport
-	SdepName      string
-	Namespace     string
-	PredictorName string
-	KafkaTopic    string
-	Producer      *kafka.Producer
+	Log             logr.Logger
+	ID              int
+	Work            chan LogRequest
+	QuitChan        chan bool
+	Client          http.Client
+	CeCtx           context.Context
+	CeTransport     transport.Transport
+	SdepName        string
+	Namespace       string
+	PredictorName   string
+	KafkaTopic      string
+	Producer        *kafka.Producer
+	PayloadProtocol string
 }
 
 func getCEType(logReq LogRequest) (string, error) {
@@ -132,6 +135,7 @@ func (w *Worker) sendKafkaEvent(logReq LogRequest) error {
 		{Key: InferenceServiceNameAttr, Value: []byte(w.SdepName)},
 		{Key: NamespaceAttr, Value: []byte(w.Namespace)},
 		{Key: EndpointAttr, Value: []byte(w.PredictorName)},
+		{Key: ProtocolAttr, Value: []byte(w.PayloadProtocol)},
 	}
 	w.Log.Info("kafkaHeaders is", "kafkaHeaders", kafkaHeaders)
 	err = w.Producer.Produce(&kafka.Message{
@@ -186,6 +190,7 @@ func (w *Worker) sendCloudEvent(logReq LogRequest) error {
 	event.SetExtension(NamespaceAttr, w.Namespace)
 	//use 'endpoint' for the header to align with kfserving - https://github.com/kubeflow/kfserving/pull/699/files#r385360114
 	event.SetExtension(EndpointAttr, w.PredictorName)
+	event.SetExtension(ProtocolAttr, w.PayloadProtocol)
 
 	event.SetSource(logReq.SourceUri.String())
 	event.SetDataContentType(logReq.ContentType)
