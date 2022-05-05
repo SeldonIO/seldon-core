@@ -32,8 +32,6 @@ from alibiexplainer.constants import (
     EXPLAIN_RANDOM_SEED_VALUE,
     SELDON_LOGLEVEL,
 )
-
-
 from alibiexplainer.explainer_wrapper import ExplainerWrapper
 
 logging.basicConfig(level=SELDON_LOGLEVEL)
@@ -64,7 +62,7 @@ class AnchorText(ExplainerWrapper):
             self.anchors_text = explainer
 
     def explain(self, inputs: List) -> Explanation:
-        if self.seed:
+        if hasattr(self, "seed"):
             np.random.seed(self.seed)
         anchor_exp = self.anchors_text.explain(inputs[0], **self.kwargs)
         return anchor_exp

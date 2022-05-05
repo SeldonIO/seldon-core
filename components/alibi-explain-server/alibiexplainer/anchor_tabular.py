@@ -46,7 +46,7 @@ class AnchorTabular(ExplainerWrapper):
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
-        if self.seed:
+        if hasattr(self, "seed"):
             np.random.seed(self.seed)
         arr = np.array(inputs)
         # We assume the input has batch dimension

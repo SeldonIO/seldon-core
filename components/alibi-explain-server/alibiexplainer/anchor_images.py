@@ -47,7 +47,7 @@ class AnchorImages(ExplainerWrapper):
         self.kwargs = kwargs
 
     def explain(self, inputs: List) -> Explanation:
-        if self.seed:
+        if hasattr(self, "seed"):
             np.random.seed(self.seed)
         arr = np.array(inputs)
         logging.info("Calling explain on image of shape %s", (arr.shape,))
