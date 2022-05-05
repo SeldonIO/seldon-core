@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/otel"
+	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
@@ -96,7 +96,7 @@ func main() {
 		}
 	}
 
-	tracer, err := otel.NewTracer("seldon-pipelinegateway")
+	tracer, err := tracing.NewTracer("seldon-pipelinegateway")
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {
@@ -113,7 +113,7 @@ func main() {
 		logger.Info("Closed config handler")
 	}()
 
-	km := pipeline.NewKafkaManager(logger, namespace)
+	km := pipeline.NewKafkaManager(logger, namespace, tracer)
 	km.StartConfigListener(agentConfigHandler)
 
 	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, nil, km)

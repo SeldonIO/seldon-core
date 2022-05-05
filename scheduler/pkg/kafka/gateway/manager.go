@@ -3,6 +3,8 @@ package gateway
 import (
 	"sync"
 
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -14,28 +16,30 @@ import (
 const DEFAULT_NWORKERS = 4
 
 type KafkaManager struct {
-	active       bool
-	logger       log.FieldLogger
-	mu           sync.Mutex
-	gateways     map[string]*InferKafkaGateway //internal model name to infer consumer
-	broker       string
-	serverConfig *KafkaServerConfig
-	configChan   chan config.AgentConfiguration
-	topicNamer   *kafka.TopicNamer
+	active         bool
+	logger         log.FieldLogger
+	mu             sync.Mutex
+	gateways       map[string]*InferKafkaGateway //internal model name to infer consumer
+	broker         string
+	serverConfig   *KafkaServerConfig
+	configChan     chan config.AgentConfiguration
+	topicNamer     *kafka.TopicNamer
+	tracerProvider *seldontracer.TracerProvider
 }
 
 func (km *KafkaManager) Name() string {
 	panic("implement me")
 }
 
-func NewKafkaManager(logger log.FieldLogger, serverConfig *KafkaServerConfig, namespace string) *KafkaManager {
+func NewKafkaManager(logger log.FieldLogger, serverConfig *KafkaServerConfig, namespace string, traceProvider *seldontracer.TracerProvider) *KafkaManager {
 	return &KafkaManager{
-		active:       false,
-		logger:       logger.WithField("source", "KafkaManager"),
-		gateways:     make(map[string]*InferKafkaGateway),
-		serverConfig: serverConfig,
-		configChan:   make(chan config.AgentConfiguration),
-		topicNamer:   kafka.NewTopicNamer(namespace),
+		active:         false,
+		logger:         logger.WithField("source", "KafkaManager"),
+		gateways:       make(map[string]*InferKafkaGateway),
+		serverConfig:   serverConfig,
+		configChan:     make(chan config.AgentConfiguration),
+		topicNamer:     kafka.NewTopicNamer(namespace),
+		tracerProvider: traceProvider,
 	}
 }
 
@@ -100,7 +104,7 @@ func (km *KafkaManager) AddModel(modelName string, streamSpec *scheduler.StreamS
 				}
 			}
 			km.logger.Infof("Adding consumer to broker %s for model %s, input topic %s output topic %s", km.broker, modelName, modelConfig.InputTopic, modelConfig.OutputTopic)
-			inferGateway, err := NewInferKafkaGateway(km.logger, DEFAULT_NWORKERS, km.broker, modelConfig, km.serverConfig)
+			inferGateway, err := NewInferKafkaGateway(km.logger, DEFAULT_NWORKERS, km.broker, modelConfig, km.serverConfig, km.tracerProvider)
 			km.gateways[modelName] = inferGateway
 			if err != nil {
 				return err

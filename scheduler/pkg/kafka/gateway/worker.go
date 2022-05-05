@@ -11,6 +11,10 @@ import (
 	"strconv"
 	"time"
 
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	"go.opentelemetry.io/otel/attribute"
+
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/credentials/insecure"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -38,6 +42,7 @@ type InferWorker struct {
 	httpClient *http.Client
 	restUrl    *url.URL
 	consumer   *InferKafkaGateway
+	tracer     trace.Tracer
 }
 
 type InferWork struct {
@@ -49,7 +54,7 @@ type V2Error struct {
 	Error string `json:"error"`
 }
 
-func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger) (*InferWorker, error) {
+func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider) (*InferWorker, error) {
 	grpcClient, err := getGrpcClient(consumer.serverConfig.Host, consumer.serverConfig.GrpcPort)
 	if err != nil {
 		return nil, err
@@ -61,6 +66,7 @@ func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger) (*Infer
 		restUrl:    restUrl,
 		httpClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		consumer:   consumer,
+		tracer:     traceProvider.TraceProvider.Tracer("Worker"),
 	}, nil
 }
 
@@ -180,20 +186,28 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 		Headers:        kafkaHeaders,
 	}
 
+	ctx, span := iw.tracer.Start(ctx, "Produce")
+	span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(job.msg.Key)))
 	carrierOut := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrierOut)
 
-	err := iw.consumer.producer.Produce(msg, nil)
+	deliveryChan := make(chan kafka.Event)
+	err := iw.consumer.producer.Produce(msg, deliveryChan)
 	if err != nil {
 		iw.logger.WithError(err).Errorf("Failed to produce response for model %s", topic)
 		return err
 	}
+	go func() {
+		<-deliveryChan
+		span.End()
+	}()
+
 	return nil
 }
 
 func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
-
+	logger.Debugf("REST request to %s for %s", iw.restUrl.String(), iw.consumer.modelConfig.ModelName)
 	data := job.msg.Value
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
@@ -226,6 +240,7 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
+	logger.Debugf("gRPC request for %s", iw.consumer.modelConfig.ModelName)
 	//Update req with correct modelName
 	req.ModelName = iw.consumer.modelConfig.ModelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())

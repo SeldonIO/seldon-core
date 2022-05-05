@@ -3,6 +3,8 @@ package gateway
 import (
 	"testing"
 
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 
 	. "github.com/onsi/gomega"
@@ -44,9 +46,11 @@ func TestManagerAddModel(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
-			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default")
+			tp, err := seldontracer.NewTracer("test")
+			g.Expect(err).To(BeNil())
+			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default", tp)
 			km.active = true
-			err := km.AddModel(test.modelName, test.streamSpec)
+			err = km.AddModel(test.modelName, test.streamSpec)
 			g.Expect(err).To(BeNil())
 			g.Expect(km.gateways[test.modelName].modelConfig.ModelName).To(Equal(test.modelName))
 			g.Expect(km.gateways[test.modelName].modelConfig.InputTopic).To(Equal(test.expectedInputTopic))
@@ -68,11 +72,13 @@ func TestManagerRemoveModel(t *testing.T) {
 		modelName        string
 		expectedGateways int
 	}
-	gw1, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo", InputTopic: "topic1", OutputTopic: "topic2"}, &KafkaServerConfig{})
+	tp, err := seldontracer.NewTracer("test")
 	g.Expect(err).To(BeNil())
-	gw2, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{})
+	gw1, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo", InputTopic: "topic1", OutputTopic: "topic2"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())
-	gw3, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{})
+	gw2, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
+	g.Expect(err).To(BeNil())
+	gw3, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())
 	tests := []test{
 		{

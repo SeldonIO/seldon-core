@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"sync"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	"go.opentelemetry.io/otel"
 
@@ -15,11 +18,12 @@ import (
 	"github.com/rs/xid"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	pollTimeoutMillisecs = 100
+	pollTimeoutMillisecs = 10000
 )
 
 type PipelineInferer interface {
@@ -35,6 +39,7 @@ type KafkaManager struct {
 	mu         sync.RWMutex
 	configChan chan config.AgentConfiguration
 	topicNamer *kafka2.TopicNamer
+	tracer     trace.Tracer
 }
 
 type Pipeline struct {
@@ -54,11 +59,12 @@ type Request struct {
 	isError  bool
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string) *KafkaManager {
+func NewKafkaManager(logger logrus.FieldLogger, namespace string, traceProvider *seldontracer.TracerProvider) *KafkaManager {
 	return &KafkaManager{
 		logger:     logger.WithField("source", "KafkaManager"),
 		configChan: make(chan config.AgentConfiguration),
 		topicNamer: kafka2.NewTopicNamer(namespace),
+		tracer:     traceProvider.TraceProvider.Tracer("KafkaManager"),
 	}
 }
 
@@ -104,8 +110,8 @@ func (km *KafkaManager) recreateProducer() error {
 	var err error
 	var producerConfigMap = kafka.ConfigMap{
 		"bootstrap.servers":   km.broker,
-		"go.delivery.reports": false, // Need this othewise will get memory leak
-		"linger.ms":           0,     // to ensure low latency - will need configuration in future
+		"go.delivery.reports": true, // Need to ensure you use delivery channel otherwise this would cause memory leak
+		"linger.ms":           0,    // to ensure low latency - will need configuration in future
 	}
 	km.logger.Infof("Creating producer with broker %s", km.broker)
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -201,14 +207,22 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 		Headers:        kafkaHeaders,
 	}
 
+	ctx, span := km.tracer.Start(ctx, "Produce")
+	span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, key))
 	// Add trace headers
 	carrier := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)
 
-	err = km.producer.Produce(msg, nil)
+	deliveryChan := make(chan kafka.Event)
+	err = km.producer.Produce(msg, deliveryChan)
 	if err != nil {
+		span.End()
 		return nil, err
 	}
+	go func() {
+		<-deliveryChan
+		span.End()
+	}()
 	request.wg.Wait()
 	if request.isError {
 		return nil, fmt.Errorf("%s", string(request.response))
@@ -252,6 +266,14 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 			case *kafka.Message:
 				logger.Infof("Received message from %s with key %s", topicName, string(e.Key))
 				if val, ok := pipeline.requests.Get(string(e.Key)); ok {
+
+					// Add tracing span
+					ctx := context.Background()
+					carrierIn := splunkkafka.NewMessageCarrier(e)
+					ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+					_, span := km.tracer.Start(ctx, "Consume")
+					span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(e.Key)))
+
 					request := val.(*Request)
 					request.mu.Lock()
 					if request.active {
@@ -260,9 +282,10 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 						request.wg.Done()
 						request.active = false
 					} else {
-						logger.Warnf("Got duolicate request with key %s", string(e.Key))
+						logger.Warnf("Got duplicate request with key %s", string(e.Key))
 					}
 					request.mu.Unlock()
+					span.End()
 				}
 
 			case kafka.Error:

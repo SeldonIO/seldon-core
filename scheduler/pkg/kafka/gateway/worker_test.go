@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -64,9 +66,11 @@ func TestRestRequest(t *testing.T) {
 			}
 			createTestV2ClientMockResponders(kafkaServerConfig.Host, kafkaServerConfig.HttpPort, kafkaModelConfig.ModelName)
 			logger := log.New()
-			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig)
+			tp, err := seldontracer.NewTracer("test")
 			g.Expect(err).To(BeNil())
-			iw, err := NewInferWorker(ic, logger)
+			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig, tp)
+			g.Expect(err).To(BeNil())
+			iw, err := NewInferWorker(ic, logger, tp)
 			g.Expect(err).To(BeNil())
 			err = iw.restRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}}, false)
 			g.Expect(err).To(BeNil())
@@ -106,9 +110,11 @@ func TestProcessRequestRest(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			createTestV2ClientMockResponders(kafkaServerConfig.Host, kafkaServerConfig.HttpPort, kafkaModelConfig.ModelName)
 			logger := log.New()
-			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig)
+			tp, err := seldontracer.NewTracer("test")
 			g.Expect(err).To(BeNil())
-			iw, err := NewInferWorker(ic, logger)
+			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig, tp)
+			g.Expect(err).To(BeNil())
+			iw, err := NewInferWorker(ic, logger, tp)
 			g.Expect(err).To(BeNil())
 			err = iw.processRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}})
 			g.Expect(err).To(BeNil())
@@ -170,17 +176,22 @@ func createInferWorkerWithMockConn(
 	grpcServer *mockGRPCMLServer,
 	logger log.FieldLogger,
 	serverConfig *KafkaServerConfig,
-	modelConfig *KafkaModelConfig) (*InferKafkaGateway, *InferWorker) {
+	modelConfig *KafkaModelConfig,
+	g *WithT) (*InferKafkaGateway, *InferWorker) {
 	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	ic, _ := NewInferKafkaGateway(logger, 0, "", modelConfig, serverConfig)
+	tp, err := seldontracer.NewTracer("test")
+	g.Expect(err).To(BeNil())
+	ic, err := NewInferKafkaGateway(logger, 0, "", modelConfig, serverConfig, tp)
+	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
 		logger:     logger,
 		grpcClient: v2.NewGRPCInferenceServiceClient(conn),
 		restUrl:    getRestUrl(serverConfig.Host, serverConfig.HttpPort, modelConfig.ModelName),
 		httpClient: http.DefaultClient,
 		consumer:   ic,
+		tracer:     tp.TraceProvider.Tracer("test"),
 	}
 	return ic, iw
 }
@@ -228,7 +239,7 @@ func TestProcessRequestGrpc(t *testing.T) {
 			}
 			mockMLGrpcServer := createMLMockGrpcServer(g)
 			defer mockMLGrpcServer.stop()
-			ic, iw := createInferWorkerWithMockConn(mockMLGrpcServer, logger, &kafkaServerConfig, &kafkaModelConfig)
+			ic, iw := createInferWorkerWithMockConn(mockMLGrpcServer, logger, &kafkaServerConfig, &kafkaModelConfig, g)
 			defer ic.Stop()
 			check := creatMockServerHealthFunc(mockMLGrpcServer)
 			g.Eventually(check).Should(BeTrue())
@@ -408,7 +419,7 @@ func TestProcessRequest(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			createTestV2ClientMockResponders(kafkaServerConfig.Host, kafkaServerConfig.HttpPort, kafkaModelConfig.ModelName)
-			ic, iw := createInferWorkerWithMockConn(mockMLGrpcServer, logger, &kafkaServerConfig, &kafkaModelConfig)
+			ic, iw := createInferWorkerWithMockConn(mockMLGrpcServer, logger, &kafkaServerConfig, &kafkaModelConfig, g)
 			defer ic.Stop()
 			check := creatMockServerHealthFunc(mockMLGrpcServer)
 			g.Eventually(check).Should(BeTrue())

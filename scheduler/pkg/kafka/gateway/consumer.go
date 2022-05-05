@@ -1,34 +1,45 @@
 package gateway
 
 import (
+	"context"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
-	pollTimeoutMillisecs = 100
+	pollTimeoutMillisecs = 10000
 )
 
 type InferKafkaGateway struct {
-	logger       log.FieldLogger
-	nworkers     int
-	workers      []*InferWorker
-	broker       string
-	modelConfig  *KafkaModelConfig
-	serverConfig *KafkaServerConfig
-	consumer     *kafka.Consumer
-	producer     *kafka.Producer
-	done         chan bool
+	logger         log.FieldLogger
+	nworkers       int
+	workers        []*InferWorker
+	broker         string
+	modelConfig    *KafkaModelConfig
+	serverConfig   *KafkaServerConfig
+	consumer       *kafka.Consumer
+	producer       *kafka.Producer
+	done           chan bool
+	tracerProvider *seldontracer.TracerProvider
+	tracer         trace.Tracer
 }
 
-func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, broker string, modelConfig *KafkaModelConfig, serverConfig *KafkaServerConfig) (*InferKafkaGateway, error) {
+func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, broker string, modelConfig *KafkaModelConfig, serverConfig *KafkaServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaGateway, error) {
 	ic := &InferKafkaGateway{
-		logger:       logger.WithField("source", "InferConsumer"),
-		nworkers:     nworkers,
-		broker:       broker,
-		modelConfig:  modelConfig,
-		serverConfig: serverConfig,
-		done:         make(chan bool),
+		logger:         logger.WithField("source", "InferConsumer"),
+		nworkers:       nworkers,
+		broker:         broker,
+		modelConfig:    modelConfig,
+		serverConfig:   serverConfig,
+		done:           make(chan bool),
+		tracerProvider: traceProvider,
+		tracer:         traceProvider.TraceProvider.Tracer("Worker"),
 	}
 	return ic, ic.setup()
 }
@@ -40,8 +51,8 @@ func (ig *InferKafkaGateway) setup() error {
 	// Create producer
 	var producerConfigMap = kafka.ConfigMap{
 		"bootstrap.servers":   ig.broker,
-		"go.delivery.reports": false, // Need this othewise will get memory leak
-		"linger.ms":           0,     // To help with low latency - should be configurable in future
+		"go.delivery.reports": true, // ensure we read delivery reports otherwise memory leak
+		"linger.ms":           0,    // To help with low latency - should be configurable in future
 	}
 	logger.Infof("Creating producer with broker %s", ig.broker)
 	ig.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -75,7 +86,7 @@ func (ig *InferKafkaGateway) setup() error {
 	}
 
 	for i := 0; i < ig.nworkers; i++ {
-		worker, err := NewInferWorker(ig, ig.logger)
+		worker, err := NewInferWorker(ig, ig.logger, ig.tracerProvider)
 		if err != nil {
 			return err
 		}
@@ -121,6 +132,13 @@ func (ig *InferKafkaGateway) Serve() {
 			switch e := ev.(type) {
 			case *kafka.Message:
 
+				// Add tracing span
+				ctx := context.Background()
+				carrierIn := splunkkafka.NewMessageCarrier(e)
+				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+				_, span := ig.tracer.Start(ctx, "Consume")
+				span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(e.Key)))
+
 				headers := collectHeaders(e.Headers)
 
 				job := InferWork{
@@ -129,6 +147,7 @@ func (ig *InferKafkaGateway) Serve() {
 				}
 				// enqueue a job
 				jobChan <- &job
+				span.End()
 
 			case kafka.Error:
 				ig.logger.Error(e, "Received stream error")

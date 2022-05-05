@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/otel"
+	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/gateway"
 
@@ -106,7 +106,7 @@ func main() {
 		}
 	}
 
-	tracer, err := otel.NewTracer("seldon-modelgateway")
+	tracer, err := tracing.NewTracer("seldon-modelgateway")
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {
@@ -127,7 +127,7 @@ func main() {
 		Host:     envoyHost,
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
-	}, namespace)
+	}, namespace, tracer)
 	defer func() { _ = kafkaManager.Stop() }()
 
 	kafkaManager.StartConfigListener(agentConfigHandler)

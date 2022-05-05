@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/otel"
+	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 
@@ -131,7 +131,7 @@ func main() {
 		}
 	}
 
-	tracer, err := otel.NewTracer("seldon-agent")
+	tracer, err := tracing.NewTracer("seldon-agent")
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {

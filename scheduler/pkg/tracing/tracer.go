@@ -1,4 +1,4 @@
-package otel
+package tracing
 
 import (
 	"context"
@@ -12,27 +12,26 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"google.golang.org/grpc"
 )
 
-type Tracer struct {
-	tp *trace.TracerProvider
+type TracerProvider struct {
+	TraceProvider *trace.TracerProvider
 }
 
-func NewTracer(serviceName string) (*Tracer, error) {
+func NewTracer(serviceName string) (*TracerProvider, error) {
 	tp, err := initTracer(serviceName)
 	if err != nil {
 		return nil, err
 	}
-	return &Tracer{
-		tp: tp,
+	return &TracerProvider{
+		TraceProvider: tp,
 	}, nil
 }
 
-func (t *Tracer) Stop() {
+func (t *TracerProvider) Stop() {
 	cxt, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	if err := t.tp.Shutdown(cxt); err != nil {
+	if err := t.TraceProvider.Shutdown(cxt); err != nil {
 		otel.Handle(err)
 	}
 }
@@ -47,7 +46,9 @@ func initTracer(serviceName string) (*trace.TracerProvider, error) {
 	traceClient := otlptracegrpc.NewClient(
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(otelAgentAddr),
-		otlptracegrpc.WithDialOption(grpc.WithBlock()))
+	// For testing we can't block and not sure is needed in production in case not tracing available
+	//otlptracegrpc.WithDialOption(grpc.WithBlock()),
+	)
 	traceExp, err := otlptrace.New(context.Background(), traceClient)
 	if err != nil {
 		return nil, err

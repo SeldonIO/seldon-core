@@ -3,6 +3,8 @@ package pipeline
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
@@ -51,17 +53,19 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		isModel           bool
 		expectedPipelines int
 	}
+	tracer, err := tracing.NewTracer("test")
+	g.Expect(err).To(BeNil())
 	tests := []test{
 		{
 			name:              "model",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default"),
+			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			resourceName:      "foo",
 			isModel:           true,
 			expectedPipelines: 1,
 		},
 		{
 			name:              "model - existing in map",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default"),
+			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			pipeline:          &Pipeline{},
 			resourceName:      "foo",
 			isModel:           true,
@@ -69,14 +73,14 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		},
 		{
 			name:              "pipeline",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default"),
+			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			resourceName:      "foo",
 			isModel:           false,
 			expectedPipelines: 1,
 		},
 		{
 			name:              "pipeline - existing in map",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default"),
+			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			pipeline:          &Pipeline{},
 			resourceName:      "foo",
 			isModel:           false,
