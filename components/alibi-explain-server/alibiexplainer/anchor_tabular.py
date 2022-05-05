@@ -41,7 +41,7 @@ class AnchorTabular(ExplainerWrapper):
             raise Exception("Anchor images requires a built explainer")
         self.anchors_tabular: alibi.explainers.AnchorTabular = explainer
         self.anchors_tabular = explainer
-        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+        if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():
             self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
 

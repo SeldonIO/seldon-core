@@ -46,7 +46,7 @@ class AnchorText(ExplainerWrapper):
         **kwargs
     ):
         self.predict_fn = predict_fn
-        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+        if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():
             self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
         logging.info("Anchor Text args %s", self.kwargs)

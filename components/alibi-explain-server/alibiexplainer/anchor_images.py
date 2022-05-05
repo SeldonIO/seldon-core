@@ -42,7 +42,7 @@ class AnchorImages(ExplainerWrapper):
         if explainer is None:
             raise Exception("Anchor images requires a built explainer")
         self.anchors_image = explainer
-        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+        if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():
             self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
 
