@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
@@ -291,6 +292,9 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()
+				// we have only one version in the test
+				g.Expect(proto.Clone(loadedVersions[0])).To(Equal(proto.Clone(test.op.ModelVersion)))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))

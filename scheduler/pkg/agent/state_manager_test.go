@@ -122,11 +122,10 @@ func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client
 func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
-	memBytes := modelVersionDetails.GetModel().GetModelSpec().GetMemoryBytes()
 
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails)
 
 	manager.cache.Lock(modelWithVersion)
 	defer manager.cache.Unlock(modelWithVersion)
@@ -142,7 +141,7 @@ func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVe
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 	// we dont have memory actually requirement in unload
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, 0, pinnedModelVersion)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails)
 
 	manager.cache.Lock(modelWithVersion)
 	defer manager.cache.Unlock(modelWithVersion)

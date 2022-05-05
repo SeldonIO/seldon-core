@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 )
 
 type ModelState struct {
@@ -129,7 +130,10 @@ func (modelState *ModelState) getVersionsForAllModels() []*agent.ModelVersion {
 	defer modelState.mu.RUnlock()
 	var loadedModels []*agent.ModelVersion
 	for _, version := range modelState.loadedModels {
-		loadedModels = append(loadedModels, version.get())
+		mv := version.get()
+		versionedModelName := mv.Model.GetMeta().Name
+		originalModelName, originalModelVersion, _ := util.GetOrignalModelNameAndVersion(versionedModelName)
+		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv))
 	}
 	return loadedModels
 }

@@ -11,6 +11,7 @@ import (
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
@@ -327,7 +328,6 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
-	memBytes := request.ModelVersion.GetModel().GetModelSpec().GetMemoryBytes()
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 
@@ -353,7 +353,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
 	// TODO: do we need the actual protos being sent
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, memBytes, pinnedModelVersion)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
 	err = c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
@@ -387,7 +387,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	// we do not care about model versions here
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, 0, pinnedModelVersion)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
 	if err := c.stateManager.UnloadModelVersion(modifiedModelVersionRequest); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
@@ -427,19 +427,9 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 	return err
 }
 
-func getModifiedModelVersion(modelId string, memBytes uint64, version uint32) *agent.ModelVersion {
-	meta := pbs.MetaData{
-		Name: modelId,
-	}
-	model := pbs.Model{
-		Meta: &meta,
-		ModelSpec: &pbs.ModelSpec{
-			MemoryBytes: &memBytes,
-		},
-	}
-	mv := agent.ModelVersion{
-		Model:   &model,
-		Version: version,
-	}
-	return &mv
+func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
+	mv := proto.Clone(originalModelVersion)
+	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
+	mv.(*agent.ModelVersion).Version = version
+	return mv.(*agent.ModelVersion)
 }
