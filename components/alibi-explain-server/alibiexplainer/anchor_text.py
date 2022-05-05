@@ -46,7 +46,7 @@ class AnchorText(ExplainerWrapper):
         **kwargs
     ):
         self.predict_fn = predict_fn
-        if EXPLAIN_RANDOM_SEED == "True" and EXPLAIN_RANDOM_SEED_VALUE.isdigit():
+        if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():
             self.seed = int(EXPLAIN_RANDOM_SEED_VALUE)
         self.kwargs = kwargs
         logging.info("Anchor Text args %s", self.kwargs)
@@ -62,7 +62,7 @@ class AnchorText(ExplainerWrapper):
             self.anchors_text = explainer
 
     def explain(self, inputs: List) -> Explanation:
-        if self.seed:
+        if hasattr(self, "seed"):
             np.random.seed(self.seed)
         anchor_exp = self.anchors_text.explain(inputs[0], **self.kwargs)
         return anchor_exp
