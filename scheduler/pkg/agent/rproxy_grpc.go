@@ -5,6 +5,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand"
 	"net"
 	"sync"
@@ -43,15 +44,21 @@ type reverseGRPCProxy struct {
 	port                  uint // service port
 	mu                    sync.RWMutex
 	metrics               metrics.MetricsHandler
+	callOptions           []grpc.CallOption
 }
 
 func NewReverseGRPCProxy(metricsHandler metrics.MetricsHandler, logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
+	opts := []grpc.CallOption{
+		grpc.MaxCallSendMsgSize(math.MaxInt32),
+		grpc.MaxCallRecvMsgSize(math.MaxInt32),
+	}
 	return &reverseGRPCProxy{
 		logger:                logger.WithField("Source", "GRPCProxy"),
 		backendGRPCServerHost: backendGRPCServerHost,
 		backendGRPCServerPort: backendGRPCServerPort,
 		port:                  servicePort,
 		metrics:               metricsHandler,
+		callOptions:           opts,
 	}
 }
 
@@ -71,7 +78,10 @@ func (rp *reverseGRPCProxy) Start() error {
 		return err
 	}
 
-	opts := []grpc.ServerOption{}
+	opts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(math.MaxInt32),
+		grpc.MaxSendMsgSize(math.MaxInt32),
+	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
 	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), rp.metrics.UnaryServerInterceptor())))
 	grpcServer := grpc.NewServer(opts...)
@@ -147,7 +157,7 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	}
 
 	startTime := time.Now()
-	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r)
+	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
 	return resp, err

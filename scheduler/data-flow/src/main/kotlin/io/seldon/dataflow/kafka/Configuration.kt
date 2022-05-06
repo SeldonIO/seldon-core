@@ -2,6 +2,7 @@ package io.seldon.dataflow.kafka
 
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.streams.StreamsConfig
 import java.util.*
 
@@ -15,8 +16,15 @@ data class KafkaDomainParams(
     val joinWindowMillis: Long,
 )
 
+val KAFKA_MAX_MESSAGE_BYTES = 1_000_000_000
+
+val kafkaTopicConfig = mapOf(
+    TopicConfig.MAX_MESSAGE_BYTES_CONFIG to KAFKA_MAX_MESSAGE_BYTES.toString()
+)
+
 fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
     // See https://docs.confluent.io/platform/current/streams/developer-guide/config-streams.html
+
 
     return Properties().apply {
         // TODO - add version to app ID?  (From env var.)
@@ -25,14 +33,18 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = "PLAINTEXT"
-        this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
-
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = 1
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
-        // Next two setting hardwired for low latency - will need config in future 
         this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1
+
+        this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+        this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+
+
         this[ProducerConfig.LINGER_MS_CONFIG] = 0
+        this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
     }
 }
 

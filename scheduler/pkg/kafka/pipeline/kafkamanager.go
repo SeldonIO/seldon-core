@@ -112,6 +112,7 @@ func (km *KafkaManager) recreateProducer() error {
 		"bootstrap.servers":   km.broker,
 		"go.delivery.reports": true, // Need to ensure you use delivery channel otherwise this would cause memory leak
 		"linger.ms":           0,    // to ensure low latency - will need configuration in future
+		"message.max.bytes":   1000000000,
 	}
 	km.logger.Infof("Creating producer with broker %s", km.broker)
 	km.producer, err = kafka.NewProducer(&producerConfigMap)

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -37,12 +38,13 @@ import (
 )
 
 type InferWorker struct {
-	logger     log.FieldLogger
-	grpcClient v2.GRPCInferenceServiceClient
-	httpClient *http.Client
-	restUrl    *url.URL
-	consumer   *InferKafkaGateway
-	tracer     trace.Tracer
+	logger      log.FieldLogger
+	grpcClient  v2.GRPCInferenceServiceClient
+	httpClient  *http.Client
+	restUrl     *url.URL
+	consumer    *InferKafkaGateway
+	tracer      trace.Tracer
+	callOptions []grpc.CallOption
 }
 
 type InferWork struct {
@@ -60,13 +62,18 @@ func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger, tracePr
 		return nil, err
 	}
 	restUrl := getRestUrl(consumer.serverConfig.Host, consumer.serverConfig.HttpPort, consumer.modelConfig.ModelName)
+	opts := []grpc.CallOption{
+		grpc.MaxCallSendMsgSize(math.MaxInt32),
+		grpc.MaxCallRecvMsgSize(math.MaxInt32),
+	}
 	return &InferWorker{
-		logger:     logger.WithField("source", "KafkaInferWorker"),
-		grpcClient: grpcClient,
-		restUrl:    restUrl,
-		httpClient: &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
-		consumer:   consumer,
-		tracer:     traceProvider.TraceProvider.Tracer("Worker"),
+		logger:      logger.WithField("source", "KafkaInferWorker"),
+		grpcClient:  grpcClient,
+		restUrl:     restUrl,
+		httpClient:  &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
+		consumer:    consumer,
+		tracer:      traceProvider.TraceProvider.Tracer("Worker"),
+		callOptions: opts,
 	}, nil
 }
 
@@ -246,7 +253,7 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 
 	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
-	resp, err := iw.grpcClient.ModelInfer(ctx, req)
+	resp, err := iw.grpcClient.ModelInfer(ctx, req, iw.callOptions...)
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
 		return iw.produce(ctx, job, iw.consumer.modelConfig.ErrorTopic, []byte(err.Error()))

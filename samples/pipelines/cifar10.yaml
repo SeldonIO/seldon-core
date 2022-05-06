@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: cifar10-test
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: cifar10
+  output:
+    steps:
+    - cifar10

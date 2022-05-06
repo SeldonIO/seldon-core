@@ -53,6 +53,7 @@ func (ig *InferKafkaGateway) setup() error {
 		"bootstrap.servers":   ig.broker,
 		"go.delivery.reports": true, // ensure we read delivery reports otherwise memory leak
 		"linger.ms":           0,    // To help with low latency - should be configurable in future
+		"message.max.bytes":   1000000000,
 	}
 	logger.Infof("Creating producer with broker %s", ig.broker)
 	ig.producer, err = kafka.NewProducer(&producerConfigMap)
