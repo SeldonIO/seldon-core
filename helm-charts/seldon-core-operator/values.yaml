@@ -160,6 +160,11 @@ predictor_servers:
       v2:
         defaultImageVersion: "21.08-py3"
         image: nvcr.io/nvidia/tritonserver
+  HUGGINGFACE_SERVER:
+    protocols:
+      v2:
+        defaultImageVersion: "1.1.0.dev3-huggingface"
+        image: seldonio/mlserver
   TEMPO_SERVER:
     protocols:
       v2:

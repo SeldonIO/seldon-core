@@ -73,6 +73,14 @@ data:
               }
             }
         },
+        "HUGGINGFACE_SERVER": {
+          "protocols" : {
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.1.0.dev3-huggingface"
+              }
+            }
+        },
         "TEMPO_SERVER": {
           "protocols" : {
             "v2": {
