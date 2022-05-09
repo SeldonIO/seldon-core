@@ -36,20 +36,20 @@ We recommend to configure Prometheus using [Prometheus Operator](https://github.
 The [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack configuration can be easily installed using the [Bitnami Helm Charts](https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus/)
 
 ```bash
-kubectl create namespace seldon-system
+kubectl create namespace seldon-monitoring
 
-helm upgrade --install prometheus kube-prometheus \
-    --version 6.8.3 \
+helm upgrade --install seldon-monitoring kube-prometheus \
+    --version 6.9.5 \
 	--set fullnameOverride=seldon-monitoring \
-    --namespace seldon-system \
+    --namespace seldon-monitoring \
     --repo https://charts.bitnami.com/bitnami
 
-kubectl rollout status -n seldon-system statefulsets/prometheus-seldon-monitoring-prometheus
+kubectl rollout status -n seldon-monitoring statefulsets/prometheus-seldon-monitoring-prometheus
 ```
 
-The following pods should now be present in the `seldon-system` namespace:
+The following pods should now be present in the `seldon-monitoring` namespace:
 ```bash
-$ kubectl get pods -n seldon-system
+$ kubectl get pods -n seldon-monitoring
 NAME                                            READY   STATUS    RESTARTS   AGE
 alertmanager-seldon-monitoring-alertmanager-0   2/2     Running   0          51s
 prometheus-kube-state-metrics-d97b6b5ff-n5z7w   1/1     Running   0          52s
@@ -67,6 +67,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: seldon-podmonitor
+  namespace: seldon-monitoring
 spec:
   selector:
     matchLabels:
@@ -89,7 +90,7 @@ Assuming that there exist `SeldonDeployment` models running in the cluster one c
 
 Expose Prometheus to your localhost with
 ```bash
-$ kubectl port-forward -n seldon-system svc/seldon-monitoring-prometheus 9090:9090
+$ kubectl port-forward -n seldon-monitoring svc/seldon-monitoring-prometheus 9090:9090
 ```
 
 You can now head to your browser http://localhost:9090 to access the Prometheus UI.
