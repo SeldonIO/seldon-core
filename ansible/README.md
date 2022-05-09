@@ -1,4 +1,4 @@
-# Ansible Setup for Seldon Core V2
+## Ansible Setup for Seldon Core V2
 
 To use these playbooks follow the installation of the Ansible collection at https://github.com/SeldonIO/ansible-k8s-collection
 ```bash
@@ -7,14 +7,16 @@ ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-co
 
 Once installed you can use the following Playbooks.
 
-## Create Kind Cluster
+### Create Kind Cluster
 
 ```bash
 ansible-playbook playbooks/kind_cluster.yaml
 ```
 
 
-## Setup Ecosystem
+### Setup Ecosystem
+
+Run the following from the ansible folder:
 
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml
@@ -24,7 +26,7 @@ ansible-playbook playbooks/setup-ecosystem.yaml
 
 The ecosystem setup can be parametrized by providing extra Ansible variables, e.g. using `-e` flag to `ansible-playbook` command.
 
-For example
+For example run the following from the ansible folder:
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_kafka=yes
 ```
@@ -45,7 +47,10 @@ will only install Kafka when setting up the ecosystem.
 | configure_opentelemetry | bool | {{ install_opentelemetry }} | configure OpenTelemetry using V2 specific resources     |
 
 
-## Install Seldon Core V2
+### Install Seldon Core V2
+
+Run the following from the ansible folder:
+
 ```bash
 ansible-playbook playbooks/setup-seldon-v2.yaml
 ```

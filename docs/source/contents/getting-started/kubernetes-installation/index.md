@@ -1,6 +1,13 @@
 # Kubernetes Installation
 
-## Preparation
+For Kubernetes installation we provide Ansible playbooks for the core ecosystem and the install.
+
+```{include} ../../../../../ansible/README.md
+```
+
+## Top-level Makefile
+
+### Preparation
 
  1. Git clone seldon-core-v2
         git clone https://github.com/SeldonIO/seldon-core-v2
@@ -9,13 +16,13 @@
  4. Install `make`.
 
 
-## Extra Optional Requirements
+### Extra Optional Requirements
 
  * To gain access to metrics you will need to install Prometheus.
  * To run Pipelines you will need to install Kafka.
  * To expose inference outside the cluster you will need to integration a service mesh of your choice. Some examples for Istio, Traefik and Ambassador are provided. We welcome help to extend these examples to other service meshes.
 
-## Deploy
+### Deploy
 
 From the project root run:
 
@@ -23,7 +30,7 @@ From the project root run:
 make deploy-k8s
 ```
 
-## Undeploy
+### Undeploy
 
 From the project root run:
 
