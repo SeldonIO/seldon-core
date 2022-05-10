@@ -32,14 +32,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const (
-	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
-)
-
-var (
-	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
-)
-
 type PrePackedInitialiser struct {
 	clientset kubernetes.Interface
 	ctx       context.Context

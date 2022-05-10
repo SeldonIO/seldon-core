@@ -63,6 +63,8 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
 
+	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
+
 	// This env var in the operator allows you to change the default path
 	// 		to mount the cert in the containers
 	ENV_DEFAULT_CERT_MOUNT_PATH_NAME = "DEFAULT_CERT_MOUNT_PATH_NAME"
@@ -79,7 +81,8 @@ const (
 )
 
 var (
-	envDefaultCertMountPath = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
+	envDefaultCertMountPath               = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
+	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
