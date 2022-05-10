@@ -27,7 +27,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -238,41 +237,6 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	return nil
 }
 
-func (pi *PrePackedInitialiser) addHuggingFaceDefault(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment) {
-
-	existingContainer := utils.GetContainerForDeployment(deploy, pu.Name)
-
-	// Environment variables that can be used as defaults if not present
-	huggingFaceDefaultEnvsDefault := []corev1.EnvVar{
-		// Disable parallel workers by default until transformers working correctly in parallel inference
-		{
-			Name:  "MLSERVER_MODEL_PARALLEL_WORKERS",
-			Value: "0",
-		},
-		// Ensure the cache folder is set to have write permissions for pretrained models
-		{
-			Name:  "TRANSFORMERS_CACHE",
-			Value: "/opt/mlserver",
-		},
-	}
-
-	// Environment variables that have hard override on top of existing env vars
-	huggingFaceDefaultEnvsOverride := []corev1.EnvVar{
-		{
-			Name:  "MLSERVER_MODEL_IMPLEMENTATION",
-			Value: "mlserver_huggingface.HuggingFaceRuntime",
-		},
-	}
-
-	for _, envVar := range huggingFaceDefaultEnvsDefault {
-		existingContainer.Env = utils.SetEnvVar(existingContainer.Env, envVar, false)
-	}
-
-	for _, envVar := range huggingFaceDefaultEnvsOverride {
-		existingContainer.Env = utils.SetEnvVar(existingContainer.Env, envVar, true)
-	}
-}
-
 func (pi *PrePackedInitialiser) addMLServerDefault(pu *machinelearningv1.PredictiveUnit, deploy *appsv1.Deployment) error {
 	c, err := getMLServerContainer(pu, deploy.Namespace)
 	if err != nil {
@@ -460,9 +424,6 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 					err := pi.addMLServerDefault(pu, deploy)
 					if err != nil {
 						return err
-					}
-					if *pu.Implementation == machinelearningv1.PrepackHuggingFaceName {
-						pi.addHuggingFaceDefault(pu, deploy)
 					}
 				} else {
 					if err := pi.addModelDefaultServers(&mlDep.Spec, pu, deploy, serverConfig); err != nil {

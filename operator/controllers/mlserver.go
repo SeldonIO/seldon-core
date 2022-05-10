@@ -14,19 +14,24 @@ import (
 )
 
 const (
+	MLServerHuggingFaceImplementation  = "mlserver_huggingface.HuggingFaceRuntime"
 	MLServerSKLearnImplementation      = "mlserver_sklearn.SKLearnModel"
 	MLServerXGBoostImplementation      = "mlserver_xgboost.XGBoostModel"
 	MLServerTempoImplementation        = "tempo.mlserver.InferenceRuntime"
 	MLServerMLFlowImplementation       = "mlserver_mlflow.MLflowRuntime"
 	MLServerAlibiExplainImplementation = "mlserver_alibi_explain.AlibiExplainRuntime"
 
-	MLServerHTTPPortEnv            = "MLSERVER_HTTP_PORT"
-	MLServerGRPCPortEnv            = "MLSERVER_GRPC_PORT"
-	MLServerModelNameEnv           = "MLSERVER_MODEL_NAME"
-	MLServerModelImplementationEnv = "MLSERVER_MODEL_IMPLEMENTATION"
-	MLServerModelURIEnv            = "MLSERVER_MODEL_URI"
-	MLServerTempoRuntimeEnv        = "TEMPO_RUNTIME_OPTIONS"
-	MLServerModelExtraEnv          = "MLSERVER_MODEL_EXTRA"
+	MLServerParallelWorkersEnv         = "MLSERVER_PARALLEL_WORKERS"
+	MLServerParallelWorkersEnvDefault  = "0"
+	MLServerHuggingFaceCacheEnv        = "TRANSFORMERS_CACHE"
+	MLServerHuggingFaceCacheEnvDefault = "/opt/mlserver"
+	MLServerHTTPPortEnv                = "MLSERVER_HTTP_PORT"
+	MLServerGRPCPortEnv                = "MLSERVER_GRPC_PORT"
+	MLServerModelNameEnv               = "MLSERVER_MODEL_NAME"
+	MLServerModelImplementationEnv     = "MLSERVER_MODEL_IMPLEMENTATION"
+	MLServerModelURIEnv                = "MLSERVER_MODEL_URI"
+	MLServerTempoRuntimeEnv            = "TEMPO_RUNTIME_OPTIONS"
+	MLServerModelExtraEnv              = "MLSERVER_MODEL_EXTRA"
 )
 
 var (
@@ -198,7 +203,7 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit, namespace string) 
 		return nil, err
 	}
 
-	return []v1.EnvVar{
+	envVars := []v1.EnvVar{
 		{
 			Name:  MLServerHTTPPortEnv,
 			Value: strconv.Itoa(int(httpPort)),
@@ -228,7 +233,27 @@ func getMLServerEnvVars(pu *machinelearningv1.PredictiveUnit, namespace string) 
 			Name:  MLServerTempoRuntimeEnv,
 			Value: fmt.Sprintf("{\"k8s_options\": {\"defaultRuntime\": \"tempo.seldon.SeldonKubernetesRuntime\", \"namespace\": \"%s\"}}", namespace),
 		},
-	}, nil
+	}
+
+	if *pu.Implementation == machinelearningv1.PrepackHuggingFaceName {
+
+		huggingFaceDefaultEnvs := []v1.EnvVar{
+			// Disable parallel workers by default until transformers working correctly in parallel inference
+			{
+				Name:  MLServerParallelWorkersEnv,
+				Value: MLServerParallelWorkersEnvDefault,
+			},
+			// Ensure the cache folder is set to have write permissions for pretrained models
+			{
+				Name:  MLServerHuggingFaceCacheEnv,
+				Value: MLServerHuggingFaceCacheEnvDefault,
+			},
+		}
+
+		envVars = append(envVars, huggingFaceDefaultEnvs...)
+	}
+
+	return envVars, nil
 }
 
 func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (string, error) {
@@ -244,6 +269,8 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 		return MLServerTempoImplementation, nil
 	case machinelearningv1.PrepackMlflowName:
 		return MLServerMLFlowImplementation, nil
+	case machinelearningv1.PrepackHuggingFaceName:
+		return MLServerHuggingFaceImplementation, nil
 	default:
 		return "", nil
 	}
