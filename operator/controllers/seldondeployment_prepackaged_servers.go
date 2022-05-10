@@ -242,11 +242,8 @@ func (pi *PrePackedInitialiser) addHuggingFaceDefault(pu *machinelearningv1.Pred
 
 	existingContainer := utils.GetContainerForDeployment(deploy, pu.Name)
 
-	huggingFaceDefaultEnvs := []corev1.EnvVar{
-		{
-			Name:  "MLSERVER_MODEL_IMPLEMENTATION",
-			Value: "mlserver_huggingface.HuggingFaceRuntime",
-		},
+	// Environment variables that can be used as defaults if not present
+	huggingFaceDefaultEnvsDefault := []corev1.EnvVar{
 		// Disable parallel workers by default until transformers working correctly in parallel inference
 		{
 			Name:  "MLSERVER_MODEL_PARALLEL_WORKERS",
@@ -259,8 +256,20 @@ func (pi *PrePackedInitialiser) addHuggingFaceDefault(pu *machinelearningv1.Pred
 		},
 	}
 
-	for _, envVar := range huggingFaceDefaultEnvs {
+	// Environment variables that have hard override on top of existing env vars
+	huggingFaceDefaultEnvsOverride := []corev1.EnvVar{
+		{
+			Name:  "MLSERVER_MODEL_IMPLEMENTATION",
+			Value: "mlserver_huggingface.HuggingFaceRuntime",
+		},
+	}
+
+	for _, envVar := range huggingFaceDefaultEnvsDefault {
 		existingContainer.Env = utils.SetEnvVar(existingContainer.Env, envVar, false)
+	}
+
+	for _, envVar := range huggingFaceDefaultEnvsOverride {
+		existingContainer.Env = utils.SetEnvVar(existingContainer.Env, envVar, true)
 	}
 }
 
@@ -452,7 +461,9 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 					if err != nil {
 						return err
 					}
-					pi.addHuggingFaceDefault(pu, deploy)
+					if *pu.Implementation == machinelearningv1.PrepackHuggingFaceName {
+						pi.addHuggingFaceDefault(pu, deploy)
+					}
 				} else {
 					if err := pi.addModelDefaultServers(&mlDep.Spec, pu, deploy, serverConfig); err != nil {
 						return err
