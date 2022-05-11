@@ -57,6 +57,16 @@ func NewExplainerInitializer(ctx context.Context, clientset kubernetes.Interface
 	return &ExplainerInitialiser{clientset: clientset, ctx: ctx}
 }
 
+func extractExplainerEnvSecretRefName(p *machinelearningv1.Explainer) string {
+	envSecretRefName := ""
+	if p.EnvSecretRefName == "" {
+		envSecretRefName = PredictiveUnitDefaultEnvSecretRefName
+	} else {
+		envSecretRefName = p.EnvSecretRefName
+	}
+	return envSecretRefName
+}
+
 type ExplainerConfig struct {
 	Image    string `json:"image"`
 	Image_v2 string `json:"image_v2"`
@@ -233,8 +243,10 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if p.Explainer.ModelUri != "" {
 			var err error
 
+			envSecretRefName := extractExplainerEnvSecretRefName(p.Explainer)
+
 			mi := NewModelInitializer(ei.ctx, ei.clientset)
-			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, p.Explainer.StorageInitializerImage)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, envSecretRefName, p.Explainer.StorageInitializerImage)
 			if err != nil {
 				return err
 			}

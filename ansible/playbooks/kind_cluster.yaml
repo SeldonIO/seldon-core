@@ -5,13 +5,18 @@
     - seldonio.k8s.kind
     - seldonio.k8s.metallb
   vars:
-    # Name of kind cluster to be created; default: ansible
-    # If kind cluster of this name already exist it will not be removed and only
-    # the current kubectl context will be updated (kind export kubeconfig ... equivalent)
+    kind_use_many_workers: no
+
     kind_cluster_name: ansible
 
-    kind_version: v0.11.1
-    kind_image_version: kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+    # For compatible version of image for each kind version please see https://github.com/kubernetes-sigs/kind/releases
+    kind_version: v0.12.0
+    kind_image_version: kindest/node:v1.21.10@sha256:84709f09756ba4f863769bdcabe5edafc2ada72d3c8c44d6515fc581b66b029c
 
-    # Default namespace to be created and set for current context (if not null).
     kind_kubectl_default_namespace: seldon
+
+  pre_tasks:
+  - name: "Set custom Kind config to use many workers"
+    set_fact:
+      kind_config_file: files/kind_config.yaml
+    when: kind_use_many_workers |  bool
