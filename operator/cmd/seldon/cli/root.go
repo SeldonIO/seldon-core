@@ -52,6 +52,7 @@ func GetCmd() *cobra.Command {
 	cmdModelUnload := createModelUnload()
 	cmdModelInfer := createModelInfer()
 	cmdModelStatus := createModelStatus()
+	cmdModelMeta := createModelMetadata()
 
 	// Server commands
 	cmdServerStatus := createServerStatus()
@@ -73,7 +74,7 @@ func GetCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP(showResponseFlag, "o", true, "show response")
 
 	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline)
-	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer)
+	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta)
 	cmdServer.AddCommand(cmdServerStatus)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus)
 	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer)

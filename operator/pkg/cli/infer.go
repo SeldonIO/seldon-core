@@ -71,6 +71,20 @@ type V2InferenceResponse struct {
 	Outputs      []interface{}          `json:"outputs,omitempty"`
 }
 
+type V2Metadata struct {
+	Name     string             `json:"name"`
+	Versions []string           `json:"versions,omitempty"`
+	Platform string             `json:"platform,omitempty"`
+	Inputs   []V2MetadataTensor `json:"inputs,omitempty"`
+	Outputs  []V2MetadataTensor `json:"outputs,omitempty"`
+}
+
+type V2MetadataTensor struct {
+	Name     string `json:"name"`
+	Datatype string `json:"datatype"`
+	Shape    []int  `json:"shape"`
+}
+
 func NewInferenceClient(host string, port int) *InferenceClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -109,6 +123,20 @@ func (ic *InferenceClient) getUrl(path string) *url.URL {
 	}
 }
 
+func decodeV2Error(response *http.Response, b []byte) error {
+	if response.StatusCode == http.StatusBadRequest {
+		v2Error := V2Error{}
+		err := json.Unmarshal(b, &v2Error)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("%s", v2Error.Error)
+	} else {
+		return fmt.Errorf("V2 server error: %d %s", response.StatusCode, b)
+	}
+
+}
+
 func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
@@ -136,16 +164,7 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 		return nil, err
 	}
 	if response.StatusCode != http.StatusOK {
-		if response.StatusCode == http.StatusBadRequest {
-			v2Error := V2Error{}
-			err := json.Unmarshal(b, &v2Error)
-			if err != nil {
-				return nil, err
-			}
-			return nil, fmt.Errorf("%s", v2Error.Error)
-		} else {
-			return nil, fmt.Errorf("V2 server error: %s", b)
-		}
+		return nil, decodeV2Error(response, b)
 	}
 	return b, nil
 }
@@ -156,6 +175,33 @@ func (ic *InferenceClient) updateSummary(modelName string) {
 	} else {
 		ic.counts[modelName] = 1
 	}
+}
+
+func (ic *InferenceClient) ModelMetadata(modelName string) error {
+	path := fmt.Sprintf("/v2/models/%s", modelName)
+	v2Url := ic.getUrl(path)
+	req, err := http.NewRequest("GET", v2Url.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set(SeldonModelHeader, modelName)
+	response, err := ic.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	b, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	err = response.Body.Close()
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != http.StatusOK {
+		return decodeV2Error(response, b)
+	}
+	printPrettyJson(b)
+	return nil
 }
 
 func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
