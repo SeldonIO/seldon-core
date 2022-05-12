@@ -8,12 +8,6 @@ import "google/protobuf/timestamp.proto";
 
 // [START Messages]
 
-/* ServerReference represents a unique server
-*/
-message ServerReference {
-  string name = 1;
-}
-
 message LoadModelRequest {
   Model model = 1;
 }
@@ -140,6 +134,11 @@ message ModelReplicaStatus {
   google.protobuf.Timestamp lastChangeTimestamp = 3;
 }
 
+message ServerStatusRequest {
+  string subscriberName = 1;
+  optional string name = 2; // Leave empty for all servers
+}
+
 /* ServerStatusResponse provides details of current server status
 */
 message ServerStatusResponse {
@@ -164,8 +163,9 @@ message ModelSubscriptionRequest {
 }
 
 message ModelStatusRequest {
-  ModelReference model = 1;
-  bool allVersions = 2;
+  string subscriberName = 1;
+  optional ModelReference model = 2;
+  bool allVersions = 3;
 }
 
 message ServerNotifyRequest {
@@ -238,7 +238,8 @@ message LoadPipelineRequest {
 }
 
 message ExperimentStatusRequest {
-  string name = 1;
+  string subscriberName = 1;
+  optional string name = 2; // Leave empty for all experiments
 }
 
 message Pipeline {
@@ -294,8 +295,9 @@ message UnloadPipelineResponse {
 }
 
 message PipelineStatusRequest {
-  string name = 1;
-  bool allVersions = 2;
+  string subscriberName = 1;
+  optional string name = 2; // Leave empty for all pipelines
+  bool allVersions = 3;
 }
 
 message PipelineSubscriptionRequest {
@@ -329,6 +331,13 @@ message PipelineVersionState {
   google.protobuf.Timestamp lastChangeTimestamp = 4;
 }
 
+message SchedulerStatusRequest {
+  string subscriberName = 1;
+}
+
+message SchedulerStatusResponse {
+  string applicationVersion = 1;
+}
 
 // [END Messages]
 
@@ -336,20 +345,26 @@ message PipelineVersionState {
 // [START Services]
 
 service Scheduler {
-  rpc ServerStatus(ServerReference) returns (ServerStatusResponse) {}
+  rpc ServerNotify(ServerNotifyRequest) returns (ServerNotifyResponse) {};
+
   rpc LoadModel(LoadModelRequest) returns (LoadModelResponse) {};
   rpc UnloadModel(UnloadModelRequest) returns (UnloadModelResponse) {};
-  rpc ModelStatus(ModelStatusRequest) returns (ModelStatusResponse) {}
-  rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
-  rpc ServerNotify(ServerNotifyRequest) returns (ServerNotifyResponse) {};
-  rpc SubscribeServerStatus(ServerSubscriptionRequest) returns (stream ServerStatusResponse) {};
-  rpc StartExperiment(StartExperimentRequest) returns (StartExperimentResponse) {};
-  rpc StopExperiment(StopExperimentRequest) returns (StopExperimentResponse) {};
-  rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
-  rpc ExperimentStatus(ExperimentStatusRequest) returns (ExperimentStatusResponse) {};
+
   rpc LoadPipeline(LoadPipelineRequest) returns (LoadPipelineResponse) {};
   rpc UnloadPipeline(UnloadPipelineRequest) returns (UnloadPipelineResponse) {};
-  rpc PipelineStatus(PipelineStatusRequest) returns (PipelineStatusResponse) {};
+
+  rpc StartExperiment(StartExperimentRequest) returns (StartExperimentResponse) {};
+  rpc StopExperiment(StopExperimentRequest) returns (StopExperimentResponse) {};
+
+  rpc ServerStatus(ServerStatusRequest) returns (stream ServerStatusResponse) {}
+  rpc ModelStatus(ModelStatusRequest) returns (stream ModelStatusResponse) {}
+  rpc PipelineStatus(PipelineStatusRequest) returns (stream PipelineStatusResponse) {};
+  rpc ExperimentStatus(ExperimentStatusRequest) returns (stream ExperimentStatusResponse) {};
+  rpc SchedulerStatus(SchedulerStatusRequest) returns (SchedulerStatusResponse) {};
+
+  rpc SubscribeServerStatus(ServerSubscriptionRequest) returns (stream ServerStatusResponse) {};
+  rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
+  rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
 }
 

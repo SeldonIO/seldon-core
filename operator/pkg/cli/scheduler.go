@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const subscriberName = "seldon CLI"
+
 type SchedulerClient struct {
 	schedulerHost string
 	schedulerPort int
@@ -91,6 +93,7 @@ func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse
 
 func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showResponse bool, waitCondition string) error {
 	req := &scheduler.ModelStatusRequest{
+		SubscriberName: subscriberName,
 		Model: &scheduler.ModelReference{
 			Name: modelName,
 		},
@@ -98,18 +101,21 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 	if showRequest {
 		printProto(req)
 	}
+
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
+
 	var res *scheduler.ModelStatusResponse
 	if waitCondition != "" {
 		for {
-			res, err = grpcClient.ModelStatus(context.Background(), req)
+			res, err := sc.getModelStatus(grpcClient, req)
 			if err != nil {
 				return err
 			}
+
 			if len(res.Versions) > 0 {
 				modelStatus := res.Versions[0].State.GetState().String()
 				if modelStatus == waitCondition {
@@ -119,7 +125,7 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 			time.Sleep(1 * time.Second)
 		}
 	} else {
-		res, err = grpcClient.ModelStatus(context.Background(), req)
+		res, err = sc.getModelStatus(grpcClient, req)
 		if err != nil {
 			return err
 		}
@@ -137,19 +143,43 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 	return nil
 }
 
+func (sc *SchedulerClient) getModelStatus(
+	grpcClient scheduler.SchedulerClient,
+	req *scheduler.ModelStatusRequest,
+) (*scheduler.ModelStatusResponse, error) {
+	// There should only be one result, but cancel to ensure resources cleaned are up
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	stream, err := grpcClient.ModelStatus(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (sc *SchedulerClient) ServerStatus(serverName string, showRequest bool, showResponse bool) error {
-	req := &scheduler.ServerReference{
-		Name: serverName,
+	req := &scheduler.ServerStatusRequest{
+		SubscriberName: subscriberName,
+		Name:           &serverName,
 	}
 	if showRequest {
 		printProto(req)
 	}
+
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
-	res, err := grpcClient.ServerStatus(context.Background(), req)
+
+	res, err := sc.getServerStatus(grpcClient, req)
 	if err != nil {
 		return err
 	}
@@ -159,6 +189,27 @@ func (sc *SchedulerClient) ServerStatus(serverName string, showRequest bool, sho
 		printProto(res)
 	}
 	return nil
+}
+
+func (sc *SchedulerClient) getServerStatus(
+	grpcClient scheduler.SchedulerClient,
+	req *scheduler.ServerStatusRequest,
+) (*scheduler.ServerStatusResponse, error) {
+	// There should only be one result, but cancel to ensure resources cleaned are up
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	stream, err := grpcClient.ServerStatus(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showResponse bool) error {
@@ -238,20 +289,23 @@ func (sc *SchedulerClient) StopExperiment(experimentName string, showRequest boo
 
 func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest bool, showResponse bool, wait bool) error {
 	req := &scheduler.ExperimentStatusRequest{
-		Name: experimentName,
+		SubscriberName: subscriberName,
+		Name:           &experimentName,
 	}
 	if showRequest {
 		printProto(req)
 	}
+
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
+
 	var res *scheduler.ExperimentStatusResponse
 	if wait {
 		for {
-			res, err = grpcClient.ExperimentStatus(context.Background(), req)
+			res, err = sc.getExperimentStatus(grpcClient, req)
 			if err != nil {
 				return err
 			}
@@ -261,7 +315,7 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest b
 			time.Sleep(1 * time.Second)
 		}
 	} else {
-		res, err = grpcClient.ExperimentStatus(context.Background(), req)
+		res, err = sc.getExperimentStatus(grpcClient, req)
 		if err != nil {
 			return err
 		}
@@ -272,6 +326,27 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest b
 		fmt.Printf("%v", res.Active)
 	}
 	return nil
+}
+
+func (sc *SchedulerClient) getExperimentStatus(
+	grpcClient scheduler.SchedulerClient,
+	req *scheduler.ExperimentStatusRequest,
+) (*scheduler.ExperimentStatusResponse, error) {
+	// There should only be one result, but cancel to ensure resources cleaned are up
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	stream, err := grpcClient.ExperimentStatus(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showResponse bool) error {
@@ -327,20 +402,23 @@ func (sc *SchedulerClient) UnloadPipeline(pipelineName string, showRequest bool,
 
 func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool, showResponse bool, waitCondition string) error {
 	req := &scheduler.PipelineStatusRequest{
-		Name: pipelineName,
+		SubscriberName: subscriberName,
+		Name:           &pipelineName,
 	}
 	if showRequest {
 		printProto(req)
 	}
+
 	conn, err := sc.getConnection()
 	if err != nil {
 		return err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
+
 	var res *scheduler.PipelineStatusResponse
 	if waitCondition != "" {
 		for {
-			res, err = grpcClient.PipelineStatus(context.Background(), req)
+			res, err = sc.getPipelineStatus(grpcClient, req)
 			if err != nil {
 				return err
 			}
@@ -353,7 +431,7 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool,
 			time.Sleep(1 * time.Second)
 		}
 	} else {
-		res, err = grpcClient.PipelineStatus(context.Background(), req)
+		res, err = sc.getPipelineStatus(grpcClient, req)
 		if err != nil {
 			return err
 		}
@@ -369,4 +447,25 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool,
 
 	}
 	return nil
+}
+
+func (sc *SchedulerClient) getPipelineStatus(
+	grpcClient scheduler.SchedulerClient,
+	req *scheduler.PipelineStatusRequest,
+) (*scheduler.PipelineStatusResponse, error) {
+	// There should only be one result, but cancel to ensure resources cleaned are up
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	stream, err := grpcClient.PipelineStatus(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := stream.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

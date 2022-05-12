@@ -19,6 +19,7 @@ type ExperimentServer interface {
 	StartExperiment(experiment *Experiment) error
 	StopExperiment(experimentName string) error
 	GetExperiment(experimentName string) (*Experiment, error)
+	GetExperiments() ([]*Experiment, error)
 	GetExperimentForBaselineModel(modelName string) *Experiment
 	SetStatus(experimentName string, active bool, reason string) error
 }
@@ -184,4 +185,20 @@ func (es *ExperimentStore) GetExperiment(experimentName string) (*Experiment, er
 			experimentName: experimentName,
 		}
 	}
+}
+
+func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
+	es.mu.RLock()
+	defer es.mu.RUnlock()
+
+	foundExperiments := []*Experiment{}
+	for _, e := range es.experiments {
+		copied, err := copystructure.Copy(e)
+		if err != nil {
+			return nil, err
+		}
+
+		foundExperiments = append(foundExperiments, copied.(*Experiment))
+	}
+	return foundExperiments, nil
 }

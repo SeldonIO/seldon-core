@@ -20,6 +20,7 @@ type PipelineHandler interface {
 	RemovePipeline(name string) error
 	GetPipelineVersion(name string, version uint32, uid string) (*PipelineVersion, error)
 	GetPipeline(name string) (*Pipeline, error)
+	GetPipelines() ([]*Pipeline, error)
 	SetPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string) error
 }
 
@@ -157,6 +158,22 @@ func (ps *PipelineStore) GetPipeline(name string) (*Pipeline, error) {
 	} else {
 		return nil, &PipelineNotFoundErr{pipeline: name}
 	}
+}
+
+func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	foundPipelines := []*Pipeline{}
+	for _, p := range ps.pipelines {
+		copied, err := copystructure.Copy(p)
+		if err != nil {
+			return nil, err
+		}
+		foundPipelines = append(foundPipelines, copied.(*Pipeline))
+	}
+
+	return foundPipelines, nil
 }
 
 func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pipeline) {

@@ -28,6 +28,14 @@ func (m *mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
 	return m.models[key], nil
 }
 
+func (f mockStore) GetModels() ([]*store.ModelSnapshot, error) {
+	models := []*store.ModelSnapshot{}
+	for _, m := range f.models {
+		models = append(models, m)
+	}
+	return models, nil
+}
+
 func (m mockStore) LockModel(modelId string) {
 }
 

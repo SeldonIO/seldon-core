@@ -1,8 +1,6 @@
 package server
 
 import (
-	"context"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -52,7 +50,7 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		ms, err := s.modelStatusImpl(context.Background(), model, false)
+		ms, err := s.modelStatusImpl(model, false)
 		if err != nil {
 			return err
 		}
@@ -91,7 +89,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		return err
 	}
 	if model.GetLatest().GetVersion() == evt.ModelVersion {
-		ms, err := s.modelStatusImpl(context.Background(), model, false)
+		ms, err := s.modelStatusImpl(model, false)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
 			return err
@@ -173,15 +171,19 @@ func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) e
 		logger.Warnf("Empty server for %s so ignoring event", evt.String())
 		return nil
 	}
-	ss, err := s.ServerStatus(context.Background(), &pb.ServerReference{Name: modelVersion.Server()})
+
+	ss, err := s.modelStore.GetServer(modelVersion.Server())
 	if err != nil {
 		return err
 	}
+	ssr := createServerStatusResponse(ss)
+
 	for stream, subscription := range s.serverEventStream.streams {
-		err := stream.Send(ss)
+		err := stream.Send(ssr)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
 		}
 	}
+
 	return nil
 }

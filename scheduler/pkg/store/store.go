@@ -82,6 +82,7 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 type ModelStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)
+	GetModels() ([]*ModelSnapshot, error)
 	LockModel(modelId string)
 	UnlockModel(modelId string)
 	RemoveModel(req *pb.UnloadModelRequest) error

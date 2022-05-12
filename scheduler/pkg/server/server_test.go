@@ -16,9 +16,14 @@ import (
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func stringPtr(s string) *string {
+	return &s
+}
 
 type mockAgentHandler struct {
 	numSyncs int
@@ -372,9 +377,12 @@ func TestPipelineStatus(t *testing.T) {
 	tests := []test{
 		{
 			name:      "pipeline does not exist",
-			statusReq: &pb.PipelineStatusRequest{Name: "foo"},
-			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
-			err:       true,
+			statusReq: &pb.PipelineStatusRequest{Name: stringPtr("foo")},
+			server: &SchedulerServer{
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil),
+				logger:          log.New(),
+			},
+			err: true,
 		},
 		{
 			name: "pipeline status",
@@ -392,7 +400,7 @@ func TestPipelineStatus(t *testing.T) {
 					},
 				},
 			},
-			statusReq: &pb.PipelineStatusRequest{Name: "foo"},
+			statusReq: &pb.PipelineStatusRequest{Name: stringPtr("foo")},
 			statusRes: &pb.PipelineStatusResponse{
 				PipelineName: "foo",
 				Versions: []*pb.PipelineWithState{
@@ -416,7 +424,10 @@ func TestPipelineStatus(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			server: &SchedulerServer{
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil),
+				logger:          log.New(),
+			},
 		},
 	}
 
@@ -426,11 +437,23 @@ func TestPipelineStatus(t *testing.T) {
 				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
 				g.Expect(err).To(BeNil())
 			}
-			psr, err := test.server.PipelineStatus(context.Background(), test.statusReq)
+
+			stream := newStubPipelineStatusServer(1)
+			err := test.server.PipelineStatus(test.statusReq, stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+
+				var psr *pb.PipelineStatusResponse
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(psr).ToNot(BeNil())
 				// clear timestamps before checking equality
 				for _, pv := range psr.Versions {
 					pv.State.LastChangeTimestamp = nil
@@ -440,4 +463,22 @@ func TestPipelineStatus(t *testing.T) {
 		})
 	}
 
+}
+
+type stubPipelineStatusServer struct {
+	msgs chan *pb.PipelineStatusResponse
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_PipelineStatusServer = (*stubPipelineStatusServer)(nil)
+
+func newStubPipelineStatusServer(capacity int) *stubPipelineStatusServer {
+	return &stubPipelineStatusServer{
+		msgs: make(chan *pb.PipelineStatusResponse, capacity),
+	}
+}
+
+func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
+	s.msgs <- r
+	return nil
 }

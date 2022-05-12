@@ -40,7 +40,7 @@ type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
 	logger                log.FieldLogger
 	modelStore            store.ModelStore
-	experiementServer     experiment.ExperimentServer
+	experimentServer      experiment.ExperimentServer
 	pipelineHandler       pipeline.PipelineHandler
 	scheduler             scheduler2.Scheduler
 	mu                    sync.RWMutex
@@ -112,11 +112,11 @@ func NewSchedulerServer(
 	eventHub *coordinator.EventHub,
 ) *SchedulerServer {
 	s := &SchedulerServer{
-		logger:            logger.WithField("source", "SchedulerServer"),
-		modelStore:        modelStore,
-		experiementServer: experiementServer,
-		pipelineHandler:   pipelineHandler,
-		scheduler:         scheduler,
+		logger:           logger.WithField("source", "SchedulerServer"),
+		modelStore:       modelStore,
+		experimentServer: experiementServer,
+		pipelineHandler:  pipelineHandler,
+		scheduler:        scheduler,
 		modelEventStream: ModelEventStream{
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
@@ -154,7 +154,8 @@ func NewSchedulerServer(
 		pipelineEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
-		s.handlePipelineEvents)
+		s.handlePipelineEvents,
+	)
 
 	return s
 }
@@ -250,7 +251,7 @@ func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 	return mvs
 }
 
-func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.ModelSnapshot, allVersions bool) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) modelStatusImpl(model *store.ModelSnapshot, allVersions bool) (*pb.ModelStatusResponse, error) {
 	var modelVersionStatuses []*pb.ModelVersionStatus
 	if !allVersions {
 		latestModel := model.GetLatest()
@@ -271,53 +272,130 @@ func (s *SchedulerServer) modelStatusImpl(ctx context.Context, model *store.Mode
 	return msr, nil
 }
 
-func (s *SchedulerServer) ModelStatus(ctx context.Context, req *pb.ModelStatusRequest) (*pb.ModelStatusResponse, error) {
-	s.modelStore.LockModel(req.Model.Name)
-	defer s.modelStore.UnlockModel(req.Model.Name)
+func (s *SchedulerServer) ModelStatus(
+	req *pb.ModelStatusRequest,
+	stream pb.Scheduler_ModelStatusServer,
+) error {
+	logger := s.logger.WithField("func", "ModelStatus")
+	logger.Infof("received status request from %s", req.SubscriberName)
 
-	model, err := s.modelStore.GetModel(req.Model.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+	if req.Model == nil {
+		// All models requested
+		models, err := s.modelStore.GetModels()
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+
+		for _, m := range models {
+			resp, err := s.modelStatusImpl(m, req.AllVersions)
+			if err != nil {
+				return status.Errorf(codes.FailedPrecondition, err.Error())
+			}
+
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, err.Error())
+			}
+		}
+		return nil
+	} else {
+		// Single model requested
+		s.modelStore.LockModel(req.Model.Name)
+		defer s.modelStore.UnlockModel(req.Model.Name)
+
+		model, err := s.modelStore.GetModel(req.Model.Name)
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		if model == nil || len(model.Versions) == 0 {
+			return status.Errorf(
+				codes.FailedPrecondition,
+				fmt.Sprintf("Failed to find model %s", req.Model.Name),
+			)
+		}
+
+		resp, err := s.modelStatusImpl(model, req.AllVersions)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		err = stream.Send(resp)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		return nil
 	}
-	if model == nil || len(model.Versions) == 0 {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", req.Model.Name))
-	}
-	return s.modelStatusImpl(ctx, model, req.AllVersions)
 }
 
-func (s *SchedulerServer) ServerStatus(ctx context.Context, reference *pb.ServerReference) (*pb.ServerStatusResponse, error) {
-	server, err := s.modelStore.GetServer(reference.Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+func (s *SchedulerServer) ServerStatus(
+	req *pb.ServerStatusRequest,
+	stream pb.Scheduler_ServerStatusServer,
+) error {
+	logger := s.logger.WithField("func", "ServerStatus")
+	logger.Infof("received status request from %s", req.SubscriberName)
+
+	if req.Name == nil {
+		// All servers requested
+		servers, err := s.modelStore.GetServers()
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+
+		for _, s := range servers {
+			resp := createServerStatusResponse(s)
+			err := stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, err.Error())
+			}
+		}
+		return nil
+	} else {
+		// Single server requested
+		server, err := s.modelStore.GetServer(req.GetName())
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		if server == nil {
+			return status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find server %s", req.GetName()))
+		}
+		resp := createServerStatusResponse(server)
+		err = stream.Send(resp)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		return nil
 	}
-	if server == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find server %s", reference.Name))
-	}
-	ss := &pb.ServerStatusResponse{
-		ServerName:        reference.Name,
-		AvailableReplicas: int32(len(server.Replicas)),
-		ExpectedReplicas:  int32(server.ExpectedReplicas),
-		KubernetesMeta:    server.KubernetesMeta,
+}
+
+func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+	resp := &pb.ServerStatusResponse{
+		ServerName:        s.Name,
+		AvailableReplicas: int32(len(s.Replicas)),
+		ExpectedReplicas:  int32(s.ExpectedReplicas),
+		KubernetesMeta:    s.KubernetesMeta,
 	}
 
 	var totalModels int32
-	for _, replica := range server.Replicas {
+	for _, replica := range s.Replicas {
 		numLoadedModelsOnReplica := int32(replica.GetNumLoadedModels())
-		ss.Resources = append(ss.Resources, &pb.ServerReplicaResources{
-			ReplicaIdx:           uint32(replica.GetReplicaIdx()),
-			TotalMemoryBytes:     replica.GetMemory(),
-			AvailableMemoryBytes: replica.GetAvailableMemory(),
-			NumLoadedModels:      numLoadedModelsOnReplica,
-			OverCommitPercentage: replica.GetOverCommitPercentage(),
-		})
+		resp.Resources = append(
+			resp.Resources,
+			&pb.ServerReplicaResources{
+				ReplicaIdx:           uint32(replica.GetReplicaIdx()),
+				TotalMemoryBytes:     replica.GetMemory(),
+				AvailableMemoryBytes: replica.GetAvailableMemory(),
+				NumLoadedModels:      numLoadedModelsOnReplica,
+				OverCommitPercentage: replica.GetOverCommitPercentage(),
+			},
+		)
 		totalModels = totalModels + numLoadedModelsOnReplica
 	}
-	ss.NumLoadedModelReplicas = totalModels
-	return ss, nil
+	resp.NumLoadedModelReplicas = totalModels
+
+	return resp
 }
 
 func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExperimentRequest) (*pb.StartExperimentResponse, error) {
-	err := s.experiementServer.StartExperiment(experiment.CreateExperimentFromRequest(req.Experiment))
+	err := s.experimentServer.StartExperiment(experiment.CreateExperimentFromRequest(req.Experiment))
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
@@ -325,30 +403,64 @@ func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExpe
 }
 
 func (s *SchedulerServer) StopExperiment(ctx context.Context, req *pb.StopExperimentRequest) (*pb.StopExperimentResponse, error) {
-	err := s.experiementServer.StopExperiment(req.GetName())
+	err := s.experimentServer.StopExperiment(req.GetName())
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	return &pb.StopExperimentResponse{}, nil
 }
 
-func (s *SchedulerServer) ExperimentStatus(ctx context.Context, req *pb.ExperimentStatusRequest) (*pb.ExperimentStatusResponse, error) {
-	exp, err := s.experiementServer.GetExperiment(req.GetName())
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+func (s *SchedulerServer) ExperimentStatus(
+	req *pb.ExperimentStatusRequest,
+	stream pb.Scheduler_ExperimentStatusServer,
+) error {
+	logger := s.logger.WithField("func", "ExperimentStatus")
+	logger.Infof("received status request from %s", req.SubscriberName)
+
+	if req.Name == nil {
+		// All experiments requested
+		experiments, err := s.experimentServer.GetExperiments()
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+
+		for _, e := range experiments {
+			resp := createExperimentStatus(e)
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, err.Error())
+			}
+		}
+		return nil
+	} else {
+		// Single experiment requested
+		exp, err := s.experimentServer.GetExperiment(req.GetName())
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+
+		resp := createExperimentStatus(exp)
+		err = stream.Send(resp)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		return nil
 	}
-	res := &pb.ExperimentStatusResponse{
-		ExperimentName:    req.GetName(),
-		Active:            exp.Active,
-		StatusDescription: exp.StatusDescription,
+}
+
+func createExperimentStatus(e *experiment.Experiment) *pb.ExperimentStatusResponse {
+	response := &pb.ExperimentStatusResponse{
+		ExperimentName:    e.Name,
+		Active:            e.Active,
+		StatusDescription: e.StatusDescription,
 	}
-	if exp.KubernetesMeta != nil {
-		res.KubernetesMeta = &pb.KubernetesMeta{
-			Namespace:  exp.KubernetesMeta.Namespace,
-			Generation: exp.KubernetesMeta.Generation,
+	if e.KubernetesMeta != nil {
+		response.KubernetesMeta = &pb.KubernetesMeta{
+			Namespace:  e.KubernetesMeta.Namespace,
+			Generation: e.KubernetesMeta.Generation,
 		}
 	}
-	return res, nil
+	return response
 }
 
 func (s *SchedulerServer) LoadPipeline(ctx context.Context, req *pb.LoadPipelineRequest) (*pb.LoadPipelineResponse, error) {
@@ -398,10 +510,50 @@ func createPipelineStatus(p *pipeline.Pipeline, allVersions bool) *pb.PipelineSt
 	}
 }
 
-func (s *SchedulerServer) PipelineStatus(ctx context.Context, req *pb.PipelineStatusRequest) (*pb.PipelineStatusResponse, error) {
-	p, err := s.pipelineHandler.GetPipeline(req.GetName())
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+func (s *SchedulerServer) PipelineStatus(
+	req *pb.PipelineStatusRequest,
+	stream pb.Scheduler_PipelineStatusServer,
+) error {
+	logger := s.logger.WithField("func", "PipelineStatus")
+	logger.Infof("received status request from %s", req.SubscriberName)
+
+	if req.Name == nil {
+		// All pipelines requested
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+
+		pipelines, err := s.pipelineHandler.GetPipelines()
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		for _, p := range pipelines {
+			resp := createPipelineStatus(p, req.GetAllVersions())
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, err.Error())
+			}
+		}
+		return nil
+	} else {
+		// Single pipeline requested
+		p, err := s.pipelineHandler.GetPipeline(req.GetName())
+		if err != nil {
+			return status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		resp := createPipelineStatus(p, req.GetAllVersions())
+		err = stream.Send(resp)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+		return nil
 	}
-	return createPipelineStatus(p, req.GetAllVersions()), nil
+}
+
+func (s *SchedulerServer) SchedulerStatus(ctx context.Context, req *pb.SchedulerStatusRequest) (*pb.SchedulerStatusResponse, error) {
+	logger := s.logger.WithField("func", "SchedulerStatus")
+	logger.Infof("received status request from %s", req.SubscriberName)
+
+	return &pb.SchedulerStatusResponse{
+		ApplicationVersion: "0.0.1",
+	}, nil
 }

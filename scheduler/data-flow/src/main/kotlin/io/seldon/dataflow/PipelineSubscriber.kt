@@ -113,7 +113,6 @@ class PipelineSubscriber(
             .setName(name)
             .build()
 
-
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
@@ -148,8 +147,6 @@ class PipelineSubscriber(
                     return
                 }
             }
-
-
 
         val previous = pipelines
             .putIfAbsent(

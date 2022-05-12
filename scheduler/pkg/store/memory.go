@@ -43,6 +43,22 @@ func (m *MemoryStore) GetAllModels() []string {
 	return modelNames
 }
 
+func (m *MemoryStore) GetModels() ([]*ModelSnapshot, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	foundModels := []*ModelSnapshot{}
+	for name, model := range m.store.models {
+		snapshot := &ModelSnapshot{
+			Name:     name,
+			Deleted:  model.deleted,
+			Versions: model.versions,
+		}
+		foundModels = append(foundModels, snapshot)
+	}
+	return foundModels, nil
+}
+
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Model, *ModelVersion) {
 	modelName := req.GetModel().GetMeta().GetName()
 	model, ok := m.store.models[modelName]
