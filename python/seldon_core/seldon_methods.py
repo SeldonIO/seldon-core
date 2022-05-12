@@ -60,7 +60,6 @@ def handle_raw_custom_metrics(
     metrics = []
     if is_proto:
         metrics = seldon_message_to_json(msg.meta).get("metrics", [])
-
         if metrics and not INCLUDE_METRICS_IN_CLIENT_RESPONSE:
             del msg.meta.metrics[:]
     elif isinstance(msg, dict):
