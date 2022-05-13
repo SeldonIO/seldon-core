@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
@@ -16,7 +18,6 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/rs/xid"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/sirupsen/logrus"
@@ -31,15 +32,13 @@ type PipelineInferer interface {
 }
 
 type KafkaManager struct {
-	active     bool
-	broker     string
-	producer   *kafka.Producer
-	pipelines  sync.Map
-	logger     logrus.FieldLogger
-	mu         sync.RWMutex
-	configChan chan config.AgentConfiguration
-	topicNamer *kafka2.TopicNamer
-	tracer     trace.Tracer
+	kafkaConfig *config.KafkaConfig
+	producer    *kafka.Producer
+	pipelines   sync.Map
+	logger      logrus.FieldLogger
+	mu          sync.RWMutex
+	topicNamer  *kafka2.TopicNamer
+	tracer      trace.Tracer
 }
 
 type Pipeline struct {
@@ -59,77 +58,51 @@ type Request struct {
 	isError  bool
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string, traceProvider *seldontracer.TracerProvider) *KafkaManager {
-	return &KafkaManager{
-		logger:     logger.WithField("source", "KafkaManager"),
-		configChan: make(chan config.AgentConfiguration),
-		topicNamer: kafka2.NewTopicNamer(namespace),
-		tracer:     traceProvider.TraceProvider.Tracer("KafkaManager"),
+func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider) (*KafkaManager, error) {
+	km := &KafkaManager{
+		kafkaConfig: kafkaConfig,
+		logger:      logger.WithField("source", "KafkaManager"),
+		topicNamer:  kafka2.NewTopicNamer(namespace),
+		tracer:      traceProvider.TraceProvider.Tracer("KafkaManager"),
 	}
+	err := km.createProducer()
+	if err != nil {
+		return nil, err
+	}
+	return km, nil
 }
 
-func (km *KafkaManager) updateConfig(config *config.AgentConfiguration) {
+func (km *KafkaManager) Stop() {
+	logger := km.logger.WithField("func", "Stop")
+	logger.Info("Stopping pipelines")
 	km.mu.Lock()
 	defer km.mu.Unlock()
-	logger := km.logger.WithField("func", "updateConfig")
-	if config != nil && config.Kafka != nil {
-		km.active = config.Kafka.Active
-		km.broker = config.Kafka.Broker
-		logger.Infof("Updated config to active %v broker %s", km.active, km.broker)
-		if km.active {
-			err := km.recreateProducer()
-			if err != nil {
-				logger.WithError(err).Error("Failed to update kafka producer")
-			}
-		}
-	}
+	km.producer.Close()
+	km.pipelines.Range(func(key interface{}, value interface{}) bool {
+		pipeline := value.(*Pipeline)
+		close(pipeline.done)
+		return true
+	})
+	logger.Info("Stopped all pipelines")
 }
 
-func (km *KafkaManager) StartConfigListener(configHandler *config.AgentConfigHandler) {
-	logger := km.logger.WithField("func", "StartConfigListener")
-	// Start config listener
-	go km.listenForConfigUpdates()
-	// Add ourself as listener on channel and handle initial config
-	logger.Info("Loading initial stream configuration")
-	km.updateConfig(configHandler.AddListener(km.configChan))
-}
-
-func (km *KafkaManager) listenForConfigUpdates() {
-	logger := km.logger.WithField("func", "listenForConfigUpdates")
-	for conf := range km.configChan {
-		logger.Info("Received config update")
-		conf := conf
-		km.updateConfig(&conf)
-	}
-}
-
-func (km *KafkaManager) recreateProducer() error {
+func (km *KafkaManager) createProducer() error {
 	if km.producer != nil {
 		km.producer.Close()
 	}
 	var err error
-	var producerConfigMap = kafka.ConfigMap{
-		"bootstrap.servers":   km.broker,
-		"go.delivery.reports": true, // Need to ensure you use delivery channel otherwise this would cause memory leak
-		"linger.ms":           0,    // to ensure low latency - will need configuration in future
-		"message.max.bytes":   1000000000,
-	}
-	km.logger.Infof("Creating producer with broker %s", km.broker)
+
+	producerConfigMap := config.CloneKafkaConfigMap(km.kafkaConfig.Producer)
+	producerConfigMap["go.delivery.reports"] = true
+	km.logger.Infof("Creating producer with config %v", producerConfigMap)
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
 	return err
 }
 
 func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline, error) {
-
-	// Create consumer
-	consumerConfig := kafka.ConfigMap{
-		"broker.address.family": "v4",
-		"group.id":              resource,
-		"session.timeout.ms":    6000,
-		"auto.offset.reset":     "earliest",
-		"bootstrap.servers":     km.broker,
-	}
-
+	consumerConfig := config.CloneKafkaConfigMap(km.kafkaConfig.Consumer)
+	consumerConfig["group.id"] = resource
+	km.logger.Infof("Creating consumer with config %v", consumerConfig)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err

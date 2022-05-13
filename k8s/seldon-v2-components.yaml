@@ -406,10 +406,31 @@ subjects:
 ---
 apiVersion: v1
 data:
-  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]\nkafka:\n  active: true\n  broker: \"seldon-kafka-plain-bootstrap.kafka:9092\""
+  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]"
 kind: ConfigMap
 metadata:
   name: seldon-agent
+  namespace: seldon-mesh
+---
+apiVersion: v1
+data:
+  kafka.json: |-
+    {
+       "bootstrap.servers": "seldon-kafka-plain-bootstrap.kafka:9092",
+       "consumer":{
+          "session.timeout.ms":6000,
+          "auto.offset.reset":"earliest"
+       },
+       "producer":{
+         "linger.ms":0,
+         "message.max.bytes":1000000000
+       },
+       "streams":{
+       }
+    }
+kind: ConfigMap
+metadata:
+  name: seldon-kafka
   namespace: seldon-mesh
 ---
 apiVersion: v1
@@ -702,6 +723,7 @@ spec:
         - --scheduler-port=9004
         - --envoy-host=seldon-mesh
         - --envoy-port=80
+        - --config-path=/mnt/config/kafka.json
         command:
         - /bin/modelgateway
         env:
@@ -723,7 +745,7 @@ spec:
       terminationGracePeriodSeconds: 5
       volumes:
       - configMap:
-          name: seldon-agent
+          name: seldon-kafka
         name: config-volume
 ---
 apiVersion: apps/v1
@@ -747,7 +769,7 @@ spec:
       - args:
         - --http-port=9010
         - --grpc-port=9011
-        - --config-path=/mnt/config
+        - --config-path=/mnt/config/kafka.json
         command:
         - /bin/pipelinegateway
         env:
@@ -776,7 +798,7 @@ spec:
       terminationGracePeriodSeconds: 5
       volumes:
       - configMap:
-          name: seldon-agent
+          name: seldon-kafka
         name: config-volume
 ---
 apiVersion: apps/v1

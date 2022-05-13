@@ -1,0 +1,13 @@
+{
+    "bootstrap.servers":"kafka:9092",
+    "consumer":{
+	"session.timeout.ms":6000,
+	"auto.offset.reset":"earliest",
+    },
+    "producer":{
+	"linger.ms":0,
+	"message.max.bytes":1000000000,
+    },
+    "streams":{
+    }
+}

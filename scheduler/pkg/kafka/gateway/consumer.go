@@ -3,6 +3,8 @@ package gateway
 import (
 	"context"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
@@ -20,7 +22,7 @@ type InferKafkaGateway struct {
 	logger         log.FieldLogger
 	nworkers       int
 	workers        []*InferWorker
-	broker         string
+	kafkaConfig    *config.KafkaConfig
 	modelConfig    *KafkaModelConfig
 	serverConfig   *KafkaServerConfig
 	consumer       *kafka.Consumer
@@ -30,11 +32,11 @@ type InferKafkaGateway struct {
 	tracer         trace.Tracer
 }
 
-func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, broker string, modelConfig *KafkaModelConfig, serverConfig *KafkaServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaGateway, error) {
+func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, kafkaConfig *config.KafkaConfig, modelConfig *KafkaModelConfig, serverConfig *KafkaServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaGateway, error) {
 	ic := &InferKafkaGateway{
 		logger:         logger.WithField("source", "InferConsumer"),
 		nworkers:       nworkers,
-		broker:         broker,
+		kafkaConfig:    kafkaConfig,
 		modelConfig:    modelConfig,
 		serverConfig:   serverConfig,
 		done:           make(chan bool),
@@ -48,33 +50,18 @@ func (ig *InferKafkaGateway) setup() error {
 	logger := ig.logger.WithField("func", "setup")
 	var err error
 
-	// Create producer
-	var producerConfigMap = kafka.ConfigMap{
-		"bootstrap.servers":   ig.broker,
-		"go.delivery.reports": true, // ensure we read delivery reports otherwise memory leak
-		"linger.ms":           0,    // To help with low latency - should be configurable in future
-		"message.max.bytes":   1000000000,
-	}
-	logger.Infof("Creating producer with broker %s", ig.broker)
+	producerConfigMap := config.CloneKafkaConfigMap(ig.kafkaConfig.Producer)
+	producerConfigMap["go.delivery.reports"] = true
+	ig.logger.Infof("Creating producer with config %v", producerConfigMap)
 	ig.producer, err = kafka.NewProducer(&producerConfigMap)
 	if err != nil {
 		return err
 	}
 	logger.Infof("Created producer %s", ig.producer.String())
 
-	// Create consumer
-	consumerConfig := kafka.ConfigMap{
-		"broker.address.family": "v4",
-		"group.id":              ig.modelConfig.ModelName,
-		"session.timeout.ms":    6000,
-		"auto.offset.reset":     "earliest",
-	}
-	if ig.broker != "" {
-		consumerConfig["bootstrap.servers"] = ig.broker
-	} else {
-		logger.Warn("Broker is empty")
-	}
-
+	consumerConfig := config.CloneKafkaConfigMap(ig.kafkaConfig.Consumer)
+	consumerConfig["group.id"] = ig.modelConfig.ModelName
+	ig.logger.Infof("Creating consumer with config %v", consumerConfig)
 	ig.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err

@@ -1,4 +1,5 @@
 resources:
-- agent-configmap.yaml
+- agent.yaml
+- kafka.yaml
 - rclone-gs-public.yaml
 

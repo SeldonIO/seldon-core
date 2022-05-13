@@ -103,7 +103,7 @@ services:
       - "--log-level"
       - "debug"
       - "--config-path"
-      - "/mnt/config"
+      - "/mnt/config/kafka-host.json"
       - "--scheduler-port"
       - ${SCHEDULER_SERVER_PORT}
       - "--envoy-port"
@@ -120,7 +120,7 @@ services:
       - "--log-level"
       - "debug"
       - "--config-path"
-      - "/mnt/config"
+      - "/mnt/config/kafka-host.json"
       - "--http-port"
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"

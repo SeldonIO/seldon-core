@@ -4665,7 +4665,7 @@ spec:
                   type: string
                 type: array
               imageOverrides:
-                description: Seldon mesh specifications for multi model servers that can load models dynamically
+                description: Image overrides
                 properties:
                   agent:
                     description: The Agent overrides

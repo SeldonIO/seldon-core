@@ -23,7 +23,7 @@ spec:
         args:
         - --http-port=9010
         - --grpc-port=9011
-        - --config-path=/mnt/config
+        - --config-path=/mnt/config/kafka.json
         image: pipelinegateway:latest
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
@@ -47,6 +47,6 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: seldon-agent
+          name: seldon-kafka
       terminationGracePeriodSeconds: 5
       serviceAccountName: scheduler

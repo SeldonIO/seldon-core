@@ -3,6 +3,8 @@ package gateway
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -48,8 +50,7 @@ func TestManagerAddModel(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTracer("test")
 			g.Expect(err).To(BeNil())
-			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default", tp)
-			km.active = true
+			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default", &config.KafkaConfig{}, tp)
 			err = km.AddModel(test.modelName, test.streamSpec)
 			g.Expect(err).To(BeNil())
 			g.Expect(km.gateways[test.modelName].modelConfig.ModelName).To(Equal(test.modelName))
@@ -74,17 +75,16 @@ func TestManagerRemoveModel(t *testing.T) {
 	}
 	tp, err := seldontracer.NewTracer("test")
 	g.Expect(err).To(BeNil())
-	gw1, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo", InputTopic: "topic1", OutputTopic: "topic2"}, &KafkaServerConfig{}, tp)
+	gw1, err := NewInferKafkaGateway(log.New(), 0, &config.KafkaConfig{}, &KafkaModelConfig{ModelName: "foo", InputTopic: "topic1", OutputTopic: "topic2"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())
-	gw2, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
+	gw2, err := NewInferKafkaGateway(log.New(), 0, &config.KafkaConfig{}, &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())
-	gw3, err := NewInferKafkaGateway(log.New(), 0, "", &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
+	gw3, err := NewInferKafkaGateway(log.New(), 0, &config.KafkaConfig{}, &KafkaModelConfig{ModelName: "foo2", InputTopic: "topic2", OutputTopic: "topic3"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())
 	tests := []test{
 		{
 			name: "no current gateways",
 			manager: &KafkaManager{
-				active:   true,
 				logger:   log.New(),
 				gateways: map[string]*InferKafkaGateway{},
 				broker:   "",
@@ -95,7 +95,6 @@ func TestManagerRemoveModel(t *testing.T) {
 		{
 			name: "gateway exists",
 			manager: &KafkaManager{
-				active: true,
 				logger: log.New(),
 				gateways: map[string]*InferKafkaGateway{
 					"foo": gw1,
@@ -108,7 +107,6 @@ func TestManagerRemoveModel(t *testing.T) {
 		{
 			name: "multiple kafka gateways",
 			manager: &KafkaManager{
-				active: true,
 				logger: log.New(),
 				gateways: map[string]*InferKafkaGateway{
 					"foo":  gw2,

@@ -8,14 +8,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/gateway"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -49,8 +48,8 @@ func init() {
 	flag.StringVar(
 		&configPath,
 		"config-path",
-		"/mnt/config",
-		"Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder",
+		"/mnt/config/kafka.json",
+		"Path to kafka configuration file",
 	)
 	flag.StringVar(&logLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 
@@ -98,14 +97,6 @@ func main() {
 
 	go makeSignalHandler(logger, done)
 
-	var clientset kubernetes.Interface
-	if runningInsideK8s() {
-		clientset, err = k8s.CreateClientset()
-		if err != nil { //TODO change to Error from Fatal?
-			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
-		}
-	}
-
 	tracer, err := tracing.NewTracer("seldon-modelgateway")
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
@@ -113,24 +104,17 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	// Start Agent configuration handler
-	agentConfigHandler, err := config.NewAgentConfigHandler(configPath, namespace, logger, clientset)
+	kafkaConfigMap, err := config.NewKafkaConfig(configPath)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to create stream config handler")
+		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
-	defer func() {
-		_ = agentConfigHandler.Close()
-		logger.Info("Closed config handler")
-	}()
 
 	kafkaManager := gateway.NewKafkaManager(logger, &gateway.KafkaServerConfig{
 		Host:     envoyHost,
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
-	}, namespace, tracer)
+	}, namespace, kafkaConfigMap, tracer)
 	defer func() { _ = kafkaManager.Stop() }()
-
-	kafkaManager.StartConfigListener(agentConfigHandler)
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaManager)
 	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)

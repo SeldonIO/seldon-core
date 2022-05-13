@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -68,7 +70,7 @@ func TestRestRequest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTracer("test")
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig, tp)
+			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
 			iw, err := NewInferWorker(ic, logger, tp)
 			g.Expect(err).To(BeNil())
@@ -112,7 +114,7 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTracer("test")
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaGateway(logger, 0, "", &kafkaModelConfig, &kafkaServerConfig, tp)
+			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
 			iw, err := NewInferWorker(ic, logger, tp)
 			g.Expect(err).To(BeNil())
@@ -183,7 +185,7 @@ func createInferWorkerWithMockConn(
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTracer("test")
 	g.Expect(err).To(BeNil())
-	ic, err := NewInferKafkaGateway(logger, 0, "", modelConfig, serverConfig, tp)
+	ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, modelConfig, serverConfig, tp)
 	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
 		logger:     logger,

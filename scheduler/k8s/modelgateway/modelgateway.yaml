@@ -25,6 +25,7 @@ spec:
         - --scheduler-port=9004
         - --envoy-host=seldon-mesh
         - --envoy-port=80
+        - --config-path=/mnt/config/kafka.json
         image: modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
@@ -41,6 +42,6 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: seldon-agent
+          name: seldon-kafka
       terminationGracePeriodSeconds: 5
       serviceAccountName: scheduler

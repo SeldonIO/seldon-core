@@ -3,6 +3,8 @@ package pipeline
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
 	. "github.com/onsi/gomega"
@@ -47,7 +49,6 @@ func TestLoadOrStorePipeline(t *testing.T) {
 
 	type test struct {
 		name              string
-		kafkaManager      *KafkaManager
 		pipeline          *Pipeline
 		resourceName      string
 		isModel           bool
@@ -58,14 +59,12 @@ func TestLoadOrStorePipeline(t *testing.T) {
 	tests := []test{
 		{
 			name:              "model",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			resourceName:      "foo",
 			isModel:           true,
 			expectedPipelines: 1,
 		},
 		{
 			name:              "model - existing in map",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			pipeline:          &Pipeline{},
 			resourceName:      "foo",
 			isModel:           true,
@@ -73,14 +72,12 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		},
 		{
 			name:              "pipeline",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			resourceName:      "foo",
 			isModel:           false,
 			expectedPipelines: 1,
 		},
 		{
 			name:              "pipeline - existing in map",
-			kafkaManager:      NewKafkaManager(logrus.New(), "default", tracer),
 			pipeline:          &Pipeline{},
 			resourceName:      "foo",
 			isModel:           false,
@@ -89,14 +86,16 @@ func TestLoadOrStorePipeline(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			km, err := NewKafkaManager(logrus.New(), "default", &config.KafkaConfig{}, tracer)
+			g.Expect(err).To(BeNil())
 			if test.pipeline != nil {
-				test.kafkaManager.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)
+				km.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)
 			}
-			pipeline, err := test.kafkaManager.loadOrStorePipeline(test.resourceName, test.isModel)
+			pipeline, err := km.loadOrStorePipeline(test.resourceName, test.isModel)
 			g.Expect(err).To(BeNil())
 			g.Expect(pipeline).ToNot(BeNil())
 			count := 0
-			test.kafkaManager.pipelines.Range(func(key interface{}, val interface{}) bool {
+			km.pipelines.Range(func(key interface{}, val interface{}) bool {
 				count = count + 1
 				return true
 			})

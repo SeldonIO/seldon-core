@@ -9,13 +9,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
 	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -42,8 +41,8 @@ func init() {
 	flag.StringVar(
 		&configPath,
 		"config-path",
-		"/mnt/config",
-		"Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder",
+		"/mnt/config/kafka.json",
+		"path to kafka configuration file",
 	)
 }
 
@@ -88,14 +87,6 @@ func main() {
 
 	updateNamespace()
 
-	var clientset kubernetes.Interface
-	if runningInsideK8s() {
-		clientset, err = k8s.CreateClientset()
-		if err != nil { //TODO change to Error from Fatal?
-			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
-		}
-	}
-
 	tracer, err := tracing.NewTracer("seldon-pipelinegateway")
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
@@ -103,18 +94,16 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	// Start Agent configuration handler
-	agentConfigHandler, err := config.NewAgentConfigHandler(configPath, namespace, logger, clientset)
+	kafkaConfigMap, err := config.NewKafkaConfig(configPath)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to create stream config handler")
+		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
-	defer func() {
-		_ = agentConfigHandler.Close()
-		logger.Info("Closed config handler")
-	}()
 
-	km := pipeline.NewKafkaManager(logger, namespace, tracer)
-	km.StartConfigListener(agentConfigHandler)
+	km, err := pipeline.NewKafkaManager(logger, namespace, kafkaConfigMap, tracer)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create kafka manager")
+	}
+	defer km.Stop()
 
 	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, nil, km)
 	go func() {
