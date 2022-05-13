@@ -106,7 +106,7 @@ def test_generate_tags_key():
     # initializing two different kinds of dictionary
     insertion_order = OrderedDict({'b': 'b', 'a': 'a'})
     sorted_order = {'a': 'a', 'b': 'b'}
-    # assert the items in the list will differ based on order
+    # assert the items in the list differ based on order
     assert list(insertion_order.items()) != list(sorted_order.items())
 
     insertion_order_tag = SeldonMetrics._generate_tags_key(insertion_order)
