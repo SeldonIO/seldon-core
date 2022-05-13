@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"time"
@@ -62,9 +64,23 @@ func printProto(msg proto.Message) {
 	}
 }
 
+func unMarshallYamlStrict(data []byte, msg interface{}) error {
+	jsonData, err := yaml.YAMLToJSON(data)
+	if err != nil {
+		return err
+	}
+	d := json.NewDecoder(bytes.NewReader(jsonData))
+	d.DisallowUnknownFields() // So we fail if not exactly as required in schema
+	err = d.Decode(msg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse bool) error {
 	model := &mlopsv1alpha1.Model{}
-	err := yaml.Unmarshal(data, model)
+	err := unMarshallYamlStrict(data, model)
 	if err != nil {
 		return err
 	}
@@ -238,7 +254,7 @@ func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showR
 
 func (sc *SchedulerClient) StartExperiment(data []byte, showRequest bool, showResponse bool) error {
 	experiment := &mlopsv1alpha1.Experiment{}
-	err := yaml.Unmarshal(data, experiment)
+	err := unMarshallYamlStrict(data, experiment)
 	if err != nil {
 		return err
 	}
@@ -351,7 +367,7 @@ func (sc *SchedulerClient) getExperimentStatus(
 
 func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showResponse bool) error {
 	pipeline := &mlopsv1alpha1.Pipeline{}
-	err := yaml.Unmarshal(data, pipeline)
+	err := unMarshallYamlStrict(data, pipeline)
 	if err != nil {
 		return err
 	}

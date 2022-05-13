@@ -1,0 +1,23 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimple-conditional
+  namespace: seldon-mesh
+spec:
+  steps:
+  - name: conditional
+  - name: mul10
+    input:
+    - conditional.outputs.OUTPUT0
+    tensorMap:
+      conditional.outputs.OUTPUT0: INPUT
+  - name: add10
+    inputs:
+    - conditional.outputs.OUTPUT1
+    tensorMap:
+      conditional.outputs.OUTPUT1: INPUT
+  output:
+    steps:
+    - mul10
+    - add10
+    stepsJoin: any
