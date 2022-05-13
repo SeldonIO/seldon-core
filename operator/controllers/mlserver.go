@@ -23,7 +23,7 @@ const (
 
 	MLServerParallelWorkersEnv         = "MLSERVER_PARALLEL_WORKERS"
 	MLServerParallelWorkersEnvDefault  = "0"
-	MLServerHuggingFaceCacheEnv        = "TRANSFORMERS_CACHE"
+	MLServerHuggingFaceCacheEnv        = "XDG_CACHE_HOME"
 	MLServerHuggingFaceCacheEnvDefault = "/opt/mlserver"
 	MLServerHTTPPortEnv                = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv                = "MLSERVER_GRPC_PORT"
