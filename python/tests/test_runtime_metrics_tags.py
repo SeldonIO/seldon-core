@@ -1,11 +1,11 @@
 import json
 import logging
 import os
+from collections import OrderedDict
 
 import numpy as np
 import pytest
 from google.protobuf import json_format
-from collections import OrderedDict
 
 from seldon_core.flask_utils import SeldonMicroserviceException
 from seldon_core.metrics import (
