@@ -1,0 +1,17 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: iris-async-drift
+  namespace: seldon-mesh
+spec:
+  steps:
+  - name: iris
+  - name: iris-drift-detect
+    batch:
+      size: 2
+    inputs:
+    - iris-async-drift.inputs
+  output:
+    steps:
+    - iris
+    - iris-drift-detect
