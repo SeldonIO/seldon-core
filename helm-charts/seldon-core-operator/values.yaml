@@ -163,7 +163,7 @@ predictor_servers:
   HUGGINGFACE_SERVER:
     protocols:
       v2:
-        defaultImageVersion: "1.1.0.dev3-huggingface"
+        defaultImageVersion: "1.1.0.dev5-huggingface"
         image: seldonio/mlserver
   TEMPO_SERVER:
     protocols:
