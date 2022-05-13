@@ -104,8 +104,8 @@ def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
 
 def test_generate_tags_key():
     # initializing two different kinds of dictionary
-    insertion_order = OrderedDict({'b': 'b', 'a': 'a'})
-    sorted_order = {'a': 'a', 'b': 'b'}
+    insertion_order = OrderedDict({"b": "b", "a": "a"})
+    sorted_order = {"a": "a", "b": "b"}
     # assert the items in the list differ based on order
     assert list(insertion_order.items()) != list(sorted_order.items())
 
