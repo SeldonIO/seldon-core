@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from collections import OrderedDict
 
 import numpy as np
 import pytest
@@ -85,6 +86,8 @@ def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
     base_tags_key = SeldonMetrics._generate_tags_key(expected_base_tags)
     expected_custom_tags = {"mytag": "mytagvalue", "method": method}
     custom_tags_key = SeldonMetrics._generate_tags_key(expected_custom_tags)
+    expected_tags_key = f"method-{method}_mytag-mytagvalue"
+    assert custom_tags_key == expected_tags_key
     assert data["GAUGE", "runtime_gauge", base_tags_key]["value"] == 42
     assert data["GAUGE", "mygauge", base_tags_key]["value"] == 100
     assert data["GAUGE", "customtag", custom_tags_key]["value"] == 200
@@ -97,6 +100,19 @@ def verify_seldon_metrics(data, mycounter_value, histogram_entries, method):
     assert np.allclose(
         data["TIMER", "mytimer", base_tags_key]["value"][1], np.sum(histogram_entries)
     )
+
+
+def test_generate_tags_key():
+    # initializing two different kinds of dictionary
+    insertion_order = OrderedDict({"b": "b", "a": "a"})
+    sorted_order = {"a": "a", "b": "b"}
+    # assert the items in the list differ based on order
+    assert list(insertion_order.items()) != list(sorted_order.items())
+
+    insertion_order_tag = SeldonMetrics._generate_tags_key(insertion_order)
+    sorted_order_tag = SeldonMetrics._generate_tags_key(sorted_order)
+    # same tag generated irrespective of order
+    assert insertion_order_tag == sorted_order_tag
 
 
 @pytest.mark.parametrize("cls", [UserObject])
