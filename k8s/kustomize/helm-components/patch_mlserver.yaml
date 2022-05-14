@@ -1,0 +1,35 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: mlserver
+  namespace: seldon-mesh
+spec:
+  podSpec:
+    containers:
+    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: rclone
+    - env:
+      - name: SELDON_SERVER_CAPABILITIES
+        value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ .Values.opentelemetry.endpoint }}'
+      image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: agent
+    - image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository }}:{{ .Values.serverConfig.mlserver.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
+      name: mlserver
+      resources:
+        requests:
+          memory: '{{ .Values.serverConfig.mlserver.resources.memory }}'
+  volumeClaimTemplates:
+  - name: mlserver-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '{{ .Values.serverConfig.mlserver.modelVolumeStorage }}'

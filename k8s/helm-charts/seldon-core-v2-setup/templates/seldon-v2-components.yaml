@@ -1,0 +1,1126 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: seldon-scheduler
+  namespace: seldon-mesh
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: seldon-server
+  namespace: seldon-mesh
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-role
+  namespace: seldon-mesh
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: seldon-leader-election-role
+  namespace: seldon-mesh
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: seldon-scheduler-role
+  namespace: seldon-mesh
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: seldon-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/status
+  verbs:
+  - get
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - experiments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - experiments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - experiments/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - explainers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - models/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - pipelines/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - serverconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - servers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - v1
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - services/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seldon-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seldon-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-rolebinding
+  namespace: seldon-mesh
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-server
+  namespace: seldon-mesh
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seldon-leader-election-rolebinding
+  namespace: seldon-mesh
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seldon-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seldon-scheduler-rolebinding
+  namespace: seldon-mesh
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seldon-scheduler-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-scheduler
+  namespace: seldon-mesh
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seldon-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-manager-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seldon-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+---
+apiVersion: v1
+data:
+  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]\nkafka:\n
+    \ active: true\n  broker: \"seldon-kafka-plain-bootstrap.kafka:9092\""
+kind: ConfigMap
+metadata:
+  name: seldon-agent
+  namespace: seldon-mesh
+---
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: e98130ae.seldon.io
+kind: ConfigMap
+metadata:
+  name: seldon-manager-config
+  namespace: seldon-mesh
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-gs-public
+  namespace: seldon-mesh
+stringData:
+  gs: |
+    type: "google cloud storage"
+    name: gs
+    parameters:
+      anonymous: true
+type: Opaque
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: seldon-controller-manager-metrics-service
+  namespace: seldon-mesh
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: seldon-mesh
+  name: seldon-mesh
+  namespace: seldon-mesh
+spec:
+  ports:
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - name: admin
+    port: 9003
+    protocol: TCP
+    targetPort: envoy-admin
+  selector:
+    app: seldon-envoy
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: seldon-mesh
+  name: seldon-pipelinegateway
+  namespace: seldon-mesh
+spec:
+  clusterIP: None
+  ports:
+  - name: http
+    port: 9010
+    protocol: TCP
+    targetPort: http
+  - name: grpc
+    port: 9011
+    protocol: TCP
+    targetPort: grpc
+  selector:
+    app: pipelinegateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: seldon-scheduler
+  name: seldon-scheduler
+  namespace: seldon-mesh
+spec:
+  ports:
+  - name: xds
+    port: 9002
+    protocol: TCP
+    targetPort: xds
+  - name: scheduler
+    port: 9004
+    protocol: TCP
+    targetPort: scheduler
+  - name: agent
+    port: 9005
+    protocol: TCP
+    targetPort: agent
+  - name: dataflow
+    port: 9008
+    protocol: TCP
+    targetPort: dataflow
+  selector:
+    control-plane: seldon-scheduler
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+      - args:
+        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=127.0.0.1:8080
+        - --leader-elect
+        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
+        - --scheduler-port=$(SELDON_SCHEDULER_PORT)
+        command:
+        - /manager
+        env:
+        - name: SELDON_SCHEDULER_SVC
+          value: seldon-scheduler.seldon-mesh
+        - name: SELDON_SCHEDULER_PORT
+          value: "9004"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: seldonio/seldonv2-controller:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: seldon-controller-manager
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: seldon-dataflow-engine
+  name: seldon-dataflow-engine
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: seldon-dataflow-engine
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-dataflow-engine
+    spec:
+      containers:
+      - env:
+        - name: SELDON_CORES_COUNT
+          value: '{{ .Values.dataflow.cores }}'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: '{{ .Values.opentelemetry.endpoint }}'
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: seldon-kafka-plain-bootstrap.kafka:9092
+        - name: SELDON_UPSTREAM_HOST
+          value: seldon-scheduler
+        - name: SELDON_UPSTREAM_PORT
+          value: "9008"
+        image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository
+          }}:{{ .Values.dataflow.image.tag }}'
+        imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
+        name: dataflow-engine
+        resources:
+          requests:
+            cpu: '{{ .Values.dataflow.resources.requests.cpu }}'
+            memory: '{{ .Values.dataflow.resources.requests.memory }}'
+      securityContext:
+        runAsUser: 8888
+      terminationGracePeriodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: seldon-envoy
+  name: seldon-envoy
+  namespace: seldon-mesh
+spec:
+  selector:
+    matchLabels:
+      app: seldon-envoy
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "9003"
+        prometheus.io/scrape: "true"
+      labels:
+        app: seldon-envoy
+    spec:
+      containers:
+      - image: seldonio/seldon-envoy:latest
+        imagePullPolicy: IfNotPresent
+        name: envoy
+        ports:
+        - containerPort: 9000
+          name: http
+        - containerPort: 9003
+          name: envoy-admin
+      terminationGracePeriodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: seldon-modelgateway
+  name: seldon-modelgateway
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: seldon-modelgateway
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-modelgateway
+    spec:
+      containers:
+      - args:
+        - --scheduler-host=seldon-scheduler
+        - --scheduler-port=9004
+        - --envoy-host=seldon-mesh
+        - --envoy-port=80
+        command:
+        - /bin/modelgateway
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: '{{ .Values.opentelemetry.endpoint }}'
+        image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository
+          }}:{{ .Values.modelgateway.image.tag }}'
+        imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
+        name: modelgateway
+        resources:
+          requests:
+            cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'
+            memory: '{{ .Values.modelgateway.resources.requests.memory }}'
+        volumeMounts:
+        - mountPath: /mnt/config
+          name: config-volume
+      securityContext:
+        runAsUser: 8888
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - configMap:
+          name: seldon-agent
+        name: config-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pipelinegateway
+  name: seldon-pipelinegateway
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipelinegateway
+  template:
+    metadata:
+      labels:
+        app: pipelinegateway
+    spec:
+      containers:
+      - args:
+        - --http-port=9010
+        - --grpc-port=9011
+        - --config-path=/mnt/config
+        command:
+        - /bin/pipelinegateway
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: '{{ .Values.opentelemetry.endpoint }}'
+        image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository
+          }}:{{ .Values.pipelinegateway.image.tag }}'
+        imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
+        name: pipelinegateway
+        ports:
+        - containerPort: 9010
+          name: http
+          protocol: TCP
+        - containerPort: 9011
+          name: grpc
+          protocol: TCP
+        resources:
+          requests:
+            cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
+            memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
+        volumeMounts:
+        - mountPath: /mnt/config
+          name: config-volume
+      securityContext:
+        runAsUser: 8888
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
+      volumes:
+      - configMap:
+          name: seldon-agent
+        name: config-volume
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: seldon-scheduler
+  name: seldon-scheduler
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: seldon-scheduler
+  template:
+    metadata:
+      labels:
+        control-plane: seldon-scheduler
+    spec:
+      containers:
+      - args:
+        - --pipeline-gateway-host=seldon-pipelinegateway
+        command:
+        - /bin/scheduler
+        image: seldonio/seldon-scheduler:latest
+        imagePullPolicy: IfNotPresent
+        name: scheduler
+        ports:
+        - containerPort: 9002
+          name: xds
+        - containerPort: 9004
+          name: scheduler
+        - containerPort: 9005
+          name: agent
+        - containerPort: 9008
+          name: dataflow
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      securityContext:
+        runAsUser: 8888
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: mlserver
+  namespace: seldon-mesh
+spec:
+  podSpec:
+    containers:
+    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
+        }}:{{ .Values.serverConfig.rclone.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: rclone
+      ports:
+      - containerPort: 5572
+        name: rclone
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+    - env:
+      - name: SELDON_SERVER_CAPABILITIES
+        value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ .Values.opentelemetry.endpoint }}'
+      - name: SELDON_SERVER_HTTP_PORT
+        value: "9000"
+      - name: SELDON_SERVER_GRPC_PORT
+        value: "9500"
+      - name: SELDON_REVERSE_PROXY_HTTP_PORT
+        value: "9001"
+      - name: SELDON_REVERSE_PROXY_GRPC_PORT
+        value: "9501"
+      - name: SELDON_SCHEDULER_HOST
+        value: seldon-scheduler
+      - name: SELDON_SCHEDULER_PORT
+        value: "9005"
+      - name: SELDON_METRICS_PORT
+        value: "9006"
+      - name: SELDON_SERVER_TYPE
+        value: mlserver
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MEMORY_REQUEST
+        valueFrom:
+          resourceFieldRef:
+            containerName: mlserver
+            resource: requests.memory
+      image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
+        }}:{{ .Values.serverConfig.agent.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: agent
+      ports:
+      - containerPort: 9501
+        name: grpc
+        protocol: TCP
+      - containerPort: 9001
+        name: http
+        protocol: TCP
+      - containerPort: 9006
+        name: metrics
+        protocol: TCP
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+      - mountPath: /mnt/config
+        name: config-volume
+    - env:
+      - name: MLSERVER_HTTP_PORT
+        value: "9000"
+      - name: MLSERVER_GRPC_PORT
+        value: "9500"
+      - name: MLSERVER_MODELS_DIR
+        value: /mnt/agent/models
+      - name: MLSERVER_MODEL_PARALLEL_WORKERS
+        value: "1"
+      - name: MLSERVER_LOAD_MODELS_AT_STARTUP
+        value: "false"
+      image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository
+        }}:{{ .Values.serverConfig.mlserver.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - /bin/sleep 10
+      livenessProbe:
+        httpGet:
+          path: /v2/health/live
+          port: server-http
+      name: mlserver
+      ports:
+      - containerPort: 9500
+        name: server-grpc
+        protocol: TCP
+      - containerPort: 9000
+        name: server-http
+        protocol: TCP
+      readinessProbe:
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      resources:
+        requests:
+          cpu: "0.1"
+          memory: '{{ .Values.serverConfig.mlserver.resources.memory }}'
+      startupProbe:
+        failureThreshold: 10
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        periodSeconds: 10
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+        readOnly: true
+    securityContext:
+      fsGroup: 2000
+      runAsNonRoot: true
+      runAsUser: 1000
+    serviceAccountName: seldon-server
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - configMap:
+        name: seldon-agent
+      name: config-volume
+  volumeClaimTemplates:
+  - name: mlserver-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '{{ .Values.serverConfig.mlserver.modelVolumeStorage }}'
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: triton
+  namespace: seldon-mesh
+spec:
+  podSpec:
+    containers:
+    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
+        }}:{{ .Values.serverConfig.rclone.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: rclone
+      ports:
+      - containerPort: 5572
+        name: rclone
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: triton-models
+    - env:
+      - name: SELDON_SERVER_CAPABILITIES
+        value: '{{ .Values.serverConfig.triton.serverCapabilities }}'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '{{ .Values.serverConfig.triton.overcommitPercentage }}'
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ .Values.opentelemetry.endpoint }}'
+      - name: SELDON_SERVER_HTTP_PORT
+        value: "9000"
+      - name: SELDON_SERVER_GRPC_PORT
+        value: "9500"
+      - name: SELDON_REVERSE_PROXY_HTTP_PORT
+        value: "9001"
+      - name: SELDON_REVERSE_PROXY_GRPC_PORT
+        value: "9501"
+      - name: SELDON_SCHEDULER_HOST
+        value: seldon-scheduler
+      - name: SELDON_SCHEDULER_PORT
+        value: "9005"
+      - name: SELDON_METRICS_PORT
+        value: "9006"
+      - name: SELDON_SERVER_TYPE
+        value: triton
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MEMORY_REQUEST
+        valueFrom:
+          resourceFieldRef:
+            containerName: triton
+            resource: requests.memory
+      image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
+        }}:{{ .Values.serverConfig.agent.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      name: agent
+      ports:
+      - containerPort: 9501
+        name: grpc
+        protocol: TCP
+      - containerPort: 9001
+        name: http
+        protocol: TCP
+      - containerPort: 9006
+        name: metrics
+        protocol: TCP
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: triton-models
+      - mountPath: /mnt/config
+        name: config-volume
+    - args:
+      - --model-repository=$(SERVER_MODELS_DIR)
+      - --http-port=$(SERVER_HTTP_PORT)
+      - --grpc-port=$(SERVER_GRPC_PORT)
+      - --log-verbose=1
+      - --model-control-mode=explicit
+      command:
+      - /opt/tritonserver/bin/tritonserver
+      env:
+      - name: SERVER_HTTP_PORT
+        value: "9000"
+      - name: SERVER_GRPC_PORT
+        value: "9500"
+      - name: SERVER_MODELS_DIR
+        value: /mnt/agent/models
+      image: '{{ .Values.serverConfig.triton.image.registry }}/{{ .Values.serverConfig.triton.image.repository
+        }}:{{ .Values.serverConfig.triton.image.tag }}'
+      imagePullPolicy: '{{ .Values.serverConfig.triton.image.pullPolicy }}'
+      livenessProbe:
+        httpGet:
+          path: /v2/health/live
+          port: server-http
+      name: triton
+      ports:
+      - containerPort: 9500
+        name: server-grpc
+        protocol: TCP
+      - containerPort: 9000
+        name: server-http
+        protocol: TCP
+      - containerPort: 8002
+        name: server-metrics
+      readinessProbe:
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      resources:
+        requests:
+          cpu: "0.1"
+          memory: '{{ .Values.serverConfig.triton.resources.memory }}'
+      startupProbe:
+        failureThreshold: 10
+        httpGet:
+          path: /v2/health/ready
+          port: server-http
+        periodSeconds: 10
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: triton-models
+        readOnly: true
+    securityContext:
+      fsGroup: 2000
+      runAsNonRoot: true
+      runAsUser: 1000
+    serviceAccountName: seldon-server
+    terminationGracePeriodSeconds: 30
+    volumes:
+    - configMap:
+        name: seldon-agent
+      name: config-volume
+  volumeClaimTemplates:
+  - name: triton-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '{{ .Values.serverConfig.triton.modelVolumeStorage }}'

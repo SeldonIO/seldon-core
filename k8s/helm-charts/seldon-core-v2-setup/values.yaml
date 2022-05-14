@@ -1,0 +1,75 @@
+opentelemetry:
+  endpoint: seldon-collector.seldon-mesh:4317
+
+modelgateway:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/seldon-modelgateway
+      tag: latest
+    resources:
+      requests:
+        cpu: 0.1
+        memory: 1G
+
+pipelinegateway:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/seldon-pipelinegateway
+      tag: latest
+    resources:
+      requests:
+        cpu: 0.1
+        memory: 1G
+
+        
+dataflow:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/seldon-dataflow-engine
+      tag: latest
+    cores: 4
+    resources:
+      requests:
+        cpu: 1
+        memory: 1G
+  
+serverConfig:
+  agent:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/seldon-agent
+      tag: latest
+  mlserver:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/mlserver
+      tag: 1.0.1
+    serverCapabilities: "mlserver,alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+    overcommitPercentage: "10"
+    modelVolumeStorage: 1Gi
+    resources:
+      memory: 1G
+  rclone:
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: seldonio/seldon-rclone
+      tag: latest
+  triton:
+    image:
+      pullPolicy: IfNotPresent
+      registry: nvcr.io
+      repository: nvidia/tritonserver
+      tag: 21.12-py3
+    serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
+    overcommitPercentage: "10"
+    modelVolumeStorage: 1Gi
+    resources:
+      memory: 1G
+      
+              

@@ -1,0 +1,17 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  serverConfig: mlserver
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: triton
+  namespace: seldon-mesh
+spec:
+  replicas: 1
+  serverConfig: triton

@@ -1,4 +1,0 @@
-namespace: seldon-mesh
-bases:
-- ../../operator/config/crd
-

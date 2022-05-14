@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seldon-modelgateway
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:        
+      - env:
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: '{{ .Values.opentelemetry.endpoint }}'
+        resources:
+          requests:
+            cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'
+            memory: '{{ .Values.modelgateway.resources.requests.memory }}'
+        image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository }}:{{ .Values.modelgateway.image.tag }}'
+        imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
+        name: modelgateway

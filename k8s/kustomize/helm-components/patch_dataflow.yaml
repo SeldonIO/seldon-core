@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataflow-engine
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository }}:{{ .Values.dataflow.image.tag }}'
+        imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
+        name: dataflow-engine
+        env:
+        - name: SELDON_CORES_COUNT
+          value: '{{ .Values.dataflow.cores }}'
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: '{{ .Values.opentelemetry.endpoint }}'
+        resources:
+          requests:
+            cpu: '{{ .Values.dataflow.resources.requests.cpu }}'
+            memory: '{{ .Values.dataflow.resources.requests.memory }}'

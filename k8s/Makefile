@@ -13,8 +13,8 @@ MLSERVER_IMG ?= seldonio/mlserver:1.0.1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 
 
-
-create:
+.PHONY: create-yaml
+create-yaml:
 	cd ../scheduler/k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
 	cd ../scheduler/k8s/envoy && kustomize edit set image envoy=${ENVOY_IMG}
 	cd ../scheduler/k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
@@ -27,6 +27,12 @@ create:
 	cd ../operator/config/serverconfigs && kustomize edit set image mlserver=${MLSERVER_IMG}
 	cd ../operator/config/serverconfigs && kustomize edit set image triton=${TRITON_IMG}
 
-	kustomize build crds/ > seldon-v2-crds.yaml
-	kustomize build components/ > seldon-v2-components.yaml
-	kustomize build servers/ > seldon-v2-servers.yaml
+	kustomize build kustomize/crds/ > yaml/seldon-v2-crds.yaml
+	kustomize build kustomize/components/ > yaml/seldon-v2-components.yaml
+	kustomize build kustomize/servers/ > yaml/seldon-v2-servers.yaml
+
+.PHONY: create-helm-charts
+create-helm-charts:
+	kustomize build kustomize/helm-crds/ > helm-charts/seldon-core-v2-crds/templates/seldon-v2-crds.yaml
+	kustomize build kustomize/helm-components/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-components.yaml
+	kustomize build kustomize/helm-servers/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-servers.yaml

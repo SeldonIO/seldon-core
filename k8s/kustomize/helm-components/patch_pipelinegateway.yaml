@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipelinegateway
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository }}:{{ .Values.pipelinegateway.image.tag }}'
+        imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
+        name: pipelinegateway
+        resources:
+          requests:
+            cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
+            memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: '{{ .Values.opentelemetry.endpoint }}'        

@@ -4,7 +4,7 @@
   vars:
     seldon_system_namespace: seldon-mesh
 
-    k8s_manifests_dir: "{{ inventory_dir }}/../k8s"
+    k8s_manifests_dir: "{{ inventory_dir }}/../k8s/yaml"
   tasks:
 
   - name: Create SCV2 CRDs
