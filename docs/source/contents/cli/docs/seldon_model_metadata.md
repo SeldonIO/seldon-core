@@ -1,23 +1,20 @@
-## seldon model infer
+## seldon model metadata
 
-run inference on a model
+get model metadata
 
 ### Synopsis
 
-call a model with a given input and get a prediction
+get model metadata
 
 ```
-seldon model infer [flags]
+seldon model metadata [flags]
 ```
 
 ### Options
 
 ```
-  -f, --file-path string        inference payload file
-  -h, --help                    help for infer
+  -h, --help                    help for metadata
       --inference-host string   seldon inference host (default "0.0.0.0:9000")
-      --inference-mode string   inference mode rest or grpc (default "rest")
-  -i, --iterations int          inference iterations (default 1)
   -m, --model-name string       model name for inference
 ```
 

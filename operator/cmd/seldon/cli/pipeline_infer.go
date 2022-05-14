@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/utils/env"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -16,10 +18,6 @@ func createPipelineInfer() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inferenceHost, err := cmd.Flags().GetString(inferenceHostFlag)
-			if err != nil {
-				return err
-			}
-			inferencePort, err := cmd.Flags().GetInt(inferencePortFlag)
 			if err != nil {
 				return err
 			}
@@ -43,7 +41,7 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			inferenceClient := cli.NewInferenceClient(inferenceHost, inferencePort)
+			inferenceClient := cli.NewInferenceClient(inferenceHost)
 			iterations, err := cmd.Flags().GetInt(inferenceIterationsFlag)
 			if err != nil {
 				return err
@@ -67,8 +65,7 @@ func createPipelineInfer() *cobra.Command {
 	if err := cmdModelInfer.MarkFlagRequired(pipelineNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdModelInfer.Flags().String(inferenceHostFlag, "0.0.0.0", "seldon inference host")
-	cmdModelInfer.Flags().Int(inferencePortFlag, 9000, "seldon scheduler port")
+	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, "0.0.0.0:9000"), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
 	return cmdModelInfer

@@ -3,6 +3,8 @@ package cli
 import (
 	"os"
 
+	"k8s.io/utils/env"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -18,15 +20,11 @@ func createModelMetadata() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			inferencePort, err := cmd.Flags().GetInt(inferencePortFlag)
-			if err != nil {
-				return err
-			}
 			modelName, err := cmd.Flags().GetString(modelNameFlag)
 			if err != nil {
 				return err
 			}
-			inferenceClient := cli.NewInferenceClient(inferenceHost, inferencePort)
+			inferenceClient := cli.NewInferenceClient(inferenceHost)
 
 			err = inferenceClient.ModelMetadata(modelName)
 			return err
@@ -36,7 +34,6 @@ func createModelMetadata() *cobra.Command {
 	if err := cmdModelMeta.MarkFlagRequired(modelNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdModelMeta.Flags().String(inferenceHostFlag, "0.0.0.0", "seldon inference host")
-	cmdModelMeta.Flags().Int(inferencePortFlag, 9000, "seldon scheduler port")
+	cmdModelMeta.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, "0.0.0.0:9000"), "seldon inference host")
 	return cmdModelMeta
 }

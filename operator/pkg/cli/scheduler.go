@@ -5,7 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
+	"os"
+	"text/tabwriter"
 	"time"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -23,18 +26,17 @@ const subscriberName = "seldon CLI"
 
 type SchedulerClient struct {
 	schedulerHost string
-	schedulerPort int
 	callOptions   []grpc.CallOption
 }
 
-func NewSchedulerClient(schedulerHost string, schedulerPort int) *SchedulerClient {
+func NewSchedulerClient(schedulerHost string) *SchedulerClient {
+
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	return &SchedulerClient{
 		schedulerHost: schedulerHost,
-		schedulerPort: schedulerPort,
 		callOptions:   opts,
 	}
 }
@@ -48,7 +50,7 @@ func (sc *SchedulerClient) getConnection() (*grpc.ClientConn, error) {
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", sc.schedulerHost, sc.schedulerPort), opts...)
+	conn, err := grpc.Dial(sc.schedulerHost, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +105,57 @@ func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse
 	}
 	if showResponse {
 		printProto(res)
+	}
+	return nil
+}
+
+func (sc *SchedulerClient) ListModels() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req := &scheduler.ModelStatusRequest{
+		SubscriberName: subscriberName,
+	}
+	conn, err := sc.getConnection()
+	if err != nil {
+		return err
+	}
+	grpcClient := scheduler.NewSchedulerClient(conn)
+
+	stream, err := grpcClient.ModelStatus(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	_, err = fmt.Fprintln(writer, "model\tstate\treason")
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(writer, "-----\t-----\t------")
+	if err != nil {
+		return err
+	}
+	for {
+		res, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return err
+			}
+
+		}
+		latestVersion := res.Versions[len(res.Versions)-1]
+		if latestVersion.State.GetState() != scheduler.ModelStatus_ModelTerminated {
+			_, err = fmt.Fprintf(writer, "%s\t%s\t%s\n", res.ModelName, latestVersion.State.GetState().String(), latestVersion.State.Reason)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -226,6 +279,55 @@ func (sc *SchedulerClient) getServerStatus(
 	}
 
 	return res, nil
+}
+
+func (sc *SchedulerClient) ListServers() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req := &scheduler.ServerStatusRequest{
+		SubscriberName: subscriberName,
+	}
+	conn, err := sc.getConnection()
+	if err != nil {
+		return err
+	}
+	grpcClient := scheduler.NewSchedulerClient(conn)
+
+	stream, err := grpcClient.ServerStatus(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	_, err = fmt.Fprintln(writer, "server\treplicas\tmodels")
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(writer, "------\t--------\t------")
+	if err != nil {
+		return err
+	}
+	for {
+		res, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return err
+			}
+
+		}
+
+		_, err = fmt.Fprintf(writer, "%s\t%d\t%d\n", res.ServerName, res.AvailableReplicas, res.NumLoadedModelReplicas)
+		if err != nil {
+			return err
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showResponse bool) error {
@@ -365,6 +467,55 @@ func (sc *SchedulerClient) getExperimentStatus(
 	return res, nil
 }
 
+func (sc *SchedulerClient) ListExperiments() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req := &scheduler.ExperimentStatusRequest{
+		SubscriberName: subscriberName,
+	}
+	conn, err := sc.getConnection()
+	if err != nil {
+		return err
+	}
+	grpcClient := scheduler.NewSchedulerClient(conn)
+
+	stream, err := grpcClient.ExperimentStatus(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	_, err = fmt.Fprintln(writer, "experiment\tactive\t")
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(writer, "----------\t------\t")
+	if err != nil {
+		return err
+	}
+	for {
+		res, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return err
+			}
+
+		}
+
+		_, err = fmt.Fprintf(writer, "%s\t%v\n", res.ExperimentName, res.Active)
+		if err != nil {
+			return err
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showResponse bool) error {
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	err := unMarshallYamlStrict(data, pipeline)
@@ -484,4 +635,53 @@ func (sc *SchedulerClient) getPipelineStatus(
 	}
 
 	return res, nil
+}
+
+func (sc *SchedulerClient) ListPipelines() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	req := &scheduler.PipelineStatusRequest{
+		SubscriberName: subscriberName,
+	}
+	conn, err := sc.getConnection()
+	if err != nil {
+		return err
+	}
+	grpcClient := scheduler.NewSchedulerClient(conn)
+
+	stream, err := grpcClient.PipelineStatus(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	_, err = fmt.Fprintln(writer, "pipeline")
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(writer, "--------")
+	if err != nil {
+		return err
+	}
+	for {
+		res, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return err
+			}
+
+		}
+
+		_, err = fmt.Fprintf(writer, "%s\n", res.PipelineName)
+		if err != nil {
+			return err
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
 }

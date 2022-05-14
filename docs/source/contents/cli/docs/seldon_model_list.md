@@ -1,22 +1,20 @@
-## seldon model status
+## seldon model list
 
-get status for model
+get list of models
 
 ### Synopsis
 
-get the status for a model
+get the list of all models with their status
 
 ```
-seldon model status [flags]
+seldon model list [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help                    help for status
-  -m, --model-name string       model name to unload
+  -h, --help                    help for list
       --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-  -w, --wait string             model wait condition
 ```
 
 ### Options inherited from parent commands

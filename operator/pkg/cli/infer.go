@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
-	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"encoding/binary"
@@ -53,7 +51,6 @@ const (
 
 type InferenceClient struct {
 	host        string
-	port        int
 	httpClient  *http.Client
 	callOptions []grpc.CallOption
 	counts      map[string]int
@@ -85,14 +82,13 @@ type V2MetadataTensor struct {
 	Shape    []int  `json:"shape"`
 }
 
-func NewInferenceClient(host string, port int) *InferenceClient {
+func NewInferenceClient(host string) *InferenceClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	return &InferenceClient{
 		host:        host,
-		port:        port,
 		httpClient:  http.DefaultClient,
 		callOptions: opts,
 		counts:      make(map[string]int),
@@ -108,7 +104,7 @@ func (ic *InferenceClient) getConnection() (*grpc.ClientConn, error) {
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", ic.host, ic.port), opts...)
+	conn, err := grpc.Dial(ic.host, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +114,7 @@ func (ic *InferenceClient) getConnection() (*grpc.ClientConn, error) {
 func (ic *InferenceClient) getUrl(path string) *url.URL {
 	return &url.URL{
 		Scheme: "http",
-		Host:   net.JoinHostPort(ic.host, strconv.Itoa(ic.port)),
+		Host:   ic.host,
 		Path:   path,
 	}
 }

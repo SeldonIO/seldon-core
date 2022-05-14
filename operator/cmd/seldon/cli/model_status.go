@@ -3,6 +3,8 @@ package cli
 import (
 	"os"
 
+	"k8s.io/utils/env"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -15,10 +17,6 @@ func createModelStatus() *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			schedulerPort, err := cmd.Flags().GetInt(schedulerPortFlag)
 			if err != nil {
 				return err
 			}
@@ -38,7 +36,7 @@ func createModelStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
+			schedulerClient := cli.NewSchedulerClient(schedulerHost)
 			err = schedulerClient.ModelStatus(modelName, showRequest, showResponse, modelWaitCondition)
 			return err
 		},
@@ -47,8 +45,7 @@ func createModelStatus() *cobra.Command {
 	if err := cmdModelStatus.MarkFlagRequired(modelNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdModelStatus.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
-	cmdModelStatus.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
+	cmdModelStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdModelStatus.Flags().StringP(waitConditionFlag, "w", "", "model wait condition")
 	return cmdModelStatus
 }

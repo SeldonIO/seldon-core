@@ -137,8 +137,9 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			}
 		}
 		if !ok {
-			s.store.FailedScheduling(latestModel, "Failed to schedule")
-			return fmt.Errorf("failed to schedule model %s. %v", modelName, debugTrail)
+			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
+			s.store.FailedScheduling(latestModel, failureErrMsg)
+			return fmt.Errorf(failureErrMsg)
 		}
 	}
 

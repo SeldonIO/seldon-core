@@ -3,6 +3,8 @@ package cli
 import (
 	"os"
 
+	"k8s.io/utils/env"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -20,10 +22,6 @@ func createServerStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerPort, err := cmd.Flags().GetInt(schedulerPortFlag)
-			if err != nil {
-				return err
-			}
 			serverName, err := cmd.Flags().GetString(serverNameFlag)
 			if err != nil {
 				return err
@@ -36,7 +34,7 @@ func createServerStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
+			schedulerClient := cli.NewSchedulerClient(schedulerHost)
 			err = schedulerClient.ServerStatus(serverName, showRequest, showResponse)
 			return err
 		},
@@ -45,7 +43,6 @@ func createServerStatus() *cobra.Command {
 	if err := cmdServerStatus.MarkFlagRequired(serverNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdServerStatus.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
-	cmdServerStatus.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
+	cmdServerStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	return cmdServerStatus
 }

@@ -3,6 +3,8 @@ package cli
 import (
 	"os"
 
+	"k8s.io/utils/env"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
@@ -18,10 +20,6 @@ func createExperimentStart() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerPort, err := cmd.Flags().GetInt(schedulerPortFlag)
-			if err != nil {
-				return err
-			}
 			filename, err := cmd.Flags().GetString(fileFlag)
 			if err != nil {
 				return err
@@ -34,7 +32,7 @@ func createExperimentStart() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost, schedulerPort)
+			schedulerClient := cli.NewSchedulerClient(schedulerHost)
 			err = schedulerClient.StartExperiment(loadFile(filename), showRequest, showResponse)
 			return err
 		},
@@ -43,7 +41,6 @@ func createExperimentStart() *cobra.Command {
 	if err := cmdStartExperiment.MarkFlagRequired(fileFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdStartExperiment.Flags().String(schedulerHostFlag, "0.0.0.0", "seldon scheduler host")
-	cmdStartExperiment.Flags().Int(schedulerPortFlag, 9004, "seldon scheduler port")
+	cmdStartExperiment.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	return cmdStartExperiment
 }

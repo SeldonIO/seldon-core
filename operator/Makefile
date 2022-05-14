@@ -85,6 +85,9 @@ build-seldon: generate fmt vet
 build-seldon-docgen: 
 	go build -o bin/seldon-gendocs -v ./cmd/seldon/docs
 
+generate-cli-docs:
+	./bin/seldon-gendocs --out ../docs/source/contents/cli/docs
+
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	cp -r ../apis apis-TEMP && rm -fr apis-TEMP/python

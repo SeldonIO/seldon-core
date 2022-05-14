@@ -53,20 +53,24 @@ func GetCmd() *cobra.Command {
 	cmdModelInfer := createModelInfer()
 	cmdModelStatus := createModelStatus()
 	cmdModelMeta := createModelMetadata()
+	cmdModelList := createModelList()
 
 	// Server commands
 	cmdServerStatus := createServerStatus()
+	cmdServerList := createServerList()
 
 	// experiment commands
 	cmdExperimentStart := createExperimentStart()
 	cmdExperimentStop := createExperimentStop()
 	cmdExperimentStatus := createExperimentStatus()
+	cmdExperimentList := createExperimentList()
 
 	// pipeline commands
 	cmdPipelineLoad := createPipelineLoad()
 	cmdPipelineUnload := createPipelineUnload()
 	cmdPipelineStatus := createPipelineStatus()
 	cmdPipelineInfer := createPipelineInfer()
+	cmdPipelineList := createPipelineList()
 
 	var rootCmd = &cobra.Command{Use: "seldon"}
 
@@ -74,10 +78,10 @@ func GetCmd() *cobra.Command {
 	rootCmd.PersistentFlags().BoolP(showResponseFlag, "o", true, "show response")
 
 	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline)
-	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta)
-	cmdServer.AddCommand(cmdServerStatus)
-	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus)
-	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer)
+	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta, cmdModelList)
+	cmdServer.AddCommand(cmdServerStatus, cmdServerList)
+	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus, cmdExperimentList)
+	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer, cmdPipelineList)
 
 	return rootCmd
 }
