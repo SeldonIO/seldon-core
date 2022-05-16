@@ -845,8 +845,9 @@ var _ = Describe("Create a prepacked triton server", func() {
 		}, timeout, interval).Should(BeNil())
 		Expect(fetched.Name).Should(Equal(sdepName))
 
-		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&instance.Spec.Predictors[0], instance.Spec.Predictors[0].Graph.Name)
-		depName := machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], sPodSpec, idx)
+		predictor := instance.Spec.Predictors[0]
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&predictor, predictor.Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, predictor, sPodSpec, idx)
 		depKey := types.NamespacedName{
 			Name:      depName,
 			Namespace: "default",
@@ -859,6 +860,9 @@ var _ = Describe("Create a prepacked triton server", func() {
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 		Expect(depFetched.Spec.Template.Spec.SecurityContext).ToNot(BeNil())
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
+
+		container := utils.GetContainerForDeployment(depFetched, predictor.Graph.Name)
+		Expect(container.SecurityContext).To(BeNil())
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 

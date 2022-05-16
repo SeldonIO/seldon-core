@@ -135,8 +135,6 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	c := utils.GetContainerForDeployment(deploy, pu.Name)
 	existing := c != nil
 
-	tritonUser := int64(1000)
-
 	cServer := &v1.Container{
 		Name: pu.Name,
 		Args: []string{
@@ -179,9 +177,6 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			PeriodSeconds:       10,
 			SuccessThreshold:    1,
 			FailureThreshold:    3,
-		},
-		SecurityContext: &v1.SecurityContext{
-			RunAsUser: &tritonUser,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			{
