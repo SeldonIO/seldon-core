@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
@@ -27,6 +28,7 @@ type GatewayHttpServer struct {
 	logger  log.FieldLogger
 	ssl     *TLSDetails
 	gateway PipelineInferer
+	metrics metrics.MetricsHandler
 }
 
 type TLSDetails struct {
@@ -35,13 +37,14 @@ type TLSDetails struct {
 	KeyFilename   string
 }
 
-func NewGatewayHttpServer(port int, logger log.FieldLogger, ssl *TLSDetails, gateway PipelineInferer) *GatewayHttpServer {
+func NewGatewayHttpServer(port int, logger log.FieldLogger, ssl *TLSDetails, gateway PipelineInferer, metrics metrics.MetricsHandler) *GatewayHttpServer {
 	return &GatewayHttpServer{
 		port:    port,
 		router:  mux.NewRouter(),
 		logger:  logger.WithField("source", "GatewayHttpServer"),
 		ssl:     ssl,
 		gateway: gateway,
+		metrics: metrics,
 	}
 }
 
@@ -92,7 +95,9 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
-	g.router.NewRoute().Path("/v2/models/{" + ModelHttpPathVariable + "}/infer").HandlerFunc(g.infer)
+	g.router.NewRoute().Path(
+		"/v2/models/{" + ModelHttpPathVariable + "}/infer").HandlerFunc(
+		g.metrics.AddHistogramMetricsHandler(g.infer))
 }
 
 func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
@@ -105,6 +110,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	startTime := time.Now()
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -133,6 +139,9 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(http.StatusOK)
+			elapsedTime := time.Since(startTime).Seconds()
+			go g.metrics.AddInferMetrics(resourceName, "", metrics.MethodTypeRest, elapsedTime)
+
 		}
 	}
 }

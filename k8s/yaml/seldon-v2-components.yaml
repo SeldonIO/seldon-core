@@ -769,6 +769,7 @@ spec:
       - args:
         - --http-port=9010
         - --grpc-port=9011
+        - --metrics-port=9006
         - --config-path=/mnt/config/kafka.json
         command:
         - /bin/pipelinegateway
@@ -784,6 +785,9 @@ spec:
           protocol: TCP
         - containerPort: 9011
           name: grpc
+          protocol: TCP
+        - containerPort: 9006
+          name: metrics
           protocol: TCP
         resources:
           requests:

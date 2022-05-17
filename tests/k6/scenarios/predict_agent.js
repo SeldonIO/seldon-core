@@ -10,7 +10,7 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '600s',
+    setupTimeout: '6000s',
     duration: '30m',
 }
 
@@ -24,7 +24,7 @@ export function setup() {
 
 export default function (config) {
     const modelId = Math.floor(Math.random() * config.maxNumModels)
-    const modelName = "model" + modelId.toString()
+    const modelName = config.modelNamePrefix + modelId.toString()
 
     const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
     doInfer(modelName, modelNameWithVersion, config, true)

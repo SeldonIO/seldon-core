@@ -1,13 +1,14 @@
-RELEASE_VERSION ?= latest
+CUSTOM_IMAGE_TAG ?= latest
+DOCKERHUB_USERNAME ?= seldonio
 
-CONTROLLER_IMG ?= seldonio/seldonv2-controller:${RELEASE_VERSION}
-SCHEDULER_IMG ?= seldonio/seldon-scheduler:${RELEASE_VERSION}
-AGENT_IMG ?= seldonio/seldon-agent:${RELEASE_VERSION}
-RCLONE_IMG ?= seldonio/seldon-rclone:${RELEASE_VERSION}
-MODELGATEWAY_IMG ?= seldonio/seldon-modelgateway:${RELEASE_VERSION}
-PIPELINEGATEWAY_IMG ?= seldonio/seldon-pipelinegateway:${RELEASE_VERSION}
-DATAFLOW_IMG ?= seldonio/seldon-dataflow-engine:${RELEASE_VERSION}
-ENVOY_IMG ?= seldonio/seldon-envoy:${RELEASE_VERSION}
+CONTROLLER_IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
+AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
+RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
+MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
+PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
+DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
+ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 
 MLSERVER_IMG ?= seldonio/mlserver:1.0.1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3

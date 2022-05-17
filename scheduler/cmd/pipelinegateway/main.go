@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
@@ -21,21 +22,31 @@ const (
 	flagHttpPort            = "http-port"
 	flagGrpcPort            = "grpc-port"
 	flagLogLevel            = "log-level"
+	flagMetricsPort         = "metrics-port"
 	kubernetesNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
+const (
+	defaultHttpPort    = 9010
+	defaultGrpcPort    = 9011
+	defaultMetricsPort = 9006
+	serviceTag         = "seldon-pipelinegateway"
+)
+
 var (
-	httpPort   int
-	grpcPort   int
-	logLevel   string
-	namespace  string
-	configPath string
+	httpPort    int
+	grpcPort    int
+	metricsPort int
+	logLevel    string
+	namespace   string
+	configPath  string
 )
 
 func init() {
 
-	flag.IntVar(&httpPort, flagHttpPort, 9010, "http-port")
-	flag.IntVar(&grpcPort, flagGrpcPort, 9011, "grpc-port")
+	flag.IntVar(&httpPort, flagHttpPort, defaultHttpPort, "http-port")
+	flag.IntVar(&grpcPort, flagGrpcPort, defaultGrpcPort, "grpc-port")
+	flag.IntVar(&metricsPort, flagMetricsPort, defaultMetricsPort, "metrics-port")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 	flag.StringVar(&logLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(
@@ -87,7 +98,7 @@ func main() {
 
 	updateNamespace()
 
-	tracer, err := tracing.NewTracer("seldon-pipelinegateway")
+	tracer, err := tracing.NewTracer(serviceTag)
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {
@@ -105,7 +116,21 @@ func main() {
 	}
 	defer km.Stop()
 
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, nil, km)
+	promMetrics, err := metrics.NewPrometheusMetrics(serviceTag, 0, namespace, logger)
+	if err != nil {
+		logger.WithError(err).Fatalf("Can't create prometheus metrics")
+	}
+	go func() {
+		err := promMetrics.Start(metricsPort)
+		if errors.Is(err, http.ErrServerClosed) {
+			return
+		}
+		logger.WithError(err).Error("Can't start metrics server")
+		close(done)
+	}()
+	defer func() { _ = promMetrics.Stop() }()
+
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, nil, km, promMetrics)
 	go func() {
 		if err := httpServer.Start(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
@@ -115,7 +140,7 @@ func main() {
 		}
 	}()
 
-	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km)
+	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")

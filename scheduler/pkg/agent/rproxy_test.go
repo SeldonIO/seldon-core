@@ -40,7 +40,7 @@ func getFreePort() (int, error) {
 
 type mockMLServerState struct {
 	models map[string]bool
-	mu     sync.Mutex
+	mu     *sync.Mutex
 }
 
 func (mlserver *mockMLServerState) v2Infer(w http.ResponseWriter, req *http.Request) {
@@ -110,13 +110,43 @@ func setupMockMLServer(mockMLServerState *mockMLServerState) {
 	}
 }
 
-type fakeMetricsHandler struct{}
+type loadModelSateValue struct {
+	memory uint64
+	isLoad bool
+	isSoft bool
+}
+
+type fakeMetricsHandler struct {
+	modelLoadState map[string]loadModelSateValue
+	mu             *sync.Mutex
+}
 
 func (f fakeMetricsHandler) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
 	return baseHandler
 }
 
 func (f fakeMetricsHandler) AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64) {
+}
+
+func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.modelLoadState[internalModelName] = loadModelSateValue{
+		memory: memory,
+		isLoad: isLoad,
+		isSoft: isSoft,
+	}
+}
+
+func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOvercommit float32) {
+}
+
+func newFakeMetricsHandler() fakeMetricsHandler {
+	return fakeMetricsHandler{
+		modelLoadState: map[string]loadModelSateValue{},
+		mu:             &sync.Mutex{},
+	}
 }
 
 func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -164,7 +194,7 @@ func TestReverseProxySmoke(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			mockMLServerState := &mockMLServerState{
 				models: make(map[string]bool),
-				mu:     sync.Mutex{},
+				mu:     &sync.Mutex{},
 			}
 			go setupMockMLServer(mockMLServerState)
 			rpPort, err := getFreePort()

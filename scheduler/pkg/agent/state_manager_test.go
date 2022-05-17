@@ -51,6 +51,10 @@ func getModelId(prefix string, suffix int) string {
 	return prefix + "_" + strconv.Itoa(suffix)
 }
 
+func getVersionedModelId(prefix string, suffix int, version int) string {
+	return getModelId(getModelId(prefix, suffix), version)
+}
+
 func getDummyModelDetails(modelId string, memBytes uint64, version uint32) *pba.ModelVersion {
 	meta := pbs.MetaData{
 		Name: modelId,
@@ -108,6 +112,7 @@ func setupLocalTestManagerWithState(
 		v2Client,
 		uint64(capacity),
 		overCommitPercentage,
+		newFakeMetricsHandler(),
 	)
 	return manager, v2ClientState
 }
@@ -984,6 +989,145 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			}
 
 			g.Expect(manager.GetAvailableMemoryBytesWithOverCommit()).To(Equal(test.expectedAvailableMemoryWithOverCommit))
+		})
+	}
+}
+
+func TestModelMetricsStats(t *testing.T) {
+	dummyModelPrefix := "dummy_model"
+	memBytes := uint64(1)
+
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		numModels int
+		capacity  int
+	}
+	tests := []test{
+		{
+			name:      "extra main capacity",
+			numModels: 10,
+			capacity:  20,
+		},
+		{
+			name:      "overcommit",
+			numModels: 10,
+			capacity:  9,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			//activate mock http server for v2
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			t.Log("load test")
+			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(50))
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				modelVersion := uint32(1)
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				time.Sleep(10 * time.Millisecond)
+				model := getVersionedModelId(dummyModelPrefix, i, 1)
+				// model under test real load
+				g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+					loadModelSateValue{
+						memory: memBytes,
+						isLoad: true,
+						isSoft: false,
+					},
+				))
+				if i >= test.capacity {
+					// first model evicted
+					evictedModel := getVersionedModelId(dummyModelPrefix, (i+1)%test.numModels, 1)
+					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
+						loadModelSateValue{
+							memory: memBytes,
+							isLoad: false,
+							isSoft: true,
+						},
+					))
+				}
+			}
+
+			t.Log("ensure load test")
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				modelVersion := uint32(1)
+				_ = manager.ensureLoadModelFn(modelName, modelVersion)
+				time.Sleep(10 * time.Millisecond)
+				if test.capacity < test.numModels {
+					// next model evicted
+					evictedModel := getVersionedModelId(dummyModelPrefix, (i+1)%test.numModels, 1)
+					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
+						loadModelSateValue{
+							memory: memBytes,
+							isLoad: false,
+							isSoft: true,
+						},
+					))
+
+					// model under test reloaded
+					model := getVersionedModelId(dummyModelPrefix, i, 1)
+					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+						loadModelSateValue{
+							memory: memBytes,
+							isLoad: true,
+							isSoft: true,
+						},
+					))
+				} else {
+
+					// no change from setup step
+					model := getVersionedModelId(dummyModelPrefix, 1, 1)
+					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+						loadModelSateValue{
+							memory: memBytes,
+							isLoad: true,
+							isSoft: false,
+						},
+					))
+				}
+			}
+
+			t.Log("unload test")
+			for i := 0; i < test.numModels; i++ {
+				modelName := getModelId(dummyModelPrefix, i)
+				modelVersion := uint32(1)
+				_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				time.Sleep(10 * time.Millisecond)
+				model := getVersionedModelId(dummyModelPrefix, i, 1)
+				if test.capacity < test.numModels {
+					if i == 0 {
+						g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+							loadModelSateValue{
+								memory: 0,
+								isLoad: false,
+								isSoft: false,
+							},
+						))
+					} else {
+						g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+							loadModelSateValue{
+								memory: memBytes,
+								isLoad: false,
+								isSoft: false,
+							},
+						))
+
+					}
+				} else {
+					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+						loadModelSateValue{
+							memory: memBytes,
+							isLoad: false,
+							isSoft: false,
+						},
+					))
+				}
+			}
 		})
 	}
 }

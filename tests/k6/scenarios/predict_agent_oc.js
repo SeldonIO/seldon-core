@@ -22,7 +22,7 @@ export function setup() {
 export default function (config) {
 
     for (let i = 0; i < config.maxNumModels; i++) {
-        var modelName = "model" + i.toString()
+        var modelName = config.modelNamePrefix + i.toString()
 
         var modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
         doInfer(modelName, modelNameWithVersion, config, false)

@@ -9,7 +9,7 @@ export function setup() {
 }
 
 export default function (config) {
-    const modelName = "model" + scenario.iterationInTest.toString()
+    const modelName = config.modelNamePrefix + scenario.iterationInTest.toString()
     const model = generateModel(config.modelType, modelName, vu.idInTest, 1, 
         config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
     const modelDefn = model.modelDefn

@@ -12,6 +12,8 @@ services:
       - "/mnt/config"
       - "--server-name"
       - "mlserver"
+      - "--metrics-port"
+      - ${AGENT_MLSERVER_METRICS_PORT}
     environment:
       - SELDON_SCHEDULER_HOST=0.0.0.0
     volumes:
@@ -125,6 +127,8 @@ services:
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
+      - "--metrics-port"
+      - ${PIPELINEGATEWAY_METRICS_PORT}
 
   kafka:
     network_mode: "host"        

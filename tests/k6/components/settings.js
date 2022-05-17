@@ -110,6 +110,13 @@ function dataflowTag() {
     return ""  // empty means that we should not go via kafka
 }
 
+function modelNamePrefix() {
+    if (__ENV.MODELNAME_PREFIX) {
+        return __ENV.MODELNAME_PREFIX
+    }
+    return "model"
+}
+
 
 export function getConfig() {
     return {
@@ -129,5 +136,6 @@ export function getConfig() {
         "inferBatchSize": inferBatchSize(),
         "isLoadPipeline": isLoadPipeline(),
         "dataflowTag": dataflowTag(),
+        "modelNamePrefix": modelNamePrefix(),
     }
 }

@@ -20,7 +20,7 @@ export function setupBase(config ) {
         connectSchedulerFn(config.schedulerEndpoint)
 
         for (let i = 0; i < config.maxNumModels; i++) {
-            const modelName = "model" + i.toString()
+            const modelName = config.modelNamePrefix + i.toString()
             const model = generateModel(config.modelType, modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
             const modelDefn = model.modelDefn
             const pipelineDefn = model.pipelineDefn
@@ -41,7 +41,7 @@ export function setupBase(config ) {
 
         // warm up
         for (let i = 0; i < config.maxNumModels; i++) {
-            const modelName = "model" + i.toString()
+            const modelName = config.modelNamePrefix + i.toString()
 
             const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
             
@@ -79,7 +79,7 @@ export function teardownBase(config ) {
         }
 
         for (let i = 0; i < config.maxNumModels; i++) {
-            const modelName = "model" + i.toString()
+            const modelName = config.modelNamePrefix + i.toString()
             // if we have added a pipeline, unloaded it
             if (config.isLoadPipeline) {
                 unloadPipeline(generatePipelineName(modelName)) 

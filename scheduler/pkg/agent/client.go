@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	backoff "github.com/cenkalti/backoff/v4"
@@ -43,6 +44,7 @@ type Client struct {
 	rpHTTP             ClientServiceInterface
 	rpGRPC             ClientServiceInterface
 	clientDebugService ClientServiceInterface
+	metrics            metrics.MetricsHandler
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -88,6 +90,7 @@ func NewClient(serverName string,
 	reverseProxyHTTP ClientServiceInterface,
 	reverseProxyGRPC ClientServiceInterface,
 	clientDebugService ClientServiceInterface,
+	metrics metrics.MetricsHandler,
 ) *Client {
 
 	opts := []grpc.CallOption{
@@ -97,7 +100,7 @@ func NewClient(serverName string,
 	modelState := NewModelState()
 
 	stateManager := NewLocalStateManager(
-		modelState, logger, v2Client, replicaConfig.GetMemoryBytes(), replicaConfig.GetOverCommitPercentage())
+		modelState, logger, v2Client, replicaConfig.GetMemoryBytes(), replicaConfig.GetOverCommitPercentage(), metrics)
 
 	clientDebugService.SetState(stateManager)
 	reverseProxyHTTP.SetState(stateManager)
@@ -111,6 +114,7 @@ func NewClient(serverName string,
 		rpHTTP:             reverseProxyHTTP,
 		rpGRPC:             reverseProxyGRPC,
 		clientDebugService: clientDebugService,
+		metrics:            metrics,
 		ClientServices: ClientServices{
 			ModelRepository: modelRepository,
 		},
@@ -258,6 +262,11 @@ func (c *Client) StartService() error {
 	if err != nil {
 		return err
 	}
+
+	go c.metrics.AddServerReplicaMetrics(
+		c.stateManager.totalMainMemoryBytes,
+		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
+
 	for {
 		operation, err := stream.Recv()
 		if err == io.EOF {
@@ -361,7 +370,6 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
-
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
 }
 
@@ -394,7 +402,6 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
-
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
 }
 

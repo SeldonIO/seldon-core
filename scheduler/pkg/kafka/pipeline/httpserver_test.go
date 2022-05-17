@@ -122,7 +122,7 @@ func TestHttpServer(t *testing.T) {
 		err:  nil,
 		data: []byte("result"),
 	}
-	httpServer := NewGatewayHttpServer(port, logrus.New(), nil, mockInferer)
+	httpServer := NewGatewayHttpServer(port, logrus.New(), nil, mockInferer, fakeMetricsHandler{})
 	go func() {
 		err := httpServer.Start()
 		g.Expect(err).To(Equal(http.ErrServerClosed))

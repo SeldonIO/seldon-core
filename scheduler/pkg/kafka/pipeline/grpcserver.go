@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc/metadata"
 
@@ -23,13 +27,15 @@ type GatewayGrpcServer struct {
 	grpcServer *grpc.Server
 	gateway    PipelineInferer
 	logger     log.FieldLogger
+	metrics    metrics.MetricsHandler
 }
 
-func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer) *GatewayGrpcServer {
+func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.MetricsHandler) *GatewayGrpcServer {
 	return &GatewayGrpcServer{
 		port:    port,
 		gateway: gateway,
 		logger:  logger.WithField("source", "GatewayGrpcServer"),
+		metrics: metricsHandler,
 	}
 }
 
@@ -51,7 +57,7 @@ func (g *GatewayGrpcServer) Start() error {
 	logger.Infof("Starting grpc server on port %d", g.port)
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
-	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
+	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), g.metrics.UnaryServerInterceptor())))
 	g.grpcServer = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(g.grpcServer, g)
 	return g.grpcServer.Serve(l)
@@ -78,6 +84,8 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find valid header %s, found %s", resources.SeldonModelHeader, resourceName))
 	}
+
+	startTime := time.Now()
 	b, err := proto.Marshal(r)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
@@ -91,5 +99,8 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
+	elapsedTime := time.Since(startTime).Seconds()
+	go g.metrics.AddInferMetrics(header, "", metrics.MethodTypeGrpc, elapsedTime)
+
 	return resProto, nil
 }

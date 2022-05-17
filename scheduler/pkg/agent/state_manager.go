@@ -7,6 +7,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	cache "github.com/seldonio/seldon-core/scheduler/pkg/agent/cache"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +26,8 @@ type LocalStateManager struct {
 	// because of race conditions we might occassionatly go into negative memory
 	availableMainMemoryBytes int64
 	// lock for `availableMainMemoryBytes`
-	mu sync.RWMutex
+	mu      sync.RWMutex
+	metrics metrics.MetricsHandler
 }
 
 func (manager *LocalStateManager) GetBackEndPath() *url.URL {
@@ -65,7 +67,8 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 		return err
 	}
 
-	if err := manager.makeRoomIfNeeded(modelId, memBytesToLoad); err != nil {
+	err = manager.makeRoomIfNeeded(modelId, memBytesToLoad)
+	if err != nil {
 		if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
 			manager.logger.WithError(err).Warnf("Model removing failed %s", modelId)
 		}
@@ -103,6 +106,8 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 		}
 		return err
 	}
+
+	go manager.metrics.AddLoadedModelMetrics(modelId, memBytesToLoad, true, false)
 
 	manager.logger.Debugf("Load model %s success, available memory is %d",
 		modelId, manager.GetAvailableMemoryBytes())
@@ -149,7 +154,9 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 		}
 
 		manager.logger.Infof("Removed model from cache %s", modelId)
-
+		go manager.metrics.AddLoadedModelMetrics(modelId, memBytes, false, false)
+	} else {
+		go manager.metrics.AddLoadedModelMetrics(modelId, 0, false, false) // model already out of memory
 	}
 
 	if _, err := manager.modelVersions.removeModelVersion(modelVersionDetails); err != nil {
@@ -177,7 +184,8 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 			manager.logger.WithError(err).Errorf("Error getting memory for model %s, model unloaded?", modelId)
 			return err
 		}
-		if err := manager.makeRoomIfNeeded(modelId, modelMemoryBytes); err != nil {
+		err = manager.makeRoomIfNeeded(modelId, modelMemoryBytes)
+		if err != nil {
 			manager.logger.Errorf("No room %s - %s", err, modelId)
 			return err
 		}
@@ -205,8 +213,11 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 			}
 		}
 
+		go manager.metrics.AddLoadedModelMetrics(modelId, modelMemoryBytes, true, true)
 		manager.logger.Infof("Reload model %s success, available memory is %d",
 			modelId, manager.GetAvailableMemoryBytes())
+
+		return nil
 	} else {
 		if err := manager.cache.UpdateDefault(modelId); err != nil {
 			manager.logger.WithError(err).Errorf(
@@ -214,8 +225,8 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 			return err
 		}
 		manager.logger.Debugf("Model exists in cache %s", modelId)
+		return nil
 	}
-	return nil
 }
 
 func (manager *LocalStateManager) GetAvailableMemoryBytes() uint64 {
@@ -227,11 +238,13 @@ func (manager *LocalStateManager) GetAvailableMemoryBytes() uint64 {
 		return uint64(manager.availableMainMemoryBytes)
 	}
 }
-
+func (manager *LocalStateManager) GetOverCommitMemoryBytes() float32 {
+	return (float32(manager.overCommitPercentage) / 100.) * float32(manager.totalMainMemoryBytes)
+}
 func (manager *LocalStateManager) GetAvailableMemoryBytesWithOverCommit() uint64 {
 	manager.mu.RLock()
 	defer manager.mu.RUnlock()
-	overCommitBytesMax := (float32(manager.overCommitPercentage) / 100.) * float32(manager.totalMainMemoryBytes)
+	overCommitBytesMax := manager.GetOverCommitMemoryBytes()
 	if manager.modelVersions.getTotalMemoryBytesForAllModels() > manager.totalMainMemoryBytes {
 		// we are overcommiting already, so there should be no main memory available
 		overCommitUsedBytes := manager.modelVersions.getTotalMemoryBytesForAllModels() - manager.totalMainMemoryBytes
@@ -322,6 +335,7 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 			manager.logger.WithError(err).Warnf("Could not update memory %s", evictedModelId)
 		}
 
+		go manager.metrics.AddLoadedModelMetrics(evictedModelId, evictedModelMemoryBytes, false, true)
 		endEvictFn()
 		manager.logger.Infof(
 			"model %s %d evicted (for model %s %d), available memory bytes: %d",
@@ -336,6 +350,7 @@ func NewLocalStateManager(
 	v2Client *V2Client,
 	totalMainMemoryBytes uint64,
 	overCommitPercentage uint32,
+	metrics metrics.MetricsHandler,
 ) *LocalStateManager {
 	// if we are here it means that it is a fresh instance with no state yet
 	// i.e. should not have any models loaded / cache is empty etc.
@@ -350,5 +365,6 @@ func NewLocalStateManager(
 		mu:                       sync.RWMutex{},
 		totalMainMemoryBytes:     totalMainMemoryBytes,
 		overCommitPercentage:     overCommitPercentage,
+		metrics:                  metrics,
 	}
 }

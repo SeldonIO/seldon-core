@@ -11,7 +11,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 
 	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 
@@ -206,6 +206,7 @@ func main() {
 		rpHTTP,
 		rpGRPC,
 		clientDebugService,
+		promMetrics,
 	)
 
 	// Wait for required services to be ready

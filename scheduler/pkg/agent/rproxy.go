@@ -12,8 +12,8 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -56,13 +56,13 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 		}
 
+		startTime := time.Now()
 		if err := rp.stateManager.EnsureLoadModel(internalModelName); err != nil {
 			rp.logger.Errorf("Cannot load model in agent %s", internalModelName)
 			http.NotFound(w, r)
 		} else {
 			r.URL.Path = rewritePath(r.URL.Path, internalModelName)
 			rp.logger.Debugf("Calling %s", r.URL.Path)
-			startTime := time.Now()
 			proxy.ServeHTTP(w, r)
 			elapsedTime := time.Since(startTime).Seconds()
 			go rp.metrics.AddInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime)

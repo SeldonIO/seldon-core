@@ -65,7 +65,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 
 	v2Client := NewV2Client("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
-	rp := NewReverseGRPCProxy(fakeMetricsHandler{}, logger, "localhost", uint(backEndGRPCPort), uint(rpPort))
+	rp := NewReverseGRPCProxy(newFakeMetricsHandler(), logger, "localhost", uint(backEndGRPCPort), uint(rpPort))
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -78,7 +78,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	mockMLServerState := &mockMLServerState{
 		models: make(map[string]bool),
-		mu:     sync.Mutex{},
+		mu:     &sync.Mutex{},
 	}
 	go setupMockMLServer(mockMLServerState)
 	mockMLServer := &mockGRPCMLServer{}

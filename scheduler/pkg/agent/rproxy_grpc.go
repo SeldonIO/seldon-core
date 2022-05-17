@@ -13,8 +13,8 @@ import (
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	log "github.com/sirupsen/logrus"
@@ -152,11 +152,11 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	if err := rp.ensureLoadModel(r.ModelName); err != nil {
+	startTime := time.Now()
+	err = rp.ensureLoadModel(r.ModelName)
+	if err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
-
-	startTime := time.Now()
 	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)

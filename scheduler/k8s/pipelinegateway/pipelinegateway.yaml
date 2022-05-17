@@ -23,6 +23,7 @@ spec:
         args:
         - --http-port=9010
         - --grpc-port=9011
+        - --metrics-port=9006
         - --config-path=/mnt/config/kafka.json
         image: pipelinegateway:latest
         imagePullPolicy: IfNotPresent
@@ -37,6 +38,9 @@ spec:
           protocol: TCP
         - containerPort: 9011
           name: grpc
+          protocol: TCP
+        - containerPort: 9006
+          name: metrics
           protocol: TCP
         env:
         - name: OTEL_EXPORTER_OTLP_ENDPOINT

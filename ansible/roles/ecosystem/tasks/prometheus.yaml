@@ -13,4 +13,5 @@
     - prometheus/monitors/agent-podmonitor.yaml
     - prometheus/monitors/envoy-servicemonitor.yaml
     - prometheus/monitors/server-podmonitor.yaml
+    - prometheus/monitors/pipelinegateway-podmonitor.yaml
   when: ecosystem_configure_prometheus | bool

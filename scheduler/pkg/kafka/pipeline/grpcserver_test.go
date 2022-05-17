@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,6 +16,27 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 )
+
+type fakeMetricsHandler struct{}
+
+func (f fakeMetricsHandler) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+	return baseHandler
+}
+
+func (f fakeMetricsHandler) AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64) {
+}
+
+func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
+}
+
+func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOvercommit float32) {
+}
+
+func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		return handler(ctx, req)
+	}
+}
 
 func TestGrpcServer(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -79,7 +101,7 @@ func TestGrpcServer(t *testing.T) {
 		err:  nil,
 		data: []byte("result"),
 	}
-	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer)
+	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakeMetricsHandler{})
 	go func() {
 		err := grpcServer.Start()
 		g.Expect(err).To(BeNil())

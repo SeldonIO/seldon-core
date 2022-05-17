@@ -3,22 +3,26 @@ kind: Job
 metadata:
   name: k6
 spec:
-  parallelism: 3
-  completions: 3
+  parallelism: 1
+  completions: 1
   template:
     spec:
       containers:
       - name: k6
         image: k6:latest
+        imagePullPolicy: Always
         args: [
+          "--no-teardown",
           "--summary-export",
           "results/base.json",
           "--out",
           "csv=results/base.gz",
           "-u",
-          "1",
+          "50",
           "-i",
-          "1",
+          "10000",
+          "-d",
+          "120m",
           "scenarios/predict_agent.js",
           ]
         env:
@@ -28,12 +32,14 @@ spec:
           value: "1"
         - name: INFER_GRPC_ITERATIONS
           value: "1"
+        - name: MODELNAME_PREFIX
+          value: "model"
         - name: MODEL_TYPE
           value: "tfsimple"
         - name: MODEL_MEMORY_BYTES
-          value: "100000000"
+          value: "1000000"
         - name: MAX_NUM_MODELS
-          value: "1"
+          value: "800"
         - name: INFER_BATCH_SIZE
           value: "1"
         - name: GOOGLE_APPLICATION_CREDENTIALS
