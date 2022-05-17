@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"github.com/seldonio/seldon-core/executor/api"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -25,7 +26,7 @@ var processedChan = make(chan bool, 100)
 func BenchmarkLoggerMemoryUsage(b *testing.B) {
 	serverPort := startSlowLogListener()
 
-	err := StartDispatcher(5, DefaultWorkQueueSize, DefaultWriteTimeoutMilliseconds, logf.Log.WithName("test"), "test-name", "test-namespace", "test-predictor", "", "")
+	err := StartDispatcher(5, DefaultWorkQueueSize, DefaultWriteTimeoutMilliseconds, logf.Log.WithName("test"), "test-name", "test-namespace", "test-predictor", "", "", api.ProtocolSeldon)
 	if err != nil {
 		b.Fatal(err)
 	}
