@@ -36,7 +36,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 	g.Expect(response.GetAvailableMemoryBytes()).To(Equal(uint64(10)))
 
 	mem := uint64(1)
-	httpmock.Activate()
+	httpmock.ActivateNonDefault(service.stateManager.v2Client.httpClient)
 	err = service.stateManager.LoadModelVersion(
 		&pba.ModelVersion{
 			Model: &pbs.Model{

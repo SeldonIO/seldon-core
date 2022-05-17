@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"sync"
 
@@ -90,13 +91,13 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
 			manager.logger.WithError(err).Warnf("Could not update memory for model %s", modelId)
 		}
-		return err
+		return err.err
 	}
 
 	if err := manager.cache.AddDefault(modelId); err != nil {
 		manager.logger.WithError(err).Infof("Cannot load model %s, aborting", modelId)
 		if err := manager.v2Client.UnloadModel(modelId); err != nil {
-			manager.logger.WithError(err).Warnf("Model unload failed %s", modelId)
+			manager.logger.WithError(err.err).Warnf("Model unload failed %s", modelId)
 		}
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
 			manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
@@ -132,8 +133,12 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 	if manager.cache.Exists(modelId, false) {
 
 		if err := manager.v2Client.UnloadModel(modelId); err != nil {
-			manager.logger.WithError(err).Errorf("Cannot unload model %s from server", modelId)
-			return err
+			if err.errCode == http.StatusNotFound {
+				manager.logger.Warnf("Model is not found on server %s", modelId)
+			} else {
+				manager.logger.WithError(err.err).Errorf("Cannot unload model %s from server", modelId)
+				return err.err
+			}
 		}
 
 		// TODO: should we reload if we get an error here?
@@ -141,8 +146,6 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 			manager.logger.WithError(err).Errorf("Delete model %s from cache failed", modelId)
 			return err
 		}
-		manager.logger.Infof("Removed model %s", modelId)
-
 		memBytes, err := manager.modelVersions.getModelMemoryBytes(modelId)
 		if err != nil {
 			manager.logger.WithError(err).Errorf("Failed to get memory details for model %s", modelId)
@@ -197,11 +200,11 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 		}
 
 		if err := manager.v2Client.LoadModel(modelId); err != nil {
-			manager.logger.WithError(err).Errorf("Cannot reload %s", modelId)
+			manager.logger.WithError(err.err).Errorf("Cannot reload %s", modelId)
 			if err := manager.updateAvailableMemory(modelMemoryBytes, false); err != nil {
 				manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
 			}
-			return err
+			return err.err
 		}
 
 		if err := manager.cache.AddDefault(modelId); err != nil {
@@ -291,12 +294,14 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 		// note there is a race condition here between the above and below statement
 		// this can happen if there is a parallel unload / evict in between so the
 		// cache and memory is not reflected
-		evictedModelId, _, err := manager.cache.Peek()
+		evictedModelId, evictedModelVal, err := manager.cache.Peek()
 		if err != nil {
 			manager.logger.WithError(err).Errorf("Cannot peek cache for model %s", modelId)
 			return err
 		}
 
+		// note: we cannot do `defer endEvictFn` as we want to release the lock before next
+		// iteration in the loop
 		endEvictFn, err := manager.cache.StartEvict(evictedModelId)
 
 		if err != nil {
@@ -321,14 +326,22 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 
 		// note that we unload here all versions of the same model
 		if err := manager.v2Client.UnloadModel(evictedModelId); err != nil {
-			// if we get an error here, proceed and assume that the model has been unloaded
+			// if we get 404 assume that the model has been unloaded
 			// by a concurrent request!
-			// TODO: what can we really do about that?
-			// is memory calculationn correct, we decide to be conservative and not update memory
-			manager.logger.WithError(err).Warnf(
-				"Cannot unload model %s from server (for reload model %s)", evictedModelId, modelId)
-			endEvictFn()
-			continue
+			// otherwise assume that the unload operation failed and put back the model in cache
+
+			if err.errCode != http.StatusNotFound {
+				errStr := fmt.Sprintf("Cannot unload model %s (for reload model %s)", evictedModelId, modelId)
+				manager.logger.WithError(err.err).Error(errStr)
+				endEvictFn()
+				// add the model back to cache
+				if err := manager.cache.Add(evictedModelId, evictedModelVal); err != nil {
+					manager.logger.Warn(err)
+				}
+				return err.err
+			} else {
+				manager.logger.Warnf("Server does not have model %s", evictedModelId)
+			}
 		}
 
 		if err := manager.updateAvailableMemory(evictedModelMemoryBytes, false); err != nil {

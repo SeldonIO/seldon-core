@@ -121,6 +121,10 @@ func (tx *CacheTransactionManager) AddDefault(id string) error {
 	return tx.cache.AddDefault(id)
 }
 
+func (tx *CacheTransactionManager) Add(id string, val int64) error {
+	return tx.cache.Add(id, val)
+}
+
 func (tx *CacheTransactionManager) Delete(id string) error {
 	return tx.cache.Delete(id)
 }

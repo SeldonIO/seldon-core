@@ -19,10 +19,11 @@ import (
 
 const (
 	ReverseProxyHTTPPort    = 9999
-	maxIdleConnsHTTP        = 500
-	maxIdleConnsPerHostHTTP = 250
+	maxIdleConnsHTTP        = 10
+	maxIdleConnsPerHostHTTP = 10
 	disableKeepAlivesHTTP   = false
-	maxConnsPerHostHTTP     = 500
+	maxConnsPerHostHTTP     = 10
+	defaultTimeoutSeconds   = 5
 )
 
 type reverseHTTPProxy struct {

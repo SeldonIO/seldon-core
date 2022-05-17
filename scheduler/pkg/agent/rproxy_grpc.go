@@ -29,7 +29,7 @@ import (
 const (
 	ReverseGRPCProxyPort          = 9998
 	grpcProxyMaxConcurrentStreams = 100
-	maxConnsPerHostGRPC           = 100
+	maxConnsPerHostGRPC           = 10
 )
 
 type reverseGRPCProxy struct {

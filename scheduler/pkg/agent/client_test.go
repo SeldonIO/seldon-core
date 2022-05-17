@@ -167,9 +167,9 @@ func TestClientCreate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
+			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -276,9 +276,9 @@ func TestLoadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
+			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -395,9 +395,9 @@ parameters:
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
+			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}
@@ -515,9 +515,9 @@ func TestUnloadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
+			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeClientService{err: nil}
 			rpGRPC := FakeClientService{err: nil}

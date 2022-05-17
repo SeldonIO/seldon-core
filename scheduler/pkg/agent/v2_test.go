@@ -23,7 +23,7 @@ func (s *v2State) loadResponder(model string, status int) func(req *http.Request
 		if status == 200 {
 			return httpmock.NewStringResponse(status, ""), nil
 		} else {
-			return httpmock.NewStringResponse(status, ""), V2BadRequestErr
+			return httpmock.NewStringResponse(status, ""), ErrV2BadRequest
 		}
 	}
 }
@@ -34,7 +34,7 @@ func (s *v2State) unloadResponder(model string, status int) func(req *http.Reque
 		if status == 200 {
 			return httpmock.NewStringResponse(status, ""), nil
 		} else {
-			return httpmock.NewStringResponse(status, ""), V2BadRequestErr
+			return httpmock.NewStringResponse(status, ""), ErrV2BadRequest
 		}
 	}
 }
@@ -87,6 +87,25 @@ func createTestV2Client(models []string, status int) *V2Client {
 	return v2
 }
 
+func TestCommunicationErrors(t *testing.T) {
+	// this should fail because of dns error
+	g := NewGomegaWithT(t)
+	modelName := "dummy"
+	r := createTestV2Client([]string{modelName}, 200)
+	err := r.LoadModel(modelName)
+	g.Expect(err.errCode).To(Equal(HttpCommunicationErrCode))
+}
+
+func TestRequestErrors(t *testing.T) {
+	// in this test we are not enabling httpmock
+	// and therefore all http requests should fail because of dns / client error
+	g := NewGomegaWithT(t)
+	modelName := "dummy"
+	v2 := NewV2Client("httpwrong://server", 0, log.New())
+	err := v2.LoadModel(modelName)
+	g.Expect(err.errCode).To(Equal(HttpRequestErrCode))
+}
+
 func TestLoad(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -96,11 +115,11 @@ func TestLoad(t *testing.T) {
 	}
 	tests := []test{
 		{models: []string{"iris"}, status: 200, err: nil},
-		{models: []string{"iris"}, status: 400, err: V2BadRequestErr},
+		{models: []string{"iris"}, status: 400, err: ErrV2BadRequest},
 	}
 	for _, test := range tests {
-		httpmock.Activate()
 		r := createTestV2Client(test.models, test.status)
+		httpmock.ActivateNonDefault(r.httpClient)
 		for _, model := range test.models {
 			err := r.LoadModel(model)
 			if test.status == 200 {
@@ -108,7 +127,7 @@ func TestLoad(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				if test.err != nil {
-					g.Expect(errors.Is(err, test.err)).To(BeTrue())
+					g.Expect(errors.Is(err.err, test.err)).To(BeTrue())
 				}
 			}
 		}
@@ -126,11 +145,11 @@ func TestUnload(t *testing.T) {
 	}
 	tests := []test{
 		{models: []string{"iris"}, status: 200, err: nil},
-		{models: []string{"iris"}, status: 400, err: V2BadRequestErr},
+		{models: []string{"iris"}, status: 400, err: ErrV2BadRequest},
 	}
 	for _, test := range tests {
-		httpmock.Activate()
 		r := createTestV2Client(test.models, test.status)
+		httpmock.ActivateNonDefault(r.httpClient)
 		for _, model := range test.models {
 			err := r.UnloadModel(model)
 			if test.status == 200 {
@@ -138,7 +157,7 @@ func TestUnload(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				if test.err != nil {
-					g.Expect(errors.Is(err, test.err)).To(BeTrue())
+					g.Expect(errors.Is(err.err, test.err)).To(BeTrue())
 				}
 			}
 		}
