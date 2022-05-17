@@ -51,6 +51,7 @@ type ServerConfigStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=mlc
 
 // ServerConfig is the Schema for the serverconfigs API
 type ServerConfig struct {

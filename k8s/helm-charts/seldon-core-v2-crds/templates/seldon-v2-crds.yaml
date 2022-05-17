@@ -11,6 +11,8 @@ spec:
     kind: Experiment
     listKind: ExperimentList
     plural: experiments
+    shortNames:
+    - mlx
     singular: experiment
   scope: Namespaced
   versions:
@@ -140,6 +142,8 @@ spec:
     kind: Explainer
     listKind: ExplainerList
     plural: explainers
+    shortNames:
+    - mle
     singular: explainer
   scope: Namespaced
   versions:
@@ -288,6 +292,8 @@ spec:
     kind: Model
     listKind: ModelList
     plural: models
+    shortNames:
+    - mlm
     singular: model
   scope: Namespaced
   versions:
@@ -450,6 +456,8 @@ spec:
     kind: Pipeline
     listKind: PipelineList
     plural: pipelines
+    shortNames:
+    - mlp
     singular: pipeline
   scope: Namespaced
   versions:
@@ -621,6 +629,8 @@ spec:
     kind: ServerConfig
     listKind: ServerConfigList
     plural: serverconfigs
+    shortNames:
+    - mlc
     singular: serverconfig
   scope: Namespaced
   versions:
@@ -7370,6 +7380,8 @@ spec:
     kind: Server
     listKind: ServerList
     plural: servers
+    shortNames:
+    - mls
     singular: server
   scope: Namespaced
   versions:

@@ -70,6 +70,7 @@ type ServerStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=mls
 
 // Server is the Schema for the servers API
 type Server struct {

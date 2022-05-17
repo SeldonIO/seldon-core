@@ -51,6 +51,7 @@ type ExperimentStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=mlx
 
 // Experiment is the Schema for the experiments API
 type Experiment struct {

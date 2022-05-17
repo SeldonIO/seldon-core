@@ -52,6 +52,7 @@ type ExplainerStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=mle
 
 // Explainer is the Schema for the explainers API
 type Explainer struct {

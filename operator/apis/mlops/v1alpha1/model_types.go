@@ -95,6 +95,7 @@ type ModelStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=mlm
 
 // Model is the Schema for the models API
 type Model struct {
