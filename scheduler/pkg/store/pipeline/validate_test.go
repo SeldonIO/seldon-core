@@ -107,7 +107,7 @@ func TestCheckStepReferencesExist(t *testing.T) {
 	}
 }
 
-func TestCheckStepInputsSpecifier(t *testing.T) {
+func TestCheckStepInputs(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tests := []validateTest{
 		{
@@ -376,6 +376,72 @@ func TestCheckStepNameNotPipelineName(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := checkStepNameNotPipelineName(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}
+
+func TestCheckStepOutputs(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "valid outputs",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+				Output: &PipelineOutput{
+					Steps: []string{"a.outputs", "a.inputs", "a.outputs.t1"},
+				},
+			},
+		},
+		{
+			name: "bad specifier not inputs or ouputs",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+				Output: &PipelineOutput{
+					Steps: []string{"a.sdfs.s"},
+				},
+			},
+			err: &PipelineOutputSpecifierErr{pipeline: "test", specifier: "a.sdfs.s"},
+		},
+		{
+			name: "bad specifier has too many parts",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+				Output: &PipelineOutput{
+					Steps: []string{"a.inputs.t1.x"},
+				},
+			},
+			err: &PipelineOutputSpecifierErr{pipeline: "test", specifier: "a.inputs.t1.x"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkStepOutputs(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {

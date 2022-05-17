@@ -92,7 +92,7 @@ func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, ver
 		}
 	}
 	if mvp == "" {
-		return "", fmt.Errorf("Failed to find a model vesion folder in %s for %s for passed in version %v", path, modelName, version)
+		return "", fmt.Errorf("Failed to find a model version folder in %s for %s for passed in version %v", path, modelName, version)
 	}
 	logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
 	return mvp, nil

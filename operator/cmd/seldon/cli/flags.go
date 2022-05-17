@@ -11,10 +11,13 @@ const (
 	inferenceHostFlag       = "inference-host"
 	inferenceModeFlag       = "inference-mode"
 	inferenceIterationsFlag = "iterations"
+	kafkaBrokerFlag         = "kafka-broker"
 
 	EnvScheduler = "SELDON_SCHEDULE_HOST"
 	EnvInfer     = "SELDON_INFER_HOST"
+	EnvKafka     = "SELDON_KAFKA_BROKER"
 
 	DefaultScheduleHost = "0.0.0.0:9004"
 	DefaultInferHost    = "0.0.0.0:9000"
+	DefaultKafkaHost    = "0.0.0.0:9092"
 )

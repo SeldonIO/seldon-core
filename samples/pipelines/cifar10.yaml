@@ -1,11 +1,16 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: cifar10-test
+  name: cifar10-production
   namespace: seldon-mesh
 spec:
   steps:
     - name: cifar10
+    - name: cifar10-outlier
+    - name: cifar10-drift
+      batch:
+        size: 20
   output:
     steps:
     - cifar10
+    - cifar10-outlier.outputs.is_outlier

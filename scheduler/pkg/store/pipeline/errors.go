@@ -26,12 +26,12 @@ func (pse *PipelineStepInputSpecifierErr) Error() string {
 	return fmt.Sprintf("pipeline step input invalid pipeline %s step %s input step %s.", pse.pipeline, pse.step, pse.outputStep)
 }
 
-type PipelineOutputSpecifierdErr struct {
+type PipelineOutputSpecifierErr struct {
 	pipeline  string
 	specifier string
 }
 
-func (pos *PipelineOutputSpecifierdErr) Error() string {
+func (pos *PipelineOutputSpecifierErr) Error() string {
 	return fmt.Sprintf("pipeline %s output specifier %s invalid", pos.pipeline, pos.specifier)
 }
 

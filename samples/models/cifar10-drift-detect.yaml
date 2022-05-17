@@ -1,0 +1,10 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: cifar10-drift
+  namespace: seldon-mesh
+spec:
+  storageUri: "gs://seldon-models/mlserver/alibi-detect/cifar10-drift"
+  requirements:
+    - mlserver
+    - alibi-detect

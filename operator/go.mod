@@ -3,6 +3,7 @@ module github.com/seldonio/seldon-core/operatorv2
 go 1.16
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.8.2 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

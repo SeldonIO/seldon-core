@@ -65,7 +65,7 @@ func createPipelineInfer() *cobra.Command {
 	if err := cmdModelInfer.MarkFlagRequired(pipelineNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, "0.0.0.0:9000"), "seldon inference host")
+	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
 	return cmdModelInfer

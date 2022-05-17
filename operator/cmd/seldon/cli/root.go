@@ -71,6 +71,7 @@ func GetCmd() *cobra.Command {
 	cmdPipelineStatus := createPipelineStatus()
 	cmdPipelineInfer := createPipelineInfer()
 	cmdPipelineList := createPipelineList()
+	cmdPipelineInspect := createPipelineInspect()
 
 	var rootCmd = &cobra.Command{Use: "seldon"}
 
@@ -81,7 +82,7 @@ func GetCmd() *cobra.Command {
 	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta, cmdModelList)
 	cmdServer.AddCommand(cmdServerStatus, cmdServerList)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus, cmdExperimentList)
-	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer, cmdPipelineList)
+	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer, cmdPipelineList, cmdPipelineInspect)
 
 	return rootCmd
 }

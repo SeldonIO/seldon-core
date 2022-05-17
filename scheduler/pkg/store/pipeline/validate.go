@@ -25,6 +25,9 @@ func validate(pv *PipelineVersion) error {
 	if err := checkStepInputs(pv); err != nil {
 		return err
 	}
+	if err := checkStepOutputs(pv); err != nil {
+		return err
+	}
 	if err := checkForCycles(pv); err != nil {
 		return err
 	}
@@ -146,6 +149,29 @@ func checkStepInputs(pv *PipelineVersion) error {
 					pipeline:   pv.Name,
 					step:       v.Name,
 					outputStep: inp,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkStepOutputs(pv *PipelineVersion) error {
+	if pv.Output != nil {
+		for _, v := range pv.Output.Steps {
+			parts := strings.Split(v, StepNameSeperator)
+			switch len(parts) {
+			case 2, 3:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier) {
+					return &PipelineOutputSpecifierErr{
+						pipeline:  pv.Name,
+						specifier: v,
+					}
+				}
+			default:
+				return &PipelineOutputSpecifierErr{
+					pipeline:  pv.Name,
+					specifier: v,
 				}
 			}
 		}

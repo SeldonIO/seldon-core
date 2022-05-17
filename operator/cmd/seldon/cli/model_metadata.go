@@ -34,6 +34,6 @@ func createModelMetadata() *cobra.Command {
 	if err := cmdModelMeta.MarkFlagRequired(modelNameFlag); err != nil {
 		os.Exit(-1)
 	}
-	cmdModelMeta.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, "0.0.0.0:9000"), "seldon inference host")
+	cmdModelMeta.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
 	return cmdModelMeta
 }

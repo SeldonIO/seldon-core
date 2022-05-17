@@ -238,7 +238,7 @@ func getDataSize(shape []int64) int64 {
 }
 
 func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
-	if len(res.RawOutputContents) > 0 {
+	if len(res.RawOutputContents) == len(res.Outputs) {
 		for idx, output := range res.Outputs {
 			contents := &v2_dataplane.InferTensorContents{}
 			output.Contents = contents
@@ -268,6 +268,46 @@ func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
 			case tyBytes:
 				output.Contents.BytesContents = make([][]byte, 1)
 				output.Contents.BytesContents[0] = res.RawOutputContents[idx]
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
+	if len(res.RawInputContents) == len(res.Inputs) {
+		for idx, inputs := range res.Inputs {
+			contents := &v2_dataplane.InferTensorContents{}
+			inputs.Contents = contents
+			var err error
+			switch inputs.Datatype {
+			case tyBool:
+				inputs.Contents.BoolContents = make([]bool, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.BoolContents)
+			case tyUint8, tyUint16, tyUint32:
+				inputs.Contents.UintContents = make([]uint32, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.UintContents)
+			case tyUint64:
+				inputs.Contents.Uint64Contents = make([]uint64, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.Uint64Contents)
+			case tyInt8, tyInt16, tyInt32:
+				inputs.Contents.IntContents = make([]int32, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.IntContents)
+			case tyInt64:
+				inputs.Contents.Int64Contents = make([]int64, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.Int64Contents)
+			case tyFp16, tyFp32:
+				inputs.Contents.Fp32Contents = make([]float32, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.Fp32Contents)
+			case tyFp64:
+				inputs.Contents.Fp64Contents = make([]float64, getDataSize(inputs.Shape))
+				err = binary.Read(bytes.NewBuffer(res.RawInputContents[idx]), binary.LittleEndian, &inputs.Contents.Fp64Contents)
+			case tyBytes:
+				inputs.Contents.BytesContents = make([][]byte, 1)
+				inputs.Contents.BytesContents[0] = res.RawInputContents[idx]
 			}
 			if err != nil {
 				return err
