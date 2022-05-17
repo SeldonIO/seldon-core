@@ -33,6 +33,11 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
 	_, err := grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(2))
+	if err != nil {
+		return err
+	}
+	pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, "Pipeline terminating")
+	err = s.updatePipelineStatusImpl(pipeline)
 	return err
 }
 
@@ -116,17 +121,17 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
 				logger.Info("Setting pipeline to not ready", "pipeline", event.PipelineName)
 				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, pv.State.Reason)
 			}
-			return s.updatePipelineStatus(pipeline)
+			return s.updatePipelineStatusImpl(pipeline)
 		})
 		if retryErr != nil {
-			logger.Error(err, "Failed to update status", "pipeline", event.PipelineName)
+			logger.Error(retryErr, "Failed to update status", "pipeline", event.PipelineName)
 		}
 
 	}
 	return nil
 }
 
-func (s *SchedulerClient) updatePipelineStatus(pipeline *v1alpha1.Pipeline) error {
+func (s *SchedulerClient) updatePipelineStatusImpl(pipeline *v1alpha1.Pipeline) error {
 	if err := s.Status().Update(context.TODO(), pipeline); err != nil {
 		s.recorder.Eventf(pipeline, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for pipeline %q: %v", pipeline.Name, err)
@@ -137,13 +142,9 @@ func (s *SchedulerClient) updatePipelineStatus(pipeline *v1alpha1.Pipeline) erro
 
 func canRemovePipelineFinalizer(state scheduler.PipelineVersionState_PipelineStatus) bool {
 	switch state {
-	case scheduler.PipelineVersionState_PipelineStatusUnknown,
-		scheduler.PipelineVersionState_PipelineCreate,
-		scheduler.PipelineVersionState_PipelineTerminate,
-		scheduler.PipelineVersionState_PipelineFailed,
-		scheduler.PipelineVersionState_PipelineTerminated:
-		return true
-	default:
+	case scheduler.PipelineVersionState_PipelineTerminating:
 		return false
+	default:
+		return true
 	}
 }
