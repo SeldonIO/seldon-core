@@ -140,10 +140,12 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	logger := p.logger.WithField("func", "handleModelEvents")
 	logger.Debugf("Received sync for model %s", event.String())
 
-	err := p.modelSync(event.ModelName)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to process sync for model %s", event.String())
-	}
+	go func() {
+		err := p.modelSync(event.ModelName)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to process sync for model %s", event.String())
+		}
+	}()
 }
 
 func (p *IncrementalProcessor) SetListener(listenerName string) {

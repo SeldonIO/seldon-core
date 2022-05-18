@@ -59,19 +59,23 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	logger := es.logger.WithField("func", "handleModelEvents")
 	logger.Infof("Received event %s", event.String())
-	es.mu.Lock()
-	defer es.mu.Unlock()
-	refs := es.modelReferences[event.ModelName]
-	if len(refs) == 0 {
-		logger.Debugf("no experiment set for %s", event.ModelName)
-		return
-	} else {
-		for _, experiment := range refs {
-			es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
-				ExperimentName: experiment.Name,
-			})
+
+	go func() {
+		es.mu.Lock()
+		defer es.mu.Unlock()
+		refs := es.modelReferences[event.ModelName]
+		if len(refs) == 0 {
+			logger.Debugf("no experiment set for %s", event.ModelName)
+			return
+		} else {
+			for _, experiment := range refs {
+				es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
+					ExperimentName: experiment.Name,
+				})
+			}
 		}
-	}
+	}()
+
 }
 
 func (es *ExperimentStore) GetExperimentForBaselineModel(modelName string) *Experiment {
