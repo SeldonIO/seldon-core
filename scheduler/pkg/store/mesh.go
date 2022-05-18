@@ -90,6 +90,20 @@ type Server struct {
 	kubernetesMeta   *pb.KubernetesMeta
 }
 
+func (s *Server) CreateSnapshot() *ServerSnapshot {
+	replicas := make(map[int]*ServerReplica, len(s.replicas))
+	for k, v := range s.replicas {
+		replicas[k] = v.createSnapshot()
+	}
+	return &ServerSnapshot{
+		Name:             s.name,
+		Replicas:         replicas,
+		Shared:           s.shared,
+		ExpectedReplicas: s.expectedReplicas,
+		KubernetesMeta:   proto.Clone(s.kubernetesMeta).(*pb.KubernetesMeta),
+	}
+}
+
 func (s *Server) SetExpectedReplicas(replicas int) {
 	s.expectedReplicas = replicas
 }
@@ -460,6 +474,27 @@ func (s *Server) GetReplicaInferenceSvc(idx int) string {
 
 func (s *Server) GetReplicaInferenceHttpPort(idx int) int32 {
 	return s.replicas[idx].inferenceHttpPort
+}
+
+func (s *ServerReplica) createSnapshot() *ServerReplica {
+	capabilities := make([]string, len(s.capabilities))
+	copy(capabilities, s.capabilities)
+	loadedModels := make(map[ModelVersionID]bool, len(s.loadedModels))
+	for k, v := range s.loadedModels {
+		loadedModels[k] = v
+	}
+	return &ServerReplica{
+		inferenceSvc:         s.inferenceSvc,
+		inferenceHttpPort:    s.inferenceHttpPort,
+		inferenceGrpcPort:    s.inferenceGrpcPort,
+		replicaIdx:           s.replicaIdx,
+		server:               nil, //TODO change ServerReplica to snapshot struct
+		capabilities:         capabilities,
+		memory:               s.memory,
+		availableMemory:      s.availableMemory,
+		loadedModels:         loadedModels,
+		overCommitPercentage: s.overCommitPercentage,
+	}
 }
 
 func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {

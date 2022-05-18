@@ -190,22 +190,12 @@ func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
 	}
 }
 
-func createServerSnapshot(server *Server) *ServerSnapshot {
-	return &ServerSnapshot{
-		Name:             server.name,
-		Replicas:         server.replicas,
-		Shared:           server.shared,
-		ExpectedReplicas: server.expectedReplicas,
-		KubernetesMeta:   server.kubernetesMeta,
-	}
-}
-
 func (m *MemoryStore) GetServers() ([]*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var servers []*ServerSnapshot
 	for _, server := range m.store.servers {
-		servers = append(servers, createServerSnapshot(server))
+		servers = append(servers, server.CreateSnapshot())
 	}
 	return servers, nil
 }
@@ -217,7 +207,7 @@ func (m *MemoryStore) GetServer(serverKey string) (*ServerSnapshot, error) {
 	if server == nil {
 		return nil, nil
 	} else {
-		return createServerSnapshot(server), nil
+		return server.CreateSnapshot(), nil
 	}
 }
 
