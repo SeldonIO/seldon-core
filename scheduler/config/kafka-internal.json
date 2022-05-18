@@ -1,5 +1,5 @@
 {
-    "bootstrap.servers":"kafka:9092",
+    "bootstrap.servers":"kafka:9093",
     "consumer":{
 	"session.timeout.ms":6000,
 	"auto.offset.reset":"earliest"

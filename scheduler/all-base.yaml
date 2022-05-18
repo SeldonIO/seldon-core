@@ -49,10 +49,6 @@ services:
       dockerfile: ./Dockerfile.dataflow
       context: .
     image: "${DATAFLOW_IMAGE_AND_TAG}"
-    environment:
-      - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
-      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
-      - SELDON_CORES_COUNT=4
     depends_on:
       - kafka
       - otel-collector
@@ -156,10 +152,6 @@ services:
     image: docker.io/bitnami/kafka:3.1
     volumes:
       - "kafka_data:/bitnami"
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_MESSAGE_MAX_BYTES=1000000000      
     depends_on:
       - zookeeper
       
