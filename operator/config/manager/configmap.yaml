@@ -77,7 +77,7 @@ data:
           "protocols" : {
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.1.0.dev3-huggingface"
+              "defaultImageVersion": "1.1.0.dev5-huggingface"
               }
             }
         },
