@@ -1,4 +1,4 @@
-# Seldon V2 Non Kubernetes Pipeline Examples
+## Seldon V2 Non Kubernetes Pipeline Examples
 
 
  * Build if needed and place `seldon` binary in your path
@@ -13,7 +13,7 @@ which seldon
     /home/clive/work/scv2/seldon-core-v2/operator/bin/seldon
 ```
 ````
-## Model Chaining
+### Model Chaining
 
 
 ```bash
@@ -362,7 +362,7 @@ seldon model unload --model-name tfsimple2
     {}
 ```
 ````
-## Model Join
+### Model Join
 
 
 ```bash
@@ -736,7 +736,7 @@ seldon model unload --model-name tfsimple3
     {}
 ```
 ````
-## Conditional
+### Conditional
 
 
 ```bash
@@ -1110,7 +1110,7 @@ seldon model unload --model-name mul10
     {}
 ```
 ````
-## Error
+### Error
 An example which errors is arguments sum to greater than 100
 
 
@@ -1342,7 +1342,7 @@ seldon model unload --model-name outlier-error
     {}
 ```
 ````
-## Outlier
+### Outlier
 An example runs only if no outlier
 
 
@@ -1635,7 +1635,7 @@ seldon model unload --model-name add10
     {}
 ```
 ````
-## Model Join with Trigger
+### Model Join with Trigger
 
 
 ```bash
@@ -2116,7 +2116,7 @@ seldon model unload --model-name check
     {}
 ```
 ````
-## Pipeline Input Tensors
+### Pipeline Input Tensors
 Access to indivudal tensors in pipeline inputs
 
 

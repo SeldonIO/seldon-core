@@ -14,7 +14,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - MLServer
   - `alibi-detect`
   - [docs](https://docs.seldon.io/projects/alibi-detect/en/stable/)
-  - TBC
+  - [example](../../examples/cifar10.md)
 * - DALI
   - Triton
   - `dali`
@@ -69,7 +69,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - Triton
   - `tensorflow`
   - [docs](https://github.com/triton-inference-server/tensorflow_backend)
-  - TBC
+  - [example](../../examples/cifar10.md)
 * - TensorRT
   - Triton
   - `tensorrt`
@@ -90,7 +90,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
 ## Notes
 
  * The `tag` field represents the tag you need to add to the `requirements` part of the Model spec for your artifact to be loaded on a compatible server. e.g. for an sklearn model:
-   ```{literalinclude} ../../../../samples/models/sklearn-iris-gs.yaml 
+   ```{literalinclude} ../../../../../samples/models/sklearn-iris-gs.yaml 
    :language: yaml
    ```
 

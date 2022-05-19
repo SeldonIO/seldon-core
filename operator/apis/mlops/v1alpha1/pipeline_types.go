@@ -49,10 +49,16 @@ type PipelineStep struct {
 	// Map of tensor name conversions to use e.g. output1 -> input1
 	TensorMap map[string]string `json:"tensorMap,omitempty"`
 	// Triggers required to activate step
-	Triggers         []string       `json:"triggers,omitempty"`
-	InputsJoinType   *JoinType      `json:"inputsJoinType,omitempty"`
-	TriggersJoinType *JoinType      `json:"triggersJoinType,omitempty"`
-	Batch            *PipelineBatch `json:"batch,omitempty"`
+	Triggers []string `json:"triggers,omitempty"`
+	// One of inner (default), outer, or any
+	// inner - do an inner join: data must be available from all inputs
+	// outer - do an outer join: data will include any data from any inputs at end of window
+	// any - first data input that arrives will be forwarded
+	InputsJoinType *JoinType `json:"inputsJoinType,omitempty"`
+	// One of inner (default), outer, or any (see above for details)
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+	// Batch size of request required before data will be sent to this step
+	Batch *PipelineBatch `json:"batch,omitempty"`
 }
 
 type PipelineBatch struct {
@@ -65,8 +71,9 @@ type PipelineOutput struct {
 	// Previous step to receive data from
 	Steps []string `json:"steps,omitempty"`
 	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
-	JoinWindowMs uint32    `json:"joinWindowMs,omitempty"`
-	StepsJoin    *JoinType `json:"stepsJoin,omitempty"`
+	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
+	// One of inner (default), outer, or any (see above for details)
+	StepsJoin *JoinType `json:"stepsJoin,omitempty"`
 	// Map of tensor name conversions to use e.g. output1 -> input1
 	TensorMap map[string]string `json:"tensorMap,omitempty"`
 }

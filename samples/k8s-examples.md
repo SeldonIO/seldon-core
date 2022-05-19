@@ -20,7 +20,7 @@ MESH_IP
 
 
 
-    '172.21.255.2'
+    '172.18.255.9'
 ```
 ````
 
@@ -73,12 +73,12 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-04-18T13:59:52Z",
+          "lastTransitionTime": "2022-05-16T09:37:02Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-04-18T13:59:52Z",
+          "lastTransitionTime": "2022-05-16T09:37:02Z",
           "status": "True",
           "type": "Ready"
         }
@@ -88,7 +88,7 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ````
 
 ```bash
-seldon model infer --model-name iris --inference-host ${MESH_IP} --inference-port 80 \
+seldon model infer --model-name iris --inference-host ${MESH_IP}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
@@ -97,7 +97,7 @@ seldon model infer --model-name iris --inference-host ${MESH_IP} --inference-por
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "60268d20-582f-4772-81a8-d799c2b866ae",
+    	"id": "35f343b7-a18d-4aba-a72d-b6d45aadb337",
     	"parameters": null,
     	"outputs": [
     		{
@@ -117,7 +117,7 @@ seldon model infer --model-name iris --inference-host ${MESH_IP} --inference-por
 ````
 
 ```bash
-seldon model infer --model-name iris --inference-mode grpc --inference-host ${MESH_IP} --inference-port 80 \
+seldon model infer --model-name iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -153,12 +153,12 @@ kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-04-16T08:43:39Z",
+          "lastTransitionTime": "2022-05-16T09:28:34Z",
           "status": "True",
           "type": "Ready"
         },
         {
-          "lastTransitionTime": "2022-04-16T08:43:39Z",
+          "lastTransitionTime": "2022-05-16T09:28:34Z",
           "reason": "StatefulSet replicas matches desired replicas",
           "status": "True",
           "type": "StatefulSetReady"
@@ -279,13 +279,13 @@ kubectl wait --for condition=ready --timeout=300s experiment --all -n seldon-mes
 ````
 
 ```bash
-seldon model infer --inference-host ${MESH_IP} --inference-port 80 -i 50 --model-name iris \
+seldon model infer --inference-host ${MESH_IP}:80 -i 50 --model-name iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
 ```json
 
-    map[iris2_1:20 iris_1:30]
+    map[iris2_1:27 iris_1:23]
 ```
 ````
 
@@ -307,7 +307,7 @@ kubectl delete -f ./experiments/sklearn2.yaml
 
 ```bash
 cat ./models/tfsimple1.yaml
-!cat ./models/tfsimple2.yaml
+cat ./models/tfsimple2.yaml
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -401,78 +401,76 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ````
 
 ```bash
-seldon pipeline infer -p tfsimples --inference-mode grpc --inference-host ${MESH_IP} --inference-port 80 \
+seldon pipeline infer -p tfsimples --inference-mode grpc --inference-host ${MESH_IP}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    [1;39m{
-      [0m[34;1m"modelName"[0m[1;39m: [0m[0;32m"tfsimple2_1"[0m[1;39m,
-      [0m[34;1m"modelVersion"[0m[1;39m: [0m[0;32m"1"[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;32m"1"[0m[1;39m,
-            [0;32m"16"[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
-            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
-              [0;39m2[0m[1;39m,
-              [0;39m4[0m[1;39m,
-              [0;39m6[0m[1;39m,
-              [0;39m8[0m[1;39m,
-              [0;39m10[0m[1;39m,
-              [0;39m12[0m[1;39m,
-              [0;39m14[0m[1;39m,
-              [0;39m16[0m[1;39m,
-              [0;39m18[0m[1;39m,
-              [0;39m20[0m[1;39m,
-              [0;39m22[0m[1;39m,
-              [0;39m24[0m[1;39m,
-              [0;39m26[0m[1;39m,
-              [0;39m28[0m[1;39m,
-              [0;39m30[0m[1;39m,
-              [0;39m32[0m[1;39m
-            [1;39m][0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT1"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;32m"1"[0m[1;39m,
-            [0;32m"16"[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
-            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
-              [0;39m2[0m[1;39m,
-              [0;39m4[0m[1;39m,
-              [0;39m6[0m[1;39m,
-              [0;39m8[0m[1;39m,
-              [0;39m10[0m[1;39m,
-              [0;39m12[0m[1;39m,
-              [0;39m14[0m[1;39m,
-              [0;39m16[0m[1;39m,
-              [0;39m18[0m[1;39m,
-              [0;39m20[0m[1;39m,
-              [0;39m22[0m[1;39m,
-              [0;39m24[0m[1;39m,
-              [0;39m26[0m[1;39m,
-              [0;39m28[0m[1;39m,
-              [0;39m30[0m[1;39m,
-              [0;39m32[0m[1;39m
-            [1;39m][0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m,
-      [0m[34;1m"rawOutputContents"[0m[1;39m: [0m[1;39m[
-        [0;32m"AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="[0m[1;39m,
-        [0;32m"AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            "1",
+            "16"
+          ],
+          "contents": {
+            "intContents": [
+              2,
+              4,
+              6,
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20,
+              22,
+              24,
+              26,
+              28,
+              30,
+              32
+            ]
+          }
+        },
+        {
+          "name": "OUTPUT1",
+          "datatype": "INT32",
+          "shape": [
+            "1",
+            "16"
+          ],
+          "contents": {
+            "intContents": [
+              2,
+              4,
+              6,
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20,
+              22,
+              24,
+              26,
+              28,
+              30,
+              32
+            ]
+          }
+        }
+      ],
+      "rawOutputContents": [
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
+      ]
+    }
 ```
 ````
 
@@ -502,8 +500,8 @@ kubectl delete -f ./models/tfsimple2.yaml
 
 ```bash
 cat ./models/tfsimple1.yaml
-!cat ./models/tfsimple2.yaml
-!cat ./models/tfsimple3.yaml
+cat ./models/tfsimple2.yaml
+cat ./models/tfsimple3.yaml
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -611,78 +609,76 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ````
 
 ```bash
-seldon pipeline infer -p join --inference-mode grpc --inference-host ${MESH_IP} --inference-port 80 \
+seldon pipeline infer -p join --inference-mode grpc --inference-host ${MESH_IP}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    [1;39m{
-      [0m[34;1m"modelName"[0m[1;39m: [0m[0;32m"tfsimple3_1"[0m[1;39m,
-      [0m[34;1m"modelVersion"[0m[1;39m: [0m[0;32m"1"[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;32m"1"[0m[1;39m,
-            [0;32m"16"[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
-            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
-              [0;39m2[0m[1;39m,
-              [0;39m4[0m[1;39m,
-              [0;39m6[0m[1;39m,
-              [0;39m8[0m[1;39m,
-              [0;39m10[0m[1;39m,
-              [0;39m12[0m[1;39m,
-              [0;39m14[0m[1;39m,
-              [0;39m16[0m[1;39m,
-              [0;39m18[0m[1;39m,
-              [0;39m20[0m[1;39m,
-              [0;39m22[0m[1;39m,
-              [0;39m24[0m[1;39m,
-              [0;39m26[0m[1;39m,
-              [0;39m28[0m[1;39m,
-              [0;39m30[0m[1;39m,
-              [0;39m32[0m[1;39m
-            [1;39m][0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT1"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;32m"1"[0m[1;39m,
-            [0;32m"16"[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
-            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
-              [0;39m2[0m[1;39m,
-              [0;39m4[0m[1;39m,
-              [0;39m6[0m[1;39m,
-              [0;39m8[0m[1;39m,
-              [0;39m10[0m[1;39m,
-              [0;39m12[0m[1;39m,
-              [0;39m14[0m[1;39m,
-              [0;39m16[0m[1;39m,
-              [0;39m18[0m[1;39m,
-              [0;39m20[0m[1;39m,
-              [0;39m22[0m[1;39m,
-              [0;39m24[0m[1;39m,
-              [0;39m26[0m[1;39m,
-              [0;39m28[0m[1;39m,
-              [0;39m30[0m[1;39m,
-              [0;39m32[0m[1;39m
-            [1;39m][0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m,
-      [0m[34;1m"rawOutputContents"[0m[1;39m: [0m[1;39m[
-        [0;32m"AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="[0m[1;39m,
-        [0;32m"AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            "1",
+            "16"
+          ],
+          "contents": {
+            "intContents": [
+              2,
+              4,
+              6,
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20,
+              22,
+              24,
+              26,
+              28,
+              30,
+              32
+            ]
+          }
+        },
+        {
+          "name": "OUTPUT1",
+          "datatype": "INT32",
+          "shape": [
+            "1",
+            "16"
+          ],
+          "contents": {
+            "intContents": [
+              2,
+              4,
+              6,
+              8,
+              10,
+              12,
+              14,
+              16,
+              18,
+              20,
+              22,
+              24,
+              26,
+              28,
+              30,
+              32
+            ]
+          }
+        }
+      ],
+      "rawOutputContents": [
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
+      ]
+    }
 ```
 ````
 

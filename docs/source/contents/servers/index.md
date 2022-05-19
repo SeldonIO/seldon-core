@@ -1,6 +1,6 @@
 # Servers
 
-By default Seldon installs two server farms using MLServer and Triton. By default these will be 1 replica each. Models are scheduled onto servers based on the server's resources and whether the capabilities of the server matches the requirements specified in the Model request. For example:
+By default Seldon installs two server farms using MLServer and Triton with 1 replica each. Models are scheduled onto servers based on the server's resources and whether the capabilities of the server matches the requirements specified in the Model request. For example:
 
 ```{literalinclude} ../../../../samples/models/sklearn-iris-gs.yaml
 :language: yaml

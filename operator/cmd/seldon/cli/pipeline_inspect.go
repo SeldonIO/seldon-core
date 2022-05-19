@@ -17,7 +17,7 @@ func createPipelineInspect() *cobra.Command {
 	cmdPipelineInspect := &cobra.Command{
 		Use:   "inspect",
 		Short: "inspect data in a pipeline",
-		Long:  `inspect data in a pipeline. Specify as <pipelineName> or <pipelinename>.(inputs|outputs) or  <pipeineName>.<stepName> or <pipelineName>.<stepName>.(inputs|outputs) or <pipelineName>.<stepName>.(inputs|outputs).tensorName`,
+		Long:  `inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or  pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)

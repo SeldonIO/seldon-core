@@ -32,6 +32,7 @@ docs/seldon_pipeline_infer.md
 docs/seldon_pipeline_load.md
 docs/seldon_pipeline_status.md
 docs/seldon_pipeline_unload.md
+docs/seldon_pipeline_inspect.md
 docs/seldon_server_status.md
 ```
 
