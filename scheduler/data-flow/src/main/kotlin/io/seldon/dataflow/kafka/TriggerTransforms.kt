@@ -83,6 +83,9 @@ fun addTriggerTopology(
     }
 }
 
+// For triggers eventually we always want the left item which is the real data returned as its
+// <real-data> join <trigger1> join <trigger2> ...
+// However for triggers joined to triggers its ok to return anyone that is not null
 private fun joinTriggerRequests(left: ByteArray?, right: ByteArray?): ByteArray {
-   return left!!
+    return left ?: right!!
 }
