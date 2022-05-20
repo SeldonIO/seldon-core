@@ -6,10 +6,15 @@ WORKDIR /build
 ADD . .
 
 RUN rm -r apis && mv apis-TEMP apis
-RUN make build
+RUN make build-hodometer
 
 ################################################################################
 
 FROM golang:alpine
 COPY --from=builder /build/bin/hodometer /bin/hodometer
+
+ARG UID=1000
+ARG GID=1000
+USER ${UID}:${GID}
+
 CMD ["/bin/hodometer"]

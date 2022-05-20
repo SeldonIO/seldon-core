@@ -2,8 +2,12 @@ package hodometer
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/dukex/mixpanel"
@@ -13,7 +17,6 @@ import (
 
 const (
 	apiKey = "e943e8a2ebd1352338ecac1f9fde8c7c"
-	apiUrl = "http://hodometer-test.seldon.io"
 
 	eventName = "collect metrics"
 )
@@ -52,23 +55,42 @@ type Publisher interface {
 	Publish(ctx context.Context, metrics *UsageMetrics) error
 }
 
-type JsonPublisher struct {
+type urlAndClient struct {
+	url    string
 	client mixpanel.Mixpanel
-	logger logrus.FieldLogger
+}
+
+type JsonPublisher struct {
+	clients []urlAndClient
+	logger  logrus.FieldLogger
+	apiUrl  string
 }
 
 var _ Publisher = (*JsonPublisher)(nil)
 
-func NewJsonPublisher(logger logrus.FieldLogger) *JsonPublisher {
+func NewJsonPublisher(
+	logger logrus.FieldLogger,
+	publishUrls []*url.URL,
+) (*JsonPublisher, error) {
 	logger = logger.WithField("source", "JsonPublisher")
 
-	// TODO - provide TLS & compression settings
-	retryClient := makeRetryClient(logger)
-	client := mixpanel.NewFromClient(retryClient, apiKey, apiUrl)
-	return &JsonPublisher{
-		client: client,
-		logger: logger,
+	if len(publishUrls) == 0 {
+		return nil, errors.New("no URLs provided to publish to")
 	}
+
+	// TODO - provide TLS & compression settings
+	clients := []urlAndClient{}
+	for _, u := range publishUrls {
+		apiUrl := u.String()
+		retryClient := makeRetryClient(logger)
+		client := mixpanel.NewFromClient(retryClient, apiKey, apiUrl)
+
+		clients = append(clients, urlAndClient{url: apiUrl, client: client})
+	}
+	return &JsonPublisher{
+		clients: clients,
+		logger:  logger,
+	}, nil
 }
 
 func makeRetryClient(logger logrus.FieldLogger) *http.Client {
@@ -83,26 +105,41 @@ func makeRetryClient(logger logrus.FieldLogger) *http.Client {
 
 func (jp *JsonPublisher) Publish(ctx context.Context, metrics *UsageMetrics) error {
 	logger := jp.logger.WithField("func", "Publish")
-	logger.Infof("publishing usage metrics to %s", apiUrl)
-
 	event := jp.makeEvent(metrics)
 
-	err := jp.client.Track(
-		metrics.ClusterId,
-		eventName,
-		event,
-	)
-	if err != nil {
-		logger.WithError(err).Error("failed to publish usage metrics")
-	}
-	logger.Info("published usage metrics")
+	wg := sync.WaitGroup{}
+	wg.Add(len(jp.clients))
 
-	return err
+	for _, c := range jp.clients {
+		urlAndClient := c
+		go func() {
+			defer wg.Done()
+			logger.Infof("publishing usage metrics to %s", urlAndClient.url)
+
+			err := urlAndClient.client.Track(
+				metrics.ClusterId,
+				eventName,
+				event,
+			)
+			if err != nil {
+				logger.
+					WithError(err).
+					Errorf("failed to publish usage metrics to %s", urlAndClient.url)
+			}
+			logger.Infof("published usage metrics to %s", urlAndClient.url)
+		}()
+	}
+
+	wg.Wait()
+	return nil
 }
 
 func (jp *JsonPublisher) makeEvent(metrics *UsageMetrics) *mixpanel.Event {
 	eventTime := time.Now().UTC()
-	p := properties{}
+	insertId := fmt.Sprintf("%d", eventTime.UnixNano())
+	p := properties{
+		"$insert_id": insertId,
+	}
 	flattenStructToProperties(p, metrics)
 
 	return &mixpanel.Event{

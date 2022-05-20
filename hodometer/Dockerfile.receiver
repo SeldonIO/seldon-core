@@ -1,0 +1,19 @@
+FROM golang:alpine AS builder
+
+RUN apk add --upgrade make cmake
+
+WORKDIR /build
+COPY . .
+
+RUN make build-receiver
+
+################################################################################
+
+FROM golang:alpine
+COPY --from=builder /build/bin/receiver /bin/receiver
+
+ARG UID=1000
+ARG GID=1000
+USER ${UID}:${GID}
+
+CMD ["/bin/receiver"]

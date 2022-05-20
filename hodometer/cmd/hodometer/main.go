@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"net/url"
 	"time"
 
-	hodometer "github.com/seldonio/seldon-core/hodometer/pkg"
+	"github.com/seldonio/seldon-core/hodometer/pkg/hodometer"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +17,11 @@ var (
 func main() {
 	logger := logrus.New()
 
-	args, err := parseArgs(logger)
+	args, failures, err := parseArgs()
 	if err != nil {
+		for _, f := range failures {
+			logger.WithError(f.failure).Error(f.arg)
+		}
 		logger.WithError(err).Fatal()
 	}
 
@@ -38,7 +42,12 @@ func main() {
 		logger.WithError(err).Fatal()
 	}
 
-	jp := hodometer.NewJsonPublisher(logger)
+	urls := []*url.URL{args.publishUrl}
+	urls = append(urls, args.extraPublishUrls...)
+	jp, err := hodometer.NewJsonPublisher(logger, urls)
+	if err != nil {
+		logger.WithError(err).Fatal()
+	}
 
 	punctuator.Run(
 		"collect metrics and publish",
