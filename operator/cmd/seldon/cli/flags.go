@@ -13,6 +13,8 @@ const (
 	inferenceIterationsFlag = "iterations"
 	kafkaBrokerFlag         = "kafka-broker"
 
+	// Defaults
+
 	EnvScheduler = "SELDON_SCHEDULE_HOST"
 	EnvInfer     = "SELDON_INFER_HOST"
 	EnvKafka     = "SELDON_KAFKA_BROKER"
