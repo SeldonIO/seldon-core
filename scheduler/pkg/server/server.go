@@ -453,6 +453,8 @@ func createExperimentStatus(e *experiment.Experiment) *pb.ExperimentStatusRespon
 		ExperimentName:    e.Name,
 		Active:            e.Active,
 		StatusDescription: e.StatusDescription,
+		CandidatesReady:   e.AreCandidatesReady(),
+		MirrorReady:       e.IsMirrorReady(),
 	}
 	if e.KubernetesMeta != nil {
 		response.KubernetesMeta = &pb.KubernetesMeta{

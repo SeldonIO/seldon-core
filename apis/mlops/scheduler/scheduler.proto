@@ -229,8 +229,10 @@ message ExperimentSubscriptionRequest {
 message ExperimentStatusResponse {
   string experimentName = 1;
   bool active = 2;
-  string statusDescription = 3;
-  optional KubernetesMeta kubernetesMeta = 4;
+  bool candidatesReady = 3;
+  bool mirrorReady = 4;
+  string statusDescription = 5;
+  optional KubernetesMeta kubernetesMeta = 6;
 }
 
 message LoadPipelineRequest {

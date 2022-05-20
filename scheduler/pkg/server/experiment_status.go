@@ -54,6 +54,8 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 			err := stream.Send(&pb.ExperimentStatusResponse{
 				ExperimentName:    event.ExperimentName,
 				Active:            event.Status.Active,
+				CandidatesReady:   event.Status.CandidatesReady,
+				MirrorReady:       event.Status.MirrorReady,
 				StatusDescription: event.Status.StatusDescription,
 				KubernetesMeta:    asKubernetesMeta(event),
 			})

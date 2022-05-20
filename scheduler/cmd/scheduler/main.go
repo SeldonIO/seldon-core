@@ -127,7 +127,7 @@ func main() {
 
 	ps := pipeline.NewPipelineStore(logger, eventHub)
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-	es := experiment.NewExperimentServer(logger, eventHub)
+	es := experiment.NewExperimentServer(logger, eventHub, ss)
 	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
 		Host:     pipelineGatewayHost,
 		HttpPort: pipelineGatewayHttpPort,

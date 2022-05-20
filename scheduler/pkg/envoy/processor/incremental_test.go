@@ -388,7 +388,7 @@ func TestExperiments(t *testing.T) {
 				logger:           log.New(),
 				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
-				experimentServer: experiment.NewExperimentServer(log.New(), nil),
+				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
 			}
 			inc.xdsCache.AddListener("listener_0")

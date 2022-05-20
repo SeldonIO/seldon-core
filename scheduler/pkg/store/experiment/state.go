@@ -1,6 +1,9 @@
 package experiment
 
-import "github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+import (
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+)
 
 const (
 	experimentStateEventSource = "experiment.state"
@@ -71,4 +74,35 @@ func (es *ExperimentStore) updateExperimentState(experiment *Experiment) {
 		es.baselines[*experiment.DefaultModel] = experiment
 	}
 	es.addModelReferences(experiment)
+	es.setCandidateAndMirrorReadiness(experiment)
+}
+
+func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment) {
+	logger := es.logger.WithField("func", "setCandidateAndMirrorReadiness")
+	if es.store != nil {
+		for _, candidate := range experiment.Candidates {
+			model, err := es.store.GetModel(candidate.ModelName)
+			if err != nil {
+				logger.WithError(err).Infof("Failed to get model %s for candidate check for experiment %s", candidate.ModelName, experiment.Name)
+			} else {
+				if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+					candidate.Ready = true
+				} else {
+					candidate.Ready = false
+				}
+			}
+		}
+		if experiment.Mirror != nil {
+			model, err := es.store.GetModel(experiment.Mirror.ModelName)
+			if err != nil {
+				logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", experiment.Mirror.ModelName, experiment.Name)
+			} else {
+				if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+					experiment.Mirror.Ready = true
+				} else {
+					experiment.Mirror.Ready = false
+				}
+			}
+		}
+	}
 }

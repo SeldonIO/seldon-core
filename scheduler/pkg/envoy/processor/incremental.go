@@ -119,7 +119,7 @@ func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.Experime
 				logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
 			}
 		} else {
-			if event.Status == nil {
+			if event.UpdatedExperiment {
 				err := p.experimentSync(exp)
 				var err2 error
 				if err != nil {

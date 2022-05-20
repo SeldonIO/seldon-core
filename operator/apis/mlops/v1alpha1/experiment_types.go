@@ -108,10 +108,14 @@ func (e *Experiment) AsSchedulerExperimentRequest() *scheduler.Experiment {
 
 const (
 	ExperimentReady apis.ConditionType = "ExperimentReady"
+	CandidatesReady apis.ConditionType = "CandidatesReady"
+	MirrorReady     apis.ConditionType = "MirrorReady"
 )
 
 var experimentConditionSet = apis.NewLivingConditionSet(
 	ExperimentReady,
+	CandidatesReady,
+	MirrorReady,
 )
 
 var _ apis.ConditionsAccessor = (*ExperimentStatus)(nil)

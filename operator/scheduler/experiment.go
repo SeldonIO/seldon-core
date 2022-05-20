@@ -111,6 +111,16 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context) error {
 				logger.Info("Setting experiment to not ready", "experiment", event.ExperimentName)
 				experiment.Status.CreateAndSetCondition(v1alpha1.ExperimentReady, false, event.StatusDescription)
 			}
+			if event.CandidatesReady {
+				experiment.Status.CreateAndSetCondition(v1alpha1.CandidatesReady, true, "Candidates ready")
+			} else {
+				experiment.Status.CreateAndSetCondition(v1alpha1.CandidatesReady, false, "Candidates not ready")
+			}
+			if event.MirrorReady {
+				experiment.Status.CreateAndSetCondition(v1alpha1.MirrorReady, true, "Mirror ready")
+			} else {
+				experiment.Status.CreateAndSetCondition(v1alpha1.MirrorReady, false, "Mirror not ready")
+			}
 			return s.updateExperimentStatus(experiment)
 		})
 		if retryErr != nil {

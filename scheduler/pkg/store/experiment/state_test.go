@@ -3,6 +3,9 @@ package experiment
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
@@ -332,6 +335,116 @@ func TestUpdateExperimentState(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			test.server.updateExperimentState(test.experiment)
 			g.Expect(test.server.getTotalModelReferences()).To(Equal(test.expectedReferences))
+		})
+	}
+}
+
+func TestSetCandidateAndMirrorReadiness(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                    string
+		experiment              *Experiment
+		modelStates             map[string]store.ModelState
+		expectedCandidatesReady bool
+		expectedMirrorReady     bool
+	}
+
+	tests := []test{
+		{
+			name: "candidate ready as model is ready",
+			experiment: &Experiment{
+				Name: "a",
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+				},
+			},
+			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable},
+			expectedCandidatesReady: true,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "candidates not ready as model is not ready",
+			experiment: &Experiment{
+				Name: "a",
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+				},
+			},
+			modelStates:             map[string]store.ModelState{"model1": store.ModelFailed},
+			expectedCandidatesReady: false,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "multiple candidates only one ready",
+			experiment: &Experiment{
+				Name: "a",
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+					{
+						ModelName: "model2",
+					},
+				},
+			},
+			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable},
+			expectedCandidatesReady: false,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "multiple candidates all ready",
+			experiment: &Experiment{
+				Name: "a",
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+					{
+						ModelName: "model2",
+					},
+				},
+			},
+			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable, "model2": store.ModelAvailable},
+			expectedCandidatesReady: true,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "mirror and candidate ready as model is ready",
+			experiment: &Experiment{
+				Name: "a",
+				Candidates: []*Candidate{
+					{
+						ModelName: "model1",
+					},
+				},
+				Mirror: &Mirror{
+					ModelName: "model1",
+				},
+			},
+			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable},
+			expectedCandidatesReady: true,
+			expectedMirrorReady:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := logrus.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			server := NewExperimentServer(logger, eventHub, fakeModelStore{status: test.modelStates})
+			err = server.StartExperiment(test.experiment)
+			g.Expect(err).To(BeNil())
+
+			server.setCandidateAndMirrorReadiness(test.experiment)
+			g.Expect(err).To(BeNil())
+			g.Expect(test.experiment.AreCandidatesReady()).To(Equal(test.expectedCandidatesReady))
+			g.Expect(test.experiment.IsMirrorReady()).To(Equal(test.expectedMirrorReady))
 		})
 	}
 }

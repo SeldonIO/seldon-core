@@ -3,6 +3,8 @@ package experiment
 import (
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	"github.com/mitchellh/copystructure"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 	"github.com/sirupsen/logrus"
@@ -31,9 +33,10 @@ type ExperimentStore struct {
 	baselines       map[string]*Experiment            // modelName to the single baseline experiment it appears in
 	modelReferences map[string]map[string]*Experiment // modelName to experiments it appears in
 	eventHub        *coordinator.EventHub
+	store           store.ModelStore
 }
 
-func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub) *ExperimentStore {
+func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore) *ExperimentStore {
 
 	es := &ExperimentStore{
 		logger:          logger.WithField("source", "experimentServer"),
@@ -41,6 +44,7 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 		baselines:       make(map[string]*Experiment),
 		modelReferences: make(map[string]map[string]*Experiment),
 		eventHub:        eventHub,
+		store:           store,
 	}
 
 	if eventHub != nil {
@@ -55,6 +59,27 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 	return es
 }
 
+func (es *ExperimentStore) publishEvent(experiment *Experiment, source string, updatedExperiment bool) {
+	var k8sMeta *coordinator.KubernetesMeta
+	if experiment.KubernetesMeta != nil {
+		k8sMeta = &coordinator.KubernetesMeta{
+			Namespace:  experiment.KubernetesMeta.Namespace,
+			Generation: experiment.KubernetesMeta.Generation,
+		}
+	}
+	es.eventHub.PublishExperimentEvent(source, coordinator.ExperimentEventMsg{
+		ExperimentName:    experiment.Name,
+		UpdatedExperiment: updatedExperiment,
+		Status: &coordinator.ExperimentEventStatus{
+			Active:            experiment.Active,
+			CandidatesReady:   experiment.AreCandidatesReady(),
+			MirrorReady:       experiment.IsMirrorReady(),
+			StatusDescription: experiment.StatusDescription,
+		},
+		KubernetesMeta: k8sMeta,
+	})
+}
+
 // This function will publish experiment events for any model that has changed which is part of an existing experiment
 func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	logger := es.logger.WithField("func", "handleModelEvents")
@@ -63,19 +88,38 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	go func() {
 		es.mu.Lock()
 		defer es.mu.Unlock()
+
 		refs := es.modelReferences[event.ModelName]
-		if len(refs) == 0 {
-			logger.Debugf("no experiment set for %s", event.ModelName)
-			return
-		} else {
-			for _, experiment := range refs {
-				es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
-					ExperimentName: experiment.Name,
-				})
+		for _, experiment := range refs {
+			for _, candidate := range experiment.Candidates {
+				if candidate.ModelName == event.ModelName {
+					model, err := es.store.GetModel(event.ModelName)
+					if err != nil {
+						logger.WithError(err).Warnf("Failed to get model %s for candidate check for experiment %s", event.ModelName, experiment.Name)
+					} else {
+						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+							candidate.Ready = true
+						} else {
+							candidate.Ready = false
+						}
+					}
+				}
 			}
+			if experiment.Mirror != nil && experiment.Mirror.ModelName == event.ModelName {
+				model, err := es.store.GetModel(event.ModelName)
+				if err != nil {
+					logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
+				} else {
+					if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+						experiment.Mirror.Ready = true
+					} else {
+						experiment.Mirror.Ready = false
+					}
+				}
+			}
+			es.publishEvent(experiment, experimentStartEventSource, true)
 		}
 	}()
-
 }
 
 func (es *ExperimentStore) GetExperimentForBaselineModel(modelName string) *Experiment {
@@ -94,21 +138,7 @@ func (es *ExperimentStore) SetStatus(experimentName string, active bool, reason 
 		experiment.Active = active
 		experiment.StatusDescription = reason
 		if currentActive != experiment.Active {
-			var k8sMeta *coordinator.KubernetesMeta
-			if experiment.KubernetesMeta != nil {
-				k8sMeta = &coordinator.KubernetesMeta{
-					Namespace:  experiment.KubernetesMeta.Namespace,
-					Generation: experiment.KubernetesMeta.Generation,
-				}
-			}
-			es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
-				ExperimentName: experiment.Name,
-				Status: &coordinator.ExperimentEventStatus{
-					Active:            experiment.Active,
-					StatusDescription: experiment.StatusDescription,
-				},
-				KubernetesMeta: k8sMeta,
-			})
+			es.publishEvent(experiment, experimentStateEventSource, false)
 		}
 	}
 	return nil
@@ -127,9 +157,7 @@ func (es *ExperimentStore) StartExperiment(experiment *Experiment) error {
 	es.updateExperimentState(experiment)
 	es.experiments[experiment.Name] = experiment
 	if es.eventHub != nil {
-		es.eventHub.PublishExperimentEvent(experimentStartEventSource, coordinator.ExperimentEventMsg{
-			ExperimentName: experiment.Name,
-		})
+		es.publishEvent(experiment, experimentStartEventSource, true)
 	}
 	return nil
 }
@@ -150,22 +178,7 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 					//Empty model version
 				})
 			}
-			//Update state of model
-			var k8sMeta *coordinator.KubernetesMeta
-			if experiment.KubernetesMeta != nil {
-				k8sMeta = &coordinator.KubernetesMeta{
-					Namespace:  experiment.KubernetesMeta.Namespace,
-					Generation: experiment.KubernetesMeta.Generation,
-				}
-			}
-			es.eventHub.PublishExperimentEvent(experimentStopEventSource, coordinator.ExperimentEventMsg{
-				ExperimentName: experimentName,
-				Status: &coordinator.ExperimentEventStatus{
-					Active:            experiment.Active,
-					StatusDescription: experiment.StatusDescription,
-				},
-				KubernetesMeta: k8sMeta,
-			})
+			es.publishEvent(experiment, experimentStopEventSource, true)
 		}
 		return nil
 	} else {
