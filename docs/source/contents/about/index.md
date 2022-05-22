@@ -17,8 +17,34 @@ Seldon V2 APIs provide a state of the art solution for machine learning inferenc
  * Kubernetes Service mesh agnostic - use the service mesh of your choice.
 
 
-```{toctree}
-:maxdepth: 1
-:hidden:
+## Core features and comparison to V1 Seldon Core APIs
 
-```
+Out V2 APIs separate out core tasks into separate resources allowing users to get started fast with deploying a Model and the progressing to more complex Pipelines, Explainers and Experiments.
+
+![intro](intro.png)
+
+## Multi-model serving
+
+Seldon transparently will provision your model onto the correct inference server.
+
+![mms1](multimodel1.png)
+
+By packing multiple models onto a smaller set of servers users can save infrastructure costs and efficiently utilize their models.
+
+![mms2](multimodel2.png)
+
+By allowing over-commit users can provision model models that available memory resources by allowing Seldon to transprently unload models that are not in use.
+
+![mms3](multimodel3.png)
+
+## Inference Servers
+
+Seldon V2 supports any V2 protocol inference server. At present we include Seldon's MLServer and NVIDIA's Triton inference server automatically on install. These servers cover a wide range of artifacts including custom python models.
+
+![servers](servers.png)
+
+## Service Mesh Agnostic
+
+Seldon core v2 can be integrated with any Kubernetes service mesh. There are current examples with istio, Ambassador and Traefic.
+
+![mesh](mesh.png)

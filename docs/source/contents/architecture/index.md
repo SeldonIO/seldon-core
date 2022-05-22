@@ -1,14 +1,45 @@
-# Architecture
+# Seldon Core V2 Architecture
 
-This section discusses the architecture of Seldon Core V2.
+The current set of components used in Seldon Core V2 is shown below:
 
- * [Architecture Overview](./overview/index.md)
- * [Inference graphs and data flow paradigm](./inference-graphs/index.md)
+![architecture](architecture.png)
 
-```{toctree}
-:maxdepth: 1
-:hidden:
+The core components are:
 
-overview/index.md
-inference-graphs/index.md
-```
+ * Scheduler : manages the load and unload of models, pipelines, explainers and experiments.
+ * Pipeline gateway : handles REST/gRPC calls to pipelines.
+ * Dataflow engine : handles the flow of data between components in a pipeline.
+ * Model gateway : handles the flow of data from models to inference requests on servers and passes on the responses.
+ * Agent : manages the loading and unloading of models on a Server and access to the server over REST/gRPC.
+ * Envoy : manages the proxying of requests to the correct servers including load balancing.
+
+All the above are Kubernetes agnostic and can run locally, e.g. on Docker Compose.
+
+We also provide a Kubernetes Operator to allow Kubernetes usage.
+
+Kafka is used as the backbone for Pipelines allowing a decentralized, syncronous and asynchronous usage.
+
+## Kafka
+
+Kafka is used as the backbone for allowing Pipelines of Models to be connected together into arbtrary directed acyclic graphs. Models can be reused in different Pipelines. The flow of data between models is handled by the datafloe engine using [KStreams](https://docs.confluent.io/platform/current/streams/concepts.html).
+
+![kafka](kafka.png)
+
+## Dataflow Architecture
+
+Seldon V2 follows a dataflow architecture and its part of the current movement for data centric machine learning. By taking a decentralized route that focuses on the flow of data users can have more flexibility and insight in building complex applications containing machine learning and traditional components. This contrasts with a more centralized orchestration more traditional in service orientated architectures.
+
+![dataflow](dataflow.png)
+
+By focusing on the data we allow users to join various flows together using stream joining concepts as shown below.
+
+![joins](joins.png)
+
+We support inner joins where all inputs need to be present for a transaction to join the tensors passed through the Pipeline; outer joins where only a subset need to be available during the join window as well as triggers in which data flows need to wait until one or more trigger data flows appear. The data in these triggers is not passed onwards from the join.
+
+We allowing these techniques complex pipeline flows of data between machine learning components can be created.
+
+More discussion on the data flow view of machine learning can be found in a paper by [Paleyes et al](https://arxiv.org/abs/2108.04105).
+
+.
+
