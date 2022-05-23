@@ -30,6 +30,8 @@ from seldon_core.gunicorn_utils import (
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.utils import getenv_as_bool, setup_tracing
 
+# This is related to how multiprocessing is implemeneted on MacOS
+# See https://github.com/SeldonIO/seldon-core/issues/3410 for discussion.
 USE_MULTIPROCESS_ENV_NAME = "USE_MULTIPROCESS_PACKAGE"
 USE_MULTIPROCESS = getenv_as_bool(USE_MULTIPROCESS_ENV_NAME, default=False)
 if USE_MULTIPROCESS:
@@ -72,6 +74,11 @@ def start_servers(
        Auxiliary flask process
 
     """
+    if USE_MULTIPROCESS:
+        logger.info("Using alternative multiprocessing library")
+    else:
+        logger.info("Using standard multiprocessing library")
+
     p2 = None
     if target2:
         p2 = mp.Process(target=target2, daemon=False)
