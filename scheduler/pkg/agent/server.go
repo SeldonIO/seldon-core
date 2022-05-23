@@ -43,8 +43,8 @@ type SchedulerAgent interface {
 
 type AgentSubscriber struct {
 	finished chan<- bool
-	//mutext   sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
-	stream pb.AgentService_SubscribeServer
+	mutext   sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
+	stream   pb.AgentService_SubscribeServer
 }
 
 func NewAgentServer(
@@ -122,10 +122,12 @@ func (s *Server) Sync(modelName string) {
 				continue
 			}
 
+			as.mutext.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
 			})
+			as.mutext.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
@@ -147,10 +149,12 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
 				continue
 			}
+			as.mutext.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
 			})
+			as.mutext.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
