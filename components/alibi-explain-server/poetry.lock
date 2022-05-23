@@ -11,7 +11,7 @@ six = "*"
 
 [[package]]
 name = "alibi"
-version = "0.6.4"
+version = "0.7.0"
 description = "Algorithms for monitoring and explaining machine learning models"
 category = "main"
 optional = false
@@ -26,17 +26,19 @@ pandas = ">=0.23.3,<2.0.0"
 Pillow = ">=5.4.1,<10.0"
 requests = ">=2.21.0,<3.0.0"
 scikit-image = ">=0.14.2,<0.17.1 || >0.17.1,<0.20"
-scikit-learn = ">=0.20.2,<1.1.0"
+scikit-learn = ">=0.22.0,<2.0.0"
 scipy = ">=1.1.0,<2.0.0"
 spacy = {version = ">=2.0.0,<4.0.0", extras = ["lookups"]}
-tensorflow = ">=2.0.0,<2.6.0 || >2.6.0,<2.6.1 || >2.6.1,<2.8.0"
 tqdm = ">=4.28.1,<5.0.0"
 transformers = ">=4.7.0,<5.0.0"
-typing-extensions = {version = ">=3.7.2", markers = "python_version < \"3.8\""}
+typing-extensions = ">=3.7.4.3"
 
 [package.extras]
+all = ["ray (>=0.8.7,<2.0.0)", "shap (>=0.40.0,<0.41.0)", "numba (>=0.50.0,!=0.54.0,<0.56.0)", "tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)", "torch (>=1.9.0,<2.0.0)"]
 ray = ["ray (>=0.8.7,<2.0.0)"]
 shap = ["shap (>=0.40.0,<0.41.0)", "numba (>=0.50.0,!=0.54.0,<0.56.0)"]
+tensorflow = ["tensorflow (>=2.0.0,!=2.6.0,!=2.6.1,<2.10.0)"]
+torch = ["torch (>=1.9.0,<2.0.0)"]
 
 [[package]]
 name = "anyio"
@@ -1837,7 +1839,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7,<3.8"
-content-hash = "5c7700b29ec3138fc1221f49d1cd4497ad1ed5f5cd2dc309165ec6d42c56e999"
+content-hash = "bfc3cc73219825ec04ab4af468b5c15dc9f5dff61b44f689766c0d561950107a"
 
 [metadata.files]
 absl-py = [
@@ -1845,8 +1847,8 @@ absl-py = [
     {file = "absl_py-1.0.0-py3-none-any.whl", hash = "sha256:84e6dcdc69c947d0c13e5457d056bd43cade4c2393dce00d684aedea77ddc2a3"},
 ]
 alibi = [
-    {file = "alibi-0.6.4-py3-none-any.whl", hash = "sha256:44e7c5dcdf913e0337a8481dbbf4b15373024185b290a9dd70ef257fdb074d57"},
-    {file = "alibi-0.6.4.tar.gz", hash = "sha256:c471d029ba3b4e6a8d4b9889885917e1e6be5bbd4b6eb02585b27fff32d50024"},
+    {file = "alibi-0.7.0-py3-none-any.whl", hash = "sha256:8cf76eaf823d278adda5bc1ad42b5cd3d0757795cd766a8af21c66404fbc2a62"},
+    {file = "alibi-0.7.0.tar.gz", hash = "sha256:4b15f85e399d5274510a719fac62e6d1e57ebf9d635249b53bc011d1940f1f03"},
 ]
 anyio = [
     {file = "anyio-3.5.0-py3-none-any.whl", hash = "sha256:b5fa16c5ff93fa1046f2eeb5bbff2dad4d3514d6cda61d02816dba34fa8c3c2e"},
@@ -2033,6 +2035,7 @@ cycler = [
 ]
 cymem = [
     {file = "cymem-2.0.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:700540b68e96a7056d0691d467df2bbaaf0934a3e6fe2383669998cbee19580a"},
+    {file = "cymem-2.0.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a261f51796a2705f3900ed22b8442519a0f230f50a816fb5bd89cb9b027dc5ac"},
     {file = "cymem-2.0.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:971cf0a8437dfb4185c3049c086e463612fe849efadc0f5cc153fc81c501da7d"},
     {file = "cymem-2.0.6-cp310-cp310-win_amd64.whl", hash = "sha256:6b0d1a6b0a1296f31fa9e4b7ae5ea49394084ecc883b1ae6fec4844403c43468"},
     {file = "cymem-2.0.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b8e1c18bb00800425576710468299153caad20c64ddb6819d40a6a34e21ee21c"},
@@ -2042,9 +2045,11 @@ cymem = [
     {file = "cymem-2.0.6-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd52d8a81881804625df88453611175ab7e0099b34f52204da1f6940cf2e83c9"},
     {file = "cymem-2.0.6-cp37-cp37m-win_amd64.whl", hash = "sha256:4749f220e4c06ec44eb10de13794ff0508cdc4f8eff656cf49cab2cdb3122c0c"},
     {file = "cymem-2.0.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:2aa3fa467d906cd2c27fa0a2e2952dd7925f5fcc7973fab6d815ef6acb25aad8"},
+    {file = "cymem-2.0.6-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:228bd261a85d92d870ed358f263ee028ac026302304f2186827377a3895c5819"},
     {file = "cymem-2.0.6-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ea535f74ab6024e7416f93de564e5c81fb7c0964b96280de66f60aeb05f0cf53"},
     {file = "cymem-2.0.6-cp38-cp38-win_amd64.whl", hash = "sha256:4f87fe087f2ae36c3e20e2b1a29d7f76a28c035372d0a97655f26223d975235a"},
     {file = "cymem-2.0.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:a93fba62fe79dbf6fc4d5b6d804a6e114b44af3ff3d40a28833ee39f21bd336b"},
+    {file = "cymem-2.0.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:5d631239bfb07293ee444b269656308da952b6b003b12332ccb1c624dbfcda4b"},
     {file = "cymem-2.0.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:04676d696596b0db3f3c5a3936bab12fb6f24278921a6622bb185e61765b2b4d"},
     {file = "cymem-2.0.6-cp39-cp39-win_amd64.whl", hash = "sha256:c59293b232b53ebb47427f16cf648e937022f489cff36c11d1d8a1f0075b6609"},
     {file = "cymem-2.0.6.tar.gz", hash = "sha256:169725b5816959d34de2545b33fee6a8021a6e08818794a426c5a4f981f17e5e"},
@@ -2303,8 +2308,10 @@ libclang = [
     {file = "libclang-13.0.0-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:069407eac2e20ea8f18212d28c6598db31014e7b8a77febc92e762ec133c3226"},
     {file = "libclang-13.0.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9c1e623340ccafe3a10a2abbc90f59593ff29f0c854f4ddb65b6220d9d998fb4"},
     {file = "libclang-13.0.0-py2.py3-none-manylinux2014_aarch64.whl", hash = "sha256:b7de34393ed46c6cf7b22178d0d43cec2f2dab2f5f95450520a47fc1cf2df5ac"},
+    {file = "libclang-13.0.0-py2.py3-none-manylinux2014_armv7l.whl", hash = "sha256:dfcdfc90eeb5d14f291e31c19b195fbcc29a8c0b2bd29fa331011f9536937a89"},
     {file = "libclang-13.0.0-py2.py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:dcc7ecd83d91e23e95315d7aa6355ee8d45b43742ca1fb642583e0b2f935d50e"},
     {file = "libclang-13.0.0-py2.py3-none-win_amd64.whl", hash = "sha256:b61dedc1b941f43acca1fa15df0a6669c6c3983197c6f3226ae03a766281dd37"},
+    {file = "libclang-13.0.0-py2.py3-none-win_arm64.whl", hash = "sha256:b0acfcfbd1f6d411f654cf6ec4f09cecf0f80b3480e4c9f834d1dcb1f8bd6907"},
 ]
 lightgbm = [
     {file = "lightgbm-3.3.2-py3-none-macosx_10_14_x86_64.macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:2e94bd1b3ab29d173102c9c1d80db2e27ad7e43b8ff5a74c5cb7984b37d19f45"},
@@ -2601,6 +2608,7 @@ pluggy = [
 ]
 preshed = [
     {file = "preshed-3.0.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:66a71ced487516cf81fd0431a3a843514262ae2f33e9a7688b87562258fa75d5"},
+    {file = "preshed-3.0.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9fb3d1da40abe3d99a9ee28c0df7090c1bab7c09042421d3cade7dc12e868c70"},
     {file = "preshed-3.0.6-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c98f725d8478f3ade4ab1ea00f50a92d2d9406d37276bc46fd8bab1d47452c4"},
     {file = "preshed-3.0.6-cp310-cp310-win_amd64.whl", hash = "sha256:ea8aa9610837e907e8442e79300df0a861bfdb4dcaf026a5d9642a688ad04815"},
     {file = "preshed-3.0.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:e03ae3eee961106a517fcd827b5a7c51f7317236b3e665c989054ab8dc381d28"},
@@ -2610,9 +2618,11 @@ preshed = [
     {file = "preshed-3.0.6-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:61b2ea656cb1c38d544cc774f1c2ad1cdab23167b46b35310a7e211d4ba9c6d0"},
     {file = "preshed-3.0.6-cp37-cp37m-win_amd64.whl", hash = "sha256:87e1add41b7f6236a3ccc34788f47ab8682bc28e8a2d369089062e274494c1a0"},
     {file = "preshed-3.0.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:a279c138ad1d5be02547b1545254929588414b01571fe637016367f6a1aa11de"},
+    {file = "preshed-3.0.6-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:ab8b5232255ebf7ee96e3cb4f1bedaace6ae0925d1113d4ede9d44c78f088ef2"},
     {file = "preshed-3.0.6-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3af09f4cfcdaca085fd87dac8107617c4e2bb0ad1458f953841b71e9728287f5"},
     {file = "preshed-3.0.6-cp38-cp38-win_amd64.whl", hash = "sha256:f92e752a868ea2690e1b38c4b775251a145e0fce36b9bdd972539e8271b7a23a"},
     {file = "preshed-3.0.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:eaffbc71fdb8625f9aac4fe7e19e20bf318d1421ea05903bebe3e6ffef27b587"},
+    {file = "preshed-3.0.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9c7809491e26a41bd6e4e2e93ddf3e8989cff256c3829a7953b57c97a8268a6c"},
     {file = "preshed-3.0.6-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cfe1495fcfc7f479de840ddc4f426dbb55351e218ae5c8712c1269183a4d0060"},
     {file = "preshed-3.0.6-cp39-cp39-win_amd64.whl", hash = "sha256:92a8f49d17a63537a8beed48a049b62ef168ca07e0042a5b2bcdf178a1fb5d48"},
     {file = "preshed-3.0.6.tar.gz", hash = "sha256:fb3b7588a3a0f2f2f1bf3fe403361b2b031212b73a37025aea1df7215af3772a"},
