@@ -11,13 +11,13 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 
 	fin := make(chan bool)
 
-	s.mu.Lock()
+	s.pipelineEventStream.mu.Lock()
 	s.pipelineEventStream.streams[stream] = &PipelineSubscription{
 		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
-	s.mu.Unlock()
+	s.pipelineEventStream.mu.Unlock()
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -28,9 +28,9 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.mu.Lock()
+			s.pipelineEventStream.mu.Lock()
 			delete(s.pipelineEventStream.streams, stream)
-			s.mu.Unlock()
+			s.pipelineEventStream.mu.Unlock()
 			return nil
 		}
 	}
@@ -39,6 +39,13 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMsg) {
 	logger := s.logger.WithField("func", "handlePipelineEvents")
 	logger.Debugf("Received pipeline event %s", event.String())
+	go func() {
+		s.sendPipelineEvents(event)
+	}()
+}
+
+func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg) {
+	logger := s.logger.WithField("func", "sendPipelineEvents")
 	pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
@@ -51,6 +58,8 @@ func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMs
 		PipelineName: pv.Name,
 		Versions:     pipelineVersions,
 	}
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
 	for stream, subscription := range s.pipelineEventStream.streams {
 		if err := stream.Send(status); err != nil {
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
@@ -59,6 +68,8 @@ func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMs
 }
 
 func (s *SchedulerServer) StopSendPipelineEvents() {
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
 	for _, subscription := range s.pipelineEventStream.streams {
 		close(subscription.fin)
 	}

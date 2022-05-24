@@ -190,6 +190,8 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 		desiredState = store.ModelReplicaStateUnknown
 	}
 	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
+	s.store.LockModel(message.ModelName)
+	defer s.store.UnlockModel(message.ModelName)
 	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)

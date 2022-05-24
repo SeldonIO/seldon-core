@@ -88,52 +88,56 @@ func NewIncrementalProcessor(
 
 func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
-	pip, err := p.pipelineHandler.GetPipeline(event.PipelineName)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to get pipeline %s", event.PipelineName)
-	} else {
-		if pip.Deleted {
-			err := p.removePipeline(pip)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to remove pipeline %s", pip.Name)
-			}
+	go func() {
+		pip, err := p.pipelineHandler.GetPipeline(event.PipelineName)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to get pipeline %s", event.PipelineName)
 		} else {
-			err := p.addPipeline(pip)
-			if err != nil {
-				logger.WithError(err).Errorf("Dailed to add pipeline %s", pip.Name)
+			if pip.Deleted {
+				err := p.removePipeline(pip)
+				if err != nil {
+					logger.WithError(err).Errorf("Failed to remove pipeline %s", pip.Name)
+				}
+			} else {
+				err := p.addPipeline(pip)
+				if err != nil {
+					logger.WithError(err).Errorf("Dailed to add pipeline %s", pip.Name)
+				}
 			}
 		}
-	}
+	}()
 }
 
 func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.ExperimentEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
 	logger.Debugf("Received sync for experiment %s", event.String())
-	exp, err := p.experimentServer.GetExperiment(event.ExperimentName)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
-	} else {
-		if exp.Deleted {
-			err := p.removeExperiment(exp)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
-			}
+	go func() {
+		exp, err := p.experimentServer.GetExperiment(event.ExperimentName)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
 		} else {
-			if event.UpdatedExperiment {
-				err := p.experimentSync(exp)
-				var err2 error
+			if exp.Deleted {
+				err := p.removeExperiment(exp)
 				if err != nil {
-					logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
-					err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
-				} else {
-					err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
+					logger.WithError(err).Errorf("Failed to get experiment %s", event.ExperimentName)
 				}
-				if err2 != nil {
-					logger.WithError(err2).Errorf("Failed to set experiment activation")
+			} else {
+				if event.UpdatedExperiment {
+					err := p.experimentSync(exp)
+					var err2 error
+					if err != nil {
+						logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
+						err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
+					} else {
+						err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
+					}
+					if err2 != nil {
+						logger.WithError(err2).Errorf("Failed to set experiment activation")
+					}
 				}
 			}
 		}
-	}
+	}()
 }
 
 func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg) {

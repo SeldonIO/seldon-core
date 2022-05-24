@@ -43,7 +43,6 @@ type SchedulerServer struct {
 	experimentServer      experiment.ExperimentServer
 	pipelineHandler       pipeline.PipelineHandler
 	scheduler             scheduler2.Scheduler
-	mu                    sync.RWMutex
 	modelEventStream      ModelEventStream
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
@@ -51,18 +50,22 @@ type SchedulerServer struct {
 }
 
 type ModelEventStream struct {
+	mu      sync.Mutex
 	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
 }
 
 type ServerEventStream struct {
+	mu      sync.Mutex
 	streams map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
 }
 
 type ExperimentEventStream struct {
+	mu      sync.Mutex
 	streams map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription
 }
 
 type PipelineEventStream struct {
+	mu      sync.Mutex
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 }
 
@@ -520,9 +523,6 @@ func (s *SchedulerServer) PipelineStatus(
 	logger.Infof("received status request from %s", req.SubscriberName)
 
 	if req.Name == nil {
-		// All pipelines requested
-		s.mu.RLock()
-		defer s.mu.RUnlock()
 
 		pipelines, err := s.pipelineHandler.GetPipelines()
 		if err != nil {

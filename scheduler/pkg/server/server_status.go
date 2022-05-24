@@ -12,13 +12,13 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 	fin := make(chan bool)
 
-	s.mu.Lock()
+	s.modelEventStream.mu.Lock()
 	s.modelEventStream.streams[stream] = &ModelSubscription{
 		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
-	s.mu.Unlock()
+	s.modelEventStream.mu.Unlock()
 
 	err := s.sendCurrentModelStatuses(stream)
 	if err != nil {
@@ -34,9 +34,9 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.mu.Lock()
+			s.modelEventStream.mu.Lock()
 			delete(s.modelEventStream.streams, stream)
-			s.mu.Unlock()
+			s.modelEventStream.mu.Unlock()
 			return nil
 		}
 	}
@@ -77,6 +77,8 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 }
 
 func (s *SchedulerServer) StopSendModelEvents() {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
 	for _, subscription := range s.modelEventStream.streams {
 		close(subscription.fin)
 	}
@@ -94,6 +96,8 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
 			return err
 		}
+		s.modelEventStream.mu.Lock()
+		defer s.modelEventStream.mu.Unlock()
 		for stream, subscription := range s.modelEventStream.streams {
 			err := stream.Send(ms)
 			if err != nil {
@@ -110,13 +114,13 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 
 	fin := make(chan bool)
 
-	s.mu.Lock()
+	s.serverEventStream.mu.Lock()
 	s.serverEventStream.streams[stream] = &ServerSubscription{
 		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
-	s.mu.Unlock()
+	s.serverEventStream.mu.Unlock()
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -127,9 +131,9 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.mu.Lock()
+			s.serverEventStream.mu.Lock()
 			delete(s.serverEventStream.streams, stream)
-			s.mu.Unlock()
+			s.serverEventStream.mu.Unlock()
 			return nil
 		}
 	}
@@ -151,6 +155,8 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
 }
 
 func (s *SchedulerServer) StopSendServerEvents() {
+	s.serverEventStream.mu.Lock()
+	defer s.serverEventStream.mu.Unlock()
 	for _, subscription := range s.serverEventStream.streams {
 		close(subscription.fin)
 	}
@@ -178,12 +184,14 @@ func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) e
 	}
 	ssr := createServerStatusResponse(ss)
 
+	s.serverEventStream.mu.Lock()
 	for stream, subscription := range s.serverEventStream.streams {
 		err := stream.Send(ssr)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
 		}
 	}
+	s.serverEventStream.mu.Unlock()
 
 	return nil
 }

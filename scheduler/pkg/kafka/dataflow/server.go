@@ -132,6 +132,8 @@ func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscripti
 }
 
 func (c *ChainerServer) StopSendPipelineEvents() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for _, subscription := range c.streams {
 		close(subscription.fin)
 	}
@@ -231,34 +233,38 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 
 func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) {
 	logger := c.logger.WithField("func", "handlePipelineEvent")
-	pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
-		return
-	}
-	logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
-	switch pv.State.Status {
-	case pipeline.PipelineCreate:
-		msg := c.createPipelineMessage(pv)
-		for _, subscription := range c.streams {
-			if err := subscription.stream.Send(msg); err != nil {
-				logger.WithError(err).Errorf("Failed to send msg for pipeline %s", pv.String())
-			} else {
-				if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, ""); err != nil {
-					logger.WithError(err).Errorf("Failed to set pipeline %s to creating state", pv.String())
+	go func() {
+		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
+			return
+		}
+		logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		switch pv.State.Status {
+		case pipeline.PipelineCreate:
+			msg := c.createPipelineMessage(pv)
+			for _, subscription := range c.streams {
+				if err := subscription.stream.Send(msg); err != nil {
+					logger.WithError(err).Errorf("Failed to send msg for pipeline %s", pv.String())
+				} else {
+					if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, ""); err != nil {
+						logger.WithError(err).Errorf("Failed to set pipeline %s to creating state", pv.String())
+					}
+				}
+			}
+		case pipeline.PipelineTerminate:
+			msg := c.createPipelineMessage(pv)
+			for _, subscription := range c.streams {
+				if err := subscription.stream.Send(msg); err != nil {
+					logger.WithError(err).Errorf("Failed to send msg for pipeline %s", pv.String())
+				} else {
+					if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, ""); err != nil {
+						logger.WithError(err).Errorf("Failed to set pipeline %s to terminate state", pv.String())
+					}
 				}
 			}
 		}
-	case pipeline.PipelineTerminate:
-		msg := c.createPipelineMessage(pv)
-		for _, subscription := range c.streams {
-			if err := subscription.stream.Send(msg); err != nil {
-				logger.WithError(err).Errorf("Failed to send msg for pipeline %s", pv.String())
-			} else {
-				if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, ""); err != nil {
-					logger.WithError(err).Errorf("Failed to set pipeline %s to terminate state", pv.String())
-				}
-			}
-		}
-	}
+	}()
 }

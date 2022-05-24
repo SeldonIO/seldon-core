@@ -11,13 +11,13 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 
 	fin := make(chan bool)
 
-	s.mu.Lock()
+	s.experimentEventStream.mu.Lock()
 	s.experimentEventStream.streams[stream] = &ExperimentSubscription{
 		name:   req.GetSubscriberName(),
 		stream: stream,
 		fin:    fin,
 	}
-	s.mu.Unlock()
+	s.experimentEventStream.mu.Unlock()
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -28,9 +28,9 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.mu.Lock()
+			s.experimentEventStream.mu.Lock()
 			delete(s.experimentEventStream.streams, stream)
-			s.mu.Unlock()
+			s.experimentEventStream.mu.Unlock()
 			return nil
 		}
 	}
@@ -50,18 +50,27 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 	logger := s.logger.WithField("func", "handleExperimentEvents")
 	logger.Debugf("Received experiment event %s", event.String())
 	if event.Status != nil {
-		for stream, subscription := range s.experimentEventStream.streams {
-			err := stream.Send(&pb.ExperimentStatusResponse{
-				ExperimentName:    event.ExperimentName,
-				Active:            event.Status.Active,
-				CandidatesReady:   event.Status.CandidatesReady,
-				MirrorReady:       event.Status.MirrorReady,
-				StatusDescription: event.Status.StatusDescription,
-				KubernetesMeta:    asKubernetesMeta(event),
-			})
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())
-			}
+		go func() {
+			s.sendExperimentStatus(event)
+		}()
+	}
+}
+
+func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEventMsg) {
+	logger := s.logger.WithField("func", "sendExperimentStatus")
+	s.experimentEventStream.mu.Lock()
+	defer s.experimentEventStream.mu.Unlock()
+	for stream, subscription := range s.experimentEventStream.streams {
+		err := stream.Send(&pb.ExperimentStatusResponse{
+			ExperimentName:    event.ExperimentName,
+			Active:            event.Status.Active,
+			CandidatesReady:   event.Status.CandidatesReady,
+			MirrorReady:       event.Status.MirrorReady,
+			StatusDescription: event.Status.StatusDescription,
+			KubernetesMeta:    asKubernetesMeta(event),
+		})
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())
 		}
 	}
 }
