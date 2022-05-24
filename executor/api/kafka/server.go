@@ -287,7 +287,6 @@ func (ks *SeldonKafkaServer) Serve() error {
 				job := KafkaJob{
 					headers:    headers,
 					message:    e,
-					reqKey:     e.Key,
 					reqPayload: reqPayload,
 				}
 				// enqueue a job
