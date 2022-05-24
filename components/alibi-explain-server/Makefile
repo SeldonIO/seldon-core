@@ -8,6 +8,8 @@ BASE_IMAGE ?= seldonio/conda-ubi8
 PYTHON_VERSION ?= 3.7.10
 CONDA_VERSION ?= 4.7.12
 
+KIND_NAME ?= kind
+
 #
 # Building protos
 #
@@ -53,7 +55,7 @@ fmt:
 docker-build: build_apis
 	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t seldonio/${IMAGE}:${VERSION} .
 
-docker-build-gpu: 
+docker-build-gpu:
 	docker build --file=Dockerfile.gpu -t seldonio/${IMAGE}-gpu:${VERSION} .
 
 docker-push:
@@ -63,7 +65,7 @@ docker-push-gpu:
 	docker push seldonio/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image seldonio/${IMAGE}:${VERSION}
+	kind load docker-image seldonio/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 # password can be found at: https://connect.redhat.com/project/3987291/view
 redhat-image-scan:
