@@ -21,6 +21,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/dataflow"
@@ -54,6 +56,7 @@ var (
 	pipelineGatewayHttpPort int
 	pipelineGatewayGrpcPort int
 	logLevel                string
+	pipelineDbPath          string
 
 	nodeID string
 )
@@ -83,6 +86,7 @@ func init() {
 	flag.IntVar(&pipelineGatewayHttpPort, "pipeline-gateway-http-port", 9010, "Pipeline gateway server http port")
 	flag.IntVar(&pipelineGatewayGrpcPort, "pipeline-gateway-grpc-port", 9011, "Pipeline gateway server grpc port")
 	flag.StringVar(&logLevel, "log-level", "debug", "Log level - examples: debug, info, error")
+	flag.StringVar(&pipelineDbPath, "pipeline-db-path", "", "Pipeline state Db")
 }
 
 func getNamespace() string {
@@ -126,6 +130,16 @@ func main() {
 	}()
 
 	ps := pipeline.NewPipelineStore(logger, eventHub)
+	if pipelineDbPath != "" {
+		logger.Infof("Opening db at %s", pipelineDbPath)
+		err := ps.InitialiseDB(pipelineDbPath)
+		if err != nil {
+			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", pipelineDbPath)
+		}
+	} else {
+		log.Warn("Not running with scheduler DB")
+	}
+
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 	es := experiment.NewExperimentServer(logger, eventHub, ss)
 	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
@@ -141,7 +155,8 @@ func main() {
 	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
-	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace)
+	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
+	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)
 	go func() {
 		err := cs.StartGrpcServer(chainerPort)
 		if err != nil {

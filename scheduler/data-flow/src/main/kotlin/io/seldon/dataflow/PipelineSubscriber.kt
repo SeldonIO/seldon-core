@@ -155,17 +155,17 @@ class PipelineSubscriber(
             )
         if (previous == null) {
             transformers.forEach { it.start() }
-            client.pipelineUpdateEvent(
-                makePipelineUpdateEvent(
-                    metadata = metadata,
-                    operation = PipelineOperation.Create,
-                    success = true,
-                    reason = "Created pipeline"
-                )
-            )
         } else {
-            logger.warn("not creating pipeline ${metadata.id} as it already exists")
+            logger.warn("pipeline ${metadata.id} already exists")
         }
+        client.pipelineUpdateEvent(
+            makePipelineUpdateEvent(
+                metadata = metadata,
+                operation = PipelineOperation.Create,
+                success = true,
+                reason = "Created pipeline"
+            )
+        )
     }
 
     private suspend fun handleDelete(metadata: PipelineMetadata) {

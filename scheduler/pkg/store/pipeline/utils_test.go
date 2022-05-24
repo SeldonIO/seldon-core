@@ -37,7 +37,6 @@ func TestCreatePipelineFromProto(t *testing.T) {
 	type test struct {
 		name     string
 		proto    *scheduler.Pipeline
-		version  uint32
 		pipeline *PipelineVersion
 		err      error
 	}
@@ -45,8 +44,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 	getUintPtr := func(val uint32) *uint32 { return &val }
 	tests := []test{
 		{
-			name:    "simple",
-			version: 1,
+			name: "simple",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -83,8 +81,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "with pipeline input",
-			version: 1,
+			name: "with pipeline input",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -102,8 +99,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 				},
 			},
 			pipeline: &PipelineVersion{
-				Name:    "pipeline",
-				Version: 1,
+				Name: "pipeline",
 				Steps: map[string]*PipelineStep{
 					"a": {
 						Name:   "a",
@@ -121,8 +117,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "simple with tensor map",
-			version: 1,
+			name: "simple with tensor map",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -163,8 +158,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "simple with join and batch",
-			version: 1,
+			name: "simple with join and batch",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -215,8 +209,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "simple with trigger",
-			version: 1,
+			name: "simple with trigger",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -271,8 +264,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "simple with k8s meta",
-			version: 1,
+			name: "simple with k8s meta",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -303,8 +295,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "multi input",
-			version: 1,
+			name: "multi input",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -333,8 +324,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			},
 		},
 		{
-			name:    "pipeline step repeated",
-			version: 1,
+			name: "pipeline step repeated",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -357,7 +347,7 @@ func TestCreatePipelineFromProto(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			pv, err := CreatePipelineFromProto(test.proto, test.version)
+			pv, err := CreatePipelineVersionFromProto(test.proto)
 			if test.err == nil {
 				pv.UID = ""
 				g.Expect(pv.Name).To(Equal(test.pipeline.Name))

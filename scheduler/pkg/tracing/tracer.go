@@ -46,8 +46,8 @@ func initTracer(serviceName string) (*trace.TracerProvider, error) {
 	traceClient := otlptracegrpc.NewClient(
 		otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(otelAgentAddr),
-	// For testing we can't block and not sure is needed in production in case not tracing available
-	//otlptracegrpc.WithDialOption(grpc.WithBlock()),
+		// For testing we can't block and not sure is needed in production in case not tracing available
+		//otlptracegrpc.WithDialOption(grpc.WithBlock()),
 	)
 	traceExp, err := otlptrace.New(context.Background(), traceClient)
 	if err != nil {

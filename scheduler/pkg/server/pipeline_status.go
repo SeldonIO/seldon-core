@@ -3,6 +3,7 @@ package server
 import (
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 )
 
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
@@ -51,8 +52,9 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 		return
 	}
+	logger.Debugf("Handling pipeline event for %s with state %v", event.String(), pv.State.Status)
 	var pipelineVersions []*pb.PipelineWithState
-	pipelineWithState := createPipelineVersionState(pv)
+	pipelineWithState := pipeline.CreatePipelineWithState(pv)
 	pipelineVersions = append(pipelineVersions, pipelineWithState)
 	status := &pb.PipelineStatusResponse{
 		PipelineName: pv.Name,

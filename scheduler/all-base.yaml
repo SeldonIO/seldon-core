@@ -78,6 +78,11 @@ services:
       - "--verbose"
 
   scheduler:
+    user: "1000:1000"
+    volumes:
+      - type: bind
+        source: ./mnt
+        target: /mnt/config
     build:
       dockerfile: ./Dockerfile.scheduler
       context: .

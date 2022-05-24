@@ -806,7 +806,7 @@ spec:
         name: config-volume
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   labels:
     control-plane: seldon-scheduler
@@ -817,6 +817,7 @@ spec:
   selector:
     matchLabels:
       control-plane: seldon-scheduler
+  serviceName: seldon-scheduler
   template:
     metadata:
       labels:
@@ -825,6 +826,7 @@ spec:
       containers:
       - args:
         - --pipeline-gateway-host=seldon-pipelinegateway
+        - --pipeline-db-path=/mnt/scheduler/pipelinedb
         command:
         - /bin/scheduler
         image: seldonio/seldon-scheduler:latest
@@ -843,10 +845,22 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        volumeMounts:
+        - mountPath: /mnt/scheduler
+          name: scheduler-state
       securityContext:
         runAsUser: 8888
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: scheduler-state
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig

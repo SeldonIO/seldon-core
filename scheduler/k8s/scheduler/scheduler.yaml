@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: scheduler
   namespace: system
   labels:
     control-plane: seldon-scheduler
 spec:
+  serviceName: "scheduler"  
   selector:
     matchLabels:
       control-plane: seldon-scheduler
@@ -23,6 +24,7 @@ spec:
         - /bin/scheduler
         args:
         - --pipeline-gateway-host=seldon-pipelinegateway
+        - --pipeline-db-path=/mnt/scheduler/pipelinedb
         image: scheduler:latest
         imagePullPolicy: IfNotPresent
         name: scheduler
@@ -39,4 +41,15 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        volumeMounts:
+        - mountPath: /mnt/scheduler
+          name: scheduler-state
       terminationGracePeriodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: scheduler-state
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

@@ -5,11 +5,13 @@ import (
 	"sort"
 	"strings"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/rs/xid"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
-func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
+func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {
 	var protoSteps []*scheduler.PipelineStep
 	var protoOutput *scheduler.PipelineOutput
 	keys := make([]string, 0)
@@ -74,13 +76,15 @@ func CreateProtoFromPipeline(pv *PipelineVersion) *scheduler.Pipeline {
 	}
 	return &scheduler.Pipeline{
 		Name:           pv.Name,
+		Uid:            pv.UID,
+		Version:        pv.Version,
 		Steps:          protoSteps,
 		Output:         protoOutput,
 		KubernetesMeta: kubernetesMeta,
 	}
 }
 
-func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) (*PipelineVersion, error) {
+func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*PipelineVersion, error) {
 	steps := make(map[string]*PipelineStep)
 	for _, stepProto := range pipelineProto.Steps {
 		step := &PipelineStep{
@@ -142,15 +146,19 @@ func CreatePipelineFromProto(pipelineProto *scheduler.Pipeline, version uint32) 
 		}
 	}
 
-	return &PipelineVersion{
+	pv := &PipelineVersion{
 		Name:           pipelineProto.Name,
-		Version:        version,
-		UID:            xid.New().String(),
+		UID:            pipelineProto.Uid,
+		Version:        pipelineProto.Version,
 		Steps:          steps,
 		State:          &PipelineState{},
 		Output:         output,
 		KubernetesMeta: kubernetesMeta,
-	}, nil
+	}
+	if pv.UID == "" {
+		pv.UID = xid.New().String()
+	}
+	return pv, nil
 }
 
 func updateInputSteps(pipelineName string, inputs []string) []string {
@@ -173,4 +181,64 @@ func updateInputSteps(pipelineName string, inputs []string) []string {
 		}
 	}
 	return updatedInputs
+}
+
+func CreatePipelineWithState(pv *PipelineVersion) *scheduler.PipelineWithState {
+	pvs := &scheduler.PipelineVersionState{
+		PipelineVersion:     pv.Version,
+		Status:              scheduler.PipelineVersionState_PipelineStatus(scheduler.PipelineVersionState_PipelineStatus_value[pv.State.Status.String()]),
+		Reason:              pv.State.Reason,
+		LastChangeTimestamp: timestamppb.New(pv.State.Timestamp.UTC()),
+	}
+	return &scheduler.PipelineWithState{
+		Pipeline: CreateProtoFromPipelineVersion(pv),
+		State:    pvs,
+	}
+}
+
+func createStateFromProto(pvs *scheduler.PipelineVersionState) *PipelineState {
+	return &PipelineState{
+		Status:    PipelineStatus(pvs.Status),
+		Reason:    pvs.Reason,
+		Timestamp: pvs.LastChangeTimestamp.AsTime(),
+	}
+}
+
+func CreatePipelineVersionWithStateFromProto(pvs *scheduler.PipelineWithState) (*PipelineVersion, error) {
+	pv, err := CreatePipelineVersionFromProto(pvs.Pipeline)
+	if err != nil {
+		return nil, err
+	}
+	pv.State = createStateFromProto(pvs.State)
+	return pv, nil
+}
+
+func CreatePipelineSnapshotFromPipeline(pipeline *Pipeline) *scheduler.PipelineSnapshot {
+	var versions []*scheduler.PipelineWithState
+	for _, pv := range pipeline.Versions {
+		versions = append(versions, CreatePipelineWithState(pv))
+	}
+	return &scheduler.PipelineSnapshot{
+		Name:        pipeline.Name,
+		LastVersion: pipeline.LastVersion,
+		Versions:    versions,
+		Deleted:     pipeline.Deleted,
+	}
+}
+
+func CreatePipelineFromSnapshot(snapshot *scheduler.PipelineSnapshot) (*Pipeline, error) {
+	var versions []*PipelineVersion
+	for _, ver := range snapshot.Versions {
+		pv, err := CreatePipelineVersionWithStateFromProto(ver)
+		if err != nil {
+			return nil, err
+		}
+		versions = append(versions, pv)
+	}
+	return &Pipeline{
+		Name:        snapshot.Name,
+		LastVersion: snapshot.LastVersion,
+		Versions:    versions,
+		Deleted:     snapshot.Deleted,
+	}, nil
 }

@@ -59,7 +59,6 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
 			return err
 		}
 
-		logger.Info("Received event", "pipeline", event.PipelineName)
 		if len(event.Versions) != 1 {
 			logger.Info("Unexpected number of pipeline versions", "numVersions", len(event.Versions), "pipeline", event.PipelineName)
 			continue
@@ -69,6 +68,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
 			logger.Info("Received pipeline event with no k8s metadata so ignoring", "pipeline", event.PipelineName)
 			continue
 		}
+		logger.Info("Received event", "pipeline", event.PipelineName, "generation", pv.GetPipeline().GetKubernetesMeta().Generation, "version", pv.GetPipeline().Version, "State", pv.GetState().String())
 		pipeline := &v1alpha1.Pipeline{}
 		err = s.Get(ctx, client.ObjectKey{Name: event.PipelineName, Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace()}, pipeline)
 		if err != nil {
@@ -115,10 +115,10 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
 			// Handle status update
 			switch pv.State.Status {
 			case scheduler.PipelineVersionState_PipelineReady:
-				logger.Info("Setting pipeline to ready", "pipeline", event.PipelineName)
+				logger.Info("Setting pipeline to ready", "pipeline", event.PipelineName, "generation", pipeline.Generation)
 				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, true, pv.State.Reason)
 			default:
-				logger.Info("Setting pipeline to not ready", "pipeline", event.PipelineName)
+				logger.Info("Setting pipeline to not ready", "pipeline", event.PipelineName, "generation", pipeline.Generation)
 				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, pv.State.Reason)
 			}
 			return s.updatePipelineStatusImpl(pipeline)

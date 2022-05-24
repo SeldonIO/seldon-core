@@ -484,28 +484,15 @@ func (s *SchedulerServer) UnloadPipeline(ctx context.Context, req *pb.UnloadPipe
 	return &pb.UnloadPipelineResponse{}, nil
 }
 
-func createPipelineVersionState(pv *pipeline.PipelineVersion) *pb.PipelineWithState {
-	pvs := &pb.PipelineVersionState{
-		PipelineVersion:     pv.Version,
-		Status:              pb.PipelineVersionState_PipelineStatus(pb.PipelineVersionState_PipelineStatus_value[pv.State.Status.String()]),
-		Reason:              pv.State.Reason,
-		LastChangeTimestamp: timestamppb.New(pv.State.Timestamp),
-	}
-	return &pb.PipelineWithState{
-		Pipeline: pipeline.CreateProtoFromPipeline(pv),
-		State:    pvs,
-	}
-}
-
 func createPipelineStatus(p *pipeline.Pipeline, allVersions bool) *pb.PipelineStatusResponse {
 	var pipelineVersions []*pb.PipelineWithState
 	pipelineLastVersion := p.GetLatestPipelineVersion()
 	if !allVersions {
-		pipelineWithState := createPipelineVersionState(pipelineLastVersion)
+		pipelineWithState := pipeline.CreatePipelineWithState(pipelineLastVersion)
 		pipelineVersions = append(pipelineVersions, pipelineWithState)
 	} else {
 		for _, pv := range p.Versions {
-			pipelineWithState := createPipelineVersionState(pv)
+			pipelineWithState := pipeline.CreatePipelineWithState(pv)
 			pipelineVersions = append(pipelineVersions, pipelineWithState)
 		}
 	}

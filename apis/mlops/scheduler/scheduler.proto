@@ -246,9 +246,11 @@ message ExperimentStatusRequest {
 
 message Pipeline {
   string name = 1;
-  repeated PipelineStep steps = 2;
-  optional PipelineOutput output = 3;
-  optional KubernetesMeta kubernetesMeta = 4;
+  string uid = 2;
+  uint32 version = 3;
+  repeated PipelineStep steps = 4;
+  optional PipelineOutput output = 5;
+  optional KubernetesMeta kubernetesMeta = 6;
 }
 
 message PipelineStep {

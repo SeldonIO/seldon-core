@@ -388,7 +388,9 @@ func TestPipelineStatus(t *testing.T) {
 			name: "pipeline status",
 			loadReq: &pb.LoadPipelineRequest{
 				Pipeline: &pb.Pipeline{
-					Name: "foo",
+					Name:    "foo",
+					Version: 1,
+					Uid:     "x",
 					Steps: []*pb.PipelineStep{
 						{
 							Name: "a",
@@ -406,7 +408,9 @@ func TestPipelineStatus(t *testing.T) {
 				Versions: []*pb.PipelineWithState{
 					{
 						Pipeline: &pb.Pipeline{
-							Name: "foo",
+							Name:    "foo",
+							Version: 1,
+							Uid:     "x",
 							Steps: []*pb.PipelineStep{
 								{
 									Name: "a",

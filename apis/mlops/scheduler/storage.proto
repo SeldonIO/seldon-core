@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package seldon.mlops.scheduler;
+
+option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler";
+
+import "mlops/scheduler/scheduler.proto";
+
+message PipelineSnapshot {
+  string name = 1;
+  uint32 lastVersion = 2;
+  repeated PipelineWithState versions = 3;
+  bool deleted = 4;
+}

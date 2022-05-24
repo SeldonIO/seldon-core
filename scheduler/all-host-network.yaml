@@ -77,6 +77,12 @@ services:
         target: /mnt/agent
         
   scheduler:
+    command:
+      - "/bin/scheduler"
+      - "--log-level"
+      - "debug"
+      - --pipeline-db-path
+      - "${PIPELINE_DB_PATH_COMPOSE}"
     network_mode: "host"
 
   dataflow:

@@ -461,13 +461,28 @@ stop-dataflow-engine-host:
 # Start local binaries
 #####################################
 
+SCHEDULER_USE_DB ?= true
+ifeq ($(SCHEDULER_USE_DB),true)
+  PIPELINE_DB_PATH_LOCAL = ${PWD}/mnt/pipelinedb
+  export PIPELINE_DB_PATH_COMPOSE = /mnt/config/pipelinedb
+else
+  PIPELINE_DB_PATH_LOCAL =
+  export PIPELINE_DB_PATH_COMPOSE = 
+endif
+
 .PHONY: start-scheduler-local
 start-scheduler-local:
-	./bin/scheduler
+	mkdir -p ${PWD}/mnt/pipelinedb
+	./bin/scheduler --pipeline-db-path "${PIPELINE_DB_PATH}"
+
+.PHONY: clear-scheduler-state
+clear-scheduler-state:
+	mkdir -p ${PWD}/mnt/pipelinedb
+	rm -r ${PWD}/mnt/pipelinedb/*
 
 .PHONY: start-agent-local-mlserver
 start-agent-local-mlserver:
-	./bin/agent --agent-folder ${PWD}/mnt/mlserver --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 \
+	./bin/agent --agent-folder ${PWD}/mnt/mlserver --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 --reverse-proxy-http-port 9999 --reverse-proxy-grpc-port 9998 --debug-grpc-port 7777 --metrics-port 9006 \
 		--server-type mlserver \
 		--log-level debug \
 		--config-path ${PWD}/config \
@@ -476,7 +491,7 @@ start-agent-local-mlserver:
 
 .PHONY: start-agent-local-triton
 start-agent-local-triton:
-	./bin/agent --agent-folder ${PWD}/mnt/triton --inference-http-port 8082 --inference-grpc-port 8083 --scheduler-host "0.0.0.0" --scheduler-port 9005 --rclone-port 5573 \
+	./bin/agent --agent-folder ${PWD}/mnt/triton --inference-http-port 8082 --inference-grpc-port 8083 --scheduler-host "0.0.0.0" --scheduler-port 9005 --rclone-port 5573 --reverse-proxy-http-port 9997 --reverse-proxy-grpc-port 9996 --debug-grpc-port 7778 --metrics-port 9007 \
 		--server-name triton \
 		--server-type triton \
 		--log-level debug \

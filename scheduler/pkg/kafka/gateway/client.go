@@ -7,12 +7,18 @@ import (
 	"math"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+)
+
+const (
+	SubscriberName = "seldon-modelgateway"
 )
 
 type KafkaSchedulerClient struct {
@@ -53,11 +59,28 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, port int) error 
 	return nil
 }
 
-func (kc *KafkaSchedulerClient) SubscribeModelEvents(ctx context.Context) error {
-	logger := kc.logger.WithField("func", "SubscribeModelEvents")
-	grcpClient := scheduler.NewSchedulerClient(kc.conn)
+func (kc *KafkaSchedulerClient) Start() error {
+	logFailure := func(err error, delay time.Duration) {
+		kc.logger.WithError(err).Errorf("Scheduler not ready")
+	}
+	backOffExp := backoff.NewExponentialBackOff()
+	// Set some reasonable settings for trying to reconnect to scheduler
+	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+	backOffExp.MaxInterval = time.Second * 15
+	backOffExp.InitialInterval = time.Second
+	err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
+	if err != nil {
+		kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
+		return err
+	}
+	return nil
+}
 
-	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon stream"}, grpc_retry.WithMax(100))
+func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
+	logger := kc.logger.WithField("func", "SubscribeModelEvents")
+	grpcClient := scheduler.NewSchedulerClient(kc.conn)
+
+	stream, err := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
 	if err != nil {
 		return err
 	}

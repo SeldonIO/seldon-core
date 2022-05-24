@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -123,9 +122,9 @@ func main() {
 	}
 
 	go func() {
-		err := kafkaSchedulerClient.SubscribeModelEvents(context.Background())
+		err := kafkaSchedulerClient.Start()
 		if err != nil {
-			logger.WithError(err).Error("Subscribe model events failed")
+			logger.WithError(err).Error("Start client failed")
 			close(done)
 		}
 	}()
