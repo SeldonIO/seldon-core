@@ -3,8 +3,6 @@ import contextlib
 import importlib
 import json
 import logging
-import multiprocessing
-import multiprocessing as mp
 import os
 import socket
 import sys
@@ -31,6 +29,16 @@ from seldon_core.gunicorn_utils import (
 )
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.utils import getenv_as_bool, setup_tracing
+
+# This is related to how multiprocessing is implemeneted on MacOS
+# See https://github.com/SeldonIO/seldon-core/issues/3410 for discussion.
+USE_MULTIPROCESS_ENV_NAME = "USE_MULTIPROCESS_PACKAGE"
+USE_MULTIPROCESS = getenv_as_bool(USE_MULTIPROCESS_ENV_NAME, default=False)
+if USE_MULTIPROCESS:
+    import multiprocess as mp
+else:
+    import multiprocessing as mp
+
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +74,11 @@ def start_servers(
        Auxiliary flask process
 
     """
+    if USE_MULTIPROCESS:
+        logger.info("Using alternative multiprocessing library")
+    else:
+        logger.info("Using standard multiprocessing library")
+
     p2 = None
     if target2:
         p2 = mp.Process(target=target2, daemon=False)
@@ -525,9 +538,7 @@ def main():
                 # NOTE: It is imperative that the worker subprocesses be forked before
                 # any gRPC servers start up. See
                 # https://github.com/grpc/grpc/issues/16001 for more details.
-                worker = multiprocessing.Process(
-                    target=_run_grpc_server, args=(bind_address,)
-                )
+                worker = mp.Process(target=_run_grpc_server, args=(bind_address,))
                 worker.start()
                 workers.append(worker)
             for worker in workers:
