@@ -36,11 +36,13 @@ const (
 	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
 	ENV_KAFKA_FULL_GRAPH   = "KAFKA_FULL_GRAPH"
 	ENV_KAFKA_WORKERS      = "KAFKA_WORKERS"
+	ENV_KAFKA_AUTO_COMMIT  = "KAFKA_AUTO_COMMIT"
 )
 
 type SeldonKafkaServer struct {
 	Client          client.SeldonApiClient
 	Producer        *kafka.Producer
+	Consumer        *kafka.Consumer
 	DeploymentName  string
 	Namespace       string
 	Transport       string
@@ -53,9 +55,10 @@ type SeldonKafkaServer struct {
 	Log             logr.Logger
 	Protocol        string
 	FullHealthCheck bool
+	AutoCommit      bool
 }
 
-func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger, fullHealthCheck bool) (*SeldonKafkaServer, error) {
+func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger, fullHealthCheck bool, autoCommit bool) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
 	if fullGraph {
@@ -101,6 +104,11 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 
 		}
 	}
+
+	if !autoCommit && workers > 1 {
+		log.Info("Disabling auto commit for kafka can have undesired side effects with multiple workers")
+	}
+
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
 	p, err := kafka.NewProducer(&producerConfigMap)
@@ -124,6 +132,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		Log:             log.WithName("KafkaServer"),
 		Protocol:        protocol,
 		FullHealthCheck: fullHealthCheck,
+		AutoCommit:      autoCommit,
 	}, nil
 }
 
@@ -167,8 +176,9 @@ func (ks *SeldonKafkaServer) Serve() error {
 		"broker.address.family": "v4",
 		"group.id":              ks.getGroupName(),
 		"session.timeout.ms":    6000,
-		"enable.auto.commit":    true,
-		"auto.offset.reset":     "earliest"}
+		"enable.auto.commit":    ks.AutoCommit,
+		"auto.offset.reset":     "earliest",
+	}
 
 	if util.GetKafkaSecurityProtocol() == "SSL" {
 		sslKakfaServer := util.GetSslElements()
@@ -190,6 +200,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	if err != nil {
 		return err
 	}
+	ks.Consumer = c
 	ks.Log.Info("Created", "consumer", c.String(), "consumer group", ks.getGroupName(), "topic", ks.TopicIn)
 
 	err = c.SubscribeTopics([]string{ks.TopicIn}, nil)
@@ -275,6 +286,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 				job := KafkaJob{
 					headers:    headers,
+					message:    e,
 					reqKey:     e.Key,
 					reqPayload: reqPayload,
 				}

@@ -79,6 +79,7 @@ var (
 	kafkaTopicOut     = flag.String("kafka_output_topic", "", "The kafka output topic")
 	kafkaFullGraph    = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
 	kafkaWorkers      = flag.Int("kafka_workers", 4, "Number of kafka workers")
+	kafkaAutoCommit   = flag.Bool("kafka_auto_commit", true, "Use auto committing in the kafka consumer")
 	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
 	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
 	fullHealthChecks  = flag.Bool("full_health_checks", false, "Full health checks via chosen protocol API")
@@ -285,6 +286,17 @@ func main() {
 			}
 		}
 
+		// Get Kafka Auto Commit
+		kafkaAutoCommitFromEnv := os.Getenv(kafka.ENV_KAFKA_AUTO_COMMIT)
+		if kafkaAutoCommitFromEnv != "" {
+			kafkaAutoCommitFromEnvBool, err := strconv.ParseBool(kafkaAutoCommitFromEnv)
+			if err != nil {
+				log.Fatalf("Failed to parse %s %s", kafka.ENV_KAFKA_AUTO_COMMIT, kafkaAutoCommitFromEnv)
+			} else {
+				*kafkaAutoCommit = kafkaAutoCommitFromEnvBool
+			}
+		}
+
 		//Kafka workers
 		kafkaWorkersFromEnv := os.Getenv(kafka.ENV_KAFKA_WORKERS)
 		if kafkaWorkersFromEnv != "" {
@@ -364,7 +376,7 @@ func main() {
 
 	if *serverType == "kafka" {
 		logger.Info("Starting kafka server")
-		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger, *fullHealthChecks)
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger, *fullHealthChecks, *kafkaAutoCommit)
 		if err != nil {
 			log.Fatalf("Failed to create kafka server: %v", err)
 		}
