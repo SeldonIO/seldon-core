@@ -1,4 +1,4 @@
-# Seldon Core V2 Architecture
+# Architecture
 
 The current set of components used in Seldon Core V2 is shown below:
 
