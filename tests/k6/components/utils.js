@@ -35,8 +35,6 @@ export function setupBase(config ) {
             if (config.isLoadPipeline) {
                 loadPipeline(generatePipelineName(modelName), pipelineDefn)  // we use pipeline name as model name
             }
-            
-            sleep(1)
         }
 
         // warm up

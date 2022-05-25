@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -45,6 +46,7 @@ type ModelVersion struct {
 	replicas  map[int]ReplicaStatus
 	deleted   bool
 	state     ModelStatus
+	mu        sync.RWMutex
 }
 
 type ModelStatus struct {
@@ -68,6 +70,7 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		replicas:  make(map[int]ReplicaStatus),
 		deleted:   false,
 		state:     ModelStatus{State: ModelStateUnknown},
+		mu:        sync.RWMutex{},
 	}
 }
 
@@ -79,6 +82,7 @@ func NewModelVersion(model *pb.Model, version uint32, server string, replicas ma
 		replicas:  replicas,
 		deleted:   deleted,
 		state:     ModelStatus{State: state},
+		mu:        sync.RWMutex{},
 	}
 }
 
@@ -248,6 +252,10 @@ func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
 }
 
+func (m ModelReplicaState) IsLoading() bool {
+	return (m == LoadRequested || m == Loading)
+}
+
 func (me ModelReplicaState) String() string {
 	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
 }
@@ -357,7 +365,13 @@ func (m *ModelVersion) Server() string {
 }
 
 func (m *ModelVersion) ReplicaState() map[int]ReplicaStatus {
-	return m.replicas
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	copy := make(map[int]ReplicaStatus, len(m.replicas))
+	for idx, r := range m.replicas {
+		copy[idx] = r
+	}
+	return copy
 }
 
 func (m *ModelVersion) ModelState() ModelStatus {
@@ -365,6 +379,8 @@ func (m *ModelVersion) ModelState() ModelStatus {
 }
 
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	state, ok := m.replicas[replicaIdx]
 	if !ok {
 		return ModelReplicaStateUnknown
@@ -377,6 +393,8 @@ func (m *ModelVersion) UpdateKubernetesMeta(meta *pb.KubernetesMeta) {
 }
 
 func (m *ModelVersion) GetReplicaForState(state ModelReplicaState) []int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	var assignment []int
 	for k, v := range m.replicas {
 		if v.State == state {
@@ -395,6 +413,8 @@ func (m *ModelVersion) HasServer() bool {
 }
 
 func (m *ModelVersion) Inactive() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	for _, v := range m.replicas {
 		if !v.State.Inactive() {
 			return false
@@ -407,6 +427,8 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 	if server != m.server {
 		return false
 	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	for r, v := range m.replicas {
 		if r == replicaIdx && v.State.IsLoadingOrLoaded() {
 			return true
@@ -416,6 +438,8 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 }
 
 func (m *ModelVersion) NoLiveReplica() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	for _, v := range m.replicas {
 		if !v.State.NoProgressingEndpoint() {
 			return false
@@ -425,6 +449,8 @@ func (m *ModelVersion) NoLiveReplica() bool {
 }
 
 func (m *ModelVersion) GetAssignment() []int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	var assignment []int
 	for k, v := range m.replicas {
 		if v.State == Loaded || v.State == Available || v.State == LoadedUnavailable {
@@ -443,7 +469,15 @@ func (m *ModelVersion) IsDeleted() bool {
 }
 
 func (m *ModelVersion) SetReplicaState(replicaIdx int, state ReplicaStatus) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.replicas[replicaIdx] = state
+}
+
+func (m *ModelVersion) DeleteReplica(replicaIdx int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.replicas, replicaIdx)
 }
 
 func (s *Server) Key() string {

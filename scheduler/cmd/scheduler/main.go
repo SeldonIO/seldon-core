@@ -151,7 +151,7 @@ func main() {
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,
-		scheduler.DefaultSchedulerConfig(),
+		scheduler.DefaultSchedulerConfig(ss),
 	)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 

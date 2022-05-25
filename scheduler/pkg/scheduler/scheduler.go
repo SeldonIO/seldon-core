@@ -29,12 +29,12 @@ type SchedulerConfig struct {
 	replicaSorts   []sorters.ReplicaSorter
 }
 
-func DefaultSchedulerConfig() SchedulerConfig {
+func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
 		serverFilters:  []ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
 		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}},
 		serverSorts:    []sorters.ServerSorter{},
-		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
+		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemoryWhileLoadingSorter{Store: store}, sorters.ModelAlreadyLoadedSorter{}},
 	}
 }
 
@@ -126,6 +126,9 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
 				continue
 			}
+
+			// TODO: do we need a lock here? we could have many goroutines at sorting
+			// without the store being reflected and hence storing on stale values
 			s.sortReplicas(candidateReplicas)
 
 			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])

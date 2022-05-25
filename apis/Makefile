@@ -17,7 +17,8 @@ build:
 		./mlops/scheduler/scheduler.proto \
 		./mlops/scheduler/storage.proto \
 		./mlops/chainer/chainer.proto \
-		./mlops/v2_dataplane/v2_dataplane.proto
+		./mlops/v2_dataplane/v2_dataplane.proto \
+		./mlops/v2_model_repository/v2_model_repository.proto
 
 
 PROTOC_PYTHON_OUT := --python_out=./python

@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"sync"
 
@@ -133,7 +132,7 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 	if manager.cache.Exists(modelId, false) {
 
 		if err := manager.v2Client.UnloadModel(modelId); err != nil {
-			if err.errCode == http.StatusNotFound {
+			if err.IsNotFound() {
 				manager.logger.Warnf("Model is not found on server %s", modelId)
 			} else {
 				manager.logger.WithError(err.err).Errorf("Cannot unload model %s from server", modelId)
@@ -330,7 +329,7 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 			// by a concurrent request!
 			// otherwise assume that the unload operation failed and put back the model in cache
 
-			if err.errCode != http.StatusNotFound {
+			if !err.IsNotFound() {
 				errStr := fmt.Sprintf("Cannot unload model %s (for reload model %s)", evictedModelId, modelId)
 				manager.logger.WithError(err.err).Error(errStr)
 				endEvictFn()

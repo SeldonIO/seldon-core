@@ -156,7 +156,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 }
 
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort int) *reverseHTTPProxy {
-	v2Client := NewV2Client("localhost", backEndServerPort, logger)
+	v2Client := NewV2Client("localhost", backEndServerPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	rp := NewReverseHTTPProxy(logger, uint(rpPort), fakeMetricsHandler{})
 	rp.SetState(localCacheManager)

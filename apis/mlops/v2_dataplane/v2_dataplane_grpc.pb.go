@@ -37,6 +37,10 @@ type GRPCInferenceServiceClient interface {
 	// indicated by the google.rpc.Status returned for the request. The OK code
 	// indicates success and other codes indicate failure.
 	ModelInfer(ctx context.Context, in *ModelInferRequest, opts ...grpc.CallOption) (*ModelInferResponse, error)
+	// control plance
+	RepositoryIndex(ctx context.Context, in *RepositoryIndexRequest, opts ...grpc.CallOption) (*RepositoryIndexResponse, error)
+	RepositoryModelLoad(ctx context.Context, in *RepositoryModelLoadRequest, opts ...grpc.CallOption) (*RepositoryModelLoadResponse, error)
+	RepositoryModelUnload(ctx context.Context, in *RepositoryModelUnloadRequest, opts ...grpc.CallOption) (*RepositoryModelUnloadResponse, error)
 }
 
 type gRPCInferenceServiceClient struct {
@@ -101,6 +105,33 @@ func (c *gRPCInferenceServiceClient) ModelInfer(ctx context.Context, in *ModelIn
 	return out, nil
 }
 
+func (c *gRPCInferenceServiceClient) RepositoryIndex(ctx context.Context, in *RepositoryIndexRequest, opts ...grpc.CallOption) (*RepositoryIndexResponse, error) {
+	out := new(RepositoryIndexResponse)
+	err := c.cc.Invoke(ctx, "/inference.GRPCInferenceService/RepositoryIndex", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gRPCInferenceServiceClient) RepositoryModelLoad(ctx context.Context, in *RepositoryModelLoadRequest, opts ...grpc.CallOption) (*RepositoryModelLoadResponse, error) {
+	out := new(RepositoryModelLoadResponse)
+	err := c.cc.Invoke(ctx, "/inference.GRPCInferenceService/RepositoryModelLoad", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gRPCInferenceServiceClient) RepositoryModelUnload(ctx context.Context, in *RepositoryModelUnloadRequest, opts ...grpc.CallOption) (*RepositoryModelUnloadResponse, error) {
+	out := new(RepositoryModelUnloadResponse)
+	err := c.cc.Invoke(ctx, "/inference.GRPCInferenceService/RepositoryModelUnload", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GRPCInferenceServiceServer is the server API for GRPCInferenceService service.
 // All implementations must embed UnimplementedGRPCInferenceServiceServer
 // for forward compatibility
@@ -124,6 +155,10 @@ type GRPCInferenceServiceServer interface {
 	// indicated by the google.rpc.Status returned for the request. The OK code
 	// indicates success and other codes indicate failure.
 	ModelInfer(context.Context, *ModelInferRequest) (*ModelInferResponse, error)
+	// control plance
+	RepositoryIndex(context.Context, *RepositoryIndexRequest) (*RepositoryIndexResponse, error)
+	RepositoryModelLoad(context.Context, *RepositoryModelLoadRequest) (*RepositoryModelLoadResponse, error)
+	RepositoryModelUnload(context.Context, *RepositoryModelUnloadRequest) (*RepositoryModelUnloadResponse, error)
 	mustEmbedUnimplementedGRPCInferenceServiceServer()
 }
 
@@ -148,6 +183,15 @@ func (UnimplementedGRPCInferenceServiceServer) ModelMetadata(context.Context, *M
 }
 func (UnimplementedGRPCInferenceServiceServer) ModelInfer(context.Context, *ModelInferRequest) (*ModelInferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModelInfer not implemented")
+}
+func (UnimplementedGRPCInferenceServiceServer) RepositoryIndex(context.Context, *RepositoryIndexRequest) (*RepositoryIndexResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RepositoryIndex not implemented")
+}
+func (UnimplementedGRPCInferenceServiceServer) RepositoryModelLoad(context.Context, *RepositoryModelLoadRequest) (*RepositoryModelLoadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RepositoryModelLoad not implemented")
+}
+func (UnimplementedGRPCInferenceServiceServer) RepositoryModelUnload(context.Context, *RepositoryModelUnloadRequest) (*RepositoryModelUnloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RepositoryModelUnload not implemented")
 }
 func (UnimplementedGRPCInferenceServiceServer) mustEmbedUnimplementedGRPCInferenceServiceServer() {}
 
@@ -270,6 +314,60 @@ func _GRPCInferenceService_ModelInfer_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GRPCInferenceService_RepositoryIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RepositoryIndexRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCInferenceServiceServer).RepositoryIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/inference.GRPCInferenceService/RepositoryIndex",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCInferenceServiceServer).RepositoryIndex(ctx, req.(*RepositoryIndexRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GRPCInferenceService_RepositoryModelLoad_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RepositoryModelLoadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCInferenceServiceServer).RepositoryModelLoad(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/inference.GRPCInferenceService/RepositoryModelLoad",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCInferenceServiceServer).RepositoryModelLoad(ctx, req.(*RepositoryModelLoadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GRPCInferenceService_RepositoryModelUnload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RepositoryModelUnloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GRPCInferenceServiceServer).RepositoryModelUnload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/inference.GRPCInferenceService/RepositoryModelUnload",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GRPCInferenceServiceServer).RepositoryModelUnload(ctx, req.(*RepositoryModelUnloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GRPCInferenceService_ServiceDesc is the grpc.ServiceDesc for GRPCInferenceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -300,6 +398,18 @@ var GRPCInferenceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ModelInfer",
 			Handler:    _GRPCInferenceService_ModelInfer_Handler,
+		},
+		{
+			MethodName: "RepositoryIndex",
+			Handler:    _GRPCInferenceService_RepositoryIndex_Handler,
+		},
+		{
+			MethodName: "RepositoryModelLoad",
+			Handler:    _GRPCInferenceService_RepositoryModelLoad_Handler,
+		},
+		{
+			MethodName: "RepositoryModelUnload",
+			Handler:    _GRPCInferenceService_RepositoryModelUnload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

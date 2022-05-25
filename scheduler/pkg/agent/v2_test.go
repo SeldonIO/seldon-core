@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
@@ -71,7 +72,7 @@ func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2Sta
 	log.SetLevel(log.DebugLevel)
 	host := "model-server"
 	port := 8080
-	v2 := NewV2Client(host, port, logger)
+	v2 := NewV2Client(host, port, logger, false)
 	state := &v2State{
 		models: make(map[string]bool, len(models)),
 	}
@@ -93,7 +94,7 @@ func TestCommunicationErrors(t *testing.T) {
 	modelName := "dummy"
 	r := createTestV2Client([]string{modelName}, 200)
 	err := r.LoadModel(modelName)
-	g.Expect(err.errCode).To(Equal(HttpCommunicationErrCode))
+	g.Expect(err.errCode).To(Equal(V2CommunicationErrCode))
 }
 
 func TestRequestErrors(t *testing.T) {
@@ -101,9 +102,9 @@ func TestRequestErrors(t *testing.T) {
 	// and therefore all http requests should fail because of dns / client error
 	g := NewGomegaWithT(t)
 	modelName := "dummy"
-	v2 := NewV2Client("httpwrong://server", 0, log.New())
+	v2 := NewV2Client("httpwrong://server", 0, log.New(), false)
 	err := v2.LoadModel(modelName)
-	g.Expect(err.errCode).To(Equal(HttpRequestErrCode))
+	g.Expect(err.errCode).To(Equal(V2RequestErrCode))
 }
 
 func TestLoad(t *testing.T) {
@@ -164,4 +165,62 @@ func TestUnload(t *testing.T) {
 		g.Expect(httpmock.GetTotalCallCount()).To(Equal(len(test.models)))
 		httpmock.DeactivateAndReset()
 	}
+}
+
+func TestGrpcV2(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	mockMLServer := &mockGRPCMLServer{}
+	backEndGRPCPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = mockMLServer.setup(uint(backEndGRPCPort))
+	go func() {
+		_ = mockMLServer.start()
+	}()
+	defer mockMLServer.stop()
+
+	time.Sleep(10 * time.Millisecond)
+
+	v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
+
+	dummModel := "dummy"
+
+	v2Err := v2Client.LoadModel(dummModel)
+	g.Expect(v2Err).To(BeNil())
+
+	v2Err = v2Client.UnloadModel(dummModel)
+	g.Expect(v2Err).To(BeNil())
+
+	v2Err = v2Client.UnloadModel(modelNameMissing)
+	g.Expect(v2Err.IsNotFound()).To(BeTrue())
+
+	err = v2Client.Ready()
+	g.Expect(err).To(BeNil())
+
+}
+
+func TestGrpcV2WithError(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	// note no grpc server to respond
+
+	backEndGRPCPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
+
+	dummModel := "dummy"
+
+	v2Err := v2Client.LoadModel(dummModel)
+	g.Expect(v2Err).NotTo(BeNil())
+
+	v2Err = v2Client.UnloadModel(dummModel)
+	g.Expect(v2Err).NotTo(BeNil())
+
+	err = v2Client.Ready()
+	g.Expect(err).NotTo(BeNil())
+
 }

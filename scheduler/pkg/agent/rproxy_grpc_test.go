@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
@@ -19,6 +21,10 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+)
+
+const (
+	modelNameMissing = "missingmodel"
 )
 
 type mockGRPCMLServer struct {
@@ -59,11 +65,26 @@ func (mlserver *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelRea
 	return &v2.ModelReadyResponse{Ready: true}, nil
 }
 
+func (mlserver *mockGRPCMLServer) ServerReady(ctx context.Context, r *v2.ServerReadyRequest) (*v2.ServerReadyResponse, error) {
+	return &v2.ServerReadyResponse{Ready: true}, nil
+}
+
+func (mlserver *mockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
+	return &v2.RepositoryModelLoadResponse{}, nil
+}
+
+func (mlserver *mockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.RepositoryModelUnloadRequest) (*v2.RepositoryModelUnloadResponse, error) {
+	if r.ModelName == modelNameMissing {
+		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found", r.ModelName))
+	}
+	return &v2.RepositoryModelUnloadResponse{}, nil
+}
+
 func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort int) *reverseGRPCProxy {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 
-	v2Client := NewV2Client("localhost", backEndServerPort, logger)
+	v2Client := NewV2Client("localhost", backEndServerPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	rp := NewReverseGRPCProxy(newFakeMetricsHandler(), logger, "localhost", uint(backEndGRPCPort), uint(rpPort))
 	rp.SetState(localCacheManager)

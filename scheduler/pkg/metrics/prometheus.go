@@ -19,8 +19,12 @@ const (
 	HistogramName                                      = "seldon_infer_api_seconds"
 	InferCounterName                                   = "seldon_infer_total"
 	InferLatencyCounterName                            = "seldon_infer_seconds_total"
+	AggregateInferCounterName                          = "seldon_aggregate_infer_total"
+	AggregateInferLatencyCounterName                   = "seldon_aggregate_infer_seconds_total"
 	CacheEvictCounterName                              = "seldon_cache_evict_count"
 	CacheMissCounterName                               = "seldon_cache_miss_count"
+	LoadModelCounterName                               = "seldon_load_model_counter"
+	UnloadModelCounterName                             = "seldon_unload_model_counter"
 	LoadedModelGaugeName                               = "seldon_loaded_model_gauge"
 	LoadedModelMemoryGaugeName                         = "seldon_loaded_model_memory_bytes_gauge"
 	EvictedModelMemoryGaugeName                        = "seldon_evicted_model_memory_bytes_gauge"
@@ -59,8 +63,12 @@ type PrometheusMetrics struct {
 	histogram                                      *prometheus.HistogramVec
 	inferCounter                                   *prometheus.CounterVec
 	inferLatencyCounter                            *prometheus.CounterVec
+	aggregateInferCounter                          *prometheus.CounterVec
+	aggregateInferLatencyCounter                   *prometheus.CounterVec
 	cacheEvictCounter                              *prometheus.CounterVec
 	cacheMissCounter                               *prometheus.CounterVec
+	loadModelCounter                               *prometheus.CounterVec
+	unloadModelCounter                             *prometheus.CounterVec
 	loadedModelGauge                               *prometheus.GaugeVec
 	loadedModelMemoryGauge                         *prometheus.GaugeVec
 	evictedModelMemoryGauge                        *prometheus.GaugeVec
@@ -75,11 +83,24 @@ func NewPrometheusMetrics(serverName string, serverReplicaIdx uint, namespace st
 	if err != nil {
 		return nil, err
 	}
+
 	inferCounter, err := createInferCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
+
 	inferLatencyCounter, err := createInferLatencyCounter(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	aggregateInferCounter, err := createAggregateInferCounter(namespace)
+	if err != nil {
+
+		return nil, err
+	}
+
+	aggregateInferLatencyCounter, err := createAggregateInferLatencyCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +111,16 @@ func NewPrometheusMetrics(serverName string, serverReplicaIdx uint, namespace st
 	}
 
 	cacheMissCounter, err := createCacheMissCounter(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	loadModelCounter, err := createLoadModelCounter(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	unloadModelCounter, err := createUnloadModelCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +158,12 @@ func NewPrometheusMetrics(serverName string, serverReplicaIdx uint, namespace st
 		histogram:                        histogram,
 		inferCounter:                     inferCounter,
 		inferLatencyCounter:              inferLatencyCounter,
+		aggregateInferCounter:            aggregateInferCounter,
+		aggregateInferLatencyCounter:     aggregateInferLatencyCounter,
 		cacheEvictCounter:                cacheEvictCounter,
 		cacheMissCounter:                 cacheMissCounter,
+		loadModelCounter:                 loadModelCounter,
+		unloadModelCounter:               unloadModelCounter,
 		loadedModelGauge:                 loadedModelGauge,
 		loadedModelMemoryGauge:           loadedModelMemoryGauge,
 		evictedModelMemoryGauge:          evictedModelMemoryGauge,
@@ -179,17 +214,45 @@ func createInferLatencyCounter(namespace string) (*prometheus.CounterVec, error)
 		namespace, labelNames)
 }
 
+func createAggregateInferCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
+	return createCounterVec(
+		AggregateInferCounterName, "A count of server inference calls (aggregate)",
+		namespace, labelNames)
+}
+
+func createAggregateInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
+	return createCounterVec(
+		AggregateInferLatencyCounterName, "A sum of server inference call latencies (aggregate)",
+		namespace, labelNames)
+}
+
 func createCacheEvictCounter(namespace string) (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonInternalModelMetric}
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
 		CacheEvictCounterName, "A count of model cache evict",
 		namespace, labelNames)
 }
 
 func createCacheMissCounter(namespace string) (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonInternalModelMetric}
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
 		CacheMissCounterName, "A count of model cache miss",
+		namespace, labelNames)
+}
+
+func createLoadModelCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
+	return createCounterVec(
+		LoadModelCounterName, "A count of model load",
+		namespace, labelNames)
+}
+
+func createUnloadModelCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
+	return createCounterVec(
+		UnloadModelCounterName, "A count of model unload",
 		namespace, labelNames)
 }
 
@@ -298,19 +361,21 @@ func (pm *PrometheusMetrics) AddInferMetrics(externalModelName string, internalM
 func (pm *PrometheusMetrics) AddLoadedModelMetrics(internalModelName string, memBytes uint64, isLoad, isSoft bool) {
 	if isLoad {
 		if isSoft {
-			pm.addCacheMissCount(internalModelName)
+			pm.addCacheMissCount()
 			pm.addEvictedModelMemoryMetrics(internalModelName, memBytes, false) // remove it from disk
 		} else {
+			pm.addLoadCount()
 			pm.addLoadedModelMetrics(internalModelName, isLoad)
 		}
 		pm.addLoadedModelMemoryMetrics(internalModelName, memBytes, isLoad)
 	} else {
 		if isSoft {
-			pm.addCacheEvictCount(internalModelName)
+			pm.addCacheEvictCount()
 			pm.addEvictedModelMemoryMetrics(internalModelName, memBytes, true)
 		} else {
 			pm.addLoadedModelMetrics(internalModelName, isLoad)
 			pm.addEvictedModelMemoryMetrics(internalModelName, memBytes, false)
+			pm.addUnloadCount()
 		}
 		pm.addLoadedModelMemoryMetrics(internalModelName, memBytes, isLoad)
 	}
@@ -380,17 +445,29 @@ func (pm *PrometheusMetrics) addEvictedModelMemoryMetrics(internalModelName stri
 	}
 }
 
-func (pm *PrometheusMetrics) addCacheMissCount(internalModelName string) {
-	pm.cacheMissCounter.With(prometheus.Labels{
-		SeldonInternalModelMetric: internalModelName,
+func (pm *PrometheusMetrics) addLoadCount() {
+	pm.loadModelCounter.With(prometheus.Labels{
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 	}).Inc()
 }
 
-func (pm *PrometheusMetrics) addCacheEvictCount(internalModelName string) {
+func (pm *PrometheusMetrics) addUnloadCount() {
+	pm.unloadModelCounter.With(prometheus.Labels{
+		SeldonServerMetric:        pm.serverName,
+		SeldonServerReplicaMetric: pm.serverReplicaIdx,
+	}).Inc()
+}
+
+func (pm *PrometheusMetrics) addCacheMissCount() {
+	pm.cacheMissCounter.With(prometheus.Labels{
+		SeldonServerMetric:        pm.serverName,
+		SeldonServerReplicaMetric: pm.serverReplicaIdx,
+	}).Inc()
+}
+
+func (pm *PrometheusMetrics) addCacheEvictCount() {
 	pm.cacheEvictCounter.With(prometheus.Labels{
-		SeldonInternalModelMetric: internalModelName,
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 	}).Inc()
@@ -404,12 +481,22 @@ func (pm *PrometheusMetrics) addInferCount(externalModelName, internalModelName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,
 	}).Inc()
+	pm.aggregateInferCounter.With(prometheus.Labels{
+		SeldonServerMetric:        pm.serverName,
+		SeldonServerReplicaMetric: pm.serverReplicaIdx,
+		MethodTypeMetric:          method,
+	}).Inc()
 }
 
 func (pm *PrometheusMetrics) addInferLatency(externalModelName, internalModelName, method string, latency float64) {
 	pm.inferLatencyCounter.With(prometheus.Labels{
 		SeldonModelMetric:         externalModelName,
 		SeldonInternalModelMetric: internalModelName,
+		SeldonServerMetric:        pm.serverName,
+		SeldonServerReplicaMetric: pm.serverReplicaIdx,
+		MethodTypeMetric:          method,
+	}).Add(latency)
+	pm.aggregateInferLatencyCounter.With(prometheus.Labels{
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,
@@ -428,5 +515,5 @@ func (pm *PrometheusMetrics) Start(port int) error {
 }
 
 func (pm *PrometheusMetrics) Stop() error {
-	return pm.server.Shutdown(context.TODO())
+	return pm.server.Shutdown(context.Background())
 }

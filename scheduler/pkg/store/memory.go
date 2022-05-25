@@ -293,7 +293,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 				"Setting model %s version %d on server %s replica %d to LoadRequested",
 				modelKey, modelVersion.version, serverKey, replica.GetReplicaIdx(),
 			)
-			modelVersion.replicas[replica.GetReplicaIdx()] = ReplicaStatus{State: LoadRequested}
+			modelVersion.SetReplicaState(replica.GetReplicaIdx(), ReplicaStatus{State: LoadRequested})
 			updated = true
 		} else {
 			logger.Debugf(
@@ -303,7 +303,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		}
 		updatedReplicas[replica.GetReplicaIdx()] = true
 	}
-	for replicaIdx, existingState := range modelVersion.replicas {
+	for replicaIdx, existingState := range modelVersion.ReplicaState() {
 		logger.Debugf(
 			"Looking at replicaidx %d with state %s but ignoring processed %v",
 			replicaIdx, existingState.State.String(), updatedReplicas,
@@ -315,7 +315,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 					"Setting model %s version %d on server %s replica %d to UnloadRequested",
 					modelKey, modelVersion.version, serverKey, replicaIdx,
 				)
-				modelVersion.replicas[replicaIdx] = ReplicaStatus{State: UnloadRequested}
+				modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{State: UnloadRequested})
 				updated = true
 			} else {
 				logger.Debugf(
@@ -349,7 +349,7 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 	}
 
 	updated := false
-	for replicaIdx, existingState := range modelVersion.replicas {
+	for replicaIdx, existingState := range modelVersion.ReplicaState() {
 		if !existingState.State.UnloadingOrUnloaded() {
 			logger.Debugf(
 				"Setting model %s version %d on server %s replica %d to UnloadRequested was %s",
@@ -359,7 +359,7 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 				replicaIdx,
 				existingState.State.String(),
 			)
-			modelVersion.replicas[replicaIdx] = ReplicaStatus{State: UnloadRequested}
+			modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{State: UnloadRequested})
 			updated = true
 		} else {
 			logger.Debugf(
@@ -395,24 +395,24 @@ func (m *MemoryStore) UpdateModelState(
 		return err
 	}
 
-	existingState, ok := modelVersion.replicas[replicaIdx]
+	existingState := modelVersion.GetModelReplicaState(replicaIdx)
 
-	if existingState.State != expectedState {
+	if existingState != expectedState {
 		return fmt.Errorf(
 			"State mismatch for %s:%d expected state %s but was %s when trying to move to state %s",
-			modelKey, version, expectedState.String(), existingState.State.String(), desiredState.String(),
+			modelKey, version, expectedState.String(), existingState.String(), desiredState.String(),
 		)
 	}
 
-	if !ok || existingState.State != desiredState {
+	if existingState != desiredState {
 		latestModel := model.Latest()
 		isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
 
-		modelVersion.replicas[replicaIdx] = ReplicaStatus{
+		modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{
 			State:     desiredState,
 			Reason:    reason,
 			Timestamp: time.Now(),
-		}
+		})
 		logger.Debugf(
 			"Setting model %s version %d on server %s replica %d to %s",
 			modelKey, version, serverKey, replicaIdx, desiredState.String(),
@@ -510,7 +510,7 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 		if ok {
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
-				delete(modelVersion.replicas, replicaIdx)
+				modelVersion.DeleteReplica(replicaIdx)
 				modelNames = append(modelNames, modelVersionID.Name)
 			} else {
 				logger.Warnf("Can't find model version %s", modelVersionID.String())

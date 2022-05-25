@@ -45,6 +45,13 @@ service GRPCInferenceService
   // indicated by the google.rpc.Status returned for the request. The OK code 
   // indicates success and other codes indicate failure.
   rpc ModelInfer(ModelInferRequest) returns (ModelInferResponse) {}
+
+  // control plance
+  rpc RepositoryIndex(RepositoryIndexRequest) returns (RepositoryIndexResponse){}
+
+  rpc RepositoryModelLoad(RepositoryModelLoadRequest) returns (RepositoryModelLoadResponse){}
+
+  rpc RepositoryModelUnload(RepositoryModelUnloadRequest) returns (RepositoryModelUnloadResponse){}
 }
 
 message ServerLiveRequest {}
@@ -337,3 +344,186 @@ message InferTensorContents
   // one-dimensional, row-major order of the tensor elements.
   repeated bytes bytes_contents = 8;
 }
+
+// control plane from triton. merged in the dataplane:
+// https://github.com/triton-inference-server/common/blob/main/protobuf/grpc_service.proto
+
+//@@
+//@@.. cpp:var:: message ModelRepositoryParameter
+//@@
+//@@   An model repository parameter value.
+//@@
+message ModelRepositoryParameter
+{
+  //@@  .. cpp:var:: oneof parameter_choice
+  //@@
+  //@@     The parameter value can be a string, an int64 or
+  //@@     a boolean
+  //@@
+  oneof parameter_choice
+  {
+    //@@    .. cpp:var:: bool bool_param
+    //@@
+    //@@       A boolean parameter value.
+    //@@
+    bool bool_param = 1;
+
+    //@@    .. cpp:var:: int64 int64_param
+    //@@
+    //@@       An int64 parameter value.
+    //@@
+    int64 int64_param = 2;
+
+    //@@    .. cpp:var:: string string_param
+    //@@
+    //@@       A string parameter value.
+    //@@
+    string string_param = 3;
+
+    //@@    .. cpp:var:: bytes bytes_param
+    //@@
+    //@@       A bytes parameter value.
+    //@@
+    bytes bytes_param = 4;
+  }
+}
+
+//@@
+//@@.. cpp:var:: message RepositoryIndexRequest
+//@@
+//@@   Request message for RepositoryIndex.
+//@@
+message RepositoryIndexRequest
+{
+  //@@  .. cpp:var:: string repository_name
+  //@@
+  //@@     The name of the repository. If empty the index is returned
+  //@@     for all repositories.
+  //@@
+  string repository_name = 1;
+
+  //@@  .. cpp:var:: bool ready
+  //@@
+  //@@     If true returned only models currently ready for inferencing.
+  //@@
+  bool ready = 2;
+}
+
+//@@
+//@@.. cpp:var:: message RepositoryIndexResponse
+//@@
+//@@   Response message for RepositoryIndex.
+//@@
+message RepositoryIndexResponse
+{
+  //@@
+  //@@  .. cpp:var:: message ModelIndex
+  //@@
+  //@@     Index entry for a model.
+  //@@
+  message ModelIndex
+  {
+    //@@
+    //@@    .. cpp:var:: string name
+    //@@
+    //@@       The name of the model.
+    //@@
+    string name = 1;
+
+    //@@    .. cpp:var:: string version
+    //@@
+    //@@       The version of the model.
+    //@@
+    string version = 2;
+
+    //@@
+    //@@    .. cpp:var:: string state
+    //@@
+    //@@       The state of the model.
+    //@@
+    string state = 3;
+
+    //@@
+    //@@    .. cpp:var:: string reason
+    //@@
+    //@@       The reason, if any, that the model is in the given state.
+    //@@
+    string reason = 4;
+  }
+
+  //@@
+  //@@  .. cpp:var:: ModelIndex models (repeated)
+  //@@
+  //@@     An index entry for each model.
+  //@@
+  repeated ModelIndex models = 1;
+}
+
+//@@
+//@@.. cpp:var:: message RepositoryModelLoadRequest
+//@@
+//@@   Request message for RepositoryModelLoad.
+//@@
+message RepositoryModelLoadRequest
+{
+  //@@  .. cpp:var:: string repository_name
+  //@@
+  //@@     The name of the repository to load from. If empty the model
+  //@@     is loaded from any repository.
+  //@@
+  string repository_name = 1;
+
+  //@@  .. cpp:var:: string repository_name
+  //@@
+  //@@     The name of the model to load, or reload.
+  //@@
+  string model_name = 2;
+
+  //@@  .. cpp:var:: map<string,ModelRepositoryParameter> parameters
+  //@@
+  //@@     Optional model repository request parameters.
+  //@@
+  map<string, ModelRepositoryParameter> parameters = 3;
+}
+
+//@@
+//@@.. cpp:var:: message RepositoryModelLoadResponse
+//@@
+//@@   Response message for RepositoryModelLoad.
+//@@
+message RepositoryModelLoadResponse {}
+
+//@@
+//@@.. cpp:var:: message RepositoryModelUnloadRequest
+//@@
+//@@   Request message for RepositoryModelUnload.
+//@@
+message RepositoryModelUnloadRequest
+{
+  //@@  .. cpp:var:: string repository_name
+  //@@
+  //@@     The name of the repository from which the model was originally
+  //@@     loaded. If empty the repository is not considered.
+  //@@
+  string repository_name = 1;
+
+  //@@  .. cpp:var:: string repository_name
+  //@@
+  //@@     The name of the model to unload.
+  //@@
+  string model_name = 2;
+
+  //@@  .. cpp:var:: map<string,ModelRepositoryParameter> parameters
+  //@@
+  //@@     Optional model repository request parameters.
+  //@@
+  map<string, ModelRepositoryParameter> parameters = 3;
+}
+
+//@@
+//@@.. cpp:var:: message RepositoryModelUnloadResponse
+//@@
+//@@   Response message for RepositoryModelUnload.
+//@@
+message RepositoryModelUnloadResponse {}
+
