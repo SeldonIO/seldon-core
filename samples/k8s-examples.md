@@ -1,12 +1,6 @@
 ## Seldon V2 Kubernetes Examples
 
- * Create a kubernetes cluster with local auth to it
- * Install Kafka - see `kafka/strimzi` folder
- * Build if needed and place `seldon` binary in your path
- * Install Seldon on Kubernetes
-   * Run `make deploy-k8s` from top level folder
-```
-````
+
 
 ```python
 MESH_IP=kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
@@ -20,7 +14,7 @@ MESH_IP
 
 
 
-    '172.18.255.9'
+    '172.22.255.9'
 ```
 ````
 
@@ -54,11 +48,9 @@ kubectl create -f ./models/sklearn-iris-gs.yaml
 ```
 ````
 
-```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```python
+buildkubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
-````{collapse} Expand to see output
-```json
 
     model.mlops.seldon.io/iris condition met
 ```
@@ -73,12 +65,12 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-05-16T09:37:02Z",
+          "lastTransitionTime": "2022-05-26T10:09:32Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-05-16T09:37:02Z",
+          "lastTransitionTime": "2022-05-26T10:09:32Z",
           "status": "True",
           "type": "Ready"
         }
@@ -88,7 +80,7 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ````
 
 ```bash
-seldon model infer --model-name iris --inference-host ${MESH_IP}:80 \
+seldon model infer iris --inference-host ${MESH_IP}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
@@ -97,7 +89,7 @@ seldon model infer --model-name iris --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "35f343b7-a18d-4aba-a72d-b6d45aadb337",
+    	"id": "5890ac9d-c1ed-4343-b9e6-a460bead5fe8",
     	"parameters": null,
     	"outputs": [
     		{
@@ -117,7 +109,7 @@ seldon model infer --model-name iris --inference-host ${MESH_IP}:80 \
 ````
 
 ```bash
-seldon model infer --model-name iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
+seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -153,12 +145,12 @@ kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-05-16T09:28:34Z",
+          "lastTransitionTime": "2022-05-26T09:58:57Z",
           "status": "True",
           "type": "Ready"
         },
         {
-          "lastTransitionTime": "2022-05-16T09:28:34Z",
+          "lastTransitionTime": "2022-05-26T09:58:57Z",
           "reason": "StatefulSet replicas matches desired replicas",
           "status": "True",
           "type": "StatefulSetReady"
@@ -279,7 +271,7 @@ kubectl wait --for condition=ready --timeout=300s experiment --all -n seldon-mes
 ````
 
 ```bash
-seldon model infer --inference-host ${MESH_IP}:80 -i 50 --model-name iris \
+seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
@@ -401,7 +393,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ````
 
 ```bash
-seldon pipeline infer -p tfsimples --inference-mode grpc --inference-host ${MESH_IP}:80 \
+seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -609,7 +601,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ````
 
 ```bash
-seldon pipeline infer -p join --inference-mode grpc --inference-host ${MESH_IP}:80 \
+seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output

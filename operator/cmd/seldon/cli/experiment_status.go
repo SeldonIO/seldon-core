@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
@@ -15,16 +13,12 @@ const (
 
 func createExperimentStatus() *cobra.Command {
 	cmdExperimentStatus := &cobra.Command{
-		Use:   "status",
+		Use:   "status <experimentName>",
 		Short: "get status for experiment",
 		Long:  `get status for experiment`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			experimentName, err := cmd.Flags().GetString(experimentFlag)
 			if err != nil {
 				return err
 			}
@@ -40,14 +34,11 @@ func createExperimentStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			experimentName := args[0]
 			schedulerClient := cli.NewSchedulerClient(schedulerHost)
 			err = schedulerClient.ExperimentStatus(experimentName, showRequest, showResponse, wait)
 			return err
 		},
-	}
-	cmdExperimentStatus.Flags().StringP(experimentFlag, "e", "", "experiment to stop")
-	if err := cmdExperimentStatus.MarkFlagRequired(experimentFlag); err != nil {
-		os.Exit(-1)
 	}
 	cmdExperimentStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdExperimentStatus.Flags().BoolP(experimentWaitFlag, "w", false, "wait for experiment to be active")

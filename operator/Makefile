@@ -71,6 +71,9 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 ##@ Build
 
+.PHONY: clean-apis
+	rm -rf apis-TEMP
+
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go

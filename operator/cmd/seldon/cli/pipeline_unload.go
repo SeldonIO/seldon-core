@@ -1,30 +1,20 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-const (
-	pipelineNameFlag = "pipeline-name"
-)
-
 func createPipelineUnload() *cobra.Command {
 	cmdPipelineUnload := &cobra.Command{
-		Use:   "unload",
+		Use:   "unload <pipelineName>",
 		Short: "unload a pipeline",
 		Long:  `unload a pipeline`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			pipelineName, err := cmd.Flags().GetString(pipelineNameFlag)
 			if err != nil {
 				return err
 			}
@@ -37,13 +27,10 @@ func createPipelineUnload() *cobra.Command {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			pipelineName := args[0]
 			err = schedulerClient.UnloadPipeline(pipelineName, showRequest, showResponse)
 			return err
 		},
-	}
-	cmdPipelineUnload.Flags().StringP(pipelineNameFlag, "p", "", "pipeline name to unload")
-	if err := cmdPipelineUnload.MarkFlagRequired(pipelineNameFlag); err != nil {
-		os.Exit(-1)
 	}
 	cmdPipelineUnload.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	return cmdPipelineUnload

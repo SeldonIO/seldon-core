@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"fmt"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
@@ -15,10 +13,10 @@ const (
 
 func createPipelineInspect() *cobra.Command {
 	cmdPipelineInspect := &cobra.Command{
-		Use:   "inspect",
+		Use:   "inspect <expression>",
 		Short: "inspect data in a pipeline",
 		Long:  `inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or  pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
 			if err != nil {
@@ -32,13 +30,7 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var data []byte
-			if len(args) > 0 {
-				data = []byte(args[0])
-			} else {
-				return fmt.Errorf("pipeline step name required")
-			}
-
+			data := []byte(args[0])
 			kc, err := cli.NewKafkaClient(kafkaBroker, schedulerHost)
 			if err != nil {
 				return err

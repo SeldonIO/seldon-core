@@ -21,6 +21,10 @@ import matplotlib.pyplot as plt
 tf.keras.backend.clear_session()
 ```
 
+    2022-05-26 11:27:37.239516: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+    2022-05-26 11:27:37.239536: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+```
+````
 
 ```python
 train, test = tf.keras.datasets.cifar10.load_data()
@@ -149,9 +153,9 @@ seldon model load -f ../../models/cifar10-drift-detect.yaml
 ````
 
 ```bash
-seldon model status --model-name cifar10 -w ModelAvailable | jq .
-seldon model status --model-name cifar10-outlier -w ModelAvailable | jq .
-seldon model status --model-name cifar10-drift -w ModelAvailable | jq .
+seldon model status cifar10 -w ModelAvailable | jq .
+seldon model status cifar10-outlier -w ModelAvailable | jq .
+seldon model status cifar10-drift -w ModelAvailable | jq .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -197,7 +201,7 @@ seldon pipeline load -f ../../pipelines/cifar10.yaml
 ````
 
 ```bash
-seldon pipeline status -p cifar10-production -w PipelineReady| jq -M .
+seldon pipeline status cifar10-production -w PipelineReady| jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -208,6 +212,8 @@ seldon pipeline status -p cifar10-production -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "cifar10-production",
+            "uid": "ca7lvtv7a4umaeddt0gg",
+            "version": 1,
             "steps": [
               {
                 "name": "cifar10"
@@ -236,7 +242,7 @@ seldon pipeline status -p cifar10-production -w PipelineReady| jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-05-15T17:44:57.471002910Z"
+            "lastChangeTimestamp": "2022-05-26T11:09:44.988745665Z"
           }
         }
       ]
@@ -259,8 +265,9 @@ seldon pipeline inspect cifar10-production.cifar10-drift.outputs.is_drift
 ````{collapse} Expand to see output
 ```json
 
+    ---
     seldon.default.model.cifar10-drift.outputs
-    {"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
+    {"name":"is_drift", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["1"]}}
 ```
 ````
 
@@ -275,9 +282,9 @@ seldon pipeline unload -p cifar10-production
 ````
 
 ```bash
-seldon model unload --model-name cifar10
-seldon model unload --model-name cifar10-outlier
-seldon model unload --model-name cifar10-drift
+seldon model unload cifar10
+seldon model unload cifar10-outlier
+seldon model unload cifar10-drift
 ```
 ````{collapse} Expand to see output
 ```json

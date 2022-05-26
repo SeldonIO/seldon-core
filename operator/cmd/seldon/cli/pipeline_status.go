@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
@@ -11,16 +9,12 @@ import (
 
 func createPipelineStatus() *cobra.Command {
 	cmdPipelineStatus := &cobra.Command{
-		Use:   "status",
+		Use:   "status <pipelineName>",
 		Short: "status of a pipeline",
 		Long:  `status of a pipeline`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			pipelineName, err := cmd.Flags().GetString(pipelineNameFlag)
 			if err != nil {
 				return err
 			}
@@ -37,13 +31,10 @@ func createPipelineStatus() *cobra.Command {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			pipelineName := args[0]
 			err = schedulerClient.PipelineStatus(pipelineName, showRequest, showResponse, waitCondition)
 			return err
 		},
-	}
-	cmdPipelineStatus.Flags().StringP(pipelineNameFlag, "p", "", "pipeline name for status")
-	if err := cmdPipelineStatus.MarkFlagRequired(pipelineNameFlag); err != nil {
-		os.Exit(-1)
 	}
 	cmdPipelineStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdPipelineStatus.Flags().StringP(waitConditionFlag, "w", "", "pipeline wait condition")

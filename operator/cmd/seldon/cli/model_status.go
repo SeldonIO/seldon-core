@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
@@ -11,16 +9,12 @@ import (
 
 func createModelStatus() *cobra.Command {
 	cmdModelStatus := &cobra.Command{
-		Use:   "status",
+		Use:   "status <modelName>",
 		Short: "get status for model",
 		Long:  `get the status for a model`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			modelName, err := cmd.Flags().GetString(modelNameFlag)
 			if err != nil {
 				return err
 			}
@@ -36,14 +30,11 @@ func createModelStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			modelName := args[0]
 			schedulerClient := cli.NewSchedulerClient(schedulerHost)
 			err = schedulerClient.ModelStatus(modelName, showRequest, showResponse, modelWaitCondition)
 			return err
 		},
-	}
-	cmdModelStatus.Flags().StringP(modelNameFlag, "m", "", "model name to unload")
-	if err := cmdModelStatus.MarkFlagRequired(modelNameFlag); err != nil {
-		os.Exit(-1)
 	}
 	cmdModelStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdModelStatus.Flags().StringP(waitConditionFlag, "w", "", "model wait condition")

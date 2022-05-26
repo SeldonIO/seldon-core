@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"k8s.io/utils/env"
 
@@ -12,20 +11,16 @@ import (
 
 func createPipelineInfer() *cobra.Command {
 	cmdModelInfer := &cobra.Command{
-		Use:   "infer",
+		Use:   "infer <pipelineName> (data)",
 		Short: "run inference on a pipeline",
 		Long:  `call a pipeline with a given input and get a prediction`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inferenceHost, err := cmd.Flags().GetString(inferenceHostFlag)
 			if err != nil {
 				return err
 			}
 			filename, err := cmd.Flags().GetString(fileFlag)
-			if err != nil {
-				return err
-			}
-			pipelineName, err := cmd.Flags().GetString(pipelineNameFlag)
 			if err != nil {
 				return err
 			}
@@ -46,10 +41,11 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			pipelineName := args[0]
 			// Get inference data
 			var data []byte
-			if len(args) > 0 {
-				data = []byte(args[0])
+			if len(args) > 1 {
+				data = []byte(args[1])
 			} else if filename != "" {
 				data = loadFile(filename)
 			} else {
@@ -61,10 +57,6 @@ func createPipelineInfer() *cobra.Command {
 		},
 	}
 	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
-	cmdModelInfer.Flags().StringP(pipelineNameFlag, "p", "", "pipeline name for inference")
-	if err := cmdModelInfer.MarkFlagRequired(pipelineNameFlag); err != nil {
-		os.Exit(-1)
-	}
 	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")

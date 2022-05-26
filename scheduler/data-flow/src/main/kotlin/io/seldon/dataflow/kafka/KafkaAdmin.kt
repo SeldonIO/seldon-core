@@ -21,7 +21,7 @@ class KafkaAdmin(kafkaProperties: KafkaProperties) {
         steps: List<PipelineStepUpdate>,
     ) {
         steps
-            .flatMap { step -> step.sourcesList + step.sink + step.triggersList}
+            .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
             .map { topicName -> parseSource(topicName).first }
             .toSet()
             .also {
@@ -31,12 +31,8 @@ class KafkaAdmin(kafkaProperties: KafkaProperties) {
             .run { adminClient.createTopics(this) }
             .values()
             .also { topicCreations ->
-                runBlocking {
-                    topicCreations.entries
-                        .asFlow()
-                        .parallel(this) { creationResult ->
-                            awaitKafkaResult(creationResult)
-                        }
+                topicCreations.entries.forEach { creationResult ->
+                    awaitKafkaResult(creationResult)
                 }
             }
     }
@@ -44,6 +40,7 @@ class KafkaAdmin(kafkaProperties: KafkaProperties) {
     private suspend fun awaitKafkaResult(result: Map.Entry<String, KafkaFuture<Void>>) {
         try {
             result.value.get()
+            logger.info("Topic created ${result.key}")
         } catch (e: ExecutionException) {
             if (e.cause is TopicExistsException) {
                 logger.info("Topic already exists ${result.key}")

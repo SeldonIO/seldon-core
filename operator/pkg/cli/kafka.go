@@ -195,7 +195,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64) error {
 }
 
 func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64) error {
-	fmt.Printf("%s\n", topic)
+	fmt.Printf("---\n%s\n", topic)
 	err := kc.subscribeAndSetOffset(topic, offset)
 	if err != nil {
 		return err

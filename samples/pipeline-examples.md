@@ -1,10 +1,6 @@
 ## Seldon V2 Non Kubernetes Pipeline Examples
 
 
- * Build if needed and place `seldon` binary in your path
-    * run `make build-seldon` from operator folder and add bin folder to PATH
- * Run Seldon V2 `make deploy-local` from top level folder
-
 
 ```bash
 which seldon
@@ -56,94 +52,14 @@ seldon model load -f ./models/tfsimple2.yaml
 ````
 
 ```bash
-seldon model status --model-name tfsimple1 -w ModelAvailable | jq -M .
-seldon model status --model-name tfsimple2 -w ModelAvailable | jq -M .
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple2 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "tfsimple1",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:20:20.260330848Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:20:20.260330848Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple1",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "tfsimple2",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:20:20.361156338Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:20:20.361156338Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple2",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
 ```
 ````
 
@@ -183,7 +99,7 @@ seldon pipeline load -f ./pipelines/tfsimples.yaml
 ````
 
 ```bash
-seldon pipeline status -p tfsimples -w PipelineReady| jq -M .
+seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -194,6 +110,8 @@ seldon pipeline status -p tfsimples -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "tfsimples",
+            "uid": "ca7ilgvf0tu0up29t7sg",
+            "version": 1,
             "steps": [
               {
                 "name": "tfsimple1"
@@ -222,7 +140,7 @@ seldon pipeline status -p tfsimples -w PipelineReady| jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:20:56.271848455Z"
+            "lastChangeTimestamp": "2022-05-26T07:22:44.053717664Z"
           }
         }
       ]
@@ -231,7 +149,7 @@ seldon pipeline status -p tfsimples -w PipelineReady| jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p tfsimples \
+seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -268,7 +186,7 @@ seldon pipeline infer -p tfsimples \
 ````
 
 ```bash
-seldon pipeline infer -p tfsimples --inference-mode grpc \
+seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -342,7 +260,34 @@ seldon pipeline infer -p tfsimples --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p tfsimples
+seldon pipeline inspect tfsimples
+```
+````{collapse} Expand to see output
+```json
+
+    ---
+    seldon.default.model.tfsimple1.inputs
+    {"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+    ---
+    seldon.default.model.tfsimple1.outputs
+    {"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    ---
+    seldon.default.model.tfsimple2.inputs
+    {"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    ---
+    seldon.default.model.tfsimple2.outputs
+    {"modelName":"tfsimple2_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}], "rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+    ---
+    seldon.default.pipeline.tfsimples.inputs
+    {"modelName":"tfsimples", "inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+    ---
+    seldon.default.pipeline.tfsimples.outputs
+    {"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}], "rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+```
+````
+
+```bash
+seldon pipeline unload tfsimples
 ```
 ````{collapse} Expand to see output
 ```json
@@ -352,8 +297,8 @@ seldon pipeline unload -p tfsimples
 ````
 
 ```bash
-seldon model unload --model-name tfsimple1
-seldon model unload --model-name tfsimple2
+seldon model unload tfsimple1
+seldon model unload tfsimple2
 ```
 ````{collapse} Expand to see output
 ```json
@@ -417,136 +362,16 @@ seldon model load -f ./models/tfsimple3.yaml
 ````
 
 ```bash
-seldon model status --model-name tfsimple1 -w ModelAvailable | jq -M .
-seldon model status --model-name tfsimple2 -w ModelAvailable | jq -M .
-seldon model status --model-name tfsimple3 -w ModelAvailable | jq -M .
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple2 -w ModelAvailable | jq -M .
+seldon model status tfsimple3 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "tfsimple1",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:21:11.274867202Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:21:11.274867202Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple1",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "tfsimple2",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:21:11.425542338Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:21:11.425542338Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple2",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "tfsimple3",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:21:11.571780123Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:21:11.571780123Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple3",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
+    {}
 ```
 ````
 
@@ -588,7 +413,7 @@ seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 ````
 
 ```bash
-seldon pipeline status -p join -w PipelineReady | jq -M .
+seldon pipeline status join -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -599,6 +424,8 @@ seldon pipeline status -p join -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "join",
+            "uid": "ca7il2nf0tu0up29t7s0",
+            "version": 1,
             "steps": [
               {
                 "name": "tfsimple1"
@@ -631,7 +458,7 @@ seldon pipeline status -p join -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:21:43.374763891Z"
+            "lastChangeTimestamp": "2022-05-26T07:21:47.760782556Z"
           }
         }
       ]
@@ -640,7 +467,7 @@ seldon pipeline status -p join -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p join --inference-mode grpc \
+seldon pipeline infer join --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -714,7 +541,7 @@ seldon pipeline infer -p join --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p join
+seldon pipeline unload join
 ```
 ````{collapse} Expand to see output
 ```json
@@ -724,9 +551,9 @@ seldon pipeline unload -p join
 ````
 
 ```bash
-seldon model unload --model-name tfsimple1
-seldon model unload --model-name tfsimple2
-seldon model unload --model-name tfsimple3
+seldon model unload tfsimple1
+seldon model unload tfsimple2
+seldon model unload tfsimple3
 ```
 ````{collapse} Expand to see output
 ```json
@@ -754,7 +581,8 @@ cat ./models/mul10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/conditional"
       requirements:
-      - triton-python
+      - triton
+      - python
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -763,7 +591,8 @@ cat ./models/mul10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
-      - triton-python
+      - triton
+      - python
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -772,7 +601,8 @@ cat ./models/mul10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/mul10"
       requirements:
-      - triton-python
+      - triton
+      - python
 ```
 ````
 
@@ -791,136 +621,16 @@ seldon model load -f ./models/mul10.yaml
 ````
 
 ```bash
-seldon model status --model-name conditional -w ModelAvailable | jq -M .
-seldon model status --model-name add10 -w ModelAvailable | jq -M .
-seldon model status --model-name mul10 -w ModelAvailable | jq -M .
+seldon model status conditional -w ModelAvailable | jq -M .
+seldon model status add10 -w ModelAvailable | jq -M .
+seldon model status mul10 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "conditional",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:22:04.449175941Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:22:04.449175941Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "conditional",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/conditional",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "add10",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:22:04.721024552Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:22:04.721024552Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "add10",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/add10",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "mul10",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:22:05.002034725Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:22:05.002034725Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "mul10",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/mul10",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
+    {}
 ```
 ````
 
@@ -966,7 +676,7 @@ seldon pipeline load -f ./pipelines/conditional.yaml
 ````
 
 ```bash
-seldon pipeline status -p tfsimple-conditional -w PipelineReady | jq -M .
+seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -977,6 +687,8 @@ seldon pipeline status -p tfsimple-conditional -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "tfsimple-conditional",
+            "uid": "ca7j0t7f0tu0up29t7tg",
+            "version": 1,
             "steps": [
               {
                 "name": "add10",
@@ -1015,7 +727,7 @@ seldon pipeline status -p tfsimple-conditional -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:22:47.702756329Z"
+            "lastChangeTimestamp": "2022-05-26T08:01:03.383542144Z"
           }
         }
       ]
@@ -1024,7 +736,7 @@ seldon pipeline status -p tfsimple-conditional -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p tfsimple-conditional --inference-mode grpc \
+seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -1056,7 +768,7 @@ seldon pipeline infer -p tfsimple-conditional --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline infer -p tfsimple-conditional --inference-mode grpc \
+seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -1088,7 +800,7 @@ seldon pipeline infer -p tfsimple-conditional --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p tfsimple-conditional
+seldon pipeline unload tfsimple-conditional
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1098,9 +810,9 @@ seldon pipeline unload -p tfsimple-conditional
 ````
 
 ```bash
-seldon model unload --model-name conditional
-seldon model unload --model-name add10
-seldon model unload --model-name mul10
+seldon model unload conditional
+seldon model unload add10
+seldon model unload mul10
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1127,7 +839,8 @@ cat ./models/outlier-error.yaml
     spec:
       storageUri: "gs://seldon-models/triton/outlier"
       requirements:
-      - triton-python
+      - triton
+      - python
 ```
 ````
 
@@ -1142,52 +855,12 @@ seldon model load -f ./models/outlier-error.yaml
 ````
 
 ```bash
-seldon model status --model-name outlier-error -w ModelAvailable | jq -M .
+seldon model status outlier-error -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "outlier-error",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:24:59.106635468Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:24:59.106635468Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "outlier-error",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/outlier",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
 ```
 ````
 
@@ -1220,7 +893,7 @@ seldon pipeline load -f ./pipelines/error.yaml
 ````
 
 ```bash
-seldon pipeline status -p error -w PipelineReady | jq -M .
+seldon pipeline status error -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1231,6 +904,8 @@ seldon pipeline status -p error -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "error",
+            "uid": "ca7j80d12bqd6oapk540",
+            "version": 1,
             "steps": [
               {
                 "name": "outlier-error"
@@ -1247,7 +922,7 @@ seldon pipeline status -p error -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:25:28.833606915Z"
+            "lastChangeTimestamp": "2022-05-26T08:02:09.701130089Z"
           }
         }
       ]
@@ -1256,7 +931,7 @@ seldon pipeline status -p error -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p error --inference-mode grpc \
+seldon pipeline infer error --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -1288,7 +963,7 @@ seldon pipeline infer -p error --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline infer -p error --inference-mode grpc \
+seldon pipeline infer error --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[100,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ````{collapse} Expand to see output
@@ -1300,16 +975,14 @@ seldon pipeline infer -p error --inference-mode grpc \
       /mnt/agent/models/outlier-error_1/1/model.py(108): execute
     
     Usage:
-      seldon pipeline infer [flags]
+      seldon pipeline infer <pipelineName> (data) [flags]
     
     Flags:
       -f, --file-path string        inference payload file
       -h, --help                    help for infer
-          --inference-host string   seldon inference host (default "0.0.0.0")
+          --inference-host string   seldon inference host (default "0.0.0.0:9000")
           --inference-mode string   inference mode rest or grpc (default "rest")
-          --inference-port int      seldon scheduler port (default 9000)
       -i, --iterations int          inference iterations (default 1)
-      -p, --pipeline-name string    pipeline name for inference
     
     Global Flags:
       -r, --show-request    show request
@@ -1324,7 +997,7 @@ seldon pipeline infer -p error --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p error
+seldon pipeline unload error
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1334,7 +1007,7 @@ seldon pipeline unload -p error
 ````
 
 ```bash
-seldon model unload --model-name outlier-error
+seldon model unload outlier-error
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1360,7 +1033,8 @@ cat ./models/add10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/outlier"
       requirements:
-      - triton-python
+      - triton
+      - python
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -1369,7 +1043,8 @@ cat ./models/add10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
-      - triton-python
+      - triton
+      - python
 ```
 ````
 
@@ -1386,94 +1061,14 @@ seldon model load -f ./models/add10.yaml
 ````
 
 ```bash
-seldon model status --model-name outlier-error -w ModelAvailable | jq -M .
-seldon model status --model-name add10 -w ModelAvailable | jq -M .
+seldon model status outlier-error -w ModelAvailable | jq -M .
+seldon model status add10 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "outlier-error",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:26:15.119768627Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:26:15.119768627Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "outlier-error",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/outlier",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "add10",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:26:15.391611238Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:26:15.391611238Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "add10",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/add10",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
 ```
 ````
 
@@ -1509,7 +1104,7 @@ seldon pipeline load -f ./pipelines/outlier.yaml
 ````
 
 ```bash
-seldon pipeline status -p outlier -w PipelineReady | jq -M .
+seldon pipeline status outlier -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1520,6 +1115,8 @@ seldon pipeline status -p outlier -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "outlier",
+            "uid": "ca7j8bl12bqd6oapk54g",
+            "version": 1,
             "steps": [
               {
                 "name": "add10",
@@ -1542,7 +1139,7 @@ seldon pipeline status -p outlier -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:26:54.769531603Z"
+            "lastChangeTimestamp": "2022-05-26T08:02:54.862019439Z"
           }
         }
       ]
@@ -1551,7 +1148,7 @@ seldon pipeline status -p outlier -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p outlier --inference-mode grpc \
+seldon pipeline infer outlier --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -1583,7 +1180,7 @@ seldon pipeline infer -p outlier --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline infer -p outlier --inference-mode grpc \
+seldon pipeline infer outlier --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[100,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq .
 ```
 ````{collapse} Expand to see output
@@ -1595,16 +1192,14 @@ seldon pipeline infer -p outlier --inference-mode grpc \
       /mnt/agent/models/outlier-error_1/1/model.py(108): execute
     
     Usage:
-      seldon pipeline infer [flags]
+      seldon pipeline infer <pipelineName> (data) [flags]
     
     Flags:
       -f, --file-path string        inference payload file
       -h, --help                    help for infer
-          --inference-host string   seldon inference host (default "0.0.0.0")
+          --inference-host string   seldon inference host (default "0.0.0.0:9000")
           --inference-mode string   inference mode rest or grpc (default "rest")
-          --inference-port int      seldon scheduler port (default 9000)
       -i, --iterations int          inference iterations (default 1)
-      -p, --pipeline-name string    pipeline name for inference
     
     Global Flags:
       -r, --show-request    show request
@@ -1615,7 +1210,7 @@ seldon pipeline infer -p outlier --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p outlier
+seldon pipeline unload outlier
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1625,8 +1220,8 @@ seldon pipeline unload -p outlier
 ````
 
 ```bash
-seldon model unload --model-name outlier-error
-seldon model unload --model-name add10
+seldon model unload outlier-error
+seldon model unload add10
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1681,7 +1276,8 @@ cat ./models/check.yaml
     spec:
       storageUri: "gs://seldon-models/triton/check"
       requirements:
-      - triton-python
+      - triton
+      - python
 ```
 ````
 
@@ -1702,178 +1298,18 @@ seldon model load -f ./models/check.yaml
 ````
 
 ```bash
-seldon model status --model-name tfsimple1 -w ModelAvailable | jq -M .
-seldon model status --model-name tfsimple2 -w ModelAvailable | jq -M .
-seldon model status --model-name tfsimple3 -w ModelAvailable | jq -M .
-seldon model status --model-name check -w ModelAvailable | jq -M .
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple2 -w ModelAvailable | jq -M .
+seldon model status tfsimple3 -w ModelAvailable | jq -M .
+seldon model status check -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "tfsimple1",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:29:43.097262399Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:29:43.097262399Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple1",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "tfsimple2",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:29:43.199880236Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:29:43.199880236Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple2",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "tfsimple3",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:29:43.302137780Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:29:43.302137780Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple3",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "check",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:29:43.739386729Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:29:43.739386729Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "check",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/check",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
+    {}
+    {}
 ```
 ````
 
@@ -1922,7 +1358,7 @@ seldon pipeline load -f ./pipelines/tfsimples-join-outlier.yaml
 ````
 
 ```bash
-seldon pipeline status -p joincheck -w PipelineReady | jq -M .
+seldon pipeline status joincheck -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1933,6 +1369,8 @@ seldon pipeline status -p joincheck -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "joincheck",
+            "uid": "ca7k0rb397m2ug7f9g8g",
+            "version": 1,
             "steps": [
               {
                 "name": "check",
@@ -1977,7 +1415,7 @@ seldon pipeline status -p joincheck -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:30:34.333430917Z"
+            "lastChangeTimestamp": "2022-05-26T08:55:11.371796570Z"
           }
         }
       ]
@@ -1986,7 +1424,7 @@ seldon pipeline status -p joincheck -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p joincheck --inference-mode grpc \
+seldon pipeline infer joincheck --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -2060,7 +1498,7 @@ seldon pipeline infer -p joincheck --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline infer -p joincheck --inference-mode grpc \
+seldon pipeline infer joincheck --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -2072,16 +1510,14 @@ seldon pipeline infer -p joincheck --inference-mode grpc \
       /mnt/agent/models/check_1/1/model.py(107): execute
     
     Usage:
-      seldon pipeline infer [flags]
+      seldon pipeline infer <pipelineName> (data) [flags]
     
     Flags:
       -f, --file-path string        inference payload file
       -h, --help                    help for infer
-          --inference-host string   seldon inference host (default "0.0.0.0")
+          --inference-host string   seldon inference host (default "0.0.0.0:9000")
           --inference-mode string   inference mode rest or grpc (default "rest")
-          --inference-port int      seldon scheduler port (default 9000)
       -i, --iterations int          inference iterations (default 1)
-      -p, --pipeline-name string    pipeline name for inference
     
     Global Flags:
       -r, --show-request    show request
@@ -2092,7 +1528,7 @@ seldon pipeline infer -p joincheck --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p joincheck
+seldon pipeline unload joincheck
 ```
 ````{collapse} Expand to see output
 ```json
@@ -2102,10 +1538,10 @@ seldon pipeline unload -p joincheck
 ````
 
 ```bash
-seldon model unload --model-name tfsimple1
-seldon model unload --model-name tfsimple2
-seldon model unload --model-name tfsimple3
-seldon model unload --model-name check
+seldon model unload tfsimple1
+seldon model unload tfsimple2
+seldon model unload tfsimple3
+seldon model unload check
 ```
 ````{collapse} Expand to see output
 ```json
@@ -2134,7 +1570,8 @@ cat ./models/add10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/mul10"
       requirements:
-      - triton-python
+      - triton
+      - python
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -2143,7 +1580,8 @@ cat ./models/add10.yaml
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
-      - triton-python
+      - triton
+      - python
 ```
 ````
 
@@ -2160,94 +1598,14 @@ seldon model load -f ./models/add10.yaml
 ````
 
 ```bash
-seldon model status --model-name mul10 -w ModelAvailable | jq -M .
-seldon model status --model-name add10 -w ModelAvailable | jq -M .
+seldon model status mul10 -w ModelAvailable | jq -M .
+seldon model status add10 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "mul10",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:31:13.008913813Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:31:13.008913813Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "mul10",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/mul10",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
-    {
-      "modelName": "add10",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-04-26T10:31:12.726176321Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-04-26T10:31:12.726176321Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "add10",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/add10",
-              "requirements": [
-                "triton-python"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
+    {}
 ```
 ````
 
@@ -2292,7 +1650,7 @@ seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 ````
 
 ```bash
-seldon pipeline status -p pipeline-inputs -w PipelineReady | jq -M .
+seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -2303,6 +1661,8 @@ seldon pipeline status -p pipeline-inputs -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "pipeline-inputs",
+            "uid": "ca7k1gj397m2ug7f9g90",
+            "version": 1,
             "steps": [
               {
                 "name": "add10",
@@ -2337,7 +1697,7 @@ seldon pipeline status -p pipeline-inputs -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-04-26T10:31:46.743076681Z"
+            "lastChangeTimestamp": "2022-05-26T08:56:35.064213420Z"
           }
         }
       ]
@@ -2346,7 +1706,7 @@ seldon pipeline status -p pipeline-inputs -w PipelineReady | jq -M .
 ````
 
 ```bash
-seldon pipeline infer -p pipeline-inputs --inference-mode grpc \
+seldon pipeline infer pipeline-inputs --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -2394,7 +1754,7 @@ seldon pipeline infer -p pipeline-inputs --inference-mode grpc \
 ````
 
 ```bash
-seldon pipeline unload -p pipeline-inputs
+seldon pipeline unload pipeline-inputs
 ```
 ````{collapse} Expand to see output
 ```json
@@ -2404,8 +1764,8 @@ seldon pipeline unload -p pipeline-inputs
 ````
 
 ```bash
-seldon model unload --model-name mul10
-seldon model unload --model-name add10
+seldon model unload mul10
+seldon model unload add10
 ```
 ````{collapse} Expand to see output
 ```json

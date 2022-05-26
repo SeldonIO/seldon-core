@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
@@ -11,16 +9,12 @@ import (
 
 func createExperimentStop() *cobra.Command {
 	cmdStopExperiment := &cobra.Command{
-		Use:   "stop",
+		Use:   "stop <experimentName>",
 		Short: "stop an experiment",
 		Long:  `stop an experiment`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			experimentName, err := cmd.Flags().GetString(experimentFlag)
 			if err != nil {
 				return err
 			}
@@ -33,13 +27,10 @@ func createExperimentStop() *cobra.Command {
 				return err
 			}
 			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			experimentName := args[0]
 			err = schedulerClient.StopExperiment(experimentName, showRequest, showResponse)
 			return err
 		},
-	}
-	cmdStopExperiment.Flags().StringP(experimentFlag, "e", "", "experiment to stop")
-	if err := cmdStopExperiment.MarkFlagRequired(experimentFlag); err != nil {
-		os.Exit(-1)
 	}
 	cmdStopExperiment.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	return cmdStopExperiment

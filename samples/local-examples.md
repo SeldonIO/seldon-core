@@ -1,10 +1,6 @@
 ## Seldon V2 Non Kubernetes Local Examples
 
 
- * Build if needed and place `seldon` binary in your path
-   * run `make build-seldon` from operator folder and add bin folder to `PATH`
- * Run Seldon V2 `make deploy-local` from top level folder
-
 ### SKLearn Model
 
 We use a simple sklearn iris classification model
@@ -42,59 +38,19 @@ Wait for the model to be ready
 
 
 ```bash
-seldon model status --model-name iris -w ModelAvailable | jq -M .
+seldon model status iris -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "iris",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "mlserver",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-05-07T08:24:44.069876241Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-07T08:24:44.069876241Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "iris",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/mlserver/iris",
-              "requirements": [
-                "sklearn"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
 ```
 ````
 Do a REST inference call
 
 
 ```bash
-seldon model infer --model-name iris \
+seldon model infer iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
@@ -103,7 +59,7 @@ seldon model infer --model-name iris \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "cb099f86-9426-4a76-9d33-7faed0ac72b3",
+    	"id": "32113a4d-d7e7-410c-82b3-921d455bb50c",
     	"parameters": null,
     	"outputs": [
     		{
@@ -125,7 +81,7 @@ Do a gRPC inference call
 
 
 ```bash
-seldon model infer --model-name iris --inference-mode grpc \
+seldon model infer iris --inference-mode grpc \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -155,7 +111,7 @@ Unload the model
 
 
 ```bash
-seldon model unload --model-name iris
+seldon model unload iris
 ```
 ````{collapse} Expand to see output
 ```json
@@ -198,59 +154,19 @@ Wait for the model to be ready.
 
 
 ```bash
-seldon model status --model-name tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
 
-    {
-      "modelName": "tfsimple1",
-      "versions": [
-        {
-          "version": 1,
-          "serverName": "triton",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
-          "modelReplicaState": {
-            "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-05-07T08:30:48.321215481Z"
-            }
-          },
-          "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-07T08:30:48.321215481Z"
-          },
-          "modelDefn": {
-            "meta": {
-              "name": "tfsimple1",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
-            },
-            "modelSpec": {
-              "uri": "gs://seldon-models/triton/simple",
-              "requirements": [
-                "tensorflow"
-              ]
-            },
-            "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
-            }
-          }
-        }
-      ]
-    }
+    {}
 ```
 ````
 Get model metadata
 
 
 ```bash
-seldon model metadata -m tfsimple1
+seldon model metadata tfsimple1
 ```
 ````{collapse} Expand to see output
 ```json
@@ -304,7 +220,7 @@ Do a REST inference call.
 
 
 ```bash
-seldon model infer -m tfsimple1 \
+seldon model infer tfsimple1 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -374,7 +290,7 @@ Do a gRPC inference call
 
 
 ```bash
-seldon model infer -m tfsimple1 --inference-mode grpc \
+seldon model infer tfsimple1 --inference-mode grpc \
     '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ````{collapse} Expand to see output
@@ -452,7 +368,7 @@ Unload the model
 
 
 ```bash
-seldon model unload --model-name tfsimple1
+seldon model unload tfsimple1
 ```
 ````{collapse} Expand to see output
 ```json
@@ -516,8 +432,8 @@ Wait for both models to be ready.
 
 
 ```bash
-seldon model status --model-name iris | jq -M .
-seldon model status --model-name iris2 | jq -M .
+seldon model status iris | jq -M .
+seldon model status iris2 | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -534,13 +450,13 @@ seldon model status --model-name iris2 | jq -M .
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-05-07T08:31:54.494645822Z"
+              "lastChangeTimestamp": "2022-05-26T07:14:11.599821862Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-07T08:31:54.494645822Z"
+            "lastChangeTimestamp": "2022-05-26T07:14:11.599821862Z"
           },
           "modelDefn": {
             "meta": {
@@ -575,13 +491,13 @@ seldon model status --model-name iris2 | jq -M .
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-05-07T08:31:54.517961482Z"
+              "lastChangeTimestamp": "2022-05-26T07:14:11.672926362Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-07T08:31:54.517961482Z"
+            "lastChangeTimestamp": "2022-05-26T07:14:11.672926362Z"
           },
           "modelDefn": {
             "meta": {
@@ -644,7 +560,7 @@ Wait for the experiment to be ready.
 
 
 ```bash
-seldon experiment status -e experiment-sample -w | jq -M .
+seldon experiment status experiment-sample -w | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -652,6 +568,8 @@ seldon experiment status -e experiment-sample -w | jq -M .
     {
       "experimentName": "experiment-sample",
       "active": true,
+      "candidatesReady": true,
+      "mirrorReady": true,
       "statusDescription": "experiment active",
       "kubernetesMeta": {
         "namespace": "seldon-mesh"
@@ -663,20 +581,20 @@ Run a set of calls and record which route the traffic took. There should be roug
 
 
 ```bash
-seldon model infer --model-name iris -i 50 \
+seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ````{collapse} Expand to see output
 ```json
 
-    map[iris2_1:24 iris_1:26]
+    map[iris2_1:27 iris_1:23]
 ```
 ````
 Stop the experiment
 
 
 ```bash
-seldon experiment stop -e experiment-sample
+seldon experiment stop experiment-sample
 ```
 ````{collapse} Expand to see output
 ```json
@@ -688,8 +606,8 @@ Unload both models.
 
 
 ```bash
-seldon model unload --model-name iris
-seldon model unload --model-name iris2
+seldon model unload iris
+seldon model unload iris2
 ```
 ````{collapse} Expand to see output
 ```json
@@ -698,3 +616,7 @@ seldon model unload --model-name iris2
     {}
 ```
 ````
+
+```python
+
+```
