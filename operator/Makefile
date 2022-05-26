@@ -85,14 +85,14 @@ run: manifests generate fmt vet ## Run a controller from your host.
 build-seldon: generate fmt vet
 	go build -o bin/seldon -v ./cmd/seldon
 
-build-seldon-docgen: 
+build-seldon-docgen:
 	go build -o bin/seldon-gendocs -v ./cmd/seldon/docs
 
 generate-cli-docs:
 	./bin/seldon-gendocs --out ../docs/source/contents/cli/docs
 
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
+docker-build: ## Build docker image with the manager.
 	cp -r ../apis apis-TEMP && rm -fr apis-TEMP/python
 	docker build -t ${IMG} .
 	rm -rf apis-TEMP

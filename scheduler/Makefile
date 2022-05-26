@@ -89,7 +89,7 @@ docker-build-scheduler: copy-apis
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
 
 .PHONY: docker-push-scheduler
-docker-push-scheduler: 
+docker-push-scheduler:
 	docker push ${SCHEDULER_IMG}
 
 .PHONY: copy-apis
@@ -102,7 +102,7 @@ docker-build-agent: copy-apis
 	docker build -t ${AGENT_IMG} -f Dockerfile.agent .
 
 .PHONY: docker-push-agent
-docker-push-agent: 
+docker-push-agent:
 	docker push ${AGENT_IMG}
 
 .PHONY: docker-build-rclone
@@ -110,7 +110,7 @@ docker-build-rclone:
 	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone .
 
 .PHONY: docker-push-rclone
-docker-push-rclone: 
+docker-push-rclone:
 	docker push ${RCLONE_IMG}
 
 .PHONY: docker-build-modelgateway
@@ -118,13 +118,13 @@ docker-build-modelgateway: copy-apis
 	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway .
 
 .PHONY: docker-push-modelgateway
-docker-push-modelgateway: 
+docker-push-modelgateway:
 	docker push ${MODELGATEWAY_IMG}
 
 docker-build-pipelinegateway: copy-apis
 	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway .
 
-docker-push-pipelinegateway: 
+docker-push-pipelinegateway:
 	docker push ${PIPELINEGATEWAY_IMG}
 
 .PHONY: docker-build-envoy
@@ -132,11 +132,11 @@ docker-build-envoy:
 	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
 
 .PHONY: docker-push-envoy
-docker-push-envoy: 
+docker-push-envoy:
 	docker push ${ENVOY_IMG}
 
 .PHONY: docker-build-dataflow
-docker-build-dataflow: copy-apis
+docker-build-dataflow: copy-apis data-flow/opentelemetry-javaagent.jar
 	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow .
 
 .PHONY: docker-push-dataflow
@@ -144,14 +144,14 @@ docker-push-dataflow:
 	docker push ${DATAFLOW_IMG}
 
 .PHONY: docker-build-all
-docker-build-all: docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway docker-build-dataflow
+docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway
 
 .PHONY: docker-push-all
 docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow
 
 
 #####################################
-# Kind 
+# Kind
 #####################################
 
 .PHONY: kind-image-install-scheduler
@@ -163,7 +163,7 @@ kind-image-install-agent: docker-build-agent
 	kind load -v 3 docker-image ${AGENT_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-envoy
-kind-image-install-envoy: docker-build-envoy 
+kind-image-install-envoy: docker-build-envoy
 	kind load -v 3 docker-image ${ENVOY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-rclone
@@ -221,7 +221,7 @@ else
 	DOCKER_COMPOSE_LOCAL_MODELS =
 endif
 
-DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml 
+DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml
 DOCKER_COMPOSE_INTERNAL= -f all-internal.yaml
 DOCKER_COMPOSE_HOST= -f all-host-network.yaml
 DOCKER_COMPOSE_SERVICE_COMMAND = ${DOCKER_COMPOSE_COMMON_IMAGES} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_INTERNAL} ${DOCKER_COMPOSE_LOCAL_MODELS} -p scv2
@@ -240,7 +240,7 @@ start-all-host: copy-apis create-model-folders
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d
 
 .PHONY: stop-all-host
-stop-all-host: 
+stop-all-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} down ${DOCKER_COMPOSE_REMOVE_VOLUMES}
 
 
@@ -261,7 +261,7 @@ list-services:
 # Single services
 
 .PHONY: start-mlserver
-start-mlserver: 
+start-mlserver:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d mlserver
 
 .PHONY: stop-mlserver
@@ -269,7 +269,7 @@ stop-mlserver:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} \
 		rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} mlserver
 
-.PHONY: start-mlserver-host 
+.PHONY: start-mlserver-host
 start-mlserver-host: create-model-folders
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d mlserver
 
