@@ -17,6 +17,8 @@ package resources
 import (
 	"time"
 
+	"github.com/golang/protobuf/ptypes/duration"
+
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
@@ -49,6 +51,7 @@ const (
 	SeldonRouteHeader          = "seldon-route"
 	SeldonModelHeaderSuffix    = "model"
 	SeldonPipelineHeaderSuffix = "pipeline"
+	DefaultRouteTimeoutSecs    = 60 //TODO allow configurable override
 )
 
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
@@ -172,6 +175,7 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 	}
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
+			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 			ClusterSpecifier: &route.RouteAction_WeightedClusters{
 				WeightedClusters: &route.WeightedCluster{
 					Clusters:    clusters,
@@ -241,6 +245,7 @@ var pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
 var pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
 var pipelineRouteActionHttp = &route.Route_Route{
 	Route: &route.RouteAction{
+		Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 		ClusterSpecifier: &route.RouteAction_Cluster{
 			Cluster: PipelineGatewayHttpClusterName,
 		},
@@ -248,6 +253,7 @@ var pipelineRouteActionHttp = &route.Route_Route{
 }
 var pipelineRouteActionGrpc = &route.Route_Route{
 	Route: &route.RouteAction{
+		Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 		ClusterSpecifier: &route.RouteAction_Cluster{
 			Cluster: PipelineGatewayGrpcClusterName,
 		},
@@ -381,13 +387,14 @@ func createTapConfig() *anypb.Any {
 func createAccessLogConfig() *anypb.Any {
 	accessFilter := accesslog_file.FileAccessLog{
 		Path: "/tmp/envoy-accesslog.txt",
+
 		/*
 			AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
 				LogFormat: &core.SubstitutionFormatString{
 					Format: &core.SubstitutionFormatString_TextFormatSource{
 						TextFormatSource: &core.DataSource{
 							Specifier: &core.DataSource_InlineString{
-								InlineString: "%LOCAL_REPLY_BODY%:%RESPONSE_CODE%:path=%REQ(:path)%\n",
+								InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
 							},
 						},
 					},
@@ -395,6 +402,7 @@ func createAccessLogConfig() *anypb.Any {
 			},
 		*/
 	}
+
 	accessAny, err := anypb.New(&accessFilter)
 	if err != nil {
 		panic(err)
