@@ -18,7 +18,7 @@ spec:
           "--out",
           "csv=results/base.gz",
           "-u",
-          "50",
+          "5",
           "-i",
           "10000",
           "-d",
@@ -33,17 +33,19 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "model"
+          value: "tfsimpleu"
         - name: MODEL_TYPE
           value: "tfsimple"
         - name: MODEL_MEMORY_BYTES
-          value: "1000000"
+          value: "500000"
         - name: MAX_NUM_MODELS
-          value: "800"
+          value: "20000"
         - name: INFER_BATCH_SIZE
           value: "1"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/run/secret/cloud.google.com/k6-service-account.json"
+        - name: GS_BUCKET_NAME
+          value: "gs://seldon-tmp/scv2-k6-results"
         volumeMounts:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
@@ -54,6 +56,7 @@ spec:
         - name: "service-account"
           secret:
             secretName: "k6-sa-key"
+            optional: true
         - name: podinfo
           downwardAPI:
             items:

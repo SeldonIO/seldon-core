@@ -520,9 +520,21 @@
           "intervalFactor": 1,
           "legendFormat": "Evict Rate",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(rate(seldon_mesh_seldon_cache_miss_count[1m]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Miss Rate",
+          "refId": "B"
         }
       ],
-      "title": "Model Evict Rate [1m]",
+      "title": "Model Evict/Miss Rate [1m]",
       "type": "timeseries"
     },
     {
@@ -586,7 +598,7 @@
         "x": 8,
         "y": 5
       },
-      "id": 13,
+      "id": 20,
       "options": {
         "legend": {
           "calcs": [],
@@ -605,16 +617,31 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "sum(rate(seldon_mesh_seldon_cache_miss_count[1m]))",
+          "expr": "sum by (server) (rate(seldon_mesh_seldon_load_model_counter[1m]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Miss Rate",
+          "legendFormat": "{{server}}_Load",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum by (server) (rate(seldon_mesh_seldon_unload_model_counter[1m]))",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "Unloa{{server}}_Loadd",
+          "refId": "B"
         }
       ],
-      "title": "Model Miss Rate [1m]",
+      "title": "Model Load/Unload Rate [1m]",
       "type": "timeseries"
     },
     {
@@ -772,6 +799,9 @@
               "viz": false
             },
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -831,26 +861,15 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "quantile(0.9, \n(\nrate(seldon_mesh_seldon_infer_seconds_total{container=\"agent\"}[1m]) / rate(seldon_mesh_seldon_infer_total{container=\"agent\"}[1m])\n)\n) by (server)",
+          "expr": "avg((rate(seldon_mesh_seldon_aggregate_infer_seconds_total{container=\"agent\"}[1m]) / rate(seldon_mesh_seldon_aggregate_infer_total{container=\"agent\"}[1m])) > 0 ) by (server, method_type)",
           "hide": false,
           "interval": "",
-          "legendFormat": "{{server}}_90%",
+          "legendFormat": "{{server}}_{{method_type}}_avg",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
-          "exemplar": true,
-          "expr": "quantile(0.5, \n(\nrate(seldon_mesh_seldon_infer_seconds_total{container=\"agent\"}[10m]) / rate(seldon_mesh_seldon_infer_total{container=\"agent\"}[10m])\n)\n) by (server)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{server}}_50%",
-          "refId": "B"
         }
       ],
-      "title": "Infer Latency (avg[1m])",
+      "title": "Infer Latency [1m]",
+      "transformations": [],
       "type": "timeseries"
     },
     {
@@ -1053,7 +1072,7 @@
           "refId": "B"
         }
       ],
-      "title": "CPU Rate [1m]",
+      "title": "CPU [1m]",
       "type": "timeseries"
     }
   ],
@@ -1072,6 +1091,6 @@
   "timezone": "",
   "title": "Seldon Core Model Mesh Monitoring",
   "uid": "MHloCP_7z",
-  "version": 9,
+  "version": 22,
   "weekStart": ""
 }

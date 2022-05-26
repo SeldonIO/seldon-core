@@ -96,6 +96,7 @@ func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2
 			MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
 			DisableKeepAlives:   disableKeepAlivesHTTP,
 			MaxConnsPerHost:     maxConnsPerHostHTTP,
+			IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 		}
 		netClient := &http.Client{
 			Timeout:   time.Second * defaultTimeoutSeconds,

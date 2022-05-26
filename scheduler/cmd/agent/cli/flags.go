@@ -22,7 +22,7 @@ func makeArgs() {
 	flag.IntVar(
 		&ReverseProxyHttpPort,
 		flagReverseProxyHttpPort,
-		agent.ReverseProxyHTTPPort,
+		agent.DefaultReverseProxyHTTPPort,
 		"Reverse proxy http port",
 	)
 	flag.IntVar(

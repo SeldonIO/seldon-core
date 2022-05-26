@@ -18,12 +18,13 @@ import (
 )
 
 const (
-	ReverseProxyHTTPPort    = 9999
-	maxIdleConnsHTTP        = 10
-	maxIdleConnsPerHostHTTP = 10
-	disableKeepAlivesHTTP   = false
-	maxConnsPerHostHTTP     = 10
-	defaultTimeoutSeconds   = 5
+	DefaultReverseProxyHTTPPort = 9999
+	maxIdleConnsHTTP            = 10
+	maxIdleConnsPerHostHTTP     = 10
+	disableKeepAlivesHTTP       = false
+	maxConnsPerHostHTTP         = 20
+	defaultTimeoutSeconds       = 5
+	idleConnTimeoutSeconds      = 60
 )
 
 type reverseHTTPProxy struct {
@@ -84,6 +85,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
 		DisableKeepAlives:   disableKeepAlivesHTTP,
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
+		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.port, backend)
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.port)), Handler: rp.addHandlers(proxy)}
