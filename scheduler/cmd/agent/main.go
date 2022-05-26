@@ -182,7 +182,13 @@ func main() {
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
-	rpHTTP := agent.NewReverseHTTPProxy(logger, uint(cli.ReverseProxyHttpPort), promMetrics)
+	rpHTTP := agent.NewReverseHTTPProxy(
+		logger,
+		cli.InferenceHost,
+		uint(cli.InferenceHttpPort),
+		uint(cli.ReverseProxyHttpPort),
+		promMetrics,
+	)
 	defer func() { _ = rpHTTP.Stop() }()
 
 	rpGRPC := agent.NewReverseGRPCProxy(

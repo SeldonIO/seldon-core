@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"net/url"
 	"sync"
 
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -28,10 +27,6 @@ type LocalStateManager struct {
 	// lock for `availableMainMemoryBytes`
 	mu      sync.RWMutex
 	metrics metrics.MetricsHandler
-}
-
-func (manager *LocalStateManager) GetBackEndPath() *url.URL {
-	return manager.v2Client.getUrl("/")
 }
 
 // this should be called from control plane (if directly)

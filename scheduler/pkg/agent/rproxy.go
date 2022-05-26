@@ -3,8 +3,10 @@ package agent
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"regexp"
 	"strconv"
 	"sync"
@@ -28,13 +30,15 @@ const (
 )
 
 type reverseHTTPProxy struct {
-	stateManager *LocalStateManager
-	logger       log.FieldLogger
-	server       *http.Server
-	serverReady  bool
-	port         uint
-	mu           sync.RWMutex
-	metrics      metrics.MetricsHandler
+	stateManager          *LocalStateManager
+	logger                log.FieldLogger
+	server                *http.Server
+	serverReady           bool
+	backendHTTPServerHost string
+	backendHTTPServerPort uint
+	servicePort           uint
+	mu                    sync.RWMutex
+	metrics               metrics.MetricsHandler
 }
 
 // need to rewrite the host of the outbound request with the host of the incoming request
@@ -78,7 +82,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		return fmt.Errorf("State not set, aborting")
 	}
 
-	backend := rp.stateManager.GetBackEndPath()
+	backend := rp.getBackEndPath()
 	proxy := httputil.NewSingleHostReverseProxy(backend)
 	proxy.Transport = &http.Transport{
 		MaxIdleConns:        maxIdleConnsHTTP,
@@ -87,8 +91,8 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
 		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
-	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.port, backend)
-	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.port)), Handler: rp.addHandlers(proxy)}
+	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
+	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.servicePort)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
 	go func() {
 		rp.mu.Lock()
@@ -101,6 +105,14 @@ func (rp *reverseHTTPProxy) Start() error {
 		rp.mu.Unlock()
 	}()
 	return nil
+}
+
+func (rp *reverseHTTPProxy) getBackEndPath() *url.URL {
+	return &url.URL{
+		Scheme: "http",
+		Host:   net.JoinHostPort(rp.backendHTTPServerHost, strconv.Itoa(int(rp.backendHTTPServerPort))),
+		Path:   "/",
+	}
 }
 
 func (rp *reverseHTTPProxy) Stop() error {
@@ -128,14 +140,18 @@ func (rp *reverseHTTPProxy) Name() string {
 
 func NewReverseHTTPProxy(
 	logger log.FieldLogger,
-	port uint,
+	backendHTTPServerHost string,
+	backendHTTPServerPort uint,
+	servicePort uint,
 	metrics metrics.MetricsHandler,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{
-		logger:  logger.WithField("Source", "HTTPProxy"),
-		port:    port,
-		metrics: metrics,
+		logger:                logger.WithField("Source", "HTTPProxy"),
+		backendHTTPServerHost: backendHTTPServerHost,
+		backendHTTPServerPort: backendHTTPServerPort,
+		servicePort:           servicePort,
+		metrics:               metrics,
 	}
 
 	return &rp
