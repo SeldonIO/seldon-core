@@ -75,6 +75,10 @@ test-jvm:
 .PHONY: test
 test: test-go test-jvm
 
+.PHONY: benchmark-go
+benchmark-go:
+	go test -run=XXX -bench=. ./pkg/...
+
 
 #####################################
 # Build Docker

@@ -1,0 +1,9 @@
+goos: linux
+goarch: amd64
+pkg: github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache
+cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+BenchmarkRouteContents100-12    	    3663	    321075 ns/op
+BenchmarkRouteContents1K-12     	     386	   3079703 ns/op
+BenchmarkRouteContents10K-12    	      37	  30910992 ns/op
+PASS
+ok  	github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache	4.803s

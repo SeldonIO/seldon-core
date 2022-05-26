@@ -15,7 +15,6 @@
 package resources
 
 import (
-	"fmt"
 	"time"
 
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
@@ -184,148 +183,129 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 	return action
 }
 
-func makeModelHttpRoute(r Route) *route.Route {
-	rt := &route.Route{
-		Name: fmt.Sprintf("%s_http", r.RouteName),
-		Match: &route.RouteMatch{
-			PathSpecifier: &route.RouteMatch_Prefix{
-				Prefix: "/v2",
-			},
-			Headers: []*route.HeaderMatcher{
-				{
-					Name: SeldonModelHeader, // Header name we will match on
-					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-						ExactMatch: r.RouteName,
-					},
-					//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-					//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-					//	StringMatch: &matcher.StringMatcher{
-					//		MatchPattern: &matcher.StringMatcher_Exact{
-					//			Exact: r.Host,
-					//		},
-					//	},
-					//},
-				},
-			},
-		},
-	}
-
-	rt.Action = createWeightedClusterAction(r.Clusters, true)
-	if r.LogPayloads {
-		rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-			{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
-		}
-	}
-	return rt
+var modelRouteMatchPathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
+var modelRouteMatchPathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+var modelRouteHeaders = []*core.HeaderValueOption{
+	{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
 }
 
-func makeModelGrpcRoute(r Route) *route.Route {
+func makeModelHttpRoute(r *Route, rt *route.Route) {
+	rt.Name = r.RouteName + "_http"
+	rt.Match.PathSpecifier = modelRouteMatchPathHttp
+	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.RouteName,
+		},
+		//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
+		//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+		//	StringMatch: &matcher.StringMatcher{
+		//		MatchPattern: &matcher.StringMatcher_Exact{
+		//			Exact: r.Host,
+		//		},
+		//	},
+		//},
+	}
+	rt.Action = createWeightedClusterAction(r.Clusters, true)
+	if r.LogPayloads {
+		rt.ResponseHeadersToAdd = modelRouteHeaders
+	}
+}
+
+func makeModelGrpcRoute(r *Route, rt *route.Route) {
 	//TODO there is no easy way to implement version specific gRPC calls so this could mean we need to implement
 	//latest model policy on V2 servers and therefore also for REST as well
-	rt := &route.Route{
-		Name: fmt.Sprintf("%s_grpc", r.RouteName),
-		Match: &route.RouteMatch{
-			PathSpecifier: &route.RouteMatch_Prefix{
-				Prefix: "/inference.GRPCInferenceService",
-			},
-			Headers: []*route.HeaderMatcher{
-				{
-					Name: SeldonModelHeader, // Header name we will match on
-					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-						ExactMatch: r.RouteName,
-					},
-					//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-					//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-					//	StringMatch: &matcher.StringMatcher{
-					//		MatchPattern: &matcher.StringMatcher_Exact{
-					//			Exact: r.Host,
-					//		},
-					//	},
-					//},
-				},
-			},
+	rt.Name = r.RouteName + "_grpc"
+	rt.Match.PathSpecifier = modelRouteMatchPathGrpc
+	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.RouteName,
 		},
+		//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
+		//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+		//	StringMatch: &matcher.StringMatcher{
+		//		MatchPattern: &matcher.StringMatcher_Exact{
+		//			Exact: r.Host,
+		//		},
+		//	},
+		//},
 	}
 	rt.Action = createWeightedClusterAction(r.Clusters, false)
 	if r.LogPayloads {
-		rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
-			{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
+		rt.ResponseHeadersToAdd = modelRouteHeaders
+	}
+}
+
+var pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
+var pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+var pipelineRouteActionHttp = &route.Route_Route{
+	Route: &route.RouteAction{
+		ClusterSpecifier: &route.RouteAction_Cluster{
+			Cluster: PipelineGatewayHttpClusterName,
+		},
+	},
+}
+var pipelineRouteActionGrpc = &route.Route_Route{
+	Route: &route.RouteAction{
+		ClusterSpecifier: &route.RouteAction_Cluster{
+			Cluster: PipelineGatewayGrpcClusterName,
+		},
+	},
+}
+
+func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route) {
+	rt.Name = r.PipelineName + "_pipeline_http"
+	rt.Match.PathSpecifier = pipelineRoutePathHttp
+	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.PipelineName + ".pipeline",
+		},
+	}
+	rt.Action = pipelineRouteActionHttp
+}
+
+func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route) {
+	rt.Name = r.PipelineName + "_pipeline_grpc"
+	rt.Match.PathSpecifier = pipelineRoutePathGrpc
+	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.PipelineName + ".pipeline",
+		},
+	}
+	rt.Action = pipelineRouteActionGrpc
+}
+
+func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) *route.RouteConfiguration {
+	rts := make([]*route.Route, 2*(len(modelRoutes)+len(pipelineRoutes)))
+	// Pre-allocate objects for better CPU pipelining
+	// Warning: assumes a fixes number of route-match headers
+	for i := 0; i < len(rts); i++ {
+		rts[i] = &route.Route{
+			Match: &route.RouteMatch{
+				Headers: make([]*route.HeaderMatcher, 1),
+			},
 		}
 	}
-	return rt
-}
 
-func makePipelineHttpRoute(r PipelineRoute) *route.Route {
-	rt := &route.Route{
-		Name: fmt.Sprintf("%s_pipeline_http", r.PipelineName),
-		Match: &route.RouteMatch{
-			PathSpecifier: &route.RouteMatch_Prefix{
-				Prefix: "/v2",
-			},
-			Headers: []*route.HeaderMatcher{
-				{
-					Name: SeldonModelHeader, // Header name we will match on
-					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-						ExactMatch: fmt.Sprintf("%s.pipeline", r.PipelineName),
-					},
-				},
-			},
-		},
-		Action: &route.Route_Route{
-			Route: &route.RouteAction{
-				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: PipelineGatewayHttpClusterName,
-				},
-			},
-		},
-	}
-	return rt
-}
-
-func makePipelineGrpcRoute(r PipelineRoute) *route.Route {
-	rt := &route.Route{
-		Name: fmt.Sprintf("%s_pipeline_grpc", r.PipelineName),
-		Match: &route.RouteMatch{
-			PathSpecifier: &route.RouteMatch_Prefix{
-				Prefix: "/inference.GRPCInferenceService",
-			},
-			Headers: []*route.HeaderMatcher{
-				{
-					Name: SeldonModelHeader, // Header name we will match on
-					HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-						ExactMatch: fmt.Sprintf("%s.pipeline", r.PipelineName),
-					},
-				},
-			},
-		},
-		Action: &route.Route_Route{
-			Route: &route.RouteAction{
-				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: PipelineGatewayGrpcClusterName,
-				},
-			},
-		},
-	}
-	return rt
-}
-
-func MakeRoute(modelRoutes []Route, pipelineRoutes []PipelineRoute) *route.RouteConfiguration {
-	var rts []*route.Route
+	idx := 0
 
 	// Create Model Routes
 	for _, r := range modelRoutes {
-		rt := makeModelHttpRoute(r)
-		rts = append(rts, rt)
-		rt = makeModelGrpcRoute(r)
-		rts = append(rts, rt)
+		makeModelHttpRoute(r, rts[idx])
+		idx++
+		makeModelGrpcRoute(r, rts[idx])
+		idx++
 	}
 
-	//Create Pipeline Routes
+	// Create Pipeline Routes
 	for _, r := range pipelineRoutes {
-		rt := makePipelineHttpRoute(r)
-		rts = append(rts, rt)
-		rt = makePipelineGrpcRoute(r)
-		rts = append(rts, rt)
+		makePipelineHttpRoute(r, rts[idx])
+		idx++
+		makePipelineGrpcRoute(r, rts[idx])
+		idx++
 	}
 
 	return &route.RouteConfiguration{

@@ -70,15 +70,20 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 }
 
 func (xds *SeldonXDSCache) RouteContents() []types.Resource {
-
-	var routesArray []resources.Route
-	for _, r := range xds.Routes { //This could be very large as is equal to number of models (100k?)
-		routesArray = append(routesArray, r)
+	routesArray := make([]*resources.Route, len(xds.Routes))
+	rIdx := 0
+	for _, r := range xds.Routes { // This could be very large as is equal to number of models (100k?)
+		modelRoute := r
+		routesArray[rIdx] = &modelRoute
+		rIdx++
 	}
 
-	var pipelinesArray []resources.PipelineRoute
+	pipelinesArray := make([]*resources.PipelineRoute, len(xds.Pipelines))
+	pIdx := 0
 	for _, r := range xds.Pipelines { // Likely to be less pipelines than models
-		pipelinesArray = append(pipelinesArray, r)
+		pipelineRoute := r
+		pipelinesArray[pIdx] = &pipelineRoute
+		pIdx++
 	}
 
 	return []types.Resource{resources.MakeRoute(routesArray, pipelinesArray)}
@@ -125,7 +130,15 @@ func (xds *SeldonXDSCache) AddListener(name string) {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRouteClusterTraffic(routeName string, modelName string, modelVersion uint32, trafficPercent uint32, httpClusterName string, grpcClusterName string, logPayloads bool) {
+func (xds *SeldonXDSCache) AddRouteClusterTraffic(
+	routeName string,
+	modelName string,
+	modelVersion uint32,
+	trafficPercent uint32,
+	httpClusterName string,
+	grpcClusterName string,
+	logPayloads bool,
+) {
 	route, ok := xds.Routes[routeName]
 	if !ok {
 		route = resources.Route{
@@ -149,7 +162,13 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(routeName string, modelName st
 	xds.Routes[routeName] = route
 }
 
-func (xds *SeldonXDSCache) AddCluster(name string, routeName string, modelName string, modelVersion uint32, isGrpc bool) {
+func (xds *SeldonXDSCache) AddCluster(
+	name string,
+	routeName string,
+	modelName string,
+	modelVersion uint32,
+	isGrpc bool,
+) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
 		cluster = resources.Cluster{
