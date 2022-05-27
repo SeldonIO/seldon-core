@@ -17,13 +17,13 @@ The list of SCv2 metrics that we are compiling is:
    :end-before: // end list of metrics 
    ```
 
-Many of these metrics are model level counters and gauges. We also aggregate some of these metrics to speed up display of graphs.
+Many of these metrics are model level counters and gauges. We also aggregate some of these metrics to speed up the display of graphs.
 
-This is experimental and these metrics are bound to change to reflect the trends we want to capture as we get more infromation about the usage of the system.
+This is experimental and these metrics are bound to change to reflect the trends we want to capture as we get more information about the usage of the system.
 
 ## Grafana dashboard
 
-We have a prebuilt grafana dashboard that make use of many of the metrics that we expose.
+We have a prebuilt grafana dashboard that makes use of many of the metrics that we expose.
 
 ![kafka](dashboard.png)
 
