@@ -42,5 +42,11 @@ We support several types of joins:
 
 These techniques allow users to create complex pipeline flows of data between machine learning components.
 
-More discussion on the data flow view of machine learning can be found in a paper by [Paleyes et al](https://arxiv.org/abs/2204.12781).
+More discussion on the data flow view of machine learning and its effect on v2 design can be found [here](dataflow.md).
 
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+dataflow.md
+```
