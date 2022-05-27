@@ -19,4 +19,6 @@ contents/cli/index
 contents/apis/index
 contents/architecture/index
 contents/faqs/index
+contents/metrics/index
+contents/performance-tests/index
 ```

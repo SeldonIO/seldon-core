@@ -16,6 +16,8 @@ import (
 )
 
 const (
+
+	// start list of metrics
 	HistogramName                                      = "seldon_infer_api_seconds"
 	InferCounterName                                   = "seldon_infer_total"
 	InferLatencyCounterName                            = "seldon_infer_seconds_total"
@@ -30,6 +32,7 @@ const (
 	EvictedModelMemoryGaugeName                        = "seldon_evicted_model_memory_bytes_gauge"
 	ServerReplicaMemoryCapacityGaugeName               = "seldon_server_replica_memory_capacity_bytes_gauge"
 	ServerReplicaMemoryCapacityWithOverCommitGaugeName = "seldon_server_replica_memory_capacity_overcommit_bytes_gauge"
+	// end list of metrics
 
 	SeldonModelMetric         = "model"
 	SeldonInternalModelMetric = "model_internal"

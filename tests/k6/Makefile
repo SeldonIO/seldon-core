@@ -47,13 +47,21 @@ undeploy-envoy-test:
 deploy-rproxy-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} 
 	kustomize build configs/k8s/overlays/rproxy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_TRITON_ENDPOINT}" envsubst | kubectl apply -f -
-	
+
+deploy-rproxy-mlserver-test:
+	cd configs/k8s/base && kustomize edit set image k6=${IMG} 
+	kustomize build configs/k8s/overlays/rproxy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_MLSERVER_ENDPOINT}" envsubst | kubectl apply -f -
+
 undeploy-rproxy-test:
 	kustomize build configs/k8s/overlays/rproxy | kubectl delete -f -
 
 deploy-server-test: 
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} 
 	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_TRITON_ENDPOINT}" envsubst | kubectl apply -f -
+
+deploy-server-mlserver-test: 
+	cd configs/k8s/base && kustomize edit set image k6=${IMG} 
+	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_MLSERVER_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-server-test:
 	kustomize build configs/k8s/overlays/server | kubectl delete -f -

@@ -1,6 +1,6 @@
 const tfsimple_string = "tfsimple_string"
 const tfsimple = "tfsimple"
-const iris = "iris"
+const iris = "iris"  // mlserver
 const pytorch_cifar10 = "pytorch_cifar10"
 const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
