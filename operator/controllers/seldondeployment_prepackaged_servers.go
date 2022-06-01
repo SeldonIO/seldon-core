@@ -436,6 +436,10 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 			}
 			if len(deploy.Spec.Template.Spec.Containers) > 0 && deploy.Spec.Template.Spec.Containers[0].Name != "" {
 				// Add deployment, provided we have a non-empty spec
+				getSvcName := machinelearningv1.GetDeployMatchValue(mlDep, p, depName)
+				deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app_svc] = getSvcName
+				deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app_svc] = getSvcName
+				deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app_svc] = getSvcName
 				c.deployments = append(c.deployments, deploy)
 			}
 		}

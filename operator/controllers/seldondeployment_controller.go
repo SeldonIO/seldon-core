@@ -541,6 +541,10 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 					}
 				}
 			}
+			getSvcName := machinelearningv1.GetDeployMatchValue(mlDep, &p, cSpec.Metadata.Name)
+			deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app_svc] = getSvcName
+			deploy.Spec.Selector.MatchLabels[machinelearningv1.Label_seldon_app_svc] = getSvcName
+			deploy.Spec.Template.ObjectMeta.Labels[machinelearningv1.Label_seldon_app_svc] = getSvcName
 			c.deployments = append(c.deployments, deploy)
 		}
 
@@ -747,9 +751,6 @@ func createContainerService(deploy *appsv1.Deployment,
 			SessionAffinity: corev1.ServiceAffinityNone,
 		},
 	}
-	deploy.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Selector.MatchLabels[containerServiceKey] = containerServiceValue
-	deploy.Spec.Template.ObjectMeta.Labels[containerServiceKey] = containerServiceValue
 
 	existingHttpPort := machinelearningv1.GetPort("http", con.Ports)
 	if existingHttpPort == nil || con.Ports == nil {
