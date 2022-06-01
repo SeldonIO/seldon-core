@@ -1,7 +1,9 @@
 .idea/
 *~
 /bin/*
-/mnt/*
+/mnt/pipelinedb
+/mnt/mlserver
+/mnt/triton
 /apis-TEMP
 cover.out
 data-flow/opentelemetry-javaagent.jar
