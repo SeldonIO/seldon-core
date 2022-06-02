@@ -1,7 +1,6 @@
 package experiment
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 )
 
@@ -47,10 +46,11 @@ func (es *ExperimentStore) getTotalModelReferences() int {
 	return tot
 }
 
-func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) {
+func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) bool {
+	publishModelEvent := false
 	existingExperiment := es.experiments[experiment.Name]
 	if existingExperiment == nil {
-		return
+		return publishModelEvent
 	}
 	// if Baseline changed update
 	if existingExperiment.DefaultModel != nil {
@@ -58,15 +58,11 @@ func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) {
 		if (experiment.DefaultModel != nil && *existingExperiment.DefaultModel != *experiment.DefaultModel) ||
 			experiment.DefaultModel == nil {
 			// Model connected has been changed or removed so need to update it
-			if es.eventHub != nil {
-				es.eventHub.PublishModelEvent(experimentStateEventSource, coordinator.ModelEventMsg{
-					ModelName: *existingExperiment.DefaultModel,
-					//Empty model version
-				})
-			}
+			publishModelEvent = true
 		}
 	}
 	es.removeModelReferences(existingExperiment)
+	return publishModelEvent
 }
 
 func (es *ExperimentStore) updateExperimentState(experiment *Experiment) {

@@ -50,9 +50,7 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 	logger := s.logger.WithField("func", "handleExperimentEvents")
 	logger.Debugf("Received experiment event %s", event.String())
 	if event.Status != nil {
-		go func() {
-			s.sendExperimentStatus(event)
-		}()
+		s.sendExperimentStatus(event)
 	}
 }
 

@@ -40,9 +40,7 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMsg) {
 	logger := s.logger.WithField("func", "handlePipelineEvents")
 	logger.Debugf("Received pipeline event %s", event.String())
-	go func() {
-		s.sendPipelineEvents(event)
-	}()
+	s.sendPipelineEvents(event)
 }
 
 func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg) {

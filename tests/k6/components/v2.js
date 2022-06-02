@@ -23,7 +23,7 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
     };
     //console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
     const response = http.post(url, payloadStr, params);
-    //console.log(response.status, JSON.stringify(response.error), response.body)
+    //console.log("URL:",url,"Status:",response.status, "Payloads:",JSON.stringify(response.error), response.body)
     check(response, {'model http prediction success': (r) => r.status === 200});
 }
 
@@ -42,7 +42,7 @@ export function inferGrpc(modelName, payload, viaEnvoy, pipelineSuffix) {
         headers['seldon-internal-model'] = modelName
     }
     const params = {
-        headers: headers
+        metadata: headers
     };
     payload.model_name = modelName
     const response = v2Client.invoke('inference.GRPCInferenceService/ModelInfer', payload, params);

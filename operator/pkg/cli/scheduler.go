@@ -655,11 +655,11 @@ func (sc *SchedulerClient) ListPipelines() error {
 	}
 
 	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
-	_, err = fmt.Fprintln(writer, "pipeline")
+	_, err = fmt.Fprintln(writer, "pipeline\tstate")
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprintln(writer, "--------")
+	_, err = fmt.Fprintln(writer, "--------\t-----")
 	if err != nil {
 		return err
 	}
@@ -674,7 +674,7 @@ func (sc *SchedulerClient) ListPipelines() error {
 
 		}
 
-		_, err = fmt.Fprintf(writer, "%s\n", res.PipelineName)
+		_, err = fmt.Fprintf(writer, "%s\t%s\n", res.PipelineName, res.Versions[len(res.Versions)-1].State.Status.String())
 		if err != nil {
 			return err
 		}

@@ -135,6 +135,63 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
     }
 }
 
+export function generateExperiment(experimentName, modelType, modelName1, modelName2, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
+    const data = models[modelType]
+    const modelTemplate = data.modelTemplate
+    var uri = modelTemplate.uriTemplate
+    if (modelTemplate.maxUriSuffix > 0) {
+        uri = uri + (uriOffset % modelTemplate.maxUriSuffix).toString()
+    }
+
+    const model1 = {"model": {
+            "meta":{
+                "name": modelName1
+            },
+            "modelSpec":{
+                "uri": uri,
+                "requirements": modelTemplate.requirements,
+                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
+            },
+            "deploymentSpec": {
+                "replicas": replicas
+            }
+        }
+    }
+
+    const model2 = {"model": {
+            "meta":{
+                "name": modelName2
+            },
+            "modelSpec":{
+                "uri": uri,
+                "requirements": modelTemplate.requirements,
+                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
+            },
+            "deploymentSpec": {
+                "replicas": replicas
+            }
+        }
+    }
+
+    const experiment = {"experiment":{
+            "name":experimentName,
+            "defaultModel": modelName1,
+            "candidates":[
+                {"modelName": modelName1,"weight":50},
+                {"modelName": modelName2,"weight":50}
+            ]
+        }
+    }
+
+    const inference = getModelInferencePayload(modelType, inferBatchSize)
+    return {
+        "model1Defn": isProxy ? {"request": model1} : model1,
+        "model2Defn": isProxy ? {"request": model2} : model2,
+        "experimentDefn": experiment,
+        "inference": JSON.parse(JSON.stringify(inference))
+    }
+}
+
 export function generateModel(modelType, modelName, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
     const data = models[modelType]
     const modelTemplate = data.modelTemplate

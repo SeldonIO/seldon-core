@@ -175,8 +175,22 @@ func (m *MemoryStore) GetModel(key string) (*ModelSnapshot, error) {
 }
 
 func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	evt, err := m.removeModelImpl(req)
+	if err != nil {
+		return err
+	}
+	if m.eventHub != nil && evt != nil {
+		m.eventHub.PublishModelEvent(
+			modelUpdateEventSource,
+			*evt,
+		)
+	}
+	return nil
+}
+
+func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.ModelEventMsg, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	model, ok := m.store.models[req.GetModel().GetName()]
 	if ok {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
@@ -184,9 +198,12 @@ func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
 		model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
 		model.deleted = true
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
-		return nil
+		return &coordinator.ModelEventMsg{
+			ModelName:    model.Latest().GetMeta().GetName(),
+			ModelVersion: model.Latest().GetVersion(),
+		}, nil
 	} else {
-		return fmt.Errorf("Model %s not found", req.GetModel().GetName())
+		return nil, fmt.Errorf("Model %s not found", req.GetModel().GetName())
 	}
 }
 
@@ -239,8 +256,18 @@ func (m *MemoryStore) UpdateLoadedModels(
 	replicas []*ServerReplica,
 ) error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.updateLoadedModelsImpl(modelKey, version, serverKey, replicas)
+	evt, err := m.updateLoadedModelsImpl(modelKey, version, serverKey, replicas)
+	m.mu.Unlock()
+	if err != nil {
+		return err
+	}
+	if m.eventHub != nil && evt != nil {
+		m.eventHub.PublishModelEvent(
+			modelUpdateEventSource,
+			*evt,
+		)
+	}
+	return nil
 }
 
 func (m *MemoryStore) updateLoadedModelsImpl(
@@ -248,29 +275,29 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	version uint32,
 	serverKey string,
 	replicas []*ServerReplica,
-) error {
+) (*coordinator.ModelEventMsg, error) {
 	logger := m.logger.WithField("func", "updateLoadedModelsImpl")
 
 	// Validate
 	model, ok := m.store.models[modelKey]
 	if !ok {
-		return fmt.Errorf("failed to find model %s", modelKey)
+		return nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
 	modelVersion := model.Latest()
 	if version != modelVersion.GetVersion() {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"Model versiion mismatch for %s got %d but latest version is now %d",
 			modelKey, version, modelVersion.GetVersion(),
 		)
 	}
 	server, ok := m.store.servers[serverKey]
 	if !ok {
-		return fmt.Errorf("failed to find server %s", serverKey)
+		return nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
 	for _, replica := range replicas {
 		_, ok := server.replicas[replica.GetReplicaIdx()]
 		if !ok {
-			return fmt.Errorf(
+			return nil, fmt.Errorf(
 				"Failed to reserve replica %d as it does not exist on server %s",
 				replica.GetReplicaIdx(), serverKey,
 			)
@@ -329,11 +356,26 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
+		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
 	}
-	return nil
+	return nil, nil
 }
 
 func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
+	evt, updated, err := m.unloadVersionModelsImpl(modelKey, version)
+	if err != nil {
+		return updated, err
+	}
+	if m.eventHub != nil && evt != nil {
+		m.eventHub.PublishModelEvent(
+			modelUpdateEventSource,
+			*evt,
+		)
+	}
+	return updated, nil
+}
+
+func (m *MemoryStore) unloadVersionModelsImpl(modelKey string, version uint32) (*coordinator.ModelEventMsg, bool, error) {
 	logger := m.logger.WithField("func", "UnloadVersionModels")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -341,11 +383,11 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 	// Validate
 	model, ok := m.store.models[modelKey]
 	if !ok {
-		return false, fmt.Errorf("failed to find model %s", modelKey)
+		return nil, false, fmt.Errorf("failed to find model %s", modelKey)
 	}
 	modelVersion := model.GetVersion(version)
 	if modelVersion == nil {
-		return false, fmt.Errorf("Version not found for model %s, version %d", modelKey, version)
+		return nil, false, fmt.Errorf("Version not found for model %s, version %d", modelKey, version)
 	}
 
 	updated := false
@@ -371,8 +413,12 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 	if updated {
 		logger.Debugf("Calling update model status for model %s version %d", modelKey, version)
 		m.updateModelStatus(false, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
+		return &coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+		}, true, nil
 	}
-	return updated, nil
+	return nil, false, nil
 }
 
 func (m *MemoryStore) UpdateModelState(
@@ -385,6 +431,29 @@ func (m *MemoryStore) UpdateModelState(
 	desiredState ModelReplicaState,
 	reason string,
 ) error {
+	evt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason)
+	if err != nil {
+		return err
+	}
+	if m.eventHub != nil && evt != nil {
+		m.eventHub.PublishModelEvent(
+			modelUpdateEventSource,
+			*evt,
+		)
+	}
+	return nil
+}
+
+func (m *MemoryStore) updateModelStateImpl(
+	modelKey string,
+	version uint32,
+	serverKey string,
+	replicaIdx int,
+	availableMemory *uint64,
+	expectedState ModelReplicaState,
+	desiredState ModelReplicaState,
+	reason string,
+) (*coordinator.ModelEventMsg, error) {
 	logger := m.logger.WithField("func", "UpdateModelState")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -392,13 +461,13 @@ func (m *MemoryStore) UpdateModelState(
 	// Validate
 	model, modelVersion, server, err := m.getModelServer(modelKey, version, serverKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	existingState := modelVersion.GetModelReplicaState(replicaIdx)
 
 	if existingState != expectedState {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"State mismatch for %s:%d expected state %s but was %s when trying to move to state %s",
 			modelKey, version, expectedState.String(), existingState.String(), desiredState.String(),
 		)
@@ -445,12 +514,29 @@ func (m *MemoryStore) UpdateModelState(
 		}
 
 		m.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
+		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
+	evts, err := m.addServerReplicaImpl(request)
+	if err != nil {
+		return err
+	}
+	if m.eventHub != nil {
+		for _, evt := range evts {
+			m.eventHub.PublishModelEvent(
+				modelUpdateEventSource,
+				evt,
+			)
+		}
+	}
+	return nil
+}
+
+func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -478,14 +564,19 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 	)
 	server.replicas[int(request.ReplicaIdx)] = serverReplica
 
+	var evts []coordinator.ModelEventMsg
 	for _, modelVersionReq := range request.LoadedModels {
 		model, modelVersion := m.addModelVersionIfNotExists(modelVersionReq)
 		modelVersion.replicas[int(request.ReplicaIdx)] = ReplicaStatus{State: Loaded}
 		modelVersion.server = request.ServerName
 		m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion())
+		evts = append(evts, coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+		})
 	}
 
-	return nil
+	return evts, nil
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {

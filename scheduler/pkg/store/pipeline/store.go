@@ -64,7 +64,9 @@ func (ps *PipelineStore) InitialiseDB(path string) error {
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "addPipeline")
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
+	ps.mu.Lock()
 	ps.pipelines[pipeline.Name] = pipeline
+	ps.mu.Unlock()
 	pv := pipeline.GetLatestPipelineVersion()
 	if ps.eventHub != nil {
 		ps.eventHub.PublishPipelineEvent(addPipelineEventSource, coordinator.PipelineEventMsg{
@@ -92,6 +94,17 @@ func validateAndAddPipelineVersion(req *scheduler.Pipeline, pipeline *Pipeline) 
 }
 
 func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
+	evt, err := ps.addPipelineImpl(req)
+	if err != nil {
+		return err
+	}
+	if ps.eventHub != nil && evt != nil {
+		ps.eventHub.PublishPipelineEvent(addPipelineEventSource, *evt)
+	}
+	return nil
+}
+
+func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.PipelineEventMsg, error) {
 	logger := ps.logger.WithField("func", "AddPipeline")
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
@@ -107,7 +120,7 @@ func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
 
 		switch lastPipeline.State.Status {
 		case PipelineTerminate:
-			return &PipelineTerminatingErr{pipeline: req.Name}
+			return nil, &PipelineTerminatingErr{pipeline: req.Name}
 		case PipelineTerminating, PipelineTerminated:
 			pipeline = &Pipeline{
 				Name:        req.Name,
@@ -118,67 +131,74 @@ func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
 			if req.GetKubernetesMeta() != nil && lastPipeline.KubernetesMeta != nil {
 				if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
 					logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
-					return nil
+					return nil, nil
 				}
 			}
 		}
 	}
 	err := validateAndAddPipelineVersion(req, pipeline)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ps.pipelines[req.Name] = pipeline
 	if ps.db != nil {
 		err = ps.db.save(pipeline)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 	pv := pipeline.GetLatestPipelineVersion()
-	if ps.eventHub != nil {
-		ps.eventHub.PublishPipelineEvent(addPipelineEventSource, coordinator.PipelineEventMsg{
-			PipelineName:    pv.Name,
-			PipelineVersion: pv.Version,
-			UID:             pv.UID,
-		})
+	return &coordinator.PipelineEventMsg{
+		PipelineName:    pv.Name,
+		PipelineVersion: pv.Version,
+		UID:             pv.UID,
+	}, nil
+}
+
+func (ps *PipelineStore) RemovePipeline(name string) error {
+	logger := ps.logger.WithField("func", "RemovePipeline")
+	logger.Debugf("Attempt to remove pipeline %s", name)
+	evt, err := ps.removePipelineImpl(name)
+	if err != nil {
+		return err
+	}
+	if ps.eventHub != nil && evt != nil {
+		ps.eventHub.PublishPipelineEvent(removePipelineEventSource, *evt)
 	}
 	return nil
 }
 
-func (ps *PipelineStore) RemovePipeline(name string) error {
+func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineEventMsg, error) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	if pipeline, ok := ps.pipelines[name]; ok {
 		lastPipelineVersion := pipeline.GetLatestPipelineVersion()
 		if lastPipelineVersion == nil {
-			return &PipelineVersionNotFoundErr{pipeline: name, version: pipeline.LastVersion - 1}
+			return nil, &PipelineVersionNotFoundErr{pipeline: name, version: pipeline.LastVersion - 1}
 		}
 		lastState := lastPipelineVersion.State
 		switch lastState.Status {
 		case PipelineTerminate:
-			return &PipelineTerminatingErr{pipeline: name}
+			return nil, &PipelineTerminatingErr{pipeline: name}
 		case PipelineTerminated:
-			return &PipelineAlreadyTerminatedErr{pipeline: name}
+			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
 			if ps.db != nil {
 				err := ps.db.delete(pipeline)
 				if err != nil {
-					return err
+					return nil, err
 				}
 			}
 			pipeline.Deleted = true
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
-			if ps.eventHub != nil {
-				ps.eventHub.PublishPipelineEvent(removePipelineEventSource, coordinator.PipelineEventMsg{
-					PipelineName:    lastPipelineVersion.Name,
-					PipelineVersion: lastPipelineVersion.Version,
-					UID:             lastPipelineVersion.UID,
-				})
-			}
+			return &coordinator.PipelineEventMsg{
+				PipelineName:    lastPipelineVersion.Name,
+				PipelineVersion: lastPipelineVersion.Version,
+				UID:             lastPipelineVersion.UID,
+			}, nil
 		}
-		return nil
 	} else {
-		return &PipelineNotFoundErr{pipeline: name}
+		return nil, &PipelineNotFoundErr{pipeline: name}
 	}
 }
 
@@ -242,17 +262,20 @@ func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
 
 	foundPipelines := []*Pipeline{}
 	for _, p := range ps.pipelines {
-		copied, err := copystructure.Copy(p)
-		if err != nil {
-			return nil, err
+		if !p.Deleted {
+			copied, err := copystructure.Copy(p)
+			if err != nil {
+				return nil, err
+			}
+			foundPipelines = append(foundPipelines, copied.(*Pipeline))
 		}
-		foundPipelines = append(foundPipelines, copied.(*Pipeline))
 	}
 
 	return foundPipelines, nil
 }
 
-func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pipeline) {
+func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pipeline) []*coordinator.PipelineEventMsg {
+	var evts []*coordinator.PipelineEventMsg
 	for _, pv := range pipeline.Versions {
 		if pv.Version != pipeline.LastVersion {
 			switch pv.State.Status {
@@ -260,44 +283,57 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 				continue
 			default:
 				pv.State.setState(PipelineTerminate, "")
-				if ps.eventHub != nil {
-					ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, coordinator.PipelineEventMsg{
-						PipelineName:    pv.Name,
-						PipelineVersion: pv.Version,
-						UID:             pv.UID,
-					})
-				}
+				evts = append(evts, &coordinator.PipelineEventMsg{
+					PipelineName:    pv.Name,
+					PipelineVersion: pv.Version,
+					UID:             pv.UID,
+				})
 			}
 		}
 	}
+	return evts
 }
 
 func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string) error {
+	logger := ps.logger.WithField("func", "SetPipelineState")
+	logger.Debugf("Attempt to set state on pipeline %s:%d status:%s", name, versionNumber, status.String())
+	evts, err := ps.setPipelineStateImpl(name, versionNumber, uid, status, reason)
+	if err != nil {
+		return err
+	}
+	if ps.eventHub != nil {
+		for _, evt := range evts {
+			ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, *evt)
+		}
+	}
+	return nil
+}
+
+func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32, uid string, status PipelineStatus, reason string) ([]*coordinator.PipelineEventMsg, error) {
+	var evts []*coordinator.PipelineEventMsg
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	if pipeline, ok := ps.pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
 				pipelineVersion.State.setState(status, reason)
-				if ps.eventHub != nil {
-					ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, coordinator.PipelineEventMsg{
-						PipelineName:    pipelineVersion.Name,
-						PipelineVersion: pipelineVersion.Version,
-						UID:             pipelineVersion.UID,
-					})
-				}
+				evts = append(evts, &coordinator.PipelineEventMsg{
+					PipelineName:    pipelineVersion.Name,
+					PipelineVersion: pipelineVersion.Version,
+					UID:             pipelineVersion.UID,
+				})
 				if status == PipelineReady {
-					ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)
+					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
 				if ps.db != nil {
 					err := ps.db.save(pipeline)
 					if err != nil {
-						return err
+						return evts, err
 					}
 				}
-				return nil
+				return evts, nil
 			} else {
-				return &PipelineVersionUidMismatchErr{
+				return evts, &PipelineVersionUidMismatchErr{
 					pipeline:    name,
 					version:     versionNumber,
 					uidActual:   pipelineVersion.UID,
@@ -305,9 +341,9 @@ func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid
 				}
 			}
 		} else {
-			return &PipelineVersionNotFoundErr{pipeline: name, version: versionNumber}
+			return evts, &PipelineVersionNotFoundErr{pipeline: name, version: versionNumber}
 		}
 	} else {
-		return &PipelineNotFoundErr{pipeline: name}
+		return evts, &PipelineNotFoundErr{pipeline: name}
 	}
 }

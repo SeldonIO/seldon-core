@@ -47,6 +47,13 @@ function loadModel() {
     return true
 }
 
+function loadExperiment() {
+    if (__ENV.SKIP_LOAD_EXPERIMENT) {
+        return false
+    }
+    return true
+}
+
 function infer() {
     if (__ENV.SKIP_INFER) {
         return false
@@ -56,6 +63,13 @@ function infer() {
 
 function unloadModel() {
     if (__ENV.SKIP_UNLOAD_MODEL) {
+        return false
+    }
+    return true
+}
+
+function unloadExperiment() {
+    if (__ENV.SKIP_UNLOAD_EXPERIMENT) {
         return false
     }
     return true
@@ -117,6 +131,12 @@ function modelNamePrefix() {
     return "model"
 }
 
+function experimentNamePrefix() {
+    if (__ENV.EXPERIMENTNAME_PREFIX) {
+        return __ENV.EXPERIMENTNAME_PREFIX
+    }
+    return "experiment"
+}
 
 export function getConfig() {
     return {
@@ -137,5 +157,8 @@ export function getConfig() {
         "isLoadPipeline": isLoadPipeline(),
         "dataflowTag": dataflowTag(),
         "modelNamePrefix": modelNamePrefix(),
+        "experimentNamePrefix": experimentNamePrefix(),
+        "loadExperiment" : loadExperiment(),
+        "unloadExperiment": unloadExperiment(),
     }
 }

@@ -59,7 +59,14 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 	return es
 }
 
-func (es *ExperimentStore) publishEvent(experiment *Experiment, source string, updatedExperiment bool) {
+func (es *ExperimentStore) publishModelEvent(experiment *Experiment) {
+	es.eventHub.PublishModelEvent(experimentStateEventSource, coordinator.ModelEventMsg{
+		ModelName: *experiment.DefaultModel,
+		//Empty model version
+	})
+}
+
+func (es *ExperimentStore) publishExperimentEvent(experiment *Experiment, source string, updatedExperiment bool) {
 	var k8sMeta *coordinator.KubernetesMeta
 	if experiment.KubernetesMeta != nil {
 		k8sMeta = &coordinator.KubernetesMeta{
@@ -80,15 +87,35 @@ func (es *ExperimentStore) publishEvent(experiment *Experiment, source string, u
 	})
 }
 
+func (es *ExperimentStore) createExperimentEventMsg(experiment *Experiment, updatedExperiment bool) *coordinator.ExperimentEventMsg {
+	var k8sMeta *coordinator.KubernetesMeta
+	if experiment.KubernetesMeta != nil {
+		k8sMeta = &coordinator.KubernetesMeta{
+			Namespace:  experiment.KubernetesMeta.Namespace,
+			Generation: experiment.KubernetesMeta.Generation,
+		}
+	}
+	return &coordinator.ExperimentEventMsg{
+		ExperimentName:    experiment.Name,
+		UpdatedExperiment: updatedExperiment,
+		Status: &coordinator.ExperimentEventStatus{
+			Active:            experiment.Active,
+			CandidatesReady:   experiment.AreCandidatesReady(),
+			MirrorReady:       experiment.IsMirrorReady(),
+			StatusDescription: experiment.StatusDescription,
+		},
+		KubernetesMeta: k8sMeta,
+	}
+}
+
 // This function will publish experiment events for any model that has changed which is part of an existing experiment
 func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	logger := es.logger.WithField("func", "handleModelEvents")
 	logger.Infof("Received event %s", event.String())
 
 	go func() {
+		var updatedExperiments []*Experiment
 		es.mu.Lock()
-		defer es.mu.Unlock()
-
 		refs := es.modelReferences[event.ModelName]
 		for _, experiment := range refs {
 			for _, candidate := range experiment.Candidates {
@@ -117,7 +144,16 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					}
 				}
 			}
-			es.publishEvent(experiment, experimentStartEventSource, true)
+			copied, err := copystructure.Copy(experiment)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to copy experiment %s", experiment.Name)
+			} else {
+				updatedExperiments = append(updatedExperiments, copied.(*Experiment))
+			}
+		}
+		es.mu.Unlock()
+		for _, experiment := range updatedExperiments {
+			es.publishExperimentEvent(experiment, experimentStartEventSource, true)
 		}
 	}()
 }
@@ -129,60 +165,104 @@ func (es *ExperimentStore) GetExperimentForBaselineModel(modelName string) *Expe
 }
 
 func (es *ExperimentStore) SetStatus(experimentName string, active bool, reason string) error {
+	evt, err := es.setStatusImpl(experimentName, active, reason)
+	if err != nil {
+		return err
+	}
+	if es.eventHub != nil && evt != nil {
+		es.eventHub.PublishExperimentEvent(experimentStateEventSource, *evt)
+	}
+	return nil
+}
+
+func (es *ExperimentStore) setStatusImpl(experimentName string, active bool, reason string) (*coordinator.ExperimentEventMsg, error) {
 	es.mu.Lock()
 	defer es.mu.Unlock()
 	if experiment, ok := es.experiments[experimentName]; !ok {
-		return &ExperimentNotFound{experimentName: experimentName}
+		return nil, &ExperimentNotFound{experimentName: experimentName}
 	} else {
-		currentActive := experiment.Active
-		experiment.Active = active
-		experiment.StatusDescription = reason
-		if currentActive != experiment.Active {
-			es.publishEvent(experiment, experimentStateEventSource, false)
+		if !experiment.Deleted || !active { //can't reactivate a deleted experiment
+			currentActive := experiment.Active
+			experiment.Active = active
+			experiment.StatusDescription = reason
+			if currentActive != experiment.Active {
+				return es.createExperimentEventMsg(experiment, false), nil
+			}
+		}
+	}
+	return nil, nil
+}
+
+func (es *ExperimentStore) StartExperiment(experiment *Experiment) error {
+	expEvt, modelEvt, err := es.startExperimentImpl(experiment)
+	if err != nil {
+		return err
+	}
+	if es.eventHub != nil {
+		if modelEvt != nil {
+			es.eventHub.PublishModelEvent(experimentStateEventSource, *modelEvt)
+		}
+		if expEvt != nil {
+			es.eventHub.PublishExperimentEvent(experimentStartEventSource, *expEvt)
 		}
 	}
 	return nil
 }
 
-func (es *ExperimentStore) StartExperiment(experiment *Experiment) error {
+func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordinator.ExperimentEventMsg, *coordinator.ModelEventMsg, error) {
 	es.mu.Lock()
 	defer es.mu.Unlock()
+	var modelEvt *coordinator.ModelEventMsg
 	logger := es.logger.WithField("func", "StartExperiment")
 	logger.Infof("Start %s", experiment.Name)
 	err := es.validate(experiment)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
-	es.cleanExperimentState(experiment)
+	if es.cleanExperimentState(experiment) {
+		modelEvt = &coordinator.ModelEventMsg{
+			ModelName: *experiment.DefaultModel,
+		}
+	}
 	es.updateExperimentState(experiment)
 	es.experiments[experiment.Name] = experiment
+	return es.createExperimentEventMsg(experiment, true), modelEvt, nil
+}
+
+func (es *ExperimentStore) StopExperiment(experimentName string) error {
+	expEvt, modelEvt, err := es.stopExperimentImpl(experimentName)
+	if err != nil {
+		return err
+	}
 	if es.eventHub != nil {
-		es.publishEvent(experiment, experimentStartEventSource, true)
+		if modelEvt != nil {
+			es.eventHub.PublishModelEvent(experimentStopEventSource, *modelEvt)
+		}
+		if expEvt != nil {
+			es.eventHub.PublishExperimentEvent(experimentStopEventSource, *expEvt)
+		}
 	}
 	return nil
 }
 
-func (es *ExperimentStore) StopExperiment(experimentName string) error {
+func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinator.ExperimentEventMsg, *coordinator.ModelEventMsg, error) {
 	logger := es.logger.WithField("func", "StopExperiment")
 	logger.Infof("Stop %s", experimentName)
 	es.mu.Lock()
 	defer es.mu.Unlock()
 	if experiment, ok := es.experiments[experimentName]; ok {
+		var modelEvt *coordinator.ModelEventMsg
 		experiment.Deleted = true
 		experiment.Active = false
 		es.cleanExperimentState(experiment)
-		if es.eventHub != nil {
-			if experiment.DefaultModel != nil {
-				es.eventHub.PublishModelEvent(experimentStateEventSource, coordinator.ModelEventMsg{
-					ModelName: *experiment.DefaultModel,
-					//Empty model version
-				})
+		if experiment.DefaultModel != nil {
+			modelEvt = &coordinator.ModelEventMsg{
+				ModelName: *experiment.DefaultModel,
 			}
-			es.publishEvent(experiment, experimentStopEventSource, true)
 		}
-		return nil
+		return es.createExperimentEventMsg(experiment, true), modelEvt, nil
 	} else {
-		return &ExperimentNotFound{
+		return nil, nil, &ExperimentNotFound{
 			experimentName: experimentName,
 		}
 	}
@@ -210,12 +290,14 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 
 	foundExperiments := []*Experiment{}
 	for _, e := range es.experiments {
-		copied, err := copystructure.Copy(e)
-		if err != nil {
-			return nil, err
-		}
+		if !e.Deleted {
+			copied, err := copystructure.Copy(e)
+			if err != nil {
+				return nil, err
+			}
 
-		foundExperiments = append(foundExperiments, copied.(*Experiment))
+			foundExperiments = append(foundExperiments, copied.(*Experiment))
+		}
 	}
 	return foundExperiments, nil
 }

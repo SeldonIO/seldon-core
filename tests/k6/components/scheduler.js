@@ -97,3 +97,47 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
     }
 }
 
+export function isExperimentActive(experimentName) {
+    const data = {"subscriberName":"k6", "name": experimentName}
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/ExperimentStatus', data);
+    if (check(response, {'experiment status success': (r) => r && r.status === grpc.StatusOK})) {
+        const responseData = response.message
+        //console.log(JSON.stringify(response.message));
+        return responseData.active
+    } else {
+        return false
+    }
+}
+
+export function awaitExperimentStart(experimentName) {
+    while (!isExperimentActive(experimentName)) {
+        sleep(1)
+    }
+}
+
+export function awaitExperimentStop(experimentName) {
+    while (isExperimentActive(experimentName)) {
+        sleep(1)
+    }
+}
+
+export function loadExperiment(experimentName, data, awaitReady=true) {
+    //console.log(data)
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/StartExperiment', data);
+    if (check(response, {'start experiment success': (r) => r && r.status === grpc.StatusOK})) {
+        if (awaitReady) {
+            awaitExperimentStart(experimentName)
+        }
+    }
+}
+
+export function unloadExperiment(experimentName, awaitReady=true) {
+    //console.log(data)
+    const data = {"name": experimentName}
+    const response = schedulerClient.invoke('seldon.mlops.scheduler.Scheduler/StopExperiment', data);
+    if (check(response, {'stop experiment success': (r) => r && r.status === grpc.StatusOK})) {
+        if (awaitReady) {
+            awaitExperimentStop(experimentName)
+        }
+    }
+}

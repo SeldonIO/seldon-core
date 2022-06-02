@@ -67,13 +67,11 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	logger.Infof("Got model event msg for %s", event.String())
 
 	// TODO - Should this spawn a goroutine?
-	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
-	go func() {
-		err := s.sendModelStatusEvent(event)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to update model status for model %s", event.String())
-		}
-	}()
+	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?
+	err := s.sendModelStatusEvent(event)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to update model status for model %s", event.String())
+	}
 }
 
 func (s *SchedulerServer) StopSendModelEvents() {
@@ -145,13 +143,11 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
 	logger.Infof("Got server state change for %s", event.String())
 
 	// TODO - Should this spawn a goroutine?
-	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
-	go func() {
-		err := s.sendServerStatusEvent(event)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
-		}
-	}()
+	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?
+	err := s.sendServerStatusEvent(event)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
+	}
 }
 
 func (s *SchedulerServer) StopSendServerEvents() {
