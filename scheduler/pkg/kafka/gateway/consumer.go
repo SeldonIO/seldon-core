@@ -41,7 +41,7 @@ func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, kafkaConfig *con
 		serverConfig:   serverConfig,
 		done:           make(chan bool),
 		tracerProvider: traceProvider,
-		tracer:         traceProvider.TraceProvider.Tracer("Worker"),
+		tracer:         traceProvider.GetTraceProvider().Tracer("Worker"),
 	}
 	return ic, ic.setup()
 }

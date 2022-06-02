@@ -44,6 +44,7 @@ const (
 	flagMemoryBytes          = "memory-bytes"
 	flagCapabilities         = "capabilities"
 	flagOverCommitPercentage = "over-commit-percentage"
+	flagTracingConfigPath    = "tracing-config-path"
 )
 
 const (
@@ -82,6 +83,7 @@ var (
 	Capabilities         []string
 	OverCommitPercentage int
 	serverTypes          = [...]string{"mlserver", "triton"}
+	TracingConfigPath    string
 )
 
 func init() {

@@ -25,7 +25,8 @@ spec:
         - --scheduler-port=9004
         - --envoy-host=seldon-mesh
         - --envoy-port=80
-        - --config-path=/mnt/config/kafka.json
+        - --kafka-config-path=/mnt/kafka/kafka.json
+        - --tracing-config-path=/mnt/tracing/tracing.json
         image: modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
@@ -33,15 +34,17 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
-        env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "seldon-collector.seldon-mesh:4317"        
         volumeMounts:
-        - name: config-volume
-          mountPath: /mnt/config
+        - name: kafka-config-volume
+          mountPath: /mnt/kafka
+        - name: tracing-config-volume
+          mountPath: /mnt/tracing
       volumes:
-      - name: config-volume
+      - name: kafka-config-volume
         configMap:
           name: seldon-kafka
+      - name: tracing-config-volume
+        configMap:
+          name: seldon-tracing
       terminationGracePeriodSeconds: 5
       serviceAccountName: scheduler

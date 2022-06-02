@@ -48,7 +48,7 @@ func TestManagerAddModel(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
-			tp, err := seldontracer.NewTracer("test")
+			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
 			km := NewKafkaManager(logger, &KafkaServerConfig{}, "default", &config.KafkaConfig{}, tp)
 			err = km.AddModel(test.modelName, test.streamSpec)
@@ -73,7 +73,8 @@ func TestManagerRemoveModel(t *testing.T) {
 		modelName        string
 		expectedGateways int
 	}
-	tp, err := seldontracer.NewTracer("test")
+	logger := log.New()
+	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
 	gw1, err := NewInferKafkaGateway(log.New(), 0, &config.KafkaConfig{}, &KafkaModelConfig{ModelName: "foo", InputTopic: "topic1", OutputTopic: "topic2"}, &KafkaServerConfig{}, tp)
 	g.Expect(err).To(BeNil())

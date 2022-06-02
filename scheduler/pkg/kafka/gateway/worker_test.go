@@ -68,7 +68,7 @@ func TestRestRequest(t *testing.T) {
 			}
 			createTestV2ClientMockResponders(kafkaServerConfig.Host, kafkaServerConfig.HttpPort, kafkaModelConfig.ModelName)
 			logger := log.New()
-			tp, err := seldontracer.NewTracer("test")
+			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
 			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
@@ -112,7 +112,7 @@ func TestProcessRequestRest(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			createTestV2ClientMockResponders(kafkaServerConfig.Host, kafkaServerConfig.HttpPort, kafkaModelConfig.ModelName)
 			logger := log.New()
-			tp, err := seldontracer.NewTracer("test")
+			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
 			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
@@ -183,7 +183,7 @@ func createInferWorkerWithMockConn(
 	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	tp, err := seldontracer.NewTracer("test")
+	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
 	ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, modelConfig, serverConfig, tp)
 	g.Expect(err).To(BeNil())
@@ -193,7 +193,7 @@ func createInferWorkerWithMockConn(
 		restUrl:    getRestUrl(serverConfig.Host, serverConfig.HttpPort, modelConfig.ModelName),
 		httpClient: http.DefaultClient,
 		consumer:   ic,
-		tracer:     tp.TraceProvider.Tracer("test"),
+		tracer:     tp.GetTraceProvider().Tracer("test"),
 	}
 	return ic, iw
 }

@@ -14,6 +14,8 @@ services:
       - "mlserver"
       - "--metrics-port"
       - ${AGENT_MLSERVER_METRICS_PORT}
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-host.json"
     environment:
       - SELDON_SCHEDULER_HOST=0.0.0.0
     volumes:
@@ -38,6 +40,8 @@ services:
       - ${AGENT_TRITON_METRICS_PORT}
       - "--server-name"
       - "triton"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-host.json"
     environment:
       - SELDON_SCHEDULER_HOST=0.0.0.0
     volumes:
@@ -81,8 +85,14 @@ services:
       - "/bin/scheduler"
       - "--log-level"
       - "debug"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
       - --pipeline-db-path
       - "${PIPELINE_DB_PATH_COMPOSE}"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config      
     network_mode: "host"
 
   dataflow:
@@ -110,12 +120,14 @@ services:
       - "/bin/modelgateway"
       - "--log-level"
       - "debug"
-      - "--config-path"
+      - "--kafka-config-path"
       - "/mnt/config/kafka-host.json"
       - "--scheduler-port"
       - ${SCHEDULER_SERVER_PORT}
       - "--envoy-port"
       - ${ENVOY_DATA_PORT}
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-host.json"
       
   pipelinegateway:
     network_mode: "host"    
@@ -127,7 +139,7 @@ services:
       - "/bin/pipelinegateway"
       - "--log-level"
       - "debug"
-      - "--config-path"
+      - "--kafka-config-path"
       - "/mnt/config/kafka-host.json"
       - "--http-port"
       - ${PIPELINEGATEWAY_HTTP_PORT}
@@ -135,6 +147,8 @@ services:
       - ${PIPELINEGATEWAY_GRPC_PORT}
       - "--metrics-port"
       - ${PIPELINEGATEWAY_METRICS_PORT}
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-host.json"
 
   kafka:
     network_mode: "host"        

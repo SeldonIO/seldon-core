@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
@@ -100,6 +102,7 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	}
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
 	s.logger.Printf("Scheduler server running on %d", schedulerPort)

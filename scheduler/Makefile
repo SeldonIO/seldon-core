@@ -524,11 +524,11 @@ endif
 
 .PHONY: start-modelgateway-local
 start-modelgateway-local:
-	./bin/modelgateway --config-path ${PWD}/config --log-level debug
+	./bin/modelgateway --kafka-config-path ${PWD}/config --log-level debug
 
 .PHONY: start-pipelinegateway-local
 start-pipelinegateway-local:
-	./bin/pipelinegateway --config-path ${PWD}/config/kafka-host.json --log-level debug
+	./bin/pipelinegateway --kafka-config-path ${PWD}/config/kafka-host.json --log-level debug
 
 data-flow/opentelemetry-javaagent.jar:
 	cd data-flow && wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar

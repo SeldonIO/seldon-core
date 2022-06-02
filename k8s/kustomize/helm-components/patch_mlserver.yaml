@@ -14,8 +14,6 @@ spec:
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ .Values.opentelemetry.endpoint }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       name: agent

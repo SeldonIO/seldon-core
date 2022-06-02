@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -86,6 +88,7 @@ func (s *Server) StartGrpcServer(agentPort uint) error {
 	}
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcOptions = append(grpcOptions, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(grpcOptions...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d", agentPort)

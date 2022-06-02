@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/xdscache"
@@ -60,9 +61,9 @@ var (
 	pipelineGatewayHttpPort int
 	pipelineGatewayGrpcPort int
 	logLevel                string
+	tracingConfigPath       string
 	pipelineDbPath          string
-
-	nodeID string
+	nodeID                  string
 )
 
 func init() {
@@ -90,6 +91,7 @@ func init() {
 	flag.IntVar(&pipelineGatewayHttpPort, "pipeline-gateway-http-port", 9010, "Pipeline gateway server http port")
 	flag.IntVar(&pipelineGatewayGrpcPort, "pipeline-gateway-grpc-port", 9011, "Pipeline gateway server grpc port")
 	flag.StringVar(&logLevel, "log-level", "debug", "Log level - examples: debug, info, error")
+	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
 	flag.StringVar(&pipelineDbPath, "pipeline-db-path", "", "Pipeline state Db")
 }
 
@@ -136,6 +138,13 @@ func main() {
 		srv := serverv3.NewServer(ctx, cache, nil)
 		server.RunServer(ctx, srv, envoyPort)
 	}()
+
+	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
+	if err != nil {
+		logger.WithError(err).Error("Failed to configure otel tracer")
+	} else {
+		defer tracer.Stop()
+	}
 
 	ps := pipeline.NewPipelineStore(logger, eventHub)
 	if pipelineDbPath != "" {

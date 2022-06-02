@@ -116,20 +116,6 @@ services:
       dockerfile: ./Dockerfile.modelgateway
       context: .
     image: "${MODELGATEWAY_IMAGE_AND_TAG}"
-    command:
-      - "/bin/modelgateway"
-      - "--log-level"
-      - "debug"
-      - "--config-path"
-      - "/mnt/config/kafka-internal.json"
-      - "--scheduler-host"
-      - "scheduler"
-      - "--scheduler-port"
-      - ${SCHEDULER_SERVER_PORT}
-      - "--envoy-host"
-      - "envoy"
-      - "--envoy-port"
-      - ${ENVOY_DATA_PORT}
     depends_on:
       - kafka
       - otel-collector
@@ -139,16 +125,6 @@ services:
       dockerfile: ./Dockerfile.pipelinegateway
       context: .
     image: "${PIPELINEGATEWAY_IMAGE_AND_TAG}"
-    command:
-      - "/bin/pipelinegateway"
-      - "--log-level"
-      - "debug"
-      - "--config-path"
-      - "/mnt/config/kafka-internal.json"
-      - "--http-port"
-      - ${PIPELINEGATEWAY_HTTP_PORT}
-      - "--grpc-port"
-      - ${PIPELINEGATEWAY_GRPC_PORT}
     depends_on:
       - kafka
       - otel-collector

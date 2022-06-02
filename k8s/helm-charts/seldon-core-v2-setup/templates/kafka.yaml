@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-kafka
+  namespace: seldon-mesh
+data:
+  kafka.json: |-
+   {
+      "bootstrap.servers": "{{ .Values.kafka.bootstrap }}",
+      "consumer":{
+         "session.timeout.ms": {{ .Values.kafka.consumer.sessionTimeoutMs }},
+         "auto.offset.reset": "{{ .Values.kafka.consumer.autoOffsetReset }}"
+      },
+      "producer":{
+        "linger.ms": {{ .Values.kafka.producer.lingerMs }},
+        "message.max.bytes": {{ int .Values.kafka.producer.messageMaxBytes }}
+      },
+      "streams":{
+      }
+   }

@@ -28,13 +28,14 @@ const (
 )
 
 var (
-	schedulerHost string
-	schedulerPort int
-	envoyHost     string
-	envoyPort     int
-	configPath    string
-	namespace     string
-	logLevel      string
+	schedulerHost     string
+	schedulerPort     int
+	envoyHost         string
+	envoyPort         int
+	kafkaConfigPath   string
+	namespace         string
+	logLevel          string
+	tracingConfigPath string
 )
 
 func init() {
@@ -45,13 +46,13 @@ func init() {
 	flag.IntVar(&envoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 	flag.StringVar(
-		&configPath,
-		"config-path",
+		&kafkaConfigPath,
+		"kafka-config-path",
 		"/mnt/config/kafka.json",
 		"Path to kafka configuration file",
 	)
 	flag.StringVar(&logLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
-
+	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
 }
 
 func updateNamespace() {
@@ -96,14 +97,14 @@ func main() {
 
 	go makeSignalHandler(logger, done)
 
-	tracer, err := tracing.NewTracer("seldon-modelgateway")
+	tracer, err := tracing.NewTraceProvider("seldon-modelgateway", &tracingConfigPath, logger)
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {
 		defer tracer.Stop()
 	}
 
-	kafkaConfigMap, err := config.NewKafkaConfig(configPath)
+	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}

@@ -13,8 +13,6 @@ spec:
         env:
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: '{{ .Values.opentelemetry.endpoint }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.requests.cpu }}'

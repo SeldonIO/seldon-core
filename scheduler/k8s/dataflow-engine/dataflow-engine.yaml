@@ -30,8 +30,16 @@ spec:
           value: "9008"
         - name: SELDON_CORES_COUNT
           value: "4"
+        - name: OTEL_JAVAAGENT_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: seldon-tracing 
+              key: OTEL_JAVAAGENT_ENABLED 
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://seldon-collector.seldon-mesh:4317"        
+          valueFrom:
+            configMapKeyRef:
+              name: seldon-tracing 
+              key: OTEL_EXPORTER_OTLP_ENDPOINT 
         resources:
           requests:
             cpu: 1

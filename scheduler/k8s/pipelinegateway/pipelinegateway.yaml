@@ -24,7 +24,8 @@ spec:
         - --http-port=9010
         - --grpc-port=9011
         - --metrics-port=9006
-        - --config-path=/mnt/config/kafka.json
+        - --kafka-config-path=/mnt/kafka/kafka.json
+        - --tracing-config-path=/mnt/tracing/tracing.json
         image: pipelinegateway:latest
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
@@ -42,15 +43,17 @@ spec:
         - containerPort: 9006
           name: metrics
           protocol: TCP
-        env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "seldon-collector.seldon-mesh:4317"        
         volumeMounts:
-        - name: config-volume
-          mountPath: /mnt/config
+        - name: kafka-config-volume
+          mountPath: /mnt/kafka
+        - name: tracing-config-volume
+          mountPath: /mnt/tracing
       volumes:
-      - name: config-volume
+      - name: kafka-config-volume
         configMap:
           name: seldon-kafka
+      - name: tracing-config-volume
+        configMap:
+          name: seldon-tracing
       terminationGracePeriodSeconds: 5
       serviceAccountName: scheduler

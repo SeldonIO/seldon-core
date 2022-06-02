@@ -20,9 +20,9 @@ deploy-k8s:
 
 .PHONY: undeploy-k8s
 undeploy-k8s:
-	kubectl delete --ignore-not-found=true -f k8s/seldon-v2-servers.yaml
-	kubectl delete --ignore-not-found=true -f k8s/seldon-v2-components.yaml
-	kubectl delete --ignore-not-found=true -f k8s/seldon-v2-crds.yaml
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-servers.yaml
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-components.yaml
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-crds.yaml
 
 #
 # Dev

@@ -54,7 +54,8 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		isModel           bool
 		expectedPipelines int
 	}
-	tracer, err := tracing.NewTracer("test")
+	logger := logrus.New()
+	tracer, err := tracing.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
 	tests := []test{
 		{

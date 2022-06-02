@@ -14,6 +14,3 @@ spec:
           requests:
             cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
             memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
-        env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: '{{ .Values.opentelemetry.endpoint }}'        

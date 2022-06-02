@@ -63,7 +63,7 @@ func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *c
 		kafkaConfig: kafkaConfig,
 		logger:      logger.WithField("source", "KafkaManager"),
 		topicNamer:  kafka2.NewTopicNamer(namespace),
-		tracer:      traceProvider.TraceProvider.Tracer("KafkaManager"),
+		tracer:      traceProvider.GetTraceProvider().Tracer("KafkaManager"),
 	}
 	err := km.createProducer()
 	if err != nil {

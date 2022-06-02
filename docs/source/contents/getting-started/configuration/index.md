@@ -20,8 +20,34 @@ The top level keys are:
 
 ### Kubernetes
 
-For Kubernetes this is controlled via a ConfigMap call `seldon-kafka` whose default value is shown below:
+For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default value is shown below:
 
 ```{literalinclude} ../../../../../scheduler/k8s/config/kafka.yaml
 :language: yaml
 ```
+
+## Tracing Configuration
+
+We allow configuration of tracing. This file looks like:
+
+```{literalinclude} ../../../../../scheduler/config/tracing-internal.json
+:language: json
+```
+
+The top level keys are:
+
+ * `enable` : whether to enable tracing
+ * `otelExporterEndpoint` : The host and port for the OTEL exporter 
+ * `ratio` : The ratio of requests to trace. Takes values between 0 and 1 inclusive.
+
+
+
+### Kubernetes
+
+For Kubernetes this is controlled via a ConfigMap call `seldon-tracing` whose default value is shown below:
+
+```{literalinclude} ../../../../../scheduler/k8s/config/tracing.yaml
+:language: yaml
+```
+
+At present Java instrumentation (for the dataflow engine) is duplicated via separate keys.

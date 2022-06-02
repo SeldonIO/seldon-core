@@ -1,5 +1,6 @@
 resources:
 - agent.yaml
 - kafka.yaml
+- tracing.yaml
 - rclone-gs-public.yaml
 

@@ -72,7 +72,7 @@ func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger, tracePr
 		restUrl:     restUrl,
 		httpClient:  &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		consumer:    consumer,
-		tracer:      traceProvider.TraceProvider.Tracer("Worker"),
+		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
 		callOptions: opts,
 	}, nil
 }

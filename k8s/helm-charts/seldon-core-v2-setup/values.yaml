@@ -1,6 +1,16 @@
 opentelemetry:
   endpoint: seldon-collector.seldon-mesh:4317
+  enable: true
+  ratio: 1
 
+kafka:
+  bootstrap: seldon-kafka-plain-bootstrap.kafka:9092
+  consumer:
+    sessionTimeoutMs: 6000
+    autoOffsetReset: earliest
+  producer:
+    lingerMs: 0
+    messageMaxBytes: 1000000000
 modelgateway:
     image:
       pullPolicy: IfNotPresent

@@ -29,6 +29,10 @@ spec:
     - image: agent:latest
       imagePullPolicy: IfNotPresent
       name: agent
+      command:
+        - /bin/agent
+      args:
+        - --tracing-config-path=/mnt/tracing/tracing.json 
       env:
       - name: SELDON_SERVER_CAPABILITIES
         value: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
@@ -76,6 +80,8 @@ spec:
         name: triton-models
       - name: config-volume
         mountPath: /mnt/config
+      - name: tracing-config-volume
+        mountPath: /mnt/tracing
     - image: triton:latest
       command:
       - /opt/tritonserver/bin/tritonserver
@@ -135,6 +141,9 @@ spec:
     - name: config-volume
       configMap:
         name: seldon-agent
+    - name: tracing-config-volume
+      configMap:
+        name: seldon-tracing
   volumeClaimTemplates:
   - name: triton-models
     spec:

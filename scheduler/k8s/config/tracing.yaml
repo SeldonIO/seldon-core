@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracing
+data:
+  tracing.json: |-
+   {
+     "enable": true,
+     "otelExporterEndpoint": "seldon-collector.seldon-mesh:4317",
+     "ratio": 1
+   }
+  OTEL_JAVAAGENT_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://seldon-collector.seldon-mesh:4317"

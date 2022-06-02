@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-tracing
+  namespace: seldon-mesh
+data:
+  tracing.json: |-
+   {
+     "enable": {{ .Values.opentelemetry.enable }},
+     "otelExporterEndpoint": "{{ .Values.opentelemetry.endpoint }}",
+     "ratio": {{ .Values.opentelemetry.ratio }}
+   }
+  OTEL_JAVAAGENT_ENABLED: "{{ .Values.opentelemetry.enable }}"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://{{ .Values.opentelemetry.endpoint }}"

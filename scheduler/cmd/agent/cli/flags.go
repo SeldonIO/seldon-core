@@ -47,6 +47,7 @@ func makeArgs() {
 	flag.StringVar(&capabilitiesList, flagCapabilities, "sklearn,xgboost", "Server capabilities")
 	flag.IntVar(&OverCommitPercentage, flagOverCommitPercentage, 0, "Overcommit memory pecentage")
 	flag.StringVar(&LogLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
+	flag.StringVar(&TracingConfigPath, flagTracingConfigPath, "", "Tracing config path")
 }
 
 func parseFlags() {

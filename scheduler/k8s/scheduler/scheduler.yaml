@@ -24,6 +24,7 @@ spec:
         - /bin/scheduler
         args:
         - --pipeline-gateway-host=seldon-pipelinegateway
+        - --tracing-config-path=/mnt/tracing/tracing.json
         - --pipeline-db-path=/mnt/scheduler/pipelinedb
         image: scheduler:latest
         imagePullPolicy: IfNotPresent
@@ -42,8 +43,14 @@ spec:
             cpu: 100m
             memory: 200Mi
         volumeMounts:
-        - mountPath: /mnt/scheduler
-          name: scheduler-state
+        - name: tracing-config-volume
+          mountPath: /mnt/tracing
+        - name: scheduler-state
+          mountPath: /mnt/scheduler
+      volumes:
+      - name: tracing-config-volume
+        configMap:
+          name: seldon-tracing
       terminationGracePeriodSeconds: 5
   volumeClaimTemplates:
   - metadata:

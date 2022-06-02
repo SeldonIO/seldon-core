@@ -131,7 +131,7 @@ func main() {
 		}
 	}
 
-	tracer, err := tracing.NewTracer("seldon-agent")
+	tracer, err := tracing.NewTraceProvider("seldon-agent", &cli.TracingConfigPath, logger)
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {

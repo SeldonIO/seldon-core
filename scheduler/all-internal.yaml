@@ -21,6 +21,8 @@ services:
       - "agent-mlserver"
       - "--server-name"
       - "mlserver"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
       - SELDON_REVERSE_PROXY_HTTP_PORT=${SELDON_MLSERVER_REVERSE_PROXY_HTTP_PORT}
@@ -45,8 +47,6 @@ services:
       - type: volume
         source: models-mlserver
         target: /mnt/agent
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
         
   agent-triton:
     command:
@@ -65,6 +65,8 @@ services:
       - "agent-triton"
       - "--server-name"
       - "triton"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
     ports:
       - "${AGENT_TRITON_HTTP_PORT}:${AGENT_TRITON_HTTP_PORT}"
       - "${AGENT_TRITON_GRPC_PORT}:${AGENT_TRITON_GRPC_PORT}"
@@ -77,8 +79,6 @@ services:
       - type: volume
         source: models-triton
         target: /mnt/agent
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
   rclone-mlserver:
     ports:
@@ -123,25 +123,55 @@ services:
       - "debug"
       - "--pipeline-gateway-host"
       - "pipelinegateway"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
       - --pipeline-db-path
       - ${PIPELINE_DB_PATH_COMPOSE}
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config      
     ports:
       - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
       - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
       - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
         
   modelgateway:
+    command:
+      - "/bin/modelgateway"
+      - "--log-level"
+      - "debug"
+      - "--kafka-config-path"
+      - "/mnt/config/kafka-internal.json"
+      - "--scheduler-host"
+      - "scheduler"
+      - "--scheduler-port"
+      - ${SCHEDULER_SERVER_PORT}
+      - "--envoy-host"
+      - "envoy"
+      - "--envoy-port"
+      - ${ENVOY_DATA_PORT}
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
   pipelinegateway:
+    command:
+      - "/bin/pipelinegateway"
+      - "--log-level"
+      - "debug"
+      - "--kafka-config-path"
+      - "/mnt/config/kafka-internal.json"
+      - "--http-port"
+      - ${PIPELINEGATEWAY_HTTP_PORT}
+      - "--grpc-port"
+      - ${PIPELINEGATEWAY_GRPC_PORT}
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"      
     volumes:
       - type: bind
         source: ./config
@@ -149,8 +179,6 @@ services:
     ports:
       - "${PIPELINEGATEWAY_HTTP_PORT}:${PIPELINEGATEWAY_HTTP_PORT}"
       - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"      
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
 
 
   dataflow:

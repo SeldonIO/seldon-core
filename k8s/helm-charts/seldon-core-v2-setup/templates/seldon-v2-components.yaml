@@ -406,35 +406,6 @@ subjects:
 ---
 apiVersion: v1
 data:
-  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]"
-kind: ConfigMap
-metadata:
-  name: seldon-agent
-  namespace: seldon-mesh
----
-apiVersion: v1
-data:
-  kafka.json: |-
-    {
-       "bootstrap.servers": "seldon-kafka-plain-bootstrap.kafka:9092",
-       "consumer":{
-          "session.timeout.ms":6000,
-          "auto.offset.reset":"earliest"
-       },
-       "producer":{
-         "linger.ms":0,
-         "message.max.bytes":1000000000
-       },
-       "streams":{
-       }
-    }
-kind: ConfigMap
-metadata:
-  name: seldon-kafka
-  namespace: seldon-mesh
----
-apiVersion: v1
-data:
   controller_manager_config.yaml: |
     apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
     kind: ControllerManagerConfig
@@ -451,19 +422,6 @@ kind: ConfigMap
 metadata:
   name: seldon-manager-config
   namespace: seldon-mesh
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: seldon-rclone-gs-public
-  namespace: seldon-mesh
-stringData:
-  gs: |
-    type: "google cloud storage"
-    name: gs
-    parameters:
-      anonymous: true
-type: Opaque
 ---
 apiVersion: v1
 kind: Service
@@ -650,14 +608,22 @@ spec:
       - env:
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: '{{ .Values.opentelemetry.endpoint }}'
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
           value: seldon-kafka-plain-bootstrap.kafka:9092
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
           value: "9008"
+        - name: OTEL_JAVAAGENT_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_JAVAAGENT_ENABLED
+              name: seldon-tracing
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+              name: seldon-tracing
         image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository
           }}:{{ .Values.dataflow.image.tag }}'
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
@@ -724,7 +690,8 @@ spec:
         - --scheduler-port=9004
         - --envoy-host=seldon-mesh
         - --envoy-port=80
-        - --config-path=/mnt/config/kafka.json
+        - --kafka-config-path=/mnt/kafka/kafka.json
+        - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/modelgateway
         env:
@@ -739,8 +706,10 @@ spec:
             cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'
             memory: '{{ .Values.modelgateway.resources.requests.memory }}'
         volumeMounts:
-        - mountPath: /mnt/config
-          name: config-volume
+        - mountPath: /mnt/kafka
+          name: kafka-config-volume
+        - mountPath: /mnt/tracing
+          name: tracing-config-volume
       securityContext:
         runAsUser: 8888
       serviceAccountName: seldon-scheduler
@@ -748,7 +717,10 @@ spec:
       volumes:
       - configMap:
           name: seldon-kafka
-        name: config-volume
+        name: kafka-config-volume
+      - configMap:
+          name: seldon-tracing
+        name: tracing-config-volume
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -772,12 +744,10 @@ spec:
         - --http-port=9010
         - --grpc-port=9011
         - --metrics-port=9006
-        - --config-path=/mnt/config/kafka.json
+        - --kafka-config-path=/mnt/kafka/kafka.json
+        - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/pipelinegateway
-        env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: '{{ .Values.opentelemetry.endpoint }}'
         image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository
           }}:{{ .Values.pipelinegateway.image.tag }}'
         imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
@@ -797,8 +767,10 @@ spec:
             cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
             memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
         volumeMounts:
-        - mountPath: /mnt/config
-          name: config-volume
+        - mountPath: /mnt/kafka
+          name: kafka-config-volume
+        - mountPath: /mnt/tracing
+          name: tracing-config-volume
       securityContext:
         runAsUser: 8888
       serviceAccountName: seldon-scheduler
@@ -806,7 +778,10 @@ spec:
       volumes:
       - configMap:
           name: seldon-kafka
-        name: config-volume
+        name: kafka-config-volume
+      - configMap:
+          name: seldon-tracing
+        name: tracing-config-volume
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -829,6 +804,7 @@ spec:
       containers:
       - args:
         - --pipeline-gateway-host=seldon-pipelinegateway
+        - --tracing-config-path=/mnt/tracing/tracing.json
         - --pipeline-db-path=/mnt/scheduler/pipelinedb
         command:
         - /bin/scheduler
@@ -849,12 +825,18 @@ spec:
             cpu: 100m
             memory: 200Mi
         volumeMounts:
+        - mountPath: /mnt/tracing
+          name: tracing-config-volume
         - mountPath: /mnt/scheduler
           name: scheduler-state
       securityContext:
         runAsUser: 8888
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
+      volumes:
+      - configMap:
+          name: seldon-tracing
+        name: tracing-config-volume
   volumeClaimTemplates:
   - metadata:
       name: scheduler-state
@@ -892,13 +874,15 @@ spec:
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
-    - env:
+    - args:
+      - --tracing-config-path=/mnt/tracing/tracing.json
+      command:
+      - /bin/agent
+      env:
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -943,6 +927,8 @@ spec:
         name: mlserver-models
       - mountPath: /mnt/config
         name: config-volume
+      - mountPath: /mnt/tracing
+        name: tracing-config-volume
     - env:
       - name: MLSERVER_HTTP_PORT
         value: "9000"
@@ -1006,6 +992,9 @@ spec:
     - configMap:
         name: seldon-agent
       name: config-volume
+    - configMap:
+        name: seldon-tracing
+      name: tracing-config-volume
   volumeClaimTemplates:
   - name: mlserver-models
     spec:
@@ -1042,13 +1031,15 @@ spec:
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
-    - env:
+    - args:
+      - --tracing-config-path=/mnt/tracing/tracing.json
+      command:
+      - /bin/agent
+      env:
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.triton.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.triton.overcommitPercentage }}'
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1065,6 +1056,8 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: triton
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: seldon-collector.seldon-mesh:4317
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1093,6 +1086,8 @@ spec:
         name: triton-models
       - mountPath: /mnt/config
         name: config-volume
+      - mountPath: /mnt/tracing
+        name: tracing-config-volume
     - args:
       - --model-repository=$(SERVER_MODELS_DIR)
       - --http-port=$(SERVER_HTTP_PORT)
@@ -1155,6 +1150,9 @@ spec:
     - configMap:
         name: seldon-agent
       name: config-volume
+    - configMap:
+        name: seldon-tracing
+      name: tracing-config-volume
   volumeClaimTemplates:
   - name: triton-models
     spec:

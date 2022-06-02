@@ -34,12 +34,13 @@ const (
 )
 
 var (
-	httpPort    int
-	grpcPort    int
-	metricsPort int
-	logLevel    string
-	namespace   string
-	configPath  string
+	httpPort          int
+	grpcPort          int
+	metricsPort       int
+	logLevel          string
+	namespace         string
+	kafkaConfigPath   string
+	tracingConfigPath string
 )
 
 func init() {
@@ -50,11 +51,12 @@ func init() {
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
 	flag.StringVar(&logLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(
-		&configPath,
-		"config-path",
+		&kafkaConfigPath,
+		"kafka-config-path",
 		"/mnt/config/kafka.json",
 		"path to kafka configuration file",
 	)
+	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
 }
 
 func makeSignalHandler(logger *log.Logger, done chan<- bool) {
@@ -98,14 +100,14 @@ func main() {
 
 	updateNamespace()
 
-	tracer, err := tracing.NewTracer(serviceTag)
+	tracer, err := tracing.NewTraceProvider(serviceTag, &tracingConfigPath, logger)
 	if err != nil {
 		logger.WithError(err).Error("Failed to configure otel tracer")
 	} else {
 		defer tracer.Stop()
 	}
 
-	kafkaConfigMap, err := config.NewKafkaConfig(configPath)
+	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
