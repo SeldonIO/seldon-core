@@ -93,6 +93,9 @@ services:
       - type: bind
         source: ./config
         target: /mnt/config      
+      - type: bind
+        source: ./mnt
+        target: /mnt/db      
     network_mode: "host"
 
   dataflow:

@@ -131,6 +131,9 @@ services:
       - type: bind
         source: ./config
         target: /mnt/config      
+      - type: bind
+        source: ./mnt
+        target: /mnt/db
     ports:
       - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
       - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
