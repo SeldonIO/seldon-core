@@ -175,12 +175,12 @@ func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error
 func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte) error {
 	logger := iw.logger.WithField("func", "produce")
 
-	var kafkaHeaders []kafka.Header
+	kafkaHeaders := job.msg.Headers
 	//kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)})
-	if pipelineName, ok := job.headers[resources.SeldonPipelineHeader]; ok {
-		logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
-		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
-	}
+	//if pipelineName, ok := job.headers[resources.SeldonPipelineHeader]; ok {
+	//	logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
+	//	kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
+	//}
 	if topic == iw.consumer.modelConfig.ErrorTopic {
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
 	}

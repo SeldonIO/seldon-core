@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+
 	. "github.com/onsi/gomega"
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -23,8 +25,8 @@ type fakePipelineInferer struct {
 	data []byte
 }
 
-func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte) ([]byte, error) {
-	return f.data, f.err
+func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) ([]byte, []kafka.Header, error) {
+	return f.data, nil, f.err
 }
 
 func getFreePort() (int, error) {

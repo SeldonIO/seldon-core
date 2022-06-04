@@ -32,12 +32,20 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			showHeaders, err := cmd.Flags().GetBool(showHeadersFlag)
+			if err != nil {
+				return err
+			}
 			inferMode, err := cmd.Flags().GetString(inferenceModeFlag)
 			if err != nil {
 				return err
 			}
 			inferenceClient := cli.NewInferenceClient(inferenceHost)
 			iterations, err := cmd.Flags().GetInt(inferenceIterationsFlag)
+			if err != nil {
+				return err
+			}
+			headers, err := cmd.Flags().GetStringArray(addHeaderFlag)
 			if err != nil {
 				return err
 			}
@@ -51,7 +59,7 @@ func createModelInfer() *cobra.Command {
 			} else {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
-			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel)
+			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers)
 			return err
 		},
 	}
@@ -59,5 +67,7 @@ func createModelInfer() *cobra.Command {
 	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, env.GetString(EnvInfer, DefaultInferHost)), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
+	cmdModelInfer.Flags().Bool(showHeadersFlag, false, "show headers")
+	cmdModelInfer.Flags().StringArray(addHeaderFlag, []string{}, fmt.Sprintf("add header key%svalue", cli.HeaderSeparator))
 	return cmdModelInfer
 }

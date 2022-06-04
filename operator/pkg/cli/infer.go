@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"encoding/binary"
@@ -23,6 +24,7 @@ import (
 const (
 	SeldonModelHeader    = "seldon-model"
 	SeldonPipelineHeader = "pipeline"
+	HeaderSeparator      = "="
 )
 
 const (
@@ -133,7 +135,7 @@ func decodeV2Error(response *http.Response, b []byte) error {
 
 }
 
-func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType) ([]byte, error) {
+func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
@@ -147,6 +149,20 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 		req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
 	}
 
+	for _, header := range headers {
+		parts := strings.Split(header, HeaderSeparator)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("Badly formed header %s: use key%sval", header, HeaderSeparator)
+		}
+		req.Header.Set(parts[0], parts[1])
+	}
+
+	if showHeaders {
+		for k, v := range req.Header {
+			fmt.Printf("Request header %s:%v\n", k, v)
+		}
+	}
+
 	response, err := ic.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -158,6 +174,11 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 	err = response.Body.Close()
 	if err != nil {
 		return nil, err
+	}
+	if showHeaders {
+		for k, v := range response.Header {
+			fmt.Printf("Response header %s:%v\n", k, v)
+		}
 	}
 	if response.StatusCode != http.StatusOK {
 		return nil, decodeV2Error(response, b)
@@ -200,13 +221,13 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
+func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
 	if showRequest {
 		printPrettyJson(data)
 	}
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 	for i := 0; i < iterations; i++ {
-		res, err := ic.call(resourceName, path, data, inferType)
+		res, err := ic.call(resourceName, path, data, inferType, showHeaders, headers)
 		if err != nil {
 			return err
 		}
@@ -317,7 +338,7 @@ func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
+func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := protojson.Unmarshal(data, req)
 	if err != nil {
@@ -340,8 +361,26 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
 	}
 
+	for _, header := range headers {
+		parts := strings.Split(header, HeaderSeparator)
+		if len(parts) != 2 {
+			return fmt.Errorf("Badly formed header %s: use key%sval", header, HeaderSeparator)
+		}
+		ctx = metadata.AppendToOutgoingContext(ctx, parts[0], parts[1])
+	}
+
+	if showHeaders {
+		md, ok := metadata.FromOutgoingContext(ctx)
+		if ok {
+			for k, v := range md {
+				fmt.Printf("Request metadata %s:%v\n", k, v)
+			}
+		}
+	}
+
 	for i := 0; i < iterations; i++ {
-		res, err := grpcClient.ModelInfer(ctx, req)
+		var header, trailer metadata.MD
+		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header), grpc.Trailer(&trailer))
 		if err != nil {
 			return err
 		}
@@ -356,6 +395,14 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 		} else {
 			ic.updateSummary(res.ModelName)
 		}
+		if showHeaders {
+			for k, v := range header {
+				fmt.Printf("Response header %s:%v\n", k, v)
+			}
+			for k, v := range trailer {
+				fmt.Printf("Response trailer %s:%v\n", k, v)
+			}
+		}
 	}
 	if iterations > 1 {
 		fmt.Printf("%v\n", ic.counts)
@@ -363,12 +410,12 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 	return nil
 }
 
-func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType) error {
+func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
 	switch inferMode {
 	case "rest":
-		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType)
+		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers)
 	case "grpc":
-		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType)
+		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers)
 	default:
 		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}

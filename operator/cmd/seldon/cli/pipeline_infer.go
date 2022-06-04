@@ -10,7 +10,7 @@ import (
 )
 
 func createPipelineInfer() *cobra.Command {
-	cmdModelInfer := &cobra.Command{
+	cmdPipelineInfer := &cobra.Command{
 		Use:   "infer <pipelineName> (data)",
 		Short: "run inference on a pipeline",
 		Long:  `call a pipeline with a given input and get a prediction`,
@@ -32,7 +32,15 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			showHeaders, err := cmd.Flags().GetBool(showHeadersFlag)
+			if err != nil {
+				return err
+			}
 			inferMode, err := cmd.Flags().GetString(inferenceModeFlag)
+			if err != nil {
+				return err
+			}
+			headers, err := cmd.Flags().GetStringArray(addHeaderFlag)
 			if err != nil {
 				return err
 			}
@@ -52,13 +60,15 @@ func createPipelineInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline)
+			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers)
 			return err
 		},
 	}
-	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
-	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
-	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
-	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
-	return cmdModelInfer
+	cmdPipelineInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
+	cmdPipelineInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
+	cmdPipelineInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
+	cmdPipelineInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
+	cmdPipelineInfer.Flags().Bool(showHeadersFlag, false, "show headers")
+	cmdPipelineInfer.Flags().StringArray(addHeaderFlag, []string{}, fmt.Sprintf("add header key%svalue", cli.HeaderSeparator))
+	return cmdPipelineInfer
 }

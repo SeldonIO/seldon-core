@@ -123,7 +123,12 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	res, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto)
+	res, kafkaHeaders, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto, convertHttpHeadersToKafkaHeaders(req.Header))
+	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaHeaders) {
+		for _, val := range vals {
+			w.Header().Set(k, val)
+		}
+	}
 	if err != nil {
 		logger.WithError(err).Error("Failed to call infer")
 		w.WriteHeader(http.StatusInternalServerError)

@@ -528,7 +528,7 @@ start-modelgateway-local:
 
 .PHONY: start-pipelinegateway-local
 start-pipelinegateway-local:
-	./bin/pipelinegateway --kafka-config-path ${PWD}/config/kafka-host.json --log-level debug
+	./bin/pipelinegateway --kafka-config-path ${PWD}/config/kafka-host.json --log-level debug --metrics-port 9009
 
 data-flow/opentelemetry-javaagent.jar:
 	cd data-flow && wget https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar

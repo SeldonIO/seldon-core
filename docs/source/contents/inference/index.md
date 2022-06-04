@@ -60,10 +60,30 @@ The Seldon architetcure uses Kafka and therefore asynchronous requests can be se
 seldon.<namespace>.<model|pipeline|explainer>.<name>.<inputs|outputs>
 ```
 
+### Model Inference
+
 For a local install if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`. The response will appear on `seldon.default.model.iris.outputs`.
 
 For a Kubernetes install in `seldon-mesh` if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.model.iris.inputs`. The response will appear on `seldon.seldon-mesh.model.iris.outputs`.
 
 
+### Pipeline Inference
+
+For a local install if you have a Pipeline `mypipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.default.pipeline.mypipeline.inputs`. The response will appear on `seldon.default.pipeline.mypipeline.outputs`.
+
+For a Kubernetes install in `seldon-mesh` if you have a Pipeline `pipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.pipeline.mypipeline.inputs`. The response will appear on `seldon.seldon-mesh.pipeline.mypipeline.outputs`.
 
 
+## Pipeline Metadata
+
+It may be useful to send metadata alongside your inference. If using Kafka directly as described above you can attach kafka metadata to your request which will be passed oround the graph. When making synchronous requests to your pipeline with REST or gRPC you can also do this.
+
+ * For REST requests add HTTP headers prefixe with `X-`
+ * For gRPC requests add meatdata with keys starting with `X-`
+
+You can also do this with the seldon CLI by setting headers with the `--header` argument (and also showing response headers with the `--show-headers` argument)
+
+```
+seldon pipeline infer --show-headers --header X-foo=bar tfsimples \
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
+```

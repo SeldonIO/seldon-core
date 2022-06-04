@@ -10,6 +10,8 @@ const (
 	inferenceModeFlag       = "inference-mode"
 	inferenceIterationsFlag = "iterations"
 	kafkaBrokerFlag         = "kafka-broker"
+	showHeadersFlag         = "show-headers"
+	addHeaderFlag           = "header"
 
 	// Defaults
 
