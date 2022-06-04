@@ -75,7 +75,7 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			Name:                          clusterName,
 			ConnectTimeout:                durationpb.New(5 * time.Second),
 			ClusterDiscoveryType:          &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
-			LbPolicy:                      cluster.Cluster_ROUND_ROBIN,
+			LbPolicy:                      cluster.Cluster_LEAST_REQUEST,
 			LoadAssignment:                MakeEndpoint(clusterName, eps),
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
@@ -85,7 +85,7 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			Name:                 clusterName,
 			ConnectTimeout:       durationpb.New(5 * time.Second),
 			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
-			LbPolicy:             cluster.Cluster_ROUND_ROBIN,
+			LbPolicy:             cluster.Cluster_LEAST_REQUEST,
 			LoadAssignment:       MakeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 		}
