@@ -157,7 +157,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			},
 		},
 		ReadinessProbe: &v1.Probe{
-			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeReadyPath,
 				Port: intstr.FromString("http"),
 			}},
@@ -168,7 +168,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			FailureThreshold:    3,
 		},
 		LivenessProbe: &v1.Probe{
-			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeLivePath,
 				Port: intstr.FromString("http"),
 			}},
