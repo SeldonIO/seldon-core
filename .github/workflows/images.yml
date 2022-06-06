@@ -41,7 +41,7 @@ jobs:
       - name: Set default docker tag for builds from master
         id: docker-tag
         run: |
-          USER_INPUT="${{ github.event.inputs.name }}"
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo ::set-output name=value::${USER_INPUT:-"latest"}
 
       - name: Echo the tags that will be used to push images
