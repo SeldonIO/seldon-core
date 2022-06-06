@@ -617,6 +617,22 @@ spec:
                               cooldownPeriod:
                                 format: int32
                                 type: integer
+                              fallback:
+                                description: Fallback is the spec for fallback options
+                                properties:
+                                  failureThreshold:
+                                    format: int32
+                                    type: integer
+                                  replicas:
+                                    format: int32
+                                    type: integer
+                                required:
+                                - failureThreshold
+                                - replicas
+                                type: object
+                              idleReplicaCount:
+                                format: int32
+                                type: integer
                               maxReplicaCount:
                                 format: int32
                                 type: integer
@@ -11809,6 +11825,22 @@ spec:
                               cooldownPeriod:
                                 format: int32
                                 type: integer
+                              fallback:
+                                description: Fallback is the spec for fallback options
+                                properties:
+                                  failureThreshold:
+                                    format: int32
+                                    type: integer
+                                  replicas:
+                                    format: int32
+                                    type: integer
+                                required:
+                                - failureThreshold
+                                - replicas
+                                type: object
+                              idleReplicaCount:
+                                format: int32
+                                type: integer
                               maxReplicaCount:
                                 format: int32
                                 type: integer
@@ -22999,6 +23031,22 @@ spec:
                                     type: boolean
                                 type: object
                               cooldownPeriod:
+                                format: int32
+                                type: integer
+                              fallback:
+                                description: Fallback is the spec for fallback options
+                                properties:
+                                  failureThreshold:
+                                    format: int32
+                                    type: integer
+                                  replicas:
+                                    format: int32
+                                    type: integer
+                                required:
+                                - failureThreshold
+                                - replicas
+                                type: object
+                              idleReplicaCount:
                                 format: int32
                                 type: integer
                               maxReplicaCount:

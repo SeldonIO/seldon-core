@@ -496,6 +496,10 @@ type SeldonScaledObjectSpec struct {
 	// +optional
 	Advanced *kedav1alpha1.AdvancedConfig `json:"advanced,omitempty" protobuf:"bytes,5,opt,name=advanced"`
 	Triggers []kedav1alpha1.ScaleTriggers `json:"triggers" protobuf:"bytes,6,opt,name=triggers"`
+	// +optional
+	IdleReplicaCount *int32 `json:"idleReplicaCount,omitempty" protobuf:"bytes,7,opt,name=idleReplicaCount"`
+	// +optional
+	Fallback *kedav1alpha1.Fallback `json:"fallback,omitempty" protobuf:"bytes,8,opt,name=fallback"`
 }
 
 type SeldonHpaSpec struct {
