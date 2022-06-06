@@ -10,8 +10,8 @@
     kind_cluster_name: ansible
 
     # For compatible version of image for each kind version please see https://github.com/kubernetes-sigs/kind/releases
-    kind_version: v0.12.0
-    kind_image_version: kindest/node:v1.21.10@sha256:84709f09756ba4f863769bdcabe5edafc2ada72d3c8c44d6515fc581b66b029c
+    kind_version: v0.14.0
+    kind_image_version: kindest/node:v1.21.12@sha256:f316b33dd88f8196379f38feb80545ef3ed44d9197dca1bfd48bcb1583210207
 
     kind_kubectl_default_namespace: seldon
 
