@@ -11,18 +11,6 @@ import (
 	"testing"
 )
 
-func TestCRDCreateV1beta1(t *testing.T) {
-	g := NewGomegaWithT(t)
-	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	discoveryFake := &discovery.FakeDiscovery{Fake: &coretesting.Fake{}}
-	crdCreator := NewCrdCreator(context.TODO(), apiExtensionsFake, discoveryFake, ctrl.Log)
-	bytes, err := LoadBytesFromFile("testdata", "crd-v1beta1.yaml")
-	g.Expect(err).To(BeNil())
-	crd, err := crdCreator.findOrCreateCRDV1beta1(bytes)
-	g.Expect(err).To(BeNil())
-	g.Expect(crd).NotTo(BeNil())
-}
-
 func TestCRDCreateV1(t *testing.T) {
 	g := NewGomegaWithT(t)
 	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
@@ -49,26 +37,7 @@ func TestCRDFindCreateV1(t *testing.T) {
 	crdCreator := NewCrdCreator(context.TODO(), apiExtensionsFake, discoveryFake, ctrl.Log)
 	bytesV1, err := LoadBytesFromFile("testdata", "crd-v1.yaml")
 	g.Expect(err).To(BeNil())
-	bytesV1beta1, err := LoadBytesFromFile("testdata", "crd-v1beta1.yaml")
-	g.Expect(err).To(BeNil())
-	crd, err := crdCreator.findOrCreateCRD(bytesV1, bytesV1beta1)
-	g.Expect(err).To(BeNil())
-	g.Expect(crd).NotTo(BeNil())
-}
-
-func TestCRDFindCreateV1Beta1(t *testing.T) {
-	g := NewGomegaWithT(t)
-	apiExtensionsFake := apiextensionsfake.NewSimpleClientset()
-	discoveryFake := &discovery.FakeDiscovery{Fake: &coretesting.Fake{},
-		FakedServerVersion: &version.Info{
-			GitVersion: "v1.16.0",
-		}}
-	crdCreator := NewCrdCreator(context.TODO(), apiExtensionsFake, discoveryFake, ctrl.Log)
-	bytesV1, err := LoadBytesFromFile("testdata", "crd-v1.yaml")
-	g.Expect(err).To(BeNil())
-	bytesV1beta1, err := LoadBytesFromFile("testdata", "crd-v1beta1.yaml")
-	g.Expect(err).To(BeNil())
-	crd, err := crdCreator.findOrCreateCRD(bytesV1, bytesV1beta1)
+	crd, err := crdCreator.findOrCreateCRD(bytesV1)
 	g.Expect(err).To(BeNil())
 	g.Expect(crd).NotTo(BeNil())
 }

@@ -8,6 +8,10 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 ## Upgrading to 1.14
 
+### CRD V1
+
+Only the v1 versions of the CRD will be supported moving forward. The v1beta1 versions will remain in the Helm chart but will be not updated. Allowing the operator to create the CRDs will result in the v1 CRD being created so will only work on Kubernetes clusters >= 1.18.
+
 ### Model Health Checks
 
 We have updated the health checks done by Seldon for the model nodes in your inference graph. If `executor.fullHealthChecks` is set to true then:
