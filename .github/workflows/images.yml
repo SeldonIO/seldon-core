@@ -15,6 +15,7 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    if: github.repository == 'SeldonIO/seldon-core-v2' # Do not run this on forks.
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v2
@@ -28,6 +29,7 @@ jobs:
   docker:
     needs: test
     runs-on: ubuntu-latest
+    if: github.repository == 'SeldonIO/seldon-core-v2' # Do not run this on forks.
     steps:
       - name: Checkout Git Commit
         uses: actions/checkout@v3
