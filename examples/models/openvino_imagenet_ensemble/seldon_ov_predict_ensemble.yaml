@@ -1,0 +1,123 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  annotations:
+
+  creationTimestamp: "2022-06-06T17:06:06Z"
+  generation: 1
+  labels:
+    app: seldon
+  name: openvino-model
+  namespace: seldon
+  resourceVersion: "8442"
+spec:
+  annotations:
+    seldon.io/grpc-read-timeout: "100000"
+  name: openvino
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+          image: seldonio/openvino-demo-transformer:0.1
+          name: imagenet-itransformer
+          image: seldonio/openvino-demo-transformer:0.1
+          name: imagenet-otransformer
+          image: seldonio/openvino-demo-combiner:0.1
+          name: imagenet-combiner
+        - env:
+          - name: LOG_LEVEL
+            value: DEBUG
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: ""
+          - name: XML_PATH
+            value: gs://public-artifacts/intelai_public_models/densenet_169/1/densenet_169_i8.xml
+          - name: BIN_PATH
+            value: gs://public-artifacts/intelai_public_models/densenet_169/1/densenet_169_i8.bin
+          - name: KMP_AFFINITY
+            value: granularity=fine,verbose,compact,1,0
+          - name: KMP_BLOCKTIME
+            value: "1"
+          - name: OMP_NUM_THREADS
+            value: "16"
+          - name: http_proxy
+            value: ""
+          - name: https_proxy
+            value: ""
+
+          image: seldonio/openvino-demo-prediction:0.3
+          name: prediction1
+          resources:
+            limits:
+              cpu: "32"
+            requests:
+              cpu: "1"
+        - env:
+          - name: LOG_LEVEL
+            value: DEBUG
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: ""
+          - name: XML_PATH
+            value: gs://public-artifacts/intelai_public_models/resnet_50_i8/1/resnet_50_i8.xml
+          - name: BIN_PATH
+            value: gs://public-artifacts/intelai_public_models/resnet_50_i8/1/resnet_50_i8.bin
+          - name: KMP_AFFINITY
+            value: granularity=fine,verbose,compact,1,0
+          - name: KMP_BLOCKTIME
+            value: "1"
+          - name: OMP_NUM_THREADS
+            value: "16"
+          - name: http_proxy
+            value: ""
+          - name: https_proxy
+            value: ""
+
+          image: seldonio/openvino-demo-prediction:0.3
+          name: prediction2
+          resources:
+            limits:
+              cpu: "32"
+            requests:
+              cpu: "1"
+        terminationGracePeriodSeconds: 1
+    graph:
+      children:
+      - children:
+        - children:
+          - children: []
+            endpoint:
+              type: GRPC
+            name: prediction1
+            type: MODEL
+          - children: []
+            endpoint:
+              type: GRPC
+            name: prediction2
+            type: MODEL
+          endpoint:
+            type: GRPC
+          name: imagenet-combiner
+          type: COMBINER
+        endpoint:
+          type: GRPC
+        name: imagenet-itransformer
+        type: TRANSFORMER
+      endpoint:
+        type: GRPC
+      name: imagenet-otransformer
+      type: OUTPUT_TRANSFORMER
+    name: openvino
+    replicas: 1
+    svcOrchSpec:
+      env:
+      - name: TRACING
+        value: '1'
+      - name: JAEGER_AGENT_HOST
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
+      - name: JAEGER_AGENT_PORT
+        value: '5775'
+      - name: JAEGER_SAMPLER_TYPE
+        value: const
+      - name: JAEGER_SAMPLER_PARAM
+        value: '1'
