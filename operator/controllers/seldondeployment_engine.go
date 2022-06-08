@@ -191,6 +191,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		protocol = machinelearningv1.ProtocolSeldon
 	}
 
+	transport := mlDep.Spec.Transport
+	if transport == "" {
+		transport = machinelearningv1.TransportRest
+	}
+
 	serverType := mlDep.Spec.ServerType
 	if serverType == "" {
 		serverType = machinelearningv1.ServerRPC
@@ -231,6 +236,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--http_port", strconv.Itoa(http_port),
 			"--grpc_port", strconv.Itoa(grpc_port),
 			"--protocol", string(protocol),
+			"--transport", string(transport),
 			"--prometheus_path", getPrometheusPath(mlDep),
 			"--server_type", string(serverType),
 			"--log_work_buffer_size", loggerQSize,
