@@ -38,7 +38,7 @@ func TestReplicaMemorySort(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			sorter := AvailableMemoryWhileLoadingSorter{}
+			sorter := AvailableMemorySorter{}
 			sort.SliceStable(test.replicas, func(i, j int) bool { return sorter.IsLess(test.replicas[i], test.replicas[j]) })
 			for idx, expected := range test.ordering {
 				g.Expect(test.replicas[idx].Replica.GetReplicaIdx()).To(Equal(expected))

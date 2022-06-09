@@ -286,7 +286,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	modelVersion := model.Latest()
 	if version != modelVersion.GetVersion() {
 		return nil, fmt.Errorf(
-			"Model versiion mismatch for %s got %d but latest version is now %d",
+			"Model version mismatch for %s got %d but latest version is now %d",
 			modelKey, version, modelVersion.GetVersion(),
 		)
 	}
@@ -321,6 +321,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 				modelKey, modelVersion.version, serverKey, replica.GetReplicaIdx(),
 			)
 			modelVersion.SetReplicaState(replica.GetReplicaIdx(), ReplicaStatus{State: LoadRequested})
+			m.updateReservedMemory(LoadRequested, serverKey, replica.GetReplicaIdx(), modelVersion.GetRequiredMemory())
 			updated = true
 		} else {
 			logger.Debugf(
@@ -443,7 +444,22 @@ func (m *MemoryStore) UpdateModelState(
 	}
 	return nil
 }
-
+func (m *MemoryStore) updateReservedMemory(
+	modelReplicaState ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64) {
+	// update reserved memory that is being used for sorting replicas
+	// do we need to lock replica update?
+	server, ok := m.store.servers[serverKey]
+	if ok {
+		replica, okReplica := server.replicas[replicaIdx]
+		if okReplica {
+			if modelReplicaState == LoadRequested {
+				replica.UpdateReservedMemory(memBytes, true)
+			} else if modelReplicaState == LoadFailed || modelReplicaState == Loaded {
+				replica.UpdateReservedMemory(memBytes, false)
+			}
+		}
+	}
+}
 func (m *MemoryStore) updateModelStateImpl(
 	modelKey string,
 	version uint32,
@@ -472,6 +488,8 @@ func (m *MemoryStore) updateModelStateImpl(
 			modelKey, version, expectedState.String(), existingState.String(), desiredState.String(),
 		)
 	}
+
+	m.updateReservedMemory(desiredState, serverKey, replicaIdx, modelVersion.GetRequiredMemory())
 
 	if existingState != desiredState {
 		latestModel := model.Latest()

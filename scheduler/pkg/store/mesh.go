@@ -126,6 +126,7 @@ func NewServer(name string, shared bool) *Server {
 }
 
 type ServerReplica struct {
+	muReservedMemory     sync.RWMutex
 	inferenceSvc         string
 	inferenceHttpPort    int32
 	inferenceGrpcPort    int32
@@ -134,6 +135,7 @@ type ServerReplica struct {
 	capabilities         []string
 	memory               uint64
 	availableMemory      uint64
+	reservedMemory       uint64 // while loading models, internal to scheduler
 	loadedModels         map[ModelVersionID]bool
 	overCommitPercentage uint32
 }
@@ -528,6 +530,7 @@ func (s *ServerReplica) createSnapshot() *ServerReplica {
 		availableMemory:      s.availableMemory,
 		loadedModels:         loadedModels,
 		overCommitPercentage: s.overCommitPercentage,
+		reservedMemory:       s.reservedMemory,
 	}
 }
 
@@ -577,4 +580,24 @@ func (s *ServerReplica) GetInferenceGrpcPort() int32 {
 
 func (s *ServerReplica) GetOverCommitPercentage() uint32 {
 	return s.overCommitPercentage
+}
+
+func (s *ServerReplica) GetReservedMemory() uint64 {
+	s.muReservedMemory.RLock()
+	defer s.muReservedMemory.RUnlock()
+	return s.reservedMemory
+}
+
+func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {
+	s.muReservedMemory.Lock()
+	defer s.muReservedMemory.Unlock()
+	if isAdd {
+		s.reservedMemory += memBytes
+	} else {
+		if memBytes > s.reservedMemory {
+			s.reservedMemory = 0
+		} else {
+			s.reservedMemory -= memBytes
+		}
+	}
 }

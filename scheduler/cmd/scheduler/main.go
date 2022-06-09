@@ -19,7 +19,6 @@ import (
 	"flag"
 	"io/ioutil"
 	"math/rand"
-	"net/http"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -46,9 +45,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/server"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	log "github.com/sirupsen/logrus"
-
-	_ "net/http"
-	_ "net/http/pprof"
 )
 
 var (
@@ -107,10 +103,6 @@ func getNamespace() string {
 }
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	logger := log.New()
 	flag.Parse()
 	logIntLevel, err := log.ParseLevel(logLevel)

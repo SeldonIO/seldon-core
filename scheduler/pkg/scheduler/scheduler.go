@@ -15,9 +15,10 @@ import (
 )
 
 type SimpleScheduler struct {
-	mu     sync.RWMutex
-	store  store.ModelStore
-	logger log.FieldLogger
+	muFailedModels  sync.RWMutex
+	muSortAndUpdate sync.Mutex
+	store           store.ModelStore
+	logger          log.FieldLogger
 	SchedulerConfig
 	failedModels map[string]bool
 }
@@ -34,7 +35,7 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 		serverFilters:  []ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
 		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}},
 		serverSorts:    []sorters.ServerSorter{},
-		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemoryWhileLoadingSorter{Store: store}, sorters.ModelAlreadyLoadedSorter{}},
+		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}
 }
 
@@ -54,8 +55,8 @@ func (s *SimpleScheduler) Schedule(modelKey string) error {
 	err := s.scheduleToServer(modelKey)
 	// Set model state using error
 	if err != nil {
-		s.mu.Lock()
-		defer s.mu.Unlock()
+		s.muFailedModels.Lock()
+		defer s.muFailedModels.Unlock()
 		s.failedModels[modelKey] = true
 		return err
 	}
@@ -63,8 +64,8 @@ func (s *SimpleScheduler) Schedule(modelKey string) error {
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.muFailedModels.RLock()
+	defer s.muFailedModels.RUnlock()
 	var updatedModels []string
 	for modelName := range s.failedModels {
 		err := s.scheduleToServer(modelName)
@@ -127,11 +128,13 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 				continue
 			}
 
-			// TODO: do we need a lock here? we could have many goroutines at sorting
+			// we need a lock here, we could have many goroutines at sorting
 			// without the store being reflected and hence storing on stale values
+			s.muSortAndUpdate.Lock()
 			s.sortReplicas(candidateReplicas)
-
 			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+			s.muSortAndUpdate.Unlock()
+
 			if err != nil {
 				logger.Warnf("Failed to update model replicas for model %s on server %s", modelName, candidateServer.Name)
 			} else {
