@@ -165,3 +165,12 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: "${GRAFANA_IMAGE_AND_TAG}"
+    ports:
+      - 3000:3000

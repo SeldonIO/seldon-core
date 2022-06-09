@@ -1,0 +1,16 @@
+apiVersion: 1
+
+providers:
+  - name: Seldon
+    org_id: 1
+    # <string, required> name of the dashboard folder. Required
+    folder: ''
+    # <string, required> provider type. Required
+    type: 'file'
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 5
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: true

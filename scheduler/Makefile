@@ -7,6 +7,8 @@ MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG
 PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
 DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
+# Grafana image only used for Docker compose not k8s
+GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.1.0.dev3
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 KIND_NAME=ansible
@@ -143,11 +145,19 @@ docker-build-dataflow: copy-apis data-flow/opentelemetry-javaagent.jar
 docker-push-dataflow:
 	docker push ${DATAFLOW_IMG}
 
+.PHONY: docker-build-grafana
+docker-build-grafana:
+	docker build -t ${GRAFANA_IMG} -f Dockerfile.grafana .
+
+.PHONY: docker-push-grafana
+docker-push-grafana:
+	docker push ${GRAFANA_IMG}
+
 .PHONY: docker-build-all
-docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway
+docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway docker-build-grafana
 
 .PHONY: docker-push-all
-docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow
+docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow docker-push-grafana
 
 
 #####################################
@@ -203,7 +213,8 @@ DOCKER_COMPOSE_COMMON_IMAGES = \
 		RCLONE_IMAGE_AND_TAG=${RCLONE_IMG} \
 		SERVER_MLSERVER_IMAGE_AND_TAG=${MLSERVER_IMG} \
 		TRITON_LOG_LEVEL=${DOCKER_COMPOSE_TRITON_LOG_LEVEL} \
-		SERVER_TRITON_IMAGE_AND_TAG=${TRITON_IMG}
+		SERVER_TRITON_IMAGE_AND_TAG=${TRITON_IMG} \
+		GRAFANA_IMAGE_AND_TAG=${GRAFANA_IMG}
 
 DOCKER_COMPOSE_TRITON_LOG_LEVEL ?= 0
 
@@ -439,6 +450,30 @@ stop-kafka:
 .PHONY: start-kafka-host
 start-kafka-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d kafka
+
+.PHONY: start-prometheus
+start-prometheus:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d prometheus
+
+.PHONY: stop-prometheus
+stop-prometheus:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} prometheus
+
+.PHONY: start-prometheus-host
+start-prometheus-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d prometheus
+
+.PHONY: start-grafana
+start-grafana:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d grafana
+
+.PHONY: stop-grafana
+stop-grafana:
+	${DOCKER_COMPOSE_SERVICE_COMMAND} rm --stop --force ${DOCKER_COMPOSE_REMOVE_VOLUMES} grafana
+
+.PHONY: start-grafana-host
+start-grafana-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d grafana
 
 .PHONY: stop-kafka-host
 stop-kafka-host:

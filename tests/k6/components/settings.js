@@ -110,6 +110,20 @@ function inferBatchSize() {
     return 1
 }
 
+function modelStartIdx() {
+    if (__ENV.MODEL_START_IDX) {
+        return parseInt(__ENV.MODEL_START_IDX)
+    }
+    return 0
+}
+
+function modelEndIdx() {
+    if (__ENV.MODEL_END_IDX) {
+        return parseInt(__ENV.MODEL_END_IDX)
+    }
+    return 0
+}
+
 function isLoadPipeline() {
     if (__ENV.DATAFLOW_TAG) {
         return !(__ENV.DATAFLOW_TAG === "")
@@ -131,11 +145,25 @@ function modelNamePrefix() {
     return "model"
 }
 
+function modelName() {
+    if (__ENV.MODEL_NAME) {
+        return __ENV.MODEL_NAME
+    }
+    return ""
+}
+
 function experimentNamePrefix() {
     if (__ENV.EXPERIMENTNAME_PREFIX) {
         return __ENV.EXPERIMENTNAME_PREFIX
     }
     return "experiment"
+}
+
+function inferType() {
+    if (__ENV.INFER_TYPE) {
+        return __ENV.INFER_REST
+    }
+    return "REST"
 }
 
 export function getConfig() {
@@ -160,5 +188,9 @@ export function getConfig() {
         "experimentNamePrefix": experimentNamePrefix(),
         "loadExperiment" : loadExperiment(),
         "unloadExperiment": unloadExperiment(),
+        "modelStartIdx" : modelStartIdx(),
+        "modelEndIdx" : modelEndIdx(),
+        "modelName" : modelName(),
+        "inferType" : inferType(),
     }
 }

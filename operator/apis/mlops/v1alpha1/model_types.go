@@ -89,13 +89,15 @@ type InferenceArtifactSpec struct {
 
 // ModelStatus defines the observed state of Model
 type ModelStatus struct {
-	// Important: Run "make" to regenerate code after modifying this file
+	// Total number of replicas targeted by this model
+	Replicas      int32 `json:"replicas,omitempty"`
 	duckv1.Status `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlm
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
 
 // Model is the Schema for the models API
 type Model struct {

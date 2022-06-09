@@ -27,7 +27,11 @@ We have a prebuilt grafana dashboard that makes use of many of the metrics that 
 
 ![kafka](dashboard.png)
 
-### Installation
+### Local Use
+
+Grafana and Prometheus are available when you run Seldon locally. You will be able to connect to the Grafana dashboard at `http://localhost:3000`. Prometheus will be available at `http://localhost:9090`.
+
+### Kubernetes Installation
 
 Download the dashboard from [SCv2 dashboard](https://github.com/SeldonIO/seldon-core-v2/blob/master/prometheus/dashboards/Seldon%20Core%20Model%20Mesh%20Monitoring.json) and import it in grafana, making sure that the data source is pointing to the correct prometheus store. Find more information on how to import the dashboard [here](https://grafana.com/docs/grafana/latest/dashboards/export-import/)
 

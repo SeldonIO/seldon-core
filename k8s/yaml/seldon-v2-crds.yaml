@@ -430,11 +430,19 @@ spec:
                   that was last processed by the controller.
                 format: int64
                 type: integer
+              replicas:
+                description: 'Important: Run "make" to regenerate code after modifying
+                  this file'
+                format: int32
+                type: integer
             type: object
         type: object
     served: true
     storage: true
     subresources:
+      scale:
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
       status: {}
 status:
   acceptedNames:

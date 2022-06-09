@@ -38,3 +38,17 @@ For k8s you will need to update the default endpoints to the services exposed, e
 ```
 MODEL_TYPE="tfsimple" SCHEDULER_ENDPOINT=172.18.255.4:9004 INFER_GRPC_ENDPOINT=172.18.255.3:80 INFER_HTTP_ENDPOINT=http://172.18.255.3 k6 run -u 5 -i 50 scenarios/load_predict_unload.js
 ```
+
+## Constant Throughput Test
+
+Run against model name `iris` which is of type `iris` against a envoy http ip as given.
+
+```
+ MODEL_NAME="iris" MODEL_TYPE="iris" INFER_HTTP_ENDPOINT="http://172.31.255.9" k6 run scenarios/model_constant_rate.js
+```
+
+Run localy but with grpc
+
+```
+INFER_TYPE="grpc" MODEL_TYPE="iris" k6 run scenarios/model_constant_rate.js
+```

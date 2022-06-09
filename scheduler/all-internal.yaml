@@ -186,7 +186,6 @@ services:
 
   dataflow:
     environment:
-    environment:
       - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
       - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
       - SELDON_CORES_COUNT=4      
@@ -218,3 +217,11 @@ services:
   zookeeper:
     ports:
       - "2181:2181"
+
+  prometheus:
+    command:
+      - --config.file=/etc/prometheus/prometheus-internal.yml
+    volumes:
+      - type: bind
+        source: ./config
+        target: /etc/prometheus

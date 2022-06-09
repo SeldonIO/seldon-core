@@ -135,6 +135,8 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 				logger.Info("Setting model to not ready", "name", event.ModelName, "state", latestVersionStatus.State.State.String())
 				latestModel.Status.CreateAndSetCondition(v1alpha1.ModelReady, false, latestVersionStatus.State.Reason)
 			}
+			// Set the total number of replicas targeted by this model
+			latestModel.Status.Replicas = int32(latestVersionStatus.State.GetAvailableReplicas() + latestVersionStatus.State.GetUnavailableReplicas())
 			return s.updateModelStatus(latestModel)
 		})
 		if retryErr != nil {
