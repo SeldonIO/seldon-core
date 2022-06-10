@@ -14,6 +14,7 @@ fun addTriggerTopology(
     tensorsByTopic: Map<TopicName, Set<TensorName>>?,
     joinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     pending: KStream<RequestId, TRecord>? = null,
+    depth: Int,
 ): KStream<RequestId, TRecord> {
     if (inputTopics.isEmpty()) {
         when (pending) {
@@ -32,7 +33,11 @@ fun addTriggerTopology(
         .filter { _, value -> value.inputsList.size != 0}
         .marshallInferenceV2Request()
 
-    when (joinType) {
+    var chosenJoinType = joinType
+    if (depth == 1) {
+        chosenJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner
+    }
+    when (chosenJoinType) {
         ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Any -> {
             val nextPending = pending
                 ?.outerJoin(
@@ -48,7 +53,7 @@ fun addTriggerTopology(
                 ) ?: nextStream
 
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth + 1)
         }
 
         ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Outer -> {
@@ -64,7 +69,7 @@ fun addTriggerTopology(
                 ) ?: nextStream
 
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth + 1)
         }
 
         else -> {
@@ -78,7 +83,7 @@ fun addTriggerTopology(
                     joinSerde,
                 ) ?: nextStream
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth+1)
         }
     }
 }

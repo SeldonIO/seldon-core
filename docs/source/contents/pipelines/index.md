@@ -118,12 +118,25 @@ In this example the last step `tfsimple3` runs only if there are outputs from `t
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-join-with-trigger).
 
+### Trigger Joins
+
+You can also define multiple triggers which need to happen based on a particulr join type. For example:
+
+```{literalinclude} ../../../../samples/pipelines/trigger-joins.yaml
+:language: yaml
+```
+
+Here the `mul10` step is run if data is seen on the pipeline inputs in the `ok1` or `ok2` tensors based on the `any` join type. If data is seen on `ok3` then the `add10` step is run.
+
+If we changed the `triggersJoinType` for `mul10` to `inner` then both `ok1` and `ok2` would need to appear before `mul10` is run.
+
+
 ## Data Centric Implementation
 
 Internally Pipelines are implemented using Kafka. Each input and output to a pipeline s
 tep has an associated Kafka topic. This has many advantages and allows auditing, replay and debugging easier as data is preseved from every step in your pipeline.
 
-Tracing allows you to monitor the processing latency of your pieplines.
+Tracing allows you to monitor the processing latency of your pipelines.
 
 ![tracing](jaeger-tracing.png)
  
