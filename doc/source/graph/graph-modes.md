@@ -102,9 +102,8 @@ linear-pipeline-separate-pods-example-1-node-two-c4f55f689gxkkr   1/1     Runnin
 linear-pipeline-separate-pods-example-2-node-three-99667dcmg9kg   1/1     Running   0          4m33s
 linear-pipeline-separate-pods-example-svc-orch-656c6bdf59-6m6nc   1/1     Running   0          4m33s
 ```
-The most basic unit in Kubernetes are pods. This model will enable [scaling](../scaling.md) at model level. In other words, you can 
+The most basic unit in Kubernetes are pods. This model will enable [scaling](scaling.md) at model level. In other words, you can 
 scale each model separately while on the other hand having them in a single pod will change the granulity of scaling to the entire graph. However, 
-on the other hand single pod deployment will need only a single [sidecar istio container](../../ingress/istio.md)
+on the other hand single pod deployment will need only a single [sidecar istio container](../ingress/istio.md)
 that needs less resource request from the sidecar containers. Another potential difference is the less communication overhead in the single pod mode as
 they will always be schduled on the same Kubernetes node.
-
