@@ -3,6 +3,7 @@ package pipeline
 import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -10,8 +11,10 @@ type PipelineDB struct {
 	db *badger.DB
 }
 
-func NewPipelineDb(path string) (*PipelineDB, error) {
-	db, err := badger.Open(badger.DefaultOptions(path))
+func NewPipelineDb(path string, logger logrus.FieldLogger) (*PipelineDB, error) {
+	options := badger.DefaultOptions(path)
+	options.Logger = logger.WithField("source", "pipelineDb")
+	db, err := badger.Open(options)
 	if err != nil {
 		return nil, err
 	}

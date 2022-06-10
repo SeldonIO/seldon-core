@@ -36,7 +36,7 @@ type PipelineStore struct {
 
 func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub) *PipelineStore {
 	ps := &PipelineStore{
-		logger:    logger,
+		logger:    logger.WithField("source", "pipelineStore"),
 		eventHub:  eventHub,
 		pipelines: make(map[string]*Pipeline),
 		db:        nil,
@@ -49,7 +49,7 @@ func (ps *PipelineStore) InitialiseDB(path string) error {
 	if err != nil {
 		return err
 	}
-	db, err := NewPipelineDb(path)
+	db, err := NewPipelineDb(path, ps.logger)
 	if err != nil {
 		return err
 	}
@@ -325,7 +325,7 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 				if status == PipelineReady {
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
-				if ps.db != nil {
+				if !pipeline.Deleted && ps.db != nil {
 					err := ps.db.save(pipeline)
 					if err != nil {
 						return evts, err
