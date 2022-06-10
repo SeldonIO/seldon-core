@@ -41,27 +41,28 @@ type InferWorker struct {
 	logger      log.FieldLogger
 	grpcClient  v2.GRPCInferenceServiceClient
 	httpClient  *http.Client
-	restUrl     *url.URL
-	consumer    *InferKafkaGateway
+	consumer    *InferKafkaConsumer
 	tracer      trace.Tracer
 	callOptions []grpc.CallOption
+	topicNamer  *kafka2.TopicNamer
 }
 
 type InferWork struct {
-	headers map[string]string
-	msg     *kafka.Message
+	modelName string
+	headers   map[string]string
+	msg       *kafka.Message
 }
 
 type V2Error struct {
 	Error string `json:"error"`
 }
 
-func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider) (*InferWorker, error) {
-	grpcClient, err := getGrpcClient(consumer.serverConfig.Host, consumer.serverConfig.GrpcPort)
+func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
+	grpcClient, err := getGrpcClient(consumer.inferenceServerConfig.Host, consumer.inferenceServerConfig.GrpcPort)
 	if err != nil {
 		return nil, err
 	}
-	restUrl := getRestUrl(consumer.serverConfig.Host, consumer.serverConfig.HttpPort, consumer.modelConfig.ModelName)
+
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -69,11 +70,11 @@ func NewInferWorker(consumer *InferKafkaGateway, logger log.FieldLogger, tracePr
 	return &InferWorker{
 		logger:      logger.WithField("source", "KafkaInferWorker"),
 		grpcClient:  grpcClient,
-		restUrl:     restUrl,
 		httpClient:  &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		consumer:    consumer,
 		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
 		callOptions: opts,
+		topicNamer:  topicNamer,
 	}, nil
 }
 
@@ -133,7 +134,7 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			ctx := createContextFromKafkaMsg(job)
 			err := iw.processRequest(ctx, job)
 			if err != nil {
-				iw.logger.WithError(err).Errorf("Failed to process request for model %s", iw.consumer.modelConfig.ModelName)
+				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}
 		}
 	}
@@ -172,7 +173,7 @@ func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error
 	}
 }
 
-func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte) error {
+func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte, errorTopic bool) error {
 	logger := iw.logger.WithField("func", "produce")
 
 	kafkaHeaders := job.msg.Headers
@@ -181,7 +182,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 	//	logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
 	//	kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
 	//}
-	if topic == iw.consumer.modelConfig.ErrorTopic {
+	if errorTopic {
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
 	}
 	logger.Infof("Produce response to topic %s", topic)
@@ -214,17 +215,18 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 
 func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
-	logger.Debugf("REST request to %s for %s", iw.restUrl.String(), iw.consumer.modelConfig.ModelName)
+	restUrl := getRestUrl(iw.consumer.inferenceServerConfig.Host, iw.consumer.inferenceServerConfig.HttpPort, job.modelName)
+	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 	data := job.msg.Value
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", iw.restUrl.String(), bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, "POST", restUrl.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
+	req.Header.Set(resources.SeldonModelHeader, job.modelName)
 	response, err := iw.httpClient.Do(req)
 	if err != nil {
 		return err
@@ -240,27 +242,27 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	iw.logger.Infof("v2 server response: %s", b)
 	if response.StatusCode != http.StatusOK {
 		logger.Warnf("Failed infer request with status code %d and payload %s", response.StatusCode, string(b))
-		return iw.produce(ctx, job, iw.consumer.modelConfig.ErrorTopic, b)
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), b, true)
 	}
-	return iw.produce(ctx, job, iw.consumer.modelConfig.OutputTopic, b)
+	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false)
 }
 
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
-	logger.Debugf("gRPC request for %s", iw.consumer.modelConfig.ModelName)
+	logger.Debugf("gRPC request for %s", job.modelName)
 	//Update req with correct modelName
-	req.ModelName = iw.consumer.modelConfig.ModelName
+	req.ModelName = job.modelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 
-	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, iw.consumer.modelConfig.ModelName)
+	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, job.modelName)
 	resp, err := iw.grpcClient.ModelInfer(ctx, req, iw.callOptions...)
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
-		return iw.produce(ctx, job, iw.consumer.modelConfig.ErrorTopic, []byte(err.Error()))
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true)
 	}
 	b, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}
-	return iw.produce(ctx, job, iw.consumer.modelConfig.OutputTopic, b)
+	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false)
 }

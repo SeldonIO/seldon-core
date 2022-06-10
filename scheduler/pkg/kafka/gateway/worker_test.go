@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -56,7 +58,7 @@ func TestRestRequest(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			kafkaServerConfig := KafkaServerConfig{
+			kafkaServerConfig := InferenceServerConfig{
 				Host:     "0.0.0.0",
 				HttpPort: 1234,
 				GrpcPort: 1235,
@@ -70,11 +72,12 @@ func TestRestRequest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
+			ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
-			iw, err := NewInferWorker(ic, logger, tp)
+			tn := kafka2.NewTopicNamer("default")
+			iw, err := NewInferWorker(ic, logger, tp, tn)
 			g.Expect(err).To(BeNil())
-			err = iw.restRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}}, false)
+			err = iw.restRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}}, false)
 			g.Expect(err).To(BeNil())
 			ic.Stop()
 			g.Expect(httpmock.GetTotalCallCount()).To(Equal(1))
@@ -98,7 +101,7 @@ func TestProcessRequestRest(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			kafkaServerConfig := KafkaServerConfig{
+			kafkaServerConfig := InferenceServerConfig{
 				Host:     "0.0.0.0",
 				HttpPort: 1234,
 				GrpcPort: 1235,
@@ -114,11 +117,12 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, &kafkaModelConfig, &kafkaServerConfig, tp)
+			ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", &kafkaServerConfig, tp)
 			g.Expect(err).To(BeNil())
-			iw, err := NewInferWorker(ic, logger, tp)
+			tn := kafka2.NewTopicNamer("default")
+			iw, err := NewInferWorker(ic, logger, tp, tn)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: test.data}})
+			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}})
 			g.Expect(err).To(BeNil())
 			ic.Stop()
 			g.Eventually(httpmock.GetTotalCallCount).Should(Equal(1))
@@ -177,23 +181,23 @@ func createMLMockGrpcServer(g *GomegaWithT) *mockGRPCMLServer {
 func createInferWorkerWithMockConn(
 	grpcServer *mockGRPCMLServer,
 	logger log.FieldLogger,
-	serverConfig *KafkaServerConfig,
+	serverConfig *InferenceServerConfig,
 	modelConfig *KafkaModelConfig,
-	g *WithT) (*InferKafkaGateway, *InferWorker) {
+	g *WithT) (*InferKafkaConsumer, *InferWorker) {
 	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
-	ic, err := NewInferKafkaGateway(logger, 0, &config.KafkaConfig{}, modelConfig, serverConfig, tp)
+	ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", serverConfig, tp)
 	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
 		logger:     logger,
 		grpcClient: v2.NewGRPCInferenceServiceClient(conn),
-		restUrl:    getRestUrl(serverConfig.Host, serverConfig.HttpPort, modelConfig.ModelName),
 		httpClient: http.DefaultClient,
 		consumer:   ic,
 		tracer:     tp.GetTraceProvider().Tracer("test"),
+		topicNamer: kafka2.NewTopicNamer("default"),
 	}
 	return ic, iw
 }
@@ -229,7 +233,7 @@ func TestProcessRequestGrpc(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
 			t.Log("Start test", test.name)
-			kafkaServerConfig := KafkaServerConfig{
+			kafkaServerConfig := InferenceServerConfig{
 				Host:     "0.0.0.0",
 				HttpPort: 1234,
 				GrpcPort: 1235,
@@ -247,7 +251,7 @@ func TestProcessRequestGrpc(t *testing.T) {
 			g.Eventually(check).Should(BeTrue())
 			b, err := proto.Marshal(test.req)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(context.Background(), &InferWork{msg: &kafka.Message{Value: b}})
+			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: b}})
 			g.Expect(err).To(BeNil())
 			g.Eventually(func() int { return mockMLGrpcServer.recv }).Should(Equal(1))
 			g.Eventually(ic.producer.Len).Should(Equal(1))
@@ -299,104 +303,117 @@ func TestProcessRequest(t *testing.T) {
 		{
 			name: "empty request is assumed grpc",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: []byte{}, Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: []byte{}, Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
 		{
 			name: "empty json request",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: []byte("{}"), Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: []byte("{}"), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
 		{
 			name: "json request",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
 		{
 			name: "chain json request",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
 		{
 			name: "json request with header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueJsonReq},
-				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueJsonReq},
+				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
 		{
 			name: "chain json request with header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueJsonRes},
-				msg:     &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueJsonRes},
+				msg:       &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
 		{
 			name: "grpc request without header",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
 		{
 			name: "grpc request with header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueProtoReq},
-				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueProtoReq},
+				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
 		{
 			name: "chained grpc request without header",
 			job: &InferWork{
-				headers: make(map[string]string),
-				msg:     &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
+				modelName: "foo",
+				headers:   make(map[string]string),
+				msg:       &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
 		{
 			name: "chained grpc request with header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueProtoRes},
-				msg:     &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueProtoRes},
+				msg:       &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
 		},
 		{
 			name: "json request with proto request header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueProtoReq},
-				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueProtoReq},
+				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error: true,
 		},
 		{
 			name: "json request with proto response header",
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueProtoRes},
-				msg:     &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueProtoRes},
+				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error: true,
 		},
 		{
 			name: "grpc request with json header treated as json", //TODO maybe fail in this case as it will fail at server
 			job: &InferWork{
-				headers: map[string]string{HeaderKeyType: HeaderValueJsonReq},
-				msg:     &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueJsonReq},
+				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			restCalls: 1,
 		},
@@ -406,7 +423,7 @@ func TestProcessRequest(t *testing.T) {
 			logger := log.New()
 			logger.Infof("Start test %s", test.name)
 			t.Log("Start test", test.name)
-			kafkaServerConfig := KafkaServerConfig{
+			kafkaServerConfig := InferenceServerConfig{
 				Host:     "0.0.0.0",
 				HttpPort: 1234,
 				GrpcPort: 1235,

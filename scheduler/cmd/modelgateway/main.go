@@ -109,14 +109,19 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	kafkaManager := gateway.NewKafkaManager(logger, &gateway.KafkaServerConfig{
+	inferServerConfig := &gateway.InferenceServerConfig{
 		Host:     envoyHost,
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
-	}, namespace, kafkaConfigMap, tracer)
-	defer func() { _ = kafkaManager.Stop() }()
+	}
+	kafkaConsumer, err := gateway.NewInferKafkaConsumer(logger, gateway.DefaultNumWorkers, kafkaConfigMap, namespace, inferServerConfig, tracer)
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to create kafka consumer")
+	}
+	go kafkaConsumer.Serve()
+	defer kafkaConsumer.Stop()
 
-	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaManager)
+	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)
 	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
 	if err != nil {
 		logger.Fatalf("Failed to connect to scheduler")

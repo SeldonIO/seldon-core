@@ -9,7 +9,8 @@ data:
       "bootstrap.servers": "{{ .Values.kafka.bootstrap }}",
       "consumer":{
          "session.timeout.ms": {{ .Values.kafka.consumer.sessionTimeoutMs }},
-         "auto.offset.reset": "{{ .Values.kafka.consumer.autoOffsetReset }}"
+         "auto.offset.reset": "{{ .Values.kafka.consumer.autoOffsetReset }}",
+         "topic.metadata.refresh.interval.ms": "{{ .Values.kafka.consumer.topicMetadataRefreshIntervalMs }}"
       },
       "producer":{
         "linger.ms": {{ .Values.kafka.producer.lingerMs }},

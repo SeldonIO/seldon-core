@@ -8,6 +8,7 @@ kafka:
   consumer:
     sessionTimeoutMs: 6000
     autoOffsetReset: earliest
+    topicMetadataRefreshIntervalMs: 1000
   producer:
     lingerMs: 0
     messageMaxBytes: 1000000000

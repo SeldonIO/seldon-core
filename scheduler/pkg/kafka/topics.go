@@ -35,6 +35,21 @@ func (tn *TopicNamer) GetModelErrorTopic() string {
 	return fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, errorsTopic, errorsSuffix)
 }
 
+func (tn *TopicNamer) GetKafkaModelTopicRegex() string {
+	return fmt.Sprintf("^%s.%s.%s.*.%s", seldonTopicPrefix, tn.namespace, modelTopic, inputsSuffix)
+}
+
+func (tn *TopicNamer) GetModelNameFromModelInputTopic(topic string) (string, error) {
+	parts := strings.Split(topic, ".")
+	if len(parts) != 5 {
+		return "", fmt.Errorf("Wrong number of sections in topic %s. Whas expecting 5 with separator '.'", topic)
+	}
+	if parts[0] != seldonTopicPrefix || parts[1] != tn.namespace || parts[2] != modelTopic || parts[4] != inputsSuffix {
+		return "", fmt.Errorf("Bad topic name %s needs to match %s", topic, tn.GetKafkaModelTopicRegex())
+	}
+	return parts[3], nil
+}
+
 func (tn *TopicNamer) GetModelTopicInputs(modelName string) string {
 	return fmt.Sprintf("%s.%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, modelName, inputsSuffix)
 }

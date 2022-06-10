@@ -419,7 +419,8 @@ data:
        "bootstrap.servers": "seldon-kafka-plain-bootstrap.kafka:9092",
        "consumer":{
           "session.timeout.ms":6000,
-          "auto.offset.reset":"earliest"
+          "auto.offset.reset":"earliest",
+          "topic.metadata.refresh.interval.ms": 1000
        },
        "producer":{
          "linger.ms":0,

@@ -2,6 +2,9 @@ package gateway
 
 import (
 	"context"
+	"sync"
+
+	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
@@ -16,69 +19,73 @@ import (
 
 const (
 	pollTimeoutMillisecs = 10000
+	DefaultNumWorkers    = 8
 )
 
-type InferKafkaGateway struct {
-	logger         log.FieldLogger
-	nworkers       int
-	workers        []*InferWorker
-	kafkaConfig    *config.KafkaConfig
-	modelConfig    *KafkaModelConfig
-	serverConfig   *KafkaServerConfig
-	consumer       *kafka.Consumer
-	producer       *kafka.Producer
-	done           chan bool
-	tracerProvider *seldontracer.TracerProvider
-	tracer         trace.Tracer
+type InferKafkaConsumer struct {
+	logger                log.FieldLogger
+	mu                    sync.Mutex
+	loadedModels          map[string]bool
+	nworkers              int
+	workers               []*InferWorker
+	kafkaConfig           *config.KafkaConfig
+	inferenceServerConfig *InferenceServerConfig
+	consumer              *kafka.Consumer
+	producer              *kafka.Producer
+	done                  chan bool
+	tracerProvider        *seldontracer.TracerProvider
+	tracer                trace.Tracer
+	topicNamer            *kafka2.TopicNamer
 }
 
-func NewInferKafkaGateway(logger log.FieldLogger, nworkers int, kafkaConfig *config.KafkaConfig, modelConfig *KafkaModelConfig, serverConfig *KafkaServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaGateway, error) {
-	ic := &InferKafkaGateway{
-		logger:         logger.WithField("source", "InferConsumer"),
-		nworkers:       nworkers,
-		kafkaConfig:    kafkaConfig,
-		modelConfig:    modelConfig,
-		serverConfig:   serverConfig,
-		done:           make(chan bool),
-		tracerProvider: traceProvider,
-		tracer:         traceProvider.GetTraceProvider().Tracer("Worker"),
+func NewInferKafkaConsumer(logger log.FieldLogger, nworkers int, kafkaConfig *config.KafkaConfig, namespace string, inferenceServerConfig *InferenceServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaConsumer, error) {
+	ic := &InferKafkaConsumer{
+		logger:                logger.WithField("source", "InferConsumer"),
+		nworkers:              nworkers,
+		kafkaConfig:           kafkaConfig,
+		inferenceServerConfig: inferenceServerConfig,
+		done:                  make(chan bool),
+		tracerProvider:        traceProvider,
+		tracer:                traceProvider.GetTraceProvider().Tracer("Worker"),
+		topicNamer:            kafka2.NewTopicNamer(namespace),
+		loadedModels:          make(map[string]bool),
 	}
 	return ic, ic.setup()
 }
 
-func (ig *InferKafkaGateway) setup() error {
-	logger := ig.logger.WithField("func", "setup")
+func (kc *InferKafkaConsumer) setup() error {
+	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(ig.kafkaConfig.Producer)
+	producerConfigMap := config.CloneKafkaConfigMap(kc.kafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
-	ig.logger.Infof("Creating producer with config %v", producerConfigMap)
-	ig.producer, err = kafka.NewProducer(&producerConfigMap)
+	kc.logger.Infof("Creating producer with config %v", producerConfigMap)
+	kc.producer, err = kafka.NewProducer(&producerConfigMap)
 	if err != nil {
 		return err
 	}
-	logger.Infof("Created producer %s", ig.producer.String())
+	logger.Infof("Created producer %s", kc.producer.String())
 
-	consumerConfig := config.CloneKafkaConfigMap(ig.kafkaConfig.Consumer)
-	consumerConfig["group.id"] = ig.modelConfig.ModelName
-	ig.logger.Infof("Creating consumer with config %v", consumerConfig)
-	ig.consumer, err = kafka.NewConsumer(&consumerConfig)
+	consumerConfig := config.CloneKafkaConfigMap(kc.kafkaConfig.Consumer)
+	consumerConfig["group.id"] = "seldon-modelgateway"
+	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
+	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
 	}
-	logger.Infof("Created consumer %s", ig.consumer.String())
+	logger.Infof("Created consumer %s", kc.consumer.String())
 
-	err = ig.consumer.SubscribeTopics([]string{ig.modelConfig.InputTopic}, nil)
+	err = kc.consumer.SubscribeTopics([]string{kc.topicNamer.GetKafkaModelTopicRegex()}, nil)
 	if err != nil {
 		return err
 	}
 
-	for i := 0; i < ig.nworkers; i++ {
-		worker, err := NewInferWorker(ig, ig.logger, ig.tracerProvider)
+	for i := 0; i < kc.nworkers; i++ {
+		worker, err := NewInferWorker(kc, kc.logger, kc.tracerProvider, kc.topicNamer)
 		if err != nil {
 			return err
 		}
-		ig.workers = append(ig.workers, worker)
+		kc.workers = append(kc.workers, worker)
 	}
 	return nil
 }
@@ -92,27 +99,40 @@ func collectHeaders(kheaders []kafka.Header) map[string]string {
 	return headers
 }
 
-func (ig *InferKafkaGateway) Stop() {
-	close(ig.done)
+func (kc *InferKafkaConsumer) Stop() {
+	close(kc.done)
 }
 
-func (ig *InferKafkaGateway) Serve() {
+func (kc *InferKafkaConsumer) AddModel(modelName string) {
+	kc.mu.Lock()
+	defer kc.mu.Unlock()
+	kc.loadedModels[modelName] = true
+}
+
+func (kc *InferKafkaConsumer) RemoveModel(modelName string) {
+	kc.mu.Lock()
+	defer kc.mu.Unlock()
+	delete(kc.loadedModels, modelName)
+}
+
+func (kc *InferKafkaConsumer) Serve() {
+	logger := kc.logger.WithField("func", "Serve")
 	run := true
 	// create a cancel and job channel
 	cancelChan := make(chan struct{})
-	jobChan := make(chan *InferWork, ig.nworkers)
+	jobChan := make(chan *InferWork, kc.nworkers)
 	// Start workers
-	for i := 0; i < ig.nworkers; i++ {
-		go ig.workers[i].Start(jobChan, cancelChan)
+	for i := 0; i < kc.nworkers; i++ {
+		go kc.workers[i].Start(jobChan, cancelChan)
 	}
 
 	for run {
 		select {
-		case <-ig.done:
-			ig.logger.Infof("Stopping")
+		case <-kc.done:
+			kc.logger.Infof("Stopping")
 			run = false
 		default:
-			ev := ig.consumer.Poll(pollTimeoutMillisecs)
+			ev := kc.consumer.Poll(pollTimeoutMillisecs)
 			if ev == nil {
 				continue
 			}
@@ -120,36 +140,58 @@ func (ig *InferKafkaGateway) Serve() {
 			switch e := ev.(type) {
 			case *kafka.Message:
 
+				var modelName string
+				var err error
+				if e.TopicPartition.Topic != nil {
+					modelName, err = kc.topicNamer.GetModelNameFromModelInputTopic(*e.TopicPartition.Topic)
+					if err != nil {
+						logger.WithError(err).Errorf("Failed to extract modelName from topic %s", *e.TopicPartition.Topic)
+						continue
+					}
+				} else {
+					logger.Errorf("Received message with no topic name")
+					continue
+				}
+
+				kc.mu.Lock()
+				if _, ok := kc.loadedModels[modelName]; !ok {
+					kc.mu.Unlock()
+					logger.Infof("Failed to find model %s in loaded models", modelName)
+					continue
+				}
+				kc.mu.Unlock()
+
 				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
-				_, span := ig.tracer.Start(ctx, "Consume")
+				_, span := kc.tracer.Start(ctx, "Consume")
 				span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(e.Key)))
 
 				headers := collectHeaders(e.Headers)
 
 				job := InferWork{
-					msg:     e,
-					headers: headers,
+					modelName: modelName,
+					msg:       e,
+					headers:   headers,
 				}
 				// enqueue a job
 				jobChan <- &job
 				span.End()
 
 			case kafka.Error:
-				ig.logger.Error(e, "Received stream error")
+				kc.logger.Error(e, "Received stream error")
 				if e.Code() == kafka.ErrAllBrokersDown {
 					run = false
 				}
 			default:
-				ig.logger.Info("Ignored %s", e.String())
+				kc.logger.Info("Ignored %s", e.String())
 			}
 		}
 	}
 
-	ig.logger.Info("Closing consumer")
+	kc.logger.Info("Closing consumer")
 	close(cancelChan)
-	ig.producer.Close()
-	_ = ig.consumer.Close()
+	kc.producer.Close()
+	_ = kc.consumer.Close()
 }

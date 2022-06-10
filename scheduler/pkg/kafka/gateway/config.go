@@ -7,7 +7,7 @@ type KafkaModelConfig struct {
 	ErrorTopic  string
 }
 
-type KafkaServerConfig struct {
+type InferenceServerConfig struct {
 	Host     string
 	HttpPort int
 	GrpcPort int

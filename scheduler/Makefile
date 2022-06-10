@@ -559,7 +559,7 @@ endif
 
 .PHONY: start-modelgateway-local
 start-modelgateway-local:
-	./bin/modelgateway --kafka-config-path ${PWD}/config --log-level debug
+	./bin/modelgateway --kafka-config-path ${PWD}/config/kafka-host.json --log-level debug
 
 .PHONY: start-pipelinegateway-local
 start-pipelinegateway-local:

@@ -13,6 +13,8 @@ ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.0.1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
 
+.PHONY: create
+create: create-yaml create-helm-charts
 
 .PHONY: create-yaml
 create-yaml:

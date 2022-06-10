@@ -92,3 +92,67 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 		})
 	}
 }
+
+func TestGetModelNameFromModelInputTopic(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name          string
+		namespace     string
+		topic         string
+		expectedModel string
+		err           bool
+	}
+
+	tests := []test{
+		{
+			name:          "model from topic ok",
+			namespace:     "default",
+			topic:         "seldon.default.model.mymodel.inputs",
+			expectedModel: "mymodel",
+		},
+		{
+			name:      "topic wrong number of separators",
+			namespace: "default",
+			topic:     "seldon.default.default.model.mymodel.inputs",
+			err:       true,
+		},
+		{
+			name:      "bad namespace",
+			namespace: "default",
+			topic:     "seldon.foo.model.mymodel.inputs",
+			err:       true,
+		},
+		{
+			name:      "bad prefix",
+			namespace: "default",
+			topic:     "seldons.default.model.mymodel.inputs",
+			err:       true,
+		},
+		{
+			name:      "bad model separator",
+			namespace: "default",
+			topic:     "seldon.default.models.mymodel.inputs",
+			err:       true,
+		},
+		{
+			name:      "bad model separator",
+			namespace: "default",
+			topic:     "seldon.default.models.mymodel.outputs",
+			err:       true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tn := NewTopicNamer(test.namespace)
+			modelName, err := tn.GetModelNameFromModelInputTopic(test.topic)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(modelName).To(Equal(test.expectedModel))
+			}
+		})
+	}
+}
