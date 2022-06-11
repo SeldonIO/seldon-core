@@ -261,14 +261,14 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	if latestModel == nil || latestModel.NoLiveReplica() {
 		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
 	}
-	server, err := p.modelStore.GetServer(latestModel.Server())
+	server, err := p.modelStore.GetServer(latestModel.Server(), false)
 	if err != nil {
 		return err
 	}
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
 		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
-		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server())
+		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server(), false)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server(), modelName)
 			return err
@@ -420,7 +420,7 @@ func (p *IncrementalProcessor) modelSync(modelName string) error {
 		logger.Debugf("sync: No live model - removing for %s", modelName)
 		return p.removeRouteForServerInEnvoy(modelName)
 	}
-	server, err := p.modelStore.GetServer(latestModel.Server())
+	server, err := p.modelStore.GetServer(latestModel.Server(), false)
 	if err != nil || server == nil {
 		logger.Debugf("sync: No server - removing for %s", modelName)
 		return p.removeRouteForServerInEnvoy(modelName)

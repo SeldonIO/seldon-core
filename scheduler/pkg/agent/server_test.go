@@ -46,11 +46,11 @@ func (m *mockStore) RemoveModel(req *pbs.UnloadModelRequest) error {
 	panic("implement me")
 }
 
-func (m *mockStore) GetServers() ([]*store.ServerSnapshot, error) {
+func (m *mockStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
-func (m *mockStore) GetServer(serverKey string) (*store.ServerSnapshot, error) {
+func (m *mockStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

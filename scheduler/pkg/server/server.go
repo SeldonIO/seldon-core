@@ -181,7 +181,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	logger := s.logger.WithField("func", "rescheduleModels")
-	server, err := s.modelStore.GetServer(serverKey)
+	server, err := s.modelStore.GetServer(serverKey, false)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
@@ -341,7 +341,7 @@ func (s *SchedulerServer) ServerStatus(
 
 	if req.Name == nil {
 		// All servers requested
-		servers, err := s.modelStore.GetServers()
+		servers, err := s.modelStore.GetServers(true)
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, err.Error())
 		}
@@ -356,7 +356,7 @@ func (s *SchedulerServer) ServerStatus(
 		return nil
 	} else {
 		// Single server requested
-		server, err := s.modelStore.GetServer(req.GetName())
+		server, err := s.modelStore.GetServer(req.GetName(), true)
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, err.Error())
 		}
@@ -393,7 +393,7 @@ func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusRespons
 				OverCommitPercentage: replica.GetOverCommitPercentage(),
 			},
 		)
-		totalModels = totalModels + numLoadedModelsOnReplica
+		totalModels += numLoadedModelsOnReplica
 	}
 	resp.NumLoadedModelReplicas = totalModels
 

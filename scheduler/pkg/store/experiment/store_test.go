@@ -345,11 +345,11 @@ func (f fakeModelStore) RemoveModel(req *scheduler.UnloadModelRequest) error {
 	panic("implement me")
 }
 
-func (f fakeModelStore) GetServers() ([]*store.ServerSnapshot, error) {
+func (f fakeModelStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
-func (f fakeModelStore) GetServer(serverKey string) (*store.ServerSnapshot, error) {
+func (f fakeModelStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

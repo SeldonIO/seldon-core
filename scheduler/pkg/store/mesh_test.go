@@ -56,7 +56,7 @@ func TestCreateSnapshot(t *testing.T) {
 		kubernetesMeta: &pb.KubernetesMeta{Namespace: "default"},
 	}
 
-	snapshot := server.CreateSnapshot()
+	snapshot := server.CreateSnapshot(false)
 
 	server.replicas[1] = &ServerReplica{
 		inferenceSvc: "svc",

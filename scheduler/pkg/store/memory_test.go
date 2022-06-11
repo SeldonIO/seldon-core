@@ -558,7 +558,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 					mv := test.store.models[test.modelKey].Latest()
 					g.Expect(mv).ToNot(BeNil())
 					g.Expect(mv.GetModelReplicaState(replicaIdx)).To(Equal(state.State))
-					ss, _ := ms.GetServer(test.serverKey)
+					ss, _ := ms.GetServer(test.serverKey, false)
 					if state.State == LoadRequested {
 						g.Expect(ss.Replicas[replicaIdx].GetReservedMemory()).To(Equal(memBytes))
 					} else {
@@ -610,8 +610,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -642,8 +642,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -676,8 +676,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -710,8 +710,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -752,8 +752,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{"foo": true}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -794,8 +794,8 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes},
-							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes},
+							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{"foo": true}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
 				},
@@ -839,6 +839,9 @@ func TestUpdateModelState(t *testing.T) {
 			} else {
 				g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetReservedMemory()).To(Equal(memBytes))
 			}
+
+			uniqueLoadedModels := toUniqueModels(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels)
+			g.Expect(uniqueLoadedModels).To(Equal(test.store.servers[test.serverKey].replicas[test.replicaIdx].uniqueLoadedModels))
 		})
 	}
 }
@@ -1372,7 +1375,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())
 			g.Expect(test.modelsReturned).To(Equal(len(models)))
-			server, err := ms.GetServer(test.serverName)
+			server, err := ms.GetServer(test.serverName, false)
 			g.Expect(err).To(BeNil())
 			if test.serverExists {
 				g.Expect(server).ToNot(BeNil())

@@ -59,11 +59,11 @@ func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
 	return false
 }
 
-func (f mockStore) GetServers() ([]*store.ServerSnapshot, error) {
+func (f mockStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
 	return f.servers, nil
 }
 
-func (f mockStore) GetServer(serverKey string) (*store.ServerSnapshot, error) {
+func (f mockStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

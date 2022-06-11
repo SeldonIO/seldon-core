@@ -94,10 +94,18 @@ type Server struct {
 	kubernetesMeta   *pb.KubernetesMeta
 }
 
-func (s *Server) CreateSnapshot() *ServerSnapshot {
-	replicas := make(map[int]*ServerReplica, len(s.replicas))
-	for k, v := range s.replicas {
-		replicas[k] = v.createSnapshot()
+func (s *Server) CreateSnapshot(shallow bool) *ServerSnapshot {
+	// TODO: this is considered interface leakage if we do shallow copy by allowing
+	// callers to access and change this structure
+	// perhaps we consider returning back only what callers need
+	var replicas map[int]*ServerReplica
+	if !shallow {
+		replicas = make(map[int]*ServerReplica, len(s.replicas))
+		for k, v := range s.replicas {
+			replicas[k] = v.createSnapshot()
+		}
+	} else {
+		replicas = s.replicas
 	}
 	return &ServerSnapshot{
 		Name:             s.name,
@@ -127,6 +135,7 @@ func NewServer(name string, shared bool) *Server {
 
 type ServerReplica struct {
 	muReservedMemory     sync.RWMutex
+	muLoadedModels       sync.RWMutex
 	inferenceSvc         string
 	inferenceHttpPort    int32
 	inferenceGrpcPort    int32
@@ -135,9 +144,10 @@ type ServerReplica struct {
 	capabilities         []string
 	memory               uint64
 	availableMemory      uint64
-	reservedMemory       uint64 // while loading models, internal to scheduler
 	loadedModels         map[ModelVersionID]bool
 	overCommitPercentage uint32
+	reservedMemory       uint64          // while loading models, internal to scheduler
+	uniqueLoadedModels   map[string]bool // precomputed values to speed up ops on scheduler
 }
 
 func NewServerReplica(inferenceSvc string,
@@ -161,6 +171,7 @@ func NewServerReplica(inferenceSvc string,
 		availableMemory:      availableMemory,
 		loadedModels:         loadedModels,
 		overCommitPercentage: overCommitPercentage,
+		uniqueLoadedModels:   toUniqueModels(loadedModels),
 	}
 }
 
@@ -176,6 +187,7 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		availableMemory:      availableMemoryBytes,
 		loadedModels:         loadedModels,
 		overCommitPercentage: config.GetOverCommitPercentage(),
+		uniqueLoadedModels:   toUniqueModels(loadedModels),
 	}
 }
 
@@ -519,6 +531,10 @@ func (s *ServerReplica) createSnapshot() *ServerReplica {
 	for k, v := range s.loadedModels {
 		loadedModels[k] = v
 	}
+	uniqueLoadedModels := make(map[string]bool, len(s.loadedModels))
+	for k, v := range s.uniqueLoadedModels {
+		uniqueLoadedModels[k] = v
+	}
 	return &ServerReplica{
 		inferenceSvc:         s.inferenceSvc,
 		inferenceHttpPort:    s.inferenceHttpPort,
@@ -531,10 +547,14 @@ func (s *ServerReplica) createSnapshot() *ServerReplica {
 		loadedModels:         loadedModels,
 		overCommitPercentage: s.overCommitPercentage,
 		reservedMemory:       s.reservedMemory,
+		uniqueLoadedModels:   uniqueLoadedModels,
 	}
 }
 
 func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {
+	s.muLoadedModels.RLock()
+	defer s.muLoadedModels.RUnlock()
+
 	var models []ModelVersionID
 	for model := range s.loadedModels {
 		models = append(models, model)
@@ -543,11 +563,10 @@ func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {
 }
 
 func (s *ServerReplica) GetNumLoadedModels() int {
-	modelMap := make(map[string]bool)
-	for model := range s.loadedModels {
-		modelMap[model.Name] = true
-	}
-	return len(modelMap)
+	s.muLoadedModels.RLock()
+	defer s.muLoadedModels.RUnlock()
+
+	return len(s.uniqueLoadedModels)
 }
 
 func (s *ServerReplica) GetAvailableMemory() uint64 {
@@ -585,12 +604,14 @@ func (s *ServerReplica) GetOverCommitPercentage() uint32 {
 func (s *ServerReplica) GetReservedMemory() uint64 {
 	s.muReservedMemory.RLock()
 	defer s.muReservedMemory.RUnlock()
+
 	return s.reservedMemory
 }
 
 func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {
 	s.muReservedMemory.Lock()
 	defer s.muReservedMemory.Unlock()
+
 	if isAdd {
 		s.reservedMemory += memBytes
 	} else {
@@ -600,4 +621,41 @@ func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {
 			s.reservedMemory -= memBytes
 		}
 	}
+}
+
+func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32) {
+	s.muLoadedModels.Lock()
+	defer s.muLoadedModels.Unlock()
+
+	s.loadedModels[ModelVersionID{Name: modelName, Version: modelVersion}] = true
+	s.uniqueLoadedModels[modelName] = true
+}
+
+func (s *ServerReplica) deleteModelVersion(modelName string, modelVersion uint32) {
+	s.muLoadedModels.Lock()
+	defer s.muLoadedModels.Unlock()
+
+	delete(s.loadedModels, ModelVersionID{Name: modelName, Version: modelVersion})
+	if !modelExists(s.loadedModels, modelName) {
+		delete(s.uniqueLoadedModels, modelName)
+	}
+}
+
+func toUniqueModels(loadedModels map[ModelVersionID]bool) map[string]bool {
+	uniqueModels := make(map[string]bool)
+	for key := range loadedModels {
+		uniqueModels[key.Name] = true
+	}
+	return uniqueModels
+}
+
+func modelExists(loadedModels map[ModelVersionID]bool, modelKey string) bool {
+	found := false
+	for key := range loadedModels {
+		if key.Name == modelKey {
+			found = true
+			break
+		}
+	}
+	return found
 }
