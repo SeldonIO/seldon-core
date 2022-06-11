@@ -419,7 +419,7 @@ data:
        "bootstrap.servers": "seldon-kafka-plain-bootstrap.kafka:9092",
        "consumer":{
           "session.timeout.ms":6000,
-          "auto.offset.reset":"earliest",
+          "auto.offset.reset":"latest",
           "topic.metadata.refresh.interval.ms": 1000
        },
        "producer":{
@@ -751,6 +751,9 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/modelgateway
+        env:
+        - name: MODELGATEWAY_NUM_WORKERS
+          value: 8
         image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway

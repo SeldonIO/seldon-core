@@ -20,6 +20,7 @@ import (
 const (
 	pollTimeoutMillisecs = 10000
 	DefaultNumWorkers    = 8
+	EnvVarNumWorkers     = "MODELGATEWAY_NUM_WORKERS"
 )
 
 type InferKafkaConsumer struct {

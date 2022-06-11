@@ -697,6 +697,8 @@ spec:
         env:
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: '{{ .Values.opentelemetry.endpoint }}'
+        - name: MODELGATEWAY_NUM_WORKERS
+          value: '{{ .Values.modelgateway.workers }}'
         image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository
           }}:{{ .Values.modelgateway.image.tag }}'
         imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'

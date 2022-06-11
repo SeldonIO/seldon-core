@@ -30,6 +30,9 @@ spec:
         image: modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
+        env:
+          - name: MODELGATEWAY_NUM_WORKERS
+            value: 8
         resources:
           requests:
             cpu: 100m

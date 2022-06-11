@@ -10,6 +10,8 @@ spec:
       - env:
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             value: '{{ .Values.opentelemetry.endpoint }}'
+          - name: MODELGATEWAY_NUM_WORKERS
+            value: '{{ .Values.modelgateway.workers }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'

@@ -18,6 +18,7 @@ modelgateway:
       registry: docker.io
       repository: seldonio/seldon-modelgateway
       tag: latest
+    workers: 8
     resources:
       requests:
         cpu: 0.1
