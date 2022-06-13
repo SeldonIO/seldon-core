@@ -38,7 +38,7 @@ logging.basicConfig(level=SELDON_LOGLEVEL)
 class AnchorTabular(ExplainerWrapper):
     def __init__(self, explainer=Optional[alibi.explainers.AnchorTabular], **kwargs):
         if explainer is None:
-            raise Exception("Anchor images requires a built explainer")
+            raise Exception("Anchor tabular requires a built explainer")
         self.anchors_tabular: alibi.explainers.AnchorTabular = explainer
         self.anchors_tabular = explainer
         if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():

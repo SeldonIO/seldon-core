@@ -15,6 +15,6 @@ spec:
         mode: all
     explainer:
       type: AnchorImages
-      modelUri: gs://seldon-models/tfserving/cifar10/cifar10_anchor_image_py3.7_alibi-0.6.2
+      modelUri: gs://seldon-models/tfserving/cifar10/cifar10_anchor_image_py3.7_alibi-0.7.0
     name: default
     replicas: 1
