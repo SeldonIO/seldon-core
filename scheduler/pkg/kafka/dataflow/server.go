@@ -244,7 +244,7 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 	}
 }
 
-func (c *ChainerServer) sendPipelineMsgToAllServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
+func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
 	logger := c.logger.WithField("func", "sendPipelineMsg")
 	servers := c.loadBalancer.GetServersForKey(pv.UID)
 	for _, serverId := range servers {
@@ -269,8 +269,6 @@ func contains(slice []string, val string) bool {
 
 func (c *ChainerServer) rebalance() {
 	logger := c.logger.WithField("func", "rebalance")
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
 	for _, event := range evts {
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
@@ -278,21 +276,32 @@ func (c *ChainerServer) rebalance() {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			continue
 		}
-		msg := c.createPipelineMessage(pv)
-		servers := c.loadBalancer.GetServersForKey(pv.UID)
-		for server, subscription := range c.streams {
-			if contains(servers, server) {
-				msg.Op = chainer.PipelineUpdateMessage_Create
-				if err := subscription.stream.Send(msg); err != nil {
-					logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
-				}
-			} else {
-				msg.Op = chainer.PipelineUpdateMessage_Delete
-				if err := subscription.stream.Send(msg); err != nil {
-					logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+		c.mu.Lock()
+		if len(c.streams) == 0 {
+			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreate, "No servers available"); err != nil {
+				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+			}
+		} else {
+			msg := c.createPipelineMessage(pv)
+			servers := c.loadBalancer.GetServersForKey(pv.UID)
+			for server, subscription := range c.streams {
+				if contains(servers, server) {
+					msg.Op = chainer.PipelineUpdateMessage_Create
+					if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "Rebalance"); err != nil {
+						logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+					}
+					if err := subscription.stream.Send(msg); err != nil {
+						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+					}
+				} else {
+					msg.Op = chainer.PipelineUpdateMessage_Delete
+					if err := subscription.stream.Send(msg); err != nil {
+						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+					}
 				}
 			}
 		}
+		c.mu.Unlock()
 	}
 }
 
@@ -318,14 +327,14 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 			msg := c.createPipelineMessage(pv)
-			c.sendPipelineMsgToAllServers(msg, pv)
+			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
 			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, ""); err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
 			msg := c.createPipelineMessage(pv)
-			c.sendPipelineMsgToAllServers(msg, pv)
+			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()
 }

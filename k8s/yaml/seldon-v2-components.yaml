@@ -1153,7 +1153,7 @@ spec:
         value: "9500"
       - name: SERVER_MODELS_DIR
         value: /mnt/agent/models
-      image: nvcr.io/nvidia/tritonserver:21.12-py3
+      image: nvcr.io/nvidia/tritonserver:22.05-py3
       imagePullPolicy: IfNotPresent
       livenessProbe:
         httpGet:

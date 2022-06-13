@@ -38,8 +38,8 @@ type FakeModelRepository struct {
 	err error
 }
 
-func (f FakeModelRepository) RemoveModelVersion(modelName string, version uint32) (int, error) {
-	return 0, nil
+func (f FakeModelRepository) RemoveModelVersion(modelName string) error {
+	return nil
 }
 
 func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte) (*string, error) {

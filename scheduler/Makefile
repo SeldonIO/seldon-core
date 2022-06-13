@@ -10,7 +10,7 @@ ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 # Grafana image only used for Docker compose not k8s
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.1.0.dev3
-TRITON_IMG ?= nvcr.io/nvidia/tritonserver:21.12-py3
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.05-py3
 KIND_NAME=ansible
 
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
@@ -165,31 +165,31 @@ docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-p
 #####################################
 
 .PHONY: kind-image-install-scheduler
-kind-image-install-scheduler: docker-build-scheduler
+kind-image-install-scheduler: 
 	kind load -v 3 docker-image ${SCHEDULER_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-agent
-kind-image-install-agent: docker-build-agent
+kind-image-install-agent: 
 	kind load -v 3 docker-image ${AGENT_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-envoy
-kind-image-install-envoy: docker-build-envoy
+kind-image-install-envoy: 
 	kind load -v 3 docker-image ${ENVOY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-rclone
-kind-image-install-rclone: docker-build-rclone
+kind-image-install-rclone: 
 	kind load -v 3 docker-image ${RCLONE_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-modelgateway
-kind-image-install-modelgateway: docker-build-modelgateway
+kind-image-install-modelgateway: 
 	kind load -v 3 docker-image ${MODELGATEWAY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-pipelinegateway
-kind-image-install-pipelinegateway: docker-build-pipelinegateway
+kind-image-install-pipelinegateway: 
 	kind load -v 3 docker-image ${PIPELINEGATEWAY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-dataflow
-kind-image-install-dataflow: docker-build-dataflow
+kind-image-install-dataflow: 
 	kind load -v 3 docker-image ${DATAFLOW_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-all
@@ -216,7 +216,7 @@ DOCKER_COMPOSE_COMMON_IMAGES = \
 		SERVER_TRITON_IMAGE_AND_TAG=${TRITON_IMG} \
 		GRAFANA_IMAGE_AND_TAG=${GRAFANA_IMG}
 
-DOCKER_COMPOSE_TRITON_LOG_LEVEL ?= 0
+DOCKER_COMPOSE_TRITON_LOG_LEVEL ?= 5
 
 DOCKER_COMPOSE_USE_EMPTY_VOLUMES ?= true
 

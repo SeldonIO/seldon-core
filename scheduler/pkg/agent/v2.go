@@ -284,3 +284,27 @@ func (v *V2Client) readyGrpc() error {
 	_, err := v.grpcClient.ServerReady(ctx, req)
 	return err
 }
+
+func (v *V2Client) GetModels() ([]string, error) {
+	if v.isGrpc {
+		return v.getModelsGrpc()
+	} else {
+		v.logger.Warnf("Http GetModels not available returning empty list")
+		return []string{}, nil
+	}
+}
+
+func (v *V2Client) getModelsGrpc() ([]string, error) {
+	var models []string
+	ctx := context.Background()
+	req := &v2.RepositoryIndexRequest{}
+
+	res, err := v.grpcClient.RepositoryIndex(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	for _, modelRes := range res.Models {
+		models = append(models, modelRes.Name)
+	}
+	return models, nil
+}

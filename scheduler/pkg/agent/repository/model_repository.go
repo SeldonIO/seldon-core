@@ -19,7 +19,7 @@ type ModelRepositoryHandler interface {
 
 type ModelRepository interface {
 	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte) (*string, error)
-	RemoveModelVersion(modelName string, version uint32) (int, error)
+	RemoveModelVersion(modelName string) error
 	Ready() error
 }
 
@@ -96,37 +96,13 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint3
 }
 
 // Remove version folder and return number of remaining versions calculated as found model-settings files
-func (r *V2ModelRepository) RemoveModelVersion(modelName string, version uint32) (int, error) {
-	logger := r.logger.WithField("func", "RemoveModelVersion")
-	versionStr := fmt.Sprintf("%d", version)
-	versionPath := filepath.Join(r.repoPath, modelName, versionStr)
-	logger.Debugf("Removing version path %s", versionPath)
-	err := os.RemoveAll(versionPath)
-	if err != nil {
-		return 0, err
-	}
+func (r *V2ModelRepository) RemoveModelVersion(modelName string) error {
 	modelPath := filepath.Join(r.repoPath, modelName)
-	var found int
-	err = filepath.Walk(modelPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && filepath.Base(path) == "model-settings.json" {
-			found++
-		}
-		return nil
-	})
+	err := os.RemoveAll(modelPath)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	if found == 0 { // Remove model folder as no versions remain
-		err := os.RemoveAll(modelPath)
-		if err != nil {
-			return 0, err
-		}
-	}
-	logger.Debugf("Found %d versions in %s", found, modelPath)
-	return found, nil
+	return nil
 }
 
 func (r *V2ModelRepository) Ready() error {

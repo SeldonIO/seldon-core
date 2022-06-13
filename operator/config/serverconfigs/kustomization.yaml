@@ -21,4 +21,4 @@ images:
   newTag: latest
 - name: triton
   newName: nvcr.io/nvidia/tritonserver
-  newTag: 21.12-py3
+  newTag: 22.05-py3

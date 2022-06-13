@@ -77,7 +77,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: nvcr.io
       repository: nvidia/tritonserver
-      tag: 21.12-py3
+      tag: 22.05-py3
     serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
     overcommitPercentage: "10"
     modelVolumeStorage: 1Gi

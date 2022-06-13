@@ -226,11 +226,9 @@ func TestRemoveModelVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name             string
-		folders          map[string]*mlserver.ModelSettings
-		modelName        string
-		versionToDelete  uint32
-		expectedVersions int
+		name      string
+		folders   map[string]*mlserver.ModelSettings
+		modelName string
 	}
 
 	tests := []test{
@@ -245,43 +243,6 @@ func TestRemoveModelVersion(t *testing.T) {
 					},
 				},
 			},
-			versionToDelete:  1,
-			expectedVersions: 0,
-		},
-		{
-			name: "DeleteVersionNotExisting",
-			folders: map[string]*mlserver.ModelSettings{
-				"1": {
-					Name:           "iris",
-					Implementation: "mlserver_sklearn.SKLearnModel",
-					Parameters: &mlserver.ModelParameters{
-						Version: "1",
-					},
-				},
-			},
-			versionToDelete:  2,
-			expectedVersions: 1,
-		},
-		{
-			name: "DeleteOneVersion",
-			folders: map[string]*mlserver.ModelSettings{
-				"1": {
-					Name:           "iris",
-					Implementation: "mlserver_sklearn.SKLearnModel",
-					Parameters: &mlserver.ModelParameters{
-						Version: "1",
-					},
-				},
-				"2": {
-					Name:           "iris",
-					Implementation: "mlserver_sklearn.SKLearnModel",
-					Parameters: &mlserver.ModelParameters{
-						Version: "2",
-					},
-				},
-			},
-			versionToDelete:  1,
-			expectedVersions: 1,
 		},
 	}
 
@@ -301,15 +262,12 @@ func TestRemoveModelVersion(t *testing.T) {
 			logger := log.New()
 			logger.SetLevel(log.DebugLevel)
 			mr := NewModelRepository(logger, nil, path, nil)
-			found, err := mr.RemoveModelVersion(test.modelName, test.versionToDelete)
+			err := mr.RemoveModelVersion(test.modelName)
 			g.Expect(err).To(BeNil())
-			g.Expect(found).To(Equal(test.expectedVersions))
-			if found == 0 {
-				modelPath := filepath.Join(path, test.modelName)
-				_, err := os.Stat(modelPath)
-				g.Expect(err).ToNot(BeNil())
-				g.Expect(errors.Is(err, os.ErrNotExist)).To(BeTrue())
-			}
+			modelPath := filepath.Join(path, test.modelName)
+			_, err = os.Stat(modelPath)
+			g.Expect(err).ToNot(BeNil())
+			g.Expect(errors.Is(err, os.ErrNotExist)).To(BeTrue())
 		})
 	}
 }

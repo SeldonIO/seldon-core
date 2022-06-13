@@ -178,6 +178,10 @@ func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) e
 	if err != nil {
 		return err
 	}
+	if ss == nil {
+		logger.Warnf("Failed to get server %s", modelVersion.Server())
+		return nil
+	}
 	ssr := createServerStatusResponse(ss)
 
 	s.serverEventStream.mu.Lock()

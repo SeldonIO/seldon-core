@@ -189,6 +189,12 @@ func (c *Client) WaitReady() error {
 		return err
 	}
 
+	// Unload any existing models on server to ensure we start in a clean state
+	err = c.UnloadAllModels()
+	if err != nil {
+		return err
+	}
+
 	// http reverse proxy
 	if err := startSubService(c.rpHTTP, logger); err != nil {
 		return err
@@ -204,6 +210,26 @@ func (c *Client) WaitReady() error {
 		return err
 	}
 
+	return nil
+}
+
+func (c *Client) UnloadAllModels() error {
+	logger := c.logger.WithField("func", "UnloadAllModels")
+	models, err := c.stateManager.v2Client.GetModels()
+	if err != nil {
+		return err
+	}
+	for _, model := range models {
+		logger.Infof("Unloading existing model %s", model)
+		v2Err := c.stateManager.v2Client.UnloadModel(model)
+		if v2Err != nil {
+			return v2Err.err
+		}
+		err := c.ModelRepository.RemoveModelVersion(model)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -388,7 +414,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 
-	_, err := c.ModelRepository.RemoveModelVersion(modelWithVersion, pinnedModelVersion)
+	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
