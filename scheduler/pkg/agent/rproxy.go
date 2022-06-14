@@ -1,8 +1,10 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -51,14 +53,31 @@ type lazyModelLoadTransport struct {
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
 func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	var originalBody []byte
+	var err error
+
+	if req.Body != nil {
+		originalBody, err = ioutil.ReadAll(req.Body)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// reset main request body
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(originalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
 	}
+
 	if res.StatusCode == http.StatusNotFound {
 		internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
 		t.loader(internalModelName)
-		return t.RoundTripper.RoundTrip(req)
+
+		req2 := req.Clone(req.Context())
+
+		req2.Body = ioutil.NopCloser(bytes.NewBuffer(originalBody))
+		return t.RoundTripper.RoundTrip(req2)
 	}
 	return res, err
 

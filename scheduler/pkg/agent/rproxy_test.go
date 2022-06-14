@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net"
@@ -319,6 +320,72 @@ func TestRewritePath(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			rewrittenPath := rewritePath(test.path, test.modelName)
 			g.Expect(rewrittenPath).To(Equal(test.expectedPath))
+		})
+	}
+}
+
+func TestLazyLoadRoundTripper(t *testing.T) {
+	g := NewGomegaWithT(t)
+	dummyModel := "foo"
+
+	type test struct {
+		name      string
+		dummyBody []byte
+	}
+	tests := []test{
+		{
+			name:      "non-empty body",
+			dummyBody: []byte{97, 98, 99, 100, 101, 102},
+		},
+		{
+			name:      "empty body",
+			dummyBody: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockMLServerState := &mockMLServerState{
+				models:         make(map[string]bool),
+				modelsNotFound: make(map[string]bool),
+				mu:             &sync.Mutex{},
+			}
+			serverPort, err := getFreePort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			mlserver := setupMockMLServer(mockMLServerState, serverPort)
+			go func() {
+				_ = mlserver.ListenAndServe()
+			}()
+
+			basePath := "http://localhost:" + strconv.Itoa(serverPort)
+
+			loader := func(model string) *V2Err {
+				loadV2Path := basePath + "/v2/repository/models/" + model + "/load"
+				httpClient := http.DefaultClient
+				httpClient.Transport = http.DefaultTransport
+				req, _ := http.NewRequest(http.MethodPost, loadV2Path, nil)
+				_, _ = httpClient.Do(req)
+				return nil
+			}
+
+			inferV2Path := "/v2/models/" + dummyModel + "/infer"
+			inferUrl := basePath + inferV2Path
+			req, err := http.NewRequest(http.MethodPost, inferUrl, bytes.NewBuffer(test.dummyBody))
+			g.Expect(err).To(BeNil())
+			req.Header.Set("contentType", "application/json")
+			httpClient := http.DefaultClient
+			httpClient.Transport = &lazyModelLoadTransport{loader, http.DefaultTransport}
+			mockMLServerState.setModelServerUnloaded(dummyModel)
+			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
+			resp, err := httpClient.Do(req)
+			g.Expect(err).To(BeNil())
+			g.Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			defer func() {
+				_ = mlserver.Shutdown(context.Background())
+			}()
 		})
 	}
 }
