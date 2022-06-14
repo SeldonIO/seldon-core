@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"

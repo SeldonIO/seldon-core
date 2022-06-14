@@ -23,7 +23,6 @@ const (
 	CertsTLSCa  = "ca.crt"
 
 	ResourceFolder            = "/tmp/operator-resources"
-	CRDFilenameV1Beta1        = "crd-v1beta1.yaml"
 	CRDFilenameV1             = "crd-v1.yaml"
 	MutatingWebhookFilename   = "mutate.yaml"
 	ValidatingWebhookFilename = "validate.yaml"
@@ -59,17 +58,12 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	}
 
 	crdCreator := NewCrdCreator(ctx, apiExtensionClient, discoveryClient, logger)
-	bytesV1Beta1, err := LoadBytesFromFile(ResourceFolder, CRDFilenameV1Beta1)
-	if err != nil {
-		logger.Error(err, "Failed to find crd v1beta1", "resourcefolder", ResourceFolder, "filename", CRDFilenameV1Beta1)
-		return err
-	}
 	bytesV1, err := LoadBytesFromFile(ResourceFolder, CRDFilenameV1)
 	if err != nil {
 		logger.Error(err, "Failed to find crd v1", "resourcefolder", ResourceFolder, "filename", CRDFilenameV1)
 		return err
 	}
-	crd, err := crdCreator.findOrCreateCRD(bytesV1, bytesV1Beta1)
+	crd, err := crdCreator.findOrCreateCRD(bytesV1)
 	if err != nil {
 		logger.Error(err, "Failed to create CRD")
 		return err
