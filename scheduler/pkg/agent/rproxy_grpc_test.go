@@ -80,7 +80,7 @@ func (mlserver *mockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *
 	return &v2.RepositoryModelUnloadResponse{}, nil
 }
 
-func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort int) *reverseGRPCProxy {
+func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort, backEndServerPort int) *reverseGRPCProxy {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 
@@ -98,10 +98,23 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	dummyModelNamePrefix := "dummy_model"
 
 	mockMLServerState := &mockMLServerState{
-		models: make(map[string]bool),
-		mu:     &sync.Mutex{},
+		models:         make(map[string]bool),
+		modelsNotFound: make(map[string]bool),
+		mu:             &sync.Mutex{},
 	}
-	go setupMockMLServer(mockMLServerState)
+
+	serverPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mlserver := setupMockMLServer(mockMLServerState, serverPort)
+	go func() {
+		_ = mlserver.ListenAndServe()
+	}()
+	defer func() {
+		_ = mlserver.Shutdown(context.Background())
+	}()
+
 	mockMLServer := &mockGRPCMLServer{}
 
 	backEndGRPCPort, err := getFreePort()
@@ -121,16 +134,15 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix, backEndGRPCPort, rpPort)
+	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix, backEndGRPCPort, rpPort, serverPort)
 	_ = rpGRPC.Start()
 
 	t.Log("Testing model found")
 
 	// load model
-	loaded, err := rpGRPC.stateManager.modelVersions.addModelVersion(
+	err = rpGRPC.stateManager.LoadModelVersion(
 		getDummyModelDetails(dummyModelNamePrefix+"_0", uint64(1), uint32(1)))
 	g.Expect(err).To(BeNil())
-	g.Expect(loaded).To(Equal(true))
 
 	time.Sleep(10 * time.Millisecond)
 
@@ -176,6 +188,13 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseReady.Ready).To(Equal(true))
 	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_0")).To(Equal(true))
 	g.Expect(errReady).To(BeNil())
+
+	t.Log("Testing lazy load")
+	mockMLServerState.setModelServerUnloaded(dummyModelNamePrefix + "_0")
+	responseInfer, errInfer = doInfer("_0")
+	g.Expect(errInfer).To(BeNil())
+	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model not found")
 	_, errInfer = doInfer("_1")

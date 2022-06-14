@@ -41,6 +41,29 @@ type reverseHTTPProxy struct {
 	metrics               metrics.MetricsHandler
 }
 
+// in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
+type lazyModelLoadTransport struct {
+	loader func(string) *V2Err
+	http.RoundTripper
+}
+
+// RoundTrip implements http.RoundTripper for the Transport type.
+// It calls its underlying http.RoundTripper to execute the request, and
+// adds retry logic if we get 404
+func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	res, err := t.RoundTripper.RoundTrip(req)
+	if err != nil {
+		return res, err
+	}
+	if res.StatusCode == http.StatusNotFound {
+		internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+		t.loader(internalModelName)
+		return t.RoundTripper.RoundTrip(req)
+	}
+	return res, err
+
+}
+
 // need to rewrite the host of the outbound request with the host of the incoming request
 // (added by ReverseProxy)
 func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
@@ -69,7 +92,9 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 		} else {
 			r.URL.Path = rewritePath(r.URL.Path, internalModelName)
 			rp.logger.Debugf("Calling %s", r.URL.Path)
+
 			proxy.ServeHTTP(w, r)
+
 			elapsedTime := time.Since(startTime).Seconds()
 			go rp.metrics.AddInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime)
 		}
@@ -84,13 +109,14 @@ func (rp *reverseHTTPProxy) Start() error {
 
 	backend := rp.getBackEndPath()
 	proxy := httputil.NewSingleHostReverseProxy(backend)
-	proxy.Transport = &http.Transport{
+	t := &http.Transport{
 		MaxIdleConns:        maxIdleConnsHTTP,
 		MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
 		DisableKeepAlives:   disableKeepAlivesHTTP,
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
 		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
+	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.servicePort)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
@@ -119,7 +145,7 @@ func (rp *reverseHTTPProxy) Stop() error {
 	// Shutdown is graceful
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
-	err := rp.server.Shutdown(context.TODO())
+	err := rp.server.Shutdown(context.Background())
 	rp.serverReady = false
 	return err
 }

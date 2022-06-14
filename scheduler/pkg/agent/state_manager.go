@@ -318,10 +318,10 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 			continue
 		}
 
-		// note that we unload here all versions of the same model
 		if err := manager.v2Client.UnloadModel(evictedModelId); err != nil {
 			// if we get 404 assume that the model has been unloaded
-			// by a concurrent request!
+			// by a concurrent request or could be that underlying server got restarted!
+			// in these cases we rectify agent view and proceed.
 			// otherwise assume that the unload operation failed and put back the model in cache
 
 			if !err.IsNotFound() {

@@ -158,6 +158,12 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
+	if getGrpcErrCode(err) == codes.NotFound {
+		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+		rp.stateManager.v2Client.LoadModel(internalModelName)
+		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
+	}
+
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
 	return resp, err
@@ -175,7 +181,13 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
 	}
 
-	return rp.getV2GRPCClient().ModelMetadata(ctx, r)
+	resp, err := rp.getV2GRPCClient().ModelMetadata(ctx, r)
+	if getGrpcErrCode(err) == codes.NotFound {
+		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+		rp.stateManager.v2Client.LoadModel(internalModelName)
+		resp, err = rp.getV2GRPCClient().ModelMetadata(ctx, r)
+	}
+	return resp, err
 }
 
 func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
@@ -190,7 +202,13 @@ func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequ
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.Name, err))
 	}
 
-	return rp.getV2GRPCClient().ModelReady(ctx, r)
+	resp, err := rp.getV2GRPCClient().ModelReady(ctx, r)
+	if getGrpcErrCode(err) == codes.NotFound {
+		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+		rp.stateManager.v2Client.LoadModel(internalModelName)
+		resp, err = rp.getV2GRPCClient().ModelReady(ctx, r)
+	}
+	return resp, err
 }
 
 func (rp *reverseGRPCProxy) ensureLoadModel(modelId string) error {
@@ -246,4 +264,13 @@ func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
 		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
 	}
 	return "", "", false
+}
+
+func getGrpcErrCode(err error) codes.Code {
+	if err != nil {
+		if e, ok := status.FromError(err); ok {
+			return e.Code()
+		}
+	}
+	return codes.Unknown
 }

@@ -94,16 +94,16 @@ func setupLocalTestManagerWithState(
 	logger.SetLevel(log.InfoLevel)
 
 	modelState := NewModelState()
-	models := make([]string, numModels*numVersions)
-	for i := 0; i < numModels; i++ {
-		for j := 0; j < numVersions; j++ {
-			// we append versions here ad `getModelId` is meant to just return the modelId (not versioned)
-			models[(i*numVersions)+j] = getModelId(modelPrefix, i) + "_" + strconv.Itoa(j+1)
-		}
-	}
 	//create mock v2 client
 	var v2ClientState *v2State
 	if v2Client == nil {
+		models := make([]string, numModels*numVersions)
+		for i := 0; i < numModels; i++ {
+			for j := 0; j < numVersions; j++ {
+				// we append versions here ad `getModelId` is meant to just return the modelId (not versioned)
+				models[(i*numVersions)+j] = getModelId(modelPrefix, i) + "_" + strconv.Itoa(j+1)
+			}
+		}
 		v2Client, v2ClientState = createTestV2ClientwithState(models, 200)
 	}
 	manager := NewLocalStateManager(

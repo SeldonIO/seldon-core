@@ -20,10 +20,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	backEndServerPort = 7777
-)
-
 func getFreePort() (int, error) {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
@@ -39,19 +35,24 @@ func getFreePort() (int, error) {
 }
 
 type mockMLServerState struct {
-	models map[string]bool
-	mu     *sync.Mutex
+	models         map[string]bool
+	mu             *sync.Mutex
+	modelsNotFound map[string]bool
 }
 
 func (mlserver *mockMLServerState) v2Infer(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
-	model_name := params["model_name"]
-	_, _ = w.Write([]byte("Model inference: " + model_name))
+	modelName := params["model_name"]
+	if _, ok := mlserver.modelsNotFound[modelName]; ok {
+		http.NotFound(w, req)
+	}
+	_, _ = w.Write([]byte("Model inference: " + modelName))
 }
 
 func (mlserver *mockMLServerState) v2Load(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	modelName := params["model_name"]
+	delete(mlserver.modelsNotFound, modelName)
 	mlserver.setModel(modelName, true)
 	_, _ = w.Write([]byte("Model load: " + modelName))
 }
@@ -69,6 +70,10 @@ func (mlserver *mockMLServerState) setModel(modelId string, val bool) {
 	mlserver.models[modelId] = val
 }
 
+func (mlserver *mockMLServerState) setModelServerUnloaded(modelId string) {
+	mlserver.modelsNotFound[modelId] = true
+}
+
 func (mlserver *mockMLServerState) isModelLoaded(modelId string) bool {
 	mlserver.mu.Lock()
 	defer mlserver.mu.Unlock()
@@ -79,35 +84,12 @@ func (mlserver *mockMLServerState) isModelLoaded(modelId string) bool {
 	return false
 }
 
-func isRegistered(port int) bool {
-	timeout := 5 * time.Second
-	conn, err := net.DialTimeout("tcp", ":"+strconv.Itoa(port), timeout)
-	if err != nil {
-		return false
-	}
-
-	if conn != nil {
-		conn.Close()
-		return true
-	}
-
-	return false
-}
-func setupMockMLServer(mockMLServerState *mockMLServerState) {
-	if isRegistered(backEndServerPort) {
-		log.Warnf("Port %d already running", backEndServerPort)
-		return
-	}
+func setupMockMLServer(mockMLServerState *mockMLServerState, serverPort int) *http.Server {
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer", mockMLServerState.v2Infer).Methods("POST")
 	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/load", mockMLServerState.v2Load).Methods("POST")
 	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/unload", mockMLServerState.v2Unload).Methods("POST")
-
-	http.Handle("/", rtr)
-
-	if err := http.ListenAndServe(":"+strconv.Itoa(backEndServerPort), nil); err != nil {
-		log.Warn(err)
-	}
+	return &http.Server{Addr: ":" + strconv.Itoa(serverPort), Handler: rtr}
 }
 
 type loadModelSateValue struct {
@@ -155,13 +137,13 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 	}
 }
 
-func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort int) *reverseHTTPProxy {
-	v2Client := NewV2Client("localhost", backEndServerPort, logger, false)
+func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
+	v2Client := NewV2Client("localhost", serverPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	rp := NewReverseHTTPProxy(
 		logger,
 		"localhost",
-		uint(backEndServerPort),
+		uint(serverPort),
 		uint(rpPort),
 		fakeMetricsHandler{})
 	rp.SetState(localCacheManager)
@@ -174,46 +156,70 @@ func TestReverseProxySmoke(t *testing.T) {
 	logger.SetLevel(log.DebugLevel)
 
 	type test struct {
-		name           string
-		modelToLoad    string
-		modelToRequest string
-		statusCode     int
+		name             string
+		modelToLoad      string
+		modelToRequest   string
+		statusCode       int
+		isLoadedonServer bool
 	}
 
 	tests := []test{
 		{
-			name:           "model exists",
-			modelToLoad:    "foo",
-			modelToRequest: "foo",
-			statusCode:     200,
+			name:             "model exists",
+			modelToLoad:      "foo",
+			modelToRequest:   "foo",
+			statusCode:       http.StatusOK,
+			isLoadedonServer: true,
 		},
 		{
-			name:           "model does not exists",
-			modelToLoad:    "foo",
-			modelToRequest: "foo2",
-			statusCode:     404,
+			name:             "model exists on agent but not loaded on server",
+			modelToLoad:      "foo",
+			modelToRequest:   "foo",
+			statusCode:       http.StatusOK,
+			isLoadedonServer: false,
+		},
+		{
+			name:             "model does not exists",
+			modelToLoad:      "foo",
+			modelToRequest:   "foo2",
+			statusCode:       http.StatusNotFound,
+			isLoadedonServer: false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockMLServerState := &mockMLServerState{
-				models: make(map[string]bool),
-				mu:     &sync.Mutex{},
+				models:         make(map[string]bool),
+				modelsNotFound: make(map[string]bool),
+				mu:             &sync.Mutex{},
 			}
-			go setupMockMLServer(mockMLServerState)
+			serverPort, err := getFreePort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			mlserver := setupMockMLServer(mockMLServerState, serverPort)
+			go func() {
+				_ = mlserver.ListenAndServe()
+			}()
+
 			rpPort, err := getFreePort()
 			if err != nil {
 				t.Fatal(err)
 			}
-			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort)
+			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort, serverPort)
 			err = rpHTTP.Start()
 			g.Expect(err).To(BeNil())
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 
 			// load model
-			_, _ = rpHTTP.stateManager.modelVersions.addModelVersion(
-				getDummyModelDetails(test.modelToLoad, uint64(1), uint32(1)))
+			err = rpHTTP.stateManager.LoadModelVersion(getDummyModelDetails(test.modelToLoad, uint64(1), uint32(1)))
+			g.Expect(err).To(BeNil())
+
+			if !test.isLoadedonServer {
+				// this will set a model to fail infer until load is called
+				mockMLServerState.setModelServerUnloaded(test.modelToLoad)
+			}
 
 			// make a dummy predict call with any model name, URL does not matter, only headers
 			inferV2Path := "/v2/models/RANDOM/infer"
@@ -225,10 +231,9 @@ func TestReverseProxySmoke(t *testing.T) {
 			req.Header.Set(resources.SeldonInternalModelHeader, test.modelToRequest)
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
-			defer resp.Body.Close()
 
 			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
-			if test.statusCode == 200 {
+			if test.statusCode == http.StatusOK {
 				bodyBytes, err := io.ReadAll(resp.Body)
 				g.Expect(err).To(BeNil())
 				bodyString := string(bodyBytes)
@@ -237,6 +242,10 @@ func TestReverseProxySmoke(t *testing.T) {
 			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
 			g.Expect(rpHTTP.Ready()).To(BeFalse())
+
+			resp.Body.Close()
+
+			_ = mlserver.Shutdown(context.Background())
 		})
 	}
 
