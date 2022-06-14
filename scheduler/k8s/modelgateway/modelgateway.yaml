@@ -32,7 +32,7 @@ spec:
         name: modelgateway
         env:
           - name: MODELGATEWAY_NUM_WORKERS
-            value: 8
+            value: "8"
         resources:
           requests:
             cpu: 100m

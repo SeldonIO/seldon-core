@@ -753,7 +753,7 @@ spec:
         - /bin/modelgateway
         env:
         - name: MODELGATEWAY_NUM_WORKERS
-          value: 8
+          value: "8"
         image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
