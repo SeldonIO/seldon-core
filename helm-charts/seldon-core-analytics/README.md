@@ -2,8 +2,6 @@
 
 ![Version: 1.14.0-dev](https://img.shields.io/static/v1?label=Version&message=1.14.0--dev&color=informational&style=flat-square)
 
-Note, this chart is not actively maintained. We recommend configuring metrics by installing Prometheus Operator, like documented [here](../analytics/analytics.html#metrics-with-prometheus-operator).
-
 Prometheus and Grafana installation with a basic Grafana dashboard showing
 the default Prometheus metrics exposed by Seldon for each inference graph
 deployed.

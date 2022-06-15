@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: cifar10
 spec:
-  protocol: kfserving
+  protocol: v2
   annotations:
     seldon.io/rest-timeout: "100000"
   predictors:
@@ -15,6 +15,6 @@ spec:
          mode: all
     explainer:
       type: AnchorImages
-      modelUri: gs://seldon-models/tfserving/cifar10/cifar10_anchor_image_py3.8_alibi0.6.2
+      modelUri: gs://seldon-models/tfserving/cifar10/cifar10_anchor_image_py3.7_alibi-0.7.0
     name: default
     replicas: 1

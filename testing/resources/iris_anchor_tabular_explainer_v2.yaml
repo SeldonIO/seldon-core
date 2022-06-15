@@ -3,7 +3,7 @@ kind: SeldonDeployment
 metadata:
   name: iris
 spec:
-  protocol: kfserving  # Activate v2 protocol / mlserver usage
+  protocol: v2  # Activate v2 protocol / mlserver usage
   name: iris
   annotations:
     seldon.io/rest-timeout: "100000"
@@ -11,10 +11,10 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.14.0-dev/sklearn/iris
       name: classifier
     explainer:
       type: AnchorTabular
-      modelUri: gs://seldon-models/alibi/iris_anchor_tabular-python3.7-alibi-0.6.2
+      modelUri: gs://seldon-models/alibi/iris_anchor_tabular-python3.7-alibi-0.7.0
     name: default
     replicas: 1

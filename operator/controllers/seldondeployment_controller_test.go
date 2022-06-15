@@ -144,6 +144,29 @@ var _ = Describe("Create a Seldon Deployment", func() {
 			},
 		))
 
+		// Check metrics env vars are there
+		fullMetricsPort := getPort(constants.DefaultMetricsPortName, containers[0].Ports)
+		metricsPort := strconv.Itoa(int(fullMetricsPort.ContainerPort))
+		metricsPath := getPrometheusPath(instance)
+		Expect(containers[0].Env).To(ContainElements(
+			v1.EnvVar{
+				Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS,
+				Value: metricsPort,
+			},
+			v1.EnvVar{
+				Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT,
+				Value: metricsPath,
+			},
+			v1.EnvVar{
+				Name:  MLServerMetricsPortEnv,
+				Value: metricsPort,
+			},
+			v1.EnvVar{
+				Name:  MLServerMetricsEndpointEnv,
+				Value: metricsPath,
+			},
+		))
+
 		// Check model's name is in there
 		Expect(containers[0].Env).To(ContainElements(
 			v1.EnvVar{

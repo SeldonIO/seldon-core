@@ -27,6 +27,8 @@ const (
 	MLServerHuggingFaceCacheEnvDefault = "/opt/mlserver"
 	MLServerHTTPPortEnv                = "MLSERVER_HTTP_PORT"
 	MLServerGRPCPortEnv                = "MLSERVER_GRPC_PORT"
+	MLServerMetricsPortEnv             = "MLSERVER_METRICS_PORT"
+	MLServerMetricsEndpointEnv         = "MLSERVER_METRICS_ENDPOINT"
 	MLServerModelNameEnv               = "MLSERVER_MODEL_NAME"
 	MLServerModelImplementationEnv     = "MLSERVER_MODEL_IMPLEMENTATION"
 	MLServerModelURIEnv                = "MLSERVER_MODEL_URI"
