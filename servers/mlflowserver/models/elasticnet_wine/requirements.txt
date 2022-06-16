@@ -1,2 +1,4 @@
 mlflow==1.19.0
 conda-pack==0.6.0
+# pinning protobuf due to https://github.com/mlflow/mlflow/issues/5949
+protobuf<4.0
