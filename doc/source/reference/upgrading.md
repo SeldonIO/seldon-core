@@ -98,7 +98,7 @@ In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/Sel
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.14.0-dev
+  image: seldonio/rclone-storage-initializer:1.14.0
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 

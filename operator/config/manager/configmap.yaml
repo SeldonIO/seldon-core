@@ -25,7 +25,7 @@ data:
               },
             "seldon": {
               "image": "seldonio/tfserving-proxy",
-              "defaultImageVersion": "1.14.0-dev"
+              "defaultImageVersion": "1.14.0"
               }
             }
         },
@@ -33,7 +33,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/sklearnserver",
-              "defaultImageVersion": "1.14.0-dev"
+              "defaultImageVersion": "1.14.0"
               },
             "v2": {
               "image": "seldonio/mlserver",
@@ -45,7 +45,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
-              "defaultImageVersion": "1.14.0-dev"
+              "defaultImageVersion": "1.14.0"
               },
             "v2": {
               "image": "seldonio/mlserver",
@@ -57,7 +57,7 @@ data:
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
-              "defaultImageVersion": "1.14.0-dev"
+              "defaultImageVersion": "1.14.0"
               },
             "v2": {
               "image": "seldonio/mlserver",
@@ -100,6 +100,6 @@ data:
     }
   explainer: |-
     {
-        "image" : "seldonio/alibiexplainer:1.14.0-dev",
+        "image" : "seldonio/alibiexplainer:1.14.0",
         "image_v2" : "seldonio/mlserver:1.1.0-alibi-explain"
     }
