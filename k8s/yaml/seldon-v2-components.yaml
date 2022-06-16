@@ -993,7 +993,7 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
-      image: seldonio/mlserver:1.0.1
+      image: seldonio/mlserver:1.1.0
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:

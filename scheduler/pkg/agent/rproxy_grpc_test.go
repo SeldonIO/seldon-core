@@ -30,6 +30,7 @@ const (
 type mockGRPCMLServer struct {
 	listener net.Listener
 	server   *grpc.Server
+	models   []MLServerModelInfo
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -78,6 +79,18 @@ func (mlserver *mockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found", r.ModelName))
 	}
 	return &v2.RepositoryModelUnloadResponse{}, nil
+}
+
+func (mlserver *mockGRPCMLServer) RepositoryIndex(ctx context.Context, r *v2.RepositoryIndexRequest) (*v2.RepositoryIndexResponse, error) {
+	ret := make([]*v2.RepositoryIndexResponse_ModelIndex, len(mlserver.models))
+	for idx, model := range mlserver.models {
+		ret[idx] = &v2.RepositoryIndexResponse_ModelIndex{Name: model.Name, State: string(model.State)}
+	}
+	return &v2.RepositoryIndexResponse{Models: ret}, nil
+}
+
+func (mlserver *mockGRPCMLServer) setModels(models []MLServerModelInfo) {
+	mlserver.models = models
 }
 
 func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort, backEndServerPort int) *reverseGRPCProxy {

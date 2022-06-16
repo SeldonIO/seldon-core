@@ -220,14 +220,20 @@ func (c *Client) UnloadAllModels() error {
 		return err
 	}
 	for _, model := range models {
-		logger.Infof("Unloading existing model %s", model)
-		v2Err := c.stateManager.v2Client.UnloadModel(model)
-		if v2Err != nil {
-			return v2Err.err
+		if model.State == MLServerModelState_READY || model.State == MLServerModelState_LOADING {
+			logger.Infof("Unloading existing model %s", model)
+			v2Err := c.stateManager.v2Client.UnloadModel(model.Name)
+			if v2Err != nil {
+				if !v2Err.IsNotFound() {
+					return v2Err.err
+				} else {
+					c.logger.Warnf("Model %s not found on server", model)
+				}
+			}
 		}
-		err := c.ModelRepository.RemoveModelVersion(model)
+		err := c.ModelRepository.RemoveModelVersion(model.Name)
 		if err != nil {
-			return err
+			c.logger.WithError(err).Errorf("Model %s could not be removed from repository", model)
 		}
 	}
 	return nil

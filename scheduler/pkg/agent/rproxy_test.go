@@ -359,6 +359,12 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 				_ = mlserver.ListenAndServe()
 			}()
 
+			time.Sleep(100 * time.Millisecond)
+
+			defer func() {
+				_ = mlserver.Shutdown(context.Background())
+			}()
+
 			basePath := "http://localhost:" + strconv.Itoa(serverPort)
 
 			loader := func(model string) *V2Err {
@@ -382,10 +388,6 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			resp, err := httpClient.Do(req)
 			g.Expect(err).To(BeNil())
 			g.Expect(resp.StatusCode).To(Equal(http.StatusOK))
-
-			defer func() {
-				_ = mlserver.Shutdown(context.Background())
-			}()
 		})
 	}
 }

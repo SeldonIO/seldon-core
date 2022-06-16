@@ -160,13 +160,7 @@ func main() {
 	)
 
 	// Create V2 Protocol Handler
-	// TODO: when issue https://github.com/SeldonIO/MLServer/issues/600 is done, let mlserver use grpc as well
-	var v2Client *agent.V2Client
-	if cli.ServerName == "triton" {
-		v2Client = agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
-	} else {
-		v2Client = agent.NewV2Client(cli.InferenceHost, cli.InferenceHttpPort, logger, false)
-	}
+	v2Client := agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
 
 	promMetrics, err := metrics.NewPrometheusMetrics(cli.ServerName, cli.ReplicaIdx, cli.Namespace, logger)
 	if err != nil {

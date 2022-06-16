@@ -196,6 +196,11 @@ func TestGrpcV2(t *testing.T) {
 	v2Err = v2Client.UnloadModel(modelNameMissing)
 	g.Expect(v2Err.IsNotFound()).To(BeTrue())
 
+	mockMLServer.setModels([]MLServerModelInfo{{dummModel, MLServerModelState_READY}, {"", MLServerModelState_UNAVAILABLE}})
+	models, err := v2Client.GetModels()
+	g.Expect(err).To(BeNil())
+	g.Expect(models).To(Equal([]MLServerModelInfo{{dummModel, MLServerModelState_READY}})) // empty string models should be discarded
+
 	err = v2Client.Ready()
 	g.Expect(err).To(BeNil())
 

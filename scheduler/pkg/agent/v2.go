@@ -19,6 +19,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type MLServerModelState string
+
+const (
+	MLServerModelState_UNKNOWN     MLServerModelState = "UNKNOWN"
+	MLServerModelState_READY       MLServerModelState = "READY"
+	MLServerModelState_UNAVAILABLE MLServerModelState = "UNAVAILABLE"
+	MLServerModelState_LOADING     MLServerModelState = "LOADING"
+	MLServerModelState_UNLOADING   MLServerModelState = "UNLOADING"
+)
+
 const (
 	// we define all communication error into one bucket
 	// TODO: separate out the different comm issues (e.g. DNS vs Connection refused etc.)
@@ -26,6 +36,11 @@ const (
 	// i.e invalid method etc.
 	V2RequestErrCode = -200
 )
+
+type MLServerModelInfo struct {
+	Name  string
+	State MLServerModelState
+}
 
 type V2Client struct {
 	host       string
@@ -285,17 +300,17 @@ func (v *V2Client) readyGrpc() error {
 	return err
 }
 
-func (v *V2Client) GetModels() ([]string, error) {
+func (v *V2Client) GetModels() ([]MLServerModelInfo, error) {
 	if v.isGrpc {
 		return v.getModelsGrpc()
 	} else {
 		v.logger.Warnf("Http GetModels not available returning empty list")
-		return []string{}, nil
+		return []MLServerModelInfo{}, nil
 	}
 }
 
-func (v *V2Client) getModelsGrpc() ([]string, error) {
-	var models []string
+func (v *V2Client) getModelsGrpc() ([]MLServerModelInfo, error) {
+	var models []MLServerModelInfo
 	ctx := context.Background()
 	req := &v2.RepositoryIndexRequest{}
 
@@ -304,7 +319,13 @@ func (v *V2Client) getModelsGrpc() ([]string, error) {
 		return nil, err
 	}
 	for _, modelRes := range res.Models {
-		models = append(models, modelRes.Name)
+		if modelRes.Name == "" {
+			// nothing to do for empty model
+			// TODO: why mlserver returns back empty string model?
+			continue
+		}
+		models = append(
+			models, MLServerModelInfo{Name: modelRes.Name, State: MLServerModelState(modelRes.State)})
 	}
 	return models, nil
 }
