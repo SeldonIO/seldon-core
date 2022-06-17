@@ -1266,7 +1266,7 @@ def rest_predict_seldon(
         payload = seldon_message_to_json(request)
 
     response_raw = requests.post(
-        "http://" + gateway_endpoint + "/api/v0.1/predictions", json=payload
+        "http://" + gateway_endpoint + "/api/v1.0/predictions", json=payload
     )
     if response_raw.status_code == 200:
         success = True
