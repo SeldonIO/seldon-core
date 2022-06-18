@@ -1,6 +1,8 @@
 package experiment
 
 import (
+	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
@@ -15,6 +17,7 @@ const (
 	experimentStartEventSource     = "experiment.store.start"
 	experimentStopEventSource      = "experiment.store.stop"
 	modelEventHandlerName          = "experiment.store.models"
+	experimentDbFolder             = "experimentdb"
 )
 
 type ExperimentServer interface {
@@ -34,6 +37,7 @@ type ExperimentStore struct {
 	modelReferences map[string]map[string]*Experiment // modelName to experiments it appears in
 	eventHub        *coordinator.EventHub
 	store           store.ModelStore
+	db              *ExperimentDBManager
 }
 
 func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore) *ExperimentStore {
@@ -57,6 +61,31 @@ func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventH
 	}
 
 	return es
+}
+
+func getExperimentDbFolder(basePath string) string {
+	return filepath.Join(basePath, experimentDbFolder)
+}
+
+func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
+	logger := es.logger.WithField("func", "initialiseDB")
+	experimentDbPath := getExperimentDbFolder(path)
+	logger.Infof("Initialise DB at %s", experimentDbPath)
+	err := os.MkdirAll(experimentDbPath, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	db, err := newExperimentDbManager(experimentDbPath, es.logger)
+	if err != nil {
+		return err
+	}
+	es.db = db
+	// If database already existed we can restore else this is a noop
+	err = es.db.restore(es.StartExperiment)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (es *ExperimentStore) publishModelEvent(experiment *Experiment) {
@@ -225,6 +254,12 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 		}
 	}
 	es.updateExperimentState(experiment)
+	if es.db != nil {
+		err := es.db.save(experiment)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 	es.experiments[experiment.Name] = experiment
 	return es.createExperimentEventMsg(experiment, true), modelEvt, nil
 }
@@ -258,6 +293,12 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 		if experiment.DefaultModel != nil {
 			modelEvt = &coordinator.ModelEventMsg{
 				ModelName: *experiment.DefaultModel,
+			}
+		}
+		if es.db != nil {
+			err := es.db.delete(experiment)
+			if err != nil {
+				return nil, nil, err
 			}
 		}
 		return es.createExperimentEventMsg(experiment, true), modelEvt, nil

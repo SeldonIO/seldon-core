@@ -1,7 +1,8 @@
 .idea/
 *~
 /bin/*
-/mnt/pipelinedb
+/mnt/db/pipelinedb
+/mnt/db/experimentdb
 /mnt/mlserver
 /mnt/triton
 /apis-TEMP

@@ -1,6 +1,8 @@
 package experiment
 
-import "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+import (
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+)
 
 func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 	var candidates []*Candidate
@@ -34,6 +36,44 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 		Name:           request.Name,
 		DefaultModel:   request.DefaultModel,
 		Active:         false,
+		Candidates:     candidates,
+		Mirror:         mirror,
+		Config:         config,
+		KubernetesMeta: k8sMeta,
+	}
+}
+
+func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
+	var candidates []*scheduler.ExperimentCandidate
+	for _, candidate := range experiment.Candidates {
+		candidates = append(candidates, &scheduler.ExperimentCandidate{
+			ModelName: candidate.ModelName,
+			Weight:    candidate.Weight,
+		})
+	}
+	var mirror *scheduler.ExperimentMirror
+	if experiment.Mirror != nil {
+		mirror = &scheduler.ExperimentMirror{
+			ModelName: experiment.Mirror.ModelName,
+			Percent:   experiment.Mirror.Percent,
+		}
+	}
+	var config *scheduler.ExperimentConfig
+	if experiment.Config != nil {
+		config = &scheduler.ExperimentConfig{
+			StickySessions: experiment.Config.StickySessions,
+		}
+	}
+	var k8sMeta *scheduler.KubernetesMeta
+	if experiment.KubernetesMeta != nil {
+		k8sMeta = &scheduler.KubernetesMeta{
+			Namespace:  experiment.KubernetesMeta.Namespace,
+			Generation: experiment.KubernetesMeta.Generation,
+		}
+	}
+	return &scheduler.Experiment{
+		Name:           experiment.Name,
+		DefaultModel:   experiment.DefaultModel,
 		Candidates:     candidates,
 		Mirror:         mirror,
 		Config:         config,

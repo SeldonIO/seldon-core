@@ -87,14 +87,14 @@ services:
       - "debug"
       - "--tracing-config-path"
       - "/mnt/config/tracing-internal.json"
-      - --pipeline-db-path
-      - "${PIPELINE_DB_PATH_COMPOSE}"
+      - --db-path
+      - "${DB_PATH_COMPOSE}"
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config      
       - type: bind
-        source: ./mnt
+        source: ./mnt/db
         target: /mnt/db      
     network_mode: "host"
 

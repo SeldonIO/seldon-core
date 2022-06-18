@@ -58,7 +58,7 @@ var (
 	pipelineGatewayGrpcPort int
 	logLevel                string
 	tracingConfigPath       string
-	pipelineDbPath          string
+	dbPath                  string
 	nodeID                  string
 )
 
@@ -88,7 +88,7 @@ func init() {
 	flag.IntVar(&pipelineGatewayGrpcPort, "pipeline-gateway-grpc-port", 9011, "Pipeline gateway server grpc port")
 	flag.StringVar(&logLevel, "log-level", "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
-	flag.StringVar(&pipelineDbPath, "pipeline-db-path", "", "Pipeline state Db")
+	flag.StringVar(&dbPath, "db-path", "", "State Db path")
 }
 
 func getNamespace() string {
@@ -139,18 +139,27 @@ func main() {
 	}
 
 	ps := pipeline.NewPipelineStore(logger, eventHub)
-	if pipelineDbPath != "" {
-		logger.Infof("Opening db at %s", pipelineDbPath)
-		err := ps.InitialiseDB(pipelineDbPath)
+	if dbPath != "" {
+		err := ps.InitialiseOrRestoreDB(dbPath)
 		if err != nil {
-			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", pipelineDbPath)
+			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", dbPath)
 		}
 	} else {
-		log.Warn("Not running with scheduler DB")
+		log.Warn("Not running with scheduler pipeline DB")
 	}
 
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+
 	es := experiment.NewExperimentServer(logger, eventHub, ss)
+	if dbPath != "" {
+		err := es.InitialiseOrRestoreDB(dbPath)
+		if err != nil {
+			log.WithError(err).Fatalf("Failed to initialise experiment db at %s", dbPath)
+		}
+	} else {
+		log.Warn("Not running with scheduler experiment DB")
+	}
+
 	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
 		Host:     pipelineGatewayHost,
 		HttpPort: pipelineGatewayHttpPort,

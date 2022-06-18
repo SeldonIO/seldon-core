@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/mitchellh/copystructure"
@@ -14,6 +15,7 @@ const (
 	addPipelineEventSource       = "pipeline.store.addpipeline"
 	removePipelineEventSource    = "pipeline.store.removepipeline"
 	setStatusPipelineEventSource = "pipeline.store.setstatus"
+	pipelineDbFolder             = "pipelinedb"
 )
 
 type PipelineHandler interface {
@@ -31,7 +33,7 @@ type PipelineStore struct {
 	mu        sync.RWMutex
 	eventHub  *coordinator.EventHub
 	pipelines map[string]*Pipeline
-	db        *PipelineDB
+	db        *PipelineDBManager
 }
 
 func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub) *PipelineStore {
@@ -44,17 +46,25 @@ func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub)
 	return ps
 }
 
-func (ps *PipelineStore) InitialiseDB(path string) error {
-	err := os.MkdirAll(path, os.ModePerm)
+func getPipelineDbFolder(basePath string) string {
+	return filepath.Join(basePath, pipelineDbFolder)
+}
+
+func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
+	logger := ps.logger.WithField("func", "initialiseDB")
+	pipelineDbPath := getPipelineDbFolder(path)
+	logger.Infof("Initialise DB at %s", pipelineDbPath)
+	err := os.MkdirAll(pipelineDbPath, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	db, err := NewPipelineDb(path, ps.logger)
+	db, err := newPipelineDbManager(pipelineDbPath, ps.logger)
 	if err != nil {
 		return err
 	}
 	ps.db = db
-	err = ps.db.restore(ps)
+	// If database already existed we can restore else this is a noop
+	err = ps.db.restore(ps.restorePipeline)
 	if err != nil {
 		return err
 	}
@@ -62,7 +72,7 @@ func (ps *PipelineStore) InitialiseDB(path string) error {
 }
 
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
-	logger := ps.logger.WithField("func", "addPipeline")
+	logger := ps.logger.WithField("func", "restorePipeline")
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
 	ps.mu.Lock()
 	ps.pipelines[pipeline.Name] = pipeline

@@ -502,22 +502,21 @@ stop-dataflow-engine-host:
 
 SCHEDULER_USE_DB ?= true
 ifeq ($(SCHEDULER_USE_DB),true)
-  PIPELINE_DB_PATH_LOCAL = ${PWD}/mnt/pipelinedb
-  export PIPELINE_DB_PATH_COMPOSE = /mnt/db/pipelinedb
+  DB_PATH_LOCAL = ${PWD}/mnt/db
+  export DB_PATH_COMPOSE = /mnt/db
 else
-  PIPELINE_DB_PATH_LOCAL =
-  export PIPELINE_DB_PATH_COMPOSE = 
+  DB_PATH_LOCAL =
+  export DB_PATH_COMPOSE = 
 endif
 
 .PHONY: start-scheduler-local
 start-scheduler-local:
-	mkdir -p ${PWD}/mnt/pipelinedb
-	./bin/scheduler --pipeline-db-path "${PIPELINE_DB_PATH}"
+	./bin/scheduler --db-path "${DB_PATH_LOCAL}"
 
 .PHONY: clear-scheduler-state
 clear-scheduler-state:
-	mkdir -p ${PWD}/mnt/pipelinedb
-	rm -r ${PWD}/mnt/pipelinedb/* || echo "no db files found"
+	rm -r ${PWD}/mnt/db/pipelinedb || echo "no pipeline db files found"
+	rm -r ${PWD}/mnt/db/experimentdb || echo "no experiment db files found"
 
 .PHONY: start-agent-local-mlserver
 start-agent-local-mlserver:

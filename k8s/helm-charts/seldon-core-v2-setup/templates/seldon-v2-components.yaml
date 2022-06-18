@@ -807,7 +807,7 @@ spec:
       - args:
         - --pipeline-gateway-host=seldon-pipelinegateway
         - --tracing-config-path=/mnt/tracing/tracing.json
-        - --pipeline-db-path=/mnt/scheduler/pipelinedb
+        - --db-path=/mnt/scheduler/db
         command:
         - /bin/scheduler
         image: seldonio/seldon-scheduler:latest

@@ -110,7 +110,7 @@ func TestSaveAndRestore(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := NewPipelineDb(path, logger)
+			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				err := db.save(p)
@@ -120,7 +120,7 @@ func TestSaveAndRestore(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			ps := NewPipelineStore(log.New(), nil)
-			err = ps.InitialiseDB(path)
+			err = ps.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())

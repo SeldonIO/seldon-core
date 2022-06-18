@@ -7,27 +7,27 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type PipelineDB struct {
+type PipelineDBManager struct {
 	db *badger.DB
 }
 
-func NewPipelineDb(path string, logger logrus.FieldLogger) (*PipelineDB, error) {
+func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBManager, error) {
 	options := badger.DefaultOptions(path)
 	options.Logger = logger.WithField("source", "pipelineDb")
 	db, err := badger.Open(options)
 	if err != nil {
 		return nil, err
 	}
-	return &PipelineDB{
+	return &PipelineDBManager{
 		db: db,
 	}, nil
 }
 
-func (pdb *PipelineDB) Stop() error {
+func (pdb *PipelineDBManager) Stop() error {
 	return pdb.db.Close()
 }
 
-func (pdb *PipelineDB) save(pipeline *Pipeline) error {
+func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
@@ -39,14 +39,14 @@ func (pdb *PipelineDB) save(pipeline *Pipeline) error {
 	})
 }
 
-func (pdb *PipelineDB) delete(pipeline *Pipeline) error {
+func (pdb *PipelineDBManager) delete(pipeline *Pipeline) error {
 	return pdb.db.Update(func(txn *badger.Txn) error {
 		err := txn.Delete([]byte(pipeline.Name))
 		return err
 	})
 }
 
-func (pdb *PipelineDB) restore(store *PipelineStore) error {
+func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline)) error {
 	return pdb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -63,7 +63,7 @@ func (pdb *PipelineDB) restore(store *PipelineStore) error {
 				if err != nil {
 					return err
 				}
-				store.restorePipeline(pipeline)
+				createPipelineCb(pipeline)
 				return nil
 			})
 			if err != nil {
