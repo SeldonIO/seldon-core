@@ -2,8 +2,7 @@
     "bootstrap.servers":"0.0.0.0:9092",
     "consumer":{
 	"session.timeout.ms":6000,
-	"auto.offset.reset":"latest",
-	"topic.metadata.refresh.interval.ms": 1000
+	"auto.offset.reset":"earliest"
     },
     "producer":{
 	"linger.ms":0,

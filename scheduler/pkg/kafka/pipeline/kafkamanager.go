@@ -48,6 +48,7 @@ type Pipeline struct {
 	requests cmap.ConcurrentMap
 	done     chan bool
 	isModel  bool
+	wg       *sync.WaitGroup
 }
 
 type Request struct {
@@ -115,6 +116,7 @@ func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline
 		requests:     cmap.New(),
 		done:         make(chan bool),
 		isModel:      isModel,
+		wg:           new(sync.WaitGroup),
 	}, nil
 }
 
@@ -127,6 +129,7 @@ func getPipelineKey(resourceName string, isModel bool) string {
 }
 
 func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
+	logger := km.logger.WithField("func", "loadOrStorePipeline")
 	key := getPipelineKey(resourceName, isModel)
 	if val, ok := km.pipelines.Load(key); ok {
 		return val.(*Pipeline), nil
@@ -135,9 +138,10 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 		if err != nil {
 			return nil, err
 		}
+		pipeline.wg.Add(1) // wait set to allow consumer to say when started
 		val, loaded := km.pipelines.LoadOrStore(key, pipeline)
 		if loaded {
-			return val.(*Pipeline), nil
+			pipeline = val.(*Pipeline)
 		} else {
 			go func() {
 				err := km.consume(pipeline)
@@ -145,17 +149,19 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 					km.logger.WithError(err).Errorf("Failed running consumer for resource %s", resourceName)
 				}
 			}()
-			return pipeline, nil
 		}
+		logger.Debugf("Waiting for consumer to be ready for %s", resourceName)
+		pipeline.wg.Wait() // wait (maybe) for consumer start
+		return pipeline, nil
 	}
 }
 
 func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) ([]byte, []kafka.Header, error) {
 	logger := km.logger.WithField("func", "Infer")
 	km.mu.RLock()
-	defer km.mu.RUnlock()
 	pipeline, err := km.loadOrStorePipeline(resourceName, isModel)
 	if err != nil {
+		km.mu.RUnlock()
 		return nil, nil, err
 	}
 	key := xid.New().String()
@@ -171,7 +177,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	if isModel {
 		outputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
 	}
-	logger.Infof("Produce on topic %s with key %s", outputTopic, key)
+	logger.Debugf("Produce on topic %s with key %s", outputTopic, key)
 	kafkaHeaders := append(headers, kafka.Header{Key: resources.SeldonPipelineHeader, Value: []byte(resourceName)})
 
 	msg := &kafka.Message{
@@ -190,6 +196,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	deliveryChan := make(chan kafka.Event)
 	err = km.producer.Produce(msg, deliveryChan)
 	if err != nil {
+		km.mu.RUnlock()
 		span.End()
 		return nil, nil, err
 	}
@@ -197,7 +204,10 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 		<-deliveryChan
 		span.End()
 	}()
+	km.mu.RUnlock()
+	logger.Debugf("Waiting for response for key %s", key)
 	request.wg.Wait()
+	logger.Debugf("Got response for key %s", key)
 	if request.isError {
 		return nil, nil, fmt.Errorf("%s", string(request.response))
 	}
@@ -220,9 +230,16 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
 
-	err := pipeline.consumer.SubscribeTopics([]string{topicName}, nil)
+	err := pipeline.consumer.SubscribeTopics([]string{topicName},
+		func(consumer *kafka.Consumer, event kafka.Event) error {
+			pipeline.wg.Done() // Mark consumer as ready so we can send our requests
+			return nil
+		})
 	if err != nil {
 		return err
+	}
+	if !km.kafkaConfig.HasKafkaBootstrapServer() { // Should only happen in testing
+		pipeline.wg.Done() // Mark consumer as ready so we can send our requests
 	}
 	logger.Infof("Started consumer for topic (pipeline:%v) %s", !pipeline.isModel, topicName)
 	run := true
@@ -238,7 +255,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 
 			switch e := ev.(type) {
 			case *kafka.Message:
-				logger.Infof("Received message from %s with key %s", topicName, string(e.Key))
+				logger.Debugf("Received message from %s with key %s", topicName, string(e.Key))
 				if val, ok := pipeline.requests.Get(string(e.Key)); ok {
 
 					// Add tracing span
@@ -251,6 +268,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 					request := val.(*Request)
 					request.mu.Lock()
 					if request.active {
+						logger.Debugf("Process response for key %s", string(e.Key))
 						request.isError = hasErrorHeader(e.Headers)
 						request.response = e.Value
 						request.headers = e.Headers

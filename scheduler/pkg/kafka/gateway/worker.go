@@ -58,7 +58,7 @@ type V2Error struct {
 }
 
 func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
-	grpcClient, err := getGrpcClient(consumer.inferenceServerConfig.Host, consumer.inferenceServerConfig.GrpcPort)
+	grpcClient, err := getGrpcClient(consumer.consumerConfig.InferenceServerConfig.Host, consumer.consumerConfig.InferenceServerConfig.GrpcPort)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 
 func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
-	restUrl := getRestUrl(iw.consumer.inferenceServerConfig.Host, iw.consumer.inferenceServerConfig.HttpPort, job.modelName)
+	restUrl := getRestUrl(iw.consumer.consumerConfig.InferenceServerConfig.Host, iw.consumer.consumerConfig.InferenceServerConfig.HttpPort, job.modelName)
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 	data := job.msg.Value
 	if maybeConvert {

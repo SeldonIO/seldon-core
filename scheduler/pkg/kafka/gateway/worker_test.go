@@ -72,7 +72,8 @@ func TestRestRequest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", &kafkaServerConfig, tp)
+			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			ic, err := NewInferKafkaConsumer(logger, config)
 			g.Expect(err).To(BeNil())
 			tn := kafka2.NewTopicNamer("default")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
@@ -117,7 +118,8 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", &kafkaServerConfig, tp)
+			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			ic, err := NewInferKafkaConsumer(logger, config)
 			g.Expect(err).To(BeNil())
 			tn := kafka2.NewTopicNamer("default")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
@@ -189,7 +191,8 @@ func createInferWorkerWithMockConn(
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
-	ic, err := NewInferKafkaConsumer(logger, 0, &config.KafkaConfig{}, "default", serverConfig, tp)
+	config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
+	ic, err := NewInferKafkaConsumer(logger, config)
 	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
 		logger:     logger,

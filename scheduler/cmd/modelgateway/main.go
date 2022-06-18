@@ -81,18 +81,18 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 	close(done)
 }
 
-func getNumberWorkers(logger *log.Logger) int {
-	valStr := os.Getenv(gateway.EnvVarNumWorkers)
+func getEnVar(logger *log.Logger, key string, defaultValue int) int {
+	valStr := os.Getenv(key)
 	if valStr != "" {
 		val, err := strconv.ParseInt(valStr, 10, 64)
 		if err != nil {
-			logger.WithError(err).Fatalf("Failed to parse %s", gateway.EnvVarNumWorkers)
+			logger.WithError(err).Fatalf("Failed to parse %s", key)
 		}
-		logger.Infof("Setting number of workers to %d", val)
+		logger.Infof("Got %s = %d", key, val)
 		return int(val)
 	}
-	logger.Infof("Setting number of workers to default %d", gateway.DefaultNumWorkers)
-	return gateway.DefaultNumWorkers
+	logger.Infof("Returning default %s = %d", key, defaultValue)
+	return defaultValue
 }
 
 func main() {
@@ -129,11 +129,15 @@ func main() {
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
 	}
-	kafkaConsumer, err := gateway.NewInferKafkaConsumer(logger, getNumberWorkers(logger), kafkaConfigMap, namespace, inferServerConfig, tracer)
-	if err != nil {
-		logger.WithError(err).Fatalf("Failed to create kafka consumer")
+	consumerConfig := gateway.ConsumerConfig{
+		KafkaConfig:           kafkaConfigMap,
+		Namespace:             namespace,
+		InferenceServerConfig: inferServerConfig,
+		TraceProvider:         tracer,
+		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
 	}
-	go kafkaConsumer.Serve()
+	kafkaConsumer := gateway.NewConsumerManager(logger, &consumerConfig,
+		getEnVar(logger, gateway.EnvMaxModelsPerConsumer, gateway.DefaultMaxModelsPerConsumer))
 	defer kafkaConsumer.Stop()
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)

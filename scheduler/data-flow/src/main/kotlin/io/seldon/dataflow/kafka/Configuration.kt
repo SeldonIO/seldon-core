@@ -39,7 +39,7 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
         this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1
 
-        this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+        this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
         this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
         this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60000

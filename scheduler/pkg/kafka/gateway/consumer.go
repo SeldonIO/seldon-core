@@ -3,9 +3,9 @@ package gateway
 import (
 	"context"
 	"sync"
+	"time"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -24,32 +24,28 @@ const (
 )
 
 type InferKafkaConsumer struct {
-	logger                log.FieldLogger
-	mu                    sync.Mutex
-	loadedModels          map[string]bool
-	nworkers              int
-	workers               []*InferWorker
-	kafkaConfig           *config.KafkaConfig
-	inferenceServerConfig *InferenceServerConfig
-	consumer              *kafka.Consumer
-	producer              *kafka.Producer
-	done                  chan bool
-	tracerProvider        *seldontracer.TracerProvider
-	tracer                trace.Tracer
-	topicNamer            *kafka2.TopicNamer
+	logger           log.FieldLogger
+	mu               sync.Mutex
+	loadedModels     map[string]bool
+	subscribedTopics map[string]bool
+	workers          []*InferWorker
+	consumer         *kafka.Consumer
+	producer         *kafka.Producer
+	done             chan bool
+	tracer           trace.Tracer
+	topicNamer       *kafka2.TopicNamer
+	consumerConfig   *ConsumerConfig
 }
 
-func NewInferKafkaConsumer(logger log.FieldLogger, nworkers int, kafkaConfig *config.KafkaConfig, namespace string, inferenceServerConfig *InferenceServerConfig, traceProvider *seldontracer.TracerProvider) (*InferKafkaConsumer, error) {
+func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig) (*InferKafkaConsumer, error) {
 	ic := &InferKafkaConsumer{
-		logger:                logger.WithField("source", "InferConsumer"),
-		nworkers:              nworkers,
-		kafkaConfig:           kafkaConfig,
-		inferenceServerConfig: inferenceServerConfig,
-		done:                  make(chan bool),
-		tracerProvider:        traceProvider,
-		tracer:                traceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:            kafka2.NewTopicNamer(namespace),
-		loadedModels:          make(map[string]bool),
+		logger:           logger.WithField("source", "InferConsumer"),
+		done:             make(chan bool),
+		tracer:           consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
+		topicNamer:       kafka2.NewTopicNamer(consumerConfig.Namespace),
+		loadedModels:     make(map[string]bool),
+		subscribedTopics: make(map[string]bool),
+		consumerConfig:   consumerConfig,
 	}
 	return ic, ic.setup()
 }
@@ -58,7 +54,7 @@ func (kc *InferKafkaConsumer) setup() error {
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(kc.kafkaConfig.Producer)
+	producerConfigMap := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
 	kc.logger.Infof("Creating producer with config %v", producerConfigMap)
 	kc.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -67,7 +63,7 @@ func (kc *InferKafkaConsumer) setup() error {
 	}
 	logger.Infof("Created producer %s", kc.producer.String())
 
-	consumerConfig := config.CloneKafkaConfigMap(kc.kafkaConfig.Consumer)
+	consumerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Consumer)
 	consumerConfig["group.id"] = "seldon-modelgateway"
 	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
@@ -76,13 +72,8 @@ func (kc *InferKafkaConsumer) setup() error {
 	}
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
-	err = kc.consumer.SubscribeTopics([]string{kc.topicNamer.GetKafkaModelTopicRegex()}, nil)
-	if err != nil {
-		return err
-	}
-
-	for i := 0; i < kc.nworkers; i++ {
-		worker, err := NewInferWorker(kc, kc.logger, kc.tracerProvider, kc.topicNamer)
+	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
+		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer)
 		if err != nil {
 			return err
 		}
@@ -104,16 +95,80 @@ func (kc *InferKafkaConsumer) Stop() {
 	close(kc.done)
 }
 
-func (kc *InferKafkaConsumer) AddModel(modelName string) {
+func (kc *InferKafkaConsumer) subscribeTopics() error {
+	topics := make([]string, len(kc.subscribedTopics))
+	idx := 0
+	for k := range kc.subscribedTopics {
+		topics[idx] = k
+		idx++
+	}
+	err := kc.consumer.SubscribeTopics(topics, nil)
+	return err
+}
+
+func (kc *InferKafkaConsumer) GetNumModels() int {
+	return len(kc.loadedModels)
+}
+
+func (kc *InferKafkaConsumer) createTopic(topicName string) error {
+	logger := kc.logger.WithField("func", "createTopic")
+	if !kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
+		logger.Warnf("Can't create topic %s as no kafka config", topicName)
+		return nil
+	}
+	adminClient, err := kafka.NewAdminClientFromConsumer(kc.consumer)
+	if err != nil {
+		return err
+	}
+	var topicSpecs []kafka.TopicSpecification
+	topicSpecs = append(topicSpecs, kafka.TopicSpecification{
+		Topic:             topicName,
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	})
+	results, err := adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
+	if err != nil {
+		return err
+	}
+	for _, result := range results {
+		logger.Debugf("Topic result for %s", result.String())
+	}
+	return nil
+}
+
+func (kc *InferKafkaConsumer) AddModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 	kc.loadedModels[modelName] = true
+	topic := kc.topicNamer.GetModelTopicInputs(modelName)
+	err := kc.createTopic(topic)
+	if err != nil {
+		return err
+	}
+	kc.subscribedTopics[topic] = true
+	err = kc.subscribeTopics()
+	if err != nil {
+		kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
+		delete(kc.loadedModels, modelName)
+		delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
+		return nil
+	}
+	return nil
 }
 
-func (kc *InferKafkaConsumer) RemoveModel(modelName string) {
+func (kc *InferKafkaConsumer) RemoveModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 	delete(kc.loadedModels, modelName)
+	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
+	if len(kc.subscribedTopics) > 0 {
+		err := kc.subscribeTopics()
+		if err != nil {
+			kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
+			return nil
+		}
+	}
+	return nil
 }
 
 func (kc *InferKafkaConsumer) Serve() {
@@ -121,9 +176,9 @@ func (kc *InferKafkaConsumer) Serve() {
 	run := true
 	// create a cancel and job channel
 	cancelChan := make(chan struct{})
-	jobChan := make(chan *InferWork, kc.nworkers)
+	jobChan := make(chan *InferWork, kc.consumerConfig.NumWorkers)
 	// Start workers
-	for i := 0; i < kc.nworkers; i++ {
+	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
 		go kc.workers[i].Start(jobChan, cancelChan)
 	}
 

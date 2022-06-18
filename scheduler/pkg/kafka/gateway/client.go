@@ -22,22 +22,22 @@ const (
 )
 
 type KafkaSchedulerClient struct {
-	logger             logrus.FieldLogger
-	conn               *grpc.ClientConn
-	callOptions        []grpc.CallOption
-	inferKafkaConsumer *InferKafkaConsumer
+	logger          logrus.FieldLogger
+	conn            *grpc.ClientConn
+	callOptions     []grpc.CallOption
+	consumerManager *ConsumerManager
 }
 
-func NewKafkaSchedulerClient(logger logrus.FieldLogger, inferkafkaConsumer *InferKafkaConsumer) *KafkaSchedulerClient {
+func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 
 	return &KafkaSchedulerClient{
-		logger:             logger.WithField("source", "KafkaSchedulerClient"),
-		callOptions:        opts,
-		inferKafkaConsumer: inferkafkaConsumer,
+		logger:          logger.WithField("source", "KafkaSchedulerClient"),
+		callOptions:     opts,
+		consumerManager: consumerManager,
 	}
 }
 
@@ -105,10 +105,16 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		switch latestVersionStatus.State.State {
 		case scheduler.ModelStatus_ModelAvailable:
 			logger.Infof("Adding model %s", event.ModelName)
-			kc.inferKafkaConsumer.AddModel(event.ModelName)
+			err := kc.consumerManager.AddModel(event.ModelName)
+			if err != nil {
+				kc.logger.WithError(err).Errorf("Failed to add model %s", event.ModelName)
+			}
 		default:
 			logger.Infof("Removing model %s", event.ModelName)
-			kc.inferKafkaConsumer.RemoveModel(event.ModelName)
+			err := kc.consumerManager.RemoveModel(event.ModelName)
+			if err != nil {
+				kc.logger.WithError(err).Errorf("Failed to remove model %s", event.ModelName)
+			}
 		}
 
 	}
