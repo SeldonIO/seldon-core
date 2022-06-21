@@ -1,4 +1,4 @@
 scikit-learn==0.23.2
-numpy==1.19.4
+numpy==1.22.0
 scipy==1.5.4
 joblib==0.16.0
