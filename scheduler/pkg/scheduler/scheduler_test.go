@@ -18,6 +18,8 @@ type mockStore struct {
 	scheduledReplicas []int
 }
 
+var _ store.ModelStore = (*mockStore)(nil)
+
 func (f mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
 }
 
@@ -59,11 +61,11 @@ func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
 	return false
 }
 
-func (f mockStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
+func (f mockStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
 	return f.servers, nil
 }
 
-func (f mockStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
+func (f mockStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

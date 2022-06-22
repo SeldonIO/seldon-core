@@ -174,7 +174,7 @@ func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) e
 		return nil
 	}
 
-	ss, err := s.modelStore.GetServer(modelVersion.Server(), true)
+	ss, err := s.modelStore.GetServer(modelVersion.Server(), true, true)
 	if err != nil {
 		return err
 	}

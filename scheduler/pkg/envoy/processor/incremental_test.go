@@ -309,7 +309,7 @@ func createTestExperiment(experimentName string, modelNames []string, defaultMod
 		}
 		err := inc.experimentServer.StartExperiment(exp)
 		g.Expect(err).To(BeNil())
-		err = inc.experimentSync(exp)
+		err = inc.experimentUpdate(exp)
 		g.Expect(err).To(BeNil())
 	}
 	return f

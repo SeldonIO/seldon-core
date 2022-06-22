@@ -558,7 +558,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 					mv := test.store.models[test.modelKey].Latest()
 					g.Expect(mv).ToNot(BeNil())
 					g.Expect(mv.GetModelReplicaState(replicaIdx)).To(Equal(state.State))
-					ss, _ := ms.GetServer(test.serverKey, false)
+					ss, _ := ms.GetServer(test.serverKey, false, true)
 					if state.State == LoadRequested {
 						g.Expect(ss.Replicas[replicaIdx].GetReservedMemory()).To(Equal(memBytes))
 					} else {
@@ -1375,7 +1375,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())
 			g.Expect(test.modelsReturned).To(Equal(len(models)))
-			server, err := ms.GetServer(test.serverName, false)
+			server, err := ms.GetServer(test.serverName, false, true)
 			g.Expect(err).To(BeNil())
 			if test.serverExists {
 				g.Expect(server).ToNot(BeNil())

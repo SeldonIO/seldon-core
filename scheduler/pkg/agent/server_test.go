@@ -17,6 +17,8 @@ type mockStore struct {
 	models map[string]*store.ModelSnapshot
 }
 
+var _ store.ModelStore = (*mockStore)(nil)
+
 func (m *mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
 }
 
@@ -46,11 +48,11 @@ func (m *mockStore) RemoveModel(req *pbs.UnloadModelRequest) error {
 	panic("implement me")
 }
 
-func (m *mockStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
+func (m *mockStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
-func (m *mockStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
+func (m *mockStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

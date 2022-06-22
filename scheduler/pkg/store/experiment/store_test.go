@@ -316,6 +316,8 @@ type fakeModelStore struct {
 	status map[string]store.ModelState
 }
 
+var _ store.ModelStore = (*fakeModelStore)(nil)
+
 func (f fakeModelStore) UpdateModel(config *scheduler.LoadModelRequest) error {
 	panic("implement me")
 }
@@ -345,11 +347,11 @@ func (f fakeModelStore) RemoveModel(req *scheduler.UnloadModelRequest) error {
 	panic("implement me")
 }
 
-func (f fakeModelStore) GetServers(shallow bool) ([]*store.ServerSnapshot, error) {
+func (f fakeModelStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 
-func (f fakeModelStore) GetServer(serverKey string, shallow bool) (*store.ServerSnapshot, error) {
+func (f fakeModelStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
 	panic("implement me")
 }
 

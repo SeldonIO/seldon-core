@@ -207,24 +207,24 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.
 	}
 }
 
-func (m *MemoryStore) GetServers(shallow bool) ([]*ServerSnapshot, error) {
+func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var servers []*ServerSnapshot
 	for _, server := range m.store.servers {
-		servers = append(servers, server.CreateSnapshot(shallow))
+		servers = append(servers, server.CreateSnapshot(shallow, modelDetails))
 	}
 	return servers, nil
 }
 
-func (m *MemoryStore) GetServer(serverKey string, shallow bool) (*ServerSnapshot, error) {
+func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	server := m.store.servers[serverKey]
 	if server == nil {
 		return nil, nil
 	} else {
-		return server.CreateSnapshot(shallow), nil
+		return server.CreateSnapshot(shallow, modelDetails), nil
 	}
 }
 

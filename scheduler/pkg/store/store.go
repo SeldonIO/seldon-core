@@ -86,8 +86,8 @@ type ModelStore interface {
 	LockModel(modelId string)
 	UnlockModel(modelId string)
 	RemoveModel(req *pb.UnloadModelRequest) error
-	GetServers(shallow bool) ([]*ServerSnapshot, error)
-	GetServer(serverKey string, shallow bool) (*ServerSnapshot, error)
+	GetServers(shallow bool, modelDetails bool) ([]*ServerSnapshot, error)
+	GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
 	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string) error

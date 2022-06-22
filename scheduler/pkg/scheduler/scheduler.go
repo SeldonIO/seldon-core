@@ -111,7 +111,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		var debugTrail []string
 		var filteredServers []*store.ServerSnapshot
 		// Get all servers
-		servers, err := s.store.GetServers(false)
+		servers, err := s.store.GetServers(false, true)
 		if err != nil {
 			return err
 		}

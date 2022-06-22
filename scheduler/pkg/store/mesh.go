@@ -94,7 +94,7 @@ type Server struct {
 	kubernetesMeta   *pb.KubernetesMeta
 }
 
-func (s *Server) CreateSnapshot(shallow bool) *ServerSnapshot {
+func (s *Server) CreateSnapshot(shallow bool, modelDetails bool) *ServerSnapshot {
 	// TODO: this is considered interface leakage if we do shallow copy by allowing
 	// callers to access and change this structure
 	// perhaps we consider returning back only what callers need
@@ -102,7 +102,7 @@ func (s *Server) CreateSnapshot(shallow bool) *ServerSnapshot {
 	if !shallow {
 		replicas = make(map[int]*ServerReplica, len(s.replicas))
 		for k, v := range s.replicas {
-			replicas[k] = v.createSnapshot()
+			replicas[k] = v.createSnapshot(modelDetails)
 		}
 	} else {
 		replicas = s.replicas
@@ -524,17 +524,23 @@ func (s *Server) GetReplicaInferenceHttpPort(idx int) int32 {
 	return s.replicas[idx].inferenceHttpPort
 }
 
-func (s *ServerReplica) createSnapshot() *ServerReplica {
+func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	capabilities := make([]string, len(s.capabilities))
 	copy(capabilities, s.capabilities)
-	loadedModels := make(map[ModelVersionID]bool, len(s.loadedModels))
-	for k, v := range s.loadedModels {
-		loadedModels[k] = v
+
+	var loadedModels map[ModelVersionID]bool
+	var uniqueLoadedModels map[string]bool
+	if modelDetails {
+		loadedModels = make(map[ModelVersionID]bool, len(s.loadedModels))
+		for k, v := range s.loadedModels {
+			loadedModels[k] = v
+		}
+		uniqueLoadedModels = make(map[string]bool, len(s.loadedModels))
+		for k, v := range s.uniqueLoadedModels {
+			uniqueLoadedModels[k] = v
+		}
 	}
-	uniqueLoadedModels := make(map[string]bool, len(s.loadedModels))
-	for k, v := range s.uniqueLoadedModels {
-		uniqueLoadedModels[k] = v
-	}
+
 	return &ServerReplica{
 		inferenceSvc:         s.inferenceSvc,
 		inferenceHttpPort:    s.inferenceHttpPort,
