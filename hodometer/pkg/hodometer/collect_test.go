@@ -1,10 +1,22 @@
 package hodometer
 
 import (
+	"context"
+	"errors"
+	"io/ioutil"
 	"testing"
 
-	pb "github.com/seldonio/seldon-core/hodometer/apis"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+
+	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/version"
+	fakeDiscovery "k8s.io/client-go/discovery/fake"
+	"k8s.io/client-go/kubernetes/fake"
+	k8sTesting "k8s.io/client-go/testing"
+
+	pb "github.com/seldonio/seldon-core/hodometer/apis"
 )
 
 func TestUpdatePipelineMetrics(t *testing.T) {
@@ -254,4 +266,121 @@ func TestUpdateServerMetrics(t *testing.T) {
 			require.Equal(t, tt.expected, metrics)
 		})
 	}
+}
+
+func TestCollectKubernetes(t *testing.T) {
+	type test struct {
+		name          string
+		hasKubeConfig bool
+		numNodes      int
+		shouldError   bool
+		expected      *kubernetesMetrics
+	}
+
+	tests := []test{
+		// Unable to easily test case of server version being unavailable,
+		// due to how the FakeDiscovery object in the fake client is set up.
+		{
+			name:          "Only able to retrieve server version",
+			hasKubeConfig: true,
+			numNodes:      0,
+			shouldError:   false,
+			expected:      &kubernetesMetrics{version: "v1.23.4"},
+		},
+		{
+			name:          "Fewer nodes than max per call",
+			hasKubeConfig: true,
+			numNodes:      maxNodesPerCall - 1,
+			shouldError:   false,
+			expected:      &kubernetesMetrics{version: "v1.23.4", nodeCount: maxNodesPerCall - 1},
+		},
+		{
+			name:          "More nodes than max per call",
+			hasKubeConfig: true,
+			numNodes:      maxNodesPerCall + 1,
+			shouldError:   false,
+			expected:      &kubernetesMetrics{version: "v1.23.4", nodeCount: maxNodesPerCall + 1},
+		},
+		{
+			name:          "Nodes should be zero on error",
+			hasKubeConfig: true,
+			numNodes:      1,
+			shouldError:   true,
+			expected:      &kubernetesMetrics{version: "v1.23.4", nodeCount: 0},
+		},
+		{
+			name:          "should not return values when no kube config available",
+			hasKubeConfig: false,
+			numNodes:      0,
+			shouldError:   false,
+			expected:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.GreaterOrEqual(t, tt.numNodes, 0)
+
+			// Given
+			logger := logrus.New()
+			logger.Out = ioutil.Discard
+			ctx := context.Background()
+			var client *fake.Clientset
+
+			// When
+			if tt.hasKubeConfig {
+				client = fake.NewSimpleClientset()
+
+				d := client.Discovery().(*fakeDiscovery.FakeDiscovery)
+				d.FakedServerVersion = &version.Info{GitVersion: "v1.23.4"}
+
+				switch {
+				case tt.shouldError:
+					addErrorOnListNodes(client, "unable to fetch nodes")
+				case tt.numNodes > 0:
+					addListNodes(client, tt.numNodes)
+				}
+			}
+
+			// Then
+			scc := SeldonCoreCollector{
+				k8sClient: client,
+				logger:    logger,
+			}
+			metrics := scc.collectKubernetes(ctx)
+			require.Equal(t, tt.expected, metrics)
+		})
+	}
+}
+
+func addErrorOnListNodes(client *fake.Clientset, msg string) {
+	client.PrependReactor(
+		"list",
+		"nodes",
+		func(action k8sTesting.Action) (bool, runtime.Object, error) {
+			return true, nil, errors.New(msg)
+		},
+	)
+}
+
+func addListNodes(client *fake.Clientset, numNodes int) {
+	returnedNodes := 0
+	client.PrependReactor(
+		"list",
+		"nodes",
+		func(action k8sTesting.Action) (bool, runtime.Object, error) {
+			nodes := &coreV1.NodeList{}
+
+			for i := 0; i < maxNodesPerCall && returnedNodes < numNodes; i++ {
+				returnedNodes++
+				nodes.Items = append(nodes.Items, coreV1.Node{})
+			}
+
+			if returnedNodes < numNodes {
+				nodes.Continue = "ongoing"
+			}
+
+			return true, nodes, nil
+		},
+	)
 }

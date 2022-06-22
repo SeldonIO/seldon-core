@@ -1,4 +1,4 @@
-FROM golang:alpine AS builder
+FROM golang:1.18-alpine AS builder
 
 RUN apk add --upgrade make cmake
 
@@ -9,7 +9,7 @@ RUN make build-receiver
 
 ################################################################################
 
-FROM golang:alpine
+FROM golang:1.18-alpine
 COPY --from=builder /build/bin/receiver /bin/receiver
 
 ARG UID=1000

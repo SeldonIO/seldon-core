@@ -4,15 +4,22 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"reflect"
 
 	"github.com/google/uuid"
-	pb "github.com/seldonio/seldon-core/hodometer/apis"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
+	pb "github.com/seldonio/seldon-core/hodometer/apis"
 )
 
 const (
 	subscriberName = "hodometer"
+
+	maxNodesPerCall = 100
 )
 
 type Collector interface {
@@ -52,9 +59,10 @@ type modelMetrics struct {
 var _ Collector = (*SeldonCoreCollector)(nil)
 
 type SeldonCoreCollector struct {
-	client    pb.SchedulerClient
-	logger    logrus.FieldLogger
-	clusterId string
+	schedulerClient pb.SchedulerClient
+	k8sClient       kubernetes.Interface
+	logger          logrus.FieldLogger
+	clusterId       string
 }
 
 func NewSeldonCoreCollector(
@@ -63,6 +71,8 @@ func NewSeldonCoreCollector(
 	schedulerPort uint,
 	clusterId string,
 ) (*SeldonCoreCollector, error) {
+	logger = logger.WithField("source", "SeldonCoreCollector")
+
 	connectOptions := []grpc.DialOption{
 		grpc.WithInsecure(), // TODO - support TLS
 	}
@@ -77,10 +87,13 @@ func NewSeldonCoreCollector(
 
 	clusterId = parseOrCreateClusterId(clusterId)
 
+	k8sClient := getKubernetesClientset(logger)
+
 	return &SeldonCoreCollector{
-		client:    client,
-		logger:    logger.WithField("source", "SeldonCoreCollector"),
-		clusterId: clusterId,
+		schedulerClient: client,
+		k8sClient:       k8sClient,
+		logger:          logger,
+		clusterId:       clusterId,
 	}, nil
 }
 
@@ -90,6 +103,24 @@ func parseOrCreateClusterId(clusterId string) string {
 		id = uuid.New()
 	}
 	return id.String()
+}
+
+func getKubernetesClientset(logger logrus.FieldLogger) *kubernetes.Clientset {
+	logger = logger.WithField("func", "getKubernetesClientset")
+
+	c, err := rest.InClusterConfig()
+	if err != nil {
+		logger.WithError(err).Warn("cannot create Kubernetes client")
+		return nil
+	}
+
+	clientset, err := kubernetes.NewForConfig(c)
+	if err != nil {
+		logger.WithError(err).Warn("cannot create Kubernetes client")
+		return nil
+	}
+
+	return clientset
 }
 
 func (scc *SeldonCoreCollector) Collect(ctx context.Context, level MetricsLevel) *UsageMetrics {
@@ -185,15 +216,57 @@ func (scc *SeldonCoreCollector) Collect(ctx context.Context, level MetricsLevel)
 }
 
 func (scc *SeldonCoreCollector) collectKubernetes(ctx context.Context) *kubernetesMetrics {
-	// TODO - query Kube API servers
-	return nil
+	if scc.k8sClient == nil || reflect.ValueOf(scc.k8sClient).IsNil() {
+		return nil
+	}
+
+	km := &kubernetesMetrics{}
+	scc.updateKubernetesVersion(km)
+	scc.updateKubernetesNodes(ctx, km)
+	return km
+}
+
+func (scc *SeldonCoreCollector) updateKubernetesVersion(metrics *kubernetesMetrics) {
+	logger := scc.logger.WithField("func", "updateKubernetesVersion")
+
+	version, err := scc.k8sClient.Discovery().ServerVersion()
+	if err != nil {
+		logger.WithError(err).Error("unable to retrieve server version")
+		return
+	}
+	metrics.version = version.GitVersion
+}
+
+func (scc *SeldonCoreCollector) updateKubernetesNodes(ctx context.Context, metrics *kubernetesMetrics) {
+	logger := scc.logger.WithField("func", "updateKubernetesNodes")
+
+	nodeClient := scc.k8sClient.CoreV1().Nodes()
+	continuation := ""
+	nodeCount := 0
+
+	for {
+		listOps := metaV1.ListOptions{Limit: maxNodesPerCall, Continue: continuation}
+		nodes, err := nodeClient.List(ctx, listOps)
+		if err != nil {
+			logger.WithError(err).Error("unable to retrieve node details")
+			return
+		}
+
+		nodeCount += len(nodes.Items)
+
+		if nodes.Continue == "" {
+			break
+		}
+		continuation = nodes.Continue
+	}
+	metrics.nodeCount = uint(nodeCount)
 }
 
 func (scc *SeldonCoreCollector) collectScheduler(ctx context.Context) *schedulerMetrics {
 	logger := scc.logger.WithField("func", "collectScheduler")
 
 	request := &pb.SchedulerStatusRequest{SubscriberName: subscriberName}
-	response, err := scc.client.SchedulerStatus(ctx, request)
+	response, err := scc.schedulerClient.SchedulerStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
 		return nil
@@ -211,7 +284,7 @@ func (scc *SeldonCoreCollector) collectExperiments(ctx context.Context) *experim
 		SubscriberName: subscriberName,
 		Name:           nil,
 	}
-	subscription, err := scc.client.ExperimentStatus(ctx, request)
+	subscription, err := scc.schedulerClient.ExperimentStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
 		return nil
@@ -243,7 +316,7 @@ func (scc *SeldonCoreCollector) collectPipelines(ctx context.Context) *pipelineM
 		AllVersions:    false,
 	}
 
-	subscription, err := scc.client.PipelineStatus(ctx, request)
+	subscription, err := scc.schedulerClient.PipelineStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
 		return nil
@@ -297,7 +370,7 @@ func (scc *SeldonCoreCollector) collectServers(ctx context.Context) *serverMetri
 		SubscriberName: subscriberName,
 		Name:           nil,
 	}
-	subscription, err := scc.client.ServerStatus(ctx, request)
+	subscription, err := scc.schedulerClient.ServerStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
 		return nil
@@ -348,7 +421,7 @@ func (scc *SeldonCoreCollector) collectModels(ctx context.Context) *modelMetrics
 		SubscriberName: subscriberName,
 		Model:          nil,
 	}
-	subscription, err := scc.client.ModelStatus(ctx, request)
+	subscription, err := scc.schedulerClient.ModelStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
 		return nil

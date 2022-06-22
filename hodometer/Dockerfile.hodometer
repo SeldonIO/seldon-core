@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.18-alpine as builder
 
 RUN apk add --upgrade make cmake
 
@@ -10,7 +10,7 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM golang:alpine
+FROM golang:1.18-alpine
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 ARG UID=1000
