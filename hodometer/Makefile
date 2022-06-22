@@ -13,9 +13,9 @@ VERBOSE ?=
 VERSION_PACKAGE = $(shell sed -n 's/^module\s\+//p' go.mod)/pkg/hodometer
 BUILD_VERSION = $(shell cat ./version.txt)
 BUILD_TIME = $(shell date -u -Iseconds)
-GIT_BRANCH = $(shell git branch --show-current)
-GIT_COMMIT = $(shell git rev-parse --short=16 HEAD)
-RELEASE_TYPE = pre-release
+GIT_BRANCH ?= $(shell git branch --show-current)
+GIT_COMMIT ?= $(shell git rev-parse --short=16 HEAD)
+RELEASE_TYPE ?= pre-release
 
 ################################################################################
 
@@ -68,7 +68,12 @@ copy-apis:
 
 .PHONY: build-hodometer-docker
 build-hodometer-docker: copy-apis
-	docker build -t ${HODOMETER_IMG} -f Dockerfile.hodometer .
+	docker build \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
+		--build-arg RELEASE_TYPE=$(RELEASE_TYPE) \
+		-t ${HODOMETER_IMG} \
+		-f Dockerfile.hodometer .
 
 .PHONY: build-receiver-docker
 build-receiver-docker:
