@@ -81,7 +81,7 @@ To allow TLS connections to Kafka for the consumer and produce use the following
 
 An example spec that gets values from screts is shown below and comes from the [Kafka KEDA demo](../examples/kafka_keda.html).
 
-```
+```yaml
    svcOrchSpec:
       env:
       - name: KAFKA_BROKER
@@ -118,7 +118,7 @@ An example spec that gets values from screts is shown below and comes from the [
 
 KEDA can be used to scale Kafka SeldonDeployments by looking at the consumer lag. 
 
-```
+```yaml
       kedaSpec:
         pollingInterval: 15
         minReplicaCount: 1
@@ -146,7 +146,7 @@ In the above we:
 
 The authentication trigger we used for this was extracting the TLS details from secrets, e.g.
 
-```
+```yaml
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
