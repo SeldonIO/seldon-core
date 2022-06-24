@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -144,7 +146,7 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
 
 	// TODO - Should this spawn a goroutine?
 	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?
-	err := s.sendServerStatusEvent(event)
+	err := s.updateServerStatus(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
 	}
@@ -158,8 +160,9 @@ func (s *SchedulerServer) StopSendServerEvents() {
 	}
 }
 
-func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) error {
+func (s *SchedulerServer) updateServerStatus(evt coordinator.ModelEventMsg) error {
 	logger := s.logger.WithField("func", "sendServerStatusEvent")
+
 	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
 		return err
@@ -174,24 +177,46 @@ func (s *SchedulerServer) sendServerStatusEvent(evt coordinator.ModelEventMsg) e
 		return nil
 	}
 
-	ss, err := s.modelStore.GetServer(modelVersion.Server(), true, true)
-	if err != nil {
-		return err
+	s.serverEventStream.pendingLock.Lock()
+	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
+	if s.serverEventStream.trigger == nil {
+		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWaitMillis, s.sendServerStatus)
 	}
-	if ss == nil {
-		logger.Warnf("Failed to get server %s", modelVersion.Server())
-		return nil
-	}
-	ssr := createServerStatusResponse(ss)
+	s.serverEventStream.pendingLock.Unlock()
 
+	return nil
+}
+
+func (s *SchedulerServer) sendServerStatus() {
+	logger := s.logger.WithField("func", "sendServerStatus")
+
+	// Sending events may be slow, so allow a new batch to start building as we send.
+	s.serverEventStream.pendingLock.Lock()
+	s.serverEventStream.trigger = nil
+	pendingServers := s.serverEventStream.pendingEvents
+	s.serverEventStream.pendingEvents = map[string]struct{}{}
+	s.serverEventStream.pendingLock.Unlock()
+
+	// Inform subscriber
 	s.serverEventStream.mu.Lock()
-	for stream, subscription := range s.serverEventStream.streams {
-		err := stream.Send(ssr)
+	for serverName := range pendingServers {
+		server, err := s.modelStore.GetServer(serverName, true, true)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
+			logger.Errorf("Failed to get server %s", serverName)
+			continue
+		}
+		if server == nil {
+			logger.Warnf("Server %s does not exist", serverName)
+			continue
+		}
+		ssr := createServerStatusResponse(server)
+
+		for stream, subscription := range s.serverEventStream.streams {
+			err := stream.Send(ssr)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
+			}
 		}
 	}
 	s.serverEventStream.mu.Unlock()
-
-	return nil
 }

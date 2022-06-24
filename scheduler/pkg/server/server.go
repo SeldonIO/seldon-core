@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
@@ -32,6 +33,7 @@ const (
 	serverEventHandlerName         = "scheduler.server.servers"
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
+	defaultBatchWaitMillis         = 250 * time.Millisecond
 )
 
 var (
@@ -57,8 +59,12 @@ type ModelEventStream struct {
 }
 
 type ServerEventStream struct {
-	mu      sync.Mutex
-	streams map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+	mu              sync.Mutex
+	streams         map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+	batchWaitMillis time.Duration
+	trigger         *time.Timer
+	pendingEvents   map[string]struct{}
+	pendingLock     sync.Mutex
 }
 
 type ExperimentEventStream struct {
@@ -127,7 +133,10 @@ func NewSchedulerServer(
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
 		serverEventStream: ServerEventStream{
-			streams: make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+			streams:         make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+			batchWaitMillis: defaultBatchWaitMillis,
+			trigger:         nil,
+			pendingEvents:   map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
