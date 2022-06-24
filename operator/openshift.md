@@ -12,7 +12,7 @@
 
 Kustomize v4 seems to run patches differently which results in fields not being removed as seen in the patch `config/openshift/patch_manager_env.yaml` which trys to get rid of the `securitycontext` with:
 
-```
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:

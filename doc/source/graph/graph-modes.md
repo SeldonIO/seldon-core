@@ -9,7 +9,7 @@ by their name in constructing the inference graph in `spec.componentSpecs.graph`
 
 The following is an example of a Seldon core inference graph with a 
 single predictor.
-```bash
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -53,7 +53,7 @@ seldon-c71cc2d950d44db1bc6afbeb0194c1da-5d8dddb8cb-xx4gv   5/5     Running   0  
 Another way of deployment is to implement the each node of inference graph in a seperate predictor which will result in having separate pods for 
 each inference graph node.
 
-```bash
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:

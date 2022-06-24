@@ -53,7 +53,7 @@ http://<ingress-gateway>/seldon/<namespace>/<deployment name>/<predictor name>/a
 
 So for example if you deployed:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
