@@ -166,6 +166,13 @@ function inferType() {
     return "REST"
 }
 
+function doWarmup() {
+    if (__ENV.WARMUP) {
+        return (__ENV.WARMUP === "true")
+    }
+    return true
+}
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -192,5 +199,6 @@ export function getConfig() {
         "modelEndIdx" : modelEndIdx(),
         "modelName" : modelName(),
         "inferType" : inferType(),
+        "doWarmup": doWarmup(),
     }
 }

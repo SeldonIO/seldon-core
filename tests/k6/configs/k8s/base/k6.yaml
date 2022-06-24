@@ -33,15 +33,17 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimpleu"
+          value: "tfsimplea"
         - name: MODEL_TYPE
           value: "tfsimple"
         - name: MODEL_MEMORY_BYTES
-          value: "500000"
+          value: "400000"
         - name: MAX_NUM_MODELS
-          value: "20000"
+          value: "18000"
         - name: INFER_BATCH_SIZE
           value: "1"
+        - name: WARMUP
+          value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/run/secret/cloud.google.com/k6-service-account.json"
         - name: GS_BUCKET_NAME

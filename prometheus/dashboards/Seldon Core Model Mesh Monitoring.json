@@ -704,7 +704,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 5,
         "x": 0,
         "y": 12
       },
@@ -728,7 +728,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_bytes_gauge)",
+          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity",
@@ -740,7 +740,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge)",
+          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"triton\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used",
@@ -752,7 +752,7 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge)",
+          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity with Over-commit",
@@ -764,15 +764,248 @@
             "uid": "P1809F7CD0C75ACF3"
           },
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge) + sum(seldon_mesh_seldon_evicted_model_memory_bytes_gauge)",
+          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"triton\"}) + sum(seldon_mesh_seldon_evicted_model_memory_bytes_gauge{server=\"triton\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used with Over-commit",
           "refId": "D"
         }
       ],
-      "title": "Memory Slots",
+      "title": "Memory Slots (triton)",
       "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P1809F7CD0C75ACF3"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 5,
+        "y": 12
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "8.4.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Capacity",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Used",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Capacity with Over-commit",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\"}) + sum(seldon_mesh_seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\"})",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Used with Over-commit",
+          "refId": "D"
+        }
+      ],
+      "title": "Memory Slots (mlserver)",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P1809F7CD0C75ACF3"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 10,
+        "y": 12
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(container_memory_working_set_bytes{container=\"mlserver\"}) ",
+          "interval": "10s",
+          "legendFormat": "mlserver",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "exemplar": true,
+          "expr": "sum(container_memory_working_set_bytes{container=\"triton\"})",
+          "hide": false,
+          "interval": "10s",
+          "legendFormat": "triton",
+          "refId": "B"
+        }
+      ],
+      "title": "Memory Used",
       "type": "timeseries"
     },
     {
@@ -838,8 +1071,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 8,
-        "y": 12
+        "x": 0,
+        "y": 20
       },
       "id": 15,
       "options": {
@@ -870,108 +1103,6 @@
       ],
       "title": "Infer Latency [1m]",
       "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P1809F7CD0C75ACF3"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 0,
-        "y": 20
-      },
-      "id": 19,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
-          "exemplar": true,
-          "expr": "container_memory_working_set_bytes{container=\"mlserver\"}",
-          "interval": "10s",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P1809F7CD0C75ACF3"
-          },
-          "exemplar": true,
-          "expr": "container_memory_working_set_bytes{container=\"triton\"}",
-          "hide": false,
-          "interval": "10s",
-          "legendFormat": "{{pod}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Memory Used",
       "type": "timeseries"
     },
     {
@@ -1030,7 +1161,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 8,
         "x": 8,
         "y": 20
@@ -1076,7 +1207,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
@@ -1084,13 +1215,13 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-10m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Seldon Core Model Mesh Monitoring",
   "uid": "MHloCP_7z",
-  "version": 22,
+  "version": 7,
   "weekStart": ""
 }

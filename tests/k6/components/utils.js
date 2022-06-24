@@ -37,22 +37,30 @@ export function setupBase(config ) {
             }
         }
 
-        // warm up
-        for (let i = 0; i < config.maxNumModels; i++) {
-            const modelName = config.modelNamePrefix + i.toString()
-
+        // note: this doesnt work in case of kafka
+        // and in the pipeline gateway doesnt support status endpoint
+        // wait for all models to be ready
+        if (!config.isLoadPipeline) {
+            const n = config.maxNumModels - 1
+            const modelName = config.modelNamePrefix + n.toString()
             const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
-            
-            const model = generateModel(config.modelType, modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
+            while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
+                sleep(1)
+            }
+        }
 
-            // note: this doesnt work in case of kafa
-            // and in the pipeline gateway doesnt support status endpoint
-            // while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
-            //     sleep(1)
-            // }
+        if (config.doWarmup) {
+            // warm up
+            for (let i = 0; i < config.maxNumModels; i++) {
+                const modelName = config.modelNamePrefix + i.toString()
 
-            inferHttpLoop(
-                config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.dataflowTag)
+                const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
+                
+                const model = generateModel(config.modelType, modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes)
+
+                inferHttpLoop(
+                    config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.dataflowTag)
+            }
         }
 
         var disconnectSchedulerFn = disconnectScheduler
