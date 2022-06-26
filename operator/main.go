@@ -36,6 +36,7 @@ import (
 	"go.uber.org/zap"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscaling "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	crdv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -67,6 +68,7 @@ func init() {
 
 	_ = appsv1.AddToScheme(scheme)
 	_ = corev1.AddToScheme(scheme)
+	_ = autoscaling.AddToScheme(scheme)
 	_ = machinelearningv1.AddToScheme(scheme)
 	_ = machinelearningv1alpha2.AddToScheme(scheme)
 	_ = machinelearningv1alpha3.AddToScheme(scheme)

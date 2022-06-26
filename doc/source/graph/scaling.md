@@ -106,7 +106,8 @@ For more details you can follow [a worked example of scaling](../examples/scale.
 To autoscale your Seldon Deployment resources you can add Horizontal Pod Template Specifications to the Pod Template Specifications you create. There are two steps:
 
   1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory. This has to be done for every container in the seldondeployment, except for the seldon-container-image and the storage initializer. Some combinations of protocol and server type may spawn additional support containers; resource requests have to be added to those containers as well.
-  2. Add a HPA Spec referring to this Deployment. (We presently support v2beta2 version of k8s HPA Metrics spec)
+  2. Add a HPA Spec referring to this Deployment. (We presently support v2 version of k8s HPA Metrics spec)
+     * This will required a Kubernetes cluster of >= 1.23
 
 To illustrate this we have an example Seldon Deployment below:
 
@@ -121,15 +122,17 @@ spec:
   - componentSpecs:
     - hpaSpec:
         maxReplicas: 3
-        minReplicas: 1
         metrics:
         - resource:
             name: cpu
-            targetAverageUtilization: 70
+            target:
+              type: AverageValue
+              averageUtilization: 70
           type: Resource
+        minReplicas: 1
       spec:
         containers:
-        - image: seldonio/mock_classifier_rest:1.3
+        - image: seldonio/mock_classifier:1.5.0-dev
           imagePullPolicy: IfNotPresent
           name: classifier
           resources:
@@ -138,8 +141,6 @@ spec:
         terminationGracePeriodSeconds: 1
     graph:
       children: []
-      endpoint:
-        type: REST
       name: classifier
       type: MODEL
     name: example
