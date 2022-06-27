@@ -13,5 +13,5 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: seldonio/echo-model:1.14.0-dev
+        - image: seldonio/echo-model:1.15.0-dev
           name: classifier
