@@ -19,3 +19,18 @@ The main requirement is a reference to a ServerConfig resource in this case `mls
 :start-after: // ServerSpec
 :end-before: // ServerStatus
 ```
+
+## Custom Servers
+
+One can easily utilize a custom image with the existing ServerConfigs. For example, the following defines an MLServer server with a custom image:
+
+```{literalinclude} ../../../../../../samples/servers/custom-mlserver.yaml
+:language: yaml
+```
+
+This server can then be targeted by a particular model by specifying this server name when creating the model, for example:
+
+```{literalinclude} ../../../../../../samples/models/iris-custom-server.yaml
+:language: yaml
+```
+

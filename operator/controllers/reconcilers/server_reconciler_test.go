@@ -249,7 +249,7 @@ func TestMergePodSpecs(t *testing.T) {
 			},
 		},
 		{
-			name: "Override",
+			name: "Override with new container",
 			serverPodSpec: &v1.PodSpec{
 				Containers: []v1.Container{
 					{
@@ -273,14 +273,46 @@ func TestMergePodSpecs(t *testing.T) {
 			expected: &v1.PodSpec{
 				Containers: []v1.Container{
 					{
+						Name:    "c2",
+						Image:   "myimagec2:2",
+						Command: []string{"cmd2"},
+					},
+					{
 						Name:    "c1",
 						Image:   "myimagec1:1",
 						Command: []string{"cmd"},
 					},
+				},
+				NodeName: "node2",
+			},
+		},
+		{
+			name: "Override with existing container",
+			serverPodSpec: &v1.PodSpec{
+				Containers: []v1.Container{
 					{
-						Name:    "c2",
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+					},
+				},
+				NodeName: "node",
+			},
+			override: &mlopsv1alpha1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:  "c1",
+						Image: "myimagec2:2",
+					},
+				},
+				NodeName: "node2",
+			},
+			expected: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
 						Image:   "myimagec2:2",
-						Command: []string{"cmd2"},
+						Command: []string{"cmd"},
 					},
 				},
 				NodeName: "node2",
@@ -290,9 +322,9 @@ func TestMergePodSpecs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			podSepc, err := mergePodSpecs(test.serverPodSpec, test.override)
+			podSpec, err := mergePodSpecs(test.serverPodSpec, test.override)
 			g.Expect(err).To(BeNil())
-			g.Expect(equality.Semantic.DeepEqual(podSepc, test.expected)).To(BeTrue())
+			g.Expect(equality.Semantic.DeepEqual(podSpec, test.expected)).To(BeTrue())
 		})
 	}
 }
@@ -360,6 +392,115 @@ func TestUpdateServerCapabilities(t *testing.T) {
 					}
 				}
 			}
+		})
+	}
+}
+
+func TestMergeContainers(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		existing []v1.Container
+		override []v1.Container
+		expected []v1.Container
+	}
+
+	tests := []test{
+		{
+			name: "different containers",
+			existing: []v1.Container{
+				{
+					Name:  "c1",
+					Image: "imagec1",
+				},
+			},
+			override: []v1.Container{
+				{
+					Name:  "c2",
+					Image: "imagec2",
+				},
+			},
+			expected: []v1.Container{
+				{
+					Name:  "c2",
+					Image: "imagec2",
+				},
+				{
+					Name:  "c1",
+					Image: "imagec1",
+				},
+			},
+		},
+		{
+			name: "same container",
+			existing: []v1.Container{
+				{
+					Name:    "c1",
+					Image:   "imagec1",
+					Command: []string{"cmd"},
+				},
+			},
+			override: []v1.Container{
+				{
+					Name:  "c1",
+					Image: "imagec2",
+					Args:  []string{"arg"},
+				},
+			},
+			expected: []v1.Container{
+				{
+					Name:    "c1",
+					Image:   "imagec2",
+					Command: []string{"cmd"},
+					Args:    []string{"arg"},
+				},
+			},
+		},
+		{
+			name: "mix of containers",
+			existing: []v1.Container{
+				{
+					Name:  "c1",
+					Image: "imagec1",
+				},
+				{
+					Name:  "c2",
+					Image: "imagec2",
+				},
+			},
+			override: []v1.Container{
+				{
+					Name:  "c1",
+					Image: "imagec2",
+				},
+				{
+					Name:  "c3",
+					Image: "imagec3",
+				},
+			},
+			expected: []v1.Container{
+				{
+					Name:  "c1",
+					Image: "imagec2",
+				},
+				{
+					Name:  "c3",
+					Image: "imagec3",
+				},
+				{
+					Name:  "c2",
+					Image: "imagec2",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			containers, err := mergeContainers(test.existing, test.override)
+			g.Expect(err).To(BeNil())
+			g.Expect(equality.Semantic.DeepEqual(containers, test.expected)).To(BeTrue())
 		})
 	}
 }

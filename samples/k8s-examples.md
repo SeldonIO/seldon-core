@@ -14,7 +14,7 @@ MESH_IP
 
 
 
-    '172.22.255.9'
+    '172.29.255.9'
 ```
 ````
 
@@ -48,9 +48,11 @@ kubectl create -f ./models/sklearn-iris-gs.yaml
 ```
 ````
 
-```python
-buildkubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
+````{collapse} Expand to see output
+```json
 
     model.mlops.seldon.io/iris condition met
 ```
@@ -65,16 +67,17 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-05-26T10:09:32Z",
+          "lastTransitionTime": "2022-06-03T14:35:59Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-05-26T10:09:32Z",
+          "lastTransitionTime": "2022-06-03T14:35:59Z",
           "status": "True",
           "type": "Ready"
         }
-      ]
+      ],
+      "replicas": 1
     }
 ```
 ````
@@ -89,7 +92,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "5890ac9d-c1ed-4343-b9e6-a460bead5fe8",
+    	"id": "3be6542c-5ad2-4ebc-a0d4-842377653b5d",
     	"parameters": null,
     	"outputs": [
     		{
@@ -695,6 +698,136 @@ kubectl delete -f ./models/tfsimple3.yaml
     model.mlops.seldon.io "tfsimple1" deleted
     model.mlops.seldon.io "tfsimple2" deleted
     model.mlops.seldon.io "tfsimple3" deleted
+```
+````
+## Custom Server
+
+
+```bash
+cat ./servers/custom-mlserver.yaml
+```
+````{collapse} Expand to see output
+```yaml
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Server
+    metadata:
+      name: mlserver-custom
+      namespace: seldon-mesh
+    spec:
+      serverConfig: mlserver
+      podSpec:
+        containers:
+        - image: cliveseldon/mlserver:1.1.0.explain
+          name: mlserver
+```
+````
+
+```bash
+kubectl create -f ./servers/custom-mlserver.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    server.mlops.seldon.io/mlserver-custom created
+```
+````
+
+```bash
+kubectl wait --for condition=ready --timeout=300s server --all -n seldon-mesh
+```
+````{collapse} Expand to see output
+```json
+
+    server.mlops.seldon.io/mlserver condition met
+    server.mlops.seldon.io/mlserver-custom condition met
+```
+````
+
+```bash
+cat ./models/iris-custom-server.yaml
+```
+````{collapse} Expand to see output
+```yaml
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Model
+    metadata:
+      name: iris
+      namespace: seldon-mesh
+    spec:
+      storageUri: "gs://seldon-models/mlserver/iris"
+      server: mlserver-custom
+```
+````
+
+```bash
+kubectl create -f ./models/iris-custom-server.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/iris created
+```
+````
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/iris condition met
+```
+````
+
+```bash
+seldon model infer iris --inference-host ${MESH_IP}:80 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    {
+    	"model_name": "iris_1",
+    	"model_version": "1",
+    	"id": "1bc7c802-b380-480c-96be-95472b76c2dc",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
+    	"outputs": [
+    		{
+    			"name": "predict",
+    			"shape": [
+    				1
+    			],
+    			"datatype": "INT64",
+    			"parameters": null,
+    			"data": [
+    				2
+    			]
+    		}
+    	]
+    }
+```
+````
+
+```bash
+kubectl delete -f ./models/iris-custom-server.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io "iris" deleted
+```
+````
+
+```bash
+kubectl delete -f ./servers/custom-mlserver.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    server.mlops.seldon.io "mlserver-custom" deleted
 ```
 ````
 
