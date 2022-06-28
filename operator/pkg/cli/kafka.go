@@ -14,12 +14,13 @@ import (
 )
 
 const (
-	SeldonPrefix      = "seldon"
-	DefaultNamespace  = "default"
-	InputsSpecifier   = "inputs"
-	OutputsSpecifier  = "outputs"
-	PipelineSpecifier = "pipeline"
-	ModelSpecifier    = "model"
+	SeldonPrefix        = "seldon"
+	DefaultNamespace    = "default"
+	InputsSpecifier     = "inputs"
+	OutputsSpecifier    = "outputs"
+	PipelineSpecifier   = "pipeline"
+	ModelSpecifier      = "model"
+	kafkaTimeoutSeconds = 2
 )
 
 type KafkaClient struct {
@@ -172,7 +173,7 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 	return res, nil
 }
 
-func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64) error {
+func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string) error {
 	status, err := kc.getPipelineStatus(pipelineStep)
 	if err != nil {
 		return err
@@ -183,7 +184,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64) error {
 	}
 
 	for _, topic := range pipelineTopics.topics {
-		err := kc.readTopic(topic, pipelineTopics.tensor, offset)
+		err := kc.readTopic(topic, pipelineTopics.tensor, offset, key)
 		if err != nil {
 			return err
 		}
@@ -194,14 +195,14 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64) error {
 	return nil
 }
 
-func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64) error {
+func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64, key string) error {
 	fmt.Printf("---\n%s\n", topic)
 	err := kc.subscribeAndSetOffset(topic, offset)
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), kafkaTimeoutSeconds*time.Second)
 	defer cancel()
 
 	run := true
@@ -219,48 +220,12 @@ func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64) erro
 			switch e := ev.(type) {
 			case *kafka.Message:
 				seen = seen + 1
-				if strings.HasSuffix(topic, OutputsSpecifier) {
-					res := &v2_dataplane.ModelInferResponse{}
-					err = proto.Unmarshal(e.Value, res)
+				if (string(e.Key) == key) || key == "" {
+					err := showKafkaMsg(e, topic, tensor)
 					if err != nil {
 						return err
-					}
-					err := updateResponseFromRawContents(res)
-					if err != nil {
-						return err
-					}
-					if tensor != "" {
-						for _, output := range res.Outputs {
-							if output.Name == tensor {
-								printProto(output)
-							}
-						}
-
-					} else {
-						printProto(res)
-					}
-				} else {
-					req := &v2_dataplane.ModelInferRequest{}
-					err = proto.Unmarshal(e.Value, req)
-					if err != nil {
-						return err
-					}
-					err := updateRequestFromRawContents(req)
-					if err != nil {
-						return err
-					}
-					if tensor != "" {
-						for _, input := range req.Inputs {
-							if input.Name == tensor {
-								printProto(input)
-							}
-						}
-
-					} else {
-						printProto(req)
 					}
 				}
-
 				if seen >= offset {
 					run = false
 				}
@@ -272,5 +237,59 @@ func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64) erro
 		}
 	}
 
+	return nil
+}
+
+func showKafkaMsg(e *kafka.Message, topic string, tensor string) error {
+	if strings.HasSuffix(topic, OutputsSpecifier) {
+		return showKafkaOutputMsg(e, tensor)
+	} else {
+		return showKafkaInputMsg(e, tensor)
+	}
+}
+
+func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
+	res := &v2_dataplane.ModelInferResponse{}
+	err := proto.Unmarshal(e.Value, res)
+	if err != nil {
+		return err
+	}
+	err = updateResponseFromRawContents(res)
+	if err != nil {
+		return err
+	}
+	if tensor != "" {
+		for _, output := range res.Outputs {
+			if output.Name == tensor {
+				printProto(output)
+			}
+		}
+
+	} else {
+		printProto(res)
+	}
+	return nil
+}
+
+func showKafkaInputMsg(e *kafka.Message, tensor string) error {
+	req := &v2_dataplane.ModelInferRequest{}
+	err := proto.Unmarshal(e.Value, req)
+	if err != nil {
+		return err
+	}
+	err = updateRequestFromRawContents(req)
+	if err != nil {
+		return err
+	}
+	if tensor != "" {
+		for _, input := range req.Inputs {
+			if input.Name == tensor {
+				printProto(input)
+			}
+		}
+
+	} else {
+		printProto(req)
+	}
 	return nil
 }

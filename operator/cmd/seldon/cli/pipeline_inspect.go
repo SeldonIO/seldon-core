@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	OffsetFlag = "offset"
+	OffsetFlag    = "offset"
+	RequestIdFlag = "request-id"
 )
 
 func createPipelineInspect() *cobra.Command {
@@ -30,17 +31,22 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			requestId, err := cmd.Flags().GetString(RequestIdFlag)
+			if err != nil {
+				return err
+			}
 			data := []byte(args[0])
 			kc, err := cli.NewKafkaClient(kafkaBroker, schedulerHost)
 			if err != nil {
 				return err
 			}
-			err = kc.InspectStep(string(data), offset)
+			err = kc.InspectStep(string(data), offset, requestId)
 			return err
 		},
 	}
 	cmdPipelineInspect.Flags().String(kafkaBrokerFlag, env.GetString(EnvKafka, DefaultKafkaHost), "kafka broker")
-	cmdPipelineInspect.Flags().Int64(OffsetFlag, 1, "Message offset to start reading from, i.e. default 1 is the last message only")
+	cmdPipelineInspect.Flags().Int64(OffsetFlag, 1, "message offset to start reading from, i.e. default 1 is the last message only")
+	cmdPipelineInspect.Flags().String(RequestIdFlag, "", "request id to show, if not specified will be all messages in offset range")
 	cmdPipelineInspect.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	return cmdPipelineInspect
 }

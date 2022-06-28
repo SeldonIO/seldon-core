@@ -90,16 +90,18 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	resBytes, kafkaHeaders, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md))
+	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md))
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = grpc.SendHeader(ctx, convertKafkaHeadersToGrpcMetadata(kafkaHeaders))
+	meta := convertKafkaHeadersToGrpcMetadata(kafkaRequest.headers)
+	meta[RequestIdHeader] = []string{kafkaRequest.key}
+	err = grpc.SendHeader(ctx, meta)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	resProto := &v2.ModelInferResponse{}
-	err = proto.Unmarshal(resBytes, resProto)
+	err = proto.Unmarshal(kafkaRequest.response, resProto)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}

@@ -25,10 +25,11 @@ import (
 
 const (
 	pollTimeoutMillisecs = 10000
+	RequestIdHeader      = "x-request-id"
 )
 
 type PipelineInferer interface {
-	Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) ([]byte, []kafka.Header, error)
+	Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error)
 }
 
 type KafkaManager struct {
@@ -55,6 +56,7 @@ type Request struct {
 	mu       sync.Mutex
 	active   bool
 	wg       *sync.WaitGroup
+	key      string
 	response []byte
 	headers  []kafka.Header
 	isError  bool
@@ -156,18 +158,19 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 	}
 }
 
-func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) ([]byte, []kafka.Header, error) {
+func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 	km.mu.RLock()
 	pipeline, err := km.loadOrStorePipeline(resourceName, isModel)
 	if err != nil {
 		km.mu.RUnlock()
-		return nil, nil, err
+		return nil, err
 	}
 	key := xid.New().String()
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
+		key:    key,
 	}
 	pipeline.requests.Set(key, request)
 	defer pipeline.requests.Remove(key)
@@ -188,7 +191,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	}
 
 	ctx, span := km.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, key))
+	span.SetAttributes(attribute.String(RequestIdHeader, key))
 	// Add trace headers
 	carrier := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)
@@ -198,7 +201,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	if err != nil {
 		km.mu.RUnlock()
 		span.End()
-		return nil, nil, err
+		return nil, err
 	}
 	go func() {
 		<-deliveryChan
@@ -209,9 +212,9 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	request.wg.Wait()
 	logger.Debugf("Got response for key %s", key)
 	if request.isError {
-		return nil, nil, fmt.Errorf("%s", string(request.response))
+		return nil, fmt.Errorf("%s", string(request.response))
 	}
-	return request.response, request.headers, nil
+	return request, nil
 }
 
 func hasErrorHeader(headers []kafka.Header) bool {
@@ -263,7 +266,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 					carrierIn := splunkkafka.NewMessageCarrier(e)
 					ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 					_, span := km.tracer.Start(ctx, "Consume")
-					span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(e.Key)))
+					span.SetAttributes(attribute.String(RequestIdHeader, string(e.Key)))
 
 					request := val.(*Request)
 					request.mu.Lock()

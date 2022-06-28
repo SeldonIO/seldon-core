@@ -87,3 +87,15 @@ You can also do this with the seldon CLI by setting headers with the `--header` 
 seldon pipeline infer --show-headers --header X-foo=bar tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
+
+## Request IDs
+
+For both model and pipeline request the response will contain a `x-request-id` response header. For pipeline requests this can be used to inspect the pipeline steps via the CLI, e.g.:
+
+```
+seldon pipeline inspect tfsimples --request-id carjjolvqj3j2pfbut10 --offset 10
+```
+
+The `--offset` parameter specifies how many messages (from the latest) you want to search to find your request. If not specified the last request will be shown.
+
+`x-request-id` will also appear in tracing spans.

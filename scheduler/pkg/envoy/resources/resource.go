@@ -414,8 +414,9 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
-		CodecType:  hcm.HttpConnectionManager_AUTO,
-		StatPrefix: "http",
+		CodecType:                    hcm.HttpConnectionManager_AUTO,
+		StatPrefix:                   "http",
+		AlwaysSetRequestIdInResponse: true,
 		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
 			Rds: &hcm.Rds{
 				ConfigSource:    makeConfigSource(),

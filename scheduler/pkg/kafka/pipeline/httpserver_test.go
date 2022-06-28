@@ -23,10 +23,15 @@ import (
 type fakePipelineInferer struct {
 	err  error
 	data []byte
+	key  string
 }
 
-func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) ([]byte, []kafka.Header, error) {
-	return f.data, nil, f.err
+func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error) {
+	if f.err != nil {
+		return nil, f.err
+	} else {
+		return &Request{key: f.key, response: f.data}, nil
+	}
 }
 
 func getFreePort() (int, error) {
@@ -118,11 +123,13 @@ func TestHttpServer(t *testing.T) {
 		},
 	}
 
+	testRequestId := "test-id"
 	port, err := getFreePort()
 	g.Expect(err).To(BeNil())
 	mockInferer := &fakePipelineInferer{
 		err:  nil,
 		data: []byte("result"),
+		key:  testRequestId,
 	}
 	httpServer := NewGatewayHttpServer(port, logrus.New(), nil, mockInferer, fakeMetricsHandler{})
 	go func() {
@@ -137,6 +144,7 @@ func TestHttpServer(t *testing.T) {
 			mockInferer := &fakePipelineInferer{
 				err:  nil,
 				data: b,
+				key:  testRequestId,
 			}
 			httpServer.gateway = mockInferer
 			inferV2Path := test.path
@@ -149,6 +157,10 @@ func TestHttpServer(t *testing.T) {
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
 			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
+			if resp.StatusCode == http.StatusOK {
+				g.Expect(resp.Header.Get(RequestIdHeader)).ToNot(BeNil())
+				g.Expect(resp.Header.Get(RequestIdHeader)).To(Equal(testRequestId))
+			}
 			defer resp.Body.Close()
 		})
 	}

@@ -5,11 +5,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
+
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
@@ -222,7 +223,7 @@ func (kc *InferKafkaConsumer) Serve() {
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 				_, span := kc.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(seldontracer.SELDON_REQUEST_ID, string(e.Key)))
+				span.SetAttributes(attribute.String(pipeline.RequestIdHeader, string(e.Key)))
 
 				headers := collectHeaders(e.Headers)
 

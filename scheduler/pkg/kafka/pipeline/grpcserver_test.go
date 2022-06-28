@@ -92,14 +92,17 @@ func TestGrpcServer(t *testing.T) {
 					},
 				},
 			},
+			error: true,
 		},
 	}
 
+	testRequestId := "test-id"
 	port, err := getFreePort()
 	g.Expect(err).To(BeNil())
 	mockInferer := &fakePipelineInferer{
 		err:  nil,
 		data: []byte("result"),
+		key:  testRequestId,
 	}
 	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakeMetricsHandler{})
 	go func() {
@@ -114,6 +117,7 @@ func TestGrpcServer(t *testing.T) {
 			mockInferer := &fakePipelineInferer{
 				err:  nil,
 				data: b,
+				key:  testRequestId,
 			}
 			grpcServer.gateway = mockInferer
 			opts := []grpc.DialOption{
@@ -124,11 +128,14 @@ func TestGrpcServer(t *testing.T) {
 			client := v2.NewGRPCInferenceServiceClient(conn)
 			ctx := context.TODO()
 			ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, test.header)
-			res, err := client.ModelInfer(ctx, test.req)
+			var header, trailer metadata.MD
+			res, err := client.ModelInfer(ctx, test.req, grpc.Header(&header), grpc.Trailer(&trailer))
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(proto.Equal(res, test.res)).To(BeTrue())
+				g.Expect(header.Get(RequestIdHeader)).ToNot(BeNil())
+				g.Expect(header.Get(RequestIdHeader)[0]).To(Equal(testRequestId))
 			}
 		})
 	}
