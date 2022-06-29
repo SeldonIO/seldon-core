@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: seldon-scheduler
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag }}'
+        imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'
+        name: scheduler

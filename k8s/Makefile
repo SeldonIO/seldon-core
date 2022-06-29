@@ -1,5 +1,6 @@
 CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
+NEW_VERSION ?= 0.0.0
 
 CONTROLLER_IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
@@ -36,6 +37,14 @@ create-yaml:
 
 .PHONY: create-helm-charts
 create-helm-charts:
+	sed "s/#TAG_VERSION_PLACEHOLDER#/${CUSTOM_IMAGE_TAG}/g" helm-charts/seldon-core-v2-setup/values.yaml.template > helm-charts/seldon-core-v2-setup/values.yaml
 	kustomize build kustomize/helm-crds/ > helm-charts/seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 	kustomize build kustomize/helm-components/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-components.yaml
 	kustomize build kustomize/helm-servers/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-servers.yaml
+
+.PHONY: set-chart-version
+set-chart-version:
+	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-crds/Chart.yaml
+	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-crds/Chart.yaml
+	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-setup/Chart.yaml
+	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-setup/Chart.yaml

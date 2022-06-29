@@ -3,4 +3,3 @@ bases:
 - ../../../scheduler/k8s/defaultNoConfig
 - ../../../operator/config/default
 - ../../../operator/config/serverconfigs
-

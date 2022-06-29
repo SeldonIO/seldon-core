@@ -1,9 +1,9 @@
 apiVersion: v1
-appVersion: 0.1
+appVersion: 0.1.0
 description: Seldon Core V2 Setup
 keywords:
 - kubernetes
 - machine-learning
 - mlops
 name: seldon-core-v2-setup
-version: 0.1
+version: 0.1.0

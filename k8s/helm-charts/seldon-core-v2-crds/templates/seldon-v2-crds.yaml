@@ -431,8 +431,7 @@ spec:
                 format: int64
                 type: integer
               replicas:
-                description: 'Important: Run "make" to regenerate code after modifying
-                  this file'
+                description: Total number of replicas targeted by this model
                 format: int32
                 type: integer
             type: object

@@ -13,3 +13,6 @@ patchesStrategicMerge:
 - patch_modelgateway.yaml
 - patch_mlserver.yaml
 - patch_triton.yaml
+- patch_controller.yaml
+- patch_envoy.yaml
+- patch_scheduler.yaml

@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seldon-envoy
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}'
+        imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
+        name: envoy

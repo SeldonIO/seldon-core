@@ -18,7 +18,7 @@ modelgateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-modelgateway
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
   workers: 8
   resources:
     requests:
@@ -30,7 +30,7 @@ pipelinegateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-pipelinegateway
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
   resources:
     requests:
       cpu: 0.1
@@ -41,7 +41,7 @@ dataflow:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-dataflow-engine
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
   cores: 4
   resources:
     requests:
@@ -53,7 +53,7 @@ controller:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldonv2-controller
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
   resources:
     requests:
       cpu: 10m
@@ -64,14 +64,14 @@ envoy:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-envoy
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
 
 scheduler:
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-scheduler
-    tag: latest
+    tag: #TAG_VERSION_PLACEHOLDER#
 
 serverConfig:
   rclone:
@@ -79,14 +79,14 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-rclone
-      tag: latest
+      tag: #TAG_VERSION_PLACEHOLDER#
 
   agent:
     image:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-agent
-      tag: latest
+      tag: #TAG_VERSION_PLACEHOLDER#
 
   mlserver:
     image:

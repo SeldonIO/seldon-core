@@ -531,17 +531,6 @@ spec:
     spec:
       containers:
       - args:
-        - --secure-listen-address=0.0.0.0:8443
-        - --upstream=http://127.0.0.1:8080/
-        - --logtostderr=true
-        - --v=10
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-        name: kube-rbac-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-      - args:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
@@ -558,8 +547,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldonv2-controller:latest
-        imagePullPolicy: IfNotPresent
+        image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository
+          }}:{{ .Values.controller.image.tag }}'
+        imagePullPolicy: '{{ .Values.controller.image.pullPolicy }}'
         livenessProbe:
           httpGet:
             path: /healthz
@@ -578,10 +568,21 @@ spec:
             cpu: 500m
             memory: 128Mi
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: '{{ .Values.controller.resources.requests.cpu }}'
+            memory: '{{ .Values.controller.resources.requests.memory }}'
         securityContext:
           allowPrivilegeEscalation: false
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
       securityContext:
         runAsNonRoot: true
       serviceAccountName: seldon-controller-manager
@@ -657,8 +658,9 @@ spec:
         app: seldon-envoy
     spec:
       containers:
-      - image: seldonio/seldon-envoy:latest
-        imagePullPolicy: IfNotPresent
+      - image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository
+          }}:{{ .Values.envoy.image.tag }}'
+        imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
         name: envoy
         ports:
         - containerPort: 9000
@@ -810,8 +812,9 @@ spec:
         - --db-path=/mnt/scheduler/db
         command:
         - /bin/scheduler
-        image: seldonio/seldon-scheduler:latest
-        imagePullPolicy: IfNotPresent
+        image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository
+          }}:{{ .Values.scheduler.image.tag }}'
+        imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'
         name: scheduler
         ports:
         - containerPort: 9002

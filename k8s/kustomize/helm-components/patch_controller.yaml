@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seldon-controller-manager
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}'
+        imagePullPolicy: '{{ .Values.controller.image.pullPolicy }}'
+        name: manager
+        resources:
+          requests:
+            cpu: '{{ .Values.controller.resources.requests.cpu }}'
+            memory: '{{ .Values.controller.resources.requests.memory }}'
