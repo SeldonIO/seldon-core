@@ -1,0 +1,42 @@
+name: Publish changelog to master on new release
+
+on:
+  release:
+    types: [published]
+
+env:
+  GITHUB_USER: seldondev
+
+jobs:
+  update-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Git Commit
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "${GITHUB_USER}"
+          git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
+
+
+      - name: Configure node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install auto-changelog tool
+        run: |
+          npm install -g auto-changelog
+
+      - name: Generate and commit changelog
+        run: |
+          git checkout master
+          auto-changelog -l 5
+          git add CHANGELOG.md && git commit -m "Updating CHANGELOG.md on master"
+          git push

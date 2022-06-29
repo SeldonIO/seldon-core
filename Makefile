@@ -53,3 +53,25 @@ docs_dev_server: docs_clean
 docs_spellcheck:
 	misspell -w docs/source/contents
 
+
+#
+# Release
+#
+
+# This must be a top-level target that sets version across all components
+set-versions:
+	make -C k8s CUSTOM_IMAGE_TAG=${NEW_VERSION} create
+	make -C k8s NEW_VERSION=${NEW_VERSION} set-chart-version
+
+# This must be a top-level target that prepares all artifacts for release
+prep-artifacts:
+	rm .release -rf && mkdir .release
+	# Package helm charts
+	helm package k8s/helm-charts/seldon-core-v2-crds -d .release
+	helm package k8s/helm-charts/seldon-core-v2-setup -d .release
+	# Add yaml files
+	cp k8s/yaml/seldon-v2-components.yaml .release/
+	cp k8s/yaml/seldon-v2-crds.yaml .release/
+	cp k8s/yaml/seldon-v2-servers.yaml .release/
+	# Build CLI
+	make -C operator build-seldon && mv operator/bin/seldon .release/seldon-linux-amd64

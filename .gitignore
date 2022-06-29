@@ -142,3 +142,7 @@ cython_debug/
 
 #emacs
 *~
+
+# this project
+event.json
+.release

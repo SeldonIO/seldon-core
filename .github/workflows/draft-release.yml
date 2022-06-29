@@ -1,0 +1,135 @@
+name: Draft New Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for new draft (e.g. v0.1.0)'
+        required: true
+
+env:
+  GITHUB_USER: seldondev
+  KUSTOMIZE_VERSION: 4.5.5
+  HELM_VERSION: v3.8.1
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Output Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
+      - name: Checkout Git Commit
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Validate workflow inputs
+        shell: bash
+        run: |
+          set -e
+
+          RELEASE_BRANCH=$(echo ${GITHUB_REF#refs/heads/})
+          RELEASE_TAG="${{ github.event.inputs.version }}"
+
+          # Ensure that we do not run on master
+          if [ "${RELEASE_BRANCH}" == "master" ]; then
+            echo "::error::Cannot run this workflow on master branch"
+            exit 1
+          fi
+
+          # TODO: validate that RELEASE BRANCH is for the release line
+
+          # Release tag version must match v<major>.<minor>.<patch> and optional -rcX suffix
+          if ! echo "${RELEASE_TAG}" | egrep '^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)*$'; then
+            echo "::error::Target version '${RELEASE_TAG}' is not valid release tag." >&2
+            exit 1
+          fi
+
+          # Ensure that release does not yet exist
+          if git rev-parse ${RELEASE_TAG}; then
+            echo "::error::Release tag ${RELEASE_TAG} already exists. Stopping draft process."
+            exit 1
+          fi
+
+          # Save env variables for later steps
+          echo "RELEASE_BRANCH=${RELEASE_BRANCH}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "${GITHUB_USER}"
+          git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '^1.16.4'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: "${{ env.HELM_VERSION }}"
+
+      - name: Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s -- ${KUSTOMIZE_VERSION}
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Set versions in helm charts and yaml manifests
+        run: |
+          make NEW_VERSION=${RELEASE_TAG#v} set-versions
+          git add k8s/helm-charts && git commit -m "Setting version for helm charts" || echo "Nothing to commit"
+          git add k8s/yaml && git commit -m "Setting version for yaml manifests" || echo "Nothing to commit"
+
+      - name: Prepare artifacts
+        run: |
+          make prep-artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: .release/
+
+      - name: Install auto-changelog tool
+        run: |
+          npm install -g auto-changelog
+
+      - name: Generate CHANGELOG.md
+        run: |
+          git commit -m "Generating changelog for ${RELEASE_TAG}" --allow-empty
+          git tag "${RELEASE_TAG}" --force && auto-changelog -l 5
+          git add CHANGELOG.md && git commit --amend --no-edit || echo "Nothing to commit"
+
+      - name: Generate release-notes.txt
+        run: |
+          auto-changelog --starting-version ${RELEASE_TAG} --ending-version ${RELEASE_TAG} -l 5 -o release-notes.txt
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: release-notes.txt
+
+      - name: Push new commits to repository
+        run: git push
+
+      - name: Create or edit release draft
+        run: |
+          # TODO: Valdiate that there is no published released (we should not get here if tag exists anyway)
+          gh release delete "${RELEASE_TAG}" --yes || echo "Draft does not yet exist"
+          gh release create "${RELEASE_TAG}" --draft \
+            --title "${RELEASE_TAG}"  \
+            --notes-file release-notes.txt \
+            --target "${RELEASE_BRANCH}" \
+            .release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
