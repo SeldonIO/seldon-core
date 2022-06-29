@@ -485,7 +485,7 @@ def main():
 
     def _run_grpc_server(bind_address):
         """Start a server in a subprocess."""
-        logger.info(f"Starting new GRPC server with {args.grpc_threads}.")
+        logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
 
         if args.tracing:
             from grpc_opentracing import open_tracing_server_interceptor
