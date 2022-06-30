@@ -10,7 +10,7 @@ Once installed you can use the following Playbooks.
 ### Create Kind Cluster
 
 ```bash
-ansible-playbook playbooks/kind_cluster.yaml
+ansible-playbook playbooks/kind-cluster.yaml
 ```
 
 
