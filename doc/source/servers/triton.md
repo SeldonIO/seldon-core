@@ -27,4 +27,4 @@ See more deployment examples in [triton examples](../examples/triton_examples.ht
 See also:
 - [Tensorflow MNIST - e2e example with MinIO](../examples/triton_mnist_e2e.html)
 - [GPT2 Model - pretrained with Azure](../examples/triton_gpt2_example_azure.html)
-- [GPT2 Model - pretrained with MinIO](../examples/triton_gpt2_example_azure.html)
+- [GPT2 Model - pretrained with MinIO](../examples/triton_gpt2_example.html)
