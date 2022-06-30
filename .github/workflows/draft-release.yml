@@ -103,15 +103,33 @@ jobs:
         run: |
           npm install -g auto-changelog
 
+      - name: Check if release is for core version
+        run: |
+          if [[ ${RELEASE_TAG} == ${RELEASE_TAG%-*} ]]; then
+            echo "Core release"
+            echo "IS_RELEASE_CORE_VERSION=true" >> $GITHUB_ENV
+          else
+            echo "Non-core release"
+            echo "IS_RELEASE_CORE_VERSION=false" >> $GITHUB_ENV
+          fi
+
       - name: Generate CHANGELOG.md
         run: |
           git commit -m "Generating changelog for ${RELEASE_TAG}" --allow-empty
-          git tag "${RELEASE_TAG}" --force && auto-changelog -l 5
+          if ${IS_RELEASE_CORE_VERSION}; then
+            git tag "${RELEASE_TAG}" --force && auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --ending-version ${RELEASE_TAG} -l 5
+          else
+            git tag "${RELEASE_TAG}" --force && auto-changelog -l 5
+          fi
           git add CHANGELOG.md && git commit --amend --no-edit || echo "Nothing to commit"
 
       - name: Generate release-notes.txt
         run: |
-          auto-changelog --starting-version ${RELEASE_TAG} --ending-version ${RELEASE_TAG} -l 5 -o release-notes.txt
+          if ${IS_RELEASE_CORE_VERSION}; then
+            auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --ending-version ${RELEASE_TAG} -l 5 -o release-notes.txt
+          else
+            auto-changelog -l 5 -o release-notes.txt
+          fi
 
       - name: Upload release notes
         uses: actions/upload-artifact@v3
