@@ -46,10 +46,11 @@ type Pipeline struct {
 	resourceName string
 	consumer     *kafka.Consumer
 	// map of kafka id to request
-	requests cmap.ConcurrentMap
-	done     chan bool
-	isModel  bool
-	wg       *sync.WaitGroup
+	requests   cmap.ConcurrentMap
+	done       chan bool
+	isModel    bool
+	wg         *sync.WaitGroup
+	hasStarted bool
 }
 
 type Request struct {
@@ -119,6 +120,7 @@ func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline
 		done:         make(chan bool),
 		isModel:      isModel,
 		wg:           new(sync.WaitGroup),
+		hasStarted:   false,
 	}, nil
 }
 
@@ -235,7 +237,13 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 
 	err := pipeline.consumer.SubscribeTopics([]string{topicName},
 		func(consumer *kafka.Consumer, event kafka.Event) error {
-			pipeline.wg.Done() // Mark consumer as ready so we can send our requests
+			switch event.(type) {
+			case kafka.AssignedPartitions:
+				if !pipeline.hasStarted {
+					pipeline.wg.Done() // Mark consumer as ready so we can send our requests
+					pipeline.hasStarted = true
+				}
+			}
 			return nil
 		})
 	if err != nil {
