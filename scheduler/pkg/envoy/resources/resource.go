@@ -165,8 +165,8 @@ func createWeightedClusterAction(clusterTraffics []TrafficSplits, rest bool) *ro
 					{
 						Header: &core.HeaderValue{
 							Key: SeldonRouteHeader,
-							Value: util.GetVersionedModelName(
-								clusterTraffic.ModelName, clusterTraffic.ModelVersion),
+							Value: util.XXHash(util.GetVersionedModelName(
+								clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
 						},
 					},
 				},
@@ -211,6 +211,61 @@ func makeModelHttpRoute(r *Route, rt *route.Route) {
 		//},
 	}
 	rt.Action = createWeightedClusterAction(r.Clusters, true)
+	if r.LogPayloads {
+		rt.ResponseHeadersToAdd = modelRouteHeaders
+	}
+}
+
+func makeModelExperimentRoute(r *Route, clusterTraffic *TrafficSplits, rt *route.Route, isGrpc bool) {
+	if isGrpc {
+		rt.Name = r.RouteName + "_grpc_experiment"
+		rt.Match.PathSpecifier = modelRouteMatchPathGrpc
+	} else {
+		rt.Name = r.RouteName + "_http_experiment"
+		rt.Match.PathSpecifier = modelRouteMatchPathHttp
+	}
+
+	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: util.XXHash(util.GetVersionedModelName(
+				clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
+		},
+	}
+	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
+		{
+			Header: &core.HeaderValue{
+				Key: SeldonInternalModelHeader,
+				Value: util.GetVersionedModelName(
+					clusterTraffic.ModelName, clusterTraffic.ModelVersion),
+			},
+		},
+		{
+			Header: &core.HeaderValue{
+				Key:   SeldonModelHeader,
+				Value: clusterTraffic.ModelName,
+			},
+		},
+	}
+	if isGrpc {
+		rt.Action = &route.Route_Route{
+			Route: &route.RouteAction{
+				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
+				ClusterSpecifier: &route.RouteAction_Cluster{
+					Cluster: clusterTraffic.GrpcCluster,
+				},
+			},
+		}
+	} else {
+		rt.Action = &route.Route_Route{
+			Route: &route.RouteAction{
+				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
+				ClusterSpecifier: &route.RouteAction_Cluster{
+					Cluster: clusterTraffic.HttpCluster,
+				},
+			},
+		}
+	}
 	if r.LogPayloads {
 		rt.ResponseHeadersToAdd = modelRouteHeaders
 	}
@@ -284,8 +339,22 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route) {
 	rt.Action = pipelineRouteActionGrpc
 }
 
+func isExperiment(r *Route) bool {
+	return len(r.Clusters) > 1
+}
+
+func calcNumberOfStickySessionsNeeded(modelRoutes []*Route) int {
+	count := 0
+	for _, r := range modelRoutes {
+		if isExperiment(r) {
+			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
+		}
+	}
+	return count
+}
+
 func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) *route.RouteConfiguration {
-	rts := make([]*route.Route, 2*(len(modelRoutes)+len(pipelineRoutes)))
+	rts := make([]*route.Route, 2*(len(modelRoutes)+len(pipelineRoutes))+calcNumberOfStickySessionsNeeded(modelRoutes))
 	// Pre-allocate objects for better CPU pipelining
 	// Warning: assumes a fixes number of route-match headers
 	for i := 0; i < len(rts); i++ {
@@ -304,6 +373,14 @@ func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) *route.Rou
 		idx++
 		makeModelGrpcRoute(r, rts[idx])
 		idx++
+		if isExperiment(r) {
+			for _, clusterTraffic := range r.Clusters {
+				makeModelExperimentRoute(r, &clusterTraffic, rts[idx], false)
+				idx++
+				makeModelExperimentRoute(r, &clusterTraffic, rts[idx], true)
+				idx++
+			}
+		}
 	}
 
 	// Create Pipeline Routes

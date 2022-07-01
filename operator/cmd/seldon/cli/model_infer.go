@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	stickySessionFlag = "sticky-session"
+)
+
 func createModelInfer() *cobra.Command {
 	cmdModelInfer := &cobra.Command{
 		Use:   "infer <modelName> (data)",
@@ -29,6 +33,10 @@ func createModelInfer() *cobra.Command {
 				return err
 			}
 			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			if err != nil {
+				return err
+			}
+			stickySesion, err := cmd.Flags().GetBool(stickySessionFlag)
 			if err != nil {
 				return err
 			}
@@ -59,11 +67,12 @@ func createModelInfer() *cobra.Command {
 			} else {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
-			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers)
+			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers, stickySesion)
 			return err
 		},
 	}
 	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
+	cmdModelInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
 	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, env.GetString(EnvInfer, DefaultInferHost)), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")

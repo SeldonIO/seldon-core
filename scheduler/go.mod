@@ -3,6 +3,7 @@ module github.com/seldonio/seldon-core/scheduler
 go 1.16
 
 require (
+	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/confluentinc/confluent-kafka-go v1.8.2
 	github.com/dgraph-io/badger/v3 v3.2103.2

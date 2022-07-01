@@ -56,10 +56,17 @@ seldon model infer iris \
 ````{collapse} Expand to see output
 ```json
 
+    Server:[envoy]
+    Traceparent:[00-e70091b8b9a1cef12b6028f4d8442d00-6fe5ae8ca35461ea-01]
+    X-Envoy-Upstream-Service-Time:[1224]
+    Seldon-Route:[mlserver_ClokMkBbMbkDHCJU1bhERfwbLZUTxuFjcGB8kJ9v0hA=_http]
+    Content-Length:[196]
+    Content-Type:[application/json]
+    Date:[Thu, 26 May 2022 18:40:04 GMT]
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "32113a4d-d7e7-410c-82b3-921d455bb50c",
+    	"id": "a304eee1-54db-4794-b929-86aa472b1c80",
     	"parameters": null,
     	"outputs": [
     		{
@@ -449,14 +456,14 @@ seldon model status iris2 | jq -M .
           },
           "modelReplicaState": {
             "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-05-26T07:14:11.599821862Z"
+              "state": "Loading",
+              "lastChangeTimestamp": "2022-05-28T09:53:54.168747754Z"
             }
           },
           "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-26T07:14:11.599821862Z"
+            "state": "ModelProgressing",
+            "unavailableReplicas": 1,
+            "lastChangeTimestamp": "2022-05-28T09:53:54.168747754Z"
           },
           "modelDefn": {
             "meta": {
@@ -490,14 +497,14 @@ seldon model status iris2 | jq -M .
           },
           "modelReplicaState": {
             "0": {
-              "state": "Available",
-              "lastChangeTimestamp": "2022-05-26T07:14:11.672926362Z"
+              "state": "Loading",
+              "lastChangeTimestamp": "2022-05-28T09:53:54.292354768Z"
             }
           },
           "state": {
-            "state": "ModelAvailable",
-            "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-26T07:14:11.672926362Z"
+            "state": "ModelProgressing",
+            "unavailableReplicas": 1,
+            "lastChangeTimestamp": "2022-05-28T09:53:54.292354768Z"
           },
           "modelDefn": {
             "meta": {
@@ -587,7 +594,60 @@ seldon model infer iris -i 50 \
 ````{collapse} Expand to see output
 ```json
 
-    map[iris2_1:27 iris_1:23]
+    map[iris2_1:30 iris_1:20]
+```
+````
+
+```bash
+seldon model infer iris \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    {
+    	"model_name": "iris_1",
+    	"model_version": "1",
+    	"id": "96842bed-5cc5-44d7-9f6b-45d9a700b2c7",
+    	"parameters": null,
+    	"outputs": [
+    		{
+    			"name": "predict",
+    			"shape": [
+    				1
+    			],
+    			"datatype": "INT64",
+    			"parameters": null,
+    			"data": [
+    				2
+    			]
+    		}
+    	]
+    }
+```
+````
+Use sticky session key passed by last infer request to ensure same route is taken each time.
+
+
+```bash
+seldon model infer iris -s -i 50 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    map[iris_1:50]
+```
+````
+
+```bash
+seldon model infer iris --inference-mode grpc -s -i 50\
+   '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    map[iris_1:50]
 ```
 ````
 Stop the experiment

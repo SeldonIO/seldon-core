@@ -10,6 +10,7 @@ contents/getting-started/index
 contents/tutorials/index
 contents/servers/index
 contents/models/index
+contents/experiments/index
 contents/pipelines/index
 contents/inference-artifacts/index
 contents/inference/index

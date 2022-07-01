@@ -31,3 +31,17 @@ curl http://${MESH_IP}/v2/models/experiment-iris/infer \
    -H "seldon-model: experiment-iris.experiment" \
    -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+
+## Sticky Sessions
+
+To allow cohorts to get consistent views in an experiment each inference request passes back a response header `seldon-route` which can be passed in future requests to an experiment to bypass the random traffic splits and get a prediction from the same model used in the initial request.
+
+This is illustrated in the [local examples notebook](../../../examples/local-examples.md).
+
+Caveats:
+
+  * Note this is the same model but not necessarily the same replica. This means at present this will not work for stateful models that need to go to the same model replica.
+
+## Service Meshes
+
+As an alternative you can choose to run experiments at the service mesh level if you use one of the popular service meshes that allow header based routing in traffic splits. For further discussion see [here](../../service-meshes/index.md).

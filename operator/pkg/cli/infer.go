@@ -23,6 +23,7 @@ import (
 
 const (
 	SeldonModelHeader    = "seldon-model"
+	SeldonRouteHeader    = "seldon-route"
 	SeldonPipelineHeader = "pipeline"
 	HeaderSeparator      = "="
 )
@@ -135,18 +136,22 @@ func decodeV2Error(response *http.Response, b []byte) error {
 
 }
 
-func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string) ([]byte, error) {
+func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string, stickySesionKey string) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	switch inferType {
-	case InferModel:
-		req.Header.Set(SeldonModelHeader, resourceName)
-	case InferPipeline:
-		req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
+	if stickySesionKey != "" {
+		req.Header.Set(SeldonRouteHeader, stickySesionKey)
+	} else {
+		switch inferType {
+		case InferModel:
+			req.Header.Set(SeldonModelHeader, resourceName)
+		case InferPipeline:
+			req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
+		}
 	}
 
 	for _, header := range headers {
@@ -182,6 +187,10 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 	}
 	if response.StatusCode != http.StatusOK {
 		return nil, decodeV2Error(response, b)
+	}
+	_, err = saveStickySessionKey(response.Header)
+	if err != nil {
+		return b, err
 	}
 	return b, nil
 }
@@ -221,13 +230,13 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
+func (ic *InferenceClient) InferRest(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string, stickySessionKey string) error {
 	if showRequest {
 		printPrettyJson(data)
 	}
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 	for i := 0; i < iterations; i++ {
-		res, err := ic.call(resourceName, path, data, inferType, showHeaders, headers)
+		res, err := ic.call(resourceName, path, data, inferType, showHeaders, headers, stickySessionKey)
 		if err != nil {
 			return err
 		}
@@ -338,7 +347,7 @@ func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
+func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string, stickySessionKey string) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := protojson.Unmarshal(data, req)
 	if err != nil {
@@ -354,11 +363,15 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 	}
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 	ctx := context.TODO()
-	switch inferType {
-	case InferModel:
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
-	case InferPipeline:
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
+	if stickySessionKey != "" {
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonRouteHeader, stickySessionKey)
+	} else {
+		switch inferType {
+		case InferModel:
+			ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
+		case InferPipeline:
+			ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
+		}
 	}
 
 	for _, header := range headers {
@@ -410,12 +423,20 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 	return nil
 }
 
-func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string) error {
+func (ic *InferenceClient) Infer(modelName string, inferMode string, data []byte, showRequest bool, showResponse bool, iterations int, inferType InferType, showHeaders bool, headers []string, stickySesion bool) error {
+	var stickySessionKey string
+	var err error
+	if stickySesion {
+		stickySessionKey, err = getStickySessionKey()
+		if err != nil {
+			return err
+		}
+	}
 	switch inferMode {
 	case "rest":
-		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers)
+		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers, stickySessionKey)
 	case "grpc":
-		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers)
+		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers, stickySessionKey)
 	default:
 		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}
