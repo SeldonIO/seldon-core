@@ -1099,6 +1099,7 @@ spec:
       - --grpc-port=$(SERVER_GRPC_PORT)
       - --log-verbose=1
       - --model-control-mode=explicit
+      - --backend-config=python,shm-default-byte-size=16777216
       command:
       - /opt/tritonserver/bin/tritonserver
       env:
@@ -1145,6 +1146,9 @@ spec:
       - mountPath: /mnt/agent
         name: triton-models
         readOnly: true
+      - mountPath: /dev/shm
+        name: dshm
+        readOnly: false
     securityContext:
       fsGroup: 2000
       runAsNonRoot: true
@@ -1158,6 +1162,10 @@ spec:
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
+    - emptyDir:
+        medium: Memory
+        sizeLimit: 256Mi
+      name: dshm
   volumeClaimTemplates:
   - name: triton-models
     spec:
