@@ -43,7 +43,7 @@ services:
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
       - SELDON_SERVER_TYPE=triton
       - SELDON_SERVER_CAPABILITIES=triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt
-      
+
   dataflow:
     build:
       dockerfile: ./Dockerfile.dataflow
@@ -52,19 +52,107 @@ services:
     depends_on:
       - kafka
       - otel-collector
-      
+
   envoy:
     build:
       dockerfile: ./Dockerfile.envoy
       context: .
     image: "${ENVOY_IMAGE_AND_TAG}"
 
+  grafana:
+    image: "${GRAFANA_IMAGE_AND_TAG}"
+    ports:
+      - 3000:3000
+
+  hodometer:
+    build:
+      dockerfile: ./../hodometer/Dockerfile.hodometer
+      context: ./../hodometer
+    image: "seldonio/hodometer:latest"
+    environment:
+      - LOG_LEVEL=${HODOMETER_LOG_LEVEL}
+      - METRICS_LEVEL=${HODOMETER_METRICS_LEVEL}
+      - SCHEDULER_PORT=${SCHEDULER_SERVER_PORT}
+
+  hodometer-receiver:
+    build:
+      dockerfile: ./../hodometer/Dockerfile.receiver
+      context: ./../hodometer
+    image: "seldonio/hodometer-receiver:latest"
+    environment:
+      - LISTEN_PORT=${HODOMETER_RECEIVER_PORT}
+      - LOG_LEVEL=${HODOMETER_RECEIVER_LOG_LEVEL}
+      - RECORD_LEVEL=${HODOMETER_RECEIVER_RECORD_LEVEL}
+    profiles:
+      - "local_metrics"
+
+  jaeger-all-in-one:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268"
+      - "14250"
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.1
+    volumes:
+      - "kafka_data:/bitnami"
+    depends_on:
+      - zookeeper
+
+  mlserver:
+    image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
+    command:
+      - "mlserver"
+      - "start"
+      - "/mnt/agent/models"
+    environment:
+      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
+
+  modelgateway:
+    build:
+      dockerfile: ./Dockerfile.modelgateway
+      context: .
+    image: "${MODELGATEWAY_IMAGE_AND_TAG}"
+    depends_on:
+      - kafka
+      - otel-collector
+
+  otel-collector:
+    image: ${OTELCOL_IMG}
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888:1888"   # pprof extension
+      #- "8888:8888"   # Prometheus metrics exposed by the collector
+      #- "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317"        # OTLP gRPC receiver
+      - "55670:55679" # zpages extension
+    depends_on:
+      - jaeger-all-in-one
+
+  pipelinegateway:
+    build:
+      dockerfile: ./Dockerfile.pipelinegateway
+      context: .
+    image: "${PIPELINEGATEWAY_IMAGE_AND_TAG}"
+    depends_on:
+      - kafka
+      - otel-collector
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+
   rclone-mlserver:
     build:
       dockerfile: ./Dockerfile.rclone
       context: .
     image: "${RCLONE_IMAGE_AND_TAG}"
-    
+
   rclone-triton:
     build:
       dockerfile: ./Dockerfile.rclone
@@ -88,15 +176,6 @@ services:
       context: .
     image: "${SCHEDULER_IMAGE_AND_TAG}"
 
-  mlserver:
-    image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
-    command:
-      - "mlserver"
-      - "start"
-      - "/mnt/agent/models"
-    environment:
-      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
-    
   triton:
     image: "${SERVER_TRITON_IMAGE_AND_TAG}"
     command:
@@ -111,66 +190,9 @@ services:
       memlock: -1
       stack: 67108864
 
-  modelgateway:
-    build:
-      dockerfile: ./Dockerfile.modelgateway
-      context: .
-    image: "${MODELGATEWAY_IMAGE_AND_TAG}"
-    depends_on:
-      - kafka
-      - otel-collector
-
-  pipelinegateway:
-    build:
-      dockerfile: ./Dockerfile.pipelinegateway
-      context: .
-    image: "${PIPELINEGATEWAY_IMAGE_AND_TAG}"
-    depends_on:
-      - kafka
-      - otel-collector
-
-  kafka:
-    image: docker.io/bitnami/kafka:3.1
-    volumes:
-      - "kafka_data:/bitnami"
-    depends_on:
-      - zookeeper
-      
-  jaeger-all-in-one:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "14268"
-      - "14250"
-
-  otel-collector:
-    image: ${OTELCOL_IMG}
-    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "1888:1888"   # pprof extension
-      #- "8888:8888"   # Prometheus metrics exposed by the collector
-      #- "8889:8889"   # Prometheus exporter metrics
-      - "13133:13133" # health_check extension
-      - "4317:4317"        # OTLP gRPC receiver
-      - "55670:55679" # zpages extension
-    depends_on:
-      - jaeger-all-in-one
-
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
     volumes:
       - "zookeeper_data:/bitnami"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
-
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: "${GRAFANA_IMAGE_AND_TAG}"
-    ports:
-      - 3000:3000

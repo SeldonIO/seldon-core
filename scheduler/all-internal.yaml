@@ -47,7 +47,7 @@ services:
       - type: volume
         source: models-mlserver
         target: /mnt/agent
-        
+
   agent-triton:
     command:
       - "/bin/agent"
@@ -80,21 +80,39 @@ services:
         source: models-triton
         target: /mnt/agent
 
-  rclone-mlserver:
+  dataflow:
+    environment:
+      - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
+      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
+      - SELDON_CORES_COUNT=4
+      - SELDON_UPSTREAM_HOST=scheduler
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+  envoy:
     ports:
-      - "${RCLONE_MLSERVER_HTTP_PORT}:${RCLONE_MLSERVER_HTTP_PORT}"
-    volumes:
-      - type: volume
-        source: models-mlserver
-        target: /mnt/agent
-        
-  rclone-triton:
+      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
+      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
+    command:
+      - "/usr/local/bin/envoy"
+      - "-c"
+      - "/etc/envoy-compose.yaml"
+
+  hodometer:
+    environment:
+      - SCHEDULER_HOST=scheduler
+
+  kafka:
+    environment:
+    - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+    - KAFKA_CFG_LISTENERS=CLIENT://:9093,EXTERNAL://:9092
+    - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9093,EXTERNAL://localhost:9092
+    - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    - KAFKA_BROKER_ID=1
+    - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    - ALLOW_PLAINTEXT_LISTENER=yes
+    - KAFKA_CFG_MESSAGE_MAX_BYTES=1000000000
     ports:
-      - "${RCLONE_TRITON_HTTP_PORT}:${RCLONE_TRITON_HTTP_PORT}"
-    volumes:
-      - type: volume
-        source: models-triton
-        target: /mnt/agent
+      - "9092:9092"
 
   mlserver:
     ports:
@@ -104,42 +122,7 @@ services:
       - type: volume
         source: models-mlserver
         target: /mnt/agent
-        
-  triton:
-    ports:
-      - "${SERVER_TRITON_HTTP_PORT}:${SERVER_TRITON_HTTP_PORT}"
-      - "${SERVER_TRITON_GRPC_PORT}:${SERVER_TRITON_GRPC_PORT}"
-    volumes:
-      - type: volume
-        source: models-triton
-        target: /mnt/agent
-    depends_on:
-      - agent-triton
 
-  scheduler:
-    command:
-      - "/bin/scheduler"
-      - "--log-level"
-      - "debug"
-      - "--pipeline-gateway-host"
-      - "pipelinegateway"
-      - "--tracing-config-path"
-      - "/mnt/config/tracing-internal.json"
-      - --db-path
-      - ${DB_PATH_COMPOSE}
-    volumes:
-      - type: bind
-        source: ./config
-        target: /mnt/config      
-      - type: bind
-        source: ./mnt/db
-        target: /mnt/db
-    ports:
-      - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
-      - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
-      - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
-
-        
   modelgateway:
     command:
       - "/bin/modelgateway"
@@ -174,49 +157,14 @@ services:
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
       - "--tracing-config-path"
-      - "/mnt/config/tracing-internal.json"      
+      - "/mnt/config/tracing-internal.json"
     volumes:
       - type: bind
         source: ./config
         target: /mnt/config
     ports:
       - "${PIPELINEGATEWAY_HTTP_PORT}:${PIPELINEGATEWAY_HTTP_PORT}"
-      - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"      
-
-
-  dataflow:
-    environment:
-      - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
-      - SELDON_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_BROKER_INTERNAL_PORT}
-      - SELDON_CORES_COUNT=4      
-      - SELDON_UPSTREAM_HOST=scheduler
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://${OTEL_EXPORTER_OTLP_ENDPOINT}
-      
-  envoy:
-    ports:
-      - "${ENVOY_DATA_PORT}:${ENVOY_DATA_PORT}"
-      - "${ENVOY_CONTROL_PORT}:${ENVOY_CONTROL_PORT}"
-    command:
-      - "/usr/local/bin/envoy"
-      - "-c"
-      - "/etc/envoy-compose.yaml"
-
-  kafka:
-    environment:
-    - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-    - KAFKA_CFG_LISTENERS=CLIENT://:9093,EXTERNAL://:9092
-    - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9093,EXTERNAL://localhost:9092
-    - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
-    - KAFKA_BROKER_ID=1
-    - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-    - ALLOW_PLAINTEXT_LISTENER=yes
-    - KAFKA_CFG_MESSAGE_MAX_BYTES=1000000000      
-    ports:
-      - "9092:9092"
-      
-  zookeeper:
-    ports:
-      - "2181:2181"
+      - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"
 
   prometheus:
     command:
@@ -225,3 +173,57 @@ services:
       - type: bind
         source: ./config
         target: /etc/prometheus
+
+  rclone-mlserver:
+    ports:
+      - "${RCLONE_MLSERVER_HTTP_PORT}:${RCLONE_MLSERVER_HTTP_PORT}"
+    volumes:
+      - type: volume
+        source: models-mlserver
+        target: /mnt/agent
+
+  rclone-triton:
+    ports:
+      - "${RCLONE_TRITON_HTTP_PORT}:${RCLONE_TRITON_HTTP_PORT}"
+    volumes:
+      - type: volume
+        source: models-triton
+        target: /mnt/agent
+
+  scheduler:
+    command:
+      - "/bin/scheduler"
+      - "--log-level"
+      - "debug"
+      - "--pipeline-gateway-host"
+      - "pipelinegateway"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
+      - --db-path
+      - ${DB_PATH_COMPOSE}
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: bind
+        source: ./mnt/db
+        target: /mnt/db
+    ports:
+      - "${SCHEDULER_XDS_PORT}:${SCHEDULER_XDS_PORT}"
+      - "${SCHEDULER_SERVER_PORT}:${SCHEDULER_SERVER_PORT}"
+      - "${SCHEDULER_AGENT_PORT}:${SCHEDULER_AGENT_PORT}"
+
+  triton:
+    ports:
+      - "${SERVER_TRITON_HTTP_PORT}:${SERVER_TRITON_HTTP_PORT}"
+      - "${SERVER_TRITON_GRPC_PORT}:${SERVER_TRITON_GRPC_PORT}"
+    volumes:
+      - type: volume
+        source: models-triton
+        target: /mnt/agent
+    depends_on:
+      - agent-triton
+
+  zookeeper:
+    ports:
+      - "2181:2181"

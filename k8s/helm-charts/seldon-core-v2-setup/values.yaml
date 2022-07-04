@@ -3,6 +3,16 @@ opentelemetry:
   enable: true
   ratio: 1
 
+hodometer:
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: seldonio/seldon-hodometer
+    tag: latest
+  logLevel: info
+  metricsLevel: feature
+  extraPublishUrls: ""
+
 kafka:
   bootstrap: seldon-kafka-plain-bootstrap.kafka:9092
   consumer:

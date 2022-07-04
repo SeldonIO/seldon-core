@@ -1,0 +1,5 @@
+services:
+
+  hodometer:
+    environment:
+      - PUBLISH_URL=http://hodometer-receiver:${HODOMETER_RECEIVER_PORT}

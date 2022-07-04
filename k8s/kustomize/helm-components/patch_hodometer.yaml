@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seldon-hodometer
+  namespace: seldon-mesh
+spec:
+  template:
+    spec:
+      containers:
+      - name: hodometer
+        image: '{{ .Values.hodometer.image.registry }}/{{ .Values.hodometer.image.repository }}:{{.Values.hodometer.image.tag }}'
+        imagePullPolicy: '{{ .Values.hodometer.image.pullPolicy }}'
+        env:
+          - name: METRICS_LEVEL
+            value: '{{ .Values.hodometer.metricsLevel }}'
+          - name: LOG_LEVEL
+            value: '{{ .Values.hodometer.logLevel }}'
+          - name: EXTRA_PUBLISH_URLS
+            value: '{{ .Values.hodometer.extraPublishUrls }}'

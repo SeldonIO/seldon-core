@@ -1,5 +1,5 @@
 DOCKER_REPO ?= seldonio
-IMAGE_NAME ?= hodometer
+IMAGE_NAME ?= seldon-hodometer
 IMAGE_TAG ?= latest
 
 HODOMETER_IMG = ${DOCKER_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
@@ -78,3 +78,7 @@ build-hodometer-docker: copy-apis
 .PHONY: build-receiver-docker
 build-receiver-docker:
 	docker build -t ${RECEIVER_IMG} -f Dockerfile.receiver .
+
+.PHONY: push-hodometer-docker
+push-hodometer-docker:
+	docker push ${HODOMETER_IMG}

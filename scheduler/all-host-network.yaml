@@ -51,57 +51,11 @@ services:
       - type: bind
         source: ./mnt/triton
         target: /mnt/agent
-        
-  rclone-mlserver:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ${PWD}/mnt/mlserver
-        target: /mnt/agent
-
-  rclone-triton:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ${PWD}/mnt/triton
-        target: /mnt/agent
-
-  mlserver:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ${PWD}/mnt/mlserver
-        target: /mnt/agent
-        
-  triton:
-    network_mode: "host"
-    volumes:
-      - type: bind
-        source: ${PWD}/mnt/triton
-        target: /mnt/agent
-        
-  scheduler:
-    command:
-      - "/bin/scheduler"
-      - "--log-level"
-      - "debug"
-      - "--tracing-config-path"
-      - "/mnt/config/tracing-internal.json"
-      - --db-path
-      - "${DB_PATH_COMPOSE}"
-    volumes:
-      - type: bind
-        source: ./config
-        target: /mnt/config      
-      - type: bind
-        source: ./mnt/db
-        target: /mnt/db      
-    network_mode: "host"
 
   dataflow:
     network_mode: "host"
     environment:
-      - SELDON_UPSTREAM_HOST=localhost      
+      - SELDON_UPSTREAM_HOST=localhost
       - SELDON_UPSTREAM_PORT=${SCHEDULER_DATAFLOW_PORT}
       - SELDON_KAFKA_BOOTSTRAP_SERVERS=0.0.0.0:${KAFKA_BROKER_EXTERNAL_PORT}
       - SELDON_CORES_COUNT=4
@@ -112,6 +66,29 @@ services:
       - "/usr/local/bin/envoy"
       - "-c"
       - "/etc/envoy-local.yaml"
+
+  hodometer:
+    network_mode: "host"
+    environment:
+      - SCHEDULER_HOST=localhost
+
+  hodometer-receiver:
+    network_mode: "host"
+
+  kafka:
+    network_mode: "host"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=127.0.0.1:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+
+  mlserver:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/mlserver
+        target: /mnt/agent
 
   modelgateway:
     network_mode: "host"
@@ -131,9 +108,9 @@ services:
       - ${ENVOY_DATA_PORT}
       - "--tracing-config-path"
       - "/mnt/config/tracing-host.json"
-      
+
   pipelinegateway:
-    network_mode: "host"    
+    network_mode: "host"
     volumes:
       - type: bind
         source: ./config
@@ -153,18 +130,6 @@ services:
       - "--tracing-config-path"
       - "/mnt/config/tracing-host.json"
 
-  kafka:
-    network_mode: "host"        
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=127.0.0.1:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-    depends_on:
-      - zookeeper
-      
-  zookeeper:
-    ports:
-      - "2181:2181"
-
   prometheus:
     command:
       - --config.file=/etc/prometheus/prometheus-host.yml
@@ -172,4 +137,46 @@ services:
       - type: bind
         source: ./config
         target: /etc/prometheus
-      
+
+  rclone-mlserver:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/mlserver
+        target: /mnt/agent
+
+  rclone-triton:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/triton
+        target: /mnt/agent
+
+  scheduler:
+    command:
+      - "/bin/scheduler"
+      - "--log-level"
+      - "debug"
+      - "--tracing-config-path"
+      - "/mnt/config/tracing-internal.json"
+      - --db-path
+      - "${DB_PATH_COMPOSE}"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /mnt/config
+      - type: bind
+        source: ./mnt/db
+        target: /mnt/db
+    network_mode: "host"
+
+  triton:
+    network_mode: "host"
+    volumes:
+      - type: bind
+        source: ${PWD}/mnt/triton
+        target: /mnt/agent
+
+  zookeeper:
+    ports:
+      - "2181:2181"
