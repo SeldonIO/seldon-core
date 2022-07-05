@@ -13,13 +13,21 @@ fun addTriggerTopology(
     inputTopics: Set<TopicName>,
     tensorsByTopic: Map<TopicName, Set<TensorName>>?,
     joinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
+    lastStream: KStream<RequestId, TRecord>,
     pending: KStream<RequestId, TRecord>? = null,
-    depth: Int,
 ): KStream<RequestId, TRecord> {
     if (inputTopics.isEmpty()) {
         when (pending) {
-            null -> throw IllegalArgumentException("cannot join zero streams")
-            else -> return pending
+            null -> return lastStream
+            else -> return lastStream
+                 .join(
+                    pending,
+                    ::joinTriggerRequests,
+                    JoinWindows.ofTimeDifferenceWithNoGrace(
+                        Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
+                    ),
+                    joinSerde,
+                )
         }
     }
 
@@ -33,11 +41,7 @@ fun addTriggerTopology(
         .filter { _, value -> value.inputsList.size != 0}
         .marshallInferenceV2Request()
 
-    var chosenJoinType = joinType
-    if (depth == 1) {
-        chosenJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner
-    }
-    when (chosenJoinType) {
+    when (joinType) {
         ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Any -> {
             val nextPending = pending
                 ?.outerJoin(
@@ -53,7 +57,7 @@ fun addTriggerTopology(
                 ) ?: nextStream
 
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth + 1)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, lastStream, nextPending)
         }
 
         ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Outer -> {
@@ -69,7 +73,7 @@ fun addTriggerTopology(
                 ) ?: nextStream
 
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth + 1)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, lastStream, nextPending)
         }
 
         else -> {
@@ -83,7 +87,7 @@ fun addTriggerTopology(
                     joinSerde,
                 ) ?: nextStream
 
-            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, nextPending, depth+1)
+            return addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTopics.minus(topic), tensorsByTopic, joinType, lastStream, nextPending)
         }
     }
 }

@@ -1,0 +1,28 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: triggers_join_internal
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: id1_node
+      inputs:
+        - triggers_join_internal.inputs.TRIGGER1
+      tensorMap:
+        triggers_join_internal.inputs.TRIGGER1: INPUT1
+    - name: id2_node
+      inputs:
+        - triggers_join_internal.inputs.TRIGGER2
+      tensorMap:
+        triggers_join_internal.inputs.TRIGGER2: INPUT1
+    - name: join_node
+      inputs:
+        - triggers_join_internal.inputs.INPUT1
+        - triggers_join_internal.inputs.INPUT2
+      triggers:
+        - id1_node.outputs.OUTPUT1
+        - id2_node.outputs.OUTPUT1
+      triggersJoinType: any
+  output:
+    steps:
+      - join_node

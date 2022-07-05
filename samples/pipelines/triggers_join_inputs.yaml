@@ -1,0 +1,18 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: triggers_join_inputs
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: join_node
+      inputs:
+        - triggers_join_inputs.inputs.INPUT1
+        - triggers_join_inputs.inputs.INPUT2
+      triggers:
+        - triggers_join_inputs.inputs.TRIGGER1
+        - triggers_join_inputs.inputs.TRIGGER2
+      triggersJoinType: any
+  output:
+    steps:
+      - join_node

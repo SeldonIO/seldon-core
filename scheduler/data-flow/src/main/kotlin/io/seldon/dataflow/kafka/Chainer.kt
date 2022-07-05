@@ -58,7 +58,7 @@ class Chainer(
             triggerTensorsByTopic,
             triggerJoinType,
             s1,
-            1
+            null,
         )
             .to(outputTopic, producerSerde)
     }
@@ -80,7 +80,7 @@ class Chainer(
             triggerTensorsByTopic,
             triggerJoinType,
             s1,
-            1
+            null,
         )
             .to(outputTopic, producerSerde)
     }
@@ -102,7 +102,7 @@ class Chainer(
             triggerTensorsByTopic,
             triggerJoinType,
             s1,
-            1
+            null,
         )
             .to(outputTopic, producerSerde)
     }
@@ -125,7 +125,7 @@ class Chainer(
             triggerTensorsByTopic,
             triggerJoinType,
             s1,
-            1
+            null,
         )
             .to(outputTopic, producerSerde)
     }
@@ -148,7 +148,7 @@ class Chainer(
             triggerTensorsByTopic,
             triggerJoinType,
             s1,
-            1
+            null,
         )
             .to(outputTopic, producerSerde)
     }

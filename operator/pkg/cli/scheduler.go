@@ -66,6 +66,15 @@ func printProto(msg proto.Message) {
 	}
 }
 
+func printProtoWithKey(key []byte, msg proto.Message) {
+	resJson, err := protojson.Marshal(msg)
+	if err != nil {
+		fmt.Printf("Failed to print proto: %s", err.Error())
+	} else {
+		fmt.Printf("%s:%s\n", string(key), string(resJson))
+	}
+}
+
 func unMarshallYamlStrict(data []byte, msg interface{}) error {
 	jsonData, err := yaml.YAMLToJSON(data)
 	if err != nil {

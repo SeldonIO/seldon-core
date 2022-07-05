@@ -252,7 +252,8 @@ func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
 	res := &v2_dataplane.ModelInferResponse{}
 	err := proto.Unmarshal(e.Value, res)
 	if err != nil {
-		return err
+		fmt.Printf("%s:%s\n", string(e.Key), string(e.Value))
+		return nil
 	}
 	err = updateResponseFromRawContents(res)
 	if err != nil {
@@ -261,12 +262,12 @@ func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, output := range res.Outputs {
 			if output.Name == tensor {
-				printProto(output)
+				printProtoWithKey(e.Key, output)
 			}
 		}
 
 	} else {
-		printProto(res)
+		printProtoWithKey(e.Key, res)
 	}
 	return nil
 }
@@ -275,7 +276,8 @@ func showKafkaInputMsg(e *kafka.Message, tensor string) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := proto.Unmarshal(e.Value, req)
 	if err != nil {
-		return err
+		fmt.Printf("%s:%s\n", string(e.Key), string(e.Value))
+		return nil
 	}
 	err = updateRequestFromRawContents(req)
 	if err != nil {
@@ -284,12 +286,12 @@ func showKafkaInputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, input := range req.Inputs {
 			if input.Name == tensor {
-				printProto(input)
+				printProtoWithKey(e.Key, input)
 			}
 		}
 
 	} else {
-		printProto(req)
+		printProtoWithKey(e.Key, req)
 	}
 	return nil
 }
