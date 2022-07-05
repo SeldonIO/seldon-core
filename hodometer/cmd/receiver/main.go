@@ -37,5 +37,7 @@ func main() {
 		recorder,
 	)
 
-	receiver.Listen()
+	if err := receiver.Listen(); err != nil {
+		baseLogger.WithError(err).Error("Listener stopped")
+	}
 }

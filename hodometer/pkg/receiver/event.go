@@ -152,7 +152,7 @@ func (p *Properties) UnmarshalJSON(b []byte) error {
 		errBuilder := strings.Builder{}
 		errBuilder.WriteString("required fields not provided:")
 
-		for k, _ := range requiredProperties {
+		for k := range requiredProperties {
 			numSeen++
 			errBuilder.WriteString(" ")
 			errBuilder.WriteString(k)

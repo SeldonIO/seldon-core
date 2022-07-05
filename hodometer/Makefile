@@ -11,7 +11,7 @@ VERBOSE ?=
 
 # Build information
 VERSION_PACKAGE = $(shell sed -n 's/^module\s\+//p' go.mod)/pkg/hodometer
-BUILD_VERSION = $(shell cat ./version.txt)
+BUILD_VERSION ?= $(shell cat ./version.txt)
 BUILD_TIME = $(shell date -u -Iseconds)
 GIT_BRANCH ?= $(shell git branch --show-current)
 GIT_COMMIT ?= $(shell git rev-parse --short=16 HEAD)
@@ -72,6 +72,7 @@ build-hodometer-docker: copy-apis
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
 		--build-arg RELEASE_TYPE=$(RELEASE_TYPE) \
+		--build-arg BUILD_VERSION=$(BUILD_VERSION) \
 		-t ${HODOMETER_IMG} \
 		-f Dockerfile.hodometer .
 

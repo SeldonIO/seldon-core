@@ -25,6 +25,8 @@ jobs:
         run: make -C operator test
       - name: test-scheduler
         run: make -C scheduler test
+      - name: test-hodometer
+        run: make -C hodometer test-hodometer
 
   docker:
     needs: test
@@ -56,3 +58,7 @@ jobs:
       - name: Push Docker Images for Scheduler
         working-directory: ./scheduler
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-all docker-push-all
+
+      - name: Push Docker Images for Hodometer
+        working-directory: ./hodometer
+        run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make build-hodometer-docker push-hodometer-docker

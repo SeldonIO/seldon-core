@@ -10,6 +10,7 @@ RUN rm -r apis && mv apis-TEMP apis
 ARG GIT_BRANCH
 ARG GIT_COMMIT
 ARG RELEASE_TYPE
+ARG BUILD_VERSION
 
 RUN make build-hodometer
 

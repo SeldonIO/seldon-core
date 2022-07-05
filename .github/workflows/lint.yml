@@ -23,3 +23,9 @@ jobs:
           version: v1.45.2
           working-directory: scheduler
           skip-go-installation: true
+      - name: lint-hodometer
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.45.2
+          working-directory: hodometer
+          skip-go-installation: true

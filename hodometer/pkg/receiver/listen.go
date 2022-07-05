@@ -58,7 +58,7 @@ func (r *Receiver) handleTrack(resp http.ResponseWriter, req *http.Request) {
 		http.Error(resp, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	resp.Write(status)
+	_, _ = resp.Write(status)
 }
 
 func (r *Receiver) eventFrom(req *http.Request) (*Event, error) {
@@ -130,7 +130,7 @@ func (r *Receiver) handleListEvents(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	resp.Write(asJson)
+	_, _ = resp.Write(asJson)
 }
 
 // Listen blocks the caller and listens on the Receiver's port for

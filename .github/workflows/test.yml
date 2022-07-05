@@ -15,3 +15,5 @@ jobs:
         run: make -C operator test
       - name: test-scheduler
         run: make -C scheduler test
+      - name: test-hodometer
+        run: make -C hodometer test
