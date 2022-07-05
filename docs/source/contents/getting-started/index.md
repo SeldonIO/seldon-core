@@ -12,7 +12,6 @@ There are three core resources you will use:
  * Models - for deploying single machine learning models, custom transformation logic, drift detectors and outliers detectors.
  * Pipelines - for connecting together flows of data between models
  * Experiments - for testing new versions of models
- * Explainers - for explaining model or pipeline  predictions
 
 By default the standard installation will deploy MLServer and Triton inference servers which provide support for a wide range of machine learning model artifacts including Tensorflow models, PyTorch models, SKlearn models, XGBoost models, ONNX models, TensorRT models, custom python models and many more. For advanced use, the creation of new inference servers is manged by two resources:
 

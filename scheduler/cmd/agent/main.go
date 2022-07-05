@@ -157,6 +157,8 @@ func main() {
 		rcloneClient,
 		modelRepositoryDir,
 		getRepositoryHandler(logger),
+		cli.EnvoyHost,
+		cli.EnvoyPort,
 	)
 
 	// Create V2 Protocol Handler

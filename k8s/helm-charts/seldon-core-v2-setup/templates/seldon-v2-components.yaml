@@ -181,32 +181,6 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
-  - explainers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - explainers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - explainers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - models
   verbs:
   - create
@@ -977,6 +951,10 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: mlserver
+      - name: SELDON_ENVOY_HOST
+        value: seldon-mesh
+      - name: SELDON_ENVOY_PORT
+        value: "80"
       - name: POD_NAME
         valueFrom:
           fieldRef:

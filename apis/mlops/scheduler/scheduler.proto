@@ -42,6 +42,14 @@ message ModelSpec {
   repeated string requirements = 4; // list of capabilities the server must satisfy to run this model
   optional uint64 memoryBytes = 5; // Requested memory
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
+  optional ExplainerSpec explainer = 7; // optional black box explainer details
+}
+
+message ExplainerSpec {
+  string type = 1;
+  // 1 of semantic either model or pipeline reference
+  optional string modelRef = 2;
+  optional string pipelineRef = 3;
 }
 
 message KubernetesMeta {

@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+
 	copy2 "github.com/otiai10/copy"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/rclone"
@@ -15,10 +17,11 @@ type ModelRepositoryHandler interface {
 	FindModelVersionFolder(modelName string, version *uint32, path string) (string, error)
 	UpdateModelVersion(modelName string, version uint32, path string) error
 	UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error
+	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 }
 
 type ModelRepository interface {
-	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte) (*string, error)
+	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec) (*string, error)
 	RemoveModelVersion(modelName string) error
 	Ready() error
 }
@@ -28,21 +31,27 @@ type V2ModelRepository struct {
 	rcloneClient           *rclone.RCloneClient
 	repoPath               string
 	modelrepositoryHandler ModelRepositoryHandler
+	envoyHost              string
+	envoyPort              int
 }
 
 func NewModelRepository(logger log.FieldLogger,
 	rcloneClient *rclone.RCloneClient,
 	repoPath string,
-	modelRepositoryHandler ModelRepositoryHandler) *V2ModelRepository {
+	modelRepositoryHandler ModelRepositoryHandler,
+	envoyHost string,
+	envoyPort int) *V2ModelRepository {
 	return &V2ModelRepository{
 		logger:                 logger.WithField("Name", "V2ModelRepository"),
 		rcloneClient:           rcloneClient,
 		repoPath:               repoPath,
 		modelrepositoryHandler: modelRepositoryHandler,
+		envoyHost:              envoyHost,
+		envoyPort:              envoyPort,
 	}
 }
 
-func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte) (*string, error) {
+func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec) (*string, error) {
 	logger := r.logger.WithField("func", "DownloadModelVersion")
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
@@ -84,6 +93,14 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint3
 	err = r.modelrepositoryHandler.UpdateModelVersion(modelName, version, modelVersionPathInRepo)
 	if err != nil {
 		return nil, err
+	}
+
+	// Update details for blackbox explainer
+	if explainerSpec != nil {
+		err = r.modelrepositoryHandler.SetExplainer(modelVersionPathInRepo, explainerSpec, r.envoyHost, r.envoyPort)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Update global model configuration

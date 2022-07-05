@@ -14,8 +14,8 @@ images:
   newName: seldonio/seldon-agent
   newTag: latest
 - name: mlserver
-  newName: seldonio/mlserver
-  newTag: 1.1.0
+  newName: cliveseldon/mlserver
+  newTag: 1.1.0.explain
 - name: rclone
   newName: seldonio/seldon-rclone
   newTag: latest

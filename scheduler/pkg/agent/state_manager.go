@@ -119,9 +119,8 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 	manager.logger.Debugf("Unloading model %s, version %d", modelId, modelVersion)
 
 	if !manager.modelVersions.versionExists(modelId, modelVersion) {
-		err := fmt.Errorf("Model %s version %d does not exist locally", modelId, modelVersion)
-		manager.logger.Error(err)
-		return err
+		manager.logger.Warnf("Model %s version %d does not exist locally", modelId, modelVersion)
+		return nil
 	}
 
 	if manager.cache.Exists(modelId, false) {

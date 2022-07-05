@@ -73,13 +73,13 @@ func TestFindModelVersionFolder(t *testing.T) {
 			logger := log.New()
 			triton := TritonRepositoryHandler{logger: logger}
 			foundPath, err := triton.FindModelVersionFolder("foo", test.artifactVersion, modelFolder)
-			g.Expect(err).To(BeNil())
-			if test.found {
-				g.Expect(filepath.Base(foundPath)).To(Equal(test.expectedFolder))
-			} else {
+			if !test.found {
+				g.Expect(err).ToNot(BeNil())
 				g.Expect(foundPath).To(Equal(""))
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(filepath.Base(foundPath)).To(Equal(test.expectedFolder))
 			}
-
 		})
 	}
 }

@@ -4,7 +4,8 @@ This section will provide some examples to allow operations with Seldon to be te
 
  * [Local examples](local-examples.md)
  * [Kubernetes examples](k8s-examples.md)
- * [Pipeline examples](pipeline-examples.md) 
+ * [Pipeline examples](pipeline-examples.md)
+ * [Explainer examples](explainer-examples.md)  
 
 ## Advanced Examples
 
@@ -18,4 +19,5 @@ local-examples.md
 k8s-examples.md
 pipeline-examples.md
 cifar10.md
+explainer-examples.md
 ```

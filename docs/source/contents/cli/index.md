@@ -1,6 +1,6 @@
 # CLI
 
-Seldon provides a CLI to allow easy management and testing of Model, Experiment, Pipeline and Explainer resources.
+Seldon provides a CLI to allow easy management and testing of Model, Experiment, and Pipeline resources.
 
 At present this needs to be built by hand from the operator folder.
 

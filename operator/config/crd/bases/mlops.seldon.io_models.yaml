@@ -46,6 +46,20 @@ spec:
               dedicated:
                 description: Dedicated server exclusive to this model Default false
                 type: boolean
+              explainer:
+                description: Explainer spec
+                properties:
+                  modelRef:
+                    description: one of the following need to be set for blackbox
+                      explainers Reference to Model
+                    type: string
+                  pipelineRef:
+                    description: Reference to Pipeline
+                    type: string
+                  type:
+                    description: type of explainer
+                    type: string
+                type: object
               logger:
                 description: Payload logging
                 properties:

@@ -17,6 +17,8 @@ package resources
 import (
 	"time"
 
+	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
+
 	"github.com/golang/protobuf/ptypes/duration"
 
 	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
@@ -333,7 +335,7 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route) {
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.PipelineName + ".pipeline",
+			ExactMatch: r.PipelineName + "." + SeldonPipelineHeaderSuffix,
 		},
 	}
 	rt.Action = pipelineRouteActionGrpc
@@ -464,27 +466,61 @@ func createTapConfig() *anypb.Any {
 func createAccessLogConfig() *anypb.Any {
 	accessFilter := accesslog_file.FileAccessLog{
 		Path: "/tmp/envoy-accesslog.txt",
-
-		/*
-			AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
-				LogFormat: &core.SubstitutionFormatString{
-					Format: &core.SubstitutionFormatString_TextFormatSource{
-						TextFormatSource: &core.DataSource{
-							Specifier: &core.DataSource_InlineString{
-								InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
-							},
+		AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
+			LogFormat: &core.SubstitutionFormatString{
+				Format: &core.SubstitutionFormatString_TextFormatSource{
+					TextFormatSource: &core.DataSource{
+						Specifier: &core.DataSource_InlineString{
+							InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
 						},
 					},
 				},
 			},
-		*/
+		},
 	}
-
 	accessAny, err := anypb.New(&accessFilter)
 	if err != nil {
 		panic(err)
 	}
 	return accessAny
+}
+
+// A filter to add the seldon-model header from the http path if its not passed
+// Does this for model and pipeline paths allowing us to keep our current header based routing
+func createHeaderFilter() *anypb.Any {
+	luaFilter := luav3.Lua{
+		InlineCode: `function envoy_on_request(request_handle)
+  local modelHeader = request_handle:headers():get("` + SeldonModelHeader + `")
+  if modelHeader == nil or modelHeader == '' then
+    local path = request_handle:headers():get(":path")
+    local i, j = string.find(path,"/v2/models/")
+    if i == 1 then
+      local s = string.sub(path,j+1)
+      i, j = string.find(s, "/")
+      if i then
+        local model = string.sub(s,0,i-1)
+        request_handle:headers():add("` + SeldonModelHeader + `",model)
+      else
+        request_handle:headers():add("` + SeldonModelHeader + `",s)
+      end
+    else
+      i, j = string.find(path,"/v2/pipelines/")
+      if i == 1 then
+        local s = string.sub(path,j+1)
+        i, j = string.find(s, "/")
+        local model = string.sub(s,0,i-1)
+        request_handle:headers():add("` + SeldonModelHeader + `",model..".` + SeldonPipelineHeaderSuffix + `")
+      end
+    end
+  end
+end
+`,
+	}
+	luaAny, err := anypb.New(&luaFilter)
+	if err != nil {
+		panic(err)
+	}
+	return luaAny
 }
 
 func MakeHTTPListener(listenerName, address string, port uint32) *listener.Listener {
@@ -505,6 +541,12 @@ func MakeHTTPListener(listenerName, address string, port uint32) *listener.Liste
 				Name: "envoy.filters.http.tap",
 				ConfigType: &hcm.HttpFilter_TypedConfig{
 					TypedConfig: createTapConfig(),
+				},
+			},
+			{
+				Name: "envoy.filters.http.lua",
+				ConfigType: &hcm.HttpFilter_TypedConfig{
+					TypedConfig: createHeaderFilter(),
 				},
 			},
 			{

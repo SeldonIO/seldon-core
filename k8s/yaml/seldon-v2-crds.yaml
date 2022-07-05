@@ -135,156 +135,6 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
-  name: explainers.mlops.seldon.io
-spec:
-  group: mlops.seldon.io
-  names:
-    kind: Explainer
-    listKind: ExplainerList
-    plural: explainers
-    shortNames:
-    - mle
-    singular: explainer
-  scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: Explainer is the Schema for the explainers API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: ExplainerSpec defines the desired state of Explainer
-            properties:
-              artifactVersion:
-                description: Artifact Version A v2 version folder to select from storage
-                  bucket
-                format: int32
-                type: integer
-              blackbox:
-                description: Either ModelRef or PipelineRef is required
-                properties:
-                  modelRef:
-                    description: Reference to Model for Black Box models
-                    type: string
-                  pipelineRef:
-                    description: Reference to Pipeline for Black Box models
-                    type: string
-                  pipelineStep:
-                    description: Reference to Pipeline step - must include pipeline
-                    type: string
-                type: object
-              dedicated:
-                description: Dedicated server exclusive to this model Default false
-                type: boolean
-              logger:
-                description: Payload logging
-                properties:
-                  percent:
-                    description: Percentage of payloads to log
-                    type: integer
-                type: object
-              maxReplicas:
-                description: Max number of replicas - default equal to replicas
-                format: int32
-                type: integer
-              memory:
-                anyOf:
-                - type: integer
-                - type: string
-                description: Memory needed for model
-                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                x-kubernetes-int-or-string: true
-              minReplicas:
-                description: Min number of replicas - default equal to replicas
-                format: int32
-                type: integer
-              modelType:
-                description: Model type
-                type: string
-              preloaded:
-                description: Model already loaded on a server. Don't schedule. Default
-                  false
-                type: boolean
-              replicas:
-                description: Number of replicas - default 1
-                format: int32
-                type: integer
-              requirements:
-                description: List of extra requirements for this model to be loaded
-                  on a compatible server
-                items:
-                  type: string
-                type: array
-              schemaUri:
-                description: Schema URI
-                type: string
-              secretName:
-                description: Secret name
-                type: string
-              server:
-                description: Name of the Server to deploy this artifact
-                type: string
-              storageUri:
-                description: Storage URI for the model repository
-                type: string
-              whitebox:
-                properties:
-                  artifactVersion:
-                    description: Artifact Version A v2 version folder to select from
-                      storage bucket
-                    format: int32
-                    type: integer
-                  modelType:
-                    description: Model type
-                    type: string
-                  schemaUri:
-                    description: Schema URI
-                    type: string
-                  secretName:
-                    description: Secret name
-                    type: string
-                  storageUri:
-                    description: Storage URI for the model repository
-                    type: string
-                required:
-                - storageUri
-                type: object
-            required:
-            - storageUri
-            type: object
-          status:
-            description: ExplainerStatus defines the observed state of Explainer
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
   name: models.mlops.seldon.io
 spec:
   group: mlops.seldon.io
@@ -325,6 +175,20 @@ spec:
               dedicated:
                 description: Dedicated server exclusive to this model Default false
                 type: boolean
+              explainer:
+                description: Explainer spec
+                properties:
+                  modelRef:
+                    description: one of the following need to be set for blackbox
+                      explainers Reference to Model
+                    type: string
+                  pipelineRef:
+                    description: Reference to Pipeline
+                    type: string
+                  type:
+                    description: type of explainer
+                    type: string
+                type: object
               logger:
                 description: Payload logging
                 properties:

@@ -1,6 +1,0 @@
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Explainer
-metadata:
-  name: explainer-sample
-spec:
-  # TODO(user): Add fields here

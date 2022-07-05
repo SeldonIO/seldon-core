@@ -23,8 +23,10 @@ services:
       - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+      - SELDON_ENVOY_HOST=envoy      
+      - SELDON_ENVOY_PORT=${ENVOY_DATA_PORT}
       - SELDON_SERVER_TYPE=mlserver
-      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
 
   agent-triton:
     build:
@@ -41,6 +43,8 @@ services:
       - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+      - SELDON_ENVOY_HOST=envoy
+      - SELDON_ENVOY_PORT=${ENVOY_DATA_PORT}
       - SELDON_SERVER_TYPE=triton
       - SELDON_SERVER_CAPABILITIES=triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt
 
@@ -99,15 +103,6 @@ services:
       - "kafka_data:/bitnami"
     depends_on:
       - zookeeper
-
-  mlserver:
-    image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
-    command:
-      - "mlserver"
-      - "start"
-      - "/mnt/agent/models"
-    environment:
-      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
 
   modelgateway:
     build:
@@ -175,6 +170,17 @@ services:
       dockerfile: ./Dockerfile.scheduler
       context: .
     image: "${SCHEDULER_IMAGE_AND_TAG}"
+
+  mlserver:
+    image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
+    command:
+      - "mlserver"
+      - "start"
+      - "/mnt/agent/models"
+    environment:
+      - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
+      - MLSERVER_METRICS_PORT=${SERVER_MLSERVER_METRICS_PORT}
+    
 
   triton:
     image: "${SERVER_TRITON_IMAGE_AND_TAG}"

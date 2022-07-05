@@ -18,6 +18,7 @@ services:
       - "/mnt/config/tracing-host.json"
     environment:
       - SELDON_SCHEDULER_HOST=0.0.0.0
+      - SELDON_ENVOY_HOST=0.0.0.0
     volumes:
       - type: bind
         source: ./config
@@ -44,6 +45,7 @@ services:
       - "/mnt/config/tracing-host.json"
     environment:
       - SELDON_SCHEDULER_HOST=0.0.0.0
+      - SELDON_ENVOY_HOST=0.0.0.0      
     volumes:
       - type: bind
         source: ./config

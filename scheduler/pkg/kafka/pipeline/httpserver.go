@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	ModelHttpPathVariable = "model"
+	ResourceNameVariable = "model"
 )
 
 type GatewayHttpServer struct {
@@ -96,20 +96,15 @@ func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path(
-		"/v2/models/{" + ModelHttpPathVariable + "}/infer").HandlerFunc(
-		g.metrics.AddHistogramMetricsHandler(g.infer))
+		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(
+		g.metrics.AddHistogramMetricsHandler(g.inferModel))
+	g.router.NewRoute().Path(
+		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(
+		g.metrics.AddHistogramMetricsHandler(g.inferModel))
 }
 
-func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
+func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, resourceName string, isModel bool) {
 	logger := g.logger.WithField("func", "infer")
-	header := req.Header.Get(resources.SeldonModelHeader)
-	resourceName, isModel, err := createResourceNameFromHeader(header)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to create resource name from %s", header)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	startTime := time.Now()
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -150,4 +145,22 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request) {
 
 		}
 	}
+}
+
+func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request) {
+	logger := g.logger.WithField("func", "inferModel")
+	header := req.Header.Get(resources.SeldonModelHeader)
+	resourceName, isModel, err := createResourceNameFromHeader(header)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to create resource name from %s", header)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	g.infer(w, req, resourceName, isModel)
+}
+
+func (g *GatewayHttpServer) inferPipeline(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	resourceName := vars[ResourceNameVariable]
+	g.infer(w, req, resourceName, false)
 }

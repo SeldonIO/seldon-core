@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	copy2 "github.com/otiai10/copy"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	pb "github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton/config"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
@@ -87,7 +88,7 @@ func (t *TritonRepositoryHandler) findModelVersionInPath(modelPath string, versi
 	}
 	switch len(found) {
 	case 0:
-		return "", nil
+		return "", fmt.Errorf("Failed to find requested version %d in path %s", version, modelPath)
 	case 1:
 		return found[0], nil
 	default:
@@ -121,7 +122,7 @@ func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (st
 	if highestVersionFolderNum > 0 { // Triton versions need to be >0
 		return highestVersionPath, nil
 	}
-	return "", nil
+	return "", fmt.Errorf("Failed to find triton model version folder in path %s", modelPath)
 }
 
 func (t *TritonRepositoryHandler) loadConfigFromFile(path string) (*pb.ModelConfig, error) {
@@ -139,4 +140,8 @@ func (t *TritonRepositoryHandler) loadConfigFromBytes(dat []byte) (*pb.ModelConf
 		return nil, err
 	}
 	return &config, nil
+}
+
+func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
+	return nil
 }

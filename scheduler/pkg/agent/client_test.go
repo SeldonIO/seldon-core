@@ -42,7 +42,7 @@ func (f FakeModelRepository) RemoveModelVersion(modelName string) error {
 	return nil
 }
 
-func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte) (*string, error) {
+func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainer *pbs.ExplainerSpec) (*string, error) {
 	if f.err != nil {
 		return nil, f.err
 	}
@@ -482,7 +482,7 @@ func TestUnloadModel(t *testing.T) {
 			v2Status:                200,
 			success:                 true}, // Success
 		{
-			name:   "FailUnknownModel",
+			name:   "UnknownModel - unload ok",
 			models: []string{"iris"},
 			loadOp: &pb.ModelOperationMessage{
 				Operation: pb.ModelOperationMessage_LOAD_MODEL,
@@ -509,7 +509,7 @@ func TestUnloadModel(t *testing.T) {
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
 			expectedAvailableMemory: 500,
 			v2Status:                200,
-			success:                 false},
+			success:                 true},
 	}
 
 	for tidx, test := range tests {

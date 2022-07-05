@@ -33,7 +33,7 @@ type SchedulerConfig struct {
 func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
 		serverFilters:  []ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
-		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}},
+		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}},
 		serverSorts:    []sorters.ServerSorter{},
 		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}

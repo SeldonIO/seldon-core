@@ -181,32 +181,6 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
-  - explainers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - explainers/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - explainers/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - models
   verbs:
   - create
@@ -1004,7 +978,7 @@ spec:
       - /bin/agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: mlserver,alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+        value: mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT
@@ -1023,6 +997,10 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: mlserver
+      - name: SELDON_ENVOY_HOST
+        value: seldon-mesh
+      - name: SELDON_ENVOY_PORT
+        value: "80"
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1063,7 +1041,7 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
-      image: seldonio/mlserver:1.1.0
+      image: cliveseldon/mlserver:1.1.0.explain
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:

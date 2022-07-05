@@ -23,6 +23,7 @@ func TestAsModelDetails(t *testing.T) {
 	server := "server"
 	m1 := resource.MustParse("1M")
 	m1bytes := uint64(1_000_000)
+	incomeModel := "income"
 	tests := []test{
 		{
 			name: "simple",
@@ -74,6 +75,10 @@ func TestAsModelDetails(t *testing.T) {
 					Requirements: []string{"a", "b"},
 					ScalingSpec:  ScalingSpec{Replicas: &replicas},
 					Server:       &server,
+					Explainer: &ExplainerSpec{
+						Type:     "anchor_tabular",
+						ModelRef: &incomeModel,
+					},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -89,6 +94,10 @@ func TestAsModelDetails(t *testing.T) {
 					Requirements:  []string{"a", "b", modelType},
 					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
 					Server:        &server,
+					Explainer: &scheduler.ExplainerSpec{
+						Type:     "anchor_tabular",
+						ModelRef: &incomeModel,
+					},
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,

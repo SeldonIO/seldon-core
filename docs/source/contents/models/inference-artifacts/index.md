@@ -15,6 +15,11 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - `alibi-detect`
   - [docs](https://docs.seldon.io/projects/alibi-detect/en/stable/)
   - [example](../../examples/cifar10.md)
+* - Alibi-Explain
+  - MLServer
+  - `alibi-explain`
+  - [docs](https://docs.seldon.io/projects/alibi/en/stable/)
+  - [example](../../examples/explainer-examples.md)
 * - DALI
   - Triton
   - `dali`

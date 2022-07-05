@@ -38,15 +38,6 @@ resources:
   controller: true
   domain: seldon.io
   group: mlops
-  kind: Explainer
-  path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
-  version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: seldon.io
-  group: mlops
   kind: ServerConfig
   path: github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1
   version: v1alpha1

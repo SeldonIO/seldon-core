@@ -8,11 +8,12 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	MLServerConfigFilename = "model-settings.json"
+	mlserverConfigFilename = "model-settings.json"
 )
 
 type MLServerRepositoryHandler struct {
@@ -34,11 +35,12 @@ type Settings struct {
 
 // MLServer model settings. Only a subset of fields included as needed
 type ModelSettings struct {
-	Name           string           `json:"name"`
-	Platform       string           `json:"platform,omitempty"`
-	Versions       []string         `json:"versions,omitempty"`
-	Implementation string           `json:"implementation,omitempty"`
-	Parameters     *ModelParameters `json:"parameters,omitempty"`
+	Name            string           `json:"name"`
+	Platform        string           `json:"platform,omitempty"`
+	Versions        []string         `json:"versions,omitempty"`
+	ParallelWorkers int              `json:"parallel_workers"`
+	Implementation  string           `json:"implementation,omitempty"`
+	Parameters      *ModelParameters `json:"parameters,omitempty"`
 }
 
 // MLServer model parameters.
@@ -49,9 +51,16 @@ type ModelParameters struct {
 	//Version of the model
 	Version string `json:"version,omitempty"`
 	//Format of the model (only available on certain runtimes).
-	Format      string            `json:"format,omitempty"`
-	ContentType string            `json:"content_type,omitempty"`
-	Extra       map[string]string `json:"extra,omitempty"`
+	Format      string          `json:"format,omitempty"`
+	ContentType string          `json:"content_type,omitempty"`
+	Extra       ExtraParameters `json:"extra,omitempty"`
+}
+
+type ExtraParameters struct {
+	InferUri       *string                `json:"infer_uri,omitempty"`
+	ExplainerType  *string                `json:"explainer_type,omitempty"`
+	InitParameters map[string]interface{} `json:"init_parameters,omitempty"`
+	//TODO we should add headers here that MLServer can add to request
 }
 
 // No need to update anything at top level for mlserver
@@ -92,14 +101,14 @@ func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, ver
 		}
 	}
 	if mvp == "" {
-		return "", fmt.Errorf("Failed to find a model version folder in %s for %s for passed in version %v", path, modelName, version)
+		return "", fmt.Errorf("Failed to find an mlserver settings file model in %s for %s for passed in version %v", path, modelName, version)
 	}
 	logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
 	return mvp, nil
 }
 
 func (m *MLServerRepositoryHandler) UpdateNameAndVersion(path string, modelName string, version string) error {
-	settingsPath := filepath.Join(path, MLServerConfigFilename)
+	settingsPath := filepath.Join(path, mlserverConfigFilename)
 	ms, err := m.loadModelSettingsFromFile(settingsPath)
 	if err != nil {
 		return err
@@ -115,6 +124,33 @@ func (m *MLServerRepositoryHandler) UpdateNameAndVersion(path string, modelName 
 		return err
 	}
 	return os.WriteFile(settingsPath, data, fs.ModePerm)
+}
+
+func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
+	if explainerSpec != nil {
+		settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
+		ms, err := m.loadModelSettingsFromFile(settingsPath)
+		if err != nil {
+			return err
+		}
+		if ms.Parameters == nil {
+			ms.Parameters = &ModelParameters{}
+		}
+		ms.Parameters.Extra.ExplainerType = &explainerSpec.Type
+		if explainerSpec.ModelRef != nil {
+			inferUri := fmt.Sprintf("http://%s:%d/v2/models/%s/infer", envoyHost, envoyPort, *explainerSpec.ModelRef)
+			ms.Parameters.Extra.InferUri = &inferUri
+		} else if explainerSpec.PipelineRef != nil {
+			inferUri := fmt.Sprintf("http://%s:%d/v2/pipelines/%s/infer", envoyHost, envoyPort, *explainerSpec.PipelineRef)
+			ms.Parameters.Extra.InferUri = &inferUri
+		}
+		data, err := json.Marshal(ms)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(settingsPath, data, fs.ModePerm)
+	}
+	return nil
 }
 
 func (m *MLServerRepositoryHandler) loadModelSettingsFromFile(path string) (*ModelSettings, error) {
@@ -141,7 +177,7 @@ func (m *MLServerRepositoryHandler) findModelVersionInPath(modelPath string, ver
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && filepath.Base(path) == MLServerConfigFilename {
+		if !info.IsDir() && filepath.Base(path) == mlserverConfigFilename {
 			versionFolder := filepath.Base(filepath.Dir(path))
 			// Just check folder name matches the desired version
 			// We ignore the parameters file vesion settings for now to be consistent
@@ -173,7 +209,7 @@ func (m *MLServerRepositoryHandler) getDefaultModelSettingsPath(modelPath string
 		if info.IsDir() && modelPath != path { //Don't descend into directories
 			return filepath.SkipDir
 		}
-		if !info.IsDir() && filepath.Base(path) == MLServerConfigFilename {
+		if !info.IsDir() && filepath.Base(path) == mlserverConfigFilename {
 			found = append(found, filepath.Dir(path))
 		}
 		return nil
@@ -195,7 +231,7 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && filepath.Base(path) == MLServerConfigFilename {
+		if !info.IsDir() && filepath.Base(path) == mlserverConfigFilename {
 			dir := filepath.Dir(path)
 			if dir != modelPath { // Don't include top level model-settings.json file
 				dirName := filepath.Base(dir)

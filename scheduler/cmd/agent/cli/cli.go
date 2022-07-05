@@ -27,6 +27,8 @@ const (
 	envMemoryRequest        = "MEMORY_REQUEST"
 	envCapabilities         = "SELDON_SERVER_CAPABILITIES"
 	envOverCommitPercentage = "SELDON_OVERCOMMIT_PERCENTAGE"
+	envEnvoyHost            = "SELDON_ENVOY_HOST"
+	envEnvoyPort            = "SELDON_ENVOY_PORT"
 
 	flagSchedulerHost        = "scheduler-host"
 	flagSchedulerPort        = "scheduler-port"
@@ -45,6 +47,8 @@ const (
 	flagCapabilities         = "capabilities"
 	flagOverCommitPercentage = "over-commit-percentage"
 	flagTracingConfigPath    = "tracing-config-path"
+	flagEnvoyHost            = "envoy-host"
+	flagEnvoyPort            = "envoy-port"
 )
 
 const (
@@ -53,6 +57,8 @@ const (
 	defaultRclonePort        = 5572
 	defaultSchedulerPort     = 9005
 	defaultMetricsPort       = 9006
+	defaultEnvoyHost         = "0.0.0.0"
+	defaultEnvoyPort         = 9000
 )
 
 var (
@@ -84,6 +90,8 @@ var (
 	OverCommitPercentage int
 	serverTypes          = [...]string{"mlserver", "triton"}
 	TracingConfigPath    string
+	EnvoyHost            string
+	EnvoyPort            int
 )
 
 func init() {
@@ -113,6 +121,8 @@ func updateFlagsFromEnv() {
 	maybeUpdateReplicaConfig()
 	maybeUpdateLogLevel()
 	maybeUpdateServerType()
+	maybeUpdateEnvoyHost()
+	maybeUpdateEnvoyPort()
 }
 
 func maybeUpdateOverCommitPercentage() {
@@ -188,6 +198,24 @@ func maybeUpdatePort(flagName string, envName string, port *int) {
 
 	log.Infof("Setting %s from %s to %d", flagName, envName, envPort)
 	*port = envPort
+}
+
+func maybeUpdateEnvoyHost() {
+	if isFlagPassed(flagEnvoyHost) {
+		return
+	}
+
+	envoyHostFromEnv, found := getEnvString(envEnvoyHost)
+	if !found {
+		return
+	}
+
+	log.Infof("Setting %s from %s to %s", flagEnvoyHost, envEnvoyHost, envoyHostFromEnv)
+	EnvoyHost = envoyHostFromEnv
+}
+
+func maybeUpdateEnvoyPort() {
+	maybeUpdatePort(flagEnvoyPort, envEnvoyPort, &EnvoyPort)
 }
 
 func maybeUpdateInferenceHttpPort() {

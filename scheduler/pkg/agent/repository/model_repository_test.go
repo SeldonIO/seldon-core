@@ -208,8 +208,8 @@ func TestDownloadModelVersion(t *testing.T) {
 			logger := log.New()
 			rcloneClient := createFakeRcloneClient(200, rclonePath)
 			modelRepoPath := t.TempDir()
-			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger))
-			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.artifactVersion, test.srcUri, nil)
+			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
+			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.artifactVersion, test.srcUri, nil, nil)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -261,7 +261,7 @@ func TestRemoveModelVersion(t *testing.T) {
 			}
 			logger := log.New()
 			logger.SetLevel(log.DebugLevel)
-			mr := NewModelRepository(logger, nil, path, nil)
+			mr := NewModelRepository(logger, nil, path, nil, "0.0.0.0", 9000)
 			err := mr.RemoveModelVersion(test.modelName)
 			g.Expect(err).To(BeNil())
 			modelPath := filepath.Join(path, test.modelName)

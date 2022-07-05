@@ -5,7 +5,6 @@ resources:
 - bases/mlops.seldon.io_models.yaml
 - bases/mlops.seldon.io_servers.yaml
 - bases/mlops.seldon.io_pipelines.yaml
-- bases/mlops.seldon.io_explainers.yaml
 - bases/mlops.seldon.io_serverconfigs.yaml
 - bases/mlops.seldon.io_experiments.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
@@ -16,7 +15,6 @@ patchesStrategicMerge:
 #- patches/webhook_in_models.yaml
 #- patches/webhook_in_servers.yaml
 #- patches/webhook_in_pipelines.yaml
-#- patches/webhook_in_explainers.yaml
 #- patches/webhook_in_serverconfigs.yaml
 #- patches/webhook_in_experiments.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
@@ -26,7 +24,6 @@ patchesStrategicMerge:
 #- patches/cainjection_in_models.yaml
 #- patches/cainjection_in_servers.yaml
 #- patches/cainjection_in_pipelines.yaml
-#- patches/cainjection_in_explainers.yaml
 #- patches/cainjection_in_serverconfigs.yaml
 #- patches/cainjection_in_experiments.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch

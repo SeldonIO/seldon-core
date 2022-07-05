@@ -48,6 +48,8 @@ func makeArgs() {
 	flag.IntVar(&OverCommitPercentage, flagOverCommitPercentage, 0, "Overcommit memory pecentage")
 	flag.StringVar(&LogLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(&TracingConfigPath, flagTracingConfigPath, "", "Tracing config path")
+	flag.StringVar(&EnvoyHost, flagEnvoyHost, defaultEnvoyHost, "Envoy host")
+	flag.IntVar(&EnvoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
 }
 
 func parseFlags() {

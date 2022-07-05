@@ -22,3 +22,14 @@ pipeline-examples.md: pipeline-examples.ipynb
 		--to markdown \
 		--output pipeline-examples.md
 	./markdown-transforms.sh pipeline-examples.md
+
+explainer-examples.md: explainer-examples.ipynb
+	jupyter nbconvert \
+		explainer-examples.ipynb \
+		--ClearOutputPreprocessor.enabled=False \
+		--to markdown \
+		--output explainer-examples.md
+	./markdown-transforms.sh explainer-examples.md
+
+.PHONY: create
+create: local-examples.md k8s-examples.md pipeline-examples.md explainer-examples.md

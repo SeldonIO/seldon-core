@@ -2,10 +2,9 @@
 
 For Kubernetes usage we provide a set of custom resources for interacting with Seldon.
 
- * [Models](./model/index.md) - for deploying single machine learning models, custom transformation logic, drift detectors and outliers detectors.
+ * [Models](./model/index.md) - for deploying single machine learning models, custom transformation logic, drift detectors, outliers detectors and explainers.
  * [Experiments](./experiment/index.md) - for testing new versions of models
  * [Pipelines](./pipeline/index.md) - for connecting together flows of data between models 
- * [Explainers](./explainer/index.md) - model explanations. (coming soon)
 
 Advanced usage:
 
@@ -20,7 +19,6 @@ Advanced usage:
 model/index.md
 experiment/index.md
 pipeline/index.md
-explainer/index.md
 server/index.md
 serverconfig/index.md
 ```

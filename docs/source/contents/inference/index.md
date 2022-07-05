@@ -1,6 +1,6 @@
 # Inference
 
-This section will discuss how to make inference calls against your seldon models, pipelines or explainers.
+This section will discuss how to make inference calls against your seldon models or pipelines.
 
 You can make synchronous inference requests via REST or gRPC or asynchronous requests via Kafka topics.
 
@@ -24,7 +24,6 @@ Seldon routes requests to to the correct enpoint via headers in HTTP calls. You 
 
  * For Models: use the model name, e.g. for a Model names `mymodel`, `seldon-model: mymodel`
  * For Pipelines: use the Pipeline name with the suffix `.pipeline`, e.g. for a Pipeline named `mypipeline`, `seldon-model: mypipeline.pipeline`
- * For Explainers: use the Explainer name with the suffix `.explainer`, e.g. for an Explainer named `myexplainer`, `seldon-m odel: myexplainer.explainer`
 
 The content of your request should be a [V2 protocol payload](../apis/inference/v2.md).
 
@@ -57,7 +56,7 @@ For Pipelines a synchronous request is possible if the Pipeline has an outputs s
 The Seldon architetcure uses Kafka and therefore asynchronous requests can be sent by pushing V2 proto payloads to the appropriate topic.
 
 ```
-seldon.<namespace>.<model|pipeline|explainer>.<name>.<inputs|outputs>
+seldon.<namespace>.<model|pipeline>.<name>.<inputs|outputs>
 ```
 
 ### Model Inference

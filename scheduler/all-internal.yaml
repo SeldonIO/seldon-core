@@ -33,8 +33,10 @@ services:
       - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
+      - SELDON_ENVOY_HOST=envoy            
+      - SELDON_ENVOY_PORT=${ENVOY_DATA_PORT}
       - SELDON_SERVER_TYPE=mlserver
-      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
     ports:
       - "${AGENT_MLSERVER_HTTP_PORT}:${AGENT_MLSERVER_HTTP_PORT}"
       - "${AGENT_MLSERVER_GRPC_PORT}:${AGENT_MLSERVER_GRPC_PORT}"

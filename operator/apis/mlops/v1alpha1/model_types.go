@@ -46,6 +46,21 @@ type ModelSpec struct {
 	Dedicated bool `json:"dedicated,omitempty"`
 	// Payload logging
 	Logger *LoggingSpec `json:"logger,omitempty"`
+	// Explainer spec
+	Explainer *ExplainerSpec `json:"explainer,omitempty"`
+}
+
+// Either ModelRef or PipelineRef is required
+type ExplainerSpec struct {
+	// type of explainer
+	Type string `json:"type,omitempty"`
+	// one of the following need to be set for blackbox explainers
+	// Reference to Model
+	// +optional
+	ModelRef *string `json:"modelRef,omitempty"`
+	// Reference to Pipeline
+	// +optional
+	PipelineRef *string `json:"pipelineRef,omitempty"`
 }
 
 type ScalingSpec struct {
@@ -139,6 +154,13 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		DeploymentSpec: &scheduler.DeploymentSpec{
 			LogPayloads: m.Spec.Logger != nil, // Simple boolean switch at present
 		},
+	}
+	if m.Spec.Explainer != nil {
+		md.ModelSpec.Explainer = &scheduler.ExplainerSpec{
+			Type:        m.Spec.Explainer.Type,
+			ModelRef:    m.Spec.Explainer.ModelRef,
+			PipelineRef: m.Spec.Explainer.PipelineRef,
+		}
 	}
 	// Add storage secret if specified
 	if m.Spec.SecretName != nil {

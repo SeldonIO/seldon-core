@@ -7,9 +7,88 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
+
+func TestSetExplainer(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	envoyHost := "0.0.0.0"
+	envoyPort := 9000
+	type test struct {
+		name          string
+		data          []byte
+		explainerSpec *scheduler.ExplainerSpec
+		expected      *ModelSettings
+	}
+
+	getStrPr := func(str string) *string { return &str }
+	tests := []test{
+		{
+			name: "basic",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
+"parameters": {"version": "1", "extra":{}}}`),
+			explainerSpec: &scheduler.ExplainerSpec{
+				Type:     "anchor_tabular",
+				ModelRef: getStrPr("mymodel"),
+			},
+			expected: &ModelSettings{
+				Name:           "iris",
+				Implementation: "mlserver_sklearn.SKLearnModel",
+				Parameters: &ModelParameters{
+					Version: "1",
+					Extra: ExtraParameters{
+						ExplainerType: getStrPr("anchor_tabular"),
+						InferUri:      getStrPr("http://0.0.0.0:9000/v2/models/mymodel/infer"),
+					},
+				},
+			},
+		},
+		{
+			name: "explainer parameters",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
+"parameters": {"version": "1", "extra":{"init_parameters":{"threshold":0.95}}}}`),
+			explainerSpec: &scheduler.ExplainerSpec{
+				Type:     "anchor_tabular",
+				ModelRef: getStrPr("mymodel"),
+			},
+			expected: &ModelSettings{
+				Name:           "iris",
+				Implementation: "mlserver_sklearn.SKLearnModel",
+				Parameters: &ModelParameters{
+					Version: "1",
+					Extra: ExtraParameters{
+						ExplainerType:  getStrPr("anchor_tabular"),
+						InferUri:       getStrPr("http://0.0.0.0:9000/v2/models/mymodel/infer"),
+						InitParameters: map[string]interface{}{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			modelRepoPath := t.TempDir()
+			settingsFile := filepath.Join(modelRepoPath, mlserverConfigFilename)
+			err := os.WriteFile(settingsFile, test.data, os.ModePerm)
+			g.Expect(err).To(BeNil())
+			m := &MLServerRepositoryHandler{}
+			err = m.SetExplainer(modelRepoPath, test.explainerSpec, envoyHost, envoyPort)
+			g.Expect(err).To(BeNil())
+			modelSettings, err := m.loadModelSettingsFromFile(settingsFile)
+			g.Expect(err).To(BeNil())
+			g.Expect(modelSettings.Parameters.Extra.ExplainerType).To(Equal(modelSettings.Parameters.Extra.ExplainerType))
+			g.Expect(modelSettings.Parameters.Extra.InferUri).To(Equal(modelSettings.Parameters.Extra.InferUri))
+			for k, v := range test.expected.Parameters.Extra.InitParameters {
+				g.Expect(modelSettings.Parameters.Extra.InitParameters[k]).To(Equal(v))
+			}
+		})
+	}
+}
 
 func TestLoadFromBytes(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -32,6 +111,19 @@ func TestLoadFromBytes(t *testing.T) {
 				Parameters: &ModelParameters{
 					Version: "1",
 				},
+			},
+		},
+		{
+			name: "parallel_workers",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
+"parameters": {"version": "1"},"parallel_workers":0}`),
+			expected: &ModelSettings{
+				Name:           "iris",
+				Implementation: "mlserver_sklearn.SKLearnModel",
+				Parameters: &ModelParameters{
+					Version: "1",
+				},
+				ParallelWorkers: 0,
 			},
 		},
 		{
@@ -326,9 +418,6 @@ func TestUpdateVersion(t *testing.T) {
 					Version:     "1",
 					ContentType: "foo",
 					Format:      "bar",
-					Extra: map[string]string{
-						"foo": "bar",
-					},
 				},
 			},
 			modelName: "foo",
@@ -369,9 +458,6 @@ func TestUpdateVersion(t *testing.T) {
 					g.Expect(ms.Parameters.Uri).To(Equal(test.settings.Parameters.Uri))
 					g.Expect(ms.Parameters.ContentType).To(Equal(test.settings.Parameters.ContentType))
 					g.Expect(ms.Parameters.Format).To(Equal(test.settings.Parameters.Format))
-					for k, v := range test.settings.Parameters.Extra {
-						g.Expect(ms.Parameters.Extra[k]).To(Equal(v))
-					}
 				}
 
 			}

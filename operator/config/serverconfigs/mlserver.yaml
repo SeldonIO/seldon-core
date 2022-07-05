@@ -35,7 +35,7 @@ spec:
       name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: "mlserver,alibi-detect,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+        value: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_SERVER_HTTP_PORT
@@ -54,6 +54,10 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: "mlserver"
+      - name: SELDON_ENVOY_HOST
+        value: "seldon-mesh"
+      - name: SELDON_ENVOY_PORT
+        value: "80"
       - name: POD_NAME
         valueFrom:
           fieldRef:
