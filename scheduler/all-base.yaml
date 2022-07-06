@@ -77,6 +77,8 @@ services:
       - LOG_LEVEL=${HODOMETER_LOG_LEVEL}
       - METRICS_LEVEL=${HODOMETER_METRICS_LEVEL}
       - SCHEDULER_PORT=${SCHEDULER_SERVER_PORT}
+    depends_on:
+      - scheduler
 
   hodometer-receiver:
     build:
