@@ -2,7 +2,7 @@
 
 .PHONY: deploy-local
 deploy-local:
-	make -C scheduler start-all
+	make -C scheduler pull-all start-all
 
 .PHONY: undeploy-local
 undeploy-local:

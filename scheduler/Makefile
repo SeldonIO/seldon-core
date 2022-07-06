@@ -170,31 +170,31 @@ docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-p
 #####################################
 
 .PHONY: kind-image-install-scheduler
-kind-image-install-scheduler: 
+kind-image-install-scheduler:
 	kind load -v 3 docker-image ${SCHEDULER_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-agent
-kind-image-install-agent: 
+kind-image-install-agent:
 	kind load -v 3 docker-image ${AGENT_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-envoy
-kind-image-install-envoy: 
+kind-image-install-envoy:
 	kind load -v 3 docker-image ${ENVOY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-rclone
-kind-image-install-rclone: 
+kind-image-install-rclone:
 	kind load -v 3 docker-image ${RCLONE_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-modelgateway
-kind-image-install-modelgateway: 
+kind-image-install-modelgateway:
 	kind load -v 3 docker-image ${MODELGATEWAY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-pipelinegateway
-kind-image-install-pipelinegateway: 
+kind-image-install-pipelinegateway:
 	kind load -v 3 docker-image ${PIPELINEGATEWAY_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-dataflow
-kind-image-install-dataflow: 
+kind-image-install-dataflow:
 	kind load -v 3 docker-image ${DATAFLOW_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-all
@@ -213,18 +213,18 @@ create-model-folders:
 
 DOCKER_COMPOSE_IMAGES = \
 	SCHEDULER_IMAGE_AND_TAG=${SCHEDULER_IMG} \
-		AGENT_IMAGE_AND_TAG=${AGENT_IMG} \
-		ENVOY_IMAGE_AND_TAG=${ENVOY_IMG} \
-		RCLONE_IMAGE_AND_TAG=${RCLONE_IMG} \
-		SERVER_MLSERVER_IMAGE_AND_TAG=${MLSERVER_IMG} \
-		SERVER_TRITON_IMAGE_AND_TAG=${TRITON_IMG} \
-		GRAFANA_IMAGE_AND_TAG=${GRAFANA_IMG} \
-		MODELGATEWAY_IMAGE_AND_TAG=${MODELGATEWAY_IMG} \
-		PIPELINEGATEWAY_IMAGE_AND_TAG=${PIPELINEGATEWAY_IMG} \
-		DATAFLOW_IMAGE_AND_TAG=${DATAFLOW_IMG} \
-		HODOMETER_IMAGE_AND_TAG=${HODOMETER_IMG} \
-		KAFKA_IMAGE_AND_TAG=${KAFKA_IMG} \
-		OTELCOL_IMG=${OTELCOL_IMG}
+	AGENT_IMAGE_AND_TAG=${AGENT_IMG} \
+	ENVOY_IMAGE_AND_TAG=${ENVOY_IMG} \
+	RCLONE_IMAGE_AND_TAG=${RCLONE_IMG} \
+	SERVER_MLSERVER_IMAGE_AND_TAG=${MLSERVER_IMG} \
+	SERVER_TRITON_IMAGE_AND_TAG=${TRITON_IMG} \
+	GRAFANA_IMAGE_AND_TAG=${GRAFANA_IMG} \
+	MODELGATEWAY_IMAGE_AND_TAG=${MODELGATEWAY_IMG} \
+	PIPELINEGATEWAY_IMAGE_AND_TAG=${PIPELINEGATEWAY_IMG} \
+	DATAFLOW_IMAGE_AND_TAG=${DATAFLOW_IMG} \
+	HODOMETER_IMAGE_AND_TAG=${HODOMETER_IMG} \
+	KAFKA_IMAGE_AND_TAG=${KAFKA_IMG} \
+	OTELCOL_IMG=${OTELCOL_IMG}
 
 DOCKER_COMPOSE_ENV = \
 	${DOCKER_COMPOSE_IMAGES} \
@@ -264,6 +264,10 @@ DOCKER_COMPOSE_SERVICE_HOST_COMMAND = ${DOCKER_COMPOSE_ENV} ${DOCKER_COMPOSE_BAS
 .PHONY: start-all
 start-all: copy-apis
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d
+
+.PHONY: pull-all
+pull-all: copy-apis
+	${DOCKER_COMPOSE_SERVICE_COMMAND} pull
 
 .PHONY: stop-all
 stop-all:
@@ -529,7 +533,7 @@ ifeq ($(SCHEDULER_USE_DB),true)
   export DB_PATH_COMPOSE = /mnt/db
 else
   DB_PATH_LOCAL =
-  export DB_PATH_COMPOSE = 
+  export DB_PATH_COMPOSE =
 endif
 
 .PHONY: start-scheduler-local

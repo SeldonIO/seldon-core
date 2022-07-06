@@ -23,7 +23,7 @@ services:
       - SELDON_SCHEDULER_HOST=scheduler
       - SELDON_SCHEDULER_PORT=${SCHEDULER_AGENT_PORT}
       - MEMORY_REQUEST=${AGENT_MEMORY_REQUEST}
-      - SELDON_ENVOY_HOST=envoy      
+      - SELDON_ENVOY_HOST=envoy
       - SELDON_ENVOY_PORT=${ENVOY_DATA_PORT}
       - SELDON_SERVER_TYPE=mlserver
       - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
@@ -72,7 +72,7 @@ services:
     build:
       dockerfile: ./../hodometer/Dockerfile.hodometer
       context: ./../hodometer
-    image: "seldonio/hodometer:latest"
+    image: "${HODOMETER_IMAGE_AND_TAG}"
     environment:
       - LOG_LEVEL=${HODOMETER_LOG_LEVEL}
       - METRICS_LEVEL=${HODOMETER_METRICS_LEVEL}
@@ -180,7 +180,7 @@ services:
     environment:
       - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
       - MLSERVER_METRICS_PORT=${SERVER_MLSERVER_METRICS_PORT}
-    
+
 
   triton:
     image: "${SERVER_TRITON_IMAGE_AND_TAG}"
