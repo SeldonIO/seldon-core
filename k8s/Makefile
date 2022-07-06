@@ -38,12 +38,18 @@ create-yaml:
 	kustomize build kustomize/components/ > yaml/seldon-v2-components.yaml
 	kustomize build kustomize/servers/ > yaml/seldon-v2-servers.yaml
 
+HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
+HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
+
 .PHONY: create-helm-charts
 create-helm-charts:
 	sed "s/#TAG_VERSION_PLACEHOLDER#/${CUSTOM_IMAGE_TAG}/g" helm-charts/seldon-core-v2-setup/values.yaml.template > helm-charts/seldon-core-v2-setup/values.yaml
-	kustomize build kustomize/helm-crds/ > helm-charts/seldon-core-v2-crds/templates/seldon-v2-crds.yaml
-	kustomize build kustomize/helm-components/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-components.yaml
-	kustomize build kustomize/helm-servers/ > helm-charts/seldon-core-v2-setup/templates/seldon-v2-servers.yaml
+	kustomize build kustomize/helm-crds/ > ${HELM_CRD_BASE}/seldon-v2-crds.yaml
+	kustomize build kustomize/helm-components/ > ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	kustomize build kustomize/helm-servers/ > ${HELM_COMPONENTS_BASE}/seldon-v2-servers.yaml
+	sed -n --file=add-helm-toggle-hodometer.sed ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml \
+		> ${HELM_COMPONENTS_BASE}/.components.yaml
+	mv ${HELM_COMPONENTS_BASE}/.components.yaml ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 
 .PHONY: set-chart-version
 set-chart-version:

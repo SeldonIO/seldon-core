@@ -30,25 +30,29 @@ There are three levels of metrics that can be enabled:
 
 The set of metrics available at each level is:
 
+<!-- start list metrics -->
+
 | Metric name | Level | Format | Notes |
 | --- | --- | --- | --- |
-| cluster_id | cluster | UUID | A random identifier for this cluster for de-duplication |
-| seldon_core_version | cluster | Version number | E.g. 1.2.3 |
-| is_global_installation | cluster | Boolean | Whether installation is global or namespaced |
-| is_kubernetes | cluster | Boolean | Whether or not the installation is in Kubernetes |
-| kubernetes_version | cluster | Version number | Kubernetes server version, if inside Kubernetes |
-| node_count | cluster | Integer | Number of nodes in the cluster, if inside Kubernetes |
-| model_count | resource | Integer | Number of `Model` resources |
-| pipeline_count | resource | Integer | Number of `Pipeline` resources |
-| experiment_count | resource | Integer | Number of `Experiment` resources |
-| server_count | resource | Integer | Number of `Server` resources |
-| server_replica_count | resource | Integer | Total number of `Server` resource replicas |
-| multimodel_enabled_count | feature | Integer | Number of `Server` resources with multi-model serving enabled |
-| overcommit_enabled_count | feature | Integer | Number of `Server` resources with overcommitting enabled |
-| gpu_enabled_count | feature | Integer | Number of `Server` resources with GPUs attached |
-| inference_server_name | feature | String | Name of inference server, e.g. MLServer or Triton |
-| server_cpu_cores_sum | feature | Float | Total of CPU limits across all `Server` resource replicas, in cores |
-| server_memory_gb_sum | feature | Float | Total of memory limits across all `Server` resource replicas, in GiB |
+| `cluster_id` | cluster | UUID | A random identifier for this cluster for de-duplication |
+| `seldon_core_version` | cluster | Version number | E.g. 1.2.3 |
+| `is_global_installation` | cluster | Boolean | Whether installation is global or namespaced |
+| `is_kubernetes` | cluster | Boolean | Whether or not the installation is in Kubernetes |
+| `kubernetes_version` | cluster | Version number | Kubernetes server version, if inside Kubernetes |
+| `node_count` | cluster | Integer | Number of nodes in the cluster, if inside Kubernetes |
+| `model_count` | resource | Integer | Number of `Model` resources |
+| `pipeline_count` | resource | Integer | Number of `Pipeline` resources |
+| `experiment_count` | resource | Integer | Number of `Experiment` resources |
+| `server_count` | resource | Integer | Number of `Server` resources |
+| `server_replica_count` | resource | Integer | Total number of `Server` resource replicas |
+| `multimodel_enabled_count` | feature | Integer | Number of `Server` resources with multi-model serving enabled |
+| `overcommit_enabled_count` | feature | Integer | Number of `Server` resources with overcommitting enabled |
+| `gpu_enabled_count` | feature | Integer | Number of `Server` resources with GPUs attached |
+| `inference_server_name` | feature | String | Name of inference server, e.g. MLServer or Triton |
+| `server_cpu_cores_sum` | feature | Float | Total of CPU limits across all `Server` resource replicas, in cores |
+| `server_memory_gb_sum` | feature | Float | Total of memory limits across all `Server` resource replicas, in GiB |
+
+<!-- end list metrics -->
 
 ## Privacy
 

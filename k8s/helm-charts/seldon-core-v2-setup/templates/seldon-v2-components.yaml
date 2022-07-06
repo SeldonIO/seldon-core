@@ -1,8 +1,11 @@
+{{ if .Values.hodometer.enabled }}
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: hodometer
   namespace: seldon-mesh
+{{ end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -95,6 +98,7 @@ rules:
   - get
   - list
   - watch
+{{ if .Values.hodometer.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -108,6 +112,7 @@ rules:
   - nodes
   verbs:
   - list
+{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -370,6 +375,7 @@ subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
   namespace: seldon-mesh
+{{ if .Values.hodometer.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -384,6 +390,7 @@ subjects:
 - kind: ServiceAccount
   name: hodometer
   namespace: seldon-mesh
+{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -675,6 +682,7 @@ spec:
         - containerPort: 9003
           name: envoy-admin
       terminationGracePeriodSeconds: 5
+{{ if .Values.hodometer.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -715,6 +723,7 @@ spec:
         runAsUser: 8888
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
+{{ end }}
 ---
 apiVersion: apps/v1
 kind: Deployment

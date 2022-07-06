@@ -4,6 +4,7 @@ opentelemetry:
   ratio: 1
 
 hodometer:
+  enabled: true
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
