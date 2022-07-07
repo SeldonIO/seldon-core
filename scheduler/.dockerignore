@@ -1,0 +1,10 @@
+bin
+data-flow/build
+data-flow/scripts
+docs
+hack
+k8s
+mlrepo
+mnt
+notebooks
+venv

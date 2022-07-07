@@ -246,6 +246,10 @@ else
 	DOCKER_COMPOSE_LOCAL_MODELS =
 endif
 
+ifneq ($(DOCKER_COMPOSE_BUILD_IMAGES),)
+	DOCKER_COMPOSE_BUILD_IMAGES := --build
+endif
+
 DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml
 DOCKER_COMPOSE_INTERNAL = -f all-internal.yaml
 DOCKER_COMPOSE_HOST = -f all-host-network.yaml
@@ -263,7 +267,7 @@ DOCKER_COMPOSE_SERVICE_HOST_COMMAND = ${DOCKER_COMPOSE_ENV} ${DOCKER_COMPOSE_BAS
 
 .PHONY: start-all
 start-all: copy-apis
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES}
 
 .PHONY: pull-all
 pull-all: copy-apis
@@ -275,7 +279,7 @@ stop-all:
 
 .PHONY: start-all-host
 start-all-host: copy-apis create-model-folders
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES}
 
 .PHONY: stop-all-host
 stop-all-host:
@@ -336,7 +340,7 @@ stop-triton-host:
 
 .PHONY: start-agent-mlserver
 start-agent-mlserver:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d agent-mlserver
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} agent-mlserver
 
 .PHONY: stop-agent-mlserver
 stop-agent-mlserver:
@@ -345,7 +349,7 @@ stop-agent-mlserver:
 
 .PHONY: start-agent-mlserver-host
 start-agent-mlserver-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d agent-mlserver
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} agent-mlserver
 
 .PHONY: stop-agent-mlserver-host
 stop-agent-mlserver-host:
@@ -354,7 +358,7 @@ stop-agent-mlserver-host:
 
 .PHONY: start-agent-triton
 start-agent-triton:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d agent-triton
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} agent-triton
 
 .PHONY: stop-agent-triton
 stop-agent-triton:
@@ -363,7 +367,7 @@ stop-agent-triton:
 
 .PHONY: start-agent-triton-host
 start-agent-triton-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d agent-triton
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} agent-triton
 
 .PHONY: stop-agent-triton-host
 stop-agent-triton-host:
@@ -372,7 +376,7 @@ stop-agent-triton-host:
 
 .PHONY: start-scheduler
 start-scheduler:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d scheduler
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} scheduler
 
 .PHONY: stop-scheduler
 stop-scheduler:
@@ -380,7 +384,7 @@ stop-scheduler:
 
 .PHONY: start-scheduler-host
 start-scheduler-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d scheduler
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} scheduler
 
 .PHONY: stop-scheduler-host
 stop-scheduler-host:
@@ -388,7 +392,7 @@ stop-scheduler-host:
 
 .PHONY: start-envoy
 start-envoy:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d envoy
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} envoy
 
 .PHONY: stop-envoy
 stop-envoy:
@@ -396,7 +400,7 @@ stop-envoy:
 
 .PHONY: start-envoy-host
 start-envoy-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d envoy
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} envoy
 
 .PHONY: stop-envoy-host
 stop-envoy-host:
@@ -404,7 +408,7 @@ stop-envoy-host:
 
 .PHONY: start-rclone
 start-rclone-mlserver:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d rclone-mlserver
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} rclone-mlserver
 
 .PHONY: stop-rclone-mlserver
 stop-rclone-mlserver:
@@ -412,7 +416,7 @@ stop-rclone-mlserver:
 
 .PHONY: start-rclone-mlserver-host
 start-rclone-mlserver-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d rclone-mlserver
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} rclone-mlserver
 
 .PHONY: stop-rclone-mlserver-host
 stop-rclone-mlserver-host:
@@ -420,7 +424,7 @@ stop-rclone-mlserver-host:
 
 .PHONY: start-rclone
 start-rclone-triton:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d rclone-triton
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} rclone-triton
 
 .PHONY: stop-rclone-triton
 stop-rclone-triton:
@@ -428,7 +432,7 @@ stop-rclone-triton:
 
 .PHONY: start-rclone-triton-host
 start-rclone-triton-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d rclone-triton
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} rclone-triton
 
 .PHONY: stop-rclone-triton-host
 stop-rclone-triton-host:
@@ -436,7 +440,7 @@ stop-rclone-triton-host:
 
 .PHONY: start-modelgateway
 start-modelgateway:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d modelgateway
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} modelgateway
 
 .PHONY: stop-modelgateway
 stop-modelgateway:
@@ -444,7 +448,7 @@ stop-modelgateway:
 
 .PHONY: start-modelgateway-host
 start-modelgateway-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d modelgateway
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} modelgateway
 
 .PHONY: stop-modelgateway-host
 stop-modelgateway-host:
@@ -452,7 +456,7 @@ stop-modelgateway-host:
 
 .PHONY: start-pipelinegateway
 start-pipelinegateway:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d pipelinegateway
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} pipelinegateway
 
 .PHONY: stop-pipelinegateway
 stop-pipelinegateway:
@@ -460,7 +464,7 @@ stop-pipelinegateway:
 
 .PHONY: start-pipelinegateway-host
 start-pipelinegateway-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d pipelinegateway
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} pipelinegateway
 
 .PHONY: stop-pipelinegateway-host
 stop-pipelinegateway-host:
@@ -508,7 +512,7 @@ stop-kafka-host:
 
 .PHONY: start-dataflow-engine
 start-dataflow-engine:
-	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d dataflow
+	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} dataflow
 
 .PHONY: stop-dataflow-engine
 stop-dataflow-engine:
@@ -516,7 +520,7 @@ stop-dataflow-engine:
 
 .PHONY: start-dataflow-engine-host
 start-dataflow-engine-host:
-	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d dataflow
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES} dataflow
 
 .PHONY: stop-dataflow-engine-host
 stop-dataflow-engine-host:
