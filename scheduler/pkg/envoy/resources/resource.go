@@ -491,7 +491,8 @@ func createHeaderFilter() *anypb.Any {
 	luaFilter := luav3.Lua{
 		InlineCode: `function envoy_on_request(request_handle)
   local modelHeader = request_handle:headers():get("` + SeldonModelHeader + `")
-  if modelHeader == nil or modelHeader == '' then
+  local routeHeader = request_handle:headers():get("` + SeldonRouteHeader + `")
+  if (modelHeader == nil or modelHeader == '') and (routeHeader == nil or routeHeader == '') then
     local path = request_handle:headers():get(":path")
     local i, j = string.find(path,"/v2/models/")
     if i == 1 then
