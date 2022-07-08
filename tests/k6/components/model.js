@@ -5,8 +5,17 @@ const pytorch_cifar10 = "pytorch_cifar10"
 const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
 const onyx_gpt2 = "onyx_gpt2"
+const mlflow_wine = "mlflow_wine"
 
 const models = {
+    mlflow_wine: {
+        "modelTemplate": {
+            "uriTemplate": "gs://seldon-models/mlflow/elasticnet_wine_model_mlserver_1_1",
+            "maxUriSuffix": 0,
+            "requirements": ["mlflow"],
+            "memoryBytes": 20000,
+        },
+    },
     iris: {
         "modelTemplate": {
             "uriTemplate": "gs://seldon-models/testing/iris",
@@ -35,7 +44,7 @@ const models = {
         "modelTemplate": {
             "uriTemplate": "gs://seldon-models/triton/pytorch_cifar10/cifar10",
             "maxUriSuffix": 0,
-            "requirements": ["tensorflow"],
+            "requirements": ["pytorch"],
             "memoryBytes": 20000,
         },
     },
@@ -59,7 +68,7 @@ const models = {
         "modelTemplate": {
             "uriTemplate": "gs://seldon-models/triton/onnx_gpt2/gpt2",
             "maxUriSuffix": 0,
-            "requirements": ["tensorflow"],
+            "requirements": ["onnx"],
             "memoryBytes": 20000,
         },
     },
@@ -131,6 +140,32 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         return {
             "http": {"inputs":[{"name":"input_ids","data": data,"datatype":datatype,"shape":shape}, {"name":"attention_mask","data": data,"datatype":datatype,"shape":shape}]},
             "grpc": {"inputs":[{"name":"input_ids","contents":{"int_contents":data},"datatype":datatype,"shape":shape}, {"name":"attention_mask","contents":{"int_contents":data},"datatype":datatype,"shape":shape}]}
+        }
+    } else if (modelName == mlflow_wine) {
+        const fields = ["fixed acidity", "volatile acidity", "citric acidity", "residual sugar", "chlorides", "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"]
+        const shape = [1]
+        const data = new Array(1).fill(1)
+        const data_all = new Array(fields.length).fill(1)
+        const datatype = "FP32"
+         var v2Fields = [];
+        var v2FieldsGrpc = [];
+        for (var i = 0; i < fields.length; i++) {
+            v2Fields.push({
+                "name": fields[i],
+                "data": data,
+                "datatype": datatype,
+                "shape": shape,
+            })
+            v2FieldsGrpc.push({
+                "name": fields[i],
+                "contents": {"fp32_contents": data},
+                "datatype": datatype,
+                "shape": shape,
+            })
+        }
+        return {
+            "http": {"inputs": v2Fields, "parameters": {"content_type": "pd"}},
+            "grpc": {"inputs": v2FieldsGrpc, "parameters": {"content_type": {"string_param": "pd"}}}
         }
     }
 }

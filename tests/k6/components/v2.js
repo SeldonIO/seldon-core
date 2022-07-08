@@ -42,7 +42,7 @@ export function inferGrpc(modelName, payload, viaEnvoy, pipelineSuffix) {
         headers['seldon-internal-model'] = modelName
     }
     const params = {
-        metadata: headers
+        headers: headers
     };
     payload.model_name = modelName
     const response = v2Client.invoke('inference.GRPCInferenceService/ModelInfer', payload, params);
