@@ -757,6 +757,8 @@ spec:
           value: '{{ .Values.opentelemetry.endpoint }}'
         - name: MODELGATEWAY_NUM_WORKERS
           value: '{{ .Values.modelgateway.workers }}'
+        - name: MODELGATEWAY_MAX_MODELS_PER_CONSUMER
+          value: "100"
         image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository
           }}:{{ .Values.modelgateway.image.tag }}'
         imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'

@@ -141,13 +141,21 @@ func (kc *InferKafkaConsumer) AddModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 	kc.loadedModels[modelName] = true
-	topic := kc.topicNamer.GetModelTopicInputs(modelName)
-	err := kc.createTopic(topic)
-	if err != nil {
+
+	// create output topic
+	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
+	if err := kc.createTopic(outputTopic); err != nil {
 		return err
 	}
-	kc.subscribedTopics[topic] = true
-	err = kc.subscribeTopics()
+
+	// create input topic
+	inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
+	if err := kc.createTopic(inputTopic); err != nil {
+		return err
+	}
+
+	kc.subscribedTopics[inputTopic] = true
+	err := kc.subscribeTopics()
 	if err != nil {
 		kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
 		delete(kc.loadedModels, modelName)

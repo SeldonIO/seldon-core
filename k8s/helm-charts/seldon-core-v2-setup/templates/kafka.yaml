@@ -11,6 +11,7 @@ data:
          "session.timeout.ms": {{ .Values.kafka.consumer.sessionTimeoutMs }},
          "auto.offset.reset": "{{ .Values.kafka.consumer.autoOffsetReset }}",
          "topic.metadata.refresh.interval.ms": "{{ .Values.kafka.consumer.topicMetadataRefreshIntervalMs }}"
+         "topic.metadata.propagation.max.ms": "{{ .Values.kafka.consumer.topicMetadataPropagationMaxMs }}"
       },
       "producer":{
         "linger.ms": {{ .Values.kafka.producer.lingerMs }},

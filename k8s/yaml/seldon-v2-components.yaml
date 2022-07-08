@@ -428,6 +428,7 @@ data:
           "session.timeout.ms":6000,
           "auto.offset.reset":"earliest",
           "topic.metadata.refresh.interval.ms": 1000
+          "topic.metadata.propagation.max.ms": 300000
        },
        "producer":{
          "linger.ms":0,
@@ -798,6 +799,8 @@ spec:
         env:
         - name: MODELGATEWAY_NUM_WORKERS
           value: "8"
+        - name: MODELGATEWAY_MAX_MODELS_PER_CONSUMER
+          value: "100"
         image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
