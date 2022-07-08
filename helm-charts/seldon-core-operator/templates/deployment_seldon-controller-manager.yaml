@@ -41,6 +41,10 @@ spec:
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - --log-level=$(MANAGER_LOG_LEVEL)
         - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
+        - --leader-election-resource-lock=$(MANAGER_LEADER_ELECTION_RESOURCE_LOCK)
+        - --leader-election-lease-duration-secs=$(MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS)
+        - --leader-election-renew-deadline-secs=$(MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS)
+        - --leader-election-retry-period-secs=$(MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS)
         - '{{- if .Values.singleNamespace }}--namespace={{ include "seldon.namespace" . }}{{- end }}'
 {{- with .Values.manager.containerSecurityContext }}
 {{- toYaml . | nindent 8}}
@@ -50,6 +54,14 @@ spec:
         env:
         - name: MANAGER_LEADER_ELECTION_ID
           value: '{{ .Values.manager.leaderElectionID }}'
+        - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
+          value: '{{ .Values.manager.leaderElectionResourceLock }}'
+        - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
+          value: '{{ .Values.manager.leaderElectionLeaseDurationSecs }}'
+        - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
+          value: '{{ .Values.manager.leaderElectionRenewDeadlineSecs }}'
+        - name: MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS
+          value: '{{ .Values.manager.leaderElectionRetryPeriodSecs }}'
         - name: MANAGER_LOG_LEVEL
           value: '{{ .Values.manager.logLevel }}'
         - name: WATCH_NAMESPACE
