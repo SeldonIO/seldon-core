@@ -216,15 +216,7 @@ def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     return logger
 
 
-def main():
-    LOG_FORMAT = (
-        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
-    )
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger.info("Starting microservice.py:main")
-    logger.info(f"Seldon Core version: {__version__}")
-
-    sys.path.append(os.getcwd())
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
 
@@ -358,7 +350,20 @@ def main():
         help="Number of GPRC workers.",
     )
 
-    args, remaining = parser.parse_known_args()
+    return parser.parse_known_args()
+
+
+def main():
+    LOG_FORMAT = (
+        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
+    )
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logger.info("Starting microservice.py:main")
+    logger.info(f"Seldon Core version: {__version__}")
+
+    sys.path.append(os.getcwd())
+
+    args, remaining = parse_args()
 
     if len(remaining) > 0:
         logger.error(
