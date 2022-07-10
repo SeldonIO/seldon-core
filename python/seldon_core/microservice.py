@@ -566,7 +566,7 @@ def main():
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
-    metrics_server_func = rest_metrics_server
+    server_metrics_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
@@ -580,7 +580,7 @@ def main():
         server_rest_func,
         server_grpc_func,
         server_custom_func,
-        metrics_server_func,
+        server_metrics_func,
     )
 
 
