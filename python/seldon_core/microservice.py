@@ -434,7 +434,7 @@ def main():
             http_port,
             args.single_threaded,
         )
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
     else:
         # Start production server
         def rest_prediction_server():
@@ -474,7 +474,7 @@ def main():
             ).run()
 
         logger.info("REST gunicorn microservice running on port %i", http_port)
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
 
     def _wait_forever(server):
         try:
@@ -545,7 +545,7 @@ def main():
             for worker in workers:
                 worker.join()
 
-    server2_func = grpc_prediction_server if args.grpc_workers > 0 else None
+    server_grpc_func = grpc_prediction_server if args.grpc_workers > 0 else None
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
@@ -567,17 +567,22 @@ def main():
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
-    metrics_server_func = rest_metrics_server
+    server_metrics_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
     ):
-        server3_func = user_object.custom_service
+        server_custom_func = user_object.custom_service
     else:
-        server3_func = None
+        server_custom_func = None
 
     logger.info("Starting servers")
-    start_servers(server1_func, server2_func, server3_func, metrics_server_func)
+    start_servers(
+        server_rest_func,
+        server_grpc_func,
+        server_custom_func,
+        server_metrics_func,
+    )
 
 
 if __name__ == "__main__":
