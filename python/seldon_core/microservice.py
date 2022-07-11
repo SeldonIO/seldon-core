@@ -434,7 +434,7 @@ def main():
             http_port,
             args.single_threaded,
         )
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
     else:
         # Start production server
         def rest_prediction_server():
@@ -474,7 +474,7 @@ def main():
             ).run()
 
         logger.info("REST gunicorn microservice running on port %i", http_port)
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
 
     def _wait_forever(server):
         try:
@@ -485,7 +485,7 @@ def main():
 
     def _run_grpc_server(bind_address):
         """Start a server in a subprocess."""
-        logger.info(f"Starting new GRPC server with {args.grpc_threads}.")
+        logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
 
         if args.tracing:
             from grpc_opentracing import open_tracing_server_interceptor
@@ -530,7 +530,9 @@ def main():
         with _reserve_grpc_port() as bind_port:
             bind_address = "0.0.0.0:{}".format(bind_port)
             logger.info(
-                f"GRPC Server Binding to '%s' {bind_address} with {args.grpc_workers} processes."
+                "GRPC Server Binding to %s with %d processes.",
+                bind_address,
+                args.grpc_workers,
             )
             sys.stdout.flush()
             workers = []
@@ -544,7 +546,7 @@ def main():
             for worker in workers:
                 worker.join()
 
-    server2_func = grpc_prediction_server if args.grpc_workers > 0 else None
+    server_grpc_func = grpc_prediction_server if args.grpc_workers > 0 else None
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
@@ -566,17 +568,22 @@ def main():
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
-    metrics_server_func = rest_metrics_server
+    server_metrics_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
     ):
-        server3_func = user_object.custom_service
+        server_custom_func = user_object.custom_service
     else:
-        server3_func = None
+        server_custom_func = None
 
     logger.info("Starting servers")
-    start_servers(server1_func, server2_func, server3_func, metrics_server_func)
+    start_servers(
+        server_rest_func,
+        server_grpc_func,
+        server_custom_func,
+        server_metrics_func,
+    )
 
 
 if __name__ == "__main__":

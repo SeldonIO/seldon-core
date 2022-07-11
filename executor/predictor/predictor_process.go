@@ -443,7 +443,7 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(nodeModel), msg, p.Meta.Meta)
 	}
 }
 
@@ -451,7 +451,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(nodeModel), msg, p.Meta.Meta)
 	}
 }
 
