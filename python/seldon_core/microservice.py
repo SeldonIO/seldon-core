@@ -530,8 +530,9 @@ def main():
         with _reserve_grpc_port() as bind_port:
             bind_address = "0.0.0.0:{}".format(bind_port)
             logger.info(
-                "GRPC Server Binding to %s with {args.grpc_workers} processes.",
+                "GRPC Server Binding to %s with %d processes.",
                 bind_address,
+                args.grpc_workers,
             )
             sys.stdout.flush()
             workers = []
