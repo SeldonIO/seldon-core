@@ -1170,18 +1170,18 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 		Expect(len(depFetched.Spec.Template.Spec.Containers[0].Args)).Should(Equal(7))
 		for _, c := range depFetched.Spec.Template.Spec.Containers {
 			if c.Name == modelName {
-				for idx, arg := range c.Args {
-					if arg == constants.TritonArgModelRepository {
-						Expect(c.Args[idx+1]).To(Equal(modelUri))
+				for _, arg := range c.Args {
+					if strings.Index(arg, constants.TritonArgModelRepository) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgModelRepository + modelUri))
 					}
-					if arg == constants.TritonArgModelControlMode {
-						Expect(c.Args[idx+1]).To(Equal("explicit"))
+					if strings.Index(arg, constants.TritonArgModelControlMode) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgModelControlMode + "explicit"))
 					}
-					if arg == constants.TritonArgLoadModel {
-						Expect(c.Args[idx+1]).To(Equal("model1"))
+					if strings.Index(arg, constants.TritonArgLoadModel) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgLoadModel + "model1"))
 					}
-					if arg == constants.TritonArgStrictModelConfig {
-						Expect(c.Args[idx+1]).To(Equal("true"))
+					if strings.Index(arg, constants.TritonArgStrictModelConfig) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgStrictModelConfig + "true"))
 					}
 				}
 			}
