@@ -135,15 +135,37 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	c := utils.GetContainerForDeployment(deploy, pu.Name)
 	existing := c != nil
 
+	// Define the default arguments
+	args := []string{
+		"/opt/tritonserver/bin/tritonserver",
+		constants.TritonArgGrpcPort + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
+		constants.TritonArgHttpPort + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+	}
+
+	// Triton can support loading models directory from cloud storage modelURI, enabled with "no-storage-initializer" annotation
+	// see: https://github.com/triton-inference-server/server/blob/main/docs/model_repository.md
+	noStorage := strings.ToLower(mlDepSpec.Annotations[machinelearningv1.ANNOTATION_NO_STOARGE_INITIALIZER]) == "true"
+	if !noStorage {
+		args = append(args, constants.TritonArgModelRepository+DefaultModelLocalMountPath)
+		args = append(args, constants.TritonArgStrictModelConfig+"false")
+	} else {
+		args = append(args, constants.TritonArgModelRepository+pu.ModelURI)
+		// Optionally allow "model_control_mode=explicit" and one or more "load_model=model_name" parameters
+		// see: https://github.com/triton-inference-server/server/blob/main/docs/model_management.md
+		for _, paramElement := range pu.Parameters {
+			if strings.ToLower(paramElement.Name) == "model_control_mode" {
+				args = append(args, constants.TritonArgModelControlMode+paramElement.Value)
+			} else if strings.ToLower(paramElement.Name) == "load_model" {
+				args = append(args, constants.TritonArgLoadModel+paramElement.Value)
+			} else if strings.ToLower(paramElement.Name) == "strict_model_config" {
+				args = append(args, constants.TritonArgStrictModelConfig+paramElement.Value)
+			}
+		}
+	}
+
 	cServer := &v1.Container{
 		Name: pu.Name,
-		Args: []string{
-			"/opt/tritonserver/bin/tritonserver",
-			"--grpc-port=" + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
-			"--http-port=" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
-			"--model-repository=" + DefaultModelLocalMountPath,
-			"--strict-model-config=false",
-		},
+		Args: args,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "grpc",
@@ -216,10 +238,15 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	}
 
 	envSecretRefName := extractEnvSecretRefName(pu)
-	mi := NewModelInitializer(pi.ctx, pi.clientset)
-	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
-	if err != nil {
-		return err
+	if !noStorage {
+		mi := NewModelInitializer(pi.ctx, pi.clientset)
+		_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Add secrets directly to triton server if not using storage initializer
+		addEnvFromSecret(cServer, envSecretRefName)
 	}
 	return nil
 }
