@@ -209,6 +209,12 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	}
 	cServer.Image = serverConfig.PrepackImageName(mlDepSpec.Protocol, pu)
 
+	envSecretRefName := extractEnvSecretRefName(pu)
+	if noStorage {
+		// Add secrets directly to triton server if not using storage initializer
+		addEnvFromSecret(cServer, envSecretRefName)
+	}
+
 	if existing {
 		// Overwrite core items if not existing or required
 		if c.Image == "" {
@@ -216,6 +222,9 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		}
 		if c.Args == nil {
 			c.Args = cServer.Args
+		}
+		if c.EnvFrom == nil {
+			c.EnvFrom = cServer.EnvFrom
 		}
 		if c.ReadinessProbe == nil {
 			c.ReadinessProbe = cServer.ReadinessProbe
@@ -237,17 +246,14 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		}
 	}
 
-	envSecretRefName := extractEnvSecretRefName(pu)
 	if !noStorage {
 		mi := NewModelInitializer(pi.ctx, pi.clientset)
 		_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
 		if err != nil {
 			return err
 		}
-	} else {
-		// Add secrets directly to triton server if not using storage initializer
-		addEnvFromSecret(cServer, envSecretRefName)
 	}
+
 	return nil
 }
 

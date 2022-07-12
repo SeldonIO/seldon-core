@@ -1065,6 +1065,19 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 	By("Creating a resource")
 	It("should create a resource with no storage initializer but triton args", func() {
 		Expect(k8sClient).NotTo(BeNil())
+		secretName := "s3-credentials"
+		secret := &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      secretName,
+				Namespace: "default",
+			},
+			Type: corev1.SecretTypeOpaque,
+			StringData: map[string]string{
+				"AWS_DEFAULT_REGION":    "us-east-1",
+				"AWS_ACCESS_KEY_ID":     "mykey",
+				"AWS_SECRET_ACCESS_KEY": "mysecret",
+			},
+		}
 		var modelType = machinelearningv1.MODEL
 		modelName := "classifier"
 		modelUri := "s3://mybucket/mymodel"
@@ -1102,11 +1115,12 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 							},
 						},
 						Graph: machinelearningv1.PredictiveUnit{
-							Name:           modelName,
-							ModelURI:       modelUri,
-							Type:           &modelType,
-							Implementation: &impl,
-							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							Name:             modelName,
+							ModelURI:         modelUri,
+							Type:             &modelType,
+							Implementation:   &impl,
+							Endpoint:         &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							EnvSecretRefName: secretName,
 							Parameters: []machinelearningv1.Parameter{
 								{
 									Name:  "model_control_mode",
@@ -1138,6 +1152,9 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
 			Should(Succeed())
 
+		// Create secret
+		Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
+
 		// Run Defaulter
 		instance.Default()
 
@@ -1166,10 +1183,10 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 		Expect(len(depFetched.Spec.Template.Spec.InitContainers)).To(Equal(0)) // no storage
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1)) // no engine
 
-		// Check we have 7 args total (server, http, grpc, model_uri, model_control_mode, load_model, strict_model_config)
-		Expect(len(depFetched.Spec.Template.Spec.Containers[0].Args)).Should(Equal(7))
 		for _, c := range depFetched.Spec.Template.Spec.Containers {
 			if c.Name == modelName {
+				// Check we have 7 args total (server, http, grpc, model_uri, model_control_mode, load_model, strict_model_config)
+				Expect(len(c.Args)).Should(Equal(7))
 				for _, arg := range c.Args {
 					if strings.Index(arg, constants.TritonArgModelRepository) == 0 {
 						Expect(arg).To(Equal(constants.TritonArgModelRepository + modelUri))
@@ -1184,6 +1201,10 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 						Expect(arg).To(Equal(constants.TritonArgStrictModelConfig + "true"))
 					}
 				}
+
+				// Check env is set from secretName
+				Expect(len(c.EnvFrom)).Should(Equal(1))
+				Expect(c.EnvFrom[0].SecretRef.Name).Should(Equal(secretName))
 			}
 		}
 
