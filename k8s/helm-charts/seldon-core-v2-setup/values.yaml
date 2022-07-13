@@ -19,7 +19,6 @@ kafka:
   consumer:
     sessionTimeoutMs: 6000
     autoOffsetReset: earliest
-    topicMetadataRefreshIntervalMs: 1000
     topicMetadataPropagationMaxMs: 300000
   producer:
     lingerMs: 0

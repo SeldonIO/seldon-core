@@ -9,7 +9,6 @@ data:
       "consumer":{
          "session.timeout.ms":6000,
          "auto.offset.reset":"earliest",
-         "topic.metadata.refresh.interval.ms": 1000
          "topic.metadata.propagation.max.ms": 300000
       },
       "producer":{

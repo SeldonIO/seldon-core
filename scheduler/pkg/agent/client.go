@@ -314,7 +314,7 @@ func (c *Client) StartService() error {
 			go func() {
 				err := c.LoadModel(operation)
 				if err != nil {
-					c.logger.WithError(err).Errorf("Failed to handle load model")
+					c.logger.WithError(err).Errorf("Failed to handle load model %s:%d", operation.GetModelVersion().GetModel().GetMeta().GetName(), operation.GetModelVersion().GetVersion())
 				}
 			}()
 
@@ -323,7 +323,7 @@ func (c *Client) StartService() error {
 			go func() {
 				err := c.UnloadModel(operation)
 				if err != nil {
-					c.logger.WithError(err).Errorf("Failed to handle unload model")
+					c.logger.WithError(err).Errorf("Failed to handle unload model %s:%d", operation.GetModelVersion().GetModel().GetMeta().GetName(), operation.GetModelVersion().GetVersion())
 				}
 			}()
 		}

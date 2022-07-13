@@ -10,7 +10,7 @@ import (
 
 const (
 	EnvMaxModelsPerConsumer     = "MODELGATEWAY_MAX_MODELS_PER_CONSUMER"
-	DefaultMaxModelsPerConsumer = 1
+	DefaultMaxModelsPerConsumer = 100
 )
 
 type ConsumerManager struct {

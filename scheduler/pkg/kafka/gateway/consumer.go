@@ -36,6 +36,7 @@ type InferKafkaConsumer struct {
 	tracer           trace.Tracer
 	topicNamer       *kafka2.TopicNamer
 	consumerConfig   *ConsumerConfig
+	adminClient      *kafka.AdminClient
 }
 
 func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig) (*InferKafkaConsumer, error) {
@@ -72,6 +73,13 @@ func (kc *InferKafkaConsumer) setup() error {
 		return err
 	}
 	logger.Infof("Created consumer %s", kc.consumer.String())
+
+	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
+		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
+		if err != nil {
+			return err
+		}
+	}
 
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
 		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer)
@@ -111,29 +119,31 @@ func (kc *InferKafkaConsumer) GetNumModels() int {
 	return len(kc.loadedModels)
 }
 
-func (kc *InferKafkaConsumer) createTopic(topicName string) error {
+func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
 	logger := kc.logger.WithField("func", "createTopic")
-	if !kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
-		logger.Warnf("Can't create topic %s as no kafka config", topicName)
+	if kc.adminClient == nil {
+		logger.Warnf("Can't create topics %v as no admin client", topicNames)
 		return nil
 	}
-	adminClient, err := kafka.NewAdminClientFromConsumer(kc.consumer)
-	if err != nil {
-		return err
-	}
+	t1 := time.Now()
+
 	var topicSpecs []kafka.TopicSpecification
-	topicSpecs = append(topicSpecs, kafka.TopicSpecification{
-		Topic:             topicName,
-		NumPartitions:     1,
-		ReplicationFactor: 1,
-	})
-	results, err := adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
+	for _, topicName := range topicNames {
+		topicSpecs = append(topicSpecs, kafka.TopicSpecification{
+			Topic:             topicName,
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		})
+	}
+	results, err := kc.adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
 	if err != nil {
 		return err
 	}
 	for _, result := range results {
 		logger.Debugf("Topic result for %s", result.String())
 	}
+	t2 := time.Now()
+	logger.Infof("Topic create in %d millis", t2.Sub(t1).Milliseconds())
 	return nil
 }
 
@@ -142,15 +152,10 @@ func (kc *InferKafkaConsumer) AddModel(modelName string) error {
 	defer kc.mu.Unlock()
 	kc.loadedModels[modelName] = true
 
-	// create output topic
-	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
-	if err := kc.createTopic(outputTopic); err != nil {
-		return err
-	}
-
-	// create input topic
+	// create topics
 	inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
-	if err := kc.createTopic(inputTopic); err != nil {
+	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
+	if err := kc.createTopics([]string{inputTopic, outputTopic}); err != nil {
 		return err
 	}
 
