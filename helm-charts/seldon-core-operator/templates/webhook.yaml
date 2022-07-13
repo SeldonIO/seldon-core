@@ -34,7 +34,7 @@ webhooks:
   - v1
   - v1beta1
   clientConfig:
-{{- if not .Values.certManager.enabled }}
+{{- if not .Values.certManager.enabled -}}
     caBundle: '{{ $ca.Cert | b64enc }}'
 {{- end }}
     service:
