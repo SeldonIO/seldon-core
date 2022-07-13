@@ -18,7 +18,7 @@ RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 RUN dnf install -y make automake gcc gcc-c++
 
 # Pin pip and setuptools
-RUN pip install pip==20.2 setuptools==46.1
+RUN pip install pip==22.1.2 setuptools==63.1.0
 
 RUN mkdir microservice
 WORKDIR /microservice
@@ -40,6 +40,6 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 RUN mkdir -p /.conda && \
     chmod a+rwx /.conda && \
     chown -R 8888 /microservice  && \
-    conda clean --index-cache
+    conda clean --yes --index-cache
 
 EXPOSE 5000
