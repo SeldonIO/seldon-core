@@ -14,7 +14,7 @@ MESH_IP
 
 
 
-    '172.29.255.9'
+    '172.24.255.9'
 ```
 ````
 
@@ -698,6 +698,211 @@ kubectl delete -f ./models/tfsimple3.yaml
     model.mlops.seldon.io "tfsimple1" deleted
     model.mlops.seldon.io "tfsimple2" deleted
     model.mlops.seldon.io "tfsimple3" deleted
+```
+````
+## Explainer
+
+
+```bash
+cat ./models/income.yaml
+```
+````{collapse} Expand to see output
+```yaml
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Model
+    metadata:
+      name: income
+      namespace: seldon-mesh
+    spec:
+      storageUri: "gs://seldon-models/mlserver/income"
+      requirements:
+      - sklearn
+```
+````
+
+```bash
+kubectl create -f ./models/income.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/income created
+```
+````
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/income condition met
+```
+````
+
+```bash
+kubectl get model income -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+```
+````{collapse} Expand to see output
+```json
+
+    {
+      "conditions": [
+        {
+          "lastTransitionTime": "2022-06-25T10:22:17Z",
+          "status": "True",
+          "type": "ModelReady"
+        },
+        {
+          "lastTransitionTime": "2022-06-25T10:22:17Z",
+          "status": "True",
+          "type": "Ready"
+        }
+      ],
+      "replicas": 1
+    }
+```
+````
+
+```bash
+seldon model infer income --inference-host ${MESH_IP}:80 \
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[53,4,0,2,8,4,2,0,0,0,60,9]]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    {
+    	"model_name": "income_1",
+    	"model_version": "1",
+    	"id": "8b8ac132-ae7d-44a7-86eb-385092dd8703",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
+    	"outputs": [
+    		{
+    			"name": "predict",
+    			"shape": [
+    				1
+    			],
+    			"datatype": "INT64",
+    			"parameters": null,
+    			"data": [
+    				0
+    			]
+    		}
+    	]
+    }
+```
+````
+
+```bash
+cat ./models/income-explainer.yaml
+```
+````{collapse} Expand to see output
+```yaml
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Model
+    metadata:
+      name: income-explainer
+      namespace: seldon-mesh
+    spec:
+      storageUri: "gs://seldon-models/mlserver/alibi-explain/income"
+      explainer:
+        type: anchor_tabular
+        modelRef: income
+```
+````
+
+```bash
+kubectl create -f ./models/income-explainer.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/income-explainer created
+```
+````
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io/income condition met
+    model.mlops.seldon.io/income-explainer condition met
+```
+````
+
+```bash
+kubectl get model income-explainer -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+```
+````{collapse} Expand to see output
+```json
+
+    {
+      "conditions": [
+        {
+          "lastTransitionTime": "2022-06-25T10:22:32Z",
+          "status": "True",
+          "type": "ModelReady"
+        },
+        {
+          "lastTransitionTime": "2022-06-25T10:22:32Z",
+          "status": "True",
+          "type": "Ready"
+        }
+      ],
+      "replicas": 1
+    }
+```
+````
+
+```bash
+seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[53,4,0,2,8,4,2,0,0,0,60,9]]}]}' 
+```
+````{collapse} Expand to see output
+```json
+
+    {
+    	"model_name": "income-explainer_1",
+    	"model_version": "1",
+    	"id": "8fb6f648-88bf-4d59-8bd4-42d215e72b28",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
+    	"outputs": [
+    		{
+    			"name": "explanation",
+    			"shape": [
+    				1
+    			],
+    			"datatype": "BYTES",
+    			"parameters": {
+    				"content_type": "str",
+    				"headers": null
+    			},
+    			"data": [
+    				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.7.0\"}, \"data\": {\"anchor\": [\"Marital Status = Separated\", \"Capital Loss <= 0.00\"], \"precision\": 0.9813084112149533, \"coverage\": 0.17423333333333332, \"raw\": {\"feature\": [3, 9], \"mean\": [0.96875, 0.9813084112149533], \"precision\": [0.96875, 0.9813084112149533], \"coverage\": [0.18063333333333334, 0.17423333333333332], \"examples\": [{\"covered_true\": [[24, 4, 4, 2, 2, 5, 4, 0, 0, 0, 40, 9], [41, 4, 4, 2, 1, 5, 4, 0, 0, 0, 40, 9], [41, 4, 4, 2, 7, 1, 4, 1, 0, 0, 21, 9], [31, 6, 1, 2, 8, 0, 4, 1, 0, 0, 60, 0], [32, 4, 4, 2, 2, 1, 4, 1, 0, 0, 40, 9], [44, 4, 4, 2, 8, 5, 4, 0, 0, 0, 70, 9], [20, 0, 3, 2, 0, 1, 3, 1, 0, 1602, 40, 9], [22, 4, 4, 2, 2, 2, 4, 1, 0, 0, 55, 9], [21, 4, 4, 2, 1, 1, 4, 0, 0, 0, 40, 9], [34, 4, 4, 2, 7, 0, 1, 1, 0, 0, 40, 7]], \"covered_false\": [[26, 4, 6, 2, 5, 0, 4, 1, 0, 1977, 40, 9], [44, 4, 6, 2, 5, 0, 4, 1, 99999, 0, 65, 9], [39, 4, 2, 2, 5, 4, 4, 0, 0, 0, 80, 9], [34, 4, 5, 2, 5, 1, 4, 1, 0, 2258, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[55, 4, 1, 2, 5, 0, 4, 1, 0, 0, 40, 9], [65, 4, 3, 2, 6, 2, 4, 0, 0, 0, 20, 9], [18, 0, 3, 2, 0, 3, 1, 0, 0, 0, 24, 3], [38, 4, 5, 2, 1, 1, 4, 0, 0, 0, 50, 3], [39, 4, 0, 2, 4, 0, 2, 1, 0, 0, 60, 9], [29, 4, 4, 2, 7, 4, 2, 0, 0, 0, 25, 9], [30, 4, 1, 2, 1, 1, 4, 0, 0, 0, 40, 9], [49, 4, 0, 2, 5, 0, 4, 1, 0, 0, 45, 9], [35, 4, 1, 2, 6, 0, 4, 1, 0, 0, 52, 9], [57, 4, 4, 2, 1, 2, 2, 0, 0, 0, 40, 5]], \"covered_false\": [[44, 4, 1, 2, 8, 0, 4, 1, 7298, 0, 48, 9], [67, 5, 4, 2, 5, 5, 4, 0, 20051, 0, 30, 1], [57, 1, 5, 2, 8, 0, 2, 1, 15024, 0, 40, 9], [60, 7, 2, 2, 5, 0, 4, 1, 0, 0, 55, 9], [32, 4, 4, 2, 2, 0, 4, 1, 99999, 0, 40, 9], [25, 4, 0, 2, 6, 1, 4, 1, 27828, 0, 40, 9], [65, 4, 1, 2, 1, 0, 4, 1, 10605, 0, 20, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Separated\", \"Capital Loss <= 0.00\"], \"prediction\": [0], \"instance\": [53.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0], \"instances\": [[53.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0]]}}}"
+    			]
+    		}
+    	]
+    }
+```
+````
+
+```bash
+kubectl delete -f ./models/income.yaml
+kubectl delete -f ./models/income-explainer.yaml
+```
+````{collapse} Expand to see output
+```json
+
+    model.mlops.seldon.io "income" deleted
+    model.mlops.seldon.io "income-explainer" deleted
 ```
 ````
 ## Custom Server
