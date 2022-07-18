@@ -524,6 +524,14 @@ if __name__ == "__main__":
         "    matchLabels:\n      serving.kubeflow.org/inferenceservice: enabled\n"
     )
     webhookData = re.sub(
+        r"(.*caBundle:.*\n)",
+        HELM_NOT_CERTMANAGER_IF_START
+        + r"\1"
+        + HELM_IF_END,
+        webhookData,
+        re.M,
+    )
+    webhookData = re.sub(
         r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",
         HELM_VERSION_IF_START
         + HELM_NOT_SINGLE_NAMESPACE_IF_START
