@@ -1,6 +1,7 @@
 package amqp
 
 import (
+	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -42,4 +43,9 @@ type Channel interface {
 	QueueDeclare(name string, durable bool, autoDelete bool, exclusive bool, noWait bool, args amqp.Table) (amqp.Queue, error)
 	Publish(exchange string, key string, mandatory bool, immediate bool, msg amqp.Publishing) error
 	Consume(name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
+}
+
+type SeldonPayloadWithHeaders struct {
+	payload.SeldonPayload
+	Headers map[string][]string
 }

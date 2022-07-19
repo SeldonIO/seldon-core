@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api"
+	"github.com/seldonio/seldon-core/executor/api/amqp"
 	seldonclient "github.com/seldonio/seldon-core/executor/api/client"
 	"github.com/seldonio/seldon-core/executor/api/grpc"
 	"github.com/seldonio/seldon-core/executor/api/grpc/kfserving"
@@ -82,6 +83,10 @@ var (
 	kafkaAutoCommit   = flag.Bool("kafka_auto_commit", true, "Use auto committing in the kafka consumer")
 	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
 	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
+	amqpFullGraph     = flag.Bool("amqp_full_graph", false, "Use amqp for internal graph processing")
+	amqpBroker        = flag.String("amqp_broker", "", "The amqp broker as host:port")
+	amqpQueueIn       = flag.String("amqp_input_queue", "", "The amqp input queue")
+	amqpQueueOut      = flag.String("amqp_output_queue", "", "The amqp output queue")
 	fullHealthChecks  = flag.Bool("full_health_checks", false, "Full health checks via chosen protocol API")
 	debug             = flag.Bool(
 		"debug",
@@ -309,6 +314,40 @@ func main() {
 		}
 	}
 
+	if *serverType == "amqp" {
+		// Get Broker
+		if *amqpBroker == "" {
+			*amqpBroker = os.Getenv(amqp.ENV_AMQP_BROKER_URL)
+			if *amqpBroker == "" {
+				log.Fatal("Required argument amqp_broker missing")
+			}
+		}
+		// Get input topic
+		if *amqpQueueIn == "" {
+			*amqpQueueIn = os.Getenv(amqp.ENV_AMQP_INPUT_QUEUE)
+			if *amqpQueueIn == "" {
+				log.Fatal("Required argument amqp_input_queue missing")
+			}
+		}
+		// Get output queue
+		if *amqpQueueOut == "" {
+			*amqpQueueOut = os.Getenv(amqp.ENV_AMQP_OUTPUT_QUEUE)
+			if *amqpQueueOut == "" {
+				log.Fatal("Required argument amqp_output_topic missing")
+			}
+		}
+		// Get Full Graph
+		amqpFullGraphFromEnv := os.Getenv(amqp.ENV_AMQP_FULL_GRAPH)
+		if amqpFullGraphFromEnv != "" {
+			amqpFullGraphFromEnvBool, err := strconv.ParseBool(amqpFullGraphFromEnv)
+			if err != nil {
+				log.Fatalf("Failed to parse %s %s", amqp.ENV_AMQP_FULL_GRAPH, amqpFullGraphFromEnv)
+			} else {
+				*amqpFullGraph = amqpFullGraphFromEnvBool
+			}
+		}
+	}
+
 	if !(*transport == "rest" || *transport == "grpc") {
 		log.Fatal("Only rest and grpc supported")
 	}
@@ -384,6 +423,20 @@ func main() {
 			err = kafkaServer.Serve()
 			if err != nil {
 				log.Fatal("Failed to serve kafka", err)
+			}
+		}()
+	}
+
+	if *serverType == "amqp" {
+		logger.Info("Starting amqp server")
+		amqpServer, err := amqp.NewAmqpServer(*amqpFullGraph, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *amqpBroker, *amqpQueueIn, *amqpQueueOut, logger, *fullHealthChecks)
+		if err != nil {
+			log.Fatalf("Failed to create amqp server: %v", err)
+		}
+		go func() {
+			err = amqpServer.Serve()
+			if err != nil {
+				log.Fatal("Failed to serve amqp", err)
 			}
 		}()
 	}

@@ -177,32 +177,35 @@ func TestConnection_Consume(t *testing.T) {
 
 		cons := &consumer{
 			connection: connection{
+				log:     logger,
 				channel: mockChan,
 			},
 			queueName:   queueName,
 			consumerTag: consumerTag,
 		}
 
-		handler := func(payloads <-chan payload.SeldonPayload, errs <-chan error) <-chan error {
-			for pl := range payloads {
-				assert.Equal(
-					t,
+		payloadHandler := func(pl SeldonPayloadWithHeaders) error {
+			assert.Equal(
+				t,
+				SeldonPayloadWithHeaders{
 					&payload.BytesPayload{
 						Msg:             []byte(`"hello"`),
 						ContentType:     rest.ContentTypeJSON,
 						ContentEncoding: "",
 					},
-					pl,
-					"payloads not equal",
-				)
-			}
-			for err := range errs {
-				assert.NoError(t, err, "unexpected error")
-			}
+					make(map[string][]string),
+				},
+				pl,
+				"payloads not equal",
+			)
 			return nil
 		}
 
-		err, _ := cons.Consume(handler)
+		errorHandler := func(err error) {
+			assert.NoError(t, err, "unexpected error")
+		}
+
+		err := cons.Consume(payloadHandler, errorHandler)
 
 		assert.NoError(t, err)
 	})
@@ -222,30 +225,33 @@ func TestConnection_Consume(t *testing.T) {
 
 		cons := &consumer{
 			connection: connection{
+				log:     logger,
 				channel: mockChan,
 			},
 			queueName:   queueName,
 			consumerTag: consumerTag,
 		}
 
-		handler := func(payloads <-chan payload.SeldonPayload, errs <-chan error) <-chan error {
-			for pl := range payloads {
-				assert.Equal(
-					t,
+		payloadHandler := func(pl SeldonPayloadWithHeaders) error {
+			assert.Equal(
+				t,
+				SeldonPayloadWithHeaders{
 					&payload.ProtoPayload{
 						Msg: &seldonMessage,
 					},
-					pl,
-					"payloads not equal",
-				)
-			}
-			for err := range errs {
-				assert.NoError(t, err, "unexpected error")
-			}
+					make(map[string][]string),
+				},
+				pl,
+				"payloads not equal",
+			)
 			return nil
 		}
 
-		err, _ := cons.Consume(handler)
+		errorHandler := func(err error) {
+			assert.NoError(t, err, "unexpected error")
+		}
+
+		err := cons.Consume(payloadHandler, errorHandler)
 
 		assert.NoError(t, err)
 	})
@@ -253,7 +259,10 @@ func TestConnection_Consume(t *testing.T) {
 }
 
 func TestConnection_Publish(t *testing.T) {
-	testMessage := TestPayload{Msg: `"hello"`}
+	testMessage := SeldonPayloadWithHeaders{
+		&TestPayload{Msg: `"hello"`},
+		make(map[string][]string),
+	}
 
 	t.Run("success", func(t *testing.T) {
 		mockChan := &mockChannel{}
@@ -263,6 +272,7 @@ func TestConnection_Publish(t *testing.T) {
 		}).Return(amqp.Queue{Name: queueName}, nil)
 
 		mockChan.On("Publish", "", queueName, true, false, amqp.Publishing{
+			Headers:     make(map[string]interface{}),
 			ContentType: "application/json",
 			Body:        []byte(`"hello"`),
 		}).Return(nil)
@@ -274,7 +284,7 @@ func TestConnection_Publish(t *testing.T) {
 			queueName: queueName,
 		}
 
-		assert.NoError(t, pub.Publish(&testMessage))
+		assert.NoError(t, pub.Publish(testMessage))
 
 		mockChan.AssertExpectations(t)
 	})
@@ -287,6 +297,7 @@ func TestConnection_Publish(t *testing.T) {
 		}).Return(amqp.Queue{Name: queueName}, nil)
 
 		mockChan.On("Publish", "", queueName, true, false, amqp.Publishing{
+			Headers:     make(map[string]interface{}),
 			ContentType: "application/json",
 			Body:        []byte(`"hello"`),
 		}).Return(errors.New("test error"))
@@ -298,7 +309,7 @@ func TestConnection_Publish(t *testing.T) {
 			queueName: queueName,
 		}
 
-		assert.EqualError(t, pub.Publish(&testMessage), "failed to publish rabbitmq message: test error")
+		assert.EqualError(t, pub.Publish(testMessage), "failed to publish rabbitmq message: test error")
 
 		mockChan.AssertExpectations(t)
 	})
@@ -317,7 +328,7 @@ func TestConnection_Publish(t *testing.T) {
 			queueName: queueName,
 		}
 
-		assert.EqualError(t, pub.Publish(&testMessage), "failed to declare rabbitmq queue: test error")
+		assert.EqualError(t, pub.Publish(testMessage), "failed to declare rabbitmq queue: test error")
 
 		mockChan.AssertExpectations(t)
 	})
@@ -337,6 +348,7 @@ func TestConnection_Publish(t *testing.T) {
 			}).Return(amqp.Queue{Name: queueName}, nil)
 
 			channel.On("Publish", "", queueName, true, false, amqp.Publishing{
+				Headers:     make(map[string]interface{}),
 				ContentType: "application/json",
 				Body:        []byte(`"hello"`),
 			}).Return(nil)
@@ -357,7 +369,7 @@ func TestConnection_Publish(t *testing.T) {
 
 		pub.err <- errors.New("dang, conn be broke")
 
-		assert.NoError(t, pub.Publish(&testMessage))
+		assert.NoError(t, pub.Publish(testMessage))
 
 		f.adapter.AssertExpectations(t)
 		f.connection.AssertExpectations(t)
@@ -371,6 +383,7 @@ func TestConnection_Publish(t *testing.T) {
 			}).Return(amqp.Queue{Name: queueName}, nil)
 
 			channel.On("Publish", "", queueName, true, false, amqp.Publishing{
+				Headers:     make(map[string]interface{}),
 				ContentType: "application/json",
 				Body:        []byte(`"hello"`),
 			}).Return(nil)
@@ -393,7 +406,7 @@ func TestConnection_Publish(t *testing.T) {
 
 		pub.err <- errors.New("dang, conn be broke")
 
-		assert.NoError(t, pub.Publish(&testMessage))
+		assert.NoError(t, pub.Publish(testMessage))
 
 		f.adapter.AssertExpectations(t)
 		f.connection.AssertExpectations(t)
@@ -417,7 +430,7 @@ func TestConnection_Publish(t *testing.T) {
 
 		pub.err <- errors.New("dang, conn be broke")
 
-		assert.Error(t, pub.Publish(&testMessage))
+		assert.Error(t, pub.Publish(testMessage))
 
 		f.adapter.AssertExpectations(t)
 	})

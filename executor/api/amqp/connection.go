@@ -6,6 +6,9 @@ import (
 	seldon "github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"github.com/seldonio/seldon-core/executor/api/rest"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -94,13 +97,14 @@ func NewConnection(uri string, logger logr.Logger) (*connection, error) {
 
 // In the event that the underlying connection was closed after connection creation, this function will attempt to
 // reconnection to the AMQP broker before performing these operations.
-func (c *consumer) Consume(handler func(<-chan payload.SeldonPayload, <-chan error) <-chan error) (error, <-chan error) {
+// this is a blocking function while the consumer is running, run it in a goroutine if needed
+func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, errorHandler func(error)) error {
 	select {
 	case <-c.err:
 		c.log.Info("attempting to reconnect to rabbitmq", "uri", c.uri)
 
 		if err := c.connect(); err != nil {
-			return errors.Wrap(err, "could not reconnect to rabbitmq"), nil
+			return errors.Wrap(err, "could not reconnect to rabbitmq")
 		}
 	default:
 	}
@@ -114,7 +118,7 @@ func (c *consumer) Consume(handler func(<-chan payload.SeldonPayload, <-chan err
 		queueArgs,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to declare rabbitmq queue"), nil
+		return errors.Wrap(err, "failed to declare rabbitmq queue")
 	}
 
 	// default exchange with queue name as name is the same as a direct exchange routed to the queue
@@ -128,59 +132,105 @@ func (c *consumer) Consume(handler func(<-chan payload.SeldonPayload, <-chan err
 		amqp.Table{},  // arguments TODO should something go here?
 	)
 	if err != nil {
-		return errors.Wrap(err, "Queue Consume error"), nil
+		return errors.Wrap(err, "Queue Consume error")
 	}
 
-	payloads, errs := MapToPayload(deliveries)
 	// TODO does this need more error handling?  What about if the connection or channel fail while
 	// the handler is running?
-	errs = handler(payloads, errs)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	return nil, errs
-}
-
-func MapToPayload(deliveries <-chan amqp.Delivery) (<-chan payload.SeldonPayload, <-chan error) {
-	payloads := make(chan payload.SeldonPayload)
-	errs := make(chan error)
-
-	go func() {
-		for delivery := range deliveries {
-			var pl payload.SeldonPayload
-			var err error = nil
-
-			switch delivery.ContentType {
-			case payload.APPLICATION_TYPE_PROTOBUF:
-				var message = &seldon.SeldonMessage{}
-				err = proto.Unmarshal(delivery.Body, message)
-				if err == nil {
-					pl = &payload.ProtoPayload{message}
-				}
-			case rest.ContentTypeJSON:
-				pl = &payload.BytesPayload{
-					delivery.Body,
-					delivery.ContentType,
-					delivery.ContentEncoding,
-				}
-			default:
-				err = fmt.Errorf("unknown payload type: %s", delivery.ContentType)
-			}
-
+	for delivery := range deliveries {
+		select {
+		case sig := <-sigChan:
+			c.log.Info("terminating due to signal", "signal", sig)
+			break
+		default:
+			pl, err := DeliveryToPayload(delivery)
 			if err != nil {
-				errs <- err
-			} else {
-				payloads <- pl
+				errorHandler(err)
+				//nackErr := delivery.Nack(false, true) // todo is this right
+				nackErr := delivery.Reject(false) // todo is this right
+				if nackErr != nil {
+					c.log.Error(nackErr, "error nack-ing", "delivery", delivery)
+				}
+				continue
+			}
+			err = payloadHandler(pl)
+			if err != nil {
+				errorHandler(err)
+				//nackErr := delivery.Nack(false, true) // todo is this right
+				nackErr := delivery.Reject(false) // todo is this right
+				if nackErr != nil {
+					c.log.Error(nackErr, "error nack-ing", "delivery", delivery)
+				}
+				continue
+			}
+			// TODO disable this for "autoAck"?
+			ackErr := delivery.Ack(false)
+			if ackErr != nil {
+				c.log.Error(ackErr, "error ack-ing", "delivery", delivery)
 			}
 		}
-		close(payloads)
-		close(errs)
-	}()
+	}
+	close(sigChan)
 
-	return payloads, errs
+	return nil
+}
+
+func TableToStringMap(t amqp.Table) map[string][]string {
+	stringMap := make(map[string][]string)
+	for key, value := range t {
+		stringMap[key] = []string{fmt.Sprintf("%v", value)}
+	}
+	return stringMap
+}
+
+func StringMapToTable(m map[string][]string) amqp.Table {
+	table := make(map[string]interface{})
+	for key, values := range m {
+		// just take the first value, at least for now
+		table[key] = values[0]
+	}
+	return table
+}
+
+func DeliveryToPayload(delivery amqp.Delivery) (SeldonPayloadWithHeaders, error) {
+	var pl SeldonPayloadWithHeaders
+	var err error = nil
+
+	headers := TableToStringMap(delivery.Headers)
+
+	switch delivery.ContentType {
+	case payload.APPLICATION_TYPE_PROTOBUF:
+		var message = &seldon.SeldonMessage{}
+		err = proto.Unmarshal(delivery.Body, message)
+		if err == nil {
+			pl = SeldonPayloadWithHeaders{
+				&payload.ProtoPayload{Msg: message},
+				headers,
+			}
+		}
+	case rest.ContentTypeJSON:
+		pl = SeldonPayloadWithHeaders{
+			&payload.BytesPayload{
+				Msg:             delivery.Body,
+				ContentType:     delivery.ContentType,
+				ContentEncoding: delivery.ContentEncoding,
+			},
+			headers,
+		}
+	default:
+		err = fmt.Errorf("unknown payload type: %s", delivery.ContentType)
+	}
+
+	return pl, err
+
 }
 
 // In the event that the underlying connection was closed after connection creation, this function will attempt to
 // reconnection to the AMQP broker before performing these operations.
-func (p *publisher) Publish(payload payload.SeldonPayload) error {
+func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 	select {
 	case <-p.err:
 		p.log.Info("attempting to reconnect to rabbitmq", "uri", p.uri)
@@ -208,6 +258,7 @@ func (p *publisher) Publish(payload payload.SeldonPayload) error {
 		return errors.Wrap(err, "could not get payload bytes")
 	}
 	message := amqp.Publishing{
+		Headers:         StringMapToTable(payload.Headers),
 		ContentType:     payload.GetContentType(),
 		ContentEncoding: payload.GetContentEncoding(),
 		Body:            body,
