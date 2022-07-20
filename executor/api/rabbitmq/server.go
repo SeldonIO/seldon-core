@@ -1,4 +1,4 @@
-package amqp
+package rabbitmq
 
 import (
 	"context"
@@ -23,13 +23,13 @@ import (
 )
 
 const (
-	ENV_AMQP_BROKER_URL   = "AMQP_BROKER_URL"
-	ENV_AMQP_INPUT_QUEUE  = "AMQP_INPUT_QUEUE"
-	ENV_AMQP_OUTPUT_QUEUE = "AMQP_OUTPUT_QUEUE"
-	ENV_AMQP_FULL_GRAPH   = "AMQP_FULL_GRAPH"
+	ENV_RABBITMQ_BROKER_URL   = "RABBITMQ_BROKER_URL"
+	ENV_RABBITMQ_INPUT_QUEUE  = "RABBITMQ_INPUT_QUEUE"
+	ENV_RABBITMQ_OUTPUT_QUEUE = "RABBITMQ_OUTPUT_QUEUE"
+	ENV_RABBITMQ_FULL_GRAPH   = "RABBITMQ_FULL_GRAPH"
 )
 
-type SeldonAmqpServer struct {
+type SeldonRabbitMqServer struct {
 	Client          client.SeldonApiClient
 	DeploymentName  string
 	Namespace       string
@@ -44,7 +44,7 @@ type SeldonAmqpServer struct {
 	FullHealthCheck bool
 }
 
-func NewAmqpServer(
+func NewRabbitMqServer(
 	fullGraph bool,
 	deploymentName,
 	namespace,
@@ -58,23 +58,23 @@ func NewAmqpServer(
 	outputQueueName string,
 	log logr.Logger,
 	fullHealthCheck bool,
-) (*SeldonAmqpServer, error) {
+) (*SeldonRabbitMqServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
 	if fullGraph {
-		log.Info("Starting full graph amqp server")
-		//apiClient = NewAmqpClient(brokerUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
+		log.Info("Starting full graph rabbitmq server")
+		//apiClient = NewRabbitMqClient(brokerUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
 		return nil, errors.New("full graph not currently supported")
 	} else {
 		switch transport {
 		case api.TransportRest:
-			log.Info("Start http amqp graph")
+			log.Info("Start http rabbitmq graph")
 			apiClient, err = rest.NewJSONRestClient(protocol, deploymentName, predictor, annotations)
 			if err != nil {
 				return nil, err
 			}
 		case api.TransportGrpc:
-			log.Info("Start grpc amqp graph")
+			log.Info("Start grpc rabbitmq graph")
 			if protocol == "seldon" {
 				apiClient = seldon.NewSeldonGrpcClient(predictor, deploymentName, annotations)
 			} else {
@@ -85,7 +85,7 @@ func NewAmqpServer(
 		}
 	}
 
-	return &SeldonAmqpServer{
+	return &SeldonRabbitMqServer{
 		Client:          apiClient,
 		DeploymentName:  deploymentName,
 		Namespace:       namespace,
@@ -95,52 +95,50 @@ func NewAmqpServer(
 		BrokerUrl:       brokerUrl,
 		InputQueueName:  inputQueueName,
 		OutputQueueName: outputQueueName,
-		Log:             log.WithName("AmqpServer"),
+		Log:             log.WithName("RabbitMqServer"),
 		Protocol:        protocol,
 		FullHealthCheck: fullHealthCheck,
 	}, nil
 }
 
-func (as *SeldonAmqpServer) Serve() error {
+func (rs *SeldonRabbitMqServer) Serve() error {
+
+	conn, err := NewConnection(rs.BrokerUrl, rs.Log)
 
 	// TODO consumerTag likely needs to have a pod/container-level identifier appended onto it
-	c, err := NewConsumer(as.BrokerUrl, as.InputQueueName, as.DeploymentName, as.Log)
-	if err != nil {
-		return err
-	}
-	as.Log.Info("Created", "consumer", c, "input queue", as.InputQueueName)
+	c := &consumer{*conn, rs.InputQueueName, rs.DeploymentName}
+	rs.Log.Info("Created", "consumer", c, "input queue", rs.InputQueueName)
 
 	//wait for graph to be ready
 	ready := false
 	for ready == false {
-		err := predictor.Ready(as.Protocol, &as.Predictor.Graph, as.FullHealthCheck)
+		err := predictor.Ready(rs.Protocol, &rs.Predictor.Graph, rs.FullHealthCheck)
 		ready = err == nil
 		if !ready {
-			as.Log.Info("Waiting for graph to be ready")
+			rs.Log.Info("Waiting for graph to be ready")
 			time.Sleep(2 * time.Second)
 		}
 	}
 
 	errorHandler := func(errToHandle error) {
 		// TODO probably need to do something better than this
-		as.Log.Error(errToHandle, "error processing message")
+		rs.Log.Error(errToHandle, "error processing message")
 	}
 
-	err = c.Consume(as.PredictAndPublishResponse, errorHandler)
+	err = c.Consume(
+		func(reqPl SeldonPayloadWithHeaders) error { return rs.PredictAndPublishResponse(reqPl, conn) },
+		errorHandler)
 	if err != nil {
 		return err
 	}
 
-	as.Log.Info("Consumer exited")
+	rs.Log.Info("Consumer exited")
 	return nil
 }
 
-func (as *SeldonAmqpServer) PredictAndPublishResponse(reqPayload SeldonPayloadWithHeaders) error {
+func (rs *SeldonRabbitMqServer) PredictAndPublishResponse(reqPayload SeldonPayloadWithHeaders, conn *connection) error {
 
-	producer, err := NewPublisher(as.BrokerUrl, as.OutputQueueName, as.Log)
-	if err != nil {
-		return err
-	}
+	producer := &publisher{*conn, rs.OutputQueueName}
 
 	ctx := context.Background()
 	// Add Seldon Puid to Context
@@ -153,18 +151,18 @@ func (as *SeldonAmqpServer) PredictAndPublishResponse(reqPayload SeldonPayloadWi
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
 		tracer := opentracing.GlobalTracer()
-		serverSpan := tracer.StartSpan("amqpServer", ext.RPCServerOption(nil))
+		serverSpan := tracer.StartSpan("rabbitMqServer", ext.RPCServerOption(nil))
 		ctx = opentracing.ContextWithSpan(ctx, serverSpan)
 		defer serverSpan.Finish()
 	}
 
-	as.Log.Info("amqp server values", "server url", as.ServerUrl)
+	rs.Log.Info("rabbitmq server values", "server url", rs.ServerUrl)
 	seldonPredictorProcess := predictor.NewPredictorProcess(
-		ctx, as.Client, logf.Log.WithName("AmqpClient"), as.ServerUrl, as.Namespace, reqPayload.Headers, "")
+		ctx, rs.Client, logf.Log.WithName("RabbitMqClient"), rs.ServerUrl, rs.Namespace, reqPayload.Headers, "")
 
-	resPayload, err := seldonPredictorProcess.Predict(&as.Predictor.Graph, reqPayload)
+	resPayload, err := seldonPredictorProcess.Predict(&rs.Predictor.Graph, reqPayload)
 	if err != nil {
-		//as.Log.Error(err, "Failed prediction")
+		//rs.Log.Error(err, "Failed prediction")
 		// TODO should this just place an error into the channel or bomb out?
 		return err
 	}

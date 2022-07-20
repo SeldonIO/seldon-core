@@ -1,4 +1,4 @@
-package amqp
+package rabbitmq
 
 import (
 	"fmt"
@@ -54,7 +54,6 @@ type consumer struct {
 	connection
 	queueName   string
 	consumerTag string
-	stop        chan bool
 }
 
 func NewPublisher(uri, queueName string, logger logr.Logger) (*publisher, error) {
@@ -77,7 +76,6 @@ func NewConsumer(uri, queueName, consumerTag string, logger logr.Logger) (*consu
 		*c,
 		queueName,
 		consumerTag,
-		make(chan bool),
 	}, nil
 }
 

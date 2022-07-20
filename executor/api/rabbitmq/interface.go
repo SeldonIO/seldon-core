@@ -1,4 +1,4 @@
-package amqp
+package rabbitmq
 
 import (
 	"github.com/seldonio/seldon-core/executor/api/payload"

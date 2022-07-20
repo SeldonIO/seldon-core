@@ -222,11 +222,12 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
 
-	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka || r.ServerType == ServerAmqp) {
+	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka || r.ServerType == ServerRabbitMq) {
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid serverType"))
 	}
 
+	// TODO validate rabbitmq
 	allErrs = r.validateKafka(allErrs)
 	allErrs = r.validateShadow(allErrs)
 
