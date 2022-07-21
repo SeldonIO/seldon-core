@@ -9,6 +9,10 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+/*
+ * mostly taken from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/publisher.go
+ */
+
 const (
 	connectionRetryLimit = 5
 

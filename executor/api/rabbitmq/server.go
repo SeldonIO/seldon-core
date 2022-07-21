@@ -23,6 +23,10 @@ import (
 	v1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
+/*
+ * based on `kafka/server.go`
+ */
+
 const (
 	ENV_RABBITMQ_BROKER_URL   = "RABBITMQ_BROKER_URL"
 	ENV_RABBITMQ_INPUT_QUEUE  = "RABBITMQ_INPUT_QUEUE"

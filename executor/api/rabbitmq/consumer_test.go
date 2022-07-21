@@ -10,6 +10,10 @@ import (
 	"testing"
 )
 
+/*
+ * based on patterns from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/publisher_test.go
+ */
+
 func TestConsume(t *testing.T) {
 	testDelivery := amqp.Delivery{
 		Body:            []byte(`"hello"`),

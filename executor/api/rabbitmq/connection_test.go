@@ -11,6 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
+/*
+ * mostly taken from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/publisher_test.go
+ */
+
 var (
 	uri         = "amqp://test-rabbitmq:5672/"
 	logger      = zapr.NewLogger(zap.L())

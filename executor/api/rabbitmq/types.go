@@ -7,6 +7,10 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+/*
+ * adapted from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/amqp_test.go
+ */
+
 // default implementation leverages the real "streadway/amqp" dialer
 var defaultDialerAdapter DialerAdapter = func(url string) (Connection, error) {
 	conn, err := amqp.Dial(url)
@@ -40,9 +44,13 @@ type Connection interface {
 
 // Channel defines the AMQP channel operations required by this library.
 type Channel interface {
-	QueueDeclare(name string, durable bool, autoDelete bool, exclusive bool, noWait bool, args amqp.Table) (amqp.Queue, error)
+	QueueDeclare(name string, durable bool, autoDelete bool, exclusive bool, noWait bool, args amqp.Table) (
+		amqp.Queue, error,
+	)
 	Publish(exchange string, key string, mandatory bool, immediate bool, msg amqp.Publishing) error
-	Consume(name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
+	Consume(
+		name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table,
+	) (<-chan amqp.Delivery, error)
 }
 
 type SeldonPayloadWithHeaders struct {

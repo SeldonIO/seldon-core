@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+/*
+ * mostly taken from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/publisher_test.go
+ */
+
 func TestPublisher(t *testing.T) {
 	testMessage := SeldonPayloadWithHeaders{
 		&TestPayload{Msg: `"hello"`},

@@ -9,6 +9,10 @@ import (
 	"syscall"
 )
 
+/*
+ * based on patterns from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/publisher.go
+ */
+
 type consumer struct {
 	connection
 	queueName   string

@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+/*
+ * adapted from https://github.com/dominodatalab/forge/blob/master/internal/message/amqp/amqp_test.go
+ */
+
 type mockDialerAdapter struct {
 	mock.Mock
 }
