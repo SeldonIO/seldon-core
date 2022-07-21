@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/seldonio/seldon-core/executor/api/rest"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -40,7 +41,9 @@ type mockChannel struct {
 	mock.Mock
 }
 
-func (m *mockChannel) QueueDeclare(name string, durable bool, autoDelete bool, exclusive bool, noWait bool, args amqp.Table) (amqp.Queue, error) {
+func (m *mockChannel) QueueDeclare(
+	name string, durable bool, autoDelete bool, exclusive bool, noWait bool, args amqp.Table,
+) (amqp.Queue, error) {
 	mArgs := m.Called(name, durable, autoDelete, exclusive, noWait, args)
 	return mArgs.Get(0).(amqp.Queue), mArgs.Error(1)
 }
@@ -50,7 +53,39 @@ func (m *mockChannel) Publish(exchange string, key string, mandatory bool, immed
 	return args.Error(0)
 }
 
-func (m *mockChannel) Consume(name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
+func (m *mockChannel) Consume(
+	name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table,
+) (<-chan amqp.Delivery, error) {
 	mArgs := m.Called(name, consumerTag, autoAck, exclusive, noLocal, noWait, args)
 	return mArgs.Get(0).(chan amqp.Delivery), mArgs.Error(1)
+}
+
+func (m *mockChannel) Ack(tag uint64, multiple bool) error {
+	return nil
+}
+func (m *mockChannel) Nack(tag uint64, multiple bool, requeue bool) error {
+	return nil
+}
+func (m *mockChannel) Reject(tag uint64, requeue bool) error {
+	return nil
+}
+
+type TestPayload struct {
+	Msg string
+}
+
+func (s *TestPayload) GetPayload() interface{} {
+	return s.Msg
+}
+
+func (s *TestPayload) GetContentType() string {
+	return rest.ContentTypeJSON
+}
+
+func (s *TestPayload) GetContentEncoding() string {
+	return ""
+}
+
+func (s *TestPayload) GetBytes() ([]byte, error) {
+	return []byte(s.Msg), nil
 }

@@ -109,6 +109,11 @@ func (rs *SeldonRabbitMqServer) Serve() error {
 		return err
 	}
 
+	return rs.serve(conn)
+}
+
+func (rs *SeldonRabbitMqServer) serve(conn *connection) error {
+
 	//TODO not sure if this is the best pattern or better to pass in pod name explicitly somehow
 	consumerTag, err := os.Hostname()
 	if err != nil {
@@ -143,7 +148,7 @@ func (rs *SeldonRabbitMqServer) Serve() error {
 
 	// consumer creates input queue if it doesn't exist
 	err = c.Consume(
-		func(reqPl SeldonPayloadWithHeaders) error { return rs.PredictAndPublishResponse(reqPl, conn) },
+		func(reqPl SeldonPayloadWithHeaders) error { return rs.predictAndPublishResponse(reqPl, conn) },
 		errorHandler)
 	if err != nil {
 		return err
@@ -153,7 +158,7 @@ func (rs *SeldonRabbitMqServer) Serve() error {
 	return nil
 }
 
-func (rs *SeldonRabbitMqServer) PredictAndPublishResponse(reqPayload SeldonPayloadWithHeaders, conn *connection) error {
+func (rs *SeldonRabbitMqServer) predictAndPublishResponse(reqPayload SeldonPayloadWithHeaders, conn *connection) error {
 
 	producer := &publisher{*conn, rs.OutputQueueName}
 
