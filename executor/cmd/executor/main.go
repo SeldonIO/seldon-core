@@ -55,7 +55,7 @@ const (
 )
 
 var (
-	serverType = flag.String("server_type", "rpc", "Server type: rpc or kafka")
+	serverType = flag.String("server_type", "rpc", "Server type: rpc or kafka or rabbitmq")
 
 	debugDefault = false
 

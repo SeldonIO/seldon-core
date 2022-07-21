@@ -161,9 +161,9 @@ func (rs *SeldonRabbitMqServer) PredictAndPublishResponse(reqPayload SeldonPaylo
 		ctx, rs.Client, logf.Log.WithName("RabbitMqClient"), rs.ServerUrl, rs.Namespace, reqPayload.Headers, "")
 
 	resPayload, err := seldonPredictorProcess.Predict(&rs.Predictor.Graph, reqPayload)
-	if err != nil {
-		//rs.Log.Error(err, "Failed prediction")
-		// TODO should this just place an error into the channel or bomb out?
+	if err != nil && resPayload == nil {
+		// normal errors from the predict process contain a status failed payload
+		// this is handling an unexpected case, so failing entirely, at least for now
 		return err
 	}
 

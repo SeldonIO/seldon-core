@@ -146,25 +146,14 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 		default:
 			pl, err := DeliveryToPayload(delivery)
 			if err != nil {
-				errorHandler(err)
-				//nackErr := delivery.Nack(false, true) // todo is this right
-				nackErr := delivery.Reject(false) // todo is this right
-				if nackErr != nil {
-					c.log.Error(nackErr, "error nack-ing", "delivery", delivery)
-				}
+				HandleConsumerError(err, errorHandler, delivery, c.log)
 				continue
 			}
 			err = payloadHandler(pl)
 			if err != nil {
-				errorHandler(err)
-				//nackErr := delivery.Nack(false, true) // todo is this right
-				nackErr := delivery.Reject(false) // todo is this right
-				if nackErr != nil {
-					c.log.Error(nackErr, "error nack-ing", "delivery", delivery)
-				}
+				HandleConsumerError(err, errorHandler, delivery, c.log)
 				continue
 			}
-			// TODO disable this for "autoAck"?
 			ackErr := delivery.Ack(false)
 			if ackErr != nil {
 				c.log.Error(ackErr, "error ack-ing", "delivery", delivery)
@@ -174,6 +163,25 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 	close(sigChan)
 
 	return nil
+}
+
+func HandleConsumerError(err error, errorHandler func(error), delivery amqp.Delivery, log logr.Logger) {
+	errorHandler(err)
+
+	// retry once
+	if delivery.Redelivered {
+		rejectErr := delivery.Reject(false)
+		if rejectErr != nil {
+			// perhaps we should do more in this case, but I'm not sure what, fail the entire app?
+			log.Error(rejectErr, "error rejecting", "delivery", delivery)
+		}
+	} else {
+		nackErr := delivery.Nack(false, true)
+		if nackErr != nil {
+			// perhaps we should do more in this case, but I'm not sure what, fail the entire app?
+			log.Error(nackErr, "error nack-ing", "delivery", delivery)
+		}
+	}
 }
 
 func TableToStringMap(t amqp.Table) map[string][]string {
