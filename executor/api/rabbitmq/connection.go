@@ -31,9 +31,7 @@ const (
 
 var (
 	connectionRetryDelay = 5 * time.Second
-	queueArgs            = amqp.Table{
-		"x-single-active-consumer": true,
-	}
+	queueArgs            = amqp.Table{}
 )
 
 type connection struct {
@@ -93,6 +91,17 @@ func NewConnection(uri string, logger logr.Logger) (*connection, error) {
 	return p, nil
 }
 
+func (c *connection) DeclareQueue(queueName string) (amqp.Queue, error) {
+	return c.channel.QueueDeclare(
+		queueName,
+		queueDurable,
+		queueAutoDelete,
+		queueExclusive,
+		queueNoWait,
+		queueArgs,
+	)
+}
+
 // In the event that the underlying connection was closed after connection creation, this function will attempt to
 // reconnection to the AMQP broker before performing these operations.
 // this is a blocking function while the consumer is running, run it in a goroutine if needed
@@ -107,14 +116,7 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 	default:
 	}
 
-	_, err := c.channel.QueueDeclare(
-		c.queueName,
-		queueDurable,
-		queueAutoDelete,
-		queueExclusive,
-		queueNoWait,
-		queueArgs,
-	)
+	_, err := c.DeclareQueue(c.queueName)
 	if err != nil {
 		return errors.Wrap(err, "failed to declare rabbitmq queue")
 	}
@@ -247,14 +249,10 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 	default:
 	}
 
-	q, err := p.channel.QueueDeclare(
-		p.queueName,
-		queueDurable,
-		queueAutoDelete,
-		queueExclusive,
-		queueNoWait,
-		queueArgs,
-	)
+	q, err := p.DeclareQueue(p.queueName)
+	if err != nil {
+		return errors.Wrap(err, "failed to declare rabbitmq queue")
+	}
 	if err != nil {
 		return errors.Wrap(err, "failed to declare rabbitmq queue")
 	}
@@ -275,24 +273,24 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 
 // Close will close the underlying AMQP connection if one has been set, and this operation will cascade down to any
 // channels created under this connection.
-func (p *connection) Close() error {
-	if p.conn != nil {
-		return p.conn.Close()
+func (c *connection) Close() error {
+	if c.conn != nil {
+		return c.conn.Close()
 	}
 	return nil
 }
 
 // implements retry logic with delays for establishing AMQP connections.
-func (p *connection) connect() error {
+func (c *connection) connect() error {
 	ticker := time.NewTicker(connectionRetryDelay)
 	defer ticker.Stop()
 
 	for counter := 0; counter < connectionRetryLimit; <-ticker.C {
 		var err error
 
-		p.conn, err = defaultDialerAdapter(p.uri)
+		c.conn, err = defaultDialerAdapter(c.uri)
 		if err != nil {
-			p.log.Error(err, "cannot dial rabbitmq", "uri", p.uri, "attempt", counter+1)
+			c.log.Error(err, "cannot dial rabbitmq", "uri", c.uri, "attempt", counter+1)
 
 			counter++
 			continue
@@ -300,17 +298,17 @@ func (p *connection) connect() error {
 
 		go func() {
 			closed := make(chan *amqp.Error, 1)
-			p.conn.NotifyClose(closed)
+			c.conn.NotifyClose(closed)
 
 			reason, ok := <-closed
 			if ok {
-				p.log.Error(reason, "rabbitmq connection closed, registering err signal")
-				p.err <- reason
+				c.log.Error(reason, "rabbitmq connection closed, registering err signal")
+				c.err <- reason
 			}
 		}()
 
-		p.channel, err = p.conn.Channel()
-		return errors.Wrapf(err, "failed to create rabbitmq channel to %q", p.uri)
+		c.channel, err = c.conn.Channel()
+		return errors.Wrapf(err, "failed to create rabbitmq channel to %q", c.uri)
 	}
 
 	return fmt.Errorf("rabbitmq connection retry limit reached: %d", connectionRetryLimit)

@@ -125,6 +125,13 @@ func (rs *SeldonRabbitMqServer) Serve() error {
 		rs.Log.Error(errToHandle, "error processing message")
 	}
 
+	// create output queue immediately instead of waiting until the first time we publish a response
+	_, err = conn.DeclareQueue(rs.OutputQueueName)
+	if err != nil {
+		return err
+	}
+
+	// consumer creates input queue if it doesn't exist
 	err = c.Consume(
 		func(reqPl SeldonPayloadWithHeaders) error { return rs.PredictAndPublishResponse(reqPl, conn) },
 		errorHandler)
@@ -132,7 +139,7 @@ func (rs *SeldonRabbitMqServer) Serve() error {
 		return err
 	}
 
-	rs.Log.Info("Consumer exited")
+	rs.Log.Info("Consumer exited without error")
 	return nil
 }
 
