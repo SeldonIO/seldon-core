@@ -2,6 +2,10 @@ package controllers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -12,9 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var _ = Describe("Create a prepacked sklearn server", func() {
@@ -1051,6 +1052,164 @@ var _ = Describe("Create a prepacked mlflow server with existing container", fun
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(2))
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
+
+})
+
+var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-initializer annotation", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	const name = "pp1"
+	const sdepName = "prepack12"
+	envExecutorUser = "2"
+	By("Creating a resource")
+	It("should create a resource with no storage initializer but triton args", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		secretName := "s3-credentials"
+		secret := &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      secretName,
+				Namespace: "default",
+			},
+			Type: corev1.SecretTypeOpaque,
+			StringData: map[string]string{
+				"AWS_DEFAULT_REGION":    "us-east-1",
+				"AWS_ACCESS_KEY_ID":     "mykey",
+				"AWS_SECRET_ACCESS_KEY": "mysecret",
+			},
+		}
+		var modelType = machinelearningv1.MODEL
+		modelName := "classifier"
+		modelUri := "s3://mybucket/mymodel"
+		var impl = machinelearningv1.PredictiveUnitImplementation(constants.PrePackedServerTriton)
+		key := types.NamespacedName{
+			Name:      sdepName,
+			Namespace: "default",
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Annotations: map[string]string{
+					"seldon.io/no-storage-initializer": "true",
+				},
+				Name:     name,
+				Protocol: machinelearningv1.ProtocolV2,
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Annotations: map[string]string{
+							"seldon.io/no-engine": "true",
+						},
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Name: modelName,
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:             modelName,
+							ModelURI:         modelUri,
+							Type:             &modelType,
+							Implementation:   &impl,
+							Endpoint:         &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							EnvSecretRefName: secretName,
+							Parameters: []machinelearningv1.Parameter{
+								{
+									Name:  "model_control_mode",
+									Type:  machinelearningv1.STRING,
+									Value: "explicit",
+								},
+								{
+									Name:  "load_model",
+									Type:  machinelearningv1.STRING,
+									Value: "model1",
+								},
+								{
+									Name:  "strict_model_config",
+									Type:  machinelearningv1.STRING,
+									Value: "true",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 30
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
+
+		// Create secret
+		Expect(k8sClient.Create(context.Background(), secret)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+		//time.Sleep(time.Second * 5)
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		predictor := instance.Spec.Predictors[0]
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(&predictor, predictor.Graph.Name)
+		depName := machinelearningv1.GetDeploymentName(instance, predictor, sPodSpec, idx)
+		depKey := types.NamespacedName{
+			Name:      depName,
+			Namespace: "default",
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), depKey, depFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(len(depFetched.Spec.Template.Spec.InitContainers)).To(Equal(0)) // no storage
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1)) // no engine
+
+		for _, c := range depFetched.Spec.Template.Spec.Containers {
+			if c.Name == modelName {
+				// Check we have 7 args total (server, http, grpc, model_uri, model_control_mode, load_model, strict_model_config)
+				Expect(len(c.Args)).Should(Equal(7))
+				for _, arg := range c.Args {
+					if strings.Index(arg, constants.TritonArgModelRepository) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgModelRepository + modelUri))
+					}
+					if strings.Index(arg, constants.TritonArgModelControlMode) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgModelControlMode + "explicit"))
+					}
+					if strings.Index(arg, constants.TritonArgLoadModel) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgLoadModel + "model1"))
+					}
+					if strings.Index(arg, constants.TritonArgStrictModelConfig) == 0 {
+						Expect(arg).To(Equal(constants.TritonArgStrictModelConfig + "true"))
+					}
+				}
+
+				// Check env is set from secretName
+				Expect(len(c.EnvFrom)).Should(Equal(1))
+				Expect(c.EnvFrom[0].SecretRef.Name).Should(Equal(secretName))
+			}
+		}
+
+		//j, _ := json.Marshal(depFetched)
+		//fmt.Println(string(j))
 	})
 
 })
