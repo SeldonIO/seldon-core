@@ -85,14 +85,6 @@ func TestPublisher(t *testing.T) {
 		mockChan.AssertExpectations(t)
 	})
 
-	//t.Run("bad_input", func(t *testing.T) {
-	//	badType := make(chan int)
-	//	defer close(badType)
-	//	pub := &publisher{}
-	//
-	//	assert.EqualError(t, pub.Publish(&badType), "cannot marshal rabbitmq event: json: unsupported type: chan int")
-	//})
-
 	t.Run("connection_closed", func(t *testing.T) {
 		f, reset := setupConnect(func(adapter *mockDialerAdapter, conn *mockConnection, channel *mockChannel) {
 			channel.On("QueueDeclare", queueName, true, false, false, false,
