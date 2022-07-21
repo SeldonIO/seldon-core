@@ -8,6 +8,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"net/url"
+	"os"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"time"
 
@@ -104,9 +105,18 @@ func NewRabbitMqServer(
 func (rs *SeldonRabbitMqServer) Serve() error {
 
 	conn, err := NewConnection(rs.BrokerUrl, rs.Log)
+	if err != nil {
+		return err
+	}
 
-	// TODO consumerTag likely needs to have a pod/container-level identifier appended onto it
-	c := &consumer{*conn, rs.InputQueueName, rs.DeploymentName}
+	//TODO not sure if this is the best pattern or better to pass in pod name explicitly somehow
+	consumerTag, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	// blank consumer tag means auto-generate
+	c := &consumer{*conn, rs.InputQueueName, consumerTag}
 	rs.Log.Info("Created", "consumer", c, "input queue", rs.InputQueueName)
 
 	//wait for graph to be ready
