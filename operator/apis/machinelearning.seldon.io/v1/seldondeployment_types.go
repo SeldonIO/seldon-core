@@ -235,18 +235,19 @@ type SSL struct {
 }
 
 type PredictorSpec struct {
-	Name            string                  `json:"name" protobuf:"string,1,opt,name=name"`
-	Graph           PredictiveUnit          `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
-	ComponentSpecs  []*SeldonPodSpec        `json:"componentSpecs,omitempty" protobuf:"bytes,3,opt,name=componentSpecs"`
-	Replicas        *int32                  `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
-	Annotations     map[string]string       `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
-	EngineResources v1.ResourceRequirements `json:"engineResources,omitempty" protobuf:"bytes,6,opt,name=engineResources"`
-	Labels          map[string]string       `json:"labels,omitempty" protobuf:"bytes,7,opt,name=labels"`
-	SvcOrchSpec     SvcOrchSpec             `json:"svcOrchSpec,omitempty" protobuf:"bytes,8,opt,name=svcOrchSpec"`
-	Traffic         int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
-	Explainer       *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
-	Shadow          bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
-	SSL             *SSL                    `json:"ssl,omitempty" protobuf:"bytes,12,opt,name=ssl"`
+	Name                    string                  `json:"name" protobuf:"string,1,opt,name=name"`
+	Graph                   PredictiveUnit          `json:"graph" protobuf:"bytes,2,opt,name=predictiveUnit"`
+	ComponentSpecs          []*SeldonPodSpec        `json:"componentSpecs,omitempty" protobuf:"bytes,3,opt,name=componentSpecs"`
+	Replicas                *int32                  `json:"replicas,omitempty" protobuf:"string,4,opt,name=replicas"`
+	Annotations             map[string]string       `json:"annotations,omitempty" protobuf:"bytes,5,opt,name=annotations"`
+	EngineResources         v1.ResourceRequirements `json:"engineResources,omitempty" protobuf:"bytes,6,opt,name=engineResources"`
+	Labels                  map[string]string       `json:"labels,omitempty" protobuf:"bytes,7,opt,name=labels"`
+	SvcOrchSpec             SvcOrchSpec             `json:"svcOrchSpec,omitempty" protobuf:"bytes,8,opt,name=svcOrchSpec"`
+	Traffic                 int32                   `json:"traffic,omitempty" protobuf:"bytes,9,opt,name=traffic"`
+	Explainer               *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
+	Shadow                  bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
+	SSL                     *SSL                    `json:"ssl,omitempty" protobuf:"bytes,12,opt,name=ssl"`
+	ProgressDeadlineSeconds int                     `json:"progressDeadlineSeconds,omitempty" protobuf:"bytes,13,opt,name=progressDeadlineSeconds"`
 }
 
 type Protocol string
