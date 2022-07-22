@@ -247,7 +247,7 @@ type PredictorSpec struct {
 	Explainer               *Explainer              `json:"explainer,omitempty" protobuf:"bytes,10,opt,name=explainer"`
 	Shadow                  bool                    `json:"shadow,omitempty" protobuf:"bytes,11,opt,name=shadow"`
 	SSL                     *SSL                    `json:"ssl,omitempty" protobuf:"bytes,12,opt,name=ssl"`
-	ProgressDeadlineSeconds int                     `json:"progressDeadlineSeconds,omitempty" protobuf:"bytes,13,opt,name=progressDeadlineSeconds"`
+	ProgressDeadlineSeconds *int32                  `json:"progressDeadlineSeconds,omitempty" protobuf:"bytes,13,opt,name=progressDeadlineSeconds"`
 }
 
 type Protocol string
