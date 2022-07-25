@@ -15,7 +15,7 @@ images:
   newTag: latest
 - name: mlserver
   newName: cliveseldon/mlserver
-  newTag: 1.1.0.explain
+  newTag: 1.2.0.dev1
 - name: rclone
   newName: seldonio/seldon-rclone
   newTag: latest

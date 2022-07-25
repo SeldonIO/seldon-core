@@ -285,7 +285,7 @@ func createTestModel(modelName string, serverName string, replicas []int) func(i
 			err = inc.modelStore.UpdateModelState(modelName, 1, serverName, replicaIdx, nil, store.LoadRequested, store.Loaded, "")
 			g.Expect(err).To(BeNil())
 		}
-		err = inc.addTraffic(&store.ModelSnapshot{
+		err = inc.addModel(&store.ModelSnapshot{
 			Name: modelName,
 			Versions: []*store.ModelVersion{
 				store.NewModelVersion(model, 1, serverName, replicaMap, false, store.ModelAvailable),
@@ -300,12 +300,12 @@ func createTestExperiment(experimentName string, modelNames []string, defaultMod
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		var candidates []*experiment.Candidate
 		for _, modelName := range modelNames {
-			candidates = append(candidates, &experiment.Candidate{ModelName: modelName, Weight: 1})
+			candidates = append(candidates, &experiment.Candidate{Name: modelName, Weight: 1})
 		}
 		exp := &experiment.Experiment{
-			Name:         experimentName,
-			DefaultModel: defaultModel,
-			Candidates:   candidates,
+			Name:       experimentName,
+			Default:    defaultModel,
+			Candidates: candidates,
 		}
 		err := inc.experimentServer.StartExperiment(exp)
 		g.Expect(err).To(BeNil())
@@ -388,7 +388,7 @@ func TestExperiments(t *testing.T) {
 				logger:           log.New(),
 				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
-				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil),
+				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
 			}
 			inc.xdsCache.AddListener("listener_0")

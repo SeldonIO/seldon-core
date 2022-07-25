@@ -175,17 +175,29 @@ func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error
 	}
 }
 
-func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte, errorTopic bool) error {
+func existsKafkaHeader(headers []kafka.Header, key string, val string) bool {
+	for _, header := range headers {
+		if header.Key == key && string(header.Value) == val {
+			return true
+		}
+	}
+	return false
+}
+
+func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte, errorTopic bool, headers map[string][]string) error {
 	logger := iw.logger.WithField("func", "produce")
 
 	kafkaHeaders := job.msg.Headers
-	//kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: HeaderKeyType, Value: []byte(headerType)})
-	//if pipelineName, ok := job.headers[resources.SeldonPipelineHeader]; ok {
-	//	logger.Debugf("Adding pipeline header %s:%s", resources.SeldonPipelineHeader, pipelineName)
-	//	kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: resources.SeldonPipelineHeaderSuffix, Value: []byte(pipelineName)})
-	//}
 	if errorTopic {
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
+	}
+	for k, vs := range headers {
+		for _, v := range vs {
+			if !existsKafkaHeader(kafkaHeaders, k, v) {
+				logger.Infof("Adding header to kafka response %s:%s", k, v)
+				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(v)})
+			}
+		}
 	}
 	logger.Infof("Produce response to topic %s", topic)
 
@@ -247,9 +259,9 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	iw.logger.Infof("v2 server response: %s", b)
 	if response.StatusCode != http.StatusOK {
 		logger.Warnf("Failed infer request with status code %d and payload %s", response.StatusCode, string(b))
-		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), b, true)
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), b, true, nil)
 	}
-	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false)
+	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false, extractHeadersHttp(response.Header))
 }
 
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
@@ -263,14 +275,17 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	if reqId, ok := job.headers[pipeline.RequestIdHeader]; ok {
 		ctx = metadata.AppendToOutgoingContext(ctx, pipeline.RequestIdHeader, reqId)
 	}
-	resp, err := iw.grpcClient.ModelInfer(ctx, req, iw.callOptions...)
+	var header, trailer metadata.MD
+	opts := append(iw.callOptions, grpc.Header(&header))
+	opts = append(opts, grpc.Trailer(&trailer))
+	resp, err := iw.grpcClient.ModelInfer(ctx, req, opts...)
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
-		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true)
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 	b, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}
-	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false)
+	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false, extractHeadersGrpc(header, trailer))
 }

@@ -30,6 +30,7 @@ class Joiner(
         val builder = StreamsBuilder()
         val s1 = buildTopology(builder, inputTopics)
         addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1, null)
+            .headerRemover()
             .to(outputTopic, producerSerde)
         KafkaStreams(builder.build(), properties)
     }

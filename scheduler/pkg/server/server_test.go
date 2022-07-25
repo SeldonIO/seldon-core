@@ -42,7 +42,7 @@ func TestLoadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
@@ -148,7 +148,7 @@ func TestUnloadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,

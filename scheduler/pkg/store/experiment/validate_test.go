@@ -21,18 +21,18 @@ func TestValidateExperiment(t *testing.T) {
 		{
 			name: "valid",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{},
-				experiments: map[string]*Experiment{},
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name:         "a",
-				DefaultModel: getStrPtr("model1"),
+				Name:    "a",
+				Default: getStrPtr("model1"),
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 					{
-						ModelName: "model2",
+						Name: "model2",
 					},
 				},
 			},
@@ -40,38 +40,38 @@ func TestValidateExperiment(t *testing.T) {
 		{
 			name: "baseline already exists",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{"model1": {Name: "b"}},
-				experiments: map[string]*Experiment{},
+				modelBaselines: map[string]*Experiment{"model1": {Name: "b"}},
+				experiments:    map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name:         "a",
-				DefaultModel: getStrPtr("model1"),
+				Name:    "a",
+				Default: getStrPtr("model1"),
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 					{
-						ModelName: "model2",
+						Name: "model2",
 					},
 				},
 			},
-			err: &ExperimentBaselineExists{experimentName: "a", modelName: "model1"},
+			err: &ExperimentBaselineExists{experimentName: "a", name: "model1"},
 		},
 		{
 			name: "baseline already exists but its this model so ignore",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{"model1": {Name: "a"}},
-				experiments: map[string]*Experiment{},
+				modelBaselines: map[string]*Experiment{"model1": {Name: "a"}},
+				experiments:    map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name:         "a",
-				DefaultModel: getStrPtr("model1"),
+				Name:    "a",
+				Default: getStrPtr("model1"),
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 					{
-						ModelName: "model2",
+						Name: "model2",
 					},
 				},
 			},
@@ -79,8 +79,8 @@ func TestValidateExperiment(t *testing.T) {
 		{
 			name: "No Canidadates",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{},
-				experiments: map[string]*Experiment{},
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
 			},
 			experiment: &Experiment{
 				Name: "a",
@@ -90,14 +90,14 @@ func TestValidateExperiment(t *testing.T) {
 		{
 			name: "Default model is not candidate",
 			store: &ExperimentStore{
-				baselines:   map[string]*Experiment{},
-				experiments: map[string]*Experiment{},
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
 			},
 			experiment: &Experiment{
-				Name:         "a",
-				DefaultModel: getStrPtr("model1"),
+				Name:    "a",
+				Default: getStrPtr("model1"),
 			},
-			err: &ExperimentDefaultModelNotFound{experimentName: "a", defaultModel: "model1"},
+			err: &ExperimentDefaultNotFound{experimentName: "a", defaultResource: "model1"},
 		},
 	}
 

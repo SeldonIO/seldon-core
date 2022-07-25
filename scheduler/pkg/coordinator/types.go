@@ -35,9 +35,10 @@ func (e ExperimentEventMsg) String() string {
 }
 
 type PipelineEventMsg struct {
-	PipelineName    string
-	PipelineVersion uint32
-	UID             string
+	PipelineName     string
+	PipelineVersion  uint32
+	UID              string
+	ExperimentUpdate bool
 }
 
 func (p PipelineEventMsg) String() string {

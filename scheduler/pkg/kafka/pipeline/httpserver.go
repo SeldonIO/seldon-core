@@ -149,7 +149,11 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 
 func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request) {
 	logger := g.logger.WithField("func", "inferModel")
-	header := req.Header.Get(resources.SeldonModelHeader)
+	g.logger.Debugf("Seldon model header %s and seldon internal model header %s", req.Header.Get(resources.SeldonModelHeader), req.Header.Get(resources.SeldonInternalModelHeader))
+	header := req.Header.Get(resources.SeldonInternalModelHeader) // Seldon internal header takes precedence
+	if header == "" {                                             // If we can't find an internal header then look for public one
+		header = req.Header.Get(resources.SeldonModelHeader)
+	}
 	resourceName, isModel, err := createResourceNameFromHeader(header)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to create resource name from %s", header)

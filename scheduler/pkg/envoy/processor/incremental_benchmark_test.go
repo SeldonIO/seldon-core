@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -111,13 +113,13 @@ func benchmarkModelUpdate(
 		require.NoError(b, err)
 
 		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-
+		pipelineStore := pipeline.NewPipelineStore(logger, eventHub)
 		ip := NewIncrementalProcessor(
 			cache.NewSnapshotCache(false, cache.IDHash{}, logger),
 			"some node",
 			logger,
 			memoryStore,
-			experiment.NewExperimentServer(logger, nil, memoryStore),
+			experiment.NewExperimentServer(logger, nil, memoryStore, pipelineStore),
 			nil,
 			eventHub,
 			&xdscache.PipelineGatewayDetails{

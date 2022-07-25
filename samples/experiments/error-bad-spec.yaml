@@ -4,7 +4,7 @@ metadata:
   name: experiment-sample
   namespace: seldon-mesh
 spec:
-  defaultModel: iris
+  default: iris
   candidate:
   - modelName: iris
     weight: 50

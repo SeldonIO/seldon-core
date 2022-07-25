@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pipeline-add10
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: add10
+  output:
+    steps:
+    - add10

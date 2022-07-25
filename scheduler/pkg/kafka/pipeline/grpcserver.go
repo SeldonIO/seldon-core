@@ -67,8 +67,8 @@ func extractHeader(key string, md metadata.MD) string {
 	values, ok := md[key]
 	if ok {
 		if len(values) > 0 {
-			// note if there are more than one elements we just return the first one
-			return values[0]
+			// note if there are more than one elements we just return the last one assuming that was added last
+			return values[len(values)-1]
 		}
 	}
 	return ""
@@ -79,7 +79,11 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if !ok {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find metadata looking for %s", resources.SeldonModelHeader))
 	}
-	header := extractHeader(resources.SeldonModelHeader, md)
+	g.logger.Debugf("Seldon model header %v and seldon internal model header %v", md[resources.SeldonModelHeader], md[resources.SeldonInternalModelHeader])
+	header := extractHeader(resources.SeldonInternalModelHeader, md) // Internal model header has precedence
+	if header == "" {                                                // If we don't find internal model header fall back on public one
+		header = extractHeader(resources.SeldonModelHeader, md)
+	}
 	resourceName, isModel, err := createResourceNameFromHeader(header)
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find valid header %s, found %s", resources.SeldonModelHeader, resourceName))

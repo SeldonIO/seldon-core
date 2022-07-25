@@ -19,7 +19,7 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
-			name: "basic",
+			name: "model",
 			experiment: &Experiment{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:       "foo",
@@ -27,39 +27,91 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 					Generation: 1,
 				},
 				Spec: ExperimentSpec{
-					DefaultModel: getStrPtr("model1"),
+					Default: getStrPtr("model1"),
 					Candidates: []ExperimentCandidate{
 						{
-							ModelName: "model1",
-							Weight:    20,
+							Name:   "model1",
+							Weight: 20,
 						},
 						{
-							ModelName: "model2",
-							Weight:    30,
+							Name:   "model2",
+							Weight: 30,
 						},
 					},
 					Mirror: &ExperimentMirror{
-						ModelName: "model4",
-						Percent:   40,
+						Name:    "model4",
+						Percent: 40,
 					},
 				},
 			},
 			proto: &scheduler.Experiment{
 				Name:         "foo",
-				DefaultModel: getStrPtr("model1"),
+				Default:      getStrPtr("model1"),
+				ResourceType: scheduler.ResourceType_MODEL,
 				Candidates: []*scheduler.ExperimentCandidate{
 					{
-						ModelName: "model1",
-						Weight:    20,
+						Name:   "model1",
+						Weight: 20,
 					},
 					{
-						ModelName: "model2",
-						Weight:    30,
+						Name:   "model2",
+						Weight: 30,
 					},
 				},
 				Mirror: &scheduler.ExperimentMirror{
-					ModelName: "model4",
-					Percent:   40,
+					Name:    "model4",
+					Percent: 40,
+				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "pipeline",
+			experiment: &Experiment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
+				},
+				Spec: ExperimentSpec{
+					Default:      getStrPtr("pipeline1"),
+					ResourceType: PipelineResourceType,
+					Candidates: []ExperimentCandidate{
+						{
+							Name:   "pipeline1",
+							Weight: 20,
+						},
+						{
+							Name:   "pipeline2",
+							Weight: 30,
+						},
+					},
+					Mirror: &ExperimentMirror{
+						Name:    "pipeline4",
+						Percent: 40,
+					},
+				},
+			},
+			proto: &scheduler.Experiment{
+				Name:         "foo",
+				Default:      getStrPtr("pipeline1"),
+				ResourceType: scheduler.ResourceType_PIPELINE,
+				Candidates: []*scheduler.ExperimentCandidate{
+					{
+						Name:   "pipeline1",
+						Weight: 20,
+					},
+					{
+						Name:   "pipeline2",
+						Weight: 30,
+					},
+				},
+				Mirror: &scheduler.ExperimentMirror{
+					Name:    "pipeline4",
+					Percent: 40,
 				},
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "default",

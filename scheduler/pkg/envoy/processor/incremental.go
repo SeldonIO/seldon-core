@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
@@ -101,21 +103,9 @@ func NewIncrementalProcessor(
 func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
 	go func() {
-		pip, err := p.pipelineHandler.GetPipeline(event.PipelineName)
+		err := p.addPipeline(event.PipelineName)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to get pipeline %s", event.PipelineName)
-		} else {
-			if pip.Deleted {
-				err := p.removePipeline(pip)
-				if err != nil {
-					logger.WithError(err).Errorf("Failed to remove pipeline %s", pip.Name)
-				}
-			} else {
-				err := p.addPipeline(pip)
-				if err != nil {
-					logger.WithError(err).Errorf("Dailed to add pipeline %s", pip.Name)
-				}
-			}
+			logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
 		}
 	}()
 }
@@ -307,20 +297,20 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	return nil
 }
 
-func (p *IncrementalProcessor) addExperimentBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
+func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "addExperimentTraffic")
 	logger.Infof("Trying to setup experiment for %s", model.Name)
-	if exp.DefaultModel == nil {
+	if exp.Default == nil {
 		return fmt.Errorf("Didn't find baseline in experiment for model %s", model.Name)
 	}
-	if *exp.DefaultModel != model.Name {
-		return fmt.Errorf("Didn't find expected model name baseline in experiment for model found %s but expected %s", *exp.DefaultModel, model.Name)
+	if *exp.Default != model.Name {
+		return fmt.Errorf("Didn't find expected model name baseline in experiment for model found %s but expected %s", *exp.Default, model.Name)
 	}
 	if exp.Deleted {
-		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, *exp.DefaultModel)
+		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, *exp.Default)
 	}
 	for _, candidate := range exp.Candidates {
-		candidateModel, err := p.modelStore.GetModel(candidate.ModelName)
+		candidateModel, err := p.modelStore.GetModel(candidate.Name)
 		if err != nil {
 			return err
 		}
@@ -332,11 +322,11 @@ func (p *IncrementalProcessor) addExperimentBaselineTraffic(model *store.ModelSn
 	return nil
 }
 
-func (p *IncrementalProcessor) addTraffic(model *store.ModelSnapshot) error {
+func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
 	logger := p.logger.WithField("func", "addTraffic")
 	exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
 	if exp != nil {
-		err := p.addExperimentBaselineTraffic(model, exp)
+		err := p.addExperimentModelBaselineTraffic(model, exp)
 		if err != nil {
 			logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
 			err = p.removeRouteForServerInEnvoy(model.Name)
@@ -353,15 +343,24 @@ func (p *IncrementalProcessor) addTraffic(model *store.ModelSnapshot) error {
 }
 
 func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *experiment.Experiment) error {
-	for _, candidate := range exp.Candidates {
-		candidateModel, err := p.modelStore.GetModel(candidate.ModelName)
-		if err != nil {
-			return err
+	switch exp.ResourceType {
+	case experiment.PipelineResourceType:
+		for _, candidate := range exp.Candidates {
+			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight)
 		}
-		err = p.addModelTraffic(routeName, candidateModel, candidate.Weight)
-		if err != nil {
-			return err
+	case experiment.ModelResourceType:
+		for _, candidate := range exp.Candidates {
+			candidateModel, err := p.modelStore.GetModel(candidate.Name)
+			if err != nil {
+				return err
+			}
+			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight)
+			if err != nil {
+				return err
+			}
 		}
+	default:
+		return fmt.Errorf("Unknown resource type %v", exp.ResourceType)
 	}
 	return nil
 }
@@ -388,40 +387,76 @@ func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) erro
 	return p.removeRouteForServerInEnvoy(routeName)
 }
 
-func (p *IncrementalProcessor) addPipeline(pip *pipeline.Pipeline) error {
+func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
+	logger := p.logger.WithField("func", "addPipeline")
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.xdsCache.AddPipelineRoute(pip.Name)
+	pip, err := p.pipelineHandler.GetPipeline(pipelineName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get pipeline %s", pipelineName)
+		return err
+	} else {
+		if pip.Deleted {
+			return p.removePipeline(pip)
+		}
+	}
+	routeName := fmt.Sprintf("%s.%s", pip.Name, resources.SeldonPipelineHeaderSuffix)
+	p.xdsCache.RemovePipelineRoute(routeName)
+	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
+	logger.Infof("getting experiment for baseline %s returned %v", pip.Name, exp)
+	// This experiment must have a default for this pipeline
+	if exp != nil {
+		if exp.Default == nil {
+			return fmt.Errorf("Didn't find baseline in experiment for pipeline %s", pip.Name)
+		}
+		if *exp.Default != pip.Name {
+			return fmt.Errorf("Didn't find expected pipeline name baseline in experiment for pipeline found %s but expected %s", *exp.Default, pip.Name)
+		}
+		if exp.Deleted {
+			return fmt.Errorf("Experiment on pipeline %s, but %s is deleted", pip.Name, *exp.Default)
+		}
+		for _, candidate := range exp.Candidates {
+			logger.Infof("Adding pipeline experiment candidate %s %s %d", routeName, candidate.Name, candidate.Weight)
+			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight)
+		}
+	} else {
+		logger.Infof("Adding normal pipeline route %s", routeName)
+		p.xdsCache.AddPipelineRoute(routeName, pip.Name, 100)
+	}
+
 	return p.updateEnvoy()
 }
 
 func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	p.xdsCache.RemovePipelineRoute(pip.Name)
 	return p.updateEnvoy()
 }
 
 func (p *IncrementalProcessor) experimentUpdate(exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "experimentSync")
-	if exp.DefaultModel != nil {
-		logger.Infof("Experiment %s sync - calling for model %s", exp.Name, *exp.DefaultModel)
-		err := p.modelUpdate(*exp.DefaultModel)
-		if err != nil {
-			return err
+	if exp.Default != nil {
+		switch exp.ResourceType {
+		case experiment.PipelineResourceType:
+			return p.addPipeline(*exp.Default)
+		case experiment.ModelResourceType:
+			logger.Infof("Experiment %s sync - calling for model %s", exp.Name, *exp.Default)
+			err := p.modelUpdate(*exp.Default)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("Unknown resource type %v", exp.ResourceType)
 		}
 	}
 	return p.addExperiment(exp)
 }
 
 func (p *IncrementalProcessor) modelUpdate(modelName string) error {
+	logger := p.logger.WithField("func", "modelUpdate")
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
 	p.modelStore.LockModel(modelName)
 	defer p.modelStore.UnlockModel(modelName)
-
-	logger := p.logger.WithField("func", "Sync")
 
 	model, err := p.modelStore.GetModel(modelName)
 	if err != nil {
@@ -457,7 +492,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		return err
 	}
 
-	err = p.addTraffic(model)
+	err = p.addModel(model)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
 		return p.removeRouteForServerInEnvoy(modelName)
@@ -480,6 +515,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 }
 
 func (p *IncrementalProcessor) modelSync() {
+	logger := p.logger.WithField("func", "modelSync")
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -496,18 +532,21 @@ func (p *IncrementalProcessor) modelSync() {
 
 		m, err := p.modelStore.GetModel(mv.name)
 		if err != nil {
+			logger.Debugf("Failed to get model %s", mv.name)
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
 
 		v := m.GetVersion(mv.version)
 		if v == nil {
+			logger.Debugf("Failed to get version for model %s version %d", mv.name, mv.version)
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
 
 		s, err := p.modelStore.GetServer(v.Server(), false, false)
 		if err != nil || s == nil {
+			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server())
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
@@ -526,6 +565,7 @@ func (p *IncrementalProcessor) modelSync() {
 				reason,
 			)
 			if err2 != nil {
+				logger.WithError(err2).Warnf("Failed to update state for model %s", mv.name)
 				break
 			}
 		}

@@ -60,6 +60,7 @@ class Chainer(
             s1,
             null,
         )
+            .headerRemover()
             .to(outputTopic, producerSerde)
     }
 
@@ -82,6 +83,7 @@ class Chainer(
             s1,
             null,
         )
+            .headerRemover()
             .to(outputTopic, producerSerde)
     }
 
@@ -104,6 +106,7 @@ class Chainer(
             s1,
             null,
         )
+            .headerRemover()
             .to(outputTopic, producerSerde)
     }
 
@@ -127,6 +130,7 @@ class Chainer(
             s1,
             null,
         )
+            .headerRemover()
             .to(outputTopic, producerSerde)
     }
 
@@ -150,6 +154,7 @@ class Chainer(
             s1,
             null,
         )
+            .headerRemover()
             .to(outputTopic, producerSerde)
     }
 

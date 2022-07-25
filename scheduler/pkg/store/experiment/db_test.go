@@ -19,23 +19,53 @@ func TestSaveAndRestore(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "basic experiment",
+			name: "basic model experiment",
 			experiments: []*Experiment{
 				{
 					Name: "test1",
 					Candidates: []*Candidate{
 						{
-							ModelName: "model1",
-							Weight:    50,
+							Name:   "model1",
+							Weight: 50,
 						},
 						{
-							ModelName: "model2",
-							Weight:    50,
+							Name:   "model2",
+							Weight: 50,
 						},
 					},
 					Mirror: &Mirror{
-						ModelName: "model3",
-						Percent:   90,
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
+		{
+			name: "basic pipeline experiment",
+			experiments: []*Experiment{
+				{
+					Name:         "test1",
+					ResourceType: PipelineResourceType,
+					Candidates: []*Candidate{
+						{
+							Name:   "pipeline1",
+							Weight: 50,
+						},
+						{
+							Name:   "pipeline2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "pipeline3",
+						Percent: 90,
 					},
 					Config: &Config{
 						StickySessions: true,
@@ -62,7 +92,7 @@ func TestSaveAndRestore(t *testing.T) {
 			err = db.Stop()
 			g.Expect(err).To(BeNil())
 
-			es := NewExperimentServer(log.New(), nil, nil)
+			es := NewExperimentServer(log.New(), nil, nil, nil)
 			err = es.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {

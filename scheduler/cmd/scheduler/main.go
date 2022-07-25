@@ -150,7 +150,7 @@ func main() {
 
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 
-	es := experiment.NewExperimentServer(logger, eventHub, ss)
+	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	if dbPath != "" {
 		err := es.InitialiseOrRestoreDB(dbPath)
 		if err != nil {

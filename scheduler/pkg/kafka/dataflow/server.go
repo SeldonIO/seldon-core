@@ -307,6 +307,9 @@ func (c *ChainerServer) rebalance() {
 
 func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) {
 	logger := c.logger.WithField("func", "handlePipelineEvent")
+	if event.ExperimentUpdate {
+		return
+	}
 	go func() {
 		c.mu.Lock()
 		defer c.mu.Unlock()

@@ -45,6 +45,9 @@ func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMs
 
 func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg) {
 	logger := s.logger.WithField("func", "sendPipelineEvents")
+	if event.ExperimentUpdate {
+		return
+	}
 	pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())

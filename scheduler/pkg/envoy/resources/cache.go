@@ -45,5 +45,11 @@ type Endpoint struct {
 }
 
 type PipelineRoute struct {
-	PipelineName string
+	RouteName string
+	Clusters  []PipelineTrafficSplits
+}
+
+type PipelineTrafficSplits struct {
+	PipelineName  string
+	TrafficWeight uint32
 }

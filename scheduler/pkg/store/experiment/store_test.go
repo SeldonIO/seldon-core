@@ -37,7 +37,7 @@ func TestStartExperiment(t *testing.T) {
 						Name: "a",
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 						},
 					},
@@ -53,7 +53,7 @@ func TestStartExperiment(t *testing.T) {
 						Name: "a",
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 						},
 					},
@@ -63,7 +63,7 @@ func TestStartExperiment(t *testing.T) {
 						Name: "b",
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 						},
 					},
@@ -79,7 +79,7 @@ func TestStartExperiment(t *testing.T) {
 						Name: "a",
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 						},
 					},
@@ -89,7 +89,7 @@ func TestStartExperiment(t *testing.T) {
 						Name: "a",
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 						},
 					},
@@ -102,14 +102,14 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name:         "a",
-						DefaultModel: getStrPtr("model1"),
+						Name:    "a",
+						Default: getStrPtr("model1"),
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 							{
-								ModelName: "model2",
+								Name: "model2",
 							},
 						},
 					},
@@ -122,14 +122,14 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name:         "a",
-						DefaultModel: getStrPtr("model1"),
+						Name:    "a",
+						Default: getStrPtr("model1"),
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 							{
-								ModelName: "model2",
+								Name: "model2",
 							},
 						},
 					},
@@ -142,28 +142,27 @@ func TestStartExperiment(t *testing.T) {
 			experiments: []*experimentAddition{
 				{
 					experiment: &Experiment{
-						Name:         "a",
-						DefaultModel: getStrPtr("model1"),
+						Name:    "a",
+						Default: getStrPtr("model1"),
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
+								Name: "model1",
 							},
 							{
-								ModelName: "model2",
+								Name: "model2",
 							},
 						},
 					},
 				},
 				{
 					experiment: &Experiment{
-						Name:         "b",
-						DefaultModel: getStrPtr("model1"),
+						Name:    "b",
+						Default: getStrPtr("model1"),
 						Candidates: []*Candidate{
 							{
-								ModelName: "model1",
-							},
-							{
-								ModelName: "model2",
+								Name: "model1",
+							}, {
+								Name: "model2",
 							},
 						},
 					},
@@ -179,7 +178,7 @@ func TestStartExperiment(t *testing.T) {
 			logger := logrus.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewExperimentServer(logger, eventHub, fakeModelStore{})
+			server := NewExperimentServer(logger, eventHub, fakeModelStore{}, fakePipelineStore{})
 			for _, ea := range test.experiments {
 				err := server.StartExperiment(ea.experiment)
 				if ea.fail {
@@ -406,7 +405,7 @@ func TestHandleModelEvents(t *testing.T) {
 				Name: "a",
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 				},
 			},
@@ -425,7 +424,7 @@ func TestHandleModelEvents(t *testing.T) {
 				Name: "a",
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 				},
 			},
@@ -444,10 +443,10 @@ func TestHandleModelEvents(t *testing.T) {
 				Name: "a",
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 					{
-						ModelName: "model2",
+						Name: "model2",
 					},
 				},
 			},
@@ -466,10 +465,10 @@ func TestHandleModelEvents(t *testing.T) {
 				Name: "a",
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 					{
-						ModelName: "model2",
+						Name: "model2",
 					},
 				},
 			},
@@ -491,11 +490,11 @@ func TestHandleModelEvents(t *testing.T) {
 				Name: "a",
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
+						Name: "model1",
 					},
 				},
 				Mirror: &Mirror{
-					ModelName: "model1",
+					Name: "model1",
 				},
 			},
 			modelStates: map[string]store.ModelState{"model1": store.ModelAvailable},
@@ -514,7 +513,7 @@ func TestHandleModelEvents(t *testing.T) {
 			logger := logrus.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewExperimentServer(logger, eventHub, fakeModelStore{status: test.modelStates})
+			server := NewExperimentServer(logger, eventHub, fakeModelStore{status: test.modelStates}, fakePipelineStore{})
 			err = server.StartExperiment(test.experiment)
 			g.Expect(err).To(BeNil())
 			for _, event := range test.modelEventMsgs {

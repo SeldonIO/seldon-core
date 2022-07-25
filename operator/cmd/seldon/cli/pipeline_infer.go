@@ -28,6 +28,10 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			stickySesion, err := cmd.Flags().GetBool(stickySessionFlag)
+			if err != nil {
+				return err
+			}
 			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
 			if err != nil {
 				return err
@@ -60,11 +64,12 @@ func createPipelineInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers, false)
+			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers, stickySesion)
 			return err
 		},
 	}
 	cmdPipelineInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
+	cmdPipelineInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
 	cmdPipelineInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
 	cmdPipelineInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdPipelineInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")

@@ -12,6 +12,11 @@ fun <T> KStream<T, TRecord>.filterForPipeline(pipelineName: String): KStream<T, 
         .filterNot { _, value -> value == null }
 }
 
+fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {
+    return this
+        .transformValues(ValueTransformerSupplier { HeaderRemover() })
+}
+
 fun <T> KStream<T, ByteArray>.unmarshallInferenceV2Response(): KStream<T, ModelInferResponse> {
     return this
         .mapValues { bytes -> ModelInferResponse.parseFrom(bytes) }

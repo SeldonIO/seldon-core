@@ -17,11 +17,11 @@ func (enf *ExperimentNotFound) Error() string {
 
 type ExperimentBaselineExists struct {
 	experimentName string
-	modelName      string
+	name           string
 }
 
 func (ebe *ExperimentBaselineExists) Error() string {
-	return fmt.Sprintf("Model %s already in experiment %s as a baseline. A model can only appear in one experiment as a baseline model", ebe.modelName, ebe.experimentName)
+	return fmt.Sprintf("Resource %s already in experiment %s as a baseline. A model or pipeline can only appear in one experiment as a baseline", ebe.name, ebe.experimentName)
 }
 
 type ExperimentNoCandidates struct {
@@ -32,16 +32,16 @@ func (enc *ExperimentNoCandidates) Error() string {
 	return fmt.Sprintf("experiment %s has no candidates", enc.experimentName)
 }
 
-type ExperimentDefaultModelNotFound struct {
-	experimentName string
-	defaultModel   string
+type ExperimentDefaultNotFound struct {
+	experimentName  string
+	defaultResource string
 }
 
-func (enc *ExperimentDefaultModelNotFound) Is(tgt error) bool {
-	_, ok := tgt.(*ExperimentDefaultModelNotFound)
+func (enc *ExperimentDefaultNotFound) Is(tgt error) bool {
+	_, ok := tgt.(*ExperimentDefaultNotFound)
 	return ok
 }
 
-func (enc *ExperimentDefaultModelNotFound) Error() string {
-	return fmt.Sprintf("default model %s not found in experiment %s candidates", enc.defaultModel, enc.experimentName)
+func (enc *ExperimentDefaultNotFound) Error() string {
+	return fmt.Sprintf("default model/pipeline %s not found in experiment %s candidates", enc.defaultResource, enc.experimentName)
 }

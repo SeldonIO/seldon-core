@@ -197,13 +197,19 @@ message StartExperimentRequest {
   Experiment experiment = 1;
 }
 
+enum ResourceType {
+  MODEL = 0;
+  PIPELINE = 1;
+}
+
 message Experiment {
   string name = 1;
-  optional string defaultModel = 2;
+  optional string default = 2;
   repeated ExperimentCandidate candidates = 3;
   optional ExperimentMirror mirror = 4;
   optional ExperimentConfig config = 5;
   optional KubernetesMeta kubernetesMeta = 6;
+  ResourceType resourceType = 7;
 }
 
 message ExperimentConfig {
@@ -211,12 +217,12 @@ message ExperimentConfig {
 }
 
 message ExperimentCandidate {
-  string modelName = 1;
+  string name = 1;
   uint32 weight = 2;
 }
 
 message ExperimentMirror {
-  string modelName = 1;
+  string name = 1;
   uint32 percent = 2;
 }
 

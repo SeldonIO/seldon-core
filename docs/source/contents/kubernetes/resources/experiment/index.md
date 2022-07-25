@@ -1,6 +1,6 @@
 # Experiment
 
-An Experiment defines a traffic split between Models. This allows new versions of models to be tested and experiments between models to be run.
+An Experiment defines a traffic split between Models or Pipelines. This allows new versions of models and pipelines to be tested.
 
 An experiment spec has three sections:
 
@@ -32,15 +32,26 @@ curl http://${MESH_IP}/v2/models/experiment-iris/infer \
    -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
+For examples see the [local experiments notebook](../../../examples/local-experiments.md).
+
+## Pipeline Experiments
+
+Running an experiment between some pipelines is very similar. The difference is `resourceType: pipeline` needs to be defined and in this case the candidates or mirrors will refer to pipelines. An example is shown below:
+
+```{literalinclude} ../../../../../../samples/experiments/addmul10.yaml 
+:language: yaml
+```
+For an example see the [local experiments notebook](../../../examples/local-experiments.md).
+
 ## Sticky Sessions
 
-To allow cohorts to get consistent views in an experiment each inference request passes back a response header `seldon-route` which can be passed in future requests to an experiment to bypass the random traffic splits and get a prediction from the same model used in the initial request.
+To allow cohorts to get consistent views in an experiment each inference request passes back a response header `x-seldon-route` which can be passed in future requests to an experiment to bypass the random traffic splits and get a prediction from the sequence of models and pipelines used in the initial request.
 
-This is illustrated in the [local examples notebook](../../../examples/local-examples.md).
+This is illustrated in the [local experiments notebook](../../../examples/local-experiments.md).
 
 Caveats:
 
-  * Note this is the same model but not necessarily the same replica. This means at present this will not work for stateful models that need to go to the same model replica.
+  * Note the models used will be the same but not necessarily the same replica instances. This means at present this will not work for stateful models that need to go to the same model replica instance.
 
 ## Service Meshes
 

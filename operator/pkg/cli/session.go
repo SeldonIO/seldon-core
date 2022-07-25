@@ -7,17 +7,20 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+
+	"google.golang.org/grpc/metadata"
 )
 
 const (
 	seldonCfgFilepath = ".config/seldon/cli"
 	sessionFilename   = "session"
+	separator         = ","
 )
 
-func saveStickySessionKey(headers http.Header) (bool, error) {
-	sessionKey := findSeldonRouteHeader(headers)
-	if sessionKey != "" {
-		err := saveSessionKeyToFile(sessionKey)
+func saveStickySessionKeyHttp(headers http.Header) (bool, error) {
+	sessionKeys := headers.Values(SeldonRouteHeader)
+	if sessionKeys != nil {
+		err := saveSessionKeysToFile(sessionKeys)
 		if err != nil {
 			return false, err
 		} else {
@@ -28,17 +31,22 @@ func saveStickySessionKey(headers http.Header) (bool, error) {
 	return false, nil
 }
 
-func getStickySessionKey() (string, error) {
-	return loadSessionKeyFromFile()
+func saveStickySessionKeyGrpc(headers metadata.MD) (bool, error) {
+	sessionKey := headers[SeldonRouteHeader]
+	if sessionKey != nil {
+		err := saveSessionKeysToFile(sessionKey)
+		if err != nil {
+			return false, err
+		} else {
+			return true, err
+		}
+
+	}
+	return false, nil
 }
 
-func findSeldonRouteHeader(headers http.Header) string {
-	for k, v := range headers {
-		if strings.ToLower(k) == SeldonRouteHeader {
-			return v[0]
-		}
-	}
-	return ""
+func getStickySessionKeys() ([]string, error) {
+	return loadSessionKeyFromFile()
 }
 
 func getCfgPath() string {
@@ -50,19 +58,20 @@ func getCfgSessionPath() string {
 	return filepath.Join(getCfgPath(), sessionFilename)
 }
 
-func saveSessionKeyToFile(key string) error {
+func saveSessionKeysToFile(keys []string) error {
 	path := getCfgPath()
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(getCfgSessionPath(), []byte(key), os.ModePerm)
+	return ioutil.WriteFile(getCfgSessionPath(), []byte(strings.Join(keys, separator)), os.ModePerm)
 }
 
-func loadSessionKeyFromFile() (string, error) {
+func loadSessionKeyFromFile() ([]string, error) {
 	data, err := ioutil.ReadFile(getCfgSessionPath())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(data), nil
+	keys := string(data)
+	return strings.Split(keys, separator), nil
 }

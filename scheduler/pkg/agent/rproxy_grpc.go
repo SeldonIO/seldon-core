@@ -145,6 +145,7 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 }
 
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
+	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -157,15 +158,21 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
-	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
+	var trailer metadata.MD
+	opts := append(rp.callOptions, grpc.Trailer(&trailer))
+	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	if getGrpcErrCode(err) == codes.NotFound {
 		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
 		rp.stateManager.v2Client.LoadModel(internalModelName)
-		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, rp.callOptions...)
+		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
 
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
+	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
+	if errTrailer != nil {
+		logger.WithError(errTrailer).Error("Failed to set trailers")
+	}
 	return resp, err
 }
 

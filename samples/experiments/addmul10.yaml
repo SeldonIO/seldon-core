@@ -1,12 +1,13 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
-  name: experiment-sample
+  name: addmul10
   namespace: seldon-mesh
 spec:
-  default: iris
+  default: pipeline-add10
+  resourceType: pipeline
   candidates:
-  - modelName: iris
+  - modelName: pipeline-add10
     weight: 50
-  - modelName: iris2
+  - modelName: pipeline-mul10
     weight: 50

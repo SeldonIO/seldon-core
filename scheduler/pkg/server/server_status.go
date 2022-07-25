@@ -90,7 +90,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	if err != nil {
 		return err
 	}
-	if model.GetLatest().GetVersion() == evt.ModelVersion {
+	if model.GetLatest() != nil && model.GetLatest().GetVersion() == evt.ModelVersion {
 		ms, err := s.modelStatusImpl(model, false)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())

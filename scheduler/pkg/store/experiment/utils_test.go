@@ -18,23 +18,23 @@ func TestLoadModel(t *testing.T) {
 	getStrPtr := func(val string) *string { return &val }
 	tests := []test{
 		{
-			name: "basic",
+			name: "model",
 			proto: &scheduler.Experiment{
-				Name:         "foo",
-				DefaultModel: getStrPtr("model1"),
+				Name:    "foo",
+				Default: getStrPtr("model1"),
 				Candidates: []*scheduler.ExperimentCandidate{
 					{
-						ModelName: "model1",
-						Weight:    20,
+						Name:   "model1",
+						Weight: 20,
 					},
 					{
-						ModelName: "model3",
-						Weight:    20,
+						Name:   "model3",
+						Weight: 20,
 					},
 				},
 				Mirror: &scheduler.ExperimentMirror{
-					ModelName: "model4",
-					Percent:   80,
+					Name:    "model4",
+					Percent: 80,
 				},
 				Config: &scheduler.ExperimentConfig{
 					StickySessions: true,
@@ -47,20 +47,21 @@ func TestLoadModel(t *testing.T) {
 			experiment: &Experiment{
 				Name:         "foo",
 				Active:       false,
-				DefaultModel: getStrPtr("model1"),
+				Default:      getStrPtr("model1"),
+				ResourceType: ModelResourceType,
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
-						Weight:    20,
+						Name:   "model1",
+						Weight: 20,
 					},
 					{
-						ModelName: "model3",
-						Weight:    20,
+						Name:   "model3",
+						Weight: 20,
 					},
 				},
 				Mirror: &Mirror{
-					ModelName: "model4",
-					Percent:   80,
+					Name:    "model4",
+					Percent: 80,
 				},
 				Config: &Config{
 					StickySessions: true,
@@ -72,22 +73,22 @@ func TestLoadModel(t *testing.T) {
 			},
 		},
 		{
-			name: "candidates",
+			name: "model candidates",
 			proto: &scheduler.Experiment{
 				Name: "foo",
 				Candidates: []*scheduler.ExperimentCandidate{
 					{
-						ModelName: "model1",
-						Weight:    20,
+						Name:   "model1",
+						Weight: 20,
 					},
 					{
-						ModelName: "model3",
-						Weight:    20,
+						Name:   "model3",
+						Weight: 20,
 					},
 				},
 				Mirror: &scheduler.ExperimentMirror{
-					ModelName: "model4",
-					Percent:   80,
+					Name:    "model4",
+					Percent: 80,
 				},
 				Config: &scheduler.ExperimentConfig{
 					StickySessions: true,
@@ -98,21 +99,78 @@ func TestLoadModel(t *testing.T) {
 				},
 			},
 			experiment: &Experiment{
-				Name:   "foo",
-				Active: false,
+				Name:         "foo",
+				Active:       false,
+				ResourceType: ModelResourceType,
 				Candidates: []*Candidate{
 					{
-						ModelName: "model1",
-						Weight:    20,
+						Name:   "model1",
+						Weight: 20,
 					},
 					{
-						ModelName: "model3",
-						Weight:    20,
+						Name:   "model3",
+						Weight: 20,
 					},
 				},
 				Mirror: &Mirror{
-					ModelName: "model4",
-					Percent:   80,
+					Name:    "model4",
+					Percent: 80,
+				},
+				Config: &Config{
+					StickySessions: true,
+				},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "pipeline",
+			proto: &scheduler.Experiment{
+				Name:         "foo",
+				Default:      getStrPtr("pipeline1"),
+				ResourceType: scheduler.ResourceType_PIPELINE,
+				Candidates: []*scheduler.ExperimentCandidate{
+					{
+						Name:   "pipeline1",
+						Weight: 20,
+					},
+					{
+						Name:   "pipeline2",
+						Weight: 20,
+					},
+				},
+				Mirror: &scheduler.ExperimentMirror{
+					Name:    "pipeline4",
+					Percent: 80,
+				},
+				Config: &scheduler.ExperimentConfig{
+					StickySessions: true,
+				},
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+			experiment: &Experiment{
+				Name:         "foo",
+				Active:       false,
+				Default:      getStrPtr("pipeline1"),
+				ResourceType: PipelineResourceType,
+				Candidates: []*Candidate{
+					{
+						Name:   "pipeline1",
+						Weight: 20,
+					},
+					{
+						Name:   "pipeline2",
+						Weight: 20,
+					},
+				},
+				Mirror: &Mirror{
+					Name:    "pipeline4",
+					Percent: 80,
 				},
 				Config: &Config{
 					StickySessions: true,

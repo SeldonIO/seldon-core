@@ -11,14 +11,14 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 	var k8sMeta *KubernetesMeta
 	for _, reqCandidate := range request.Candidates {
 		candidates = append(candidates, &Candidate{
-			ModelName: reqCandidate.ModelName,
-			Weight:    reqCandidate.Weight,
+			Name:   reqCandidate.Name,
+			Weight: reqCandidate.Weight,
 		})
 	}
 	if request.Mirror != nil {
 		mirror = &Mirror{
-			ModelName: request.Mirror.ModelName,
-			Percent:   request.Mirror.Percent,
+			Name:    request.Mirror.Name,
+			Percent: request.Mirror.Percent,
 		}
 	}
 	if request.Config != nil {
@@ -32,9 +32,17 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 			Generation: request.KubernetesMeta.Generation,
 		}
 	}
+	var resourceType ResourceType
+	switch request.ResourceType {
+	case scheduler.ResourceType_PIPELINE:
+		resourceType = PipelineResourceType
+	case scheduler.ResourceType_MODEL:
+		resourceType = ModelResourceType
+	}
 	return &Experiment{
 		Name:           request.Name,
-		DefaultModel:   request.DefaultModel,
+		Default:        request.Default,
+		ResourceType:   resourceType,
 		Active:         false,
 		Candidates:     candidates,
 		Mirror:         mirror,
@@ -47,15 +55,15 @@ func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
 	var candidates []*scheduler.ExperimentCandidate
 	for _, candidate := range experiment.Candidates {
 		candidates = append(candidates, &scheduler.ExperimentCandidate{
-			ModelName: candidate.ModelName,
-			Weight:    candidate.Weight,
+			Name:   candidate.Name,
+			Weight: candidate.Weight,
 		})
 	}
 	var mirror *scheduler.ExperimentMirror
 	if experiment.Mirror != nil {
 		mirror = &scheduler.ExperimentMirror{
-			ModelName: experiment.Mirror.ModelName,
-			Percent:   experiment.Mirror.Percent,
+			Name:    experiment.Mirror.Name,
+			Percent: experiment.Mirror.Percent,
 		}
 	}
 	var config *scheduler.ExperimentConfig
@@ -71,9 +79,17 @@ func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
 			Generation: experiment.KubernetesMeta.Generation,
 		}
 	}
+	var resourceType scheduler.ResourceType
+	switch experiment.ResourceType {
+	case PipelineResourceType:
+		resourceType = scheduler.ResourceType_PIPELINE
+	case ModelResourceType:
+		resourceType = scheduler.ResourceType_MODEL
+	}
 	return &scheduler.Experiment{
 		Name:           experiment.Name,
-		DefaultModel:   experiment.DefaultModel,
+		Default:        experiment.Default,
+		ResourceType:   resourceType,
 		Candidates:     candidates,
 		Mirror:         mirror,
 		Config:         config,

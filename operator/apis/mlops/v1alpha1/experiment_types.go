@@ -27,21 +27,29 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type ResourceType string
+
+const (
+	ModelResourceType    ResourceType = "model"
+	PipelineResourceType ResourceType = "pipeline"
+)
+
 // ExperimentSpec defines the desired state of Experiment
 type ExperimentSpec struct {
-	DefaultModel *string               `json:"defaultModel,omitempty"`
+	Default      *string               `json:"default,omitempty"`
 	Candidates   []ExperimentCandidate `json:"candidates"`
 	Mirror       *ExperimentMirror     `json:"mirror,omitempty"`
+	ResourceType ResourceType          `json:"resourceType,omitempty"`
 }
 
 type ExperimentCandidate struct {
-	ModelName string `json:"modelName"`
-	Weight    uint32 `json:"weight"`
+	Name   string `json:"modelName"`
+	Weight uint32 `json:"weight"`
 }
 
 type ExperimentMirror struct {
-	ModelName string `json:"model_name"`
-	Percent   uint32 `json:"percent"`
+	Name    string `json:"model_name"`
+	Percent uint32 `json:"percent"`
 }
 
 // ExperimentStatus defines the observed state of Experiment
@@ -77,8 +85,8 @@ func init() {
 
 func asSchedulerCandidate(candidate *ExperimentCandidate) *scheduler.ExperimentCandidate {
 	return &scheduler.ExperimentCandidate{
-		ModelName: candidate.ModelName,
-		Weight:    candidate.Weight,
+		Name:   candidate.Name,
+		Weight: candidate.Weight,
 	}
 }
 
@@ -90,19 +98,27 @@ func (e *Experiment) AsSchedulerExperimentRequest() *scheduler.Experiment {
 	}
 	if e.Spec.Mirror != nil {
 		mirror = &scheduler.ExperimentMirror{
-			ModelName: e.Spec.Mirror.ModelName,
-			Percent:   e.Spec.Mirror.Percent,
+			Name:    e.Spec.Mirror.Name,
+			Percent: e.Spec.Mirror.Percent,
 		}
 	}
+	var resourceType scheduler.ResourceType
+	switch e.Spec.ResourceType {
+	case PipelineResourceType:
+		resourceType = scheduler.ResourceType_PIPELINE
+	default:
+		resourceType = scheduler.ResourceType_MODEL
+	}
 	return &scheduler.Experiment{
-		Name:         e.Name,
-		DefaultModel: e.Spec.DefaultModel,
-		Candidates:   candidates,
-		Mirror:       mirror,
+		Name:       e.Name,
+		Default:    e.Spec.Default,
+		Candidates: candidates,
+		Mirror:     mirror,
 		KubernetesMeta: &scheduler.KubernetesMeta{
 			Namespace:  e.Namespace,
 			Generation: e.Generation,
 		},
+		ResourceType: resourceType,
 	}
 }
 

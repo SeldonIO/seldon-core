@@ -114,8 +114,25 @@ func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
 //	return r
 //}
 
-func (xds *SeldonXDSCache) AddPipelineRoute(pipelineName string) {
-	xds.Pipelines[pipelineName] = resources.PipelineRoute{PipelineName: pipelineName}
+func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32) {
+	pipelineRoute, ok := xds.Pipelines[routeName]
+	if !ok {
+		xds.Pipelines[routeName] = resources.PipelineRoute{
+			RouteName: routeName,
+			Clusters: []resources.PipelineTrafficSplits{
+				{
+					PipelineName:  pipelineName,
+					TrafficWeight: trafficWeight,
+				},
+			},
+		}
+	} else {
+		pipelineRoute.Clusters = append(pipelineRoute.Clusters, resources.PipelineTrafficSplits{
+			PipelineName:  pipelineName,
+			TrafficWeight: trafficWeight,
+		})
+		xds.Pipelines[routeName] = pipelineRoute
+	}
 }
 
 func (xds *SeldonXDSCache) RemovePipelineRoute(pipelineName string) {
