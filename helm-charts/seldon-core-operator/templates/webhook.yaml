@@ -4,7 +4,7 @@
 {{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}
 ---
 
-{{- if not .Values.certManager.enabled -}}
+{{- if not .Values.certManager.enabled }}
 apiVersion: v1
 data:
   ca.crt: '{{ $ca.Cert | b64enc }}'
@@ -34,7 +34,7 @@ webhooks:
   - v1
   - v1beta1
   clientConfig:
-{{- if not .Values.certManager.enabled -}}
+{{- if not .Values.certManager.enabled }}
     caBundle: '{{ $ca.Cert | b64enc }}'
 {{- end }}
     service:
