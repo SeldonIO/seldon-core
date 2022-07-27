@@ -23,4 +23,4 @@ USER 1000
 COPY data-flow/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
 # TODO - inject JAR name & version from build pipeline
-CMD ["java", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
+CMD ["java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]

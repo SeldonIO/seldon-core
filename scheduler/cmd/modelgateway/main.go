@@ -137,7 +137,7 @@ func main() {
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
 	}
 	kafkaConsumer := gateway.NewConsumerManager(logger, &consumerConfig,
-		getEnVar(logger, gateway.EnvMaxModelsPerConsumer, gateway.DefaultMaxModelsPerConsumer))
+		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))
 	defer kafkaConsumer.Stop()
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)

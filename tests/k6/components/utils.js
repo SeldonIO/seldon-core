@@ -1,6 +1,6 @@
 import { sleep } from 'k6';
 import { generateModel, generatePipelineName } from '../components/model.js';
-import { connectScheduler, disconnectScheduler, loadModel, unloadModel, loadPipeline, unloadPipeline } from '../components/scheduler.js';
+import { connectScheduler, disconnectScheduler, loadModel, unloadModel, loadPipeline, unloadPipeline, awaitPipelineStatus } from '../components/scheduler.js';
 import {
     connectScheduler as connectSchedulerProxy,
     disconnectScheduler as disconnectSchedulerProxy,
@@ -33,7 +33,7 @@ export function setupBase(config ) {
             loadModelFn(modelName, modelDefn, false)
 
             if (config.isLoadPipeline) {
-                loadPipeline(generatePipelineName(modelName), pipelineDefn)  // we use pipeline name as model name
+                loadPipeline(generatePipelineName(modelName), pipelineDefn, false)  // we use pipeline name as model name
             }
         }
 
@@ -47,6 +47,10 @@ export function setupBase(config ) {
             while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
                 sleep(1)
             }
+        } else {
+            const n = config.maxNumModels - 1
+            const modelName = config.modelNamePrefix + n.toString()
+            awaitPipelineStatus(generatePipelineName(modelName), "PipelineReady")
         }
 
         if (config.doWarmup) {

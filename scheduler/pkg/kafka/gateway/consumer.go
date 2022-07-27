@@ -37,9 +37,10 @@ type InferKafkaConsumer struct {
 	topicNamer       *kafka2.TopicNamer
 	consumerConfig   *ConsumerConfig
 	adminClient      *kafka.AdminClient
+	consumerName     string
 }
 
-func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig) (*InferKafkaConsumer, error) {
+func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaConsumer, error) {
 	ic := &InferKafkaConsumer{
 		logger:           logger.WithField("source", "InferConsumer"),
 		done:             make(chan bool),
@@ -48,6 +49,7 @@ func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfi
 		loadedModels:     make(map[string]bool),
 		subscribedTopics: make(map[string]bool),
 		consumerConfig:   consumerConfig,
+		consumerName:     consumerName,
 	}
 	return ic, ic.setup()
 }
@@ -66,7 +68,10 @@ func (kc *InferKafkaConsumer) setup() error {
 	logger.Infof("Created producer %s", kc.producer.String())
 
 	consumerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Consumer)
-	consumerConfig["group.id"] = "seldon-modelgateway"
+	// we map topics consistently to consumers and we choose the consumer group.id based on this mapping
+	// for eg. hash(topic1) -> modelgateway-0
+	// this is done by the caller i.e. ConsumerManager (manager.go)
+	consumerConfig["group.id"] = kc.consumerName
 	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
@@ -162,9 +167,7 @@ func (kc *InferKafkaConsumer) AddModel(modelName string) error {
 	kc.subscribedTopics[inputTopic] = true
 	err := kc.subscribeTopics()
 	if err != nil {
-		kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
-		delete(kc.loadedModels, modelName)
-		delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
+		kc.logger.WithError(err).Warn("Failed to subscribe to topics")
 		return nil
 	}
 	return nil

@@ -33,7 +33,7 @@ spec:
         env:
           - name: MODELGATEWAY_NUM_WORKERS
             value: "8"
-          - name: MODELGATEWAY_MAX_MODELS_PER_CONSUMER
+          - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: "100"
         resources:
           requests:

@@ -6,6 +6,7 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -42,4 +43,17 @@ func filterKafkaInputHeaders(headers []kafka.Header) []kafka.Header {
 		}
 	}
 	return filteredHeaders
+}
+
+// Map a model name / id to a consumer bucket consistently.
+// This requires that number of buckets does not change between calls.
+// If it changes there is a potential redundant work that is being done as kafka
+// will restart from earliest.
+func modelIdToConsumerBucket(modelId string, numBuckets int) uint32 {
+	hash, err := util.Hash(modelId)
+	if err != nil {
+		// is this ok to revert to bucket 0?
+		return 0
+	}
+	return hash % uint32(numBuckets)
 }
