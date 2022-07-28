@@ -127,7 +127,6 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 		return fmt.Errorf("error %w retrieving hostname", err)
 	}
 
-	// blank consumer tag means auto-generate
 	c := &consumer{*conn, rs.InputQueueName, consumerTag}
 	rs.Log.Info("Created", "consumer", c, "input queue", rs.InputQueueName)
 
