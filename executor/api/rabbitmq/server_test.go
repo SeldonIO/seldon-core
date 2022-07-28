@@ -63,7 +63,7 @@ func TestRabbitMqServer(t *testing.T) {
 	outputQueue := "outputQueue"
 	fullHealthCheck := false
 
-	testServer := SeldonRabbitMqServer{
+	testServer := SeldonRabbitMQServer{
 		Client:          test.SeldonMessageTestClient{},
 		DeploymentName:  deploymentName,
 		Namespace:       namespace,
@@ -92,21 +92,20 @@ func TestRabbitMqServer(t *testing.T) {
 	}
 
 	t.Run("create server", func(t *testing.T) {
-		server, err := NewRabbitMqServer(
-			false,
-			deploymentName,
-			namespace,
-			protocol,
-			transport,
-			map[string]string{},
-			serverUrl,
-			&p,
-			brokerUrl,
-			inputQueue,
-			outputQueue,
-			logger,
-			fullHealthCheck,
-		)
+		server, err := CreateRabbitMQServer(RabbitMQServerOptions{
+			DeploymentName:  deploymentName,
+			Namespace:       namespace,
+			Protocol:        protocol,
+			Transport:       transport,
+			Annotations:     map[string]string{},
+			ServerUrl:       serverUrl,
+			Predictor:       &p,
+			BrokerUrl:       brokerUrl,
+			InputQueueName:  inputQueue,
+			OutputQueueName: outputQueue,
+			Log:             logger,
+			FullHealthCheck: fullHealthCheck,
+		})
 
 		assert.NoError(t, err)
 		assert.NotNil(t, server)

@@ -83,10 +83,10 @@ var (
 	kafkaAutoCommit   = flag.Bool("kafka_auto_commit", true, "Use auto committing in the kafka consumer")
 	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
 	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
-	rabbitmqFullGraph = flag.Bool("rabbitmq_full_graph", false, "Use rabbitmq for internal graph processing")
-	rabbitmqBroker    = flag.String("rabbitmq_broker", "", "The rabbitmq broker as host:port")
-	rabbitmqQueueIn   = flag.String("rabbitmq_input_queue", "", "The rabbitmq input queue")
-	rabbitmqQueueOut  = flag.String("rabbitmq_output_queue", "", "The rabbitmq output queue")
+	rabbitMQFullGraph = flag.Bool("rabbitmq_full_graph", false, "Use rabbitmq for internal graph processing")
+	rabbitMQBroker    = flag.String("rabbitmq_broker", "", "The rabbitmq broker as host:port")
+	rabbitMQQueueIn   = flag.String("rabbitmq_input_queue", "", "The rabbitmq input queue")
+	rabbitMQQueueOut  = flag.String("rabbitmq_output_queue", "", "The rabbitmq output queue")
 	fullHealthChecks  = flag.Bool("full_health_checks", false, "Full health checks via chosen protocol API")
 	debug             = flag.Bool(
 		"debug",
@@ -316,34 +316,34 @@ func main() {
 
 	if *serverType == "rabbitmq" {
 		// Get Broker
-		if *rabbitmqBroker == "" {
-			*rabbitmqBroker = os.Getenv(rabbitmq.ENV_RABBITMQ_BROKER_URL)
-			if *rabbitmqBroker == "" {
+		if *rabbitMQBroker == "" {
+			*rabbitMQBroker = os.Getenv(rabbitmq.ENV_RABBITMQ_BROKER_URL)
+			if *rabbitMQBroker == "" {
 				log.Fatal("Required argument rabbitmq_broker missing")
 			}
 		}
 		// Get input topic
-		if *rabbitmqQueueIn == "" {
-			*rabbitmqQueueIn = os.Getenv(rabbitmq.ENV_RABBITMQ_INPUT_QUEUE)
-			if *rabbitmqQueueIn == "" {
+		if *rabbitMQQueueIn == "" {
+			*rabbitMQQueueIn = os.Getenv(rabbitmq.ENV_RABBITMQ_INPUT_QUEUE)
+			if *rabbitMQQueueIn == "" {
 				log.Fatal("Required argument rabbitmq_input_queue missing")
 			}
 		}
 		// Get output queue
-		if *rabbitmqQueueOut == "" {
-			*rabbitmqQueueOut = os.Getenv(rabbitmq.ENV_RABBITMQ_OUTPUT_QUEUE)
-			if *rabbitmqQueueOut == "" {
+		if *rabbitMQQueueOut == "" {
+			*rabbitMQQueueOut = os.Getenv(rabbitmq.ENV_RABBITMQ_OUTPUT_QUEUE)
+			if *rabbitMQQueueOut == "" {
 				log.Fatal("Required argument rabbitmq_output_topic missing")
 			}
 		}
 		// Get Full Graph
-		rabbitmqFullGraphFromEnv := os.Getenv(rabbitmq.ENV_RABBITMQ_FULL_GRAPH)
-		if rabbitmqFullGraphFromEnv != "" {
-			rabbitmqFullGraphFromEnvBool, err := strconv.ParseBool(rabbitmqFullGraphFromEnv)
+		rabbitMQFullGraphFromEnv := os.Getenv(rabbitmq.ENV_RABBITMQ_FULL_GRAPH)
+		if rabbitMQFullGraphFromEnv != "" {
+			rabbitmqFullGraphFromEnvBool, err := strconv.ParseBool(rabbitMQFullGraphFromEnv)
 			if err != nil {
-				log.Fatalf("Failed to parse %s %s", rabbitmq.ENV_RABBITMQ_FULL_GRAPH, rabbitmqFullGraphFromEnv)
+				log.Fatalf("Failed to parse %s %s", rabbitmq.ENV_RABBITMQ_FULL_GRAPH, rabbitMQFullGraphFromEnv)
 			} else {
-				*rabbitmqFullGraph = rabbitmqFullGraphFromEnvBool
+				*rabbitMQFullGraph = rabbitmqFullGraphFromEnvBool
 			}
 		}
 	}
@@ -429,12 +429,26 @@ func main() {
 
 	if *serverType == "rabbitmq" {
 		logger.Info("Starting rabbitmq server")
-		rabbitMqServer, err := rabbitmq.NewRabbitMqServer(*rabbitmqFullGraph, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *rabbitmqBroker, *rabbitmqQueueIn, *rabbitmqQueueOut, logger, *fullHealthChecks)
+		rabbitMQServer, err := rabbitmq.CreateRabbitMQServer(rabbitmq.RabbitMQServerOptions{
+			FullGraph:       *rabbitMQFullGraph,
+			DeploymentName:  *sdepName,
+			Namespace:       *namespace,
+			Protocol:        *protocol,
+			Transport:       *transport,
+			Annotations:     annotations,
+			ServerUrl:       *serverUrl,
+			Predictor:       *predictor,
+			BrokerUrl:       *rabbitMQBroker,
+			InputQueueName:  *rabbitMQQueueIn,
+			OutputQueueName: *rabbitMQQueueOut,
+			Log:             logger,
+			FullHealthCheck: *fullHealthChecks,
+		})
 		if err != nil {
 			log.Fatalf("Failed to create rabbitmq server: %v", err)
 		}
 		go func() {
-			err = rabbitMqServer.Serve()
+			err = rabbitMQServer.Serve()
 			if err != nil {
 				log.Fatal("Failed to serve rabbitmq", err)
 			}

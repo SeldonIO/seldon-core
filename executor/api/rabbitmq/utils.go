@@ -56,5 +56,4 @@ func DeliveryToPayload(delivery amqp.Delivery) (SeldonPayloadWithHeaders, error)
 	}
 
 	return pl, err
-
 }

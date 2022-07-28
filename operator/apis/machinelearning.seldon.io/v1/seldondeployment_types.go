@@ -268,9 +268,9 @@ const (
 type ServerType string
 
 const (
-	ServerRPC      ServerType = "rpc"
-	ServerKafka    ServerType = "kafka"
-	ServerRabbitMq ServerType = "rabbitmq"
+	ServerTypeRPC      ServerType = "rpc"
+	ServerTypeKafka    ServerType = "kafka"
+	ServerTypeRabbitMQ ServerType = "rabbitmq"
 )
 
 type SvcOrchSpec struct {

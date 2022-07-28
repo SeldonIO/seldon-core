@@ -102,7 +102,7 @@ func TestExecutorCreateKafka(t *testing.T) {
 	g := NewGomegaWithT(t)
 	cleanEnvImages()
 	mlDep := createTestSeldonDeployment()
-	mlDep.Spec.ServerType = machinelearningv1.ServerKafka
+	mlDep.Spec.ServerType = machinelearningv1.ServerTypeKafka
 	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
 	cleanEnvImages()

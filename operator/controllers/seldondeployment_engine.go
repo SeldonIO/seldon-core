@@ -198,7 +198,7 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 
 	serverType := mlDep.Spec.ServerType
 	if serverType == "" {
-		serverType = machinelearningv1.ServerRPC
+		serverType = machinelearningv1.ServerTypeRPC
 	}
 
 	// Get executor image from env vars in order of priority

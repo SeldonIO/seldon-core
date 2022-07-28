@@ -1,8 +1,8 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"os"
 	"os/signal"
@@ -22,7 +22,7 @@ type consumer struct {
 func NewConsumer(uri, queueName, consumerTag string, logger logr.Logger) (*consumer, error) {
 	c, err := NewConnection(uri, logger)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error %w creating connection to %v for consumer", err, uri)
 	}
 	return &consumer{
 		*c,
@@ -40,14 +40,14 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 		c.log.Info("attempting to reconnect to rabbitmq", "uri", c.uri)
 
 		if err := c.connect(); err != nil {
-			return errors.Wrap(err, "could not reconnect to rabbitmq")
+			return fmt.Errorf("error %w reconnecting to rabbitmq", err)
 		}
 	default:
 	}
 
 	_, err := c.DeclareQueue(c.queueName)
 	if err != nil {
-		return errors.Wrap(err, "failed to declare rabbitmq queue")
+		return fmt.Errorf("error %w declaring rabbitmq queue", err)
 	}
 
 	// default exchange with queue name as name is the same as a direct exchange routed to the queue
@@ -61,7 +61,7 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 		amqp.Table{},  // arguments TODO should something go here?
 	)
 	if err != nil {
-		return errors.Wrap(err, "Queue Consume error")
+		return fmt.Errorf("error %w consuming from rabbitmq queue", err)
 	}
 
 	// TODO does this need more error handling?  What about if the connection or channel fail while

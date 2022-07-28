@@ -1,8 +1,9 @@
 package rabbitmq
 
 import (
+	"fmt"
+
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -23,7 +24,7 @@ type publisher struct {
 func NewPublisher(uri, queueName string, logger logr.Logger) (*publisher, error) {
 	c, err := NewConnection(uri, logger)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error %w creating connection to %v for publisher", err, uri)
 	}
 	return &publisher{
 		*c,
@@ -39,19 +40,19 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 		p.log.Info("attempting to reconnect to rabbitmq", "uri", p.uri)
 
 		if err := p.connect(); err != nil {
-			return errors.Wrap(err, "could not reconnect to rabbitmq")
+			return fmt.Errorf("error %w reconnecting to rabbitmq", err)
 		}
 	default:
 	}
 
 	_, err := p.DeclareQueue(p.queueName)
 	if err != nil {
-		return errors.Wrap(err, "failed to declare rabbitmq queue")
+		return fmt.Errorf("error %w declaring rabbitmq queue", err)
 	}
 
 	body, err := payload.GetBytes()
 	if err != nil {
-		return errors.Wrap(err, "could not get payload bytes")
+		return fmt.Errorf("error %w retrieving payload bytes", err)
 	}
 	message := amqp.Publishing{
 		Headers:         StringMapToTable(payload.Headers),
@@ -60,5 +61,5 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 		Body:            body,
 	}
 	err = p.channel.Publish(amqpExchange, p.queueName, publishMandatory, publishImmediate, message)
-	return errors.Wrap(err, "failed to publish rabbitmq message")
+	return fmt.Errorf("error %w publishing rabbitmq message", err)
 }

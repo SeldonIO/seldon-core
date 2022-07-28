@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"github.com/seldonio/seldon-core/executor/api/payload"
 	"io"
 
@@ -15,7 +16,7 @@ import (
 var defaultDialerAdapter DialerAdapter = func(url string) (Connection, error) {
 	conn, err := amqp.Dial(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error %w dialing rabbitmq at url %v", err, url)
 	}
 
 	return ConnectionAdapter{conn}, nil

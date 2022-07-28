@@ -47,7 +47,7 @@ func NewConnection(uri string, logger logr.Logger) (*connection, error) {
 	}
 
 	if err := p.connect(); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error connecting to %v", uri)
 	}
 	return p, nil
 }
@@ -67,7 +67,10 @@ func (c *connection) DeclareQueue(queueName string) (amqp.Queue, error) {
 // channels created under this connection.
 func (c *connection) Close() error {
 	if c.conn != nil {
-		return c.conn.Close()
+		err := c.conn.Close()
+		if err != nil {
+			return errors.Wrapf(err, "error closing connection %v", c)
+		}
 	}
 	return nil
 }

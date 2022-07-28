@@ -178,7 +178,7 @@ const (
 )
 
 func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
-	if r.ServerType == ServerKafka {
+	if r.ServerType == ServerTypeKafka {
 		for i, p := range r.Predictors {
 			if len(p.SvcOrchSpec.Env) == 0 {
 				fldPath := field.NewPath("spec").Child("predictors").Index(i)
@@ -212,17 +212,26 @@ func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.Err
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
-	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKfserving || r.Protocol == ProtocolV2) {
+	switch r.Protocol {
+	case "", ProtocolSeldon, ProtocolTensorflow, ProtocolKfserving, ProtocolV2: // do nothing, no error
+		seldondeploymentlog.Info("Protocol is valid", "Protocol", r.Protocol)
+	default:
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Protocol, "Invalid protocol"))
 	}
 
-	if r.Transport != "" && !(r.Transport == TransportRest || r.Transport == TransportGrpc) {
+	switch r.Transport {
+	case "", TransportRest, TransportGrpc: // do nothing, no error
+		seldondeploymentlog.Info("Transport is valid", "Transport", r.Transport)
+	default:
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Transport, "Invalid transport"))
 	}
 
-	if r.ServerType != "" && !(r.ServerType == ServerRPC || r.ServerType == ServerKafka || r.ServerType == ServerRabbitMq) {
+	switch r.ServerType {
+	case "", ServerTypeRPC, ServerTypeKafka, ServerTypeRabbitMQ: // do nothing, no error
+		seldondeploymentlog.Info("Server Type is valid", "ServerType", r.ServerType)
+	default:
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.ServerType, "Invalid serverType"))
 	}
