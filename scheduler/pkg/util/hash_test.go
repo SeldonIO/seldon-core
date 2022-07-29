@@ -1,4 +1,4 @@
-package gateway
+package util
 
 import (
 	"testing"

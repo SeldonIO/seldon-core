@@ -1,11 +1,11 @@
 package gateway
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,13 +41,8 @@ func NewConsumerManager(logger log.FieldLogger, consumerConfig *ConsumerConfig, 
 	}
 }
 
-func (cm *ConsumerManager) getKafkaConsumerName(modelName string) string {
-	idx := modelIdToConsumerBucket(modelName, cm.maxNumConsumers)
-	return fmt.Sprintf("%s-%d", modelGatewayConsumerNamePrefix, idx)
-}
-
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaConsumer, error) {
-	consumerBucketId := cm.getKafkaConsumerName(modelName)
+	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
 
 	if !ok && !create {

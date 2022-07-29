@@ -16,7 +16,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	cmap "github.com/orcaman/concurrent-map"
 	"github.com/rs/xid"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -33,24 +32,22 @@ type PipelineInferer interface {
 }
 
 type KafkaManager struct {
-	kafkaConfig *config.KafkaConfig
-	producer    *kafka.Producer
-	pipelines   sync.Map
-	logger      logrus.FieldLogger
-	mu          sync.RWMutex
-	topicNamer  *kafka2.TopicNamer
-	tracer      trace.Tracer
+	kafkaConfig     *config.KafkaConfig
+	producer        *kafka.Producer
+	pipelines       sync.Map
+	logger          logrus.FieldLogger
+	mu              sync.RWMutex
+	topicNamer      *kafka2.TopicNamer
+	tracer          trace.Tracer
+	consumerManager *ConsumerManager
 }
 
 type Pipeline struct {
 	resourceName string
-	consumer     *kafka.Consumer
-	// map of kafka id to request
-	requests   cmap.ConcurrentMap
-	done       chan bool
-	isModel    bool
-	wg         *sync.WaitGroup
-	hasStarted bool
+	consumer     *MultiTopicsKafkaConsumer
+	isModel      bool
+	wg           *sync.WaitGroup
+	hasStarted   bool
 }
 
 type Request struct {
@@ -63,12 +60,15 @@ type Request struct {
 	isError  bool
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider) (*KafkaManager, error) {
+func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
-		kafkaConfig: kafkaConfig,
-		logger:      logger.WithField("source", "KafkaManager"),
-		topicNamer:  kafka2.NewTopicNamer(namespace),
-		tracer:      traceProvider.GetTraceProvider().Tracer("KafkaManager"),
+		kafkaConfig:     kafkaConfig,
+		logger:          logger.WithField("source", "KafkaManager"),
+		topicNamer:      kafka2.NewTopicNamer(namespace),
+		tracer:          tracer,
+		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
+		mu:              sync.RWMutex{},
 	}
 	err := km.createProducer()
 	if err != nil {
@@ -83,11 +83,7 @@ func (km *KafkaManager) Stop() {
 	km.mu.Lock()
 	defer km.mu.Unlock()
 	km.producer.Close()
-	km.pipelines.Range(func(key interface{}, value interface{}) bool {
-		pipeline := value.(*Pipeline)
-		close(pipeline.done)
-		return true
-	})
+	km.consumerManager.Stop()
 	logger.Info("Stopped all pipelines")
 }
 
@@ -105,19 +101,13 @@ func (km *KafkaManager) createProducer() error {
 }
 
 func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline, error) {
-	consumerConfig := config.CloneKafkaConfigMap(km.kafkaConfig.Consumer)
-	consumerConfig["group.id"] = resource
-	km.logger.Infof("Creating consumer with config %v", consumerConfig)
-	consumer, err := kafka.NewConsumer(&consumerConfig)
+	consumer, err := km.consumerManager.getKafkaConsumer()
 	if err != nil {
 		return nil, err
 	}
-	km.logger.Infof("Created consumer %s", consumer.String())
 	return &Pipeline{
 		resourceName: resource,
 		consumer:     consumer,
-		requests:     cmap.New(),
-		done:         make(chan bool),
 		isModel:      isModel,
 		wg:           new(sync.WaitGroup),
 		hasStarted:   false,
@@ -174,8 +164,8 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 		wg:     new(sync.WaitGroup),
 		key:    key,
 	}
-	pipeline.requests.Set(key, request)
-	defer pipeline.requests.Remove(key)
+	pipeline.consumer.requests.Set(key, request)
+	defer pipeline.consumer.requests.Remove(key)
 	request.wg.Add(1)
 
 	outputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
@@ -234,73 +224,11 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	if pipeline.isModel {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-
-	err := pipeline.consumer.SubscribeTopics([]string{topicName},
-		func(consumer *kafka.Consumer, event kafka.Event) error {
-			switch event.(type) {
-			case kafka.AssignedPartitions:
-				if !pipeline.hasStarted {
-					pipeline.wg.Done() // Mark consumer as ready so we can send our requests
-					pipeline.hasStarted = true
-				}
-			}
-			return nil
-		})
+	err := pipeline.consumer.AddTopic(topicName, nil)
+	pipeline.wg.Done()
+	logger.Infof("Topic %s added in consumer id %s", topicName, pipeline.consumer.id)
 	if err != nil {
 		return err
 	}
-	if !km.kafkaConfig.HasKafkaBootstrapServer() { // Should only happen in testing
-		pipeline.wg.Done() // Mark consumer as ready so we can send our requests
-	}
-	logger.Infof("Started consumer for topic (pipeline:%v) %s", !pipeline.isModel, topicName)
-	run := true
-	for run {
-		select {
-		case <-pipeline.done:
-			run = false
-		default:
-			ev := pipeline.consumer.Poll(pollTimeoutMillisecs)
-			if ev == nil {
-				continue
-			}
-
-			switch e := ev.(type) {
-			case *kafka.Message:
-				logger.Debugf("Received message from %s with key %s", topicName, string(e.Key))
-				if val, ok := pipeline.requests.Get(string(e.Key)); ok {
-
-					// Add tracing span
-					ctx := context.Background()
-					carrierIn := splunkkafka.NewMessageCarrier(e)
-					ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
-					_, span := km.tracer.Start(ctx, "Consume")
-					span.SetAttributes(attribute.String(RequestIdHeader, string(e.Key)))
-
-					request := val.(*Request)
-					request.mu.Lock()
-					if request.active {
-						logger.Debugf("Process response for key %s", string(e.Key))
-						request.isError = hasErrorHeader(e.Headers)
-						request.response = e.Value
-						request.headers = e.Headers
-						request.wg.Done()
-						request.active = false
-					} else {
-						logger.Warnf("Got duplicate request with key %s", string(e.Key))
-					}
-					request.mu.Unlock()
-					span.End()
-				}
-
-			case kafka.Error:
-				km.logger.Error(e, "Received stream error")
-				if e.Code() == kafka.ErrAllBrokersDown {
-					run = false
-				}
-			default:
-				km.logger.Debug("Ignored %s", e.String())
-			}
-		}
-	}
-	return pipeline.consumer.Close()
+	return nil
 }

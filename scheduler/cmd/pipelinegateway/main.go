@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
@@ -69,6 +70,7 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 	close(done)
 }
 
+// TODO: move to a common util
 func updateNamespace() {
 	nsBytes, err := ioutil.ReadFile(kubernetesNamespacePath)
 	if err != nil {
@@ -78,6 +80,21 @@ func updateNamespace() {
 		log.Infof("Setting namespace from k8s file to %s", ns)
 		namespace = ns
 	}
+}
+
+//TODO: move to a common util
+func getEnVar(logger *log.Logger, key string, defaultValue int) int {
+	valStr := os.Getenv(key)
+	if valStr != "" {
+		val, err := strconv.ParseInt(valStr, 10, 64)
+		if err != nil {
+			logger.WithError(err).Fatalf("Failed to parse %s", key)
+		}
+		logger.Infof("Got %s = %d", key, val)
+		return int(val)
+	}
+	logger.Infof("Returning default %s = %d", key, defaultValue)
+	return defaultValue
 }
 
 func runningInsideK8s() bool {
@@ -112,7 +129,10 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	km, err := pipeline.NewKafkaManager(logger, namespace, kafkaConfigMap, tracer)
+	maxNumTopicsPerConsumer := getEnVar(logger, pipeline.EnvMaxNumTopicPerConsumer, pipeline.DefaultMaxNumTopicsPerConsumer)
+	maxNumConsumers := getEnVar(logger, pipeline.EnvMaxNumConsumers, pipeline.DefaultMaxNumConsumers)
+	km, err := pipeline.NewKafkaManager(
+		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers, maxNumTopicsPerConsumer)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create kafka manager")
 	}
