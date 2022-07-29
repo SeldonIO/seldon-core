@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
+import io.seldon.mlops.inference.v2.V2Dataplane.InferParameter
 import io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor
@@ -57,11 +58,13 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
                 val batchSize = v.sumOf { it.getShape(0) }
                 val dataShape = v.first().shapeList.drop(1)
                 val shape = mutableListOf(batchSize) + dataShape
-
+                val parameters = mutableMapOf<String, InferParameter>()
+                v.map { it.parametersMap }.forEach {parameters.putAll(it)}
                 InferInputTensor
                     .newBuilder()
                     .setName(k)
                     .addAllShape(shape)
+                    .putAllParameters(parameters)
                     .setContents(
                         InferTensorContents
                             .newBuilder()
@@ -84,6 +87,7 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
             .setId(batchReferenceRequest.id)
             .setModelName(batchReferenceRequest.modelName)
             .setModelVersion(batchReferenceRequest.modelVersion)
+            .putAllParameters(batchReferenceRequest.parametersMap)
             .addAllInputs(tensorNames.values)
             .build()
     }
