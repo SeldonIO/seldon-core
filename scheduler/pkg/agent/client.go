@@ -44,7 +44,7 @@ type Client struct {
 	rpHTTP             ClientServiceInterface
 	rpGRPC             ClientServiceInterface
 	clientDebugService ClientServiceInterface
-	metrics            metrics.MetricsHandler
+	metrics            metrics.AgentMetricsHandler
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -90,7 +90,7 @@ func NewClient(serverName string,
 	reverseProxyHTTP ClientServiceInterface,
 	reverseProxyGRPC ClientServiceInterface,
 	clientDebugService ClientServiceInterface,
-	metrics metrics.MetricsHandler,
+	metrics metrics.AgentMetricsHandler,
 ) *Client {
 
 	opts := []grpc.CallOption{

@@ -197,8 +197,16 @@ kind-image-install-pipelinegateway:
 kind-image-install-dataflow:
 	kind load -v 3 docker-image ${DATAFLOW_IMG} --name ${KIND_NAME}
 
+.PHONY: kind-image-install-mlserver
+kind-image-install-mlserver:
+	kind load -v 3 docker-image ${MLSERVER_IMG} --name ${KIND_NAME}
+
+.PHONY: kind-image-install-triton
+kind-image-install-triton:
+	kind load -v 3 docker-image ${TRITON_IMG} --name ${KIND_NAME}
+
 .PHONY: kind-image-install-all
-kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway kind-image-install-pipelinegateway kind-image-install-dataflow
+kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway kind-image-install-pipelinegateway kind-image-install-dataflow kind-image-install-mlserver kind-image-install-triton
 
 #####################################
 # Start with Docker Compose
@@ -493,6 +501,10 @@ stop-prometheus:
 .PHONY: start-prometheus-host
 start-prometheus-host:
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d prometheus
+
+.PHONY: stop-prometheus-host
+stop-prometheus-host:
+	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} rm --stop --force prometheus
 
 .PHONY: start-grafana
 start-grafana:

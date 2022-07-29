@@ -3,4 +3,5 @@ scrape_configs:
     scrape_interval: 10s
     static_configs:
       - targets: ['agent-mlserver:9006']
-      - targets: ['agent-triton:9006']        
+      - targets: ['agent-triton:9006']
+      - targets: ['pipelinegateway:9009']

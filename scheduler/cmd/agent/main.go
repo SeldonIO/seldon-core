@@ -164,7 +164,7 @@ func main() {
 	// Create V2 Protocol Handler
 	v2Client := agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
 
-	promMetrics, err := metrics.NewPrometheusMetrics(cli.ServerName, cli.ReplicaIdx, cli.Namespace, logger)
+	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, cli.Namespace, logger)
 	if err != nil {
 		logger.WithError(err).Fatalf("Can't create prometheus metrics")
 	}

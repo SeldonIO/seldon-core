@@ -7,3 +7,4 @@ spec:
   storageUri: "gs://seldon-models/triton/simple"
   requirements:
   - tensorflow
+  memory: 100Ki

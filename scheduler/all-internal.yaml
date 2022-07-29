@@ -159,6 +159,8 @@ services:
       - ${PIPELINEGATEWAY_HTTP_PORT}
       - "--grpc-port"
       - ${PIPELINEGATEWAY_GRPC_PORT}
+      - "--metrics-port"
+      - ${PIPELINEGATEWAY_METRICS_PORT}
       - "--tracing-config-path"
       - "/mnt/config/tracing-internal.json"
     volumes:
@@ -172,6 +174,8 @@ services:
   prometheus:
     command:
       - --config.file=/etc/prometheus/prometheus-internal.yml
+    ports:
+      - "9090:9090"      
     volumes:
       - type: bind
         source: ./config

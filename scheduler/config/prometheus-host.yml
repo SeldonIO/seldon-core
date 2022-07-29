@@ -3,4 +3,5 @@ scrape_configs:
     scrape_interval: 10s
     static_configs:
       - targets: ['0.0.0.0:9006']
-      - targets: ['0.0.0.0:9007']        
+      - targets: ['0.0.0.0:9007']
+      - targets: ['0.0.0.0:9009']

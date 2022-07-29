@@ -27,10 +27,10 @@ type GatewayGrpcServer struct {
 	grpcServer *grpc.Server
 	gateway    PipelineInferer
 	logger     log.FieldLogger
-	metrics    metrics.MetricsHandler
+	metrics    metrics.PipelineMetricsHandler
 }
 
-func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.MetricsHandler) *GatewayGrpcServer {
+func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.PipelineMetricsHandler) *GatewayGrpcServer {
 	return &GatewayGrpcServer{
 		port:    port,
 		gateway: gateway,
@@ -57,7 +57,7 @@ func (g *GatewayGrpcServer) Start() error {
 	logger.Infof("Starting grpc server on port %d", g.port)
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
-	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), g.metrics.UnaryServerInterceptor())))
+	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), g.metrics.PipelineUnaryServerInterceptor())))
 	g.grpcServer = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(g.grpcServer, g)
 	return g.grpcServer.Serve(l)
@@ -95,22 +95,25 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md))
+	elapsedTime := time.Since(startTime).Seconds()
 	if err != nil {
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.FailedPrecondition.String())
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	meta := convertKafkaHeadersToGrpcMetadata(kafkaRequest.headers)
 	meta[RequestIdHeader] = []string{kafkaRequest.key}
 	err = grpc.SendHeader(ctx, meta)
 	if err != nil {
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Internal.String())
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	resProto := &v2.ModelInferResponse{}
 	err = proto.Unmarshal(kafkaRequest.response, resProto)
 	if err != nil {
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Internal.String())
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	elapsedTime := time.Since(startTime).Seconds()
-	go g.metrics.AddInferMetrics(header, "", metrics.MethodTypeGrpc, elapsedTime)
+	go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.OK.String())
 
 	return resProto, nil
 }

@@ -18,11 +18,13 @@ import (
 const (
 
 	// start list of metrics
-	HistogramName                                      = "seldon_infer_api_seconds"
-	InferCounterName                                   = "seldon_infer_total"
-	InferLatencyCounterName                            = "seldon_infer_seconds_total"
-	AggregateInferCounterName                          = "seldon_aggregate_infer_total"
-	AggregateInferLatencyCounterName                   = "seldon_aggregate_infer_seconds_total"
+	// Model metrics
+	ModelHistogramName                    = "seldon_model_infer_api_seconds"
+	ModelInferCounterName                 = "seldon_model_infer_total"
+	ModelInferLatencyCounterName          = "seldon_model_infer_seconds_total"
+	ModelAggregateInferCounterName        = "seldon_model_aggregate_infer_total"
+	ModelAggregateInferLatencyCounterName = "seldon_model_aggregate_infer_seconds_total"
+	// Agent metrics
 	CacheEvictCounterName                              = "seldon_cache_evict_count"
 	CacheMissCounterName                               = "seldon_cache_miss_count"
 	LoadModelCounterName                               = "seldon_load_model_counter"
@@ -46,10 +48,10 @@ const (
 )
 
 //TODO Revisit splitting this interface as metric handling matures
-type MetricsHandler interface {
-	AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc
+type AgentMetricsHandler interface {
+	AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc
 	UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error)
-	AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64)
+	AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string)
 	AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool)
 	AddServerReplicaMetrics(memory uint64, memoryWithOvercommit float32)
 }
@@ -59,15 +61,16 @@ var (
 )
 
 type PrometheusMetrics struct {
-	serverName                                     string
-	serverReplicaIdx                               string
-	namespace                                      string
-	logger                                         log.FieldLogger
-	histogram                                      *prometheus.HistogramVec
-	inferCounter                                   *prometheus.CounterVec
-	inferLatencyCounter                            *prometheus.CounterVec
-	aggregateInferCounter                          *prometheus.CounterVec
-	aggregateInferLatencyCounter                   *prometheus.CounterVec
+	serverName       string
+	serverReplicaIdx string
+	namespace        string
+	logger           log.FieldLogger
+	// Model metrics
+	modelHistogram                                 *prometheus.HistogramVec
+	modelInferCounter                              *prometheus.CounterVec
+	modelInferLatencyCounter                       *prometheus.CounterVec
+	modelAggregateInferCounter                     *prometheus.CounterVec
+	modelAggregateInferLatencyCounter              *prometheus.CounterVec
 	cacheEvictCounter                              *prometheus.CounterVec
 	cacheMissCounter                               *prometheus.CounterVec
 	loadModelCounter                               *prometheus.CounterVec
@@ -80,30 +83,30 @@ type PrometheusMetrics struct {
 	server                                         *http.Server
 }
 
-func NewPrometheusMetrics(serverName string, serverReplicaIdx uint, namespace string, logger log.FieldLogger) (*PrometheusMetrics, error) {
+func NewPrometheusModelMetrics(serverName string, serverReplicaIdx uint, namespace string, logger log.FieldLogger) (*PrometheusMetrics, error) {
 	namespace = safeNamespaceName(namespace)
-	histogram, err := createHistogram(namespace)
+	histogram, err := createModelHistogram(namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	inferCounter, err := createInferCounter(namespace)
+	inferCounter, err := createModelInferCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	inferLatencyCounter, err := createInferLatencyCounter(namespace)
+	inferLatencyCounter, err := createModelInferLatencyCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	aggregateInferCounter, err := createAggregateInferCounter(namespace)
+	aggregateInferCounter, err := createModelAggregateInferCounter(namespace)
 	if err != nil {
 
 		return nil, err
 	}
 
-	aggregateInferLatencyCounter, err := createAggregateInferLatencyCounter(namespace)
+	aggregateInferLatencyCounter, err := createModelAggregateInferLatencyCounter(namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -154,23 +157,23 @@ func NewPrometheusMetrics(serverName string, serverReplicaIdx uint, namespace st
 	}
 
 	return &PrometheusMetrics{
-		serverName:                       serverName,
-		serverReplicaIdx:                 fmt.Sprintf("%d", serverReplicaIdx),
-		namespace:                        namespace,
-		logger:                           logger.WithField("source", "PrometheusMetrics"),
-		histogram:                        histogram,
-		inferCounter:                     inferCounter,
-		inferLatencyCounter:              inferLatencyCounter,
-		aggregateInferCounter:            aggregateInferCounter,
-		aggregateInferLatencyCounter:     aggregateInferLatencyCounter,
-		cacheEvictCounter:                cacheEvictCounter,
-		cacheMissCounter:                 cacheMissCounter,
-		loadModelCounter:                 loadModelCounter,
-		unloadModelCounter:               unloadModelCounter,
-		loadedModelGauge:                 loadedModelGauge,
-		loadedModelMemoryGauge:           loadedModelMemoryGauge,
-		evictedModelMemoryGauge:          evictedModelMemoryGauge,
-		serverReplicaMemoryCapacityGauge: serverReplicaMemoryCapacityGauge,
+		serverName:                        serverName,
+		serverReplicaIdx:                  fmt.Sprintf("%d", serverReplicaIdx),
+		namespace:                         namespace,
+		logger:                            logger.WithField("source", "PrometheusMetrics"),
+		modelHistogram:                    histogram,
+		modelInferCounter:                 inferCounter,
+		modelInferLatencyCounter:          inferLatencyCounter,
+		modelAggregateInferCounter:        aggregateInferCounter,
+		modelAggregateInferLatencyCounter: aggregateInferLatencyCounter,
+		cacheEvictCounter:                 cacheEvictCounter,
+		cacheMissCounter:                  cacheMissCounter,
+		loadModelCounter:                  loadModelCounter,
+		unloadModelCounter:                unloadModelCounter,
+		loadedModelGauge:                  loadedModelGauge,
+		loadedModelMemoryGauge:            loadedModelMemoryGauge,
+		evictedModelMemoryGauge:           evictedModelMemoryGauge,
+		serverReplicaMemoryCapacityGauge:  serverReplicaMemoryCapacityGauge,
 		serverReplicaMemoryCapacityWithOvercommitGauge: serverReplicaMemoryCapacityWithOvercommitGauge,
 	}, nil
 }
@@ -179,13 +182,13 @@ func safeNamespaceName(namespace string) string {
 	return strings.ReplaceAll(namespace, "-", "_")
 }
 
-func createHistogram(namespace string) (*prometheus.HistogramVec, error) {
+func createModelHistogram(namespace string) (*prometheus.HistogramVec, error) {
 	//TODO add method for rest/grpc
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodMetric, CodeMetric}
 
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:      HistogramName,
+			Name:      ModelHistogramName,
 			Namespace: namespace,
 			Help:      "A histogram of latencies for inference server",
 			Buckets:   DefaultHistogramBuckets,
@@ -203,31 +206,31 @@ func createHistogram(namespace string) (*prometheus.HistogramVec, error) {
 	return histogram, nil
 }
 
-func createInferCounter(namespace string) (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric}
+func createModelInferCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		InferCounterName, "A count of server inference calls",
+		ModelInferCounterName, "A count of server inference calls",
 		namespace, labelNames)
 }
 
-func createInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric}
+func createModelInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		InferLatencyCounterName, "A sum of server inference call latencies",
+		ModelInferLatencyCounterName, "A sum of server inference call latencies",
 		namespace, labelNames)
 }
 
-func createAggregateInferCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelAggregateInferCounter(namespace string) (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
 	return createCounterVec(
-		AggregateInferCounterName, "A count of server inference calls (aggregate)",
+		ModelAggregateInferCounterName, "A count of server inference calls (aggregate)",
 		namespace, labelNames)
 }
 
-func createAggregateInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelAggregateInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
 	return createCounterVec(
-		AggregateInferLatencyCounterName, "A sum of server inference call latencies (aggregate)",
+		ModelAggregateInferLatencyCounterName, "A sum of server inference call latencies (aggregate)",
 		namespace, labelNames)
 }
 
@@ -294,49 +297,9 @@ func createServerReplicaMemoryCapacityWithOvercommitGauge(namespace string) (*pr
 		namespace, labelNames)
 }
 
-func createCounterVec(counterName, helperName, namespace string, labelNames []string) (*prometheus.CounterVec, error) {
-	counter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name:      counterName,
-			Namespace: namespace,
-			Help:      helperName,
-		},
-		labelNames,
-	)
-	err := prometheus.Register(counter)
-	if err != nil {
-		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			counter = e.ExistingCollector.(*prometheus.CounterVec)
-		} else {
-			return nil, err
-		}
-	}
-	return counter, nil
-}
-
-func createGaugeVec(gaugeName, helperName, namespace string, labelNames []string) (*prometheus.GaugeVec, error) {
-	gauge := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name:      gaugeName,
-			Namespace: namespace,
-			Help:      helperName,
-		},
-		labelNames,
-	)
-	err := prometheus.Register(gauge)
-	if err != nil {
-		if e, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			gauge = e.ExistingCollector.(*prometheus.GaugeVec)
-		} else {
-			return nil, err
-		}
-	}
-	return gauge, nil
-}
-
-func (pm *PrometheusMetrics) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+func (pm *PrometheusMetrics) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
 	handler := promhttp.InstrumentHandlerDuration(
-		pm.histogram.MustCurryWith(prometheus.Labels{
+		pm.modelHistogram.MustCurryWith(prometheus.Labels{
 			SeldonServerMetric:        pm.serverName,
 			SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		}),
@@ -351,14 +314,14 @@ func (pm *PrometheusMetrics) UnaryServerInterceptor() func(ctx context.Context, 
 		resp, err := handler(ctx, req)
 		st, _ := status.FromError(err)
 		elapsedTime := time.Since(startTime).Seconds()
-		pm.histogram.WithLabelValues(pm.serverName, pm.serverReplicaIdx, "grpc", st.Code().String()).Observe(elapsedTime)
+		pm.modelHistogram.WithLabelValues(pm.serverName, pm.serverReplicaIdx, "grpc", st.Code().String()).Observe(elapsedTime)
 		return resp, err
 	}
 }
 
-func (pm *PrometheusMetrics) AddInferMetrics(externalModelName string, internalModelName string, method string, latency float64) {
-	pm.addInferLatency(externalModelName, internalModelName, method, latency)
-	pm.addInferCount(externalModelName, internalModelName, method)
+func (pm *PrometheusMetrics) AddModelInferMetrics(externalModelName string, internalModelName string, method string, latency float64, code string) {
+	pm.addInferLatency(externalModelName, internalModelName, method, latency, code)
+	pm.addInferCount(externalModelName, internalModelName, method, code)
 }
 
 func (pm *PrometheusMetrics) AddLoadedModelMetrics(internalModelName string, memBytes uint64, isLoad, isSoft bool) {
@@ -476,30 +439,32 @@ func (pm *PrometheusMetrics) addCacheEvictCount() {
 	}).Inc()
 }
 
-func (pm *PrometheusMetrics) addInferCount(externalModelName, internalModelName, method string) {
-	pm.inferCounter.With(prometheus.Labels{
+func (pm *PrometheusMetrics) addInferCount(externalModelName, internalModelName, method string, code string) {
+	pm.modelInferCounter.With(prometheus.Labels{
 		SeldonModelMetric:         externalModelName,
 		SeldonInternalModelMetric: internalModelName,
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,
+		CodeMetric:                code,
 	}).Inc()
-	pm.aggregateInferCounter.With(prometheus.Labels{
+	pm.modelAggregateInferCounter.With(prometheus.Labels{
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,
 	}).Inc()
 }
 
-func (pm *PrometheusMetrics) addInferLatency(externalModelName, internalModelName, method string, latency float64) {
-	pm.inferLatencyCounter.With(prometheus.Labels{
+func (pm *PrometheusMetrics) addInferLatency(externalModelName, internalModelName, method string, latency float64, code string) {
+	pm.modelInferLatencyCounter.With(prometheus.Labels{
 		SeldonModelMetric:         externalModelName,
 		SeldonInternalModelMetric: internalModelName,
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,
+		CodeMetric:                code,
 	}).Add(latency)
-	pm.aggregateInferLatencyCounter.With(prometheus.Labels{
+	pm.modelAggregateInferLatencyCounter.With(prometheus.Labels{
 		SeldonServerMetric:        pm.serverName,
 		SeldonServerReplicaMetric: pm.serverReplicaIdx,
 		MethodTypeMetric:          method,

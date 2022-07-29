@@ -134,6 +134,7 @@ services:
       - "/mnt/config/tracing-host.json"
 
   prometheus:
+    network_mode: "host"    
     command:
       - --config.file=/etc/prometheus/prometheus-host.yml
     volumes:

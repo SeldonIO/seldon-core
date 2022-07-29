@@ -3,6 +3,7 @@ package agent
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -104,11 +105,15 @@ type fakeMetricsHandler struct {
 	mu             *sync.Mutex
 }
 
-func (f fakeMetricsHandler) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+func (f fakeMetricsHandler) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
 	return baseHandler
 }
 
-func (f fakeMetricsHandler) AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64) {
+func (f fakeMetricsHandler) HttpCodeToString(code int) string {
+	return fmt.Sprintf("%d", code)
+}
+
+func (f fakeMetricsHandler) AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string) {
 }
 
 func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
@@ -382,7 +387,8 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
 			httpClient := http.DefaultClient
-			httpClient.Transport = &lazyModelLoadTransport{loader, http.DefaultTransport}
+			metricsHandler := newFakeMetricsHandler()
+			httpClient.Transport = &lazyModelLoadTransport{loader, http.DefaultTransport, metricsHandler}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)

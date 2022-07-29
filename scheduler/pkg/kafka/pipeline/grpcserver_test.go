@@ -17,22 +17,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type fakeMetricsHandler struct{}
+type fakePipelineMetricsHandler struct{}
 
-func (f fakeMetricsHandler) AddHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+func (f fakePipelineMetricsHandler) AddPipelineHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
 	return baseHandler
 }
 
-func (f fakeMetricsHandler) AddInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64) {
+func (f fakePipelineMetricsHandler) AddPipelineInferMetrics(pipelineName string, method string, elapsedTime float64, code string) {
 }
 
-func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
-}
-
-func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOvercommit float32) {
-}
-
-func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func (f fakePipelineMetricsHandler) PipelineUnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		return handler(ctx, req)
 	}
@@ -104,7 +98,7 @@ func TestGrpcServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakeMetricsHandler{})
+	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{})
 	go func() {
 		err := grpcServer.Start()
 		g.Expect(err).To(BeNil())

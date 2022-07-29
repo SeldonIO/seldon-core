@@ -26,7 +26,7 @@ type LocalStateManager struct {
 	availableMainMemoryBytes int64
 	// lock for `availableMainMemoryBytes`
 	mu      sync.RWMutex
-	metrics metrics.MetricsHandler
+	metrics metrics.AgentMetricsHandler
 }
 
 // this should be called from control plane (if directly)
@@ -356,7 +356,7 @@ func NewLocalStateManager(
 	v2Client *V2Client,
 	totalMainMemoryBytes uint64,
 	overCommitPercentage uint32,
-	metrics metrics.MetricsHandler,
+	metrics metrics.AgentMetricsHandler,
 ) *LocalStateManager {
 	// if we are here it means that it is a fresh instance with no state yet
 	// i.e. should not have any models loaded / cache is empty etc.

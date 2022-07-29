@@ -118,7 +118,7 @@ func main() {
 	}
 	defer km.Stop()
 
-	promMetrics, err := metrics.NewPrometheusMetrics(serviceTag, 0, namespace, logger)
+	promMetrics, err := metrics.NewPrometheusPipelineMetrics(namespace, logger)
 	if err != nil {
 		logger.WithError(err).Fatalf("Can't create prometheus metrics")
 	}

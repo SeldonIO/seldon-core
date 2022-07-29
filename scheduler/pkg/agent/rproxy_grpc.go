@@ -43,11 +43,11 @@ type reverseGRPCProxy struct {
 	v2GRPCClientPool      []v2.GRPCInferenceServiceClient
 	port                  uint // service port
 	mu                    sync.RWMutex
-	metrics               metrics.MetricsHandler
+	metrics               metrics.AgentMetricsHandler
 	callOptions           []grpc.CallOption
 }
 
-func NewReverseGRPCProxy(metricsHandler metrics.MetricsHandler, logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
+func NewReverseGRPCProxy(metricsHandler metrics.AgentMetricsHandler, logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -156,6 +156,8 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
 	if err != nil {
+		elapsedTime := time.Since(startTime).Seconds()
+		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 	var trailer metadata.MD
@@ -167,8 +169,9 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
 
+	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
-	go rp.metrics.AddInferMetrics(internalModelName, externalModelName, metrics.MethodTypeGrpc, elapsedTime)
+	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
 	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
 	if errTrailer != nil {
 		logger.WithError(errTrailer).Error("Failed to set trailers")

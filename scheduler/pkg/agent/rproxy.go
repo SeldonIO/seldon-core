@@ -40,13 +40,14 @@ type reverseHTTPProxy struct {
 	backendHTTPServerPort uint
 	servicePort           uint
 	mu                    sync.RWMutex
-	metrics               metrics.MetricsHandler
+	metrics               metrics.AgentMetricsHandler
 }
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
 type lazyModelLoadTransport struct {
 	loader func(string) *V2Err
 	http.RoundTripper
+	metrics metrics.AgentMetricsHandler
 }
 
 // RoundTrip implements http.RoundTripper for the Transport type.
@@ -56,6 +57,9 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var originalBody []byte
 	var err error
 
+	externalModelName := req.Header.Get(resources.SeldonModelHeader)
+	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+	startTime := time.Now()
 	if req.Body != nil {
 		originalBody, err = ioutil.ReadAll(req.Body)
 	}
@@ -77,8 +81,12 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		req2 := req.Clone(req.Context())
 
 		req2.Body = ioutil.NopCloser(bytes.NewBuffer(originalBody))
-		return t.RoundTripper.RoundTrip(req2)
+		res, err = t.RoundTripper.RoundTrip(req2)
 	}
+
+	elapsedTime := time.Since(startTime).Seconds()
+	go t.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(res.StatusCode))
+
 	return res, err
 
 }
@@ -90,7 +98,8 @@ func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
 }
 
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
-	return otelhttp.NewHandler(rp.metrics.AddHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
+	return otelhttp.NewHandler(rp.metrics.AddModelHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
 		rp.rewriteHostHandler(r)
 
 		externalModelName := r.Header.Get(resources.SeldonModelHeader)
@@ -104,18 +113,16 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
 		}
 
-		startTime := time.Now()
 		if err := rp.stateManager.EnsureLoadModel(internalModelName); err != nil {
 			rp.logger.Errorf("Cannot load model in agent %s", internalModelName)
+			elapsedTime := time.Since(startTime).Seconds()
+			go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusNotFound))
 			http.NotFound(w, r)
 		} else {
 			r.URL.Path = rewritePath(r.URL.Path, internalModelName)
 			rp.logger.Debugf("Calling %s", r.URL.Path)
 
 			proxy.ServeHTTP(w, r)
-
-			elapsedTime := time.Since(startTime).Seconds()
-			go rp.metrics.AddInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime)
 		}
 	}), "seldon-rproxy")
 }
@@ -135,7 +142,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
 		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
-	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t}
+	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.servicePort)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
@@ -188,7 +195,7 @@ func NewReverseHTTPProxy(
 	backendHTTPServerHost string,
 	backendHTTPServerPort uint,
 	servicePort uint,
-	metrics metrics.MetricsHandler,
+	metrics metrics.AgentMetricsHandler,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{

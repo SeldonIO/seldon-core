@@ -7,3 +7,4 @@ spec:
   storageUri: "gs://seldon-models/mlserver/iris"
   requirements:
   - sklearn
+  memory: 100Ki

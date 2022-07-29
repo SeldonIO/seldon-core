@@ -795,7 +795,7 @@
         {
             "datasource": "prometheus",
           "exemplar": true,
-          "expr": "avg((rate(seldon_aggregate_infer_seconds_total[1m]) / rate(seldon_aggregate_infer_total[1m])) > 0 ) by (server, method_type)",
+          "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total[1m]) / rate(seldon_model_aggregate_infer_total[1m])) > 0 ) by (server, method_type)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{server}}_{{method_type}}_avg",

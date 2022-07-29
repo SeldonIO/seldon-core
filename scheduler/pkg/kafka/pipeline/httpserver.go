@@ -28,7 +28,7 @@ type GatewayHttpServer struct {
 	logger  log.FieldLogger
 	ssl     *TLSDetails
 	gateway PipelineInferer
-	metrics metrics.MetricsHandler
+	metrics metrics.PipelineMetricsHandler
 }
 
 type TLSDetails struct {
@@ -37,7 +37,7 @@ type TLSDetails struct {
 	KeyFilename   string
 }
 
-func NewGatewayHttpServer(port int, logger log.FieldLogger, ssl *TLSDetails, gateway PipelineInferer, metrics metrics.MetricsHandler) *GatewayHttpServer {
+func NewGatewayHttpServer(port int, logger log.FieldLogger, ssl *TLSDetails, gateway PipelineInferer, metrics metrics.PipelineMetricsHandler) *GatewayHttpServer {
 	return &GatewayHttpServer{
 		port:    port,
 		router:  mux.NewRouter(),
@@ -97,10 +97,10 @@ func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path(
 		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(
-		g.metrics.AddHistogramMetricsHandler(g.inferModel))
+		g.metrics.AddPipelineHistogramMetricsHandler(g.inferModel))
 	g.router.NewRoute().Path(
 		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(
-		g.metrics.AddHistogramMetricsHandler(g.inferModel))
+		g.metrics.AddPipelineHistogramMetricsHandler(g.inferModel))
 }
 
 func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, resourceName string, isModel bool) {
@@ -119,6 +119,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		return
 	}
 	kafkaRequest, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto, convertHttpHeadersToKafkaHeaders(req.Header))
+	elapsedTime := time.Since(startTime).Seconds()
 	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
 		for _, val := range vals {
 			w.Header().Set(k, val)
@@ -132,6 +133,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		resJson, err := ConvertV2ResponseBytesToJson(kafkaRequest.response)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to convert v2 response to json for resource %s", resourceName)
+			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusInternalServerError))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -140,9 +142,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(http.StatusOK)
-			elapsedTime := time.Since(startTime).Seconds()
-			go g.metrics.AddInferMetrics(resourceName, "", metrics.MethodTypeRest, elapsedTime)
-
+			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusOK))
 		}
 	}
 }
