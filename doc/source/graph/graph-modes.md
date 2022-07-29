@@ -102,6 +102,32 @@ linear-pipeline-separate-pods-example-1-node-two-c4f55f689gxkkr   1/1     Runnin
 linear-pipeline-separate-pods-example-2-node-three-99667dcmg9kg   1/1     Running   0          4m33s
 linear-pipeline-separate-pods-example-svc-orch-656c6bdf59-6m6nc   1/1     Running   0          4m33s
 ```
+
+### Separate pods with prepackaged servers
+
+If you want to deploy each inference graph node (model) in a separate pod but are using the prepackaged servers it is enough just to specify the `name` in the componentSpec like so:
+
+```yaml
+spec:
+  predictors:
+    - name: default
+      graph:
+        name: model_one
+        implementation: PREPACKAGED_SERVER
+        modelUri: MODEL_URI
+        children:
+          - name: model_two
+            implementation: PREPACKAGED_SERVER
+            modelUri: MODEL_URI
+      componentSpecs:
+        - spec:
+            containers:
+              - name: model_one
+        - spec:
+            containers:
+              - name: model_two
+```
+
 The most basic unit in Kubernetes are pods. This model will enable [scaling](scaling.md) at model level. In other words, you can 
 scale each model separately while on the other hand having them in a single pod will change the granulity of scaling to the entire graph. However, 
 on the other hand single pod deployment will need only a single [sidecar istio container](../ingress/istio.md)
