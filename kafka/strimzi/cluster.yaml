@@ -4,7 +4,7 @@ metadata:
   name: seldon
 spec:
   kafka:
-    version: 3.1.0
+    version: 3.2.0
     replicas: 3
     listeners:
       - name: plain
@@ -28,6 +28,10 @@ spec:
       transaction.state.log.min.isr: 1
       default.replication.factor: 1
       min.insync.replicas: 1
+      inter.broker.protocol.version: "3.2"
+    template:
+      pod:
+        tmpDirSizeLimit: 100Mi
     storage:
       type: jbod
       volumes:
@@ -41,8 +45,12 @@ spec:
         configMapKeyRef:
           name: kafka-metrics
           key: kafka-metrics-config.yml
+  # zookeeper settings should not be use in case of STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft (raft)
+  # to enable raft run:
+  # `kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n kafka`
+  # which is the default with ansible install
   zookeeper:
-    replicas: 3
+    replicas: 1
     readinessProbe:
       initialDelaySeconds: 15
       timeoutSeconds: 5
@@ -53,15 +61,6 @@ spec:
       type: persistent-claim
       size: 100Gi
       deleteClaim: false
-    metricsConfig:
-      type: jmxPrometheusExporter
-      valueFrom:
-        configMapKeyRef:
-          name: kafka-metrics
-          key: zookeeper-metrics-config.yml
-  entityOperator:
-    topicOperator: {}
-    userOperator: {}
   kafkaExporter:
     topicRegex: ".*"
     groupRegex: ".*"

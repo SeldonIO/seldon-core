@@ -100,7 +100,7 @@ services:
       - "14250"
 
   kafka:
-    image: docker.io/bitnami/kafka:3.1
+    image: "${KAFKA_IMAGE_AND_TAG}"
     volumes:
       - "kafka_data:/bitnami"
     depends_on:

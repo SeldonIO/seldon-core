@@ -7,7 +7,7 @@ ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 # Grafana image only used for Docker compose not k8s
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
-KAFKA_IMG ?= quay.io/strimzi/kafka:0.28.0-kafka-3.1.0
+KAFKA_IMG ?= docker.io/bitnami/kafka:3.1
 MLSERVER_IMG ?= cliveseldon/mlserver:1.2.0.dev1
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest

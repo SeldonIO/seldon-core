@@ -12,6 +12,7 @@ install_opentelemetry: true
 
 # Configuration on/off flags
 ecosystem_configure_prometheus: "{{ install_prometheus }}"
+ecosystem_enable_kraft: "{{ install_kafka }}"
 ecosystem_configure_kafka: "{{ install_kafka }}"
 ecosystem_configure_jaeger: "{{ install_jaeger }}"
 ecosystem_configure_opentelemetry: "{{ install_opentelemetry }}"

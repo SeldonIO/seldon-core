@@ -3,6 +3,11 @@
     name: seldonio.k8s.strimzi_kafka
   when: install_kafka | bool
 
+- name: Enable KRaft
+  shell:
+      " kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n {{ kafka_namespace }} "
+  tags: kraft
+  when: ecosystem_enable_kraft | bool
 
 - name: Create Kafka Cluster
   kubernetes.core.k8s:
