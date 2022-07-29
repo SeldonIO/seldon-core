@@ -16,7 +16,7 @@ roleRef:
   name: seldon-manager-sas-role-{{ include "seldon.namespace" . }}
 subjects:
 - kind: ServiceAccount
-  name: seldon-manager
+  name: '{{ .Values.serviceAccount.name }}'
   namespace: '{{ include "seldon.namespace" . }}'
 {{- end }}
 {{- end }}

@@ -15,7 +15,7 @@ roleRef:
   name: seldon-webhook-role-{{ include "seldon.namespace" . }}
 subjects:
 - kind: ServiceAccount
-  name: seldon-manager
+  name: '{{ .Values.serviceAccount.name }}'
   namespace: '{{ include "seldon.namespace" . }}'
 {{- end }}
 {{- end }}
