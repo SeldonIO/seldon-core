@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: experiments.mlops.seldon.io
 spec:
@@ -49,7 +49,7 @@ spec:
                   - weight
                   type: object
                 type: array
-              defaultModel:
+              default:
                 type: string
               mirror:
                 properties:
@@ -62,6 +62,8 @@ spec:
                 - model_name
                 - percent
                 type: object
+              resourceType:
+                type: string
             required:
             - candidates
             type: object
@@ -122,18 +124,12 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: models.mlops.seldon.io
 spec:
@@ -307,18 +303,12 @@ spec:
         specReplicasPath: .spec.replicas
         statusReplicasPath: .status.replicas
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: pipelines.mlops.seldon.io
 spec:
@@ -491,18 +481,12 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: serverconfigs.mlops.seldon.io
 spec:
@@ -652,6 +636,7 @@ spec:
                                         type: object
                                       type: array
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 weight:
                                   description: Weight associated with matching the
                                     corresponding nodeSelectorTerm, in the range 1-100.
@@ -757,10 +742,12 @@ spec:
                                         type: object
                                       type: array
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 type: array
                             required:
                             - nodeSelectorTerms
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                       podAffinity:
                         description: Describes pod affinity scheduling rules (e.g.
@@ -841,6 +828,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaceSelector:
                                       description: A label query over the set of namespaces
                                         that the term applies to. The term is applied
@@ -900,6 +888,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaces:
                                       description: namespaces specifies a static list
                                         of namespace names that the term applies to.
@@ -1004,6 +993,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -1062,6 +1052,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaces:
                                   description: namespaces specifies a static list
                                     of namespace names that the term applies to. The
@@ -1165,6 +1156,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaceSelector:
                                       description: A label query over the set of namespaces
                                         that the term applies to. The term is applied
@@ -1224,6 +1216,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaces:
                                       description: namespaces specifies a static list
                                         of namespace names that the term applies to.
@@ -1328,6 +1321,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -1386,6 +1380,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaces:
                                   description: namespaces specifies a static list
                                     of namespace names that the term applies to. The
@@ -1499,6 +1494,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   fieldRef:
                                     description: 'Selects a field of the pod: supports
                                       metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -1517,6 +1513,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   resourceFieldRef:
                                     description: 'Selects a resource of the container:
                                       only resources limits and requests (limits.cpu,
@@ -1542,6 +1539,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   secretKeyRef:
                                     description: Selects a key of a secret in the
                                       pod's namespace
@@ -1563,6 +1561,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 type: object
                             required:
                             - name
@@ -1594,6 +1593,7 @@ spec:
                                       be defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                               prefix:
                                 description: An optional identifier to prepend to
                                   each key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -1612,6 +1612,7 @@ spec:
                                       defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                           type: array
                         image:
@@ -2745,6 +2746,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   fieldRef:
                                     description: 'Selects a field of the pod: supports
                                       metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -2763,6 +2765,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   resourceFieldRef:
                                     description: 'Selects a resource of the container:
                                       only resources limits and requests (limits.cpu,
@@ -2788,6 +2791,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   secretKeyRef:
                                     description: Selects a key of a secret in the
                                       pod's namespace
@@ -2809,6 +2813,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 type: object
                             required:
                             - name
@@ -2840,6 +2845,7 @@ spec:
                                       be defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                               prefix:
                                 description: An optional identifier to prepend to
                                   each key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -2858,6 +2864,7 @@ spec:
                                       defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                           type: array
                         image:
@@ -3877,6 +3884,7 @@ spec:
                             TODO: Add other useful fields. apiVersion, kind, uid?'
                           type: string
                       type: object
+                      x-kubernetes-map-type: atomic
                     type: array
                   initContainers:
                     description: 'List of initialization containers belonging to the
@@ -3972,6 +3980,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   fieldRef:
                                     description: 'Selects a field of the pod: supports
                                       metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -3990,6 +3999,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   resourceFieldRef:
                                     description: 'Selects a resource of the container:
                                       only resources limits and requests (limits.cpu,
@@ -4015,6 +4025,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   secretKeyRef:
                                     description: Selects a key of a secret in the
                                       pod's namespace
@@ -4036,6 +4047,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 type: object
                             required:
                             - name
@@ -4067,6 +4079,7 @@ spec:
                                       be defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                               prefix:
                                 description: An optional identifier to prepend to
                                   each key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -4085,6 +4098,7 @@ spec:
                                       defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                           type: array
                         image:
@@ -5465,6 +5479,7 @@ spec:
                                 contains only "value". The requirements are ANDed.
                               type: object
                           type: object
+                          x-kubernetes-map-type: atomic
                         maxSkew:
                           description: 'MaxSkew describes the degree to which pods
                             may be unevenly distributed. When `whenUnsatisfiable=DoNotSchedule`,
@@ -5495,19 +5510,19 @@ spec:
                             a pod if it doesn''t satisfy the spread constraint. -
                             DoNotSchedule (default) tells the scheduler not to schedule
                             it. - ScheduleAnyway tells the scheduler to schedule the
-                            pod in any location,   but giving higher precedence to
-                            topologies that would help reduce the   skew. A constraint
-                            is considered "Unsatisfiable" for an incoming pod if and
-                            only if every possible node assigment for that pod would
-                            violate "MaxSkew" on some topology. For example, in a
-                            3-zone cluster, MaxSkew is set to 1, and pods with the
-                            same labelSelector spread as 3/1/1: | zone1 | zone2 |
-                            zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable
-                            is set to DoNotSchedule, incoming pod can only be scheduled
-                            to zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1)
-                            on zone2(zone3) satisfies MaxSkew(1). In other words,
-                            the cluster can still be imbalanced, but scheduler won''t
-                            make it *more* imbalanced. It''s a required field.'
+                            pod in any location, but giving higher precedence to topologies
+                            that would help reduce the skew. A constraint is considered
+                            "Unsatisfiable" for an incoming pod if and only if every
+                            possible node assigment for that pod would violate "MaxSkew"
+                            on some topology. For example, in a 3-zone cluster, MaxSkew
+                            is set to 1, and pods with the same labelSelector spread
+                            as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   |
+                            If WhenUnsatisfiable is set to DoNotSchedule, incoming
+                            pod can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2)
+                            as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1).
+                            In other words, the cluster can still be imbalanced, but
+                            scheduler won''t make it *more* imbalanced. It''s a required
+                            field.'
                           type: string
                       required:
                       - maxSkew
@@ -5650,6 +5665,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             user:
                               description: 'Optional: User is the rados user name,
                                 default is admin More info: https://examples.k8s.io/volumes/cephfs/README.md#how-to-use-it'
@@ -5682,6 +5698,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             volumeID:
                               description: 'volume id used to identify the volume
                                 in cinder. More info: https://examples.k8s.io/mysql-cinder-pd/README.md'
@@ -5756,6 +5773,7 @@ spec:
                                 must be defined
                               type: boolean
                           type: object
+                          x-kubernetes-map-type: atomic
                         csi:
                           description: CSI (Container Storage Interface) represents
                             ephemeral storage that is handled by certain external
@@ -5787,6 +5805,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             readOnly:
                               description: Specifies a read-only configuration for
                                 the volume. Defaults to false (read/write).
@@ -5842,6 +5861,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   mode:
                                     description: 'Optional: mode bits used to set
                                       permissions on this file, must be an octal value
@@ -5886,6 +5906,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 required:
                                 - path
                                 type: object
@@ -5922,12 +5943,12 @@ spec:
                             the pod starts, and deleted when the pod is removed. \n
                             Use this if: a) the volume is only needed while the pod
                             runs, b) features of normal volumes like restoring from
-                            snapshot or capacity    tracking are needed, c) the storage
+                            snapshot or capacity tracking are needed, c) the storage
                             driver is specified through a storage class, and d) the
                             storage driver supports dynamic volume provisioning through
-                            \   a PersistentVolumeClaim (see EphemeralVolumeSource
-                            for more    information on the connection between this
-                            volume type    and PersistentVolumeClaim). \n Use PersistentVolumeClaim
+                            a PersistentVolumeClaim (see EphemeralVolumeSource for
+                            more information on the connection between this volume
+                            type and PersistentVolumeClaim). \n Use PersistentVolumeClaim
                             or one of the vendor-specific APIs for volumes that persist
                             for longer than the lifecycle of an individual pod. \n
                             Use CSI for light-weight local ephemeral volumes if the
@@ -6011,6 +6032,7 @@ spec:
                                       - kind
                                       - name
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     dataSourceRef:
                                       description: 'Specifies the object from which
                                         to populate the volume with data, if a non-empty
@@ -6030,12 +6052,12 @@ spec:
                                         the other is non-empty. There are two important
                                         differences between DataSource and DataSourceRef:
                                         * While DataSource only allows two specific
-                                        types of objects, DataSourceRef   allows any
+                                        types of objects, DataSourceRef allows any
                                         non-core object, as well as PersistentVolumeClaim
                                         objects. * While DataSource ignores disallowed
-                                        values (dropping them), DataSourceRef   preserves
+                                        values (dropping them), DataSourceRef preserves
                                         all values, and generates an error if a disallowed
-                                        value is   specified. (Alpha) Using this field
+                                        value is specified. (Alpha) Using this field
                                         requires the AnyVolumeDataSource feature gate
                                         to be enabled.'
                                       properties:
@@ -6058,6 +6080,7 @@ spec:
                                       - kind
                                       - name
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     resources:
                                       description: 'Resources represents the minimum
                                         resources the volume should have. More info:
@@ -6141,6 +6164,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     storageClassName:
                                       description: 'Name of the StorageClass required
                                         by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
@@ -6230,6 +6254,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                           required:
                           - driver
                           type: object
@@ -6408,6 +6433,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             targetPortal:
                               description: iSCSI Target Portal. The Portal is either
                                 an IP or ip_addr:port if the port is other than default
@@ -6583,6 +6609,7 @@ spec:
                                           or its keys must be defined
                                         type: boolean
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   downwardAPI:
                                     description: information about the downwardAPI
                                       data to project
@@ -6612,6 +6639,7 @@ spec:
                                               required:
                                               - fieldPath
                                               type: object
+                                              x-kubernetes-map-type: atomic
                                             mode:
                                               description: 'Optional: mode bits used
                                                 to set permissions on this file, must
@@ -6663,6 +6691,7 @@ spec:
                                               required:
                                               - resource
                                               type: object
+                                              x-kubernetes-map-type: atomic
                                           required:
                                           - path
                                           type: object
@@ -6730,6 +6759,7 @@ spec:
                                           its key must be defined
                                         type: boolean
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   serviceAccountToken:
                                     description: information about the serviceAccountToken
                                       data to project
@@ -6849,6 +6879,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             user:
                               description: 'The rados user name. Default is admin.
                                 More info: https://examples.k8s.io/volumes/rbd/README.md#how-to-use-it'
@@ -6888,6 +6919,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             sslEnabled:
                               description: Flag to enable/disable SSL communication
                                 with Gateway, default false
@@ -7007,6 +7039,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             volumeName:
                               description: VolumeName is the human-readable name of
                                 the StorageOS volume.  Volume names are only unique
@@ -7099,6 +7132,7 @@ spec:
                           - kind
                           - name
                           type: object
+                          x-kubernetes-map-type: atomic
                         dataSourceRef:
                           description: 'Specifies the object from which to populate
                             the volume with data, if a non-empty volume is desired.
@@ -7114,12 +7148,12 @@ spec:
                             if one of them is empty and the other is non-empty. There
                             are two important differences between DataSource and DataSourceRef:
                             * While DataSource only allows two specific types of objects,
-                            DataSourceRef   allows any non-core object, as well as
-                            PersistentVolumeClaim objects. * While DataSource ignores
-                            disallowed values (dropping them), DataSourceRef   preserves
-                            all values, and generates an error if a disallowed value
-                            is   specified. (Alpha) Using this field requires the
-                            AnyVolumeDataSource feature gate to be enabled.'
+                            DataSourceRef allows any non-core object, as well as PersistentVolumeClaim
+                            objects. * While DataSource ignores disallowed values
+                            (dropping them), DataSourceRef preserves all values, and
+                            generates an error if a disallowed value is specified.
+                            (Alpha) Using this field requires the AnyVolumeDataSource
+                            feature gate to be enabled.'
                           properties:
                             apiGroup:
                               description: APIGroup is the group for the resource
@@ -7137,6 +7171,7 @@ spec:
                           - kind
                           - name
                           type: object
+                          x-kubernetes-map-type: atomic
                         resources:
                           description: 'Resources represents the minimum resources
                             the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
@@ -7211,6 +7246,7 @@ spec:
                                 contains only "value". The requirements are ANDed.
                               type: object
                           type: object
+                          x-kubernetes-map-type: atomic
                         storageClassName:
                           description: 'Name of the StorageClass required by the claim.
                             More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
@@ -7242,18 +7278,12 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: servers.mlops.seldon.io
 spec:
@@ -7372,6 +7402,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 fieldRef:
                                   description: 'Selects a field of the pod: supports
                                     metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -7390,6 +7421,7 @@ spec:
                                   required:
                                   - fieldPath
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 resourceFieldRef:
                                   description: 'Selects a resource of the container:
                                     only resources limits and requests (limits.cpu,
@@ -7415,6 +7447,7 @@ spec:
                                   required:
                                   - resource
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 secretKeyRef:
                                   description: Selects a key of a secret in the pod's
                                     namespace
@@ -7436,6 +7469,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           required:
                           - name
@@ -7466,6 +7500,7 @@ spec:
                                     be defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                             prefix:
                               description: An optional identifier to prepend to each
                                 key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -7483,6 +7518,7 @@ spec:
                                     defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                           type: object
                         type: array
                       image:
@@ -8535,6 +8571,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 fieldRef:
                                   description: 'Selects a field of the pod: supports
                                     metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -8553,6 +8590,7 @@ spec:
                                   required:
                                   - fieldPath
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 resourceFieldRef:
                                   description: 'Selects a resource of the container:
                                     only resources limits and requests (limits.cpu,
@@ -8578,6 +8616,7 @@ spec:
                                   required:
                                   - resource
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 secretKeyRef:
                                   description: Selects a key of a secret in the pod's
                                     namespace
@@ -8599,6 +8638,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           required:
                           - name
@@ -8629,6 +8669,7 @@ spec:
                                     be defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                             prefix:
                               description: An optional identifier to prepend to each
                                 key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -8646,6 +8687,7 @@ spec:
                                     defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                           type: object
                         type: array
                       image:
@@ -9698,6 +9740,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 fieldRef:
                                   description: 'Selects a field of the pod: supports
                                     metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -9716,6 +9759,7 @@ spec:
                                   required:
                                   - fieldPath
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 resourceFieldRef:
                                   description: 'Selects a resource of the container:
                                     only resources limits and requests (limits.cpu,
@@ -9741,6 +9785,7 @@ spec:
                                   required:
                                   - resource
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 secretKeyRef:
                                   description: Selects a key of a secret in the pod's
                                     namespace
@@ -9762,6 +9807,7 @@ spec:
                                   required:
                                   - key
                                   type: object
+                                  x-kubernetes-map-type: atomic
                               type: object
                           required:
                           - name
@@ -9792,6 +9838,7 @@ spec:
                                     be defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                             prefix:
                               description: An optional identifier to prepend to each
                                 key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -9809,6 +9856,7 @@ spec:
                                     defined
                                   type: boolean
                               type: object
+                              x-kubernetes-map-type: atomic
                           type: object
                         type: array
                       image:
@@ -10910,6 +10958,7 @@ spec:
                                         type: object
                                       type: array
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 weight:
                                   description: Weight associated with matching the
                                     corresponding nodeSelectorTerm, in the range 1-100.
@@ -11015,10 +11064,12 @@ spec:
                                         type: object
                                       type: array
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 type: array
                             required:
                             - nodeSelectorTerms
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                       podAffinity:
                         description: Describes pod affinity scheduling rules (e.g.
@@ -11099,6 +11150,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaceSelector:
                                       description: A label query over the set of namespaces
                                         that the term applies to. The term is applied
@@ -11158,6 +11210,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaces:
                                       description: namespaces specifies a static list
                                         of namespace names that the term applies to.
@@ -11262,6 +11315,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -11320,6 +11374,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaces:
                                   description: namespaces specifies a static list
                                     of namespace names that the term applies to. The
@@ -11423,6 +11478,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaceSelector:
                                       description: A label query over the set of namespaces
                                         that the term applies to. The term is applied
@@ -11482,6 +11538,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     namespaces:
                                       description: namespaces specifies a static list
                                         of namespace names that the term applies to.
@@ -11586,6 +11643,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaceSelector:
                                   description: A label query over the set of namespaces
                                     that the term applies to. The term is applied
@@ -11644,6 +11702,7 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                  x-kubernetes-map-type: atomic
                                 namespaces:
                                   description: namespaces specifies a static list
                                     of namespace names that the term applies to. The
@@ -11757,6 +11816,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   fieldRef:
                                     description: 'Selects a field of the pod: supports
                                       metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -11775,6 +11835,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   resourceFieldRef:
                                     description: 'Selects a resource of the container:
                                       only resources limits and requests (limits.cpu,
@@ -11800,6 +11861,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   secretKeyRef:
                                     description: Selects a key of a secret in the
                                       pod's namespace
@@ -11821,6 +11883,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 type: object
                             required:
                             - name
@@ -11852,6 +11915,7 @@ spec:
                                       be defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                               prefix:
                                 description: An optional identifier to prepend to
                                   each key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -11870,6 +11934,7 @@ spec:
                                       defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                           type: array
                         image:
@@ -12956,6 +13021,7 @@ spec:
                             TODO: Add other useful fields. apiVersion, kind, uid?'
                           type: string
                       type: object
+                      x-kubernetes-map-type: atomic
                     type: array
                   initContainers:
                     description: 'List of initialization containers belonging to the
@@ -13051,6 +13117,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   fieldRef:
                                     description: 'Selects a field of the pod: supports
                                       metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
@@ -13069,6 +13136,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   resourceFieldRef:
                                     description: 'Selects a resource of the container:
                                       only resources limits and requests (limits.cpu,
@@ -13094,6 +13162,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   secretKeyRef:
                                     description: Selects a key of a secret in the
                                       pod's namespace
@@ -13115,6 +13184,7 @@ spec:
                                     required:
                                     - key
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 type: object
                             required:
                             - name
@@ -13146,6 +13216,7 @@ spec:
                                       be defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                               prefix:
                                 description: An optional identifier to prepend to
                                   each key in the ConfigMap. Must be a C_IDENTIFIER.
@@ -13164,6 +13235,7 @@ spec:
                                       defined
                                     type: boolean
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                           type: array
                         image:
@@ -14538,6 +14610,7 @@ spec:
                                 contains only "value". The requirements are ANDed.
                               type: object
                           type: object
+                          x-kubernetes-map-type: atomic
                         maxSkew:
                           description: 'MaxSkew describes the degree to which pods
                             may be unevenly distributed. When `whenUnsatisfiable=DoNotSchedule`,
@@ -14568,19 +14641,19 @@ spec:
                             a pod if it doesn''t satisfy the spread constraint. -
                             DoNotSchedule (default) tells the scheduler not to schedule
                             it. - ScheduleAnyway tells the scheduler to schedule the
-                            pod in any location,   but giving higher precedence to
-                            topologies that would help reduce the   skew. A constraint
-                            is considered "Unsatisfiable" for an incoming pod if and
-                            only if every possible node assigment for that pod would
-                            violate "MaxSkew" on some topology. For example, in a
-                            3-zone cluster, MaxSkew is set to 1, and pods with the
-                            same labelSelector spread as 3/1/1: | zone1 | zone2 |
-                            zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable
-                            is set to DoNotSchedule, incoming pod can only be scheduled
-                            to zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1)
-                            on zone2(zone3) satisfies MaxSkew(1). In other words,
-                            the cluster can still be imbalanced, but scheduler won''t
-                            make it *more* imbalanced. It''s a required field.'
+                            pod in any location, but giving higher precedence to topologies
+                            that would help reduce the skew. A constraint is considered
+                            "Unsatisfiable" for an incoming pod if and only if every
+                            possible node assigment for that pod would violate "MaxSkew"
+                            on some topology. For example, in a 3-zone cluster, MaxSkew
+                            is set to 1, and pods with the same labelSelector spread
+                            as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   |
+                            If WhenUnsatisfiable is set to DoNotSchedule, incoming
+                            pod can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2)
+                            as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1).
+                            In other words, the cluster can still be imbalanced, but
+                            scheduler won''t make it *more* imbalanced. It''s a required
+                            field.'
                           type: string
                       required:
                       - maxSkew
@@ -14723,6 +14796,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             user:
                               description: 'Optional: User is the rados user name,
                                 default is admin More info: https://examples.k8s.io/volumes/cephfs/README.md#how-to-use-it'
@@ -14755,6 +14829,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             volumeID:
                               description: 'volume id used to identify the volume
                                 in cinder. More info: https://examples.k8s.io/mysql-cinder-pd/README.md'
@@ -14829,6 +14904,7 @@ spec:
                                 must be defined
                               type: boolean
                           type: object
+                          x-kubernetes-map-type: atomic
                         csi:
                           description: CSI (Container Storage Interface) represents
                             ephemeral storage that is handled by certain external
@@ -14860,6 +14936,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             readOnly:
                               description: Specifies a read-only configuration for
                                 the volume. Defaults to false (read/write).
@@ -14915,6 +14992,7 @@ spec:
                                     required:
                                     - fieldPath
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   mode:
                                     description: 'Optional: mode bits used to set
                                       permissions on this file, must be an octal value
@@ -14959,6 +15037,7 @@ spec:
                                     required:
                                     - resource
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                 required:
                                 - path
                                 type: object
@@ -14995,12 +15074,12 @@ spec:
                             the pod starts, and deleted when the pod is removed. \n
                             Use this if: a) the volume is only needed while the pod
                             runs, b) features of normal volumes like restoring from
-                            snapshot or capacity    tracking are needed, c) the storage
+                            snapshot or capacity tracking are needed, c) the storage
                             driver is specified through a storage class, and d) the
                             storage driver supports dynamic volume provisioning through
-                            \   a PersistentVolumeClaim (see EphemeralVolumeSource
-                            for more    information on the connection between this
-                            volume type    and PersistentVolumeClaim). \n Use PersistentVolumeClaim
+                            a PersistentVolumeClaim (see EphemeralVolumeSource for
+                            more information on the connection between this volume
+                            type and PersistentVolumeClaim). \n Use PersistentVolumeClaim
                             or one of the vendor-specific APIs for volumes that persist
                             for longer than the lifecycle of an individual pod. \n
                             Use CSI for light-weight local ephemeral volumes if the
@@ -15084,6 +15163,7 @@ spec:
                                       - kind
                                       - name
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     dataSourceRef:
                                       description: 'Specifies the object from which
                                         to populate the volume with data, if a non-empty
@@ -15103,12 +15183,12 @@ spec:
                                         the other is non-empty. There are two important
                                         differences between DataSource and DataSourceRef:
                                         * While DataSource only allows two specific
-                                        types of objects, DataSourceRef   allows any
+                                        types of objects, DataSourceRef allows any
                                         non-core object, as well as PersistentVolumeClaim
                                         objects. * While DataSource ignores disallowed
-                                        values (dropping them), DataSourceRef   preserves
+                                        values (dropping them), DataSourceRef preserves
                                         all values, and generates an error if a disallowed
-                                        value is   specified. (Alpha) Using this field
+                                        value is specified. (Alpha) Using this field
                                         requires the AnyVolumeDataSource feature gate
                                         to be enabled.'
                                       properties:
@@ -15131,6 +15211,7 @@ spec:
                                       - kind
                                       - name
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     resources:
                                       description: 'Resources represents the minimum
                                         resources the volume should have. More info:
@@ -15214,6 +15295,7 @@ spec:
                                             only "value". The requirements are ANDed.
                                           type: object
                                       type: object
+                                      x-kubernetes-map-type: atomic
                                     storageClassName:
                                       description: 'Name of the StorageClass required
                                         by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
@@ -15303,6 +15385,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                           required:
                           - driver
                           type: object
@@ -15481,6 +15564,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             targetPortal:
                               description: iSCSI Target Portal. The Portal is either
                                 an IP or ip_addr:port if the port is other than default
@@ -15656,6 +15740,7 @@ spec:
                                           or its keys must be defined
                                         type: boolean
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   downwardAPI:
                                     description: information about the downwardAPI
                                       data to project
@@ -15685,6 +15770,7 @@ spec:
                                               required:
                                               - fieldPath
                                               type: object
+                                              x-kubernetes-map-type: atomic
                                             mode:
                                               description: 'Optional: mode bits used
                                                 to set permissions on this file, must
@@ -15736,6 +15822,7 @@ spec:
                                               required:
                                               - resource
                                               type: object
+                                              x-kubernetes-map-type: atomic
                                           required:
                                           - path
                                           type: object
@@ -15803,6 +15890,7 @@ spec:
                                           its key must be defined
                                         type: boolean
                                     type: object
+                                    x-kubernetes-map-type: atomic
                                   serviceAccountToken:
                                     description: information about the serviceAccountToken
                                       data to project
@@ -15922,6 +16010,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             user:
                               description: 'The rados user name. Default is admin.
                                 More info: https://examples.k8s.io/volumes/rbd/README.md#how-to-use-it'
@@ -15961,6 +16050,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             sslEnabled:
                               description: Flag to enable/disable SSL communication
                                 with Gateway, default false
@@ -16080,6 +16170,7 @@ spec:
                                     uid?'
                                   type: string
                               type: object
+                              x-kubernetes-map-type: atomic
                             volumeName:
                               description: VolumeName is the human-readable name of
                                 the StorageOS volume.  Volume names are only unique
@@ -16199,9 +16290,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

@@ -1,10 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
+    controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
   name: experiments.mlops.seldon.io
 spec:
@@ -51,7 +50,7 @@ spec:
                   - weight
                   type: object
                 type: array
-              defaultModel:
+              default:
                 type: string
               mirror:
                 properties:
@@ -64,6 +63,8 @@ spec:
                 - model_name
                 - percent
                 type: object
+              resourceType:
+                type: string
             required:
             - candidates
             type: object
@@ -124,9 +125,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
