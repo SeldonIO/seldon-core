@@ -4,7 +4,7 @@ metadata:
   name: income-explainer
   namespace: seldon-mesh
 spec:
-  storageUri: "gs://seldon-models/mlserver/alibi-explain/income"
+  storageUri: "gs://seldon-models/scv2/examples/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income

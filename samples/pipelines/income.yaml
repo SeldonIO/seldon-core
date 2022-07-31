@@ -1,0 +1,19 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: income-production
+  namespace: seldon-mesh
+spec:
+  steps:
+    - name: income
+    - name: income-preprocess
+    - name: income-outlier
+      inputs:
+      - income-preprocess
+    - name: income-drift
+      batch:
+        size: 20
+  output:
+    steps:
+    - income
+    - income-outlier.outputs.is_outlier

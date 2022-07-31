@@ -64,7 +64,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - MLServer
   - `python`
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/sklearn/README.md)
-  - TBC
+  - [example](../../examples/income.md)
 * - Spark Mlib
   - MLServer
   - `spark-mlib`

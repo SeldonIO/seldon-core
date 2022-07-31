@@ -10,7 +10,8 @@ This section will provide some examples to allow operations with Seldon to be te
 
 ## Advanced Examples
 
- * [Production image clasifier with drift and outlier monitoring](cifar10.md)
+ * [Production image classifier with drift and outlier monitoring](cifar10.md)
+ * [Production income classifier with drift, outlier and explanations](income.md)
 
 ```{toctree}
 :maxdepth: 1

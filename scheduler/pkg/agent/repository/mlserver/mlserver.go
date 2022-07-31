@@ -60,6 +60,7 @@ type ExtraParameters struct {
 	InferUri       *string                `json:"infer_uri,omitempty"`
 	ExplainerType  *string                `json:"explainer_type,omitempty"`
 	InitParameters map[string]interface{} `json:"init_parameters,omitempty"`
+	PredictFn      *string                `json:"predict_fn,omitempty"`
 	//TODO we should add headers here that MLServer can add to request
 }
 
