@@ -11,6 +11,6 @@ ENV RCLONE_CONFIG_GS_TYPE google cloud storage
 ENV RCLONE_CONFIG_GS_ANONYMOUS true
 
 # Do not set to '2' by default, as this may leak sensitive values
-ENV RCLONE_VERBOSE=1
+ENV RCLONE_VERBOSE 1
 
 ENTRYPOINT ["rclone", "copy"]
