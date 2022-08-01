@@ -76,6 +76,4 @@ kubectl get catalogsource seldon-core-catalog -n openshift-marketplace -o yaml
 
 At present need to create operator from Openshift UI.
 
-
-
-
+Note: in case you need to test new bundle first remove the operator, then remove catalog `kubectl delete -f catalog-source-openshift.yaml` and apply it again.
