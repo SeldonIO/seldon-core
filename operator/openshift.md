@@ -89,8 +89,6 @@ Will need to be run in release branch
 
 Create a fork of https://github.com/k8s-operatorhub/community-operators
 
-Create a PR for community operator
-
 Update the Makefile locally for
 
 ```
@@ -101,12 +99,20 @@ UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.12.0
+git checkout -b 1.14.0
 ```
 
 ```
 make update_community
 ```
+
+Add to `manifests/seldon-operator.clusterserviceversion.yaml`
+```
+  replaces: seldon-operator.v1.13.1
+```
+line with previous version of operator (see previous releases for example)
+
+Create a PR for community operator
 
 Follow [instructions](https://operator-framework.github.io/community-operators/). At present the test instructions fail to work.
 
