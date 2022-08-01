@@ -48,15 +48,15 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: seldonio/seldon-core-operator:1.13.1
+    containerImage: docker.io/seldonio/seldon-core-operator:1.14.0
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
-    olm.skipRange: <1.12.0
-    operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
+    olm.skipRange: <1.13.1
+    operators.operatorframework.io/builder: operator-sdk-v1.22.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.13.1
+  name: seldon-operator.v1.14.0
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -406,7 +406,13 @@ spec:
           - update
         serviceAccountName: seldon-manager
       deployments:
-      - name: seldon-controller-manager
+      - label:
+          app: seldon
+          app.kubernetes.io/instance: seldon1
+          app.kubernetes.io/name: seldon
+          app.kubernetes.io/version: v0.5
+          control-plane: seldon-controller-manager
+        name: seldon-controller-manager
         spec:
           replicas: 1
           selector:
@@ -483,7 +489,7 @@ spec:
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: seldonio/seldon-core-executor:1.13.1
+                  value: docker.io/seldonio/seldon-core-executor:1.14.0
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -511,7 +517,9 @@ spec:
                   value: 512Mi
                 - name: DEPLOYMENT_NAME_AS_PREFIX
                   value: 'false'
-                image: docker.io/seldonio/seldon-core-operator:1.13.1
+                - name: EXECUTOR_FULL_HEALTH_CHECKS
+                  value: 'false'
+                image: docker.io/seldonio/seldon-core-operator:1.14.0
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -597,8 +605,10 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.12.0
+  relatedImages:
+  - image: ''
+    name: ''
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.13.1
+  version: 1.14.0

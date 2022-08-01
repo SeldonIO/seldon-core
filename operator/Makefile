@@ -260,8 +260,11 @@ recreate_bundle:
 	rm -fr bundle
 	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	echo '  com.redhat.openshift.versions: "v4.8-v4.9"' >> bundle/metadata/annotations.yaml
-	echo 'LABEL com.redhat.openshift.versions=v4.8-v4.9' >> bundle.Dockerfile
+	echo '  com.redhat.openshift.versions: "v4.8-v4.10"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=v4.8-v4.10' >> bundle.Dockerfile
+
+create_openshift_operator:
+	docker
 
 create_bundle_image:
 	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
