@@ -6,11 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFlattenStructToProerties(t *testing.T) {
+func TestFlattenStructToProperties(t *testing.T) {
 	expected := properties{
 		"cluster_id":               "cluster id",
 		"seldon_core_version":      "0.1.2",
-		"node_count":               uint(3),
 		"model_count":              uint(4),
 		"pipeline_count":           uint(5),
 		"experiment_count":         uint(6),
@@ -22,7 +21,6 @@ func TestFlattenStructToProerties(t *testing.T) {
 		"multimodel_enabled_count": uint(12),
 		"overcommit_enabled_count": uint(13),
 		"kubernetes_version":       "14.15.16",
-		"is_global_installation":   false,
 		"collector_version":        "17.18.19",
 		"collector_git_commit":     "20",
 	}
@@ -30,7 +28,6 @@ func TestFlattenStructToProerties(t *testing.T) {
 	m := UsageMetrics{}
 	m.ClusterId = "cluster id"
 	m.SeldonCoreVersion = "0.1.2"
-	m.NodeCount = 3
 	m.ModelCount = 4
 	m.PipelineCount = 5
 	m.ExperimentCount = 6
@@ -42,7 +39,6 @@ func TestFlattenStructToProerties(t *testing.T) {
 	m.MultimodelEnabledCount = 12
 	m.OvercommitEnabledCount = 13
 	m.KubernetesVersion = "14.15.16"
-	m.IsGlobalInstallation = false
 	m.CollectorVersion = "17.18.19"
 	m.CollectorGitCommit = "20"
 

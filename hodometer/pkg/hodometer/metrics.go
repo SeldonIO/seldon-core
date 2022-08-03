@@ -15,13 +15,11 @@ type CollectorMetrics struct {
 type ClusterMetrics struct {
 	ClusterId         string `json:"cluster_id"`
 	SeldonCoreVersion string `json:"seldon_core_version"`
-	NodeCount         uint   `json:"node_count"`
 	KubernetesMetrics
 }
 
 type KubernetesMetrics struct {
-	IsGlobalInstallation bool   `json:"is_global_installation"`
-	KubernetesVersion    string `json:"kubernetes_version"`
+	KubernetesVersion string `json:"kubernetes_version"`
 }
 
 type ResourceMetrics struct {

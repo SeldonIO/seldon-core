@@ -98,21 +98,6 @@ rules:
   - get
   - list
   - watch
-{{ if .Values.hodometer.enabled }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: hodometer
-  namespace: seldon-mesh
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - list
-{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -375,22 +360,6 @@ subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
   namespace: seldon-mesh
-{{ if .Values.hodometer.enabled }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: hodometer
-  namespace: seldon-mesh
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: hodometer
-subjects:
-- kind: ServiceAccount
-  name: hodometer
-  namespace: seldon-mesh
-{{ end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

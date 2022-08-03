@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -18,8 +17,6 @@ import (
 
 const (
 	subscriberName = "hodometer"
-
-	maxNodesPerCall = 100
 )
 
 type Collector interface {
@@ -27,9 +24,8 @@ type Collector interface {
 }
 
 type kubernetesMetrics struct {
-	version   string
-	isGlobal  bool
-	nodeCount uint
+	version  string
+	isGlobal bool
 }
 
 type schedulerMetrics struct {
@@ -177,12 +173,9 @@ func (scc *SeldonCoreCollector) Collect(ctx context.Context, level MetricsLevel)
 	um.CollectorVersion = BuildVersion
 	um.CollectorGitCommit = GitCommit
 	um.ClusterId = scc.clusterId
-	um.NodeCount = 1
 
 	if kubernetesDetails != nil {
-		um.NodeCount = kubernetesDetails.nodeCount
 		um.KubernetesMetrics.KubernetesVersion = kubernetesDetails.version
-		um.KubernetesMetrics.IsGlobalInstallation = kubernetesDetails.isGlobal
 	}
 	if schedulerDetails != nil {
 		um.SeldonCoreVersion = schedulerDetails.version
@@ -222,7 +215,6 @@ func (scc *SeldonCoreCollector) collectKubernetes(ctx context.Context) *kubernet
 
 	km := &kubernetesMetrics{}
 	scc.updateKubernetesVersion(km)
-	scc.updateKubernetesNodes(ctx, km)
 	return km
 }
 
@@ -235,31 +227,6 @@ func (scc *SeldonCoreCollector) updateKubernetesVersion(metrics *kubernetesMetri
 		return
 	}
 	metrics.version = version.GitVersion
-}
-
-func (scc *SeldonCoreCollector) updateKubernetesNodes(ctx context.Context, metrics *kubernetesMetrics) {
-	logger := scc.logger.WithField("func", "updateKubernetesNodes")
-
-	nodeClient := scc.k8sClient.CoreV1().Nodes()
-	continuation := ""
-	nodeCount := 0
-
-	for {
-		listOps := metaV1.ListOptions{Limit: maxNodesPerCall, Continue: continuation}
-		nodes, err := nodeClient.List(ctx, listOps)
-		if err != nil {
-			logger.WithError(err).Error("unable to retrieve node details")
-			return
-		}
-
-		nodeCount += len(nodes.Items)
-
-		if nodes.Continue == "" {
-			break
-		}
-		continuation = nodes.Continue
-	}
-	metrics.nodeCount = uint(nodeCount)
 }
 
 func (scc *SeldonCoreCollector) collectScheduler(ctx context.Context) *schedulerMetrics {
