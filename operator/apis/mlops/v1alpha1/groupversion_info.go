@@ -33,4 +33,12 @@ var (
 
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
+
+	// SchemeGroupVersion is group version used to register these objects
+	SchemeGroupVersion = schema.GroupVersion{Group: "mlops.seldon.io", Version: "v1alpha1"}
+
+	// Resource takes an unqualified resource and returns a Group qualified GroupResource
+	Resource = func(resource string) schema.GroupResource {
+		return SchemeGroupVersion.WithResource(resource).GroupResource()
+	}
 )

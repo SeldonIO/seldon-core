@@ -109,6 +109,7 @@ type ModelStatus struct {
 	duckv1.Status `json:",inline"`
 }
 
+// +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlm
