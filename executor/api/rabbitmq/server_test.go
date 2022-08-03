@@ -22,7 +22,6 @@ import (
 func TestRabbitMqServer(t *testing.T) {
 	// this bit down to where `p` is defined is taken from rest/server_test.go
 	g := NewGomegaWithT(t)
-	//called := false
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bodyBytes, err := ioutil.ReadAll(r.Body)
@@ -33,9 +32,9 @@ func TestRabbitMqServer(t *testing.T) {
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
-	url, err := url.Parse(server.URL)
+	serverUrl, err := url.Parse(server.URL)
 	g.Expect(err).Should(BeNil())
-	urlParts := strings.Split(url.Host, ":")
+	urlParts := strings.Split(serverUrl.Host, ":")
 	port, err := strconv.Atoi(urlParts[1])
 	g.Expect(err).Should(BeNil())
 
@@ -53,7 +52,7 @@ func TestRabbitMqServer(t *testing.T) {
 		},
 	}
 
-	serverUrl, _ := url.Parse("http://localhost")
+	serverUrl, _ = url.Parse("http://localhost")
 	deploymentName := "testDep"
 	namespace := "testNs"
 	protocol := api.ProtocolSeldon
@@ -67,14 +66,14 @@ func TestRabbitMqServer(t *testing.T) {
 		Client:          test.SeldonMessageTestClient{},
 		DeploymentName:  deploymentName,
 		Namespace:       namespace,
+		Protocol:        protocol,
 		Transport:       transport,
-		Predictor:       &p,
-		ServerUrl:       serverUrl,
+		ServerUrl:       *serverUrl,
+		Predictor:       p,
 		BrokerUrl:       brokerUrl,
 		InputQueueName:  inputQueue,
 		OutputQueueName: outputQueue,
 		Log:             logger,
-		Protocol:        protocol,
 		FullHealthCheck: fullHealthCheck,
 	}
 
@@ -98,8 +97,8 @@ func TestRabbitMqServer(t *testing.T) {
 			Protocol:        protocol,
 			Transport:       transport,
 			Annotations:     map[string]string{},
-			ServerUrl:       serverUrl,
-			Predictor:       &p,
+			ServerUrl:       *serverUrl,
+			Predictor:       p,
 			BrokerUrl:       brokerUrl,
 			InputQueueName:  inputQueue,
 			OutputQueueName: outputQueue,
@@ -113,8 +112,8 @@ func TestRabbitMqServer(t *testing.T) {
 		assert.Equal(t, deploymentName, server.DeploymentName)
 		assert.Equal(t, namespace, server.Namespace)
 		assert.Equal(t, transport, server.Transport)
-		assert.Equal(t, &p, server.Predictor)
-		assert.Equal(t, serverUrl, server.ServerUrl)
+		assert.Equal(t, p, server.Predictor)
+		assert.Equal(t, *serverUrl, server.ServerUrl)
 		assert.Equal(t, brokerUrl, server.BrokerUrl)
 		assert.Equal(t, inputQueue, server.InputQueueName)
 		assert.Equal(t, outputQueue, server.OutputQueueName)

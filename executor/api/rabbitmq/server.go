@@ -38,14 +38,14 @@ type SeldonRabbitMQServer struct {
 	Client          client.SeldonApiClient
 	DeploymentName  string
 	Namespace       string
+	Protocol        string
 	Transport       string
-	Predictor       v1.PredictorSpec
 	ServerUrl       url.URL
+	Predictor       v1.PredictorSpec
 	BrokerUrl       string
 	InputQueueName  string
 	OutputQueueName string
 	Log             logr.Logger
-	Protocol        string
 	FullHealthCheck bool
 }
 
@@ -72,8 +72,6 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 	var apiClient client.SeldonApiClient
 	var err error
 	if args.FullGraph {
-		log.Info("Starting full graph rabbitmq server")
-		//apiClient = NewRabbitMqClient(brokerUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
 		return nil, errors.New("full graph not currently supported")
 	}
 
@@ -82,7 +80,7 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 		log.Info("Start http rabbitmq graph")
 		apiClient, err = rest.NewJSONRestClient(protocol, deploymentName, &predictor, annotations)
 		if err != nil {
-			return nil, fmt.Errorf("error %w creating json rest client", err)
+			return nil, fmt.Errorf("error '%w' creating json rest client", err)
 		}
 	case api.TransportGrpc:
 		log.Info("Start grpc rabbitmq graph")
@@ -92,7 +90,7 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 			apiClient = tensorflow.NewTensorflowGrpcClient(&predictor, deploymentName, annotations)
 		}
 	default:
-		return nil, fmt.Errorf("unknown Transport %s", transport)
+		return nil, fmt.Errorf("unknown transport '%s'", transport)
 	}
 
 	return &SeldonRabbitMQServer{
@@ -114,7 +112,7 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 func (rs *SeldonRabbitMQServer) Serve() error {
 	conn, err := NewConnection(rs.BrokerUrl, rs.Log)
 	if err != nil {
-		return fmt.Errorf("error %w connecting to rabbitmq", err)
+		return fmt.Errorf("error '%w' connecting to rabbitmq", err)
 	}
 
 	return rs.serve(conn)
@@ -124,13 +122,13 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 	//TODO not sure if this is the best pattern or better to pass in pod name explicitly somehow
 	consumerTag, err := os.Hostname()
 	if err != nil {
-		return fmt.Errorf("error %w retrieving hostname", err)
+		return fmt.Errorf("error '%w' retrieving hostname", err)
 	}
 
-	c := &consumer{*conn, rs.InputQueueName, consumerTag}
-	rs.Log.Info("Created", "consumer", c, "input queue", rs.InputQueueName)
+	consumer := &consumer{*conn, rs.InputQueueName, consumerTag}
+	rs.Log.Info("Created", "consumer", consumer, "input queue", rs.InputQueueName)
 
-	//wait for graph to be ready
+	// wait for graph to be ready
 	ready := false
 	for ready == false {
 		err := pred.Ready(rs.Protocol, &rs.Predictor.Graph, rs.FullHealthCheck)
@@ -149,15 +147,15 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 	// create output queue immediately instead of waiting until the first time we publish a response
 	_, err = conn.DeclareQueue(rs.OutputQueueName)
 	if err != nil {
-		return fmt.Errorf("error %w declaring rabbitmq queue", err)
+		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
 	}
 
 	// consumer creates input queue if it doesn't exist
-	err = c.Consume(
+	err = consumer.Consume(
 		func(reqPl SeldonPayloadWithHeaders) error { return rs.predictAndPublishResponse(reqPl, conn) },
 		errorHandler)
 	if err != nil {
-		return fmt.Errorf("error %w in consumer", err)
+		return fmt.Errorf("error '%w' in consumer", err)
 	}
 
 	rs.Log.Info("Consumer exited without error")
@@ -165,7 +163,7 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 }
 
 func (rs *SeldonRabbitMQServer) predictAndPublishResponse(reqPayload SeldonPayloadWithHeaders, conn *connection) error {
-	producer := &publisher{*conn, rs.OutputQueueName}
+	publisher := &publisher{*conn, rs.OutputQueueName}
 
 	ctx := context.Background()
 	// Add Seldon Puid to Context
@@ -196,12 +194,12 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(reqPayload SeldonPaylo
 
 	resHeaders := make(map[string][]string)
 	resHeaders[payload.SeldonPUIDHeader] = reqPayload.Headers[payload.SeldonPUIDHeader]
-	//TODO might need more headers
+	//i TODO might need more headers
 
 	resPayloadWithHeaders := SeldonPayloadWithHeaders{
 		resPayload,
 		resHeaders,
 	}
 
-	return producer.Publish(resPayloadWithHeaders)
+	return publisher.Publish(resPayloadWithHeaders)
 }

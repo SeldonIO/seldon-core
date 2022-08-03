@@ -62,7 +62,7 @@ func TestPublisher(t *testing.T) {
 			queueName: queueName,
 		}
 
-		assert.EqualError(t, pub.Publish(testMessage), "failed to publish rabbitmq message: test error")
+		assert.ErrorContains(t, pub.Publish(testMessage), "test error")
 
 		mockChan.AssertExpectations(t)
 	})
@@ -80,7 +80,7 @@ func TestPublisher(t *testing.T) {
 			queueName: queueName,
 		}
 
-		assert.EqualError(t, pub.Publish(testMessage), "failed to declare rabbitmq queue: test error")
+		assert.ErrorContains(t, pub.Publish(testMessage), "test error")
 
 		mockChan.AssertExpectations(t)
 	})

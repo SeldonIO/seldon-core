@@ -52,7 +52,7 @@ func DeliveryToPayload(delivery amqp.Delivery) (SeldonPayloadWithHeaders, error)
 			headers,
 		}
 	default:
-		err = fmt.Errorf("unknown payload type: %s", delivery.ContentType)
+		err = fmt.Errorf("unknown payload type '%s'", delivery.ContentType)
 	}
 
 	return pl, err

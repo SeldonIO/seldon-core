@@ -139,7 +139,7 @@ func TestConnection_Close(t *testing.T) {
 			conn: mockConn,
 		}
 
-		assert.EqualError(t, con.Close(), "test failed to close connection")
+		assert.ErrorContains(t, con.Close(), "test failed to close connection")
 		mockConn.AssertExpectations(t)
 	})
 
