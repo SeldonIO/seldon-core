@@ -6,8 +6,6 @@ import (
 	"net"
 	"time"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -57,7 +55,7 @@ func (g *GatewayGrpcServer) Start() error {
 	logger.Infof("Starting grpc server on port %d", g.port)
 	opts := []grpc.ServerOption{}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
-	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), g.metrics.PipelineUnaryServerInterceptor())))
+	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	g.grpcServer = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(g.grpcServer, g)
 	return g.grpcServer.Serve(l)

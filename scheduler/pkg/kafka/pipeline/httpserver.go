@@ -96,11 +96,9 @@ func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path(
-		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(
-		g.metrics.AddPipelineHistogramMetricsHandler(g.inferModel))
+		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
 	g.router.NewRoute().Path(
-		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(
-		g.metrics.AddPipelineHistogramMetricsHandler(g.inferModel))
+		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
 }
 
 func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, resourceName string, isModel bool) {

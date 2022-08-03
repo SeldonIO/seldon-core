@@ -27,7 +27,7 @@ For the pipeline gateway that handles requests to pipelines:
    ```
 
 Many of these metrics are model and pipeline level counters and gauges.
-We also aggregate some of these metrics to speed up the display of graphs.
+We also aggregate some of these metrics to speed up the display of graphs. We don't presently store per-model histogram metrics for performance reasons. However, we do presently store per-pipeline histogram metrics.
 
 This is experimental and these metrics are bound to change to reflect the trends we want to capture as we get more information about the usage of the system.
 

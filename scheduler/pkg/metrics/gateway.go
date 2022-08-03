@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -30,8 +27,6 @@ const (
 
 //TODO Revisit splitting this interface as metric handling matures
 type PipelineMetricsHandler interface {
-	AddPipelineHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc
-	PipelineUnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error)
 	AddPipelineInferMetrics(pipelineName string, method string, elapsedTime float64, code string)
 }
 
@@ -91,7 +86,7 @@ func NewPrometheusPipelineMetrics(namespace string, logger log.FieldLogger) (*Pr
 
 func createPipelineHistogram(namespace string) (*prometheus.HistogramVec, error) {
 	//TODO add method for rest/grpc
-	labelNames := []string{SeldonServerMetric, MethodMetric, CodeMetric}
+	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodMetric, CodeMetric}
 
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -145,27 +140,6 @@ func (pm *PrometheusPipelineMetrics) HttpCodeToString(code int) string {
 	return fmt.Sprintf("%d", code)
 }
 
-func (pm *PrometheusPipelineMetrics) AddPipelineHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
-	handler := promhttp.InstrumentHandlerDuration(
-		pm.pipelineHistogram.MustCurryWith(prometheus.Labels{
-			SeldonServerMetric: pm.serverName,
-		}),
-		baseHandler,
-	)
-	return handler
-}
-
-func (pm *PrometheusPipelineMetrics) PipelineUnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		startTime := time.Now()
-		resp, err := handler(ctx, req)
-		st, _ := status.FromError(err)
-		elapsedTime := time.Since(startTime).Seconds()
-		pm.pipelineHistogram.WithLabelValues(pm.serverName, "grpc", st.Code().String()).Observe(elapsedTime)
-		return resp, err
-	}
-}
-
 func (pm *PrometheusPipelineMetrics) AddPipelineInferMetrics(pipelineName string, method string, latency float64, code string) {
 	pm.addInferLatency(pipelineName, method, latency, code)
 	pm.addInferCount(pipelineName, method, code)
@@ -195,6 +169,7 @@ func (pm *PrometheusPipelineMetrics) addInferLatency(pipelineName, method string
 		SeldonServerMetric: pm.serverName,
 		MethodTypeMetric:   method,
 	}).Add(latency)
+	pm.pipelineHistogram.WithLabelValues(pm.serverName, pipelineName, method, code).Observe(latency)
 }
 
 func (pm *PrometheusPipelineMetrics) Start(port int) error {
