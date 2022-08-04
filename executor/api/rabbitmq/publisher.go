@@ -22,7 +22,7 @@ type publisher struct {
 }
 
 func NewPublisher(uri, queueName string, logger logr.Logger) (*publisher, error) {
-	c, err := NewConnection(uri, logger)
+	c, err := NewConnection(uri, logger.WithName("Publisher"))
 	if err != nil {
 		c.log.Error(err, "error creating connection for publisher", "uri", c.uri)
 		return nil, fmt.Errorf("error '%w' creating connection to '%v' for publisher", err, uri)

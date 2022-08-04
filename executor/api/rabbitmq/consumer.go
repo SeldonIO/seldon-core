@@ -20,7 +20,7 @@ type consumer struct {
 }
 
 func NewConsumer(uri, queueName, consumerTag string, logger logr.Logger) (*consumer, error) {
-	c, err := NewConnection(uri, logger)
+	c, err := NewConnection(uri, logger.WithName("Consumer"))
 	if err != nil {
 		c.log.Error(err, "error creating connection for consumer", "uri", c.uri)
 		return nil, fmt.Errorf("error '%w' creating connection to '%v' for consumer", err, uri)

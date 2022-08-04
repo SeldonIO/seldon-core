@@ -42,7 +42,7 @@ func NewConnection(uri string, logger logr.Logger) (*connection, error) {
 	conn := &connection{
 		uri: uri,
 		err: make(chan error),
-		log: logger.WithName("MessagePublisher"),
+		log: logger.WithName("Connection"),
 	}
 
 	if err := conn.connect(); err != nil {

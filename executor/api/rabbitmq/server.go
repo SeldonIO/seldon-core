@@ -107,14 +107,14 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 		BrokerUrl:       args.BrokerUrl,
 		InputQueueName:  args.InputQueueName,
 		OutputQueueName: args.OutputQueueName,
-		Log:             log.WithName("RabbitMqServer"),
+		Log:             log.WithName("RabbitMQServer"),
 		Protocol:        protocol,
 		FullHealthCheck: args.FullHealthCheck,
 	}, nil
 }
 
 func (rs *SeldonRabbitMQServer) Serve() error {
-	conn, err := NewConnection(rs.BrokerUrl, rs.Log)
+	conn, err := NewConnection(rs.BrokerUrl, rs.Log.WithName("RabbitMQServerConnection"))
 	if err != nil {
 		rs.Log.Error(err, "error connecting to rabbitmq")
 		return fmt.Errorf("error '%w' connecting to rabbitmq", err)
