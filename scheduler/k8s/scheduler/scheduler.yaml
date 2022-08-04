@@ -18,7 +18,9 @@ spec:
     spec:
       serviceAccountName: scheduler
       securityContext:
-        runAsUser: 8888
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
       - command:
         - /bin/scheduler

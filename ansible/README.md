@@ -13,7 +13,6 @@ Once installed you can use the following Playbooks.
 ansible-playbook playbooks/kind-cluster.yaml
 ```
 
-
 ### Setup Ecosystem
 
 Run the following from the ansible folder:

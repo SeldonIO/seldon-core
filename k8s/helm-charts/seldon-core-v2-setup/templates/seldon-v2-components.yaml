@@ -862,7 +862,9 @@ spec:
         - mountPath: /mnt/scheduler
           name: scheduler-state
       securityContext:
-        runAsUser: 8888
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:

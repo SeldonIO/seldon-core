@@ -1,4 +1,4 @@
-# Ansible install
+# Ansible Install
 
 ```{include} ../../../../../ansible/README.md
 ```

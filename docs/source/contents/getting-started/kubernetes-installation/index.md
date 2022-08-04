@@ -10,7 +10,6 @@ To install Seldon Core V2 itself you can choose:
  * [Ansible](ansible.md)
  * [Raw yaml](raw.md)
 
-
 ```{toctree}
 :maxdepth: 1
 :hidden:
