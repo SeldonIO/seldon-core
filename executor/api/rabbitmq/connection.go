@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -40,16 +39,17 @@ type connection struct {
 
 // NewConnection creates a new AMQP connection that targets a specific broker uri and queue.
 func NewConnection(uri string, logger logr.Logger) (*connection, error) {
-	p := &connection{
+	conn := &connection{
 		uri: uri,
 		err: make(chan error),
 		log: logger.WithName("MessagePublisher"),
 	}
 
-	if err := p.connect(); err != nil {
-		return nil, errors.Wrapf(err, "error connecting to %v", uri)
+	if err := conn.connect(); err != nil {
+		conn.log.Error(err, "error connecting", "uri", uri)
+		return nil, fmt.Errorf("error '%w' connecting to '%v'", err, uri)
 	}
-	return p, nil
+	return conn, nil
 }
 
 func (c *connection) DeclareQueue(queueName string) (amqp.Queue, error) {
@@ -69,7 +69,7 @@ func (c *connection) Close() error {
 	if c.conn != nil {
 		err := c.conn.Close()
 		if err != nil {
-			return errors.Wrapf(err, "error closing connection %v", c)
+			return fmt.Errorf("error '%w' closing connection '%v'", err, c)
 		}
 	}
 	return nil
@@ -103,7 +103,11 @@ func (c *connection) connect() error {
 		}()
 
 		c.channel, err = c.conn.Channel()
-		return errors.Wrapf(err, "failed to create rabbitmq channel to %q", c.uri)
+		if err != nil {
+			c.log.Error(err, "error creating rabbitmq channel", "uri", c.uri)
+			return fmt.Errorf("error '%w' creating rabbitmq channel to %q", err, c.uri)
+		}
+		return nil
 	}
 
 	return fmt.Errorf("rabbitmq connection retry limit reached: %d", connectionRetryLimit)

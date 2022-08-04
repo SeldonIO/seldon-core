@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/jsonpb"
 	guuid "github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"net/url"
 	"os"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -72,7 +73,9 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 	var apiClient client.SeldonApiClient
 	var err error
 	if args.FullGraph {
-		return nil, errors.New("full graph not currently supported")
+		err = errors.New("full graph not currently supported")
+		log.Error(err, "tried to use full graph mode but not currently supported for RabbitMQ server")
+		return nil, err
 	}
 
 	switch args.Transport {
@@ -80,6 +83,7 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 		log.Info("Start http rabbitmq graph")
 		apiClient, err = rest.NewJSONRestClient(protocol, deploymentName, &predictor, annotations)
 		if err != nil {
+			log.Error(err, "error creating json rest client")
 			return nil, fmt.Errorf("error '%w' creating json rest client", err)
 		}
 	case api.TransportGrpc:
@@ -112,6 +116,7 @@ func CreateRabbitMQServer(args RabbitMQServerOptions) (*SeldonRabbitMQServer, er
 func (rs *SeldonRabbitMQServer) Serve() error {
 	conn, err := NewConnection(rs.BrokerUrl, rs.Log)
 	if err != nil {
+		rs.Log.Error(err, "error connecting to rabbitmq")
 		return fmt.Errorf("error '%w' connecting to rabbitmq", err)
 	}
 
@@ -139,22 +144,22 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 		}
 	}
 
-	errorHandler := func(errToHandle error) {
-		// TODO probably need to do something better than this
-		rs.Log.Error(errToHandle, "error processing message")
-	}
-
 	// create output queue immediately instead of waiting until the first time we publish a response
 	_, err = conn.DeclareQueue(rs.OutputQueueName)
 	if err != nil {
+		rs.Log.Error(err, "error declaring rabbitmq queue", "uri", conn.uri)
 		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
 	}
 
+	producer := &publisher{*conn, rs.OutputQueueName}
+
 	// consumer creates input queue if it doesn't exist
 	err = consumer.Consume(
-		func(reqPl SeldonPayloadWithHeaders) error { return rs.predictAndPublishResponse(reqPl, conn) },
-		errorHandler)
+		func(reqPl *SeldonPayloadWithHeaders) error { return rs.predictAndPublishResponse(reqPl, producer) },
+		func(args ConsumerError) error { return rs.createAndPublishErrorResponse(args, producer) },
+	)
 	if err != nil {
+		rs.Log.Error(err, "error in consumer")
 		return fmt.Errorf("error '%w' in consumer", err)
 	}
 
@@ -162,16 +167,18 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 	return nil
 }
 
-func (rs *SeldonRabbitMQServer) predictAndPublishResponse(reqPayload SeldonPayloadWithHeaders, conn *connection) error {
-	publisher := &publisher{*conn, rs.OutputQueueName}
-
-	ctx := context.Background()
-	// Add Seldon Puid to Context
-	if reqPayload.Headers[payload.SeldonPUIDHeader] == nil {
-		reqPayload.Headers[payload.SeldonPUIDHeader] = []string{guuid.New().String()}
+func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
+	reqPayload *SeldonPayloadWithHeaders,
+	publisher *publisher,
+) error {
+	if reqPayload == nil {
+		err := errors.New("missing request payload")
+		rs.Log.Error(err, "passed in request payload was blank")
+		return err
 	}
 
-	ctx = context.WithValue(ctx, payload.SeldonPUIDHeader, reqPayload.Headers[payload.SeldonPUIDHeader][0])
+	seldonPuid := assignAndReturnPUID(reqPayload)
+	ctx := context.WithValue(context.Background(), payload.SeldonPUIDHeader, seldonPuid)
 
 	// Apply tracing if active
 	if opentracing.IsGlobalTracerRegistered() {
@@ -183,21 +190,95 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(reqPayload SeldonPaylo
 
 	rs.Log.Info("rabbitmq server values", "server url", rs.ServerUrl)
 	seldonPredictorProcess := pred.NewPredictorProcess(
-		ctx, rs.Client, logf.Log.WithName("RabbitMqClient"), &rs.ServerUrl, rs.Namespace, reqPayload.Headers, "")
+		ctx, rs.Client, rs.Log.WithName("RabbitMqClient"), &rs.ServerUrl, rs.Namespace, reqPayload.Headers, "")
 
 	resPayload, err := seldonPredictorProcess.Predict(&rs.Predictor.Graph, reqPayload)
 	if err != nil && resPayload == nil {
 		// normal errors from the predict process contain a status failed payload
 		// this is handling an unexpected case, so failing entirely, at least for now
+		rs.Log.Error(err, "unhandled error from predictor process")
 		return fmt.Errorf("unhandled error %w from predictor process", err)
 	}
 
-	resHeaders := make(map[string][]string)
-	resHeaders[payload.SeldonPUIDHeader] = reqPayload.Headers[payload.SeldonPUIDHeader]
-	//i TODO might need more headers
+	return publishPayload(publisher, resPayload, seldonPuid)
+}
+
+func (rs *SeldonRabbitMQServer) createAndPublishErrorResponse(errorArgs ConsumerError, publisher *publisher) error {
+	reqPayload := errorArgs.pl
+
+	seldonPuid := assignAndReturnPUID(reqPayload)
+
+	message := &proto.SeldonMessage{
+		Status: &proto.Status{
+			Code:   0,
+			Info:   "Prediction Failed",
+			Reason: errorArgs.err.Error(),
+			Status: proto.Status_FAILURE,
+		},
+		Meta: &proto.Meta{
+			Puid: seldonPuid,
+		},
+	}
+
+	var resPayload payload.SeldonPayload
+	switch errorArgs.delivery.ContentType {
+	case payload.APPLICATION_TYPE_PROTOBUF:
+		resPayload = &payload.ProtoPayload{Msg: message}
+		break
+	case rest.ContentTypeJSON:
+		var err error
+		resPayload, err = rs.createJsonResponsePayload(message)
+		if err != nil {
+			rs.Log.Error(err, "error creating json response")
+			return fmt.Errorf("error '%w' creating json response", err)
+		}
+		break
+	default: // default to json response if unknown payload
+		err := fmt.Errorf("unknown content type %v", errorArgs.delivery.ContentType)
+		rs.Log.Error(err, "unexpected content type", "default response content-type", rest.ContentTypeJSON)
+		resPayload, err = rs.createJsonResponsePayload(message)
+		if err != nil {
+			rs.Log.Error(err, "error creating json response")
+			return fmt.Errorf("error '%w' creating json response", err)
+		}
+		break
+	}
+
+	return publishPayload(publisher, resPayload, seldonPuid)
+}
+
+func (rs *SeldonRabbitMQServer) createJsonResponsePayload(message *proto.SeldonMessage) (payload.SeldonPayload, error) {
+
+	jsonStr, err := new(jsonpb.Marshaler).MarshalToString(message)
+	if err != nil {
+		rs.Log.Error(err, "error marshaling seldon message")
+		return nil, fmt.Errorf("error '%w' marshaling seldon message", err)
+	}
+	return &payload.BytesPayload{
+		Msg:         []byte(jsonStr),
+		ContentType: rest.ContentTypeJSON,
+	}, nil
+}
+
+func assignAndReturnPUID(pl *SeldonPayloadWithHeaders) string {
+	if pl == nil {
+		return guuid.New().String()
+	}
+	if pl.Headers == nil {
+		pl.Headers = make(map[string][]string)
+	}
+	if pl.Headers[payload.SeldonPUIDHeader] == nil {
+		pl.Headers[payload.SeldonPUIDHeader] = []string{guuid.New().String()}
+	}
+	return pl.Headers[payload.SeldonPUIDHeader][0]
+}
+
+func publishPayload(publisher *publisher, pl payload.SeldonPayload, seldonPuid string) error {
+	resHeaders := map[string][]string{payload.SeldonPUIDHeader: {seldonPuid}}
+	//TODO might need more headers
 
 	resPayloadWithHeaders := SeldonPayloadWithHeaders{
-		resPayload,
+		pl,
 		resHeaders,
 	}
 

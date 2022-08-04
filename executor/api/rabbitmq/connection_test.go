@@ -2,13 +2,11 @@ package rabbitmq
 
 import (
 	"errors"
-	"testing"
-	"time"
-
-	"github.com/go-logr/zapr"
+	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"testing"
+	"time"
 )
 
 /*
@@ -17,7 +15,6 @@ import (
 
 var (
 	uri         = "amqp://test-rabbitmq:5672/"
-	logger      = zapr.NewLogger(zap.L())
 	queueName   = "test-queue"
 	consumerTag = "tag"
 )
@@ -56,6 +53,8 @@ func setupConnect(fn func(adapter *mockDialerAdapter, conn *mockConnection, chan
 }
 
 func TestNewConnection(t *testing.T) {
+	log := testr.New(t)
+
 	t.Run("connect", func(t *testing.T) {
 		f, reset := setupConnect(func(adapter *mockDialerAdapter, conn *mockConnection, channel *mockChannel) {
 			conn.On("Channel").Return(channel, nil)
@@ -63,7 +62,7 @@ func TestNewConnection(t *testing.T) {
 		})
 		defer reset()
 
-		actual, err := NewConnection(uri, logger)
+		actual, err := NewConnection(uri, log)
 		require.NoError(t, err)
 		assert.NotNil(t, actual.conn)
 		assert.NotNil(t, actual.channel)
@@ -81,7 +80,7 @@ func TestNewConnection(t *testing.T) {
 		})
 		defer reset()
 
-		actual, err := NewConnection(uri, logger)
+		actual, err := NewConnection(uri, log)
 		require.NoError(t, err)
 		assert.NotNil(t, actual.conn)
 		assert.NotNil(t, actual.channel)
@@ -99,7 +98,7 @@ func TestNewConnection(t *testing.T) {
 		})
 		defer reset()
 
-		_, err := NewConnection(uri, logger)
+		_, err := NewConnection(uri, log)
 		assert.Error(t, err)
 
 		f.adapter.AssertExpectations(t)
@@ -112,7 +111,7 @@ func TestNewConnection(t *testing.T) {
 		})
 		defer reset()
 
-		_, err := NewConnection(uri, logger)
+		_, err := NewConnection(uri, log)
 		assert.Error(t, err)
 
 		f.adapter.AssertExpectations(t)

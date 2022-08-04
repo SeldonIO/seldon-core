@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"errors"
+	"github.com/go-logr/logr/testr"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -12,6 +13,7 @@ import (
  */
 
 func TestPublisher(t *testing.T) {
+	log := testr.New(t)
 	testMessage := SeldonPayloadWithHeaders{
 		&TestPayload{Msg: `"hello"`},
 		make(map[string][]string),
@@ -32,6 +34,7 @@ func TestPublisher(t *testing.T) {
 
 		pub := &publisher{
 			connection: connection{
+				log:     log,
 				channel: mockChan,
 			},
 			queueName: queueName,
@@ -57,6 +60,7 @@ func TestPublisher(t *testing.T) {
 
 		pub := &publisher{
 			connection: connection{
+				log:     log,
 				channel: mockChan,
 			},
 			queueName: queueName,
@@ -75,6 +79,7 @@ func TestPublisher(t *testing.T) {
 
 		pub := &publisher{
 			connection: connection{
+				log:     log,
 				channel: mockChan,
 			},
 			queueName: queueName,
@@ -105,7 +110,7 @@ func TestPublisher(t *testing.T) {
 		pub := &publisher{
 			connection: connection{
 				uri: uri,
-				log: logger,
+				log: log,
 				err: make(chan error, 1),
 			},
 			queueName: queueName,
@@ -142,7 +147,7 @@ func TestPublisher(t *testing.T) {
 		pub := &publisher{
 			connection: connection{
 				uri: uri,
-				log: logger,
+				log: log,
 				err: make(chan error, 1),
 			},
 			queueName: queueName,
@@ -166,7 +171,7 @@ func TestPublisher(t *testing.T) {
 		pub := &publisher{
 			connection: connection{
 				uri: uri,
-				log: logger,
+				log: log,
 				err: make(chan error, 1),
 			},
 			queueName: queueName,

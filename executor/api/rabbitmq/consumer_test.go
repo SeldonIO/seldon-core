@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"github.com/go-logr/logr/testr"
 	proto2 "github.com/golang/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
@@ -15,27 +16,19 @@ import (
  */
 
 func TestConsume(t *testing.T) {
-	testDelivery := amqp.Delivery{
-		Body:            []byte(`"hello"`),
-		ContentType:     rest.ContentTypeJSON,
-		ContentEncoding: "",
-	}
+	log := testr.New(t)
+	testMessageStr := `"hello"`
 	seldonMessage := proto.SeldonMessage{
 		Status: &proto.Status{
 			Status: proto.Status_SUCCESS,
 		},
 		Meta: nil,
 		DataOneof: &proto.SeldonMessage_StrData{
-			StrData: `"hello"`,
+			StrData: testMessageStr,
 		},
 	}
 	seldonMessageEnc, _ := proto2.Marshal(&seldonMessage)
 	seldonMessage.XXX_sizecache = 0 // to make test cases match
-	testDelivery2 := amqp.Delivery{
-		Body:            seldonMessageEnc,
-		ContentType:     payload.APPLICATION_TYPE_PROTOBUF,
-		ContentEncoding: "",
-	}
 
 	t.Run("success", func(t *testing.T) {
 		mockChan := &mockChannel{}
@@ -45,7 +38,7 @@ func TestConsume(t *testing.T) {
 			nil)
 
 		mockDeliveries := make(chan amqp.Delivery, 1) // buffer 1 so that we send returns before starting consumer
-		mockDeliveries <- testDelivery
+		mockDeliveries <- createTestDelivery(mockChan, []byte(testMessageStr), rest.ContentTypeJSON)
 		close(mockDeliveries)
 
 		mockChan.On("Consume", queueName, consumerTag, false, false, false, false,
@@ -54,17 +47,17 @@ func TestConsume(t *testing.T) {
 
 		cons := &consumer{
 			connection: connection{
-				log:     logger,
+				log:     log,
 				channel: mockChan,
 			},
 			queueName:   queueName,
 			consumerTag: consumerTag,
 		}
 
-		payloadHandler := func(pl SeldonPayloadWithHeaders) error {
+		payloadHandler := func(pl *SeldonPayloadWithHeaders) error {
 			assert.Equal(
 				t,
-				SeldonPayloadWithHeaders{
+				&SeldonPayloadWithHeaders{
 					&payload.BytesPayload{
 						Msg:             []byte(`"hello"`),
 						ContentType:     rest.ContentTypeJSON,
@@ -78,8 +71,9 @@ func TestConsume(t *testing.T) {
 			return nil
 		}
 
-		errorHandler := func(err error) {
-			assert.NoError(t, err, "unexpected error")
+		errorHandler := func(err ConsumerError) error {
+			assert.NoError(t, err.err, "unexpected error")
+			return nil
 		}
 
 		err := cons.Consume(payloadHandler, errorHandler)
@@ -95,7 +89,7 @@ func TestConsume(t *testing.T) {
 			nil)
 
 		mockDeliveries := make(chan amqp.Delivery, 1) // buffer 1 so that we send returns before starting consumer
-		mockDeliveries <- testDelivery2
+		mockDeliveries <- createTestDelivery(mockChan, seldonMessageEnc, payload.APPLICATION_TYPE_PROTOBUF)
 		close(mockDeliveries)
 
 		mockChan.On("Consume", queueName, consumerTag, false, false, false, false,
@@ -104,17 +98,17 @@ func TestConsume(t *testing.T) {
 
 		cons := &consumer{
 			connection: connection{
-				log:     logger,
+				log:     log,
 				channel: mockChan,
 			},
 			queueName:   queueName,
 			consumerTag: consumerTag,
 		}
 
-		payloadHandler := func(pl SeldonPayloadWithHeaders) error {
+		payloadHandler := func(pl *SeldonPayloadWithHeaders) error {
 			assert.Equal(
 				t,
-				SeldonPayloadWithHeaders{
+				&SeldonPayloadWithHeaders{
 					&payload.ProtoPayload{
 						Msg: &seldonMessage,
 					},
@@ -126,8 +120,9 @@ func TestConsume(t *testing.T) {
 			return nil
 		}
 
-		errorHandler := func(err error) {
-			assert.NoError(t, err, "unexpected error")
+		errorHandler := func(err ConsumerError) error {
+			assert.NoError(t, err.err, "unexpected error")
+			return nil
 		}
 
 		err := cons.Consume(payloadHandler, errorHandler)
@@ -135,4 +130,13 @@ func TestConsume(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+}
+
+func createTestDelivery(ack amqp.Acknowledger, body []byte, contentType string) amqp.Delivery {
+	return amqp.Delivery{
+		Acknowledger:    ack,
+		Body:            body,
+		ContentType:     contentType,
+		ContentEncoding: "",
+	}
 }

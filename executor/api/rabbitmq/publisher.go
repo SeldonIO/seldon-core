@@ -24,6 +24,7 @@ type publisher struct {
 func NewPublisher(uri, queueName string, logger logr.Logger) (*publisher, error) {
 	c, err := NewConnection(uri, logger)
 	if err != nil {
+		c.log.Error(err, "error creating connection for publisher", "uri", c.uri)
 		return nil, fmt.Errorf("error '%w' creating connection to '%v' for publisher", err, uri)
 	}
 	return &publisher{
@@ -40,6 +41,7 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 		p.log.Info("attempting to reconnect to rabbitmq", "uri", p.uri)
 
 		if err := p.connect(); err != nil {
+			p.log.Error(err, "error reconnecting to rabbitmq")
 			return fmt.Errorf("error '%w' reconnecting to rabbitmq", err)
 		}
 	default:
@@ -47,11 +49,13 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 
 	_, err := p.DeclareQueue(p.queueName)
 	if err != nil {
+		p.log.Error(err, "error declaring rabbitmq queue", "uri", p.uri)
 		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
 	}
 
 	body, err := payload.GetBytes()
 	if err != nil {
+		p.log.Error(err, "error retrieving payload bytes")
 		return fmt.Errorf("error '%w' retrieving payload bytes", err)
 	}
 	message := amqp.Publishing{
@@ -62,6 +66,7 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 	}
 	err = p.channel.Publish(amqpExchange, p.queueName, publishMandatory, publishImmediate, message)
 	if err != nil {
+		p.log.Error(err, "error consuming from rabbitmq queue")
 		return fmt.Errorf("error '%w' publishing rabbitmq message", err)
 	}
 	return nil

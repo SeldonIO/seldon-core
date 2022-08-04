@@ -22,6 +22,7 @@ type consumer struct {
 func NewConsumer(uri, queueName, consumerTag string, logger logr.Logger) (*consumer, error) {
 	c, err := NewConnection(uri, logger)
 	if err != nil {
+		c.log.Error(err, "error creating connection for consumer", "uri", c.uri)
 		return nil, fmt.Errorf("error '%w' creating connection to '%v' for consumer", err, uri)
 	}
 	return &consumer{
@@ -34,12 +35,16 @@ func NewConsumer(uri, queueName, consumerTag string, logger logr.Logger) (*consu
 // In the event that the underlying connection was closed after connection creation, this function will attempt to
 // reconnection to the AMQP broker before performing these operations.
 // this is a blocking function while the consumer is running, run it in a goroutine if needed
-func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, errorHandler func(error)) error {
+func (c *consumer) Consume(
+	payloadHandler func(*SeldonPayloadWithHeaders) error,
+	errorHandler func(args ConsumerError) error,
+) error {
 	select {
 	case <-c.err:
 		c.log.Info("attempting to reconnect to rabbitmq", "uri", c.uri)
 
 		if err := c.connect(); err != nil {
+			c.log.Error(err, "error reconnecting to rabbitmq")
 			return fmt.Errorf("error '%w' reconnecting to rabbitmq", err)
 		}
 	default:
@@ -47,6 +52,7 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 
 	_, err := c.DeclareQueue(c.queueName)
 	if err != nil {
+		c.log.Error(err, "error declaring rabbitmq queue", "uri", c.uri)
 		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
 	}
 
@@ -61,6 +67,7 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 		amqp.Table{},  // arguments TODO should something go here?
 	)
 	if err != nil {
+		c.log.Error(err, "error consuming from rabbitmq queue")
 		return fmt.Errorf("error '%w' consuming from rabbitmq queue", err)
 	}
 
@@ -77,17 +84,26 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 		default:
 			pl, err := DeliveryToPayload(delivery)
 			if err != nil {
-				handleConsumerError(err, errorHandler, delivery, c.log)
+				errorHandlerErr := c.handleConsumerError(ConsumerError{err, delivery, pl}, errorHandler)
+				if errorHandlerErr != nil {
+					// fatal error, abort the consumer
+					return errorHandlerErr
+				}
 				continue
 			}
 			err = payloadHandler(pl)
 			if err != nil {
-				handleConsumerError(err, errorHandler, delivery, c.log)
+				errorHandlerErr := c.handleConsumerError(ConsumerError{err, delivery, pl}, errorHandler)
+				if errorHandlerErr != nil {
+					// fatal error, abort the consumer
+					return errorHandlerErr
+				}
 				continue
 			}
 			ackErr := delivery.Ack(false)
 			if ackErr != nil {
-				c.log.Error(ackErr, "error ack-ing", "delivery", delivery)
+				// fatal error, abort the consumer
+				return ackErr
 			}
 		}
 	}
@@ -96,21 +112,38 @@ func (c *consumer) Consume(payloadHandler func(SeldonPayloadWithHeaders) error, 
 	return nil
 }
 
-func handleConsumerError(err error, errorHandler func(error), delivery amqp.Delivery, log logr.Logger) {
-	errorHandler(err)
+type ConsumerError struct {
+	err      error
+	delivery amqp.Delivery
+	pl       *SeldonPayloadWithHeaders // might be nil
+}
+
+func (c *consumer) handleConsumerError(
+	args ConsumerError,
+	errorHandler func(args ConsumerError) error,
+) error {
+	delivery := args.delivery
 
 	// retry once
 	if delivery.Redelivered {
+		err := errorHandler(args)
+		if err != nil {
+			c.log.Error(err, "error handler encountered an error", "original error", args.err)
+			return fmt.Errorf("error handler encountered an error '%w' when handling original error '%v'", err, args.err)
+		}
+
 		rejectErr := delivery.Reject(false)
 		if rejectErr != nil {
-			// perhaps we should do more in this case, but I'm not sure what, fail the entire app?
-			log.Error(rejectErr, "error rejecting", "delivery", delivery)
+			c.log.Error(rejectErr, "error rejecting")
+			return fmt.Errorf("error '%w' rejecting", rejectErr)
 		}
 	} else {
 		nackErr := delivery.Nack(false, true)
 		if nackErr != nil {
-			// perhaps we should do more in this case, but I'm not sure what, fail the entire app?
-			log.Error(nackErr, "error nack-ing", "delivery", delivery)
+			c.log.Error(nackErr, "error nack-ing")
+			return fmt.Errorf("error '%w' nack-ing", nackErr)
 		}
 	}
+
+	return nil
 }

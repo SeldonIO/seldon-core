@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"github.com/go-logr/logr/testr"
 	. "github.com/onsi/gomega"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -20,6 +21,7 @@ import (
 )
 
 func TestRabbitMqServer(t *testing.T) {
+	log := testr.New(t)
 	// this bit down to where `p` is defined is taken from rest/server_test.go
 	g := NewGomegaWithT(t)
 
@@ -73,7 +75,7 @@ func TestRabbitMqServer(t *testing.T) {
 		BrokerUrl:       brokerUrl,
 		InputQueueName:  inputQueue,
 		OutputQueueName: outputQueue,
-		Log:             logger,
+		Log:             log,
 		FullHealthCheck: fullHealthCheck,
 	}
 
@@ -102,7 +104,7 @@ func TestRabbitMqServer(t *testing.T) {
 			BrokerUrl:       brokerUrl,
 			InputQueueName:  inputQueue,
 			OutputQueueName: outputQueue,
-			Log:             logger,
+			Log:             log,
 			FullHealthCheck: fullHealthCheck,
 		})
 

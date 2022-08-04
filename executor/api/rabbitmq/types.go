@@ -52,6 +52,9 @@ type Channel interface {
 	Consume(
 		name string, consumerTag string, autoAck bool, exclusive bool, noLocal bool, noWait bool, args amqp.Table,
 	) (<-chan amqp.Delivery, error)
+	Ack(tag uint64, multiple bool) error
+	Nack(tag uint64, multiple bool, requeue bool) error
+	Reject(tag uint64, requeue bool) error
 }
 
 type SeldonPayloadWithHeaders struct {

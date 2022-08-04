@@ -26,8 +26,8 @@ func StringMapToTable(m map[string][]string) amqp.Table {
 	return table
 }
 
-func DeliveryToPayload(delivery amqp.Delivery) (SeldonPayloadWithHeaders, error) {
-	var pl SeldonPayloadWithHeaders
+func DeliveryToPayload(delivery amqp.Delivery) (*SeldonPayloadWithHeaders, error) {
+	var pl *SeldonPayloadWithHeaders = nil
 	var err error = nil
 
 	headers := TableToStringMap(delivery.Headers)
@@ -37,13 +37,13 @@ func DeliveryToPayload(delivery amqp.Delivery) (SeldonPayloadWithHeaders, error)
 		var message = &proto.SeldonMessage{}
 		err = proto2.Unmarshal(delivery.Body, message)
 		if err == nil {
-			pl = SeldonPayloadWithHeaders{
+			pl = &SeldonPayloadWithHeaders{
 				&payload.ProtoPayload{Msg: message},
 				headers,
 			}
 		}
 	case rest.ContentTypeJSON:
-		pl = SeldonPayloadWithHeaders{
+		pl = &SeldonPayloadWithHeaders{
 			&payload.BytesPayload{
 				Msg:             delivery.Body,
 				ContentType:     delivery.ContentType,
