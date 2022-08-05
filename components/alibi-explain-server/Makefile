@@ -68,12 +68,16 @@ kind_load: docker-build
 	kind load docker-image seldonio/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 # password can be found at: https://connect.redhat.com/project/3987291/view
+scan=ospid-02f3e15b-c16f-4353-affa-61d5f3c6408b
+project=5e9c884a014eb1d2cfa8f217
 redhat-image-scan:
 	docker pull seldonio/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_alibi_explain} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-02f3e15b-c16f-4353-affa-61d5f3c6408b/${IMAGE}:${VERSION}
-	docker push scan.connect.redhat.com/ospid-02f3e15b-c16f-4353-affa-61d5f3c6408b/${IMAGE}:${VERSION}
+	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION}
+	docker push scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 clean:
 	rm -rf test_models
