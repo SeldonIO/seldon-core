@@ -16,7 +16,7 @@ The general work flow is:
 
     ```bash
     s2i build https://github.com/seldonio/seldon-core.git \
-        --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.15.0-dev \
+        --context-dir=wrappers/s2i/python/test/model-template-app seldonio/seldon-core-s2i-python3:1.14.1 \
         seldon-core-template-model
     ```
 
