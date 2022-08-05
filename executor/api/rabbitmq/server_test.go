@@ -1,7 +1,10 @@
 package rabbitmq
 
 import (
+	"errors"
+	"fmt"
 	"github.com/go-logr/logr/testr"
+	guuid "github.com/google/uuid"
 	. "github.com/onsi/gomega"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -20,6 +23,18 @@ import (
 	"testing"
 )
 
+var (
+	model           = v1.MODEL
+	deploymentName  = "testDep"
+	namespace       = "testNs"
+	protocol        = api.ProtocolSeldon
+	transport       = api.TransportRest
+	brokerUrl       = "amqp://something.com"
+	inputQueue      = "inputQueue"
+	outputQueue     = "outputQueue"
+	fullHealthCheck = false
+)
+
 func TestRabbitMqServer(t *testing.T) {
 	log := testr.New(t)
 	// this bit down to where `p` is defined is taken from rest/server_test.go
@@ -30,7 +45,7 @@ func TestRabbitMqServer(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		g.Expect(r.Header.Get(payload.SeldonPUIDHeader)).To(Equal("1"))
 		//called = true
-		w.Write([]byte(bodyBytes))
+		_, _ = w.Write(bodyBytes)
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
@@ -40,7 +55,6 @@ func TestRabbitMqServer(t *testing.T) {
 	port, err := strconv.Atoi(urlParts[1])
 	g.Expect(err).Should(BeNil())
 
-	model := v1.MODEL
 	p := v1.PredictorSpec{
 		Name: "p",
 		Graph: v1.PredictiveUnit{
@@ -53,16 +67,7 @@ func TestRabbitMqServer(t *testing.T) {
 			},
 		},
 	}
-
 	serverUrl, _ = url.Parse("http://localhost")
-	deploymentName := "testDep"
-	namespace := "testNs"
-	protocol := api.ProtocolSeldon
-	transport := api.TransportRest
-	brokerUrl := "amqp://something.com"
-	inputQueue := "inputQueue"
-	outputQueue := "outputQueue"
-	fullHealthCheck := false
 
 	testServer := SeldonRabbitMQServer{
 		Client:          test.SeldonMessageTestClient{},
@@ -85,11 +90,14 @@ func TestRabbitMqServer(t *testing.T) {
 		conn:    mockRmqConn,
 		channel: mockRmqChan,
 	}
+	testPuid := guuid.New().String()
+	testHeaders := map[string]interface{}{payload.SeldonPUIDHeader: testPuid}
 
 	testDelivery := amqp.Delivery{
 		Acknowledger: mockRmqChan,
 		ContentType:  rest.ContentTypeJSON,
 		Body:         []byte(`{ "data": { "ndarray": [[1,2,3,4]] } }`),
+		Headers:      testHeaders,
 	}
 
 	t.Run("create server", func(t *testing.T) {
@@ -148,6 +156,44 @@ func TestRabbitMqServer(t *testing.T) {
 		err := testServer.serve(mockConn)
 
 		assert.NoError(t, err)
+
+		mockRmqChan.AssertExpectations(t)
+	})
+
+	t.Run("createAndPublishErrorResponse", func(t *testing.T) {
+		expected := fmt.Sprintf(
+			`{"status":{"info":"Prediction Failed","reason":"error 1","status":"FAILURE"},"meta":{"puid":"%v"}}`,
+			testPuid,
+		)
+		mockRmqChan.On("Publish", "", outputQueue, true, false, amqp.Publishing{
+			ContentType: "application/json",
+			Body:        []byte(expected),
+			Headers:     testHeaders,
+		}).Return(nil)
+		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
+			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
+
+		publisher := &publisher{*mockConn, outputQueue}
+
+		// valid payload
+		error1 := errors.New("error 1")
+		pl1, _ := DeliveryToPayload(testDelivery)
+		consumerError1 := ConsumerError{
+			err:      error1,
+			delivery: testDelivery,
+			pl:       pl1,
+		}
+		err1 := testServer.createAndPublishErrorResponse(consumerError1, publisher)
+		assert.NoError(t, err1)
+
+		// no payload
+		error2 := errors.New("error 2")
+		consumerError2 := ConsumerError{
+			err:      error2,
+			delivery: testDelivery,
+		}
+		err2 := testServer.createAndPublishErrorResponse(consumerError2, publisher)
+		assert.NoError(t, err2)
 
 		mockRmqChan.AssertExpectations(t)
 	})

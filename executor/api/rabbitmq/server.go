@@ -8,6 +8,7 @@ import (
 	guuid "github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
 	"net/url"
 	"os"
@@ -177,7 +178,7 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
 		return err
 	}
 
-	seldonPuid := assignAndReturnPUID(reqPayload)
+	seldonPuid := assignAndReturnPUID(reqPayload, nil)
 	ctx := context.WithValue(context.Background(), payload.SeldonPUIDHeader, seldonPuid)
 
 	// Apply tracing if active
@@ -206,7 +207,7 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
 func (rs *SeldonRabbitMQServer) createAndPublishErrorResponse(errorArgs ConsumerError, publisher *publisher) error {
 	reqPayload := errorArgs.pl
 
-	seldonPuid := assignAndReturnPUID(reqPayload)
+	seldonPuid := assignAndReturnPUID(reqPayload, &errorArgs.delivery)
 
 	message := &proto.SeldonMessage{
 		Status: &proto.Status{
@@ -225,21 +226,19 @@ func (rs *SeldonRabbitMQServer) createAndPublishErrorResponse(errorArgs Consumer
 	case payload.APPLICATION_TYPE_PROTOBUF:
 		resPayload = &payload.ProtoPayload{Msg: message}
 		break
-	case rest.ContentTypeJSON:
-		var err error
-		resPayload, err = rs.createJsonResponsePayload(message)
-		if err != nil {
-			rs.Log.Error(err, "error creating json response")
-			return fmt.Errorf("error '%w' creating json response", err)
+	default: // includes `rest.ContentTypeJson`, defaulting to json response if unknown payload
+		if errorArgs.delivery.ContentType != rest.ContentTypeJSON {
+			err := fmt.Errorf("unknown content type %v", errorArgs.delivery.ContentType)
+			rs.Log.Error(err, "unexpected content type", "default response content-type", rest.ContentTypeJSON)
 		}
-		break
-	default: // default to json response if unknown payload
-		err := fmt.Errorf("unknown content type %v", errorArgs.delivery.ContentType)
-		rs.Log.Error(err, "unexpected content type", "default response content-type", rest.ContentTypeJSON)
-		resPayload, err = rs.createJsonResponsePayload(message)
+		jsonStr, err := new(jsonpb.Marshaler).MarshalToString(message)
 		if err != nil {
-			rs.Log.Error(err, "error creating json response")
-			return fmt.Errorf("error '%w' creating json response", err)
+			rs.Log.Error(err, "error marshaling seldon message")
+			return fmt.Errorf("error '%w' marshaling seldon message", err)
+		}
+		resPayload = &payload.BytesPayload{
+			Msg:         []byte(jsonStr),
+			ContentType: rest.ContentTypeJSON,
 		}
 		break
 	}
@@ -247,21 +246,11 @@ func (rs *SeldonRabbitMQServer) createAndPublishErrorResponse(errorArgs Consumer
 	return publishPayload(publisher, resPayload, seldonPuid)
 }
 
-func (rs *SeldonRabbitMQServer) createJsonResponsePayload(message *proto.SeldonMessage) (payload.SeldonPayload, error) {
-
-	jsonStr, err := new(jsonpb.Marshaler).MarshalToString(message)
-	if err != nil {
-		rs.Log.Error(err, "error marshaling seldon message")
-		return nil, fmt.Errorf("error '%w' marshaling seldon message", err)
-	}
-	return &payload.BytesPayload{
-		Msg:         []byte(jsonStr),
-		ContentType: rest.ContentTypeJSON,
-	}, nil
-}
-
-func assignAndReturnPUID(pl *SeldonPayloadWithHeaders) string {
+func assignAndReturnPUID(pl *SeldonPayloadWithHeaders, delivery *amqp.Delivery) string {
 	if pl == nil {
+		if delivery != nil && delivery.Headers != nil && delivery.Headers[payload.SeldonPUIDHeader] != nil {
+			return delivery.Headers[payload.SeldonPUIDHeader].(string)
+		}
 		return guuid.New().String()
 	}
 	if pl.Headers == nil {
