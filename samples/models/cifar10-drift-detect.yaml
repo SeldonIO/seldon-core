@@ -4,7 +4,7 @@ metadata:
   name: cifar10-drift
   namespace: seldon-mesh
 spec:
-  storageUri: "gs://seldon-models/mlserver/alibi-detect/cifar10-drift"
+  storageUri: "gs://seldon-models/scv2/examples/cifar10/drift-detector"
   requirements:
     - mlserver
     - alibi-detect

@@ -4,7 +4,7 @@ metadata:
   name: cifar10-outlier
   namespace: seldon-mesh
 spec:
-  storageUri: "gs://seldon-models/mlserver/alibi-detect/cifar10-outlier"
+  storageUri: "gs://seldon-models/scv2/examples/cifar10/outlier-detector"
   requirements:
     - mlserver
     - alibi-detect

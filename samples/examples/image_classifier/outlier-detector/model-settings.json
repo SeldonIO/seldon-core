@@ -1,0 +1,8 @@
+{
+  "name": "income-drift",
+  "implementation": "mlserver_alibi_detect.AlibiDetectRuntime",
+  "parameters": {
+    "uri": "./",
+    "version": "v0.1.0"
+  }
+}
