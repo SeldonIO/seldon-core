@@ -84,20 +84,17 @@ func TestRabbitMqServer(t *testing.T) {
 		FullHealthCheck: fullHealthCheck,
 	}
 
-	mockRmqConn := &mockConnection{}
-	mockRmqChan := &mockChannel{}
-	mockConn := &connection{
-		conn:    mockRmqConn,
-		channel: mockRmqChan,
-	}
 	testPuid := guuid.New().String()
 	testHeaders := map[string]interface{}{payload.SeldonPUIDHeader: testPuid}
 
-	testDelivery := amqp.Delivery{
-		Acknowledger: mockRmqChan,
-		ContentType:  rest.ContentTypeJSON,
-		Body:         []byte(`{ "data": { "ndarray": [[1,2,3,4]] } }`),
-		Headers:      testHeaders,
+	invalidErrorJsonResponse := fmt.Sprintf(
+		`{"status":{"info":"Prediction Failed","reason":"unknown payload type 'bogus'","status":"FAILURE"},"meta":{"puid":"%v"}}`,
+		testPuid,
+	)
+	invalidErrorPublishing := amqp.Publishing{
+		ContentType: "application/json",
+		Body:        []byte(invalidErrorJsonResponse),
+		Headers:     testHeaders,
 	}
 
 	t.Run("create server", func(t *testing.T) {
@@ -139,6 +136,20 @@ func TestRabbitMqServer(t *testing.T) {
 	 * unit test since the code connects to RabbitMQ.
 	 */
 	t.Run("serve", func(t *testing.T) {
+		mockRmqConn := &mockConnection{}
+		mockRmqChan := &mockChannel{}
+		mockConn := &connection{
+			conn:    mockRmqConn,
+			channel: mockRmqChan,
+		}
+
+		testDelivery := amqp.Delivery{
+			Acknowledger: mockRmqChan,
+			ContentType:  rest.ContentTypeJSON,
+			Body:         []byte(`{ "data": { "ndarray": [[1,2,3,4]] } }`),
+			Headers:      testHeaders,
+		}
+
 		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
 			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 		mockRmqChan.On("QueueDeclare", inputQueue, queueDurable, queueAutoDelete, queueExclusive,
@@ -160,23 +171,80 @@ func TestRabbitMqServer(t *testing.T) {
 		mockRmqChan.AssertExpectations(t)
 	})
 
+	/*
+	 * This makes sure the Serve(), predictAndPublishResponse(), and createAndPublishErrorResponse() code runs and
+	 * makes the proper calls and returns an appropriate error message by hacking a bunch of mocks.
+	 */
+	t.Run("serveError", func(t *testing.T) {
+		mockRmqConn := &mockConnection{}
+		mockRmqChan := &mockChannel{}
+		mockConn := &connection{
+			conn:    mockRmqConn,
+			channel: mockRmqChan,
+		}
+
+		invalidDelivery := amqp.Delivery{
+			Acknowledger: mockRmqChan,
+			ContentType:  "bogus",
+			Body:         []byte(`bogus`),
+			Headers:      testHeaders,
+			Redelivered:  true,
+		}
+
+		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
+			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
+		mockRmqChan.On("QueueDeclare", inputQueue, queueDurable, queueAutoDelete, queueExclusive,
+			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
+
+		mockDeliveries := make(chan amqp.Delivery, 1)
+		mockDeliveries <- invalidDelivery
+		close(mockDeliveries)
+
+		mockRmqChan.On("Consume", inputQueue, mock.Anything, false, false, false, false,
+			amqp.Table{}).Return(mockDeliveries, nil)
+		mockRmqChan.On("Publish", "", outputQueue, publishMandatory, publishImmediate,
+			invalidErrorPublishing).Return(nil)
+
+		err := testServer.serve(mockConn)
+
+		assert.NoError(t, err)
+
+		mockRmqChan.AssertExpectations(t)
+	})
+
 	t.Run("createAndPublishErrorResponse", func(t *testing.T) {
-		expected := fmt.Sprintf(
-			`{"status":{"info":"Prediction Failed","reason":"error 1","status":"FAILURE"},"meta":{"puid":"%v"}}`,
-			testPuid,
-		)
-		mockRmqChan.On("Publish", "", outputQueue, true, false, amqp.Publishing{
-			ContentType: "application/json",
-			Body:        []byte(expected),
-			Headers:     testHeaders,
-		}).Return(nil)
+		mockRmqConn := &mockConnection{}
+		mockRmqChan := &mockChannel{}
+		mockConn := &connection{
+			conn:    mockRmqConn,
+			channel: mockRmqChan,
+		}
+
+		testDelivery := amqp.Delivery{
+			Acknowledger: mockRmqChan,
+			ContentType:  rest.ContentTypeJSON,
+			Body:         []byte(`{ "data": { "ndarray": [[1,2,3,4]] } }`),
+			Headers:      testHeaders,
+		}
+
 		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
 			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 
 		publisher := &publisher{*mockConn, outputQueue}
 
 		// valid payload
-		error1 := errors.New("error 1")
+		error1Text := "error 1"
+		error1 := errors.New(error1Text)
+		generatedErrorPublishing1 := amqp.Publishing{
+			ContentType: "application/json",
+			Body: []byte(fmt.Sprintf(
+				`{"status":{"info":"Prediction Failed","reason":"%v","status":"FAILURE"},"meta":{"puid":"%v"}}`,
+				error1Text,
+				testPuid,
+			)),
+			Headers: testHeaders,
+		}
+		mockRmqChan.On("Publish", "", outputQueue, true, false, generatedErrorPublishing1).Return(nil)
 		pl1, _ := DeliveryToPayload(testDelivery)
 		consumerError1 := ConsumerError{
 			err:      error1,
@@ -186,8 +254,21 @@ func TestRabbitMqServer(t *testing.T) {
 		err1 := testServer.createAndPublishErrorResponse(consumerError1, publisher)
 		assert.NoError(t, err1)
 
+		mockRmqChan.AssertExpectations(t)
+
 		// no payload
-		error2 := errors.New("error 2")
+		error2Text := "error 2"
+		error2 := errors.New(error2Text)
+		generatedErrorPublishing2 := amqp.Publishing{
+			ContentType: "application/json",
+			Body: []byte(fmt.Sprintf(
+				`{"status":{"info":"Prediction Failed","reason":"%v","status":"FAILURE"},"meta":{"puid":"%v"}}`,
+				error2Text,
+				testPuid,
+			)),
+			Headers: testHeaders,
+		}
+		mockRmqChan.On("Publish", "", outputQueue, true, false, generatedErrorPublishing2).Return(nil)
 		consumerError2 := ConsumerError{
 			err:      error2,
 			delivery: testDelivery,
