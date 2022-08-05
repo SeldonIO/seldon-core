@@ -73,4 +73,5 @@ COPY --from=builder /licenses /licenses
 # This is to have writable numba cache directory
 ENV NUMBA_CACHE_DIR /tmp/numba-cache
 
+USER 8888
 ENTRYPOINT ["python", "-m", "adserver"]
