@@ -155,6 +155,9 @@ docker-build-no-test: generate-resources
 docker-build-redhat: test generate-resources
 	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
+docker-build-redhat-no-test: generate-resources
+	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
@@ -177,11 +180,7 @@ controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
 	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
 	}
 
 CONTROLLER_GEN=$(GOBIN)/controller-gen
@@ -341,6 +340,9 @@ redhat-image-scan:
 		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT} --docker-config=${HOME}/.docker/config.json --certification-project-id=5e6352370307ea9e345f6084 --pyxis-api-token=$${pyxis_api_token} --submit
+
 
 
 
