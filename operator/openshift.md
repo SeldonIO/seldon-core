@@ -195,19 +195,21 @@ After these are finished (approx 1.5 hours) you will need to manually publish im
 
 publish
 
- * https://connect.redhat.com/project/5912261/view
- * https://connect.redhat.com/project/5912271/view
- * https://connect.redhat.com/project/5912311/view
- * https://connect.redhat.com/project/5912301/view
- * https://connect.redhat.com/project/1366481/view
- * https://connect.redhat.com/project/1366491/view
- * https://connect.redhat.com/project/3977851/view
- * https://connect.redhat.com/project/3986991/view
- * https://connect.redhat.com/project/3987291/view
- * https://connect.redhat.com/project/3993461/view
- * https://connect.redhat.com/project/4035711/view
+ * https://connect.redhat.com/project/1366481/view (Seldon Core Operator)
+ * https://connect.redhat.com/project/3977851/view (Seldon Executor)
+ * https://connect.redhat.com/project/5912261/view (Seldon SKLearn Server)
+ * https://connect.redhat.com/project/5912271/view (MLFlow Seldon Server)
+ * https://connect.redhat.com/project/5912301/view (Seldon XGBoost Server)
+ * https://connect.redhat.com/project/5912311/view (Seldon Tensorflow Serving Proxy)
+ * https://connect.redhat.com/project/3987291/view (Seldon Alibi Explainer Wrapper)
+ * https://connect.redhat.com/project/3993461/view (Alibi Detect Server)
+ * https://connect.redhat.com/project/3986991/view (Seldon Storage Initializer)
+ * https://connect.redhat.com/project/4035711/view (Seldon Dummy Model)
 
-Noe fork the [certified operators repo](https://github.com/redhat-openshift-ecosystem/certified-operators). Seldon's operator is in `operators/seldon-operator-certified`. Update Makefile CERTIFIED_OPERATORS_FOLDER or set when running:
+previously used images:
+* https://connect.redhat.com/project/1366491/view (Seldon Engine)
+
+Now fork the [certified operators repo](https://github.com/redhat-openshift-ecosystem/certified-operators). Seldon's operator is in `operators/seldon-operator-certified`. Update Makefile CERTIFIED_OPERATORS_FOLDER or set when running:
 
 ```
 make update_certified
