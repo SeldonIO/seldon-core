@@ -1,5 +1,5 @@
 # Adds namespace to all resources.
-namespace: seldon-mesh
+#namespace: seldon-mesh
 
 resources:
 - mlserver.yaml

@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
   name: pipeline-inputs
-  namespace: seldon-mesh
 spec:
   steps:
   - name: mul10

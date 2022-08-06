@@ -2,10 +2,9 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: mlserver-custom
-  namespace: seldon-mesh
 spec:
   serverConfig: mlserver
   podSpec:
     containers:
-    - image: cliveseldon/mlserver:1.1.0.explain
+    - image: cliveseldon/mlserver:1.2.0.dev1
       name: mlserver

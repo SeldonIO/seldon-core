@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
   name: add1020
-  namespace: seldon-mesh
 spec:
   default: add10
   candidates:

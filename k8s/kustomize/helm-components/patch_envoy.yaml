@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seldon-envoy
-  namespace: seldon-mesh
 spec:
   template:
     spec:

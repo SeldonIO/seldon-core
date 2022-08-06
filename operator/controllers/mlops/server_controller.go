@@ -82,15 +82,15 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 	return false, nil
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
-// +kubebuilder:rbac:groups=v1,resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=v1,resources=services/status,verbs=get
-// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",namespace=seldon-mesh,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=v1,namespace=seldon-mesh,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",namespace=seldon-mesh,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=v1,namespace=seldon-mesh,resources=services/status,verbs=get
+// +kubebuilder:rbac:groups=apps,namespace=seldon-mesh,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,namespace=seldon-mesh,resources=statefulsets/status,verbs=get
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

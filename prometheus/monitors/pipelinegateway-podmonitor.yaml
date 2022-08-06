@@ -2,14 +2,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: pipelinegateway
-  namespace: seldon-mesh
 spec:
   selector:
     matchLabels:
       app: pipelinegateway
   namespaceSelector:
-    matchNames:
-    - seldon-mesh
+    matchNames: []
+    any: false
   podMetricsEndpoints:
   - port: metrics
     interval: 15s

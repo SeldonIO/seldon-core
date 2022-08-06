@@ -48,4 +48,5 @@ Prometheus will be available at `http://localhost:9090`.
 Download the dashboard from [SCv2 dashboard](https://github.com/SeldonIO/seldon-core-v2/blob/master/prometheus/dashboards/seldon.json) and import it in Grafana, making sure that the data source is pointing to the correct Prometheus store.
 Find more information on how to import the dashboard [here](https://grafana.com/docs/grafana/latest/dashboards/export-import/).
 
+Inside Kubernetes these metrics may be prefixed by namespace, e.g. `seldon_pipeline_infer_api_seconds` will be found as `seldon_mesh_seldon_pipeline_infer_api_seconds` if the namespace is `seldon_mesh`.
 

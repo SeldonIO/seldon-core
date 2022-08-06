@@ -4,32 +4,32 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: hodometer
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 {{ end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-controller-manager
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-scheduler
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-server
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: agent-role
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 rules:
 - apiGroups:
   - ""
@@ -50,7 +50,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-leader-election-role
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 rules:
 - apiGroups:
   - ""
@@ -87,23 +87,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: seldon-scheduler-role
-  namespace: seldon-mesh
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
   creationTimestamp: null
   name: seldon-manager-role
+  namespace: '{{ .Release.Namespace }}'
 rules:
 - apiGroups:
   - ""
@@ -292,38 +278,25 @@ rules:
   - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: seldon-metrics-reader
+  name: seldon-scheduler-role
+  namespace: '{{ .Release.Namespace }}'
 rules:
-- nonResourceURLs:
-  - /metrics
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
   verbs:
   - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: seldon-proxy-role
-rules:
-- apiGroups:
-  - authentication.k8s.io
-  resources:
-  - tokenreviews
-  verbs:
-  - create
-- apiGroups:
-  - authorization.k8s.io
-  resources:
-  - subjectaccessreviews
-  verbs:
-  - create
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: agent-rolebinding
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -331,13 +304,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-server
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-leader-election-rolebinding
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -345,13 +318,27 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seldon-manager-rolebinding
+  namespace: '{{ .Release.Namespace }}'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seldon-manager-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-scheduler-rolebinding
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -359,33 +346,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
-  namespace: seldon-mesh
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: seldon-manager-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: seldon-manager-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
-  namespace: seldon-mesh
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: seldon-proxy-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: seldon-proxy-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: v1
 data:
@@ -404,23 +365,7 @@ data:
 kind: ConfigMap
 metadata:
   name: seldon-manager-config
-  namespace: seldon-mesh
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    control-plane: controller-manager
-  name: seldon-controller-manager-metrics-service
-  namespace: seldon-mesh
-spec:
-  ports:
-  - name: https
-    port: 8443
-    protocol: TCP
-    targetPort: https
-  selector:
-    control-plane: controller-manager
+  namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: v1
 kind: Service
@@ -428,7 +373,7 @@ metadata:
   labels:
     app: seldon-mesh
   name: seldon-mesh
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   ports:
   - name: http2
@@ -449,7 +394,7 @@ metadata:
   labels:
     app: seldon-mesh
   name: seldon-pipelinegateway
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   clusterIP: None
   ports:
@@ -470,7 +415,7 @@ metadata:
   labels:
     app: seldon-scheduler
   name: seldon-scheduler
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   ports:
   - name: xds
@@ -499,7 +444,7 @@ metadata:
   labels:
     control-plane: controller-manager
   name: seldon-controller-manager
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -515,15 +460,15 @@ spec:
       containers:
       - args:
         - --health-probe-bind-address=:8081
-        - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
         - --scheduler-host=$(SELDON_SCHEDULER_SVC)
         - --scheduler-port=$(SELDON_SCHEDULER_PORT)
+        - --namespace=$(POD_NAMESPACE)
         command:
         - /manager
         env:
         - name: SELDON_SCHEDULER_SVC
-          value: seldon-scheduler.seldon-mesh
+          value: seldon-scheduler
         - name: SELDON_SCHEDULER_PORT
           value: "9004"
         - name: POD_NAMESPACE
@@ -555,17 +500,6 @@ spec:
             memory: '{{ .Values.controller.resources.requests.memory }}'
         securityContext:
           allowPrivilegeEscalation: false
-      - args:
-        - --secure-listen-address=0.0.0.0:8443
-        - --upstream=http://127.0.0.1:8080/
-        - --logtostderr=true
-        - --v=10
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-        name: kube-rbac-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
       securityContext:
         runAsNonRoot: true
       serviceAccountName: seldon-controller-manager
@@ -577,7 +511,7 @@ metadata:
   labels:
     control-plane: seldon-dataflow-engine
   name: seldon-dataflow-engine
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -626,7 +560,7 @@ metadata:
   labels:
     app: seldon-envoy
   name: seldon-envoy
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   selector:
     matchLabels:
@@ -659,7 +593,7 @@ metadata:
   labels:
     app.kubernetes.io/name: hodometer
   name: seldon-hodometer
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -700,7 +634,7 @@ metadata:
   labels:
     control-plane: seldon-modelgateway
   name: seldon-modelgateway
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -759,7 +693,7 @@ metadata:
   labels:
     app: pipelinegateway
   name: seldon-pipelinegateway
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -820,7 +754,7 @@ metadata:
   labels:
     control-plane: seldon-scheduler
   name: seldon-scheduler
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
@@ -885,7 +819,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: mlserver
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   podSpec:
     containers:
@@ -1046,7 +980,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: triton
-  namespace: seldon-mesh
+  namespace: '{{ .Release.Namespace }}'
 spec:
   podSpec:
     containers:
@@ -1094,8 +1028,6 @@ spec:
         value: "9006"
       - name: SELDON_SERVER_TYPE
         value: triton
-      - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: seldon-collector.seldon-mesh:4317
       - name: POD_NAME
         valueFrom:
           fieldRef:

@@ -70,10 +70,10 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, model *mlopsv1alp
 	return false, nil
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=models,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=models/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=models,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=models/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=models/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",namespace=seldon-mesh,resources=events,verbs=create;patch
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")

@@ -2,14 +2,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: envoy
-  namespace: seldon-mesh
 spec:
   selector:
     matchLabels:
       app: seldon-mesh
   namespaceSelector:
-    matchNames:
-    - seldon-mesh
+    matchNames: []
+    any: false
   endpoints:
   - port: admin
     interval: 15s

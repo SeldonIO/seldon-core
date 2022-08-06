@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: triton
-  namespace: seldon-mesh
 spec:
   serverConfig: triton
   replicas: 1

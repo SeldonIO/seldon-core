@@ -3,7 +3,13 @@
 
 
 ```python
-MESH_IP=kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+import os
+os.environ["NAMESPACE"] = "test"
+```
+
+
+```python
+MESH_IP=kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 MESH_IP=MESH_IP[0]
 import os
 os.environ['MESH_IP'] = MESH_IP
@@ -14,7 +20,7 @@ MESH_IP
 
 
 
-    '172.24.255.9'
+    '172.18.255.9'
 ```
 ````
 
@@ -30,16 +36,16 @@ cat ./models/sklearn-iris-gs.yaml
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
       - sklearn
+      memory: 100Ki
 ```
 ````
 
 ```bash
-kubectl create -f ./models/sklearn-iris-gs.yaml
+kubectl create -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -49,7 +55,7 @@ kubectl create -f ./models/sklearn-iris-gs.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -59,7 +65,7 @@ kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ````
 
 ```bash
-kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -67,12 +73,12 @@ kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-06-03T14:35:59Z",
+          "lastTransitionTime": "2022-08-04T14:33:14Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-06-03T14:35:59Z",
+          "lastTransitionTime": "2022-08-04T14:33:14Z",
           "status": "True",
           "type": "Ready"
         }
@@ -92,8 +98,11 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "3be6542c-5ad2-4ebc-a0d4-842377653b5d",
-    	"parameters": null,
+    	"id": "d04092bb-b434-4acb-9985-941169be52e3",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
     	"outputs": [
     		{
     			"name": "predict",
@@ -140,7 +149,7 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
 ````
 
 ```bash
-kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -148,12 +157,12 @@ kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-05-26T09:58:57Z",
+          "lastTransitionTime": "2022-08-04T14:31:33Z",
           "status": "True",
           "type": "Ready"
         },
         {
-          "lastTransitionTime": "2022-05-26T09:58:57Z",
+          "lastTransitionTime": "2022-08-04T14:31:33Z",
           "reason": "StatefulSet replicas matches desired replicas",
           "status": "True",
           "type": "StatefulSetReady"
@@ -165,7 +174,7 @@ kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ````
 
 ```bash
-kubectl delete -f ./models/sklearn-iris-gs.yaml
+kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -177,7 +186,7 @@ kubectl delete -f ./models/sklearn-iris-gs.yaml
 
 
 ```bash
-cat ./experiments/sklearn1.yaml
+cat ./models/sklearn1.yaml
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -185,7 +194,6 @@ cat ./experiments/sklearn1.yaml
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
@@ -194,7 +202,7 @@ cat ./experiments/sklearn1.yaml
 ````
 
 ```bash
-cat ./experiments/sklearn2.yaml 
+cat ./models/sklearn2.yaml 
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -202,7 +210,6 @@ cat ./experiments/sklearn2.yaml
     kind: Model
     metadata:
       name: iris2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
@@ -211,8 +218,8 @@ cat ./experiments/sklearn2.yaml
 ````
 
 ```bash
-kubectl create -f ./experiments/sklearn1.yaml
-kubectl create -f ./experiments/sklearn2.yaml
+kubectl create -f ./models/sklearn1.yaml -n ${NAMESPACE}
+kubectl create -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -223,7 +230,7 @@ kubectl create -f ./experiments/sklearn2.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -242,9 +249,8 @@ cat ./experiments/ab-default-model.yaml
     kind: Experiment
     metadata:
       name: experiment-sample
-      namespace: seldon-mesh
     spec:
-      defaultModel: iris
+      default: iris
       candidates:
       - modelName: iris
         weight: 50
@@ -254,7 +260,7 @@ cat ./experiments/ab-default-model.yaml
 ````
 
 ```bash
-kubectl create -f ./experiments/ab-default-model.yaml 
+kubectl create -f ./experiments/ab-default-model.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -264,7 +270,7 @@ kubectl create -f ./experiments/ab-default-model.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s experiment --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s experiment --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -280,14 +286,14 @@ seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
 ````{collapse} Expand to see output
 ```json
 
-    map[iris2_1:27 iris_1:23]
+    map[:iris2_1::25 :iris_1::25]
 ```
 ````
 
 ```bash
-kubectl delete -f ./experiments/ab-default-model.yaml 
-kubectl delete -f ./experiments/sklearn1.yaml
-kubectl delete -f ./experiments/sklearn2.yaml
+kubectl delete -f ./experiments/ab-default-model.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/sklearn1.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -301,7 +307,7 @@ kubectl delete -f ./experiments/sklearn2.yaml
 
 
 ```bash
-cat ./models/tfsimple1.yaml
+cat ./models/tfsimple1.yaml 
 cat ./models/tfsimple2.yaml
 ```
 ````{collapse} Expand to see output
@@ -310,26 +316,26 @@ cat ./models/tfsimple2.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
 ```
 ````
 
 ```bash
-kubectl create -f ./models/tfsimple1.yaml
-kubectl create -f ./models/tfsimple2.yaml
+kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -340,7 +346,7 @@ kubectl create -f ./models/tfsimple2.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -359,7 +365,6 @@ cat ./pipelines/tfsimples.yaml
     kind: Pipeline
     metadata:
       name: tfsimples
-      namespace: seldon-mesh
     spec:
       steps:
         - name: tfsimple1
@@ -376,7 +381,7 @@ cat ./pipelines/tfsimples.yaml
 ````
 
 ```bash
-kubectl create -f ./pipelines/tfsimples.yaml
+kubectl create -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -386,7 +391,7 @@ kubectl create -f ./pipelines/tfsimples.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -470,7 +475,7 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
 ````
 
 ```bash
-kubectl delete -f ./pipelines/tfsimples.yaml
+kubectl delete -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -480,8 +485,8 @@ kubectl delete -f ./pipelines/tfsimples.yaml
 ````
 
 ```bash
-kubectl delete -f ./models/tfsimple1.yaml
-kubectl delete -f ./models/tfsimple2.yaml
+kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -504,36 +509,36 @@ cat ./models/tfsimple3.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple3
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
 ```
 ````
 
 ```bash
-kubectl create -f ./models/tfsimple1.yaml
-kubectl create -f ./models/tfsimple2.yaml
-kubectl create -f ./models/tfsimple3.yaml
+kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
+kubectl create -f ./models/tfsimple3.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -545,7 +550,7 @@ kubectl create -f ./models/tfsimple3.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -565,7 +570,6 @@ cat ./pipelines/tfsimples-join.yaml
     kind: Pipeline
     metadata:
       name: join
-      namespace: seldon-mesh
     spec:
       steps:
         - name: tfsimple1
@@ -584,7 +588,7 @@ cat ./pipelines/tfsimples-join.yaml
 ````
 
 ```bash
-kubectl create -f ./pipelines/tfsimples-join.yaml
+kubectl create -f ./pipelines/tfsimples-join.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -594,7 +598,7 @@ kubectl create -f ./pipelines/tfsimples-join.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -678,7 +682,7 @@ seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 
 ````
 
 ```bash
-kubectl delete -f ./pipelines/tfsimples-join.yaml
+kubectl delete -f ./pipelines/tfsimples-join.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -688,9 +692,9 @@ kubectl delete -f ./pipelines/tfsimples-join.yaml
 ````
 
 ```bash
-kubectl delete -f ./models/tfsimple1.yaml
-kubectl delete -f ./models/tfsimple2.yaml
-kubectl delete -f ./models/tfsimple3.yaml
+kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/tfsimple3.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -712,16 +716,15 @@ cat ./models/income.yaml
     kind: Model
     metadata:
       name: income
-      namespace: seldon-mesh
     spec:
-      storageUri: "gs://seldon-models/mlserver/income"
+      storageUri: "gs://seldon-models/scv2/examples/income/classifier"
       requirements:
       - sklearn
 ```
 ````
 
 ```bash
-kubectl create -f ./models/income.yaml
+kubectl create -f ./models/income.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -731,7 +734,7 @@ kubectl create -f ./models/income.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -741,7 +744,7 @@ kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ````
 
 ```bash
-kubectl get model income -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -749,12 +752,12 @@ kubectl get model income -n seldon-mesh -o jsonpath='{.status}' | jq -M .
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-06-25T10:22:17Z",
+          "lastTransitionTime": "2022-08-04T11:59:29Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-06-25T10:22:17Z",
+          "lastTransitionTime": "2022-08-04T11:59:29Z",
           "status": "True",
           "type": "Ready"
         }
@@ -766,7 +769,7 @@ kubectl get model income -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 
 ```bash
 seldon model infer income --inference-host ${MESH_IP}:80 \
-     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[53,4,0,2,8,4,2,0,0,0,60,9]]}]}' 
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}' 
 ```
 ````{collapse} Expand to see output
 ```json
@@ -774,7 +777,7 @@ seldon model infer income --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "income_1",
     	"model_version": "1",
-    	"id": "8b8ac132-ae7d-44a7-86eb-385092dd8703",
+    	"id": "389eebf2-069b-4a4b-8ae1-005402493469",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -805,9 +808,8 @@ cat ./models/income-explainer.yaml
     kind: Model
     metadata:
       name: income-explainer
-      namespace: seldon-mesh
     spec:
-      storageUri: "gs://seldon-models/mlserver/alibi-explain/income"
+      storageUri: "gs://seldon-models/scv2/examples/income/explainer"
       explainer:
         type: anchor_tabular
         modelRef: income
@@ -815,7 +817,7 @@ cat ./models/income-explainer.yaml
 ````
 
 ```bash
-kubectl create -f ./models/income-explainer.yaml
+kubectl create -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -825,7 +827,7 @@ kubectl create -f ./models/income-explainer.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -836,7 +838,7 @@ kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ````
 
 ```bash
-kubectl get model income-explainer -n seldon-mesh -o jsonpath='{.status}' | jq -M .
+kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 ```
 ````{collapse} Expand to see output
 ```json
@@ -844,12 +846,12 @@ kubectl get model income-explainer -n seldon-mesh -o jsonpath='{.status}' | jq -
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-06-25T10:22:32Z",
+          "lastTransitionTime": "2022-08-04T11:59:53Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-06-25T10:22:32Z",
+          "lastTransitionTime": "2022-08-04T11:59:53Z",
           "status": "True",
           "type": "Ready"
         }
@@ -861,7 +863,7 @@ kubectl get model income-explainer -n seldon-mesh -o jsonpath='{.status}' | jq -
 
 ```bash
 seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
-     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[53,4,0,2,8,4,2,0,0,0,60,9]]}]}' 
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}' 
 ```
 ````{collapse} Expand to see output
 ```json
@@ -869,7 +871,7 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "income-explainer_1",
     	"model_version": "1",
-    	"id": "8fb6f648-88bf-4d59-8bd4-42d215e72b28",
+    	"id": "02b6d055-e587-4485-a36c-d09b5830748e",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -886,7 +888,7 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
     				"headers": null
     			},
     			"data": [
-    				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.7.0\"}, \"data\": {\"anchor\": [\"Marital Status = Separated\", \"Capital Loss <= 0.00\"], \"precision\": 0.9813084112149533, \"coverage\": 0.17423333333333332, \"raw\": {\"feature\": [3, 9], \"mean\": [0.96875, 0.9813084112149533], \"precision\": [0.96875, 0.9813084112149533], \"coverage\": [0.18063333333333334, 0.17423333333333332], \"examples\": [{\"covered_true\": [[24, 4, 4, 2, 2, 5, 4, 0, 0, 0, 40, 9], [41, 4, 4, 2, 1, 5, 4, 0, 0, 0, 40, 9], [41, 4, 4, 2, 7, 1, 4, 1, 0, 0, 21, 9], [31, 6, 1, 2, 8, 0, 4, 1, 0, 0, 60, 0], [32, 4, 4, 2, 2, 1, 4, 1, 0, 0, 40, 9], [44, 4, 4, 2, 8, 5, 4, 0, 0, 0, 70, 9], [20, 0, 3, 2, 0, 1, 3, 1, 0, 1602, 40, 9], [22, 4, 4, 2, 2, 2, 4, 1, 0, 0, 55, 9], [21, 4, 4, 2, 1, 1, 4, 0, 0, 0, 40, 9], [34, 4, 4, 2, 7, 0, 1, 1, 0, 0, 40, 7]], \"covered_false\": [[26, 4, 6, 2, 5, 0, 4, 1, 0, 1977, 40, 9], [44, 4, 6, 2, 5, 0, 4, 1, 99999, 0, 65, 9], [39, 4, 2, 2, 5, 4, 4, 0, 0, 0, 80, 9], [34, 4, 5, 2, 5, 1, 4, 1, 0, 2258, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[55, 4, 1, 2, 5, 0, 4, 1, 0, 0, 40, 9], [65, 4, 3, 2, 6, 2, 4, 0, 0, 0, 20, 9], [18, 0, 3, 2, 0, 3, 1, 0, 0, 0, 24, 3], [38, 4, 5, 2, 1, 1, 4, 0, 0, 0, 50, 3], [39, 4, 0, 2, 4, 0, 2, 1, 0, 0, 60, 9], [29, 4, 4, 2, 7, 4, 2, 0, 0, 0, 25, 9], [30, 4, 1, 2, 1, 1, 4, 0, 0, 0, 40, 9], [49, 4, 0, 2, 5, 0, 4, 1, 0, 0, 45, 9], [35, 4, 1, 2, 6, 0, 4, 1, 0, 0, 52, 9], [57, 4, 4, 2, 1, 2, 2, 0, 0, 0, 40, 5]], \"covered_false\": [[44, 4, 1, 2, 8, 0, 4, 1, 7298, 0, 48, 9], [67, 5, 4, 2, 5, 5, 4, 0, 20051, 0, 30, 1], [57, 1, 5, 2, 8, 0, 2, 1, 15024, 0, 40, 9], [60, 7, 2, 2, 5, 0, 4, 1, 0, 0, 55, 9], [32, 4, 4, 2, 2, 0, 4, 1, 99999, 0, 40, 9], [25, 4, 0, 2, 6, 1, 4, 1, 27828, 0, 40, 9], [65, 4, 1, 2, 1, 0, 4, 1, 10605, 0, 20, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Separated\", \"Capital Loss <= 0.00\"], \"prediction\": [0], \"instance\": [53.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0], \"instances\": [[53.0, 4.0, 0.0, 2.0, 8.0, 4.0, 2.0, 0.0, 0.0, 0.0, 60.0, 9.0]]}}}"
+    				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.7.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"precision\": 0.9938650306748467, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 5, 8], \"mean\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"precision\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], \"examples\": [{\"covered_true\": [[66, 0, 1, 1, 0, 0, 4, 1, 0, 0, 6, 9], [36, 2, 1, 1, 5, 1, 4, 0, 0, 0, 60, 9], [40, 4, 1, 1, 8, 0, 4, 1, 0, 0, 75, 9], [42, 4, 1, 1, 6, 4, 4, 1, 0, 0, 45, 0], [49, 2, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [37, 4, 1, 1, 5, 0, 4, 1, 0, 0, 55, 9], [61, 4, 5, 1, 6, 0, 4, 1, 3103, 0, 50, 9], [54, 4, 1, 1, 7, 0, 4, 1, 0, 0, 40, 9], [35, 2, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [24, 4, 1, 1, 6, 1, 4, 1, 0, 0, 47, 9]], \"covered_false\": [[38, 6, 5, 1, 5, 0, 2, 1, 99999, 0, 60, 9], [40, 4, 1, 1, 7, 5, 1, 0, 7688, 0, 52, 6], [43, 4, 5, 1, 5, 1, 4, 1, 0, 0, 50, 9], [51, 4, 1, 1, 8, 1, 0, 1, 0, 0, 50, 9], [42, 4, 1, 1, 8, 0, 4, 1, 0, 2415, 60, 9], [22, 4, 1, 1, 5, 1, 0, 0, 14344, 0, 40, 9], [46, 4, 5, 1, 8, 1, 4, 0, 27828, 0, 50, 9], [50, 4, 1, 1, 8, 0, 4, 1, 7298, 0, 50, 9], [43, 1, 1, 1, 8, 1, 4, 1, 0, 0, 40, 9], [56, 6, 5, 1, 2, 0, 4, 1, 0, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[36, 4, 1, 1, 6, 3, 4, 1, 0, 1902, 45, 9], [55, 4, 2, 1, 8, 3, 4, 1, 0, 0, 60, 9], [46, 4, 2, 1, 5, 3, 4, 1, 0, 0, 70, 9], [45, 2, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [55, 5, 5, 1, 8, 3, 4, 1, 0, 0, 60, 9], [24, 4, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [58, 6, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [34, 4, 5, 1, 4, 3, 2, 0, 0, 0, 40, 0], [30, 4, 1, 1, 4, 3, 4, 1, 0, 0, 60, 4], [39, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 1]], \"covered_false\": [[45, 2, 1, 1, 2, 3, 1, 1, 7298, 0, 40, 9], [42, 1, 5, 1, 8, 3, 4, 0, 14084, 0, 60, 9], [46, 4, 1, 1, 2, 3, 4, 1, 15024, 0, 40, 9], [36, 4, 5, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [47, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [42, 2, 1, 1, 1, 3, 4, 0, 99999, 0, 40, 9], [55, 4, 5, 1, 5, 3, 4, 1, 15024, 0, 50, 0], [48, 1, 5, 1, 8, 3, 4, 0, 10520, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[27, 4, 5, 1, 8, 3, 4, 0, 0, 0, 25, 9], [45, 1, 1, 1, 8, 3, 4, 0, 0, 0, 40, 9], [32, 4, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [81, 6, 1, 1, 5, 3, 4, 0, 0, 1668, 3, 4], [44, 2, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [44, 7, 5, 1, 8, 3, 4, 1, 0, 0, 40, 9], [41, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [48, 7, 2, 1, 5, 3, 4, 1, 0, 0, 50, 9], [32, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 9], [68, 4, 5, 1, 5, 3, 4, 1, 0, 0, 18, 0]], \"covered_false\": [[67, 5, 1, 1, 8, 3, 4, 1, 0, 2392, 75, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
     			]
     		}
     	]
@@ -895,8 +897,8 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
 ````
 
 ```bash
-kubectl delete -f ./models/income.yaml
-kubectl delete -f ./models/income-explainer.yaml
+kubectl delete -f ./models/income.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -917,18 +919,17 @@ cat ./servers/custom-mlserver.yaml
     kind: Server
     metadata:
       name: mlserver-custom
-      namespace: seldon-mesh
     spec:
       serverConfig: mlserver
       podSpec:
         containers:
-        - image: cliveseldon/mlserver:1.1.0.explain
+        - image: cliveseldon/mlserver:1.2.0.dev1
           name: mlserver
 ```
 ````
 
 ```bash
-kubectl create -f ./servers/custom-mlserver.yaml
+kubectl create -f ./servers/custom-mlserver.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -938,13 +939,14 @@ kubectl create -f ./servers/custom-mlserver.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s server --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s server --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
 
     server.mlops.seldon.io/mlserver condition met
     server.mlops.seldon.io/mlserver-custom condition met
+    server.mlops.seldon.io/triton condition met
 ```
 ````
 
@@ -957,7 +959,6 @@ cat ./models/iris-custom-server.yaml
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       server: mlserver-custom
@@ -965,7 +966,7 @@ cat ./models/iris-custom-server.yaml
 ````
 
 ```bash
-kubectl create -f ./models/iris-custom-server.yaml
+kubectl create -f ./models/iris-custom-server.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -975,7 +976,7 @@ kubectl create -f ./models/iris-custom-server.yaml
 ````
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -994,7 +995,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "1bc7c802-b380-480c-96be-95472b76c2dc",
+    	"id": "ddfb14fa-dd0e-4960-9a89-4137570f5feb",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -1017,7 +1018,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 ````
 
 ```bash
-kubectl delete -f ./models/iris-custom-server.yaml
+kubectl delete -f ./models/iris-custom-server.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json
@@ -1027,7 +1028,7 @@ kubectl delete -f ./models/iris-custom-server.yaml
 ````
 
 ```bash
-kubectl delete -f ./servers/custom-mlserver.yaml
+kubectl delete -f ./servers/custom-mlserver.yaml -n ${NAMESPACE}
 ```
 ````{collapse} Expand to see output
 ```json

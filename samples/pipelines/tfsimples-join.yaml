@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
   name: join
-  namespace: seldon-mesh
 spec:
   steps:
     - name: tfsimple1

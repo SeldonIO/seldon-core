@@ -1,4 +1,4 @@
-
+SELDON_NAMESPACE?=seldon-mesh
 
 .PHONY: deploy-local
 deploy-local:
@@ -8,21 +8,25 @@ deploy-local:
 undeploy-local:
 	make -C scheduler stop-all
 
+# Start raw deploy
 .PHONY: deploy-k8s
 deploy-k8s:
-	kubectl create ns seldon-mesh || echo "namespace seldon-mesh already existing"
+	kubectl create ns ${SELDON_NAMESPACE} || echo "namespace already existing"
 	kubectl create -f k8s/yaml/seldon-v2-crds.yaml
 	sleep 1
 	kubectl wait --for condition=established --timeout=60s crd/servers.mlops.seldon.io
 	kubectl wait --for condition=established --timeout=60s crd/serverconfigs.mlops.seldon.io
-	kubectl create -f k8s/yaml/seldon-v2-components.yaml
-	kubectl create -f k8s/yaml/seldon-v2-servers.yaml
+	kubectl create -f k8s/yaml/seldon-v2-components.yaml -n ${SELDON_NAMESPACE}
+	kubectl create -f k8s/yaml/seldon-v2-servers.yaml -n ${SELDON_NAMESPACE}
+# End raw deploy
 
+# Start raw undeploy
 .PHONY: undeploy-k8s
 undeploy-k8s:
-	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-servers.yaml
-	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-components.yaml
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-servers.yaml --wait=true -n ${SELDON_NAMESPACE}
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-components.yaml -n ${SELDON_NAMESPACE} 
 	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-crds.yaml
+# End raw undeploy
 
 #
 # Dev

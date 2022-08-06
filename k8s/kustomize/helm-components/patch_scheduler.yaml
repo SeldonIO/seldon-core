@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: seldon-scheduler
-  namespace: seldon-mesh
 spec:
   template:
     spec:

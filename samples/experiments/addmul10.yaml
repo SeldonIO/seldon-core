@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
   name: addmul10
-  namespace: seldon-mesh
 spec:
   default: pipeline-add10
   resourceType: pipeline

@@ -2,7 +2,6 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: seldon
-  namespace: seldon-mesh
 spec:
   config: |
     receivers:
@@ -16,7 +15,7 @@ spec:
       logging:
         
       jaeger:
-        endpoint: simplest-collector.seldon-mesh:14250
+        endpoint: simplest-collector:14250
         tls:
           insecure: true
       

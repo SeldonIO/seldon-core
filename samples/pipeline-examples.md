@@ -24,20 +24,20 @@ cat ./models/tfsimple2.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
 ```
 ````
 
@@ -74,7 +74,6 @@ cat ./pipelines/tfsimples.yaml
     kind: Pipeline
     metadata:
       name: tfsimples
-      namespace: seldon-mesh
     spec:
       steps:
         - name: tfsimple1
@@ -112,7 +111,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "tfsimples",
-            "uid": "cahec4fu7k0kl6oagsp0",
+            "uid": "cbkk8dnje7k1k4uqoir0",
             "version": 1,
             "steps": [
               {
@@ -142,7 +141,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:34:58.712206570Z"
+            "lastChangeTimestamp": "2022-08-05T06:12:26.321828296Z"
           }
         }
       ]
@@ -269,22 +268,22 @@ seldon pipeline inspect tfsimples
 
     ---
     seldon.default.model.tfsimple1.inputs
-    {"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+    cbmbeglvqj3k9ho9hr6g:{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
     ---
     seldon.default.model.tfsimple1.outputs
-    {"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
     ---
     seldon.default.model.tfsimple2.inputs
-    {"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    cbmbeglvqj3k9ho9hr6g:{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
     ---
     seldon.default.model.tfsimple2.outputs
-    {"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
     ---
     seldon.default.pipeline.tfsimples.inputs
-    {"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
     ---
     seldon.default.pipeline.tfsimples.outputs
-    {"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+    cbmbeglvqj3k9ho9hr6g:{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
 ```
 ````
 
@@ -325,29 +324,29 @@ cat ./models/tfsimple3.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple3
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
 ```
 ````
 
@@ -388,7 +387,6 @@ cat ./pipelines/tfsimples-join.yaml
     kind: Pipeline
     metadata:
       name: join
-      namespace: seldon-mesh
     spec:
       steps:
         - name: tfsimple1
@@ -428,7 +426,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "join",
-            "uid": "cahed2fu7k0kl6oagspg",
+            "uid": "cbmbem2l0p8os8jr7dp0",
             "version": 1,
             "steps": [
               {
@@ -454,15 +452,13 @@ seldon pipeline status join -w PipelineReady | jq -M .
                 "tfsimple3.outputs"
               ]
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:36:58.313959175Z"
+            "lastChangeTimestamp": "2022-08-05T06:23:21.201715650Z"
           }
         }
       ]
@@ -583,7 +579,6 @@ cat ./models/mul10.yaml
     kind: Model
     metadata:
       name: conditional
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/conditional"
       requirements:
@@ -593,7 +588,6 @@ cat ./models/mul10.yaml
     kind: Model
     metadata:
       name: add10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
@@ -603,7 +597,6 @@ cat ./models/mul10.yaml
     kind: Model
     metadata:
       name: mul10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/mul10"
       requirements:
@@ -649,7 +642,6 @@ cat ./pipelines/conditional.yaml
     kind: Pipeline
     metadata:
       name: tfsimple-conditional
-      namespace: seldon-mesh
     spec:
       steps:
       - name: conditional
@@ -693,7 +685,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "tfsimple-conditional",
-            "uid": "cahedm7u7k0kl6oagsq0",
+            "uid": "cbmbeq2l0p8os8jr7dpg",
             "version": 1,
             "steps": [
               {
@@ -725,15 +717,13 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
               ],
               "stepsJoin": "ANY"
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:38:17.710751776Z"
+            "lastChangeTimestamp": "2022-08-05T06:23:36.912625660Z"
           }
         }
       ]
@@ -841,7 +831,6 @@ cat ./models/outlier-error.yaml
     kind: Model
     metadata:
       name: outlier-error
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/outlier"
       requirements:
@@ -910,7 +899,7 @@ seldon pipeline status error -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "error",
-            "uid": "cahee0nu7k0kl6oagsqg",
+            "uid": "cbmbeuil0p8os8jr7dq0",
             "version": 1,
             "steps": [
               {
@@ -928,7 +917,7 @@ seldon pipeline status error -w PipelineReady | jq -M .
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:38:58.483729421Z"
+            "lastChangeTimestamp": "2022-08-05T06:23:54.999521917Z"
           }
         }
       ]
@@ -991,6 +980,7 @@ seldon pipeline infer error --inference-mode grpc \
           --inference-mode string   inference mode rest or grpc (default "rest")
       -i, --iterations int          inference iterations (default 1)
           --show-headers            show headers
+      -s, --sticky-session          use sticky session from last infer (only works with inference to experiments)
     
     Global Flags:
       -r, --show-request    show request
@@ -1040,34 +1030,33 @@ cat ./models/check.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: tfsimple3
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
       name: check
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/check"
       requirements:
@@ -1117,7 +1106,6 @@ cat ./pipelines/tfsimples-join-outlier.yaml
     kind: Pipeline
     metadata:
       name: joincheck
-      namespace: seldon-mesh
     spec:
       steps:
         - name: tfsimple1
@@ -1164,7 +1152,7 @@ seldon pipeline status joincheck -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "joincheck",
-            "uid": "caheevvu7k0kl6oagsr0",
+            "uid": "cbmbf2ql0p8os8jr7dqg",
             "version": 1,
             "steps": [
               {
@@ -1202,15 +1190,13 @@ seldon pipeline status joincheck -w PipelineReady | jq -M .
                 "tfsimple3.outputs"
               ]
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:41:04.702400893Z"
+            "lastChangeTimestamp": "2022-08-05T06:24:11.979632149Z"
           }
         }
       ]
@@ -1315,6 +1301,7 @@ seldon pipeline infer joincheck --inference-mode grpc \
           --inference-mode string   inference mode rest or grpc (default "rest")
       -i, --iterations int          inference iterations (default 1)
           --show-headers            show headers
+      -s, --sticky-session          use sticky session from last infer (only works with inference to experiments)
     
     Global Flags:
       -r, --show-request    show request
@@ -1363,7 +1350,6 @@ cat ./models/add10.yaml
     kind: Model
     metadata:
       name: mul10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/mul10"
       requirements:
@@ -1373,7 +1359,6 @@ cat ./models/add10.yaml
     kind: Model
     metadata:
       name: add10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
@@ -1415,7 +1400,6 @@ cat ./pipelines/pipeline-inputs.yaml
     kind: Pipeline
     metadata:
       name: pipeline-inputs
-      namespace: seldon-mesh
     spec:
       steps:
       - name: mul10
@@ -1458,7 +1442,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "pipeline-inputs",
-            "uid": "cahefk7u7k0kl6oagsrg",
+            "uid": "cbmbf7al0p8os8jr7dr0",
             "version": 1,
             "steps": [
               {
@@ -1486,15 +1470,13 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
                 "add10.outputs"
               ]
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:42:24.461695292Z"
+            "lastChangeTimestamp": "2022-08-05T06:24:30.136785252Z"
           }
         }
       ]
@@ -1586,7 +1568,6 @@ cat ./models/add10.yaml
     kind: Model
     metadata:
       name: mul10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/mul10"
       requirements:
@@ -1596,7 +1577,6 @@ cat ./models/add10.yaml
     kind: Model
     metadata:
       name: add10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/add10"
       requirements:
@@ -1638,7 +1618,6 @@ cat ./pipelines/trigger-joins.yaml
     kind: Pipeline
     metadata:
       name: trigger-joins
-      namespace: seldon-mesh
     spec:
       steps:
       - name: mul10
@@ -1683,7 +1662,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         {
           "pipeline": {
             "name": "trigger-joins",
-            "uid": "cahefp7u7k0kl6oagss0",
+            "uid": "cbmbfb2l0p8os8jr7drg",
             "version": 1,
             "steps": [
               {
@@ -1714,15 +1693,13 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
               ],
               "stepsJoin": "ANY"
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-06-10T06:42:44.770994720Z"
+            "lastChangeTimestamp": "2022-08-05T06:24:45.326151425Z"
           }
         }
       ]

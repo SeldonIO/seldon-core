@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
   name: experiment-iris
-  namespace: seldon-mesh
 spec:
   candidates:
   - modelName: iris

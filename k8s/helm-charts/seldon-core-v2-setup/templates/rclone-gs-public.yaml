@@ -2,7 +2,6 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: seldon-rclone-gs-public
-  namespace: seldon-mesh
 type: Opaque
 stringData:
   gs: |

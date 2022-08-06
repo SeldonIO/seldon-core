@@ -15,11 +15,11 @@ cat ./models/sklearn-iris-gs.yaml
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
       - sklearn
+      memory: 100Ki
 ```
 ````
 Load the model
@@ -56,18 +56,14 @@ seldon model infer iris \
 ````{collapse} Expand to see output
 ```json
 
-    Server:[envoy]
-    Traceparent:[00-e70091b8b9a1cef12b6028f4d8442d00-6fe5ae8ca35461ea-01]
-    X-Envoy-Upstream-Service-Time:[1224]
-    Seldon-Route:[mlserver_ClokMkBbMbkDHCJU1bhERfwbLZUTxuFjcGB8kJ9v0hA=_http]
-    Content-Length:[196]
-    Content-Type:[application/json]
-    Date:[Thu, 26 May 2022 18:40:04 GMT]
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "a304eee1-54db-4794-b929-86aa472b1c80",
-    	"parameters": null,
+    	"id": "43364ced-5bb4-4903-9a8a-0688e28a5876",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
     	"outputs": [
     		{
     			"name": "predict",
@@ -138,11 +134,11 @@ cat ./models/tfsimple1.yaml
     kind: Model
     metadata:
       name: tfsimple1
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/simple"
       requirements:
       - tensorflow
+      memory: 100Ki
 ```
 ````
 Load the model.
@@ -389,7 +385,7 @@ We will use two SKlearn Iris classification models to illustrate experiments.
 
 
 ```bash
-cat ./experiments/sklearn1.yaml
+cat ./models/sklearn1.yaml
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -397,7 +393,6 @@ cat ./experiments/sklearn1.yaml
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
@@ -406,7 +401,7 @@ cat ./experiments/sklearn1.yaml
 ````
 
 ```bash
-cat ./experiments/sklearn2.yaml
+cat ./models/sklearn2.yaml
 ```
 ````{collapse} Expand to see output
 ```yaml
@@ -414,7 +409,6 @@ cat ./experiments/sklearn2.yaml
     kind: Model
     metadata:
       name: iris2
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
@@ -425,8 +419,8 @@ Load both models.
 
 
 ```bash
-seldon model load -f ./experiments/sklearn1.yaml
-seldon model load -f ./experiments/sklearn2.yaml
+seldon model load -f ./models/sklearn1.yaml
+seldon model load -f ./models/sklearn2.yaml
 ```
 ````{collapse} Expand to see output
 ```json
@@ -451,26 +445,22 @@ seldon model status iris2 | jq -M .
         {
           "version": 1,
           "serverName": "mlserver",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
+          "kubernetesMeta": {},
           "modelReplicaState": {
             "0": {
-              "state": "Loading",
-              "lastChangeTimestamp": "2022-05-28T09:53:54.168747754Z"
+              "state": "Available",
+              "lastChangeTimestamp": "2022-08-05T06:13:33.202712680Z"
             }
           },
           "state": {
-            "state": "ModelProgressing",
-            "unavailableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-28T09:53:54.168747754Z"
+            "state": "ModelAvailable",
+            "availableReplicas": 1,
+            "lastChangeTimestamp": "2022-08-05T06:13:33.202712680Z"
           },
           "modelDefn": {
             "meta": {
               "name": "iris",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
+              "kubernetesMeta": {}
             },
             "modelSpec": {
               "uri": "gs://seldon-models/mlserver/iris",
@@ -492,26 +482,22 @@ seldon model status iris2 | jq -M .
         {
           "version": 1,
           "serverName": "mlserver",
-          "kubernetesMeta": {
-            "namespace": "seldon-mesh"
-          },
+          "kubernetesMeta": {},
           "modelReplicaState": {
             "0": {
-              "state": "Loading",
-              "lastChangeTimestamp": "2022-05-28T09:53:54.292354768Z"
+              "state": "Available",
+              "lastChangeTimestamp": "2022-08-05T06:13:33.454597451Z"
             }
           },
           "state": {
-            "state": "ModelProgressing",
-            "unavailableReplicas": 1,
-            "lastChangeTimestamp": "2022-05-28T09:53:54.292354768Z"
+            "state": "ModelAvailable",
+            "availableReplicas": 1,
+            "lastChangeTimestamp": "2022-08-05T06:13:33.454597451Z"
           },
           "modelDefn": {
             "meta": {
               "name": "iris2",
-              "kubernetesMeta": {
-                "namespace": "seldon-mesh"
-              }
+              "kubernetesMeta": {}
             },
             "modelSpec": {
               "uri": "gs://seldon-models/mlserver/iris",
@@ -541,9 +527,8 @@ cat ./experiments/ab-default-model.yaml
     kind: Experiment
     metadata:
       name: experiment-sample
-      namespace: seldon-mesh
     spec:
-      defaultModel: iris
+      default: iris
       candidates:
       - modelName: iris
         weight: 50
@@ -578,9 +563,7 @@ seldon experiment status experiment-sample -w | jq -M .
       "candidatesReady": true,
       "mirrorReady": true,
       "statusDescription": "experiment active",
-      "kubernetesMeta": {
-        "namespace": "seldon-mesh"
-      }
+      "kubernetesMeta": {}
     }
 ```
 ````
@@ -594,7 +577,7 @@ seldon model infer iris -i 50 \
 ````{collapse} Expand to see output
 ```json
 
-    map[iris2_1:30 iris_1:20]
+    map[:iris2_1::24 :iris_1::26]
 ```
 ````
 
@@ -608,8 +591,11 @@ seldon model infer iris \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "96842bed-5cc5-44d7-9f6b-45d9a700b2c7",
-    	"parameters": null,
+    	"id": "77d6ccee-ea17-4e3d-b58c-64989b3a5ef5",
+    	"parameters": {
+    		"content_type": null,
+    		"headers": null
+    	},
     	"outputs": [
     		{
     			"name": "predict",
@@ -636,7 +622,7 @@ seldon model infer iris -s -i 50 \
 ````{collapse} Expand to see output
 ```json
 
-    map[iris_1:50]
+    map[:iris_1::50]
 ```
 ````
 
@@ -647,7 +633,7 @@ seldon model infer iris --inference-mode grpc -s -i 50\
 ````{collapse} Expand to see output
 ```json
 
-    map[iris_1:50]
+    map[:iris_1::50]
 ```
 ````
 Stop the experiment

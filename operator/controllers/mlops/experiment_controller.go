@@ -69,9 +69,9 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, experiment *
 	return false, nil
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=experiments/finalizers,verbs=update
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=experiments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=experiments/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=experiments/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

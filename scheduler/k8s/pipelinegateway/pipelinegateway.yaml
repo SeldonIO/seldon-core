@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pipelinegateway
-  namespace: system
   labels:
     app: pipelinegateway
 spec:

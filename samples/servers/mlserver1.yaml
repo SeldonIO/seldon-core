@@ -2,6 +2,5 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: mlserver1
-  namespace: seldon-mesh
 spec:
   serverConfig: mlserver

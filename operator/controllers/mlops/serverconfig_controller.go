@@ -31,9 +31,9 @@ type ServerConfigReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=serverconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=serverconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,resources=serverconfigs/finalizers,verbs=update
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=serverconfigs,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=serverconfigs/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=serverconfigs/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

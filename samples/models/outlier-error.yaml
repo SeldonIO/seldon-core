@@ -2,7 +2,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
   name: outlier-error
-  namespace: seldon-mesh
 spec:
   storageUri: "gs://seldon-models/triton/outlier"
   requirements:

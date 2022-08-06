@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller-manager
-  namespace: system
   labels:
     control-plane: controller-manager
 spec:
@@ -23,15 +22,17 @@ spec:
       - command:
         - /manager
         args:
+        - --health-probe-bind-address=:8081
         - --leader-elect
         - --scheduler-host=$(SELDON_SCHEDULER_SVC)
         - --scheduler-port=$(SELDON_SCHEDULER_PORT)
+        - --namespace=$(POD_NAMESPACE)
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
         env:
           - name: SELDON_SCHEDULER_SVC
-            value: "seldon-scheduler.seldon-mesh"
+            value: "seldon-scheduler"
           - name: SELDON_SCHEDULER_PORT
             value: "9004"
           - name: POD_NAMESPACE

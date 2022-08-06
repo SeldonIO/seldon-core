@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-server
-  namespace: seldon-mesh
+
