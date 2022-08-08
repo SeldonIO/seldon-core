@@ -72,6 +72,9 @@ def test_namespace_update(namespace, seldon_version):
 
     assert_model_during_op(_install_namespace_scoped, "mymodel", namespace)
 
+    # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run(f"helm delete seldon --namespace {namespace}")
+
 
 @pytest.mark.sequential
 @pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
