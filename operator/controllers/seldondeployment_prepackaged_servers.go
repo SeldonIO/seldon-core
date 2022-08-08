@@ -396,37 +396,35 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 }
 
 func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit, podSecurityContext *v1.PodSecurityContext) error {
+	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+	if sPodSpec == nil {
+		return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+	}
+	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
-	if machinelearningv1.IsPrepack(pu) {
-		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-		if sPodSpec == nil {
-			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+	var deploy *appsv1.Deployment
+	existing := false
+	for i := 0; i < len(c.deployments); i++ {
+		d := c.deployments[i]
+		if strings.Compare(d.Name, depName) == 0 {
+			deploy = d
+			existing = true
+			break
 		}
-		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+	}
+
+	// might not be a Deployment yet - if so we have to create one
+	if deploy == nil {
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+		deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext, true)
+	}
 
-		var deploy *appsv1.Deployment
-		existing := false
-		for i := 0; i < len(c.deployments); i++ {
-			d := c.deployments[i]
-			if strings.Compare(d.Name, depName) == 0 {
-				deploy = d
-				existing = true
-				break
-			}
-		}
-
-		// might not be a Deployment yet - if so we have to create one
-		if deploy == nil {
-			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-			deploy = createDeploymentWithoutEngine(depName, seldonId, sPodSpec, p, mlDep, podSecurityContext, true)
-		}
-
-		// apply serviceAccountName to pod to enable EKS fine-grained IAM roles
-		if pu.ServiceAccountName != "" {
-			deploy.Spec.Template.Spec.ServiceAccountName = pu.ServiceAccountName
-		}
-
+	// apply serviceAccountName to pod to enable EKS fine-grained IAM roles
+	if pu.ServiceAccountName != "" {
+		deploy.Spec.Template.Spec.ServiceAccountName = pu.ServiceAccountName
+	}
+	if machinelearningv1.IsPrepack(pu) {
 		serverConfig := machinelearningv1.GetPrepackServerConfig(string(*pu.Implementation))
 		if serverConfig != nil {
 			switch *pu.Implementation {
@@ -471,6 +469,15 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 				// Add deployment, provided we have a non-empty spec
 				c.deployments = append(c.deployments, deploy)
 			}
+		}
+	} else {
+		// not a prepack
+		envSecretRefName := extractEnvSecretRefName(pu)
+		c := utils.GetContainerForDeployment(deploy, pu.Name)
+		mi := NewModelInitializer(pi.ctx, pi.clientset)
+		_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
+		if err != nil {
+			return err
 		}
 	}
 

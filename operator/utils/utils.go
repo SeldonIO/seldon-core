@@ -151,3 +151,13 @@ func GetEnvAsBool(key string, fallback bool) bool {
 func IsEmptyTLS(p *machinelearningv1.PredictorSpec) bool {
 	return p.SSL == nil || len(p.SSL.CertSecretName) == 0
 }
+
+func GetNameWithSuffix(name string, suffix string) string {
+	volumeName := name + "-" + suffix
+	// kubernetes names limited to 63
+	if len(volumeName) > 63 {
+		volumeName = volumeName[0:63]
+		volumeName = strings.TrimSuffix(volumeName, "-")
+	}
+	return volumeName
+}

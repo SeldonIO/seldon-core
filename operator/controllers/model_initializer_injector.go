@@ -123,18 +123,8 @@ func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment
 		return deployment, fmt.Errorf("Invalid configuration: cannot find container: %s", containerName)
 	}
 
-	ModelInitializerVolumeName := userContainer.Name + "-" + ModelInitializerVolumeSuffix
-	//kubernetes names limited to 63
-	if len(ModelInitializerVolumeName) > 63 {
-		ModelInitializerVolumeName = ModelInitializerVolumeName[0:63]
-		ModelInitializerVolumeName = strings.TrimSuffix(ModelInitializerVolumeName, "-")
-	}
-
-	ModelInitializerContainerName := userContainer.Name + "-" + ModelInitializerContainerSuffix
-	if len(ModelInitializerContainerName) > 63 {
-		ModelInitializerContainerName = ModelInitializerContainerName[0:63]
-		ModelInitializerContainerName = strings.TrimSuffix(ModelInitializerContainerName, "-")
-	}
+	ModelInitializerVolumeName := utils.GetNameWithSuffix(userContainer.Name, ModelInitializerVolumeSuffix)
+	ModelInitializerContainerName := utils.GetNameWithSuffix(userContainer.Name, ModelInitializerContainerSuffix)
 
 	// TODO: KFServing does a check for an annotation before injecting - not doing that for now
 	podSpec := &deployment.Spec.Template.Spec

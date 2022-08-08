@@ -28,6 +28,7 @@ import (
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	testutils "github.com/seldonio/seldon-core/operator/controllers/testing"
+	"github.com/seldonio/seldon-core/operator/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
@@ -1407,5 +1408,133 @@ var _ = Describe("Create a Seldon Deployment with KEDA", func() {
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 
+	})
+})
+
+var _ = Describe("Create a No implementation Seldon Deployment with graph ModelUri", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	namespaceName := rand.String(10)
+	depname := "no-engine-dep"
+	It("should create a resources", func() {
+		Expect(k8sClient).NotTo(BeNil())
+		key := types.NamespacedName{
+			Name:      depname,
+			Namespace: namespaceName,
+		}
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Name: "mydep",
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: "p1",
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: v1.PodSpec{
+									Containers: []v1.Container{
+										{
+											Name:  "step-one",
+											Image: "seldonio/step_one:1.0",
+										},
+										{
+											Name:  "step-two",
+											Image: "seldonio/step_two:1.0",
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Name:           "step-one",
+							Implementation: nil, // No implementation
+							ModelURI:       "s3://foo/one",
+							Children: []machinelearningv1.PredictiveUnit{
+								{
+									Name:     "step-two",
+									ModelURI: "s3://foo/two",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// Create namespace
+		namespace := &v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespaceName,
+			},
+		}
+		Expect(k8sClient.Create(context.Background(), namespace)).Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(depname))
+		// Check deployment created
+		depKey := types.NamespacedName{
+			Name:      machinelearningv1.GetDeploymentName(instance, instance.Spec.Predictors[0], instance.Spec.Predictors[0].ComponentSpecs[0], 0),
+			Namespace: namespaceName,
+		}
+		depFetched := &appsv1.Deployment{}
+		Eventually(func() error {
+			return k8sClient.Get(context.Background(), depKey, depFetched)
+		}, timeout, interval).Should(BeNil())
+
+		// Check init containers created, step-one and step-two
+		Expect(depFetched.Spec.Template.Spec.InitContainers).Should(HaveLen(2))
+		// Check container step one and step two and engine container are created
+		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(3))
+		// Check container and init container are configured correctly
+		for i, name := range []string{"step-one", "step-two"} {
+			volumeName := utils.GetNameWithSuffix(name, ModelInitializerVolumeSuffix)
+			// check volume created
+			Expect(depFetched.Spec.Template.Spec.Volumes).Should(ContainElement(v1.Volume{
+				Name:         volumeName,
+				VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}},
+			}))
+			// check init container mounted
+			initContainer := depFetched.Spec.Template.Spec.InitContainers[i]
+			Expect(initContainer.Name).Should(Equal(
+				utils.GetNameWithSuffix(name, ModelInitializerContainerSuffix),
+			))
+			Expect(initContainer.VolumeMounts).Should(ContainElement(v1.VolumeMount{
+				Name:      volumeName,
+				MountPath: DefaultModelLocalMountPath,
+			}))
+			// check container mounted
+			depContainer := utils.GetContainerForDeployment(depFetched, name)
+			Expect(depContainer).NotTo(BeNil())
+			Expect(depContainer.VolumeMounts).Should(ContainElement(v1.VolumeMount{
+				Name:      volumeName,
+				MountPath: DefaultModelLocalMountPath,
+				ReadOnly:  true,
+			}))
+		}
+
+		// Check svc created
+		svcKey := types.NamespacedName{
+			Name:      machinelearningv1.GetContainerServiceName(depname, instance.Spec.Predictors[0], &instance.Spec.Predictors[0].ComponentSpecs[0].Spec.Containers[0]),
+			Namespace: namespaceName,
+		}
+		svcFetched := &v1.Service{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), svcKey, svcFetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
 })
