@@ -48,7 +48,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: docker.io/seldonio/seldon-core-operator:1.14.0
+    containerImage: docker.io/seldonio/seldon-core-operator:1.14.1
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
     olm.skipRange: <1.13.1
@@ -56,7 +56,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.14.0
+  name: seldon-operator.v1.14.1
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -448,6 +448,13 @@ spec:
                 - name: EXECUTOR_CONTAINER_USER
                 - name: MANAGER_LEADER_ELECTION_ID
                   value: a33bd623.machinelearning.seldon.io
+                - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
+                  value: '0'
+                - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
+                  value: '0'
+                - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
+                  value: '0'
+                - name: MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS
                 - name: MANAGER_LOG_LEVEL
                   value: INFO
                 - name: WATCH_NAMESPACE
@@ -489,7 +496,7 @@ spec:
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/seldon-core-executor:1.14.0
+                  value: docker.io/seldonio/seldon-core-executor:1.14.1
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -519,7 +526,7 @@ spec:
                   value: 'false'
                 - name: EXECUTOR_FULL_HEALTH_CHECKS
                   value: 'false'
-                image: docker.io/seldonio/seldon-core-operator:1.14.0
+                image: docker.io/seldonio/seldon-core-operator:1.14.1
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -611,4 +618,4 @@ spec:
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.14.0
+  version: 1.14.1
