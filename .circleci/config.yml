@@ -1,0 +1,2232 @@
+# CircleCI 2.1 configuration file
+# Check https://circleci.com/docs/2.0/sample-config/ for more details
+#
+version: 2.1
+
+# << -- Reused Components VIA Yaml anchors -- >>
+
+# Prevents Docker Hub rate-limiting (https://docs.docker.com/docker-hub/download-rate-limit/).
+auth_dockerhub: &auth_dockerhub
+  auth:
+    username: $DOCKERHUB_USER
+    password: $DOCKERHUB_PAT_PASSWORD
+  # <</ -- Reused Components VIA Yaml anchors -- >>
+
+commands:
+  # Deploy an environment and persist the ID of the deployment for future steps
+  # Calls into Fleetcommand to accomplish this, which then calls the `platform-apps` repo in CircleCI.
+  create_deployment_and_persist_id:
+    parameters:
+      deployment_prefix:
+        default: "e2e"
+        type: string
+      flavor:
+        default: "dev-cdk-eks"
+        type: string
+      resource_account:
+        default: "domino-deploys-alpha"
+        type: string
+    steps:
+      - run:
+          name: Run the deployer-tests deploy process
+          command: |
+            export RESOURCE_ACCOUNTS='{"AWS":"<< parameters.resource_account >>"}' >> $BASH_ENV
+
+            echo "Using deploy_tag $DEPLOYER_IMAGE"
+            /app/ops/lighthouse.py \
+              deploy \
+              --by-tag $IMAGE_TAG \
+              --deployer $DEPLOYER_IMAGE \
+              --domino-version $DOMINO_VERSION \
+              --enable-signups \
+              --spot \
+              --newrelic-infrastructure \
+              --json \
+              --destroy-on-failed \
+              --destroy-after 6h \
+              << parameters.flavor >> << parameters.deployment_prefix >> \
+              | tee -a build_output.json
+
+            DEPLOY_ID=$(jq -re '.[0].result | .subdomain // .build_parameters.deploy_id_prefix + .build' build_output.json)
+            export BASH_ENV=/tmp/workspace/.bash_env
+            echo "export DEPLOY_ID=$DEPLOY_ID" >> $BASH_ENV
+
+            /app/ops/lighthouse.py \
+              status --wait $DEPLOY_ID
+
+  # Deploy an environment configured to run scale-related tests, and persist the ID of
+  # the deployment for future steps. Calls into Fleetcommand to accomplish this, which
+  # then calls the `platform-apps` repo in CircleCI.
+  create_scale_test_deployment_and_persist_id:
+    parameters:
+      deployment_prefix:
+        default: "e2e-scale"
+        type: string
+      flavor:
+        default: "qe-scale-cdk-eks"
+        type: string
+      resource_account:
+        default: "domino-deploys-alpha"
+        type: string
+    steps:
+      - run:
+          name: Run the deployer-tests deploy process
+          command: |
+            export RESOURCE_ACCOUNTS='{"AWS":"<< parameters.resource_account >>"}' >> $BASH_ENV
+
+            echo "Using deploy_tag $DEPLOYER_IMAGE"
+            /app/ops/lighthouse.py \
+              deploy \
+              --by-tag $IMAGE_TAG \
+              --deployer $DEPLOYER_IMAGE \
+              --domino-version $DOMINO_VERSION \
+              --newrelic-infrastructure \
+              --newrelic-apm \
+              --json \
+              --destroy-on-failed \
+              --destroy-after 6h \
+              << parameters.flavor >> << parameters.deployment_prefix >> \
+              | tee -a build_output.json
+
+            DEPLOY_ID=$(jq -re '.[0].result | .subdomain // .build_parameters.deploy_id_prefix + .build' build_output.json)
+            export BASH_ENV=/tmp/workspace/.bash_env
+            echo "export DEPLOY_ID=$DEPLOY_ID" >> $BASH_ENV
+
+            /app/ops/lighthouse.py \
+              status --wait $DEPLOY_ID
+
+  e2e-test:
+    parameters:
+      destroy_deployment:
+        type: boolean
+        description: Destroy the deployment after completing the steps in this phase?
+        default: true
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *setup_remote_docker_env
+      - *login_to_docker_registries
+      - *configure_test_sso_in_release_environment
+      - *run_release_automated_tests
+      - *de_configure_test_sso_in_release_environment
+      - *upload_automated_test_results
+      # TODO: This will run twice because we call this command multiple times in a workflow.
+      # TODO: This is a duplicate from the job definition retrieve-release-environment-keycloak-password
+      - run:
+          name: Retrieving keycloak password for release environment and persisting it
+          command: |
+            export BASH_ENV=/tmp/workspace/.bash_env
+            echo "extracting hostname from domino host url"
+            deployment_domain=${DOMINO_USERHOST##*://}
+            deployment_name=${deployment_domain%%.*}
+            echo "Setting up kubectl access using Teleport..."
+            ./build/ci/tsh-login $deployment_name
+            echo "Retrieving keycloak password..."
+            DOMINO_KEYCLOAK_PASSWORD=$(./build/ci/get-keycloak-password $deployment_domain)
+            echo "Persisting keycloak password..."
+            echo "export DOMINO_KEYCLOAK_PASSWORD=$DOMINO_KEYCLOAK_PASSWORD" >> /tmp/workspace/.bash_env
+      - run:
+          name: Destroy environments created during release certification process
+          command: |
+            if [[ "<< parameters.destroy_deployment >>" == "true" ]]; then
+              /app/ops/lighthouse.py \
+                destroy $DEPLOY_ID
+            else
+              echo "Destroy not triggered, value is << parameters.destroy_deployment >>"
+            fi
+          when: always
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - store_artifacts:
+          path: results
+      - store_test_results:
+          path: results/final
+      - run:
+          name: Get test meta summary from test results
+          when: always
+          command: |
+            python build/ci/get_test_meta.py results/final/*.xml >> $BASH_ENV
+            source $BASH_ENV
+            echo "test meta summary: $TEST_META_SUMMARY"
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  # e2e-scale-test is a duplicate of the e2e-test command, but without the following
+  # steps which do not apply at this time to scale/benchmark tests
+  #   - *configure_test_sso_in_release_environment
+  #   - *de_configure_test_sso_in_release_environment
+  #   - *upload_automated_test_results
+  e2e-scale-test:
+    parameters:
+      destroy_deployment:
+        type: boolean
+        description: Destroy the deployment after completing the steps in this phase?
+        default: true
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *setup_remote_docker_env
+      - *login_to_docker_registries
+      - *run_release_automated_tests
+      # TODO: This will run twice because we call this command multiple times in a workflow.
+      # TODO: This is a duplicate from the job definition retrieve-release-environment-keycloak-password
+      - run:
+          name: Retrieving keycloak password for release environment and persisting it
+          command: |
+            export BASH_ENV=/tmp/workspace/.bash_env
+            echo "extracting hostname from domino host url"
+            deployment_domain=${DOMINO_USERHOST##*://}
+            deployment_name=${deployment_domain%%.*}
+            echo "Setting up kubectl access using Teleport..."
+            ./build/ci/tsh-login $deployment_name
+            echo "Retrieving keycloak password..."
+            DOMINO_KEYCLOAK_PASSWORD=$(./build/ci/get-keycloak-password $deployment_domain)
+            echo "Persisting keycloak password..."
+            echo "export DOMINO_KEYCLOAK_PASSWORD=$DOMINO_KEYCLOAK_PASSWORD" >> /tmp/workspace/.bash_env
+      - run:
+          name: Destroy environments created during release certification process
+          command: |
+            if [[ "<< parameters.destroy_deployment >>" == "true" ]]; then
+              /app/ops/lighthouse.py \
+                destroy $DEPLOY_ID
+            else
+              echo "Destroy not triggered, value is << parameters.destroy_deployment >>"
+            fi
+          when: always
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - store_artifacts:
+          path: results
+      - store_test_results:
+          path: results/final
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  e2e-test-vcluster:
+    parameters:
+      destroy_deployment:
+        type: boolean
+        description: Destroy the deployment after completing the steps in this phase?
+        default: true
+      vcluster_name:
+        type: string
+      account:
+        type: string
+        default: e2e-testing-sandbox
+      # TODO: In the future, we can extend this string value to specify the type of notification (e.g. Slack message,
+      #       email, pull request comment). Currently, it only adds a pull request comment.
+      notify_pull_request:
+        type: string
+        description: "When the job is complete, notify the pull request. Currently supported values are 'yes' and 'no'."
+        default: "no"
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *setup_remote_docker_env
+      - *login_to_docker_registries
+      - *configure_test_sso_in_release_environment_vcluster
+      - *run_release_automated_tests_vcluster
+      - *de_configure_test_sso_in_release_environment_vcluster
+      - *upload_automated_test_results
+      - run:
+          name: Get artifacts and cluster status
+          command: |
+            host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+            bash /resources/deployer/ci/vcluster_cluster_state.sh \
+              $host_cluster_name \
+              << parameters.vcluster_name >> \
+              << parameters.account >>
+            cp -r /tmp/cluster_state_host ./cluster_state_host
+            cp -r /tmp/cluster_state_vcluster ./cluster_state_vcluster
+            cp -r /tmp/describe_host_cluster ./describe_host_cluster
+          working_directory: /domino-deployer
+          when: on_fail
+      - store_artifacts:
+          name: Store host cluster state
+          path: /domino-deployer/cluster_state_host
+      - store_artifacts:
+          name: Store vcluster state
+          path: /domino-deployer/cluster_state_vcluster
+      - store_artifacts:
+          name: Store vcluster resources status in the context of the host cluster
+          path: /domino-deployer/describe_host_cluster
+      - run:
+          name: Destroy vcluster environment created for e2e tests
+          command: |
+            host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+            vcluster_name=<< parameters.vcluster_name >>
+            echo "host_cluster_name=$host_cluster_name"
+            echo "vcluster_name=$vcluster_name"
+            if [[ "<< parameters.destroy_deployment >>" == "true" ]]; then
+              for i in {1..5};
+              do
+                bash /resources/deployer/ci/vcluster_destroy.sh \
+                  $host_cluster_name \
+                  << parameters.vcluster_name >> \
+                  << parameters.account >> && break
+
+                [ "$i" = 5 ] && echo "Failed to destroy domino on vcluster" && exit 1
+                sleep 5
+              done
+            else
+              echo "Destroy not triggered, value is << parameters.destroy_deployment >>"
+            fi
+          when: always
+          no_output_timeout: "10m"
+          working_directory: /domino-deployer
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - store_artifacts:
+          path: /home/circleci/project/results
+      - store_test_results:
+          path: /home/circleci/project/results/final
+      - run:
+          name: Get test meta summary from test results
+          when: always
+          command: |
+            python /root/project/build/ci/get_test_meta.py /home/circleci/project/results/final/*.xml >> $BASH_ENV
+            source $BASH_ENV
+            echo "test meta summary: $TEST_META_SUMMARY"
+      - run:
+          name: Notify the pull request (if necessary)
+          when: always
+          working_directory: "/home/circleci/project"
+          command: |
+            should_notify=<< parameters.notify_pull_request >>
+            if [ "${should_notify:-no}" == "yes" ]; then
+              # If a user manually runs the CI workflow, a PR might not be associated with the branch.
+              if [ "${CIRCLE_PULL_REQUEST:-none}" != "none" ]; then
+                pr_url=$(echo "https://api.github.com/repos/${CIRCLE_PULL_REQUEST:19}" | sed "s/\/pull\//\/pulls\//")
+                response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "$pr_url")
+                commit=$(git rev-parse HEAD)
+
+                comment_url=$(echo $response | jq -r "._links.comments.href")
+                curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  --request POST "$comment_url" \
+                  --header 'Content-Type: application/json' \
+                  --data-raw '{
+                    "body": "e2e-test `test_type='"$TEST_TYPE"'` on '"$commit"' finished: '"$CIRCLE_BUILD_URL"'"
+                  }'
+              fi
+            fi
+
+      - jira/notify
+
+  notify_slack_channel_on_fail:
+    description: "For nightly workflows, notifications should be sent to the Slack channel specified by
+      the 'NIGHTLY_NOTIF_SLACK_WEBHOOK' environment variable. For release testing, notifications should be sent to
+      the Slack channel specified by the 'RELEASES_NOTIF_SLACK_WEBHOOK' environment variable."
+    steps:
+      - slack/status:
+          fail_only: true
+          # NOTE: Pinning this setting to specific branch(es) to avoid noise.
+          only_for_branches: "releases-4.3.3"
+          failure_message: Job [$CIRCLE_JOB] for branch [$CIRCLE_BRANCH] has failed (started by GitHub user [$CIRCLE_USERNAME]) $TEST_META_SUMMARY
+          webhook: "${RELEASES_NOTIF_SLACK_WEBHOOK}"
+      - slack/status:
+          fail_only: true
+          only_for_branches: "develop"
+          failure_message: Job [$CIRCLE_JOB] for branch [$CIRCLE_BRANCH] has failed $TEST_META_SUMMARY
+          webhook: "${NIGHTLY_NOTIF_SLACK_WEBHOOK}"
+
+  store_bazel_logs:
+    description: Store diagnostic logs around Bazel on each run
+    parameters:
+      bazel_args:
+        default: ""
+        type: string
+      working_directory:
+        default: "/home/circleci/project"
+        type: string
+    steps:
+      - run:
+          name: Get Bazel logs
+          command: |
+            cd << parameters.working_directory >>
+            # TODO(jbrown) swap this out to use a previously sourced env file that has the bazel startup flags
+            export BAZEL_OUTPUT_BASE=$(bazel << parameters.bazel_args >> info | grep output_base | awk '{print $2}')
+            build/ci/harvest_bazel_logs.sh
+          when: always
+      - store_artifacts:
+          path: /tmp/bazel-debugging
+
+  skip_if_files_unchanged:
+    description: "Checks if certain types of files have changed in the pull request. If files matching the pattern are
+    not found, we halt the CircleCI runner."
+    parameters:
+      job_name:
+        type: string
+      pattern:
+        type: string
+      working_directory:
+        type: string
+    steps:
+      - run:
+          name: Skip if files unchanged
+          working_directory: << parameters.working_directory >>
+          command: |
+            if [[ "${CIRCLE_JOB}" != "<< parameters.job_name >>" ]]; then
+              echo "Skipping check since we are not running in the desired job"
+              exit 0
+            fi
+
+            # NOTE: When CircleCI does a code checkout, it does not always fetch the latest,
+            #       which causes "git diff" to show more files than expected.
+            git fetch --quiet
+
+            if [[ -n $CIRCLE_PULL_REQUEST ]]; then
+              pr=$(echo "https://api.github.com/repos/${CIRCLE_PULL_REQUEST:19}" | sed "s/\/pull\//\/pulls\//")
+              base_branch=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "$pr" | jq -r '.base.ref')
+
+              matching_files=$(git diff --name-only "origin/$base_branch"... -- '<< parameters.pattern >>')
+              if [[ -z $matching_files ]]; then
+                echo "Did not detect any matching file changes in the PR"
+                circleci-agent step halt
+              fi
+            fi
+            echo "Continuing to remaining steps of this CI job."
+
+  skip_if_last_commit_unchanged:
+    description: "Checks if certain types of files have changed in the last commit. If files matching the pattern are
+    not found, we halt the CircleCI runner."
+    parameters:
+      pattern:
+        type: string
+        description: "A space separated list of paths to check for changes. File globs are supported, for example
+        nucleus/*.scala will match all scala files under the nucleus directory and it's sub-directories. For more
+        information see
+        https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec"
+      working_directory:
+        type: string
+      skip_last_commit_unchanged_check:
+        type: boolean
+        description: "Skip this check"
+
+    steps:
+      - when:
+          condition:
+            not: << parameters.skip_last_commit_unchanged_check >>
+          steps:
+            - run:
+                name: Skip if files unchanged in last commit
+                working_directory: << parameters.working_directory >>
+                command: |
+                  matching_files=$(git diff --name-only HEAD HEAD~1 -- << parameters.pattern >>)
+                  if [[ -z "$matching_files" ]]; then
+                    echo "Did not detect any matching file changes in the last commit"
+                    circleci-agent step halt
+                  else
+                    echo "Files changed:"
+                    echo "$matching_files"
+                  fi
+
+  ubuntu_workspace_setup_bazel:
+    description: "Reusable steps for setting up a CircleCI workspace for Bazel executions. This command should be
+      paired up with 'ubuntu_workspace_teardown_bazel'."
+    parameters:
+      tmpfs_size_GB:
+        type: integer
+        default: 24
+    steps:
+      - *restore_checkout
+      - checkout
+      - skip_if_files_unchanged:
+          job_name: build-test-and-sonar
+          working_directory: /home/circleci/project
+          pattern: "***.scala"
+      - attach_workspace:
+          at: .
+      - run:
+          name: Hack to restore cache into /usr/local ...
+          command: sudo chmod 777 /usr/local /usr/local/bin
+      - restore_cache:
+          keys:
+            - v9-base-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-{{ .Branch }}
+            - v9-base-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-
+            - v9-base-bazel-{{ checksum "WORKSPACE" }}-
+            - v9-base-bazel-
+      - run:
+          name: Hack to restore cache into /usr/local
+          command: sudo chmod 755 /usr/local /usr/local/bin
+      - run:
+          name: Install prereqs
+          command: |
+            sudo build/ci/machine_executor_prereqs.sh
+            # Drops incoming packets which are not associated with a known connection:
+            # https://support.circleci.com/hc/en-us/articles/360050319431-Docker-build-fails-with-Exited-with-code-exit-status-56-when-downloading-assets
+            sudo iptables -I INPUT -m conntrack --ctstate INVALID -j DROP
+      - *login_to_docker_registries
+      - *export_env_vars
+      - run:
+          name: setup tmpfs
+          command: |
+            sudo mkdir -p /circleci/tmpfs
+            # See: https://dominodatalab.atlassian.net/browse/DOM-32850
+            sudo mount -t tmpfs -o nr_inodes=10000000,size=<< parameters.tmpfs_size_GB >>G tmpfs /circleci/tmpfs
+      - run:
+          name: Log resource use
+          background: true
+          command: |
+            mkdir -p /home/circleci/ci-debugging
+
+            FILE=/home/circleci/ci-debugging/resource_usage.txt
+            while true
+            do
+              echo "Time: $(date -u)" >> $FILE
+              free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }' >> $FILE
+              df -h | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}' >> $FILE
+              top -bn1 | grep load | awk '{printf "CPU Load: %.2f\n", $(NF-2)}' >> $FILE
+              echo "Top 10 memory consuming processes" >> $FILE
+              ps aux --sort -rss | head -11 >> $FILE
+              echo "----------" >> $FILE
+              sleep 5
+            done
+      - run:
+          name: Write dmesg to log
+          background: true
+          command: |
+            # Enable non-root users to read the kernel
+            # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=842226#15
+            sudo sysctl kernel.dmesg_restrict=0
+            dmesg --follow > /home/circleci/ci-debugging/dmesg.log
+
+  ubuntu_workspace_teardown_bazel:
+    description: "Reusable steps for tearing down a CircleCI workspace after Bazel execution. This command should be
+      paired up with 'ubuntu_workspace_setup_bazel'."
+    steps:
+      - store_artifacts:
+          path: /tmp/bazel-debugging
+      - store_artifacts:
+          path: /home/circleci/ci-debugging
+      - save_cache:
+          paths:
+            # save bazelisk home directory so we don't need to download it each time
+            # not really sure how applicable this is to docker.
+            - ~/.bazelisk
+            - /usr/local/bin/bazelisk
+            - /usr/local/jdk8u265-b01
+          # this key now looks to be too specific but can address later
+          key: v9-base-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-{{ .Branch }}
+          when: always
+      - *save_checkout
+      - jira/notify
+
+executors:
+  platform-apps-ops-executor:
+    docker:
+      # This image is defined by: https://github.com/cerebrotech/platform-apps/blob/develop/resources/ops/Dockerfile
+      - image: quay.io/domino/ops:develop.latest
+        auth:
+          username: $QUAY_USER
+          password: $QUAY_PASSWORD
+
+  cucu-test-executor:
+    docker:
+      - image: quay.io/domino/ops:develop.latest
+        auth:
+          username: $QUAY_USER
+          password: $QUAY_PASSWORD
+      - image: selenium/standalone-chrome:102.0
+        environment:
+          SE_NODE_MAX_SESSIONS: 10
+          SE_NODE_OVERRIDE_MAX_SESSIONS: true
+          SE_NODE_SESSION_TIMEOUT: 900 # 15 minutes
+          SCREEN_WIDTH: 1920
+          SCREEN_HEIGHT: 1080
+    resource_class: xlarge
+
+  vcluster-test-executor:
+    docker:
+      - image: quay.io/domino/deployer:develop.latest
+        auth:
+          username: $QUAY_USER
+          password: $QUAY_PASSWORD
+      - image: selenium/standalone-chrome:4.1.2-20220217
+        environment:
+          SE_NODE_MAX_SESSIONS: 5
+          SE_NODE_OVERRIDE_MAX_SESSIONS: true
+          SE_NODE_SESSION_TIMEOUT: 900 # 15 minutes
+          SCREEN_WIDTH: 1920
+          SCREEN_HEIGHT: 1080
+    resource_class: xlarge
+
+  deployer_image:
+    docker:
+      # This image is defined by: https://github.com/cerebrotech/platform-apps/blob/develop/resources/deployer/Dockerfile
+      - image: quay.io/domino/deployer:develop.latest
+        auth:
+          username: $QUAY_USER
+          password: $QUAY_PASSWORD
+
+jobs:
+  e2e-common-setup:
+    executor: platform-apps-ops-executor
+    environment:
+      NIGHTLY: <<parameters.nightly>>
+      DEPLOY_LATEST_DEVELOP: << parameters.deploy-latest-develop >>
+    parameters:
+      nightly:
+        default: false
+        type: boolean
+      deploy-latest-develop:
+        default: false
+        type: boolean
+      create-testrail-run:
+        default: true
+        type: boolean
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: .
+      - *export_env_vars
+      - when:
+          condition:
+            << parameters.create-testrail-run >>
+          steps:
+            - *create_run_in_testrail
+            - store_artifacts:
+                path: testrail_run.json
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .bash_env
+            - testrail_run.json
+
+  # Similar to the e2e-common-setup, but minus the TestRail bits
+  e2e-scale-common-setup:
+    executor: platform-apps-ops-executor
+    environment:
+      NIGHTLY: <<parameters.nightly>>
+      DEPLOY_LATEST_DEVELOP: << parameters.deploy-latest-develop >>
+    parameters:
+      nightly:
+        default: false
+        type: boolean
+      deploy-latest-develop:
+        default: false
+        type: boolean
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: .
+      - *export_env_vars
+
+  e2e-setup-for-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: selenium
+      WDIO_FILE: readiness.wdio.conf.js
+      RESULTS_DIRECTORY: /home/circleci/project/results
+      TESTRAIL_SECTION_NAME: "Readiness Tests"
+      TESTRAIL_PARENT_SUITE: "Automation Tests"
+      RETRIES_MODE: disabled
+      # RETRY_COUNT is the number of times to retry failed tests.
+      # Note: for Selenium tests, the initial attempt is not included in this count:
+      RETRY_COUNT: 2
+    steps:
+      - run:
+          name: Wait for deployment to finish starting up
+          # PLAT-5076: At first, Kubernetes may reallocate resources, resulting in intermittent 502 errors, so wait
+          # for things to settle:
+          command: sleep 300
+      - e2e-test:
+          destroy_deployment: false
+
+  e2e-selenium-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: selenium
+      WDIO_FILE: wdio.conf.js
+      RESULTS_DIRECTORY: /home/circleci/project/results
+      TESTRAIL_SECTION_NAME: "Selenium Tests"
+      TESTRAIL_PARENT_SUITE: "Automation Tests"
+      RETRIES_MODE: enabled
+      # RETRY_COUNT is the number of times to retry failed tests.
+      # Note: for Selenium tests, the initial attempt is not included in this count:
+      RETRY_COUNT: 2
+      MAXIMUM_FAILED_PERCENT: 10
+    steps:
+      - e2e-test
+
+  e2e-system-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: system
+      RESULTS_DIRECTORY: /home/circleci/project/results
+      TESTRAIL_SECTION_NAME: "System Tests"
+      TESTRAIL_PARENT_SUITE: "Automation Tests"
+      # RETRIES_MODE toggles where the Testrail reporting script looks for XML. If 'enabled',
+      # it looks in results/intermediate. If 'disabled', it looks in results/final. There is
+      # a 'dual' setting for RETRIES_MODE that does not apply to system-tests.
+      RETRIES_MODE: enabled
+      # RETRY_COUNT is the number of times to retry failed tests.
+      # Note: for system-tests, the initial attempt is included in this count:
+      RETRY_COUNT: 3
+    steps:
+      - e2e-test
+
+  e2e-sso-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: selenium
+      WDIO_FILE: ssotests.wdio.conf.js
+      SSO_ENABLED: true
+      RESULTS_DIRECTORY: /home/circleci/project/results
+      TESTRAIL_SECTION_NAME: "SSO-enabled Selenium Tests"
+      TESTRAIL_PARENT_SUITE: "Automation Tests"
+      RETRIES_MODE: enabled
+      # RETRY_COUNT is the number of times to retry failed tests.
+      # Note: for Selenium tests, the initial attempt is not included in this count:
+      RETRY_COUNT: 2
+    steps:
+      - e2e-test
+
+  e2e-cucu-tests:
+    executor: cucu-test-executor
+    environment:
+      TEST_TYPE: cucu
+      NIGHTLY: <<parameters.nightly>>
+      RESULTS_DIRECTORY: /home/circleci/project/results
+    parameters:
+      nightly:
+        default: false
+        type: boolean
+    steps:
+      - e2e-test
+
+  e2e-tests-vcluster:
+    executor: vcluster-test-executor
+    environment:
+      TEST_TYPE: << parameters.test_type >>
+      NIGHTLY: << parameters.nightly >>
+      RESULTS_DIRECTORY: /home/circleci/project/results
+    parameters:
+      vcluster_name:
+        type: string
+      test_type:
+        type: string
+        default: "cucu"
+      nightly:
+        default: false
+        type: boolean
+      notify_pull_request:
+        type: string
+        default: "no"
+    steps:
+      - e2e-test-vcluster:
+          vcluster_name: << parameters.vcluster_name >>
+          notify_pull_request: << parameters.notify_pull_request >>
+
+  e2e-benchmark-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: api_benchmark
+      RESULTS_DIRECTORY: /home/circleci/project/results
+    steps:
+      - e2e-scale-test
+
+  e2e-dco-tests:
+    executor: platform-apps-ops-executor
+    environment:
+      TEST_TYPE: dco_benchmark
+      RESULTS_DIRECTORY: /home/circleci/project/results
+    steps:
+      - e2e-scale-test
+
+  # Changing this job's name requires an update to the env var in build/ci/export_env_vars.sh and related files.
+  setup-environment:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - *save_checkout
+      - *export_env_vars
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .bash_env
+      - jira/notify
+
+  # Build the CLI on a MacOS worker so that we can notarize the DMG CLI with Apple.
+  # Bazel args are generally half the available ram on the system.
+  build-cli-macos:
+    <<: *bazel_mac_env
+    steps:
+      - run:
+          name: Check if release-related branch
+          # Only build the MacOS CLI if we're running on a release-related branch
+          command: |
+            if ! [[ ( $CIRCLE_BRANCH == releases-* ) || ( $CIRCLE_BRANCH == backport-* ) || ( $CIRCLE_BRANCH == fix-* ) ]]; then
+              circleci-agent step halt
+            fi
+      - *restore_checkout_mac
+      - checkout
+      - *save_checkout_mac
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - mac-v1-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-{{ .Branch }}
+            - mac-v1-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-
+            - mac-v1-bazel-{{ checksum "WORKSPACE" }}-
+            - mac-v1-bazel-
+      - run:
+          name: Install prereqs
+          command: |
+            build/ci/mac_prereqs.sh
+            # Reset path to use xcode instead of CLI tools, need altool to resolve via xcrun...
+            sudo xcode-select --reset
+      - *export_env_vars
+      - *setup_flare_cache
+      - run:
+          name: bazel build //client:cli_resources
+          command: |
+            bazel --host_jvm_args="-Xmx8g" build --show_timestamps --config ci //client:cli_resources -k
+            # HACK: Copying this to nucleus dir so we can direct import for release
+            cp bazel-bin/client/libcli_resources.jar nucleus/libcli_resources.jar
+      - store_bazel_logs:
+          bazel_args: "--host_jvm_args='-Xmx8g'"
+          working_directory: "/Users/distiller/project"
+      - store_artifacts:
+          path: bazel-bin/client/public/cli
+      - persist_to_workspace:
+          root: .
+          paths:
+            - nucleus/libcli_resources.jar
+      - save_cache:
+          paths:
+            # save bazelisk home directory so we don't need to download it each time
+            # not really sure how applicable this is to docker.
+            - ~/.bazelisk
+          # this key now looks to be too specific but can address later
+          key: mac-v1-bazel-{{ checksum "WORKSPACE" }}-{{ checksum "nucleus/BUILD" }}-{{ .Branch }}
+          when: always
+      - jira/notify
+
+  pre-commit-validate:
+    docker:
+      - image: cimg/python:3.10.2
+    working_directory: ~/repo/
+    steps:
+      - checkout
+      - run:
+          name: Combine precommit config and python versions for caching
+          command: |
+            cat .pre-commit-config.yaml > pre-commit-deps.txt
+            python -VV >> pre-commit-deps.txt
+      - restore_cache:
+          keys:
+            - v2-precommit-deps-{{ checksum "pre-commit-deps.txt" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade setuptools
+            pip install pre-commit
+            # Install the hooks now so that they'll be cached
+            pre-commit install-hooks
+      - save_cache:
+          paths:
+            - ~/.cache/pre-commit
+            - ./venv
+          key: v2-precommit-deps-{{ checksum "pre-commit-deps.txt" }}
+
+      - run:
+          name: Run pre-commit validations
+          command: |
+            . venv/bin/activate
+            SKIP=circleci-validate,lint-frontend,check-codeowners,no-commit-to-branch pre-commit run --show-diff-on-failure --from-ref origin/HEAD --to-ref HEAD
+
+  # Build, Test, and Publish the artifacts using Bazel.
+  # Bazel args are generally half the available ram on the system.
+  # Tmpfs is currently, 24GB and we'll have to monitor over time...
+  # TODO(devprod): Monitor tmpfs usage per build
+  build-test-and-publish:
+    <<: *bazel_ubuntu_env
+    environment:
+      BAZEL_START_OPTS: "--output_base=/circleci/tmpfs --host_jvm_args=-Xmx16g"
+    steps:
+      - ubuntu_workspace_setup_bazel
+      - *setup_flare_cache
+      - run:
+          name: Check dependencies
+          command: |
+            dev/bazel/gen_deps.sh
+            git diff --exit-code || (echo "Dependency updates must be fully propagated by running dev/bazel/gen_deps.sh!"; exit 1)
+      - run:
+          name: bazel build //... --config flare_ci
+          command: |
+            # Create an empty vault-token to make the nucleus build happy.
+            mkdir -p ./nucleus/localSecrets
+            touch ./nucleus/localSecrets/vault-token
+
+            # This references a file that the Bazel sandbox doesn't have access to
+            unset BASH_ENV
+
+            # fetch with retry before build to isolate download failure
+            ./build/ci/retry.sh 3 "bazel ${BAZEL_START_OPTS} fetch --show_timestamps -k //... --config flare_ci"
+
+            # retry cmd based on bazel exit code
+            cmd="bazel ${BAZEL_START_OPTS} build"
+            cmd="$cmd --show_timestamps"
+            cmd="$cmd --config ci -k --verbose_failures"
+            cmd="$cmd --profile=/home/circleci/ci-debugging/bazel-build_profile.gz //... --config flare_ci"
+            ./build/ci/retry.sh --bazel-exitcode 3 "$cmd"
+
+            # PLAT-4872: after build, if there are modified git-managed files including yarn.lock,
+            # that means the files are not committed as part of the commit.
+            # In this case, fail the build.
+            git diff --name-only
+            modify_count=$(git diff --name-only | wc -l | xargs)
+            echo modify_count=$modify_count
+            if [ -n $modify_count ] && [ $modify_count != "0" ]; then
+              echo "There are $modify_count modified files and treating the build as failure."
+              exit 2
+            fi
+      - run:
+          name: bazel publish Domino UI NPM package
+          command: |
+            # This references a file that the Bazel sandbox doesn't have access to
+            unset BASH_ENV
+
+            cd ./frontend/packages/ui
+            echo "_auth=${NPM_AUTH_TOKEN}" >> .npmrc
+            tag=`[ "$IMAGE_TAG_PREFIX" = develop ] && echo "latest" || echo "$IMAGE_TAG_PREFIX"`
+            bazel ${BAZEL_START_OPTS} run --stamp //frontend/packages/ui:domino_ui_components.publish -- --tag=$tag
+      - run:
+          name: bazel publish images to quay.io
+          no_output_timeout: "20m"
+          command: |
+            # This references a file that the Bazel sandbox doesn't have access to
+            unset BASH_ENV
+
+            FILE_DONE=build-image-definitions-push.done
+            rm -f $FILE_DONE
+
+            if [[ ${IS_RELEASE_BRANCH} == "true" ]]; then
+              BAZEL_PARAM="--//nucleus:nucleus_build_type=release"
+            else
+              BAZEL_PARAM="--//nucleus:nucleus_build_type=development_with_cli"
+            fi
+
+            ./build/ci/retry.sh 3 "bazel ${BAZEL_START_OPTS} run --show_timestamps --config ci -k --verbose_failures //build/image-definitions:push ${BAZEL_PARAM}"
+
+            # Save the exit code to the file.
+            result=$?
+            echo $result > $FILE_DONE
+          background: true
+      - run:
+          name: start MongoDB
+          command: |
+            docker run --publish 27017:27017 --mount type=tmpfs,destination=/data/db --name mongodb --detach mongo:4.0
+          background: true
+      - run:
+          name: bazel test //... --config flare_ci
+          # PLAT-5146: We were seeing failures when the building and publishing of images was slow and not releasing the Bazel worker to start the tests.
+          #            Increasing the default 10m timeout of no output is an attempt at reducing early failures and giving some breathing room for slowness.
+          no_output_timeout: "45m"
+          command: |
+            unset BASH_ENV
+
+            # NOTE: The 2xlarge machine executor that we use has 64GB of RAM.
+            # It's hard to measure the exact amount of memory to allocate per JVM, so we have to account for some overhead.
+            # Michael Fraenkel's past observation: When we had a max of 16G with 4 jobs, one job could use 20G.
+            # In effect, we would run into an overflow (20G * 4 > 64G).
+            # Using 3 jobs should hopefully prevent an overflow (20G * 3 < 64G).
+
+            # retry cmd based on bazel exit code
+            cmd="bazel ${BAZEL_START_OPTS} test"
+            cmd="$cmd --show_timestamps"
+            cmd="$cmd --config ci -k --verbose_failures --test_output=summary --jobs=3"
+            cmd="$cmd --define no_colored_test_log=true"
+            cmd="$cmd --profile=/home/circleci/ci-debugging/bazel-test_profile.gz //... --config flare_ci"
+            ./build/ci/retry.sh --bazel-exitcode 3 "$cmd"
+      - run:
+          name: wait for bazel publish images to quay.io done
+          command: |
+            FILE_DONE=build-image-definitions-push.done
+            # timeout after 900 seconds
+            # From https://docs.google.com/document/d/1imAUzoBXY3A_zHmlz_BfepUvzgfX5AxqX7ORzJnE3Tk/edit#heading=h.uyvp76c79arx,
+            # bazel test took 336 and bazel push took 558, that gives 222(~250) btw two steps.
+            # We previously used 500s, but still saw some runs fail, so we decided to use 900s.
+            end=$((SECONDS + 900))
+
+            while [ $SECONDS -lt $end ]
+            do
+              echo "$(date +"%Y-%m-%dT%H:%M:%S%z") Waiting for images to be published to Quay.io"
+              if [ -s "$FILE_DONE" ]; then
+                # file exists and is not-empty: bazel exit code.
+                result=$(< "$FILE_DONE")
+                exit $result
+              fi
+              sleep 5
+            done
+
+            # timeout
+            echo "bazel publish images to quay.io step timed out!"
+            exit 1
+      - store_bazel_logs:
+          bazel_args: "--output_base=/circleci/tmpfs --host_jvm_args='-Xmx16g'"
+      - store_artifacts:
+          path: bazel-bin/nucleus/public/swagger.json
+      - store_artifacts:
+          path: bazel-bin/nucleus/public/public-api.json
+      - run:
+          name: Copy swagger.json
+          command: |
+            cp bazel-bin/nucleus/public/swagger.json system-tests/api-docs/cloud-develop.json
+      - run:
+          name: Copy public-api.json
+          command: |
+            cp bazel-bin/nucleus/public/public-api.json system-tests/api-docs/public-api.json
+      - run:
+          name: Build and push system-tests Image
+          command: |
+            cd system-tests
+            bin/build-client
+            export IMAGE_NAME="quay.io/domino/system-tests:${IMAGE_TAG}"
+            echo "export IMAGE_NAME='${IMAGE_NAME}'" >> $BASH_ENV
+            docker build -t ${IMAGE_NAME} .
+            echo "Built system-tests image '${IMAGE_NAME}' successfully."
+            ci/push_built_image.sh
+      - run:
+          name: Rename test output files
+          command: |
+            mkdir -p flattenend_testxml; find bazel-testlogs/ -name test.xml -follow -exec bash -c 'cp $0 flattenend_testxml/${0//\//_}' {} \;
+            mkdir -p flattenend_testlogs; find bazel-testlogs/ -name test.log -follow -exec bash -c 'cp $0 flattenend_testlogs/${0//\//_}' {} \;
+
+            # Tar for easy downloading of test results
+            tar -C flattenend_testxml -cvf testxml.tar .
+          when: always
+      - store_test_results:
+          path: flattenend_testxml
+      - store_artifacts:
+          path: testxml.tar
+      - store_artifacts:
+          path: flattenend_testlogs
+      - store_artifacts:
+          path: ~/.npm/_logs
+      - ubuntu_workspace_teardown_bazel
+      - slack/status:
+          fail_only: true
+          only_for_branches: develop
+          webhook: "${BAZEL_SLACK_WEBHOOK}"
+
+  # For running SonarQube inspections, we want to run unit tests without caching to generate a coverage report and
+  # upload the information to our SonarQube server.
+  build-test-and-sonar:
+    <<: *sonar_bazel_ubuntu_env
+    environment:
+      # NOTE: We are using a smaller machine executor (xlarge - 32G RAM).
+      BAZEL_START_OPTS: "--output_base=/circleci/tmpfs/bzl --host_jvm_args=-Xmx10g"
+    steps:
+      - run:
+          name: Check if we should run sonar analysis
+          command: |
+            # NOTE: In case we need to stop SonarQube scans overall, we've configured a CircleCI Project-level
+            #       environment variable "SONAR_ENABLED".
+            if [[ "$SONAR_ENABLED" != "true" ]]; then
+              circleci-agent step halt
+            fi
+
+            # We want to run sonar analysis on develop, fix, and release branches; and for PRs to those branches
+            if [[ ! -z $CIRCLE_PULL_REQUEST ]]; then
+              pr=$(echo https://api.github.com/repos/${CIRCLE_PULL_REQUEST:19} | sed "s/\/pull\//\/pulls\//")
+              base_branch=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" $pr | jq -r '.base.ref')
+            else
+              base_branch="$CIRCLE_BRANCH"
+            fi
+
+            case $base_branch in
+              "develop"|"releases-"*|"backport-"*|"fix-"*)
+                exit 0
+                ;;
+
+              *)
+                circleci-agent step halt
+                ;;
+            esac
+      - ubuntu_workspace_setup_bazel:
+          # Less tmpfs is necessary for build-test-and-sonar because it's just building + testing unit tests
+          tmpfs_size_GB: 20
+      - checkout:
+          path: /circleci/tmpfs/domino
+      - run:
+          name: Copy .bash_env to tmpfs
+          command: cp /home/circleci/project/.bash_env /circleci/tmpfs/domino
+      - run:
+          name: Set bazel config for FlareCache in tmpfs
+          working_directory: /circleci/tmpfs/domino
+          command: |
+            FLARE_BUILD_USER=circleci FLARE_CI=1 build/ci/setup_flare.sh
+      - run:
+          name: Update SonarQube Bazel target
+          working_directory: /circleci/tmpfs/domino
+          command: |
+            pip3 install -r build/ci/requirements-dev.txt
+            go get github.com/bazelbuild/buildtools/buildozer
+            dev/bazel/update_sonarqube_config.py
+      - store_artifacts:
+          path: /circleci/tmpfs/domino/BUILD.bazel
+      - run:
+          name: Run unit tests with code coverage
+          working_directory: /circleci/tmpfs/domino
+          command: |
+            unset BASH_ENV
+
+            # Create an empty vault-token to make the nucleus build happy.
+            mkdir -p ./nucleus/localSecrets
+            touch ./nucleus/localSecrets/vault-token
+
+            # Scala targets that produce coverage stats that SonarQube can process
+            SCALA_BAZEL_TARGETS=$(bazel query "kind('scala_test', //...) intersect attr(tags, 'unit-tests', //...)" | xargs)
+
+            # Run all tests tagged with unit-tests to get code coverage, no caching
+            bazel ${BAZEL_START_OPTS} test --show_timestamps \
+                  --config ci -k --verbose_failures --test_output=summary \
+                  --define no_colored_test_log=true \
+                  --collect_code_coverage \
+                  --combined_report=lcov --coverage_report_generator=@bazel_sonarqube//:sonarqube_coverage_generator \
+                  --nocache_test_results \
+                  --jobs=2 \
+                  ${SCALA_BAZEL_TARGETS}
+      - run:
+          name: Run sonar-scanner
+          working_directory: /circleci/tmpfs/domino
+          command: |
+            unset BASH_ENV
+
+            # WARNING: Setting "sonar.verbose" to true enables debug logs, which can be very noisy.
+            #   If we need to enable it, it's strongly suggested to write the output to a file
+            #   since CircleCI has a 100 MB output limit.
+            SONAR_CMD="bazel ${BAZEL_START_OPTS} run //:sq -- \
+            -Dsonar.host.url=${SONAR_URL} \
+            -Dsonar.login=${SONAR_LOGIN}"
+
+            # Check if there is an open pull request
+            if [[ ! -z $CIRCLE_PULL_REQUEST ]]; then
+              pr=$(echo https://api.github.com/repos/${CIRCLE_PULL_REQUEST:19} | sed "s/\/pull\//\/pulls\//")
+              base_branch=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" $pr | jq -r '.base.ref')
+              SONAR_CMD+=" \
+              -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} \
+              -Dsonar.pullrequest.branch=${CIRCLE_BRANCH} \
+              -Dsonar.pullrequest.base=${base_branch}"
+            else
+              SONAR_CMD+=" \
+              -Dsonar.branch.name=${CIRCLE_BRANCH}"
+            fi
+
+            echo "Running sonarqube analysis... $SONAR_CMD"
+            eval $SONAR_CMD
+      - store_bazel_logs:
+          bazel_args: "--output_base=/circleci/tmpfs/bzl --host_jvm_args='-Xmx10g'"
+          working_directory: "/circleci/tmpfs/domino"
+      - run:
+          name: Rename test output files
+          working_directory: /circleci/tmpfs/domino
+          command: |
+            mkdir -p flattenend_testxml; find bazel-testlogs/ -name test.xml -follow -exec bash -c 'cp $0 flattenend_testxml/${0//\//_}' {} \;
+            mkdir -p flattenend_testlogs; find bazel-testlogs/ -name test.log -follow -exec bash -c 'cp $0 flattenend_testlogs/${0//\//_}' {} \;
+
+            # Tar for easy downloading of test results
+            tar -C flattenend_testxml -cvf testxml.tar .
+          when: always
+      - store_test_results:
+          path: /circleci/tmpfs/domino/flattenend_testxml
+      - store_artifacts:
+          path: /circleci/tmpfs/domino/testxml.tar
+      - store_artifacts:
+          path: /circleci/tmpfs/domino/flattenend_testlogs
+      - store_artifacts:
+          path: ~/.npm/_logs
+      - ubuntu_workspace_teardown_bazel
+
+  # Uses Chromatic to build and publish 3 frontend Storybooks from packages/ui and apps/web
+  # https://dominodatalab.atlassian.net/wiki/spaces/ENG/pages/2124742716/Domino+Storybook+Best+Practice
+  chromatic-publish-storybooks:
+    <<: *bazel_ubuntu_env
+    environment:
+      BAZEL_START_OPTS: "--output_base=/circleci/tmpfs --host_jvm_args=-Xmx16g"
+    steps:
+      - ubuntu_workspace_setup_bazel
+      - *setup_flare_cache
+      - run:
+          name: Check dependencies
+          command: |
+            dev/bazel/gen_deps.sh
+            git diff --exit-code || (echo "Dependency updates must be fully propagated by running dev/bazel/gen_deps.sh!"; exit 1)
+      - run:
+          name: bazel build //nucleus:swagger.json
+          command: |
+            bazel build //nucleus:swagger.json
+      - run:
+          name: Install and build frontend dependencies
+          command: |
+            cd frontend && yarn build-install-dependencies
+      - run:
+          name: Chromatic publish frontend Storybooks in 'packages/ui' and 'apps/web'
+          command: |
+            ./build/ci/publish-chromatic-storybooks.sh
+      - store_artifacts:
+          path: /tmp/chromatic-debugging
+      - store_artifacts:
+          path: bazel-bin/nucleus/public/swagger.json
+      - store_artifacts:
+          path: /tmp/bazel-debugging
+      - store_artifacts:
+          path: /home/circleci/ci-debugging
+
+  validate-metrics-list:
+    docker: *standard_builder_image
+    steps:
+      - *restore_checkout
+      - checkout
+      - run:
+          name: Validate metrics list
+          command: ./build/ci/metrics/document_metrics.py
+      - jira/notify
+
+  push-metrics-list:
+    docker: *standard_builder_image
+    steps:
+      - *restore_checkout
+      - checkout
+      - run:
+          name: Push metrics list
+          command: |
+            ./build/ci/metrics/document_metrics.py --label-branch True
+            git clone --single-branch --branch master --depth 1 git@github.com:cerebrotech/admin-docs.git
+            cp build/ci/metrics/metrics_table:*.md admin-docs/assets/
+            cd admin-docs
+            if [[ $(git status -s) ]]; then
+              git config user.email dominometrics@dominodatalab.com
+              git config user.name Domino Metrics
+              git add .
+              git commit -m "updating metrics list"
+              git push -q git@github.com:cerebrotech/admin-docs.git master
+            else
+              echo "No changes found, skipping push to admin-docs"
+            fi
+      - jira/notify
+
+  tag-artifacts-and-publish-release:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - *export_env_vars
+      - *publish_release_to_fleetcommand
+      - jira/notify
+
+  # << -- Image Build Jobs -- >>
+  reverse-proxy-image-build-and-push:
+    <<: *image_build_env
+    environment:
+      IMAGE_REPOSITORY: domino/reverse-proxy
+      DOCKERFILE_RELATIVE_PATH: build/image-definitions/reverse-proxy
+    <<: *shared_image_build_steps
+
+  selenium-tests-image-build-and-push:
+    <<: *image_build_env
+    environment:
+      IMAGE_REPOSITORY: domino/selenium-tests
+      DOCKERFILE_RELATIVE_PATH: selenium
+    <<: *shared_image_build_steps
+
+  git-image-build-and-push:
+    <<: *image_build_env
+    environment:
+      IMAGE_REPOSITORY: domino/git
+      DOCKERFILE_RELATIVE_PATH: build/image-definitions/git/
+    <<: *shared_image_build_steps
+  # <</ -- Image Build Jobs -- >>
+
+  # << -- Release Branch Jobs -- >>
+  create-testrail-run:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *create_run_in_testrail
+      - persist_to_workspace:
+          root: .
+          paths:
+            - testrail_run.json
+      - store_artifacts:
+          path: testrail_run.json
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  create-deployment:
+    <<: *release_certification_env
+    parameters:
+      deployment_prefix:
+        default: "e2e"
+        type: string
+      resource_account:
+        default: "domino-deploys-alpha"
+        type: string
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - create_deployment_and_persist_id:
+          deployment_prefix: << parameters.deployment_prefix >>
+          resource_account: << parameters.resource_account >>
+      - run:
+          name: Persist DOMINO_USERHOST
+          command: |  # This will not halt the build: DEPLOY_ID may not be set
+            export BASH_ENV=/tmp/workspace/.bash_env
+            source $BASH_ENV
+            invoke -r /app ci.domino-host $DEPLOY_ID --persist
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  # Creates a deployment of flavor "qe-scale-cdk-eks" for scale/perf tests
+  create-scale-test-deployment:
+    <<: *release_certification_env
+    parameters:
+      deployment_prefix:
+        default: "e2e-scale"
+        type: string
+      resource_account:
+        default: "domino-deploys-alpha"
+        type: string
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - create_scale_test_deployment_and_persist_id:
+          deployment_prefix: << parameters.deployment_prefix >>
+          resource_account: << parameters.resource_account >>
+      - run:
+          name: Persist DOMINO_USERHOST
+          command: |  # This will not halt the build: DEPLOY_ID may not be set
+            export BASH_ENV=/tmp/workspace/.bash_env
+            source $BASH_ENV
+            invoke -r /app ci.domino-host $DEPLOY_ID --persist
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  create-deployment-vcluster:
+    executor: deployer_image
+    parameters:
+      host_cluster_names:
+        type: string
+      vcluster_name:
+        type: string
+      account:
+        type: string
+        default: e2e-testing-sandbox
+      update_nucleus_webui_image:
+        type: boolean
+        default: false
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *setup_remote_docker_env
+      - *login_to_docker_registries
+      - run:
+          name: Create Domino Deployment on vcluster
+          # NOTE: Using domino:develop is desired for a couple of reasons:
+          #       * In the deployment step, there is no polling on image tags. If a branch is new and the
+          #         build-test-and-publish workflow has not completed, there won't be an image (e.g. tagged "latest")
+          #         for the deployer to use.
+          #       * Using develop is ok because after the deployment, the workflow will use the images built from the
+          #         current branch to update domino services. By the time tests run, the deployment should be using the
+          #         PR build.
+          command: |
+            bash /resources/deployer/ci/vcluster_install.sh \
+              "<< parameters.host_cluster_names >>" \
+              << parameters.vcluster_name >> \
+              << parameters.account >> \
+              "true" \
+              develop.latest \
+              5 \
+              develop
+          no_output_timeout: "30m"
+          working_directory: /domino-deployer
+      - run:
+          name: Retrieving keycloak password for release environment and persisting it
+          command: |
+            export BASH_ENV=/tmp/workspace/.bash_env
+            source $BASH_ENV
+            echo "Setting up kubectl access using ssh..."
+            mkdir -p /root/.kube
+            cp ./kubeconfig.yaml /root/.kube/config
+            echo "Retrieving keycloak password..."
+            DOMINO_KEYCLOAK_PASSWORD=$(kubectl get secret -n domino-platform keycloak-http -ogo-template='{{.data.password | base64decode}}'; echo)
+            echo "Persisting keycloak password..."
+            echo "export DOMINO_KEYCLOAK_PASSWORD=$DOMINO_KEYCLOAK_PASSWORD" >> /tmp/workspace/.bash_env
+            cp ./kubeconfig.yaml /tmp/workspace/kubeconfig.yaml
+          working_directory: /domino-deployer
+      - run:
+          name: Update nucleus and web-ui images
+          command: |
+            if [[ << parameters.update_nucleus_webui_image >> == "true" ]]; then
+              echo "Waiting for the nucleus and frontend images that are built on this branch."
+
+              host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+              for i in {1..60}; do
+                docker pull quay.io/domino/nucleus:$IMAGE_TAG && docker pull quay.io/domino/frontend:$IMAGE_TAG && break
+
+                [ "$i" = 60 ] && echo "The nucleus and frontend images are not ready after 60 mins. Exit..." && exit 1
+                sleep 60
+              done
+              bash /resources/deployer/ci/vcluster_update_nucleus_and_webui_images.sh $host_cluster_name << parameters.vcluster_name >> << parameters.account >> $IMAGE_TAG
+            else
+              echo "Skipped updating nucleus and web-ui images. Still using develop.latest tag."
+            fi
+          working_directory: /domino-deployer
+      - run:
+          name: Persist DOMINO_USERHOST
+          command: |
+            host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+            export BASH_ENV=/tmp/workspace/.bash_env
+            source $BASH_ENV
+            cluster_name=<< parameters.vcluster_name >>
+            domino_url=https://$host_cluster_name-$cluster_name.<< parameters.account >>.domino.tech
+            echo "DOMINO_USERHOST $domino_url"
+            echo "export DOMINO_USERHOST=\"$domino_url\"" >> $BASH_ENV
+      - run:
+          name: Get artifacts and cluster status
+          command: |
+            host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+            cp -r /resources/deployer/deploys/$host_cluster_name ./install/
+            bash /resources/deployer/ci/vcluster_cluster_state.sh \
+              $host_cluster_name \
+              << parameters.vcluster_name >> \
+              << parameters.account >>
+            cp -r /tmp/cluster_state_host ./cluster_state_host
+            cp -r /tmp/cluster_state_vcluster ./cluster_state_vcluster
+            cp -r /tmp/describe_host_cluster ./describe_host_cluster
+          working_directory: /domino-deployer
+          when: on_fail
+      - store_artifacts:
+          name: Store installation artifacts and logs
+          path: /domino-deployer/install
+      - store_artifacts:
+          name: Store host cluster state
+          path: /domino-deployer/cluster_state_host
+      - store_artifacts:
+          name: Store vcluster state
+          path: /domino-deployer/cluster_state_vcluster
+      - store_artifacts:
+          name: Store vcluster resources status in the context of the host cluster
+          path: /domino-deployer/describe_host_cluster
+      - run:
+          name: Destroy Domino on vcluster
+          command: |
+            host_cluster_name=$(cat /tmp/workspace/host_cluster_name.txt)
+            for i in {1..5};
+            do
+              bash /resources/deployer/ci/vcluster_destroy.sh \
+                $host_cluster_name \
+                << parameters.vcluster_name >> \
+                << parameters.account >> && break
+
+              [ "$i" = 5 ] && echo "Failed to destroy domino on vcluster" && exit 1
+              sleep 5
+            done
+          no_output_timeout: 10m
+          when: on_fail
+          working_directory: /domino-deployer
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+            - kubeconfig.yaml
+            - host_cluster_name.txt
+      - slack/status:
+          fail_only: true
+          only_for_branches: "develop"
+          webhook: "${BAZEL_SLACK_WEBHOOK}"
+      - jira/notify
+
+  retrieve-release-environment-keycloak-password:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - run:
+          name: Retrieving keycloak password for release environment and persisting it
+          command: |
+            export BASH_ENV=/tmp/workspace/.bash_env
+            echo "extracting hostname from domino host url"
+            deployment_domain=${DOMINO_USERHOST##*://}
+            deployment_name=${deployment_domain%%.*}
+            echo "Setting up kubectl access using Teleport..."
+            ./build/ci/tsh-login $deployment_name
+            echo "Retrieving keycloak password..."
+            DOMINO_KEYCLOAK_PASSWORD=$(./build/ci/get-keycloak-password $deployment_domain)
+            echo "Persisting keycloak password..."
+            echo "export DOMINO_KEYCLOAK_PASSWORD=$DOMINO_KEYCLOAK_PASSWORD" >> /tmp/workspace/.bash_env
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - .bash_env
+      - notify_slack_channel_on_fail
+
+  release-tag-artifacts-and-publish-release:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - *publish_release_to_fleetcommand
+      - notify_slack_channel_on_fail
+      - jira/notify
+
+  # TODO: Make this a parameterized command.  Remove the duplication on line 1144
+  e2e-notify-release-slack-channel:
+    docker:
+      - image: cimg/base:2020.12
+    resource_class: small
+    steps:
+      - slack/notify:
+          message: e2e tests for branch [$CIRCLE_BRANCH] have completed (started by GitHub user [$CIRCLE_USERNAME]). Results are viewable in TestRail.
+          webhook: "${RELEASES_NOTIF_SLACK_WEBHOOK}"
+
+  e2e-notify-qe-slack-channel:
+    docker:
+      - image: cimg/base:2020.12
+    resource_class: small
+    steps:
+      - slack/notify:
+          message: e2e tests for branch [$CIRCLE_BRANCH] have completed. Results are viewable in TestRail.
+          webhook: "${NIGHTLY_NOTIF_SLACK_WEBHOOK}"
+
+  provision-rainforest-environment:
+    <<: *release_certification_env
+    steps:
+      - *restore_checkout
+      - checkout
+      - attach_workspace:
+          at: /tmp/workspace
+      - *export_env_vars
+      - run:
+          name: Run Rainforest provisioning
+          command: |
+            GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' \
+            git -c http.sslVerify=false clone \
+              --single-branch --branch master --depth 1 \
+              git@github.com:cerebrotech/rainforest.git
+            cd rainforest
+            virtualenv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            cd provisioning
+            python run.py \
+              --kc-env-var 'DOMINO_KEYCLOAK_PASSWORD' "$DOMINO_USERHOST"
+      - run:
+          name: Set Rainforest environment to the new deployment
+          command: |
+            curl -X PUT \
+              --header 'Content-Type: application/json' \
+              --header 'Accept: application/json' \
+              --header "CLIENT_TOKEN: $RAINFOREST_TOKEN" \
+              -w "\n%{http_code}\n" \
+              -d "{\"url\": \"$DOMINO_USERHOST\"}" \
+              'https://app.rainforestqa.com/api/1/site_environments/115300'
+
+  test-dev-v2:
+    macos:
+      xcode: 13.2.1
+    resource_class: large
+    parameters:
+      skip_last_commit_unchanged_check:
+        default: false
+        type: boolean
+
+    steps:
+      - *restore_checkout_mac
+      - checkout
+      - *save_checkout_mac
+      - skip_if_last_commit_unchanged:
+          working_directory: /Users/distiller/project
+          pattern: "dino dev/setup/ansible"
+          skip_last_commit_unchanged_check: << parameters.skip_last_commit_unchanged_check >>
+      - attach_workspace:
+          at: .
+      - *export_env_vars
+      - *setup_flare_cache
+      - run:
+          name: Configure dino
+          command: |
+            echo "-----BEGIN OPENSSH PRIVATE KEY-----" > github_key
+            echo "$DINO_KEY" >> github_key
+            echo "-----END OPENSSH PRIVATE KEY-----" >> github_key
+            chmod 600 github_key
+
+            echo "$DINO_KEY_PUB" > github_key.pub
+            chmod 644 github_key.pub
+
+            mkdir -p ~/.dino
+
+            DINO_CONFIG=$(cat \<<END_HEREDOC
+            {
+              "ConfigVersion": "1.0",
+              "Persona": "fullstack",
+              "FleetcommandToken": "$FLEETCOMMAND_USER_API_TOKEN",
+              "DevV2SshPemKey": "/Users/distiller/project/dino/internal/keys/dev-v2-ssh-key.pem",
+              "GitHubSshKey": "/Users/distiller/project/github_key",
+              "GitHubUsername": "domino-builds",
+              "LocalDominoDirectory": "/Users/distiller/project",
+              "RemoteDominoDirectory": "/home/ec2-user/domino",
+              "EnableItermTmux": false
+            }
+            END_HEREDOC
+            )
+            echo "$DINO_CONFIG" > ~/.dino/config.json
+            echo "export DEVV2_PREFIX=devv2tst" >> $BASH_ENV
+      - run:
+          name: Install bazelisk
+          command: |
+            brew install bazelisk
+
+      - run:
+          name: Deploy Domino
+          command: |
+            bazel run //dino:cli -- deploy --account domino-deploys-kappa --prefix $DEVV2_PREFIX | tee ~/.dino/deploy_domino.log
+
+            DEPLOY_NAME_REGEX="Provisioning ($DEVV2_PREFIX[0-9]*)"
+            if [[ "$(cat -v ~/.dino/deploy_domino.log)" =~ $DEPLOY_NAME_REGEX ]]
+            then
+              echo "export FLEETCOMMAND_DEPLOY_NAME=$(echo -n "${BASH_REMATCH[1]}")" >> $BASH_ENV
+            else
+              echo "Build name not found in deploy output, check logs"
+              exit 1
+            fi
+
+      - run:
+          name: Setup Dev V2
+          command: |
+            bazel run //dino:cli -- setup -d "$FLEETCOMMAND_DEPLOY_NAME"
+
+      - run:
+          name: Run nucleus and frontend
+          command: |
+            # bazel run //dino:cli -- use $FLEETCOMMAND_DEPLOY_NAME
+            # run-nucleus-frontend-ci.sh won't be present on develop till this change is merged or will be an older
+            # version if testing changes after merge. So copy the file manually to get around this.
+            bazel run //dino:cli -- rsync ~/project/dev/run-nucleus-frontend-ci.sh $FLEETCOMMAND_DEPLOY_NAME:/home/ec2-user/domino/dev
+            bazel run //dino:cli -- ssh "chmod u+x ~/domino/dev/run-nucleus-frontend-ci.sh"
+            bazel run //dino:cli -- ssh "ZSH=/home/ec2-user/.oh-my-zsh FLEETCOMMAND_DEPLOY_NAME=$FLEETCOMMAND_DEPLOY_NAME ~/domino/dev/run-nucleus-frontend-ci.sh" | tee ~/.dino/run_nucleus.log
+
+      - run:
+          name: Destroy Domino
+          when: always
+          command: |
+            bazel run //dino:cli -- destroy $FLEETCOMMAND_DEPLOY_NAME | tee ~/.dino/destroy_domino.log
+
+      - store_artifacts:
+          name: Store dino logs.
+          path: /Users/distiller/.dino
+      - store_artifacts:
+          name: Store ansible logs.
+          path: /Users/distiller/project/dev/setup/ansible/logs
+      - store_bazel_logs:
+          working_directory: "/Users/distiller/project"
+      - slack/status:
+          fail_only: true
+          only_for_branches: develop
+          webhook: "${BAZEL_SLACK_WEBHOOK}"
+
+notify:
+  webhooks:
+    # Sends job metadata to Domino's Build Health Metrics database.
+    - url: https://update.domino.tech/webhooks/circleci
+
+parameters:
+  run_build_test_workflow:
+    type: boolean
+    default: true
+  run_rainforest_group:
+    type: boolean
+    default: false
+  rainforest_rungroup_id:
+    type: string
+    default: '7600'
+  run_rainforest_all:
+    type: boolean
+    default: false
+  run_test_dev_v2:
+    type: boolean
+    default: false
+  run_nightly_vcluster:
+    type: boolean
+    default: false
+  run_e2e_pre_merge_vcluster_workflow:
+    type: boolean
+    default: false
+  e2e_test_type:
+    type: string
+    default: "cucu"
+
+orbs:
+  slack: circleci/slack@3.4.2
+  jira: circleci/jira@1.2.2
+  rainforest:  rainforest-qa/rainforest@2.1.0
+
+workflows:
+  build-and-test:
+    when: << pipeline.parameters.run_build_test_workflow >>
+    jobs:
+      - setup-environment
+      - build-cli-macos
+      - pre-commit-validate
+      - validate-metrics-list:
+          requires:
+            - setup-environment
+      - push-metrics-list:
+          requires:
+            - validate-metrics-list
+          filters:
+            branches:
+              only:
+                - /releases-.*/
+                - develop
+      - git-image-build-and-push:
+          requires:
+            - setup-environment
+      - reverse-proxy-image-build-and-push:
+          requires:
+            - setup-environment
+      - selenium-tests-image-build-and-push:
+          requires:
+            - setup-environment
+      - build-test-and-publish:
+          requires:
+            - pre-commit-validate
+            - setup-environment
+            - build-cli-macos
+      - build-test-and-sonar:
+          requires:
+            - setup-environment
+      - chromatic-publish-storybooks:
+          requires:
+            - setup-environment
+          filters:
+            branches:
+              only:
+                - develop
+      - tag-artifacts-and-publish-release:
+          <<: *development_branches_only
+          requires:
+            - build-test-and-publish
+            - git-image-build-and-push
+            - reverse-proxy-image-build-and-push
+            - selenium-tests-image-build-and-push
+
+      # RELEASE BRANCH JOBS
+      - release-tag-artifacts-and-publish-release:
+          <<: *release_branches_only
+          requires:
+            - build-test-and-publish
+            - git-image-build-and-push
+            - reverse-proxy-image-build-and-push
+            - selenium-tests-image-build-and-push
+      ##
+      ## Common e2e setup tasks
+      ##
+      - e2e-common-setup:
+          requires:
+            - release-tag-artifacts-and-publish-release
+
+      ##
+      ## e2e Selenium Tests
+      ##
+      - create-deployment:
+          name: e2e-selenium-create-deployment
+          deployment_prefix: e2e-selenium
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-selenium-setup-for-tests
+          requires:
+            - e2e-selenium-create-deployment
+
+      - e2e-selenium-tests:
+          requires:
+            - e2e-selenium-setup-for-tests
+
+      ##
+      ## Start e2e SSO Tests
+      ##
+      - create-deployment:
+          name: e2e-sso-create-deployment
+          deployment_prefix: e2e-sso
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-sso-setup-for-tests
+          requires:
+            - e2e-sso-create-deployment
+
+      - e2e-sso-tests:
+          requires:
+            - e2e-sso-setup-for-tests
+
+      ##
+      ## Start e2e System Tests
+      ##
+      - create-deployment:
+          name: e2e-system-create-deployment
+          deployment_prefix: e2e-system
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-system-setup-for-tests
+          requires:
+            - e2e-system-create-deployment
+
+      - e2e-system-tests:
+          requires:
+            - e2e-system-setup-for-tests
+
+      ##
+      ## Start e2e cucu Tests
+      ##
+      - create-deployment:
+          name: e2e-cucu-create-deployment
+          deployment_prefix: e2e-cucu
+          requires:
+            - e2e-common-setup
+
+      - e2e-cucu-tests:
+          requires:
+            - e2e-cucu-create-deployment
+
+      ##
+      ## Scale/benchmark Tests
+      ##
+
+      # Execution logic:
+      #
+      # - e2e-benchmark-tests will only run on branches named "benchmark-*",
+      #   but only if create-scale-test-deployment has previously run
+      # - create-scale-test-deployment will only run if e2e-scale-common-setup
+      #   has previously run
+      # - e2e-scale-common-setup can only run if scale_branches_only_filter
+      #   is True, and if tag-artifacts-and-publish-release has already run
+      # - scale_branches_only_filter is only True if the branch name begins with
+      #   either "scale-*"" or "benchmark-*"
+      # - see further comment below for tag-artifacts-and-publish-release
+
+      - e2e-scale-common-setup:
+          <<: *scale_branches_only_filter
+          requires:
+            # The required tag-etc-etc step listed below (defined in the jobs
+            # section earlier in this file) is what builds Domino and tags the
+            # resulting artifact, making it available for installation onto a
+            # new deployment, which is also created as part of this workflow.
+            #
+            # Where the step is introduced above in the build-and-test workflow,
+            # it's constained to only run on "development_branches_only". By the
+            # definition in the earlier part of this file, a development branch
+            # is essentially ANY branch that does not match one of the branch
+            # names applied to release_branches, also defined above.
+            #
+            # So by defintion, any branch that begins with benchmark-* or scale-*
+            # will also fall within the category of development branches.
+            - tag-artifacts-and-publish-release
+
+      - create-scale-test-deployment:
+          requires:
+            - e2e-scale-common-setup
+
+      - e2e-benchmark-tests:
+          requires:
+            - create-scale-test-deployment
+          filters:
+            branches:
+              only:
+                - /benchmark-.*/
+
+      - e2e-dco-tests:
+          requires:
+            - create-scale-test-deployment
+          filters:
+            branches:
+              only:
+                - /dco-.*/
+
+      # XXX: The following block is included as an example of how one might
+      # include another type of scale test based on branch name within the
+      # build-and-test workflow.
+      # - e2e-scale-tests:
+      #     requires:
+      #       - create-scale-test-deployment
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /scale-.*/
+
+      ##
+      ## Slack channel notification for passing builds on releases
+      ##
+      - e2e-notify-release-slack-channel:
+          filters:
+            branches:
+              only:
+                - /releases-.*/
+          requires:
+            - e2e-selenium-tests
+            - e2e-sso-tests
+            - e2e-system-tests
+            - e2e-cucu-tests
+
+  e2e-cucu-test-vcluster:
+    when:
+      matches: { pattern: "^cucu-.+$", value: << pipeline.git.branch >> }
+    jobs:
+      - e2e-common-setup:
+          deploy-latest-develop: true # signal to use latest develop, but not report results to testrail
+          create-testrail-run: false # cucu test uses it's only tool to create testrail report
+
+      - create-deployment-vcluster:
+          name: e2e-cucu-vcluster
+          update_nucleus_webui_image: true
+          host_cluster_names: dominopr1
+          vcluster_name: vc-cucu-${CIRCLE_WORKFLOW_ID:0:8}
+          requires:
+            - e2e-common-setup
+
+      - e2e-tests-vcluster:
+          test_type: "cucu"
+          vcluster_name: vc-cucu-${CIRCLE_WORKFLOW_ID:0:8}
+          requires:
+            - e2e-cucu-vcluster
+
+  nightly:
+    # Runs end-to-end tests once a day against the latest successfully built 'develop' branch artifacts.
+    triggers:
+      - schedule:
+          # UTC Times, 3AM/4AM Pacific PST/PDT
+          # Expect to have ~4 hour run completed before start of day PT
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+    jobs:
+      ##
+      ## Common e2e setup tasks
+      ##
+      - e2e-common-setup:
+          nightly: true
+
+      ##
+      ## e2e Selenium Tests
+      ##
+      - create-deployment:
+          name: e2e-selenium-create-deployment
+          deployment_prefix: e2e-selenium
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-selenium-setup-for-tests
+          requires:
+            - e2e-selenium-create-deployment
+
+      - e2e-selenium-tests:
+          requires:
+            - e2e-selenium-setup-for-tests
+
+      ##
+      ## Start e2e SSO Tests
+      ##
+      - create-deployment:
+          name: e2e-sso-create-deployment
+          deployment_prefix: e2e-sso
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-sso-setup-for-tests
+          requires:
+            - e2e-sso-create-deployment
+
+      - e2e-sso-tests:
+          requires:
+            - e2e-sso-setup-for-tests
+
+      ##
+      ## Start e2e System Tests
+      ##
+      - create-deployment:
+          name: e2e-system-create-deployment
+          deployment_prefix: e2e-system
+          requires:
+            - e2e-common-setup
+
+      - e2e-setup-for-tests:
+          name: e2e-system-setup-for-tests
+          requires:
+            - e2e-system-create-deployment
+
+      - e2e-system-tests:
+          requires:
+            - e2e-system-setup-for-tests
+
+      ##
+      ## Start e2e cucu tests
+      ##
+      - create-deployment:
+          name: e2e-cucu-create-deployment
+          deployment_prefix: e2e-cucu
+          requires:
+            - e2e-common-setup
+
+      - e2e-cucu-tests:
+          nightly: true
+          requires:
+            - e2e-cucu-create-deployment
+
+      - e2e-notify-qe-slack-channel:
+          requires:
+            - e2e-selenium-tests
+            - e2e-sso-tests
+            - e2e-system-tests
+            - e2e-cucu-tests
+
+  nightly-benchmark:
+    # Runs benchmark tests once a day against the latest successfully built
+    # 'develop' branch artifacts.
+    triggers:
+      - schedule:
+          # UTC Times, 3AM/4AM Pacific PST/PDT
+          # Expect to have ~4 hour run completed before start of day PT
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+    jobs:
+      - e2e-scale-common-setup:
+          nightly: true
+
+      - create-scale-test-deployment:
+          requires:
+            - e2e-scale-common-setup
+
+      - e2e-benchmark-tests:
+          requires:
+            - create-scale-test-deployment
+
+      - e2e-notify-qe-slack-channel:
+          requires:
+            - e2e-benchmark-tests
+
+  # Automatically runs on every merge to develop branch
+  e2e-post-merge-vcluster:
+    when: << pipeline.parameters.run_build_test_workflow >>
+    jobs:
+      - e2e-common-setup:
+          filters:
+            branches:
+              only: develop
+          create-testrail-run: false # cucu test uses it's only tool to create testrail report
+
+      - create-deployment-vcluster:
+          name: e2e-create-deployment-vcluster
+          update_nucleus_webui_image: true
+          host_cluster_names: "dominopost1 dominopost2"
+          vcluster_name: vc-e2e-${CIRCLE_WORKFLOW_ID:0:8}
+          requires:
+            - e2e-common-setup
+
+      - e2e-tests-vcluster:
+          test_type: "cucu"
+          vcluster_name: vc-e2e-${CIRCLE_WORKFLOW_ID:0:8}
+          requires:
+            - e2e-create-deployment-vcluster
+
+      - e2e-notify-qe-slack-channel:
+          requires:
+            - e2e-tests-vcluster
+
+  # Triggered by a pull request comment (or if a user manually runs build/ci/run_e2e_test_ci.py)
+  # It can also be manually triggerred by providing the run_e2e_pre_merge_vcluster parameter on CircleCI web app
+  e2e-pre-merge-vcluster:
+    when: << pipeline.parameters.run_e2e_pre_merge_vcluster_workflow >>
+    jobs:
+      - e2e-common-setup:
+          create-testrail-run: false  # cucu test uses it's only tool to create testrail report
+
+      - create-deployment-vcluster:
+          name: e2e-create-deployment-vcluster
+          update_nucleus_webui_image: true
+          host_cluster_names: "dominopre1 dominopre2"
+          vcluster_name: vc-e2e-${CIRCLE_WORKFLOW_ID:0:8}
+          requires:
+            - e2e-common-setup
+
+      - e2e-tests-vcluster:
+          vcluster_name: vc-e2e-${CIRCLE_WORKFLOW_ID:0:8}
+          test_type: << pipeline.parameters.e2e_test_type >>
+          notify_pull_request: "yes"
+          requires:
+            - e2e-create-deployment-vcluster
+
+  rainforest-group:
+    when: << pipeline.parameters.run_rainforest_group >>
+    jobs:
+      - create-deployment:
+          name: rainforest-create-deployment
+          deployment_prefix: cirfqa
+          resource_account: domino-qe-rainforest
+      - retrieve-release-environment-keycloak-password:
+          requires:
+            - rainforest-create-deployment
+      - provision-rainforest-environment:
+          requires:
+            - retrieve-release-environment-keycloak-password
+      - rainforest/run:
+          requires:
+            - provision-rainforest-environment
+          run_group_id: << pipeline.parameters.rainforest_rungroup_id >>
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+
+  rainforest-all:
+    when: << pipeline.parameters.run_rainforest_all >>
+    jobs:
+      - create-deployment:
+          name: rainforest-create-deployment
+          deployment_prefix: cirfqa
+          resource_account: domino-qe-rainforest
+      - retrieve-release-environment-keycloak-password:
+          requires:
+            - deploy-fresh-environment-for-rainforest-tests
+      - provision-rainforest-environment:
+          requires:
+            - retrieve-release-environment-keycloak-password
+      - rainforest/run:
+          name: Run Smoke tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '7600'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Abishek's  tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8679'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Abishek's tests that don't need GPUs
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8886'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Anna's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8674'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run David's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8678'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Kevin's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8673'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Med's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8676'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Mike's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8680'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+      - rainforest/run:
+          name: Run Sean's tests
+          requires:
+            - provision-rainforest-environment
+          run_group_id: '8677'
+          environment_id: '22107'
+          pipeline_id: << pipeline.id >>
+
+  ##
+  ## Test changes that might affect dev-v2
+  ##
+  # This workflow runs alongside build-test-and-publish
+  test-dev-v2:
+    when: << pipeline.parameters.run_build_test_workflow >>
+    jobs:
+      - test-dev-v2:
+          filters:
+            branches:
+              only: develop
+
+  # This workflow runs based on a scheduled trigger: https://app.circleci.com/settings/project/github/cerebrotech/domino/triggers
+  run-test-dev-v2:
+    when: << pipeline.parameters.run_test_dev_v2 >>
+    jobs:
+      - test-dev-v2:
+          skip_last_commit_unchanged_check: true
