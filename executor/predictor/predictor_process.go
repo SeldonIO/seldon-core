@@ -29,6 +29,16 @@ var (
 	envEnableRoutingInjection       = len(os.Getenv(ENV_ENABLE_ROUTING_INJECTION)) != 0
 )
 
+// Routing-related constants.
+// Ref: https://github.com/SeldonIO/seldon-core/blob/master/doc/source/analytics/routers.md
+const (
+	// Route to all children.
+	routeToAllChildren = -1
+	// Route to no children.
+	routeToNoChildren = -2
+	// Any other positive integer N means route to child N.
+)
+
 type PredictorProcess struct {
 	Ctx               context.Context
 	Client            client.SeldonApiClient
@@ -281,8 +291,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 			return nil, err
 		}
 		var cmsgs []payload.SeldonPayload
-		if route == -1 {
-
+		if route == routeToAllChildren { // Routes msg to all children of the current node.
 			cmsgs = make([]payload.SeldonPayload, len(node.Children))
 			var errs = make([]error, len(node.Children))
 			wg := sync.WaitGroup{}
@@ -302,13 +311,13 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 					return cmsgs[i], err
 				}
 			}
-		} else if route == -2 {
+		} else if route == routeToNoChildren { // Returns msg as is.
 			//Abort and return request
 			p.RoutingMutex.Lock()
 			p.Routing[node.Name] = -2
 			p.RoutingMutex.Unlock()
 			return msg, nil
-		} else {
+		} else { // Calls SeldonApiClient.Predict.
 			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Predict(&node.Children[route], msg)
 			p.RoutingMutex.Lock()
