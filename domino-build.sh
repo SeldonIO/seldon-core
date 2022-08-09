@@ -2,20 +2,24 @@
 set -o nounset -o errexit -o pipefail
 
 nopush_flag=''
-while getopts 'n' flag; do
+tag_arg=''
+while getopts 'nt:' flag; do
   case "${flag}" in
     n) nopush_flag='true' ;;
+    t) tag_arg="${OPTARG}" ;;
     *) error "Unexpected option ${flag}" ;;
   esac
 done
 readonly nopush_flag
+readonly tag_arg
 
 SELDON_REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 cd "${SELDON_REPO}"
 
 SOURCE_IMAGE_TAG="$(<version.txt)"
-TARGET_IMAGE_TAG="${SOURCE_IMAGE_TAG}-$(git rev-parse --short HEAD)"
+TARGET_IMAGE_TAG_DEFAULT="${SOURCE_IMAGE_TAG}-$(git rev-parse --short HEAD)"
+TARGET_IMAGE_TAG="${tag_arg:-$TARGET_IMAGE_TAG_DEFAULT}"
 
 echo -e "\n  Building operator...\n"
 cd "$SELDON_REPO/operator"
