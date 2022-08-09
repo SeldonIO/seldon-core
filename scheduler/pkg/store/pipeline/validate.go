@@ -6,9 +6,10 @@ import (
 
 // Step inputs can be reference a previous step name and tensor output/input
 // e.g.
-//  step1 <output from step1>
-//  step1.outputs.out1 <out1 named tensor from step1>
-//  step1.inputs.in1 <in1 names tensor from step1>
+//
+//	step1 <output from step1>
+//	step1.outputs.out1 <out1 named tensor from step1>
+//	step1.inputs.in1 <in1 names tensor from step1>
 const (
 	StepInputSpecifier  = "inputs"
 	StepOutputSpecifier = "outputs"

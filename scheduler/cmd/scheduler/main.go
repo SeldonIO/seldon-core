@@ -17,8 +17,8 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -92,7 +92,7 @@ func init() {
 }
 
 func getNamespace() string {
-	nsBytes, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	nsBytes, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
 		return namespace

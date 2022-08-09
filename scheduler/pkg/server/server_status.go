@@ -44,7 +44,7 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	}
 }
 
-//TODO as this could be 1000s of models may need to look at ways to optimize?
+// TODO as this could be 1000s of models may need to look at ways to optimize?
 func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
 	modelNames := s.modelStore.GetAllModels()
 	for _, modelName := range modelNames {

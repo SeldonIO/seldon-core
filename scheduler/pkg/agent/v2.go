@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -154,7 +154,7 @@ func (v *V2Client) call(path string) *V2Err {
 			errCode: V2CommunicationErrCode,
 		}
 	}
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return &V2Err{
 			isGrpc:  false,

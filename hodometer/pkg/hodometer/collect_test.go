@@ -2,7 +2,7 @@ package hodometer
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -290,7 +290,7 @@ func TestCollectKubernetes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Given
 			logger := logrus.New()
-			logger.Out = ioutil.Discard
+			logger.Out = io.Discard
 			ctx := context.Background()
 			var client *fake.Clientset
 

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/user"
@@ -64,11 +63,11 @@ func saveSessionKeysToFile(keys []string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(getCfgSessionPath(), []byte(strings.Join(keys, separator)), os.ModePerm)
+	return os.WriteFile(getCfgSessionPath(), []byte(strings.Join(keys, separator)), os.ModePerm)
 }
 
 func loadSessionKeyFromFile() ([]string, error) {
-	data, err := ioutil.ReadFile(getCfgSessionPath())
+	data, err := os.ReadFile(getCfgSessionPath())
 	if err != nil {
 		return nil, err
 	}

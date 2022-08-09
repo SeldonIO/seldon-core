@@ -1,7 +1,7 @@
 package processor
 
 import (
-	"io/ioutil"
+	"io"
 	"strconv"
 	"testing"
 	"time"
@@ -107,7 +107,7 @@ func benchmarkModelUpdate(
 
 	for i := 0; i < b.N; i++ {
 		logger := logrus.New()
-		logger.Out = ioutil.Discard
+		logger.Out = io.Discard
 
 		eventHub, err := coordinator.NewEventHub(logger)
 		require.NoError(b, err)

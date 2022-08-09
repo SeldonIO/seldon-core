@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -72,7 +71,7 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 
 // TODO: move to a common util
 func updateNamespace() {
-	nsBytes, err := ioutil.ReadFile(kubernetesNamespacePath)
+	nsBytes, err := os.ReadFile(kubernetesNamespacePath)
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
 	} else {
@@ -82,7 +81,7 @@ func updateNamespace() {
 	}
 }
 
-//TODO: move to a common util
+// TODO: move to a common util
 func getEnVar(logger *log.Logger, key string, defaultValue int) int {
 	valStr := os.Getenv(key)
 	if valStr != "" {

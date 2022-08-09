@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"net/http"
 	"net/url"
@@ -174,7 +174,7 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 	if err != nil {
 		return nil, err
 	}
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 	if err != nil {
 		return err
 	}
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}

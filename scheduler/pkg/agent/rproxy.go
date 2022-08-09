@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -61,14 +61,14 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
 	startTime := time.Now()
 	if req.Body != nil {
-		originalBody, err = ioutil.ReadAll(req.Body)
+		originalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	// reset main request body
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(originalBody))
+	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -80,7 +80,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 		req2 := req.Clone(req.Context())
 
-		req2.Body = ioutil.NopCloser(bytes.NewBuffer(originalBody))
+		req2.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
 	}
 

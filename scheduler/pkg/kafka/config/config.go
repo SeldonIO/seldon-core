@@ -3,7 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -28,7 +28,7 @@ func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 }
 
 func NewKafkaConfig(path string) (*KafkaConfig, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

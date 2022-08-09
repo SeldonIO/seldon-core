@@ -32,7 +32,7 @@ helm install seldon-core-v2  k8s/helm-charts/seldon-core-v2-setup --namespace se
 ## Install the Default Seldon Core V2 Servers
 
 ```bash
-helm install seldon-v2-servers helm-charts/seldon-core-v2-servers/ --namespace seldon-mesh
+helm install seldon-v2-servers k8s/helm-charts/seldon-core-v2-servers --namespace seldon-mesh
 ```
 
 ## Uninstall

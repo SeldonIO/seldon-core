@@ -78,7 +78,7 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	return updatedModels, nil
 }
 
-//TODO - clarify non shared models should not be scheduled
+// TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	logger := s.logger.WithField("func", "scheduleToServer")
 	logger.Debugf("Schedule model %s", modelName)

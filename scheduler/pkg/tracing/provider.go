@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -76,7 +76,7 @@ func (t *TracerProvider) loadConfig(path *string) error {
 		}
 		logger.Info("No tracing path provided so setting NOOP TraceProvider")
 	} else {
-		data, err := ioutil.ReadFile(*path)
+		data, err := os.ReadFile(*path)
 		if err != nil {
 			return err
 		}

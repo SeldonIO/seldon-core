@@ -25,7 +25,7 @@ const (
 	SeldonPipelineMetric = "pipeline"
 )
 
-//TODO Revisit splitting this interface as metric handling matures
+// TODO Revisit splitting this interface as metric handling matures
 type PipelineMetricsHandler interface {
 	AddPipelineInferMetrics(pipelineName string, method string, elapsedTime float64, code string)
 }

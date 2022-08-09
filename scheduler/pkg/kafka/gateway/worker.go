@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"net"
 	"net/http"
@@ -248,7 +248,7 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	if err != nil {
 		return err
 	}
-	b, err := ioutil.ReadAll(response.Body)
+	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}

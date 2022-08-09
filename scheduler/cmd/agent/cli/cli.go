@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"strconv"
@@ -350,7 +349,7 @@ func maybeUpdateServerType() {
 }
 
 func updateNamespace() {
-	nsBytes, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	nsBytes, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
 	} else {

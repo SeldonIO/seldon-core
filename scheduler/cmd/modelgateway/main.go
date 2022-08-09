@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"strconv"
@@ -57,7 +56,7 @@ func init() {
 }
 
 func updateNamespace() {
-	nsBytes, err := ioutil.ReadFile(kubernetesNamespacePath)
+	nsBytes, err := os.ReadFile(kubernetesNamespacePath)
 	if err != nil {
 		log.Warn("Using namespace from command line argument")
 	} else {

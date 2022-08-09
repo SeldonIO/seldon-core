@@ -8,24 +8,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: '^1.16.4'
       - name: lint-operator
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.48.0
           working-directory: operator
           skip-go-installation: true
       - name: lint-scheduler
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.48.0
           working-directory: scheduler
           skip-go-installation: true
       - name: lint-hodometer
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.48.0
           working-directory: hodometer
           skip-go-installation: true

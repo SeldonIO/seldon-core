@@ -6,6 +6,8 @@ import (
 	"io"
 	"reflect"
 
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -70,7 +72,7 @@ func NewSeldonCoreCollector(
 	logger = logger.WithField("source", "SeldonCoreCollector")
 
 	connectOptions := []grpc.DialOption{
-		grpc.WithInsecure(), // TODO - support TLS
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // TODO - support TLS
 	}
 	conn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", schedulerHost, schedulerPort),

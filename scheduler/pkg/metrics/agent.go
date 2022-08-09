@@ -47,7 +47,7 @@ const (
 	CodeMetric                = "code"
 )
 
-//TODO Revisit splitting this interface as metric handling matures
+// TODO Revisit splitting this interface as metric handling matures
 type AgentMetricsHandler interface {
 	AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc
 	UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error)

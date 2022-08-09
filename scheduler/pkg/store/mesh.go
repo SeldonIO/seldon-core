@@ -329,7 +329,7 @@ func (m *Model) Previous() *ModelVersion {
 	}
 }
 
-//TODO do we need to consider previous versions?
+// TODO do we need to consider previous versions?
 func (m *Model) Inactive() bool {
 	return m.Latest().Inactive()
 }
