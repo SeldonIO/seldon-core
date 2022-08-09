@@ -24,5 +24,4 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 RUN yum remove -y nodejs httpd
 
 USER default
-
 ENTRYPOINT ["./storage-initializer/scripts/initializer-entrypoint"]
