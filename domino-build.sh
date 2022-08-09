@@ -24,6 +24,18 @@ docker tag "seldonio/seldon-core-operator:${SOURCE_IMAGE_TAG}" "quay.io/domino/s
 echo -e "\n  Tagging executor...\n"
 docker tag "seldonio/seldon-core-executor:${SOURCE_IMAGE_TAG}" "quay.io/domino/seldon-core-executor:${TARGET_IMAGE_TAG}"
 
+
+
+
+if [ "$(cat ~/.docker/config.json | jq '.auths | has("quay.io")')" = "true" ]; then
+  echo -e "[Docker is already logged into quay.io, using existing credentials.]"
+elif [ "${QUAY_USER:-missing}" != "missing" ] && [ "${QUAY_PASSWORD:-missing}" != "missing" ]; then
+  echo "$QUAY_PASSWORD" | docker login -u "$QUAY_USER" --password-stdin quay.io
+else
+  echo -e "[Push to quay.io requires docker login, either run 'docker login quay.io' or set QUAY_USER and QUAY_PASSWORD before running this script.]"
+  exit 1
+fi
+
 echo -e "\n  Pushing operator...\n"
 docker push "quay.io/domino/seldon-core-operator:${TARGET_IMAGE_TAG}"
 
