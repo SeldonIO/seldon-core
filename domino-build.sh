@@ -40,8 +40,7 @@ if [ "${nopush_flag}" == "" ]; then
   elif [ "${QUAY_USER:-missing}" != "missing" ] && [ "${QUAY_PASSWORD:-missing}" != "missing" ]; then
     echo "$QUAY_PASSWORD" | docker login -u "$QUAY_USER" --password-stdin quay.io
   else
-    echo -e "[Push to quay.io requires docker login, either run 'docker login quay.io' or set QUAY_USER and QUAY_PASSWORD before running this script.]"
-    exit 1
+    error "Push to quay.io requires docker login, either run 'docker login quay.io' or set QUAY_USER and QUAY_PASSWORD before running this script."
   fi
 
   echo -e "\n  Pushing operator...\n"
