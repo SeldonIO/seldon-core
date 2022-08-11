@@ -447,6 +447,14 @@ def _make_rest_server_prod(
     return server
 
 
+def _wait_forever(server):
+    try:
+        while True:
+            time.sleep(60 * 60)
+    except KeyboardInterrupt:
+        server.stop(None)
+
+
 def main():
     LOG_FORMAT = (
         "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
@@ -524,13 +532,6 @@ def main():
             jaeger_extra_tags=jaeger_extra_tags,
             annotations=annotations,
         )
-
-    def _wait_forever(server):
-        try:
-            while True:
-                time.sleep(60 * 60)
-        except KeyboardInterrupt:
-            server.stop(None)
 
     def _run_grpc_server(bind_address):
         """Start a server in a subprocess."""
