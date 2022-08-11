@@ -455,6 +455,43 @@ def _wait_forever(server):
         server.stop(None)
 
 
+def _run_grpc_server(
+    user_object: Any,
+    seldon_metrics: SeldonMetrics,
+    args: argparse.Namespace,
+    annotations: Dict[str, str],
+    bind_address: str,
+):
+    """Start a server in a subprocess."""
+    logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
+
+    if args.tracing:
+        from grpc_opentracing import open_tracing_server_interceptor
+
+        logger.info("Adding tracer")
+        tracer = setup_tracing(args.interface_name)
+        interceptor = open_tracing_server_interceptor(tracer)
+    else:
+        interceptor = None
+
+    server = seldon_microservice.get_grpc_server(
+        user_object,
+        seldon_metrics,
+        annotations=annotations,
+        trace_interceptor=interceptor,
+        num_threads=args.grpc_threads,
+    )
+
+    try:
+        user_object.load()
+    except (NotImplementedError, AttributeError):
+        pass
+
+    server.add_insecure_port(bind_address)
+    server.start()
+    _wait_forever(server)
+
+
 def main():
     LOG_FORMAT = (
         "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
@@ -533,36 +570,6 @@ def main():
             annotations=annotations,
         )
 
-    def _run_grpc_server(bind_address):
-        """Start a server in a subprocess."""
-        logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
-
-        if args.tracing:
-            from grpc_opentracing import open_tracing_server_interceptor
-
-            logger.info("Adding tracer")
-            tracer = setup_tracing(args.interface_name)
-            interceptor = open_tracing_server_interceptor(tracer)
-        else:
-            interceptor = None
-
-        server = seldon_microservice.get_grpc_server(
-            user_object,
-            seldon_metrics,
-            annotations=annotations,
-            trace_interceptor=interceptor,
-            num_threads=args.grpc_threads,
-        )
-
-        try:
-            user_object.load()
-        except (NotImplementedError, AttributeError):
-            pass
-
-        server.add_insecure_port(bind_address)
-        server.start()
-        _wait_forever(server)
-
     @contextlib.contextmanager
     def _reserve_grpc_port():
         """Find and reserve a port for all subprocesses to use."""
@@ -590,7 +597,16 @@ def main():
                 # NOTE: It is imperative that the worker subprocesses be forked before
                 # any gRPC servers start up. See
                 # https://github.com/grpc/grpc/issues/16001 for more details.
-                worker = mp.Process(target=_run_grpc_server, args=(bind_address,))
+                worker = mp.Process(
+                    target=_run_grpc_server,
+                    args=(
+                        user_object,
+                        seldon_metrics,
+                        args,
+                        annotations,
+                        bind_address,
+                    ),
+                )
                 worker.start()
                 workers.append(worker)
             for worker in workers:
