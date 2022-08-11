@@ -9,7 +9,7 @@ RUN make build-receiver
 
 ################################################################################
 
-FROM golang:1.18-alpine
+FROM gcr.io/distroless/static:nonroot
 COPY --from=builder /build/bin/receiver /bin/receiver
 
 ARG UID=1000

@@ -16,7 +16,7 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM golang:1.18-alpine
+FROM gcr.io/distroless/static:nonroot
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 ARG UID=1000

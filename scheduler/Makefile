@@ -26,15 +26,15 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	go build -o bin/scheduler ./cmd/scheduler
+	CGO_ENABLED=0 go build -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
-	go build -o bin/proxy ./cmd/proxy
+	CGO_ENABLED=0 go build -o bin/proxy ./cmd/proxy
 
 .PHONY: build-agent
 build-agent: test-go
-	go build -o bin/agent ./cmd/agent
+	CGO_ENABLED=0 go build -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
 build-modelgateway: test-go
