@@ -492,6 +492,20 @@ def _run_grpc_server(
     _wait_forever(server)
 
 
+@contextlib.contextmanager
+def _reserve_grpc_port(grpc_port: int):
+    """Find and reserve a port for all subprocesses to use."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
+        raise RuntimeError("Failed to set SO_REUSEPORT.")
+    sock.bind(("", grpc_port))
+    try:
+        yield sock.getsockname()[1]
+    finally:
+        sock.close()
+
+
 def main():
     LOG_FORMAT = (
         "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
@@ -570,21 +584,8 @@ def main():
             annotations=annotations,
         )
 
-    @contextlib.contextmanager
-    def _reserve_grpc_port():
-        """Find and reserve a port for all subprocesses to use."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
-            raise RuntimeError("Failed to set SO_REUSEPORT.")
-        sock.bind(("", grpc_port))
-        try:
-            yield sock.getsockname()[1]
-        finally:
-            sock.close()
-
     def grpc_prediction_server():
-        with _reserve_grpc_port() as bind_port:
+        with _reserve_grpc_port(args.grpc_port) as bind_port:
             bind_address = "0.0.0.0:{}".format(bind_port)
             logger.info(
                 "GRPC Server Binding to %s with %d processes.",
