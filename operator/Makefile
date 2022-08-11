@@ -348,7 +348,8 @@ opm_index_certified:
 opm_push_certified:
 	docker push quay.io/seldon/test-catalog-certified:latest
 
-update_openshift_certified: create_certified_bundle create_certified_bundle_image push_certified_bundle_image validate_certified_bundle_image opm_index_certified opm_push_certified
+# this does not include "create_certified_bundle" target to not affect manual pinning of images
+update_openshift_certified: create_certified_bundle_image push_certified_bundle_image validate_certified_bundle_image opm_index_certified opm_push_certified
 
 
 # password can be found at: https://connect.redhat.com/project/1366481/view
