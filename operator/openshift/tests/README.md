@@ -58,7 +58,7 @@ kubectl create -f operator-subscription.yaml
 This should create the seldon-controller manager. Once running you can test. It will be namespace only so will only manage sdeps in marketplace namespace.
 
 
-## Openshift Cluster
+## Openshift Cluster (Community Operator Test)
 
 [Create Openshift Cluster](https://cloud.redhat.com/openshift/). We use AWS and this can be done simply using the rosa command line tool. You will need RedHat connect login details and AWS account details.
 
@@ -70,7 +70,7 @@ kubectl create -f catalog-source-openshift.yaml
 
 Check
 
-```
+```bash
 kubectl get catalogsource seldon-core-catalog -n openshift-marketplace -o yaml
 ```
 
@@ -83,3 +83,14 @@ kubectl delete -f catalog-source-openshift.yaml
 ```
 
 and apply it again.
+
+
+## Openshift Cluster (Certified Operator Test)
+
+1. Create Catalog Source
+```bash
+kubectl create -f catalog-source-openshift-certified.yaml
+```
+2. Check
+```bash
+kubectl get catalogsource seldon-core-catalog-certified -n openshift-marketplace -o yaml
