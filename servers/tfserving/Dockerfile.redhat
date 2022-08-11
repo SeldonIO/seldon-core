@@ -43,4 +43,5 @@ RUN ln -s /etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/tensorflow/serving/master/LICENSE
 
+USER 8888
 ENTRYPOINT ["/usr/bin/tf_serving_entrypoint.sh"]

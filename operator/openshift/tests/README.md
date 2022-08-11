@@ -94,3 +94,9 @@ kubectl create -f catalog-source-openshift-certified.yaml
 2. Check
 ```bash
 kubectl get catalogsource seldon-core-catalog-certified -n openshift-marketplace -o yaml
+3. Install manually and verify it works properly
+4. Delete Operator Via UI
+5. Delete Catalog Source
+```bash
+kubectl delete -f catalog-source-openshift-certified.yaml
+```

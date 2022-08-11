@@ -202,6 +202,7 @@ publish
  * https://connect.redhat.com/project/5912261/view (Seldon SKLearn Server)
  * https://connect.redhat.com/project/5912271/view (MLFlow Seldon Server)
  * https://connect.redhat.com/project/5912301/view (Seldon XGBoost Server)
+ * https://connect.redhat.com/project/4098071/view (Seldon Tensorflow Serving)
  * https://connect.redhat.com/project/5912311/view (Seldon Tensorflow Serving Proxy)
  * https://connect.redhat.com/project/3987291/view (Seldon Alibi Explainer Wrapper)
  * https://connect.redhat.com/project/3993461/view (Alibi Detect Server)
