@@ -181,8 +181,10 @@ The bundle certification process is desbribed in [official RedHat docs](https://
 First create the bundle with
 
 ```
-make create_certified_bundle
+make update_openshift_certified
 ```
+
+
 
 Then push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
 
@@ -203,8 +205,9 @@ publish
  * https://connect.redhat.com/project/5912311/view (Seldon Tensorflow Serving Proxy)
  * https://connect.redhat.com/project/3987291/view (Seldon Alibi Explainer Wrapper)
  * https://connect.redhat.com/project/3993461/view (Alibi Detect Server)
- * https://connect.redhat.com/project/3986991/view (Seldon Storage Initializer)
  * https://connect.redhat.com/project/4035711/view (Seldon Dummy Model)
+ * https://connect.redhat.com/project/3986991/view (Seldon Storage Initializer)
+ * https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/images (Rclone Storage Initializer)
 
 previously used images:
 * https://connect.redhat.com/project/1366491/view (Seldon Engine)
