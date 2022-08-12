@@ -13,5 +13,6 @@ Servers
     SKLearn Server </servers/sklearn.md>
     Tempo Server </servers/tempo.md>
     MLFlow Server </servers/mlflow.md>
+    HuggingFace Server </servers/huggingface.md>
     TensorFlow Serving </servers/tensorflow.md>
 

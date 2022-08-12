@@ -64,22 +64,22 @@ var _ = Describe("MLServer helpers", func() {
 
 			Expect(merged).ToNot(BeNil())
 			Expect(merged.ReadinessProbe).ToNot(BeNil())
-			Expect(merged.ReadinessProbe.Handler.HTTPGet).ToNot(BeNil())
-			Expect(merged.ReadinessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
+			Expect(merged.ReadinessProbe.ProbeHandler.HTTPGet).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.ProbeHandler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
 			Expect(merged.LivenessProbe).ToNot(BeNil())
-			Expect(merged.LivenessProbe.Handler.HTTPGet).ToNot(BeNil())
-			Expect(merged.LivenessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
+			Expect(merged.LivenessProbe.ProbeHandler.HTTPGet).ToNot(BeNil())
+			Expect(merged.LivenessProbe.ProbeHandler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
 		})
 
 		It("should override only path if probes present", func() {
 			existing.ReadinessProbe = &v1.Probe{
-				Handler: v1.Handler{
+				ProbeHandler: v1.ProbeHandler{
 					TCPSocket: &v1.TCPSocketAction{Port: intstr.FromString("http")},
 				},
 				InitialDelaySeconds: 66,
 			}
 			existing.LivenessProbe = &v1.Probe{
-				Handler: v1.Handler{
+				ProbeHandler: v1.ProbeHandler{
 					TCPSocket: &v1.TCPSocketAction{Port: intstr.FromString("http")},
 				},
 				InitialDelaySeconds: 67,
@@ -89,12 +89,12 @@ var _ = Describe("MLServer helpers", func() {
 
 			Expect(merged).ToNot(BeNil())
 			Expect(merged.ReadinessProbe).ToNot(BeNil())
-			Expect(merged.ReadinessProbe.Handler.HTTPGet).ToNot(BeNil())
-			Expect(merged.ReadinessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
+			Expect(merged.ReadinessProbe.ProbeHandler.HTTPGet).ToNot(BeNil())
+			Expect(merged.ReadinessProbe.ProbeHandler.HTTPGet.Path).To(Equal(constants.KFServingProbeReadyPath))
 			Expect(merged.ReadinessProbe.InitialDelaySeconds).To(Equal(int32(66)))
 			Expect(merged.LivenessProbe).ToNot(BeNil())
-			Expect(merged.LivenessProbe.Handler.HTTPGet).ToNot(BeNil())
-			Expect(merged.LivenessProbe.Handler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
+			Expect(merged.LivenessProbe.ProbeHandler.HTTPGet).ToNot(BeNil())
+			Expect(merged.LivenessProbe.ProbeHandler.HTTPGet.Path).To(Equal(constants.KFServingProbeLivePath))
 			Expect(merged.LivenessProbe.InitialDelaySeconds).To(Equal(int32(67)))
 		})
 	})

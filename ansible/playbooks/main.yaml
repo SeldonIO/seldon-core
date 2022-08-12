@@ -1,7 +1,6 @@
 ---
 - name: Install Seldon Core & Prerequisites
   hosts: localhost
-  gather_facts: no
   roles:
     - role: seldonio.k8s.istio
       when: install_istio | bool
@@ -9,8 +8,8 @@
     - role: seldonio.k8s.minio
       when: install_minio | bool
 
-    - role: seldonio.k8s.seldon_core_analytics
-      when: install_seldon_core_analytics | bool
+    - name: seldonio.k8s.prometheus
+      when: install_prometheus | bool
 
     - role: seldonio.k8s.seldon_core
       when: install_seldon_core | bool
@@ -21,8 +20,8 @@
     install_istio: "{{ full_install }}"
     install_ambassador: "{{ full_install }}"
     install_minio: "{{ full_install }}"
+    install_prometheus: "{{ full_install }}"
 
-    install_seldon_core_analytics: "{{ full_install }}"
     install_seldon_core: "{{ full_install }}"
 
     # Overwrite this variable if you want to DO NOT want to include any variable from defaults

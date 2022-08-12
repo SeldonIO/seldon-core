@@ -517,3 +517,41 @@ var _ = Describe("Create a Seldon Deployment with zero replicas with explainer",
 	})
 
 })
+
+var _ = Describe("Test override of environment variable for explainers", func() {
+	const blankName = ""
+	const secretName = "SECRET_NAME"
+	const overrideName = "OVERRIDE_NAME"
+	By("Creating a predictive unit resource with an envSecretRefName and a default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		explainer := machinelearningv1.Explainer{EnvSecretRefName: overrideName}
+		resultSecretName := extractExplainerEnvSecretRefName(&explainer)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource with an envSecretRefName and no default env var")
+	It("Should override the default env var with envSecretRefName", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		explainer := machinelearningv1.Explainer{EnvSecretRefName: overrideName}
+		resultSecretName := extractExplainerEnvSecretRefName(&explainer)
+		Expect(resultSecretName).To(Equal(overrideName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and a default env var")
+	It("Should set the value to the default env var", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = secretName
+		explainer := machinelearningv1.Explainer{}
+		resultSecretName := extractExplainerEnvSecretRefName(&explainer)
+		Expect(resultSecretName).To(Equal(secretName))
+	})
+	By("Creating a predictive unit resource without an envSecretRefName and without default env var")
+	It("Should set the value to empty string", func() {
+		// Overriding environment variable
+		PredictiveUnitDefaultEnvSecretRefName = blankName
+		explainer := machinelearningv1.Explainer{}
+		resultSecretName := extractExplainerEnvSecretRefName(&explainer)
+		Expect(resultSecretName).To(Equal(blankName))
+	})
+})

@@ -9,9 +9,8 @@ from seldon_e2e_utils import (
 )
 
 SELDON_VERSIONS_TO_TEST = [
-    "1.10.0",
-    "1.11.0",
-    "1.12.0",
+    "1.13.1",
+    "1.14.0",
 ]
 
 
@@ -72,6 +71,9 @@ def test_namespace_update(namespace, seldon_version):
         wait_for_rollout("mymodel", namespace)
 
     assert_model_during_op(_install_namespace_scoped, "mymodel", namespace)
+
+    # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run(f"helm delete seldon --namespace {namespace}")
 
 
 @pytest.mark.sequential

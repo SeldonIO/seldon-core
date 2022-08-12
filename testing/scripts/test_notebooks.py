@@ -73,16 +73,17 @@ class TestNotebooks(object):
     # def test_tracing(self):
     #    create_and_run_script("../../examples/models/tracing", "tracing")
 
-    def test_metrics(self):
-        try:
-            create_and_run_script("../../examples/models/metrics", "general_metrics")
-        except CalledProcessError as e:
-            run(
-                "helm delete seldon-core-analytics --namespace seldon-system",
-                shell=True,
-                check=False,
-            )
-            raise e
+    # Disabling prometheus tests temporarily as they seem to be flaky
+    # def test_metrics(self):
+    #     try:
+    #         create_and_run_script("../../examples/models/metrics", "metrics")
+    #     except CalledProcessError as e:
+    #         run(
+    #             "helm uninstall -n seldon-system prometheus",
+    #             shell=True,
+    #             check=False,
+    #         )
+    #         raise e
 
     def test_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata")
@@ -92,24 +93,6 @@ class TestNotebooks(object):
 
     def test_grpc_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata_grpc")
-
-    def test_payload_logging(self):
-        create_and_run_script(
-            "../../examples/models/payload_logging", "payload_logging"
-        )
-
-    def test_custom_metrics(self):
-        try:
-            create_and_run_script(
-                "../../examples/models/custom_metrics", "customMetrics"
-            )
-        except CalledProcessError as e:
-            run(
-                "helm delete seldon-core-analytics --namespace seldon-system",
-                shell=True,
-                check=False,
-            )
-            raise e
 
     def test_autoscaling(self):
         try:

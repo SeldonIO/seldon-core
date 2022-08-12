@@ -10,7 +10,6 @@ The core charts for installing Seldon Core are shown below.
    :maxdepth: 1
 
    seldon-core-operator <../charts/seldon-core-operator>
-   seldon-core-analytics <../charts/seldon-core-analytics>
 
 For further details see [here](../workflow/install.md).
 
@@ -35,4 +34,4 @@ A set of charts to provide example templates for creating particular inference g
    :maxdepth: 1
 
    seldon-core-loadtesting <../charts/seldon-core-loadtesting>
-
+   seldon-core-analytics <../charts/seldon-core-analytics>

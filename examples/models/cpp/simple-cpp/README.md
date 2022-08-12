@@ -2,7 +2,7 @@
 
 In this example we will show how we can wrap a simple CPP project with the default parameters, which will enable us to just provide a single CPP file.
 
-If you want to wrap an existing library, or you have more complex requirements please refer to the ["Build system override CPP Wrapper example"](../buildsystem-override/README.ipynb).
+If you want to wrap an existing library, or you have more complex requirements please refer to the ["Build system override CPP Wrapper example"](https://docs.seldon.io/projects/seldon-core/en/latest/examples/cpp_advanced.html).
 
 You can read about how to configure your environment in the [CPP Wrapper page](https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html).
 
@@ -57,18 +57,23 @@ We can now build our seldon microservice using `s2i`:
     Installing collected packages: SeldonPackage
     Running setup.py develop for SeldonPackage
     Successfully installed SeldonPackage
+    WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
+    WARNING: You are using pip version 20.2; however, version 22.0.4 is available.
+    You should consider upgrading via the '/opt/conda/bin/python -m pip install --upgrade pip' command.
     Collecting pip-licenses
-    Downloading https://files.pythonhosted.org/packages/08/b4/6e53ab4e82e2b9f8356dd17d7b9e30cba57ba0460186c92cc05e8a1a7f97/pip_licenses-3.0.0-py3-none-any.whl
-    Collecting PTable (from pip-licenses)
-    Downloading https://files.pythonhosted.org/packages/ab/b3/b54301811173ca94119eb474634f120a49cd370f257d1aae5a4abaf12729/PTable-0.9.2.tar.gz
+    Downloading pip_licenses-3.5.3-py3-none-any.whl (17 kB)
+    Collecting PTable
+    Downloading PTable-0.9.2.tar.gz (31 kB)
     Building wheels for collected packages: PTable
     Building wheel for PTable (setup.py): started
     Building wheel for PTable (setup.py): finished with status 'done'
-    Created wheel for PTable: filename=PTable-0.9.2-cp37-none-any.whl size=22906 sha256=f8ceb5d135fae9aad1de576924d11560c8a004a59c489b980412a974eeffd694
-    Stored in directory: /root/.cache/pip/wheels/22/cc/2e/55980bfe86393df3e9896146a01f6802978d09d7ebcba5ea56
+    Created wheel for PTable: filename=PTable-0.9.2-py3-none-any.whl size=22908 sha256=3957aaca98c08e334c02711f973964454d089ed7ec1d25760986f01af67dde69
+    Stored in directory: /root/.cache/pip/wheels/1b/3a/02/8d8da2bca2223dda2f827949c88b2d82dc85dccbc2bb6265e5
     Successfully built PTable
     Installing collected packages: PTable, pip-licenses
-    Successfully installed PTable-0.9.2 pip-licenses-3.0.0
+    Successfully installed PTable-0.9.2 pip-licenses-3.5.3
+    WARNING: You are using pip version 20.2; however, version 22.0.4 is available.
+    You should consider upgrading via the '/opt/conda/bin/python -m pip install --upgrade pip' command.
     created path: ./licenses/license_info.csv
     created path: ./licenses/license.txt
     Build completed successfully
@@ -78,10 +83,10 @@ We can now build our seldon microservice using `s2i`:
 
 
 ```python
-!docker run --name "simple_cpp" -d --rm -p 5000:5000 seldonio/simple-cpp:0.1
+!docker run --name "simple_cpp" -d --rm -p 9000:9000 seldonio/simple-cpp:0.1
 ```
 
-    19f989a0ae389e041c4daf915067016a6ab8dc569873948a1099442a249ec502
+    8027cd995ae3012286abfccaa0cb12be0688997f2d156d0d415e118b06a3a60f
 
 
 ### Send request (which should return the same value)
@@ -90,7 +95,7 @@ We can now build our seldon microservice using `s2i`:
 ```python
 !curl -X POST -H 'Content-Type: application/json' \
    -d '{"strData":"hello"}' \
-    http://localhost:5000/api/v1.0/predictions
+    http://localhost:9000/api/v1.0/predictions
 ```
 
     {"strData":"hello"}

@@ -18,59 +18,22 @@ patchesStrategicMerge:
 - patches/cainjection_in_seldondeployments.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
-# Seldon addition:
-# Need to add this when conversion patch is activated but will only work in k8s >=1.15
-# Needed due to https://github.com/kubernetes-sigs/controller-tools/issues/279
-# but be aware issue means we can't support k8s <1.12 https://github.com/knative/eventing-contrib/issues/114
-#- patches/preserve_ukn_fields.yaml
-
-# Seldon addition
-# Allow graphs up to a set number of levels. Recursive openApi Validation is not presently supported in CRDs.
-- patches/graph_children.yaml
-
-
-# Warning
-# DownwardAPI volumes are not presently supported due to: https://github.com/SeldonIO/seldon-core/issues/926
-# Also see: https://github.com/kubernetes-sigs/kubebuilder/issues/1128
-# Remove volume patch below for Kubernetes 1.17, 1.18 when tested
-
-# Warning
-# apiextensions.k8s.io/v1beta1 version of CustomResourceDefinition is deprecated in v1.16 and will no longer be served in v1.19. Need use apiextensions.k8s.io/v1 which is defined in ../crd_v1.
-# Remove this folder when 1.17 k8s is no longer used.
-
 patchesJson6902:
-  - target:
-      group: apiextensions.k8s.io
-      version: v1beta1
-      kind: CustomResourceDefinition
-      name: seldondeployments.machinelearning.seldon.io
-    path: patches/structural.json
-  - target:
-      group: apiextensions.k8s.io
-      version: v1beta1
-      kind: CustomResourceDefinition
-      name: seldondeployments.machinelearning.seldon.io
-    path: patches/structural2.json
-  - target:
-      group: apiextensions.k8s.io
-      version: v1beta1
-      kind: CustomResourceDefinition
-      name: seldondeployments.machinelearning.seldon.io
-    path: patches/volumes.json
-  # Fix for https://github.com/kubernetes/kubernetes/issues/91395
-  - target:
-      group: apiextensions.k8s.io
-      version: v1beta1
-      kind: CustomResourceDefinition
-      name: seldondeployments.machinelearning.seldon.io
-    path: patches/protocol.yaml
-  # Fix for https://github.com/kubernetes-sigs/controller-tools/issues/456
-  - target:
-      group: apiextensions.k8s.io
-      version: v1beta1
-      kind: CustomResourceDefinition
-      name: seldondeployments.machinelearning.seldon.io
-    path: patches/status.json
+# Ensure multiple levels of graph defn in OpenAPISpec as you can't have references let alone recursive refs
+# https://github.com/kubernetes/kubernetes/issues/54579  
+- target: 
+    group: apiextensions.k8s.io
+    version: v1
+    kind: CustomResourceDefinition
+    name: seldondeployments.machinelearning.seldon.io
+  path: patches/graph_children.yaml
+# Fix for https://github.com/kubernetes-sigs/controller-tools/issues/456
+- target:
+    group: apiextensions.k8s.io
+    version: v1
+    kind: CustomResourceDefinition
+    name: seldondeployments.machinelearning.seldon.io
+  path: patches/status.json
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.
 configurations:

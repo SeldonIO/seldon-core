@@ -57,6 +57,16 @@ func NewExplainerInitializer(ctx context.Context, clientset kubernetes.Interface
 	return &ExplainerInitialiser{clientset: clientset, ctx: ctx}
 }
 
+func extractExplainerEnvSecretRefName(p *machinelearningv1.Explainer) string {
+	envSecretRefName := ""
+	if p.EnvSecretRefName == "" {
+		envSecretRefName = PredictiveUnitDefaultEnvSecretRefName
+	} else {
+		envSecretRefName = p.EnvSecretRefName
+	}
+	return envSecretRefName
+}
+
 type ExplainerConfig struct {
 	Image    string `json:"image"`
 	Image_v2 string `json:"image_v2"`
@@ -159,15 +169,15 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		}
 
 		if explainerContainer.LivenessProbe == nil {
-			explainerContainer.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 5, TimeoutSeconds: 1}
+			explainerContainer.LivenessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 5, TimeoutSeconds: 1}
 		}
 		if explainerContainer.ReadinessProbe == nil {
-			explainerContainer.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 7, TimeoutSeconds: 1}
+			explainerContainer.ReadinessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromString(portType)}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 7, TimeoutSeconds: 1}
 		}
 
 		// Add livecycle probe
 		if explainerContainer.Lifecycle == nil {
-			explainerContainer.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
+			explainerContainer.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.LifecycleHandler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 		}
 
 		//TODO need to change python explainers to accept v2 as protocol name
@@ -233,8 +243,10 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if p.Explainer.ModelUri != "" {
 			var err error
 
+			envSecretRefName := extractExplainerEnvSecretRefName(p.Explainer)
+
 			mi := NewModelInitializer(ei.ctx, ei.clientset)
-			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, p.Explainer.EnvSecretRefName, p.Explainer.StorageInitializerImage)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, envSecretRefName, p.Explainer.StorageInitializerImage)
 			if err != nil {
 				return err
 			}

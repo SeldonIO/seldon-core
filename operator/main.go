@@ -20,13 +20,14 @@ import (
 	"context"
 	"flag"
 	"os"
+	"time"
 
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 
-	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
 	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha3"
@@ -117,10 +118,18 @@ func main() {
 	var debug bool
 	var logLevel string
 	var leaderElectionID string
+	var leaderElectionResourceLock string
+	var leaderElectionLeaseDurationSecs int
+	var leaderElectionRenewDeadlineSecs int
+	var leaderElectionRetryPeriodSecs int
 
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&leaderElectionResourceLock, "leader-election-resource-lock", "", "Leader election resource lock")
+	flag.IntVar(&leaderElectionLeaseDurationSecs, "leader-election-lease-duration-secs", 0, "leadership election lease duration in secs")
+	flag.IntVar(&leaderElectionRenewDeadlineSecs, "leader-election-renew-deadline-secs", 0, "leadership election renew deadline in secs")
+	flag.IntVar(&leaderElectionRetryPeriodSecs, "leader-election-retry-period-secs", 0, "leadership election retry period in secs")
 	flag.IntVar(&webHookPort, "webhook-port", 443, "Webhook server port")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.StringVar(&operatorNamespace, "operator-namespace", "default", "The namespace of the running operator")
@@ -165,13 +174,41 @@ func main() {
 		}
 	}
 
+	// Assign leader election vars if provided
+	var leaderElectionLeaseDuration *time.Duration
+	var leaderElectionRenewDeadlineDuration *time.Duration
+	var leaderElectionRetryPeriodDuration *time.Duration
+	if leaderElectionLeaseDurationSecs > 0 {
+		duration := time.Second * time.Duration(leaderElectionLeaseDurationSecs)
+		leaderElectionLeaseDuration = &duration
+	}
+	if leaderElectionRenewDeadlineSecs > 0 {
+		duration := time.Second * time.Duration(leaderElectionRenewDeadlineSecs)
+		leaderElectionRenewDeadlineDuration = &duration
+	}
+	if leaderElectionRetryPeriodSecs > 0 {
+		duration := time.Second * time.Duration(leaderElectionRetryPeriodSecs)
+		leaderElectionRetryPeriodDuration = &duration
+	}
+
+	setupLog.Info("Leadership election",
+		"ID", leaderElectionID,
+		"resourceLock", leaderElectionResourceLock,
+		"leaseDuration", leaderElectionLeaseDurationSecs,
+		"renew deadline", leaderElectionRenewDeadlineSecs,
+		"retry period", leaderElectionRetryPeriodSecs)
+
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   leaderElectionID,
-		Port:               webHookPort,
-		Namespace:          namespace,
+		Scheme:                     scheme,
+		MetricsBindAddress:         metricsAddr,
+		LeaderElection:             enableLeaderElection,
+		LeaderElectionID:           leaderElectionID,
+		LeaderElectionResourceLock: leaderElectionResourceLock,
+		LeaseDuration:              leaderElectionLeaseDuration,
+		RenewDeadline:              leaderElectionRenewDeadlineDuration,
+		RetryPeriod:                leaderElectionRetryPeriodDuration,
+		Port:                       webHookPort,
+		Namespace:                  namespace,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

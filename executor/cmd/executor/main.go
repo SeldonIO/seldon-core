@@ -79,8 +79,10 @@ var (
 	kafkaTopicOut     = flag.String("kafka_output_topic", "", "The kafka output topic")
 	kafkaFullGraph    = flag.Bool("kafka_full_graph", false, "Use kafka for internal graph processing")
 	kafkaWorkers      = flag.Int("kafka_workers", 4, "Number of kafka workers")
+	kafkaAutoCommit   = flag.Bool("kafka_auto_commit", true, "Use auto committing in the kafka consumer")
 	logKafkaBroker    = flag.String("log_kafka_broker", "", "The kafka log broker")
 	logKafkaTopic     = flag.String("log_kafka_topic", "", "The kafka log topic")
+	fullHealthChecks  = flag.Bool("full_health_checks", false, "Full health checks via chosen protocol API")
 	debug             = flag.Bool(
 		"debug",
 		util.GetEnvAsBool(debugEnvVar, debugDefault),
@@ -101,13 +103,13 @@ func getServerUrl(hostname string, port int) (*url.URL, error) {
 	return url.Parse(fmt.Sprintf("http://%s:%d/", hostname, port))
 }
 
-func runHttpServer(wg *sync.WaitGroup, shutdown chan bool, lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string) {
+func runHttpServer(wg *sync.WaitGroup, shutdown chan bool, lis net.Listener, logger logr.Logger, predictor *v1.PredictorSpec, client seldonclient.SeldonApiClient, port int, probesOnly bool, serverUrl *url.URL, namespace string, protocol string, deploymentName string, prometheusPath string, fullHealthChecks bool) {
 	wg.Add(1)
 	defer wg.Done()
 	defer lis.Close()
 
 	// Create REST API
-	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath)
+	seldonRest := rest.NewServerRestApi(predictor, client, probesOnly, serverUrl, namespace, protocol, deploymentName, prometheusPath, fullHealthChecks)
 	seldonRest.Initialise()
 	srv := seldonRest.CreateHttpServer(port)
 
@@ -284,6 +286,17 @@ func main() {
 			}
 		}
 
+		// Get Kafka Auto Commit
+		kafkaAutoCommitFromEnv := os.Getenv(kafka.ENV_KAFKA_AUTO_COMMIT)
+		if kafkaAutoCommitFromEnv != "" {
+			kafkaAutoCommitFromEnvBool, err := strconv.ParseBool(kafkaAutoCommitFromEnv)
+			if err != nil {
+				log.Fatalf("Failed to parse %s %s", kafka.ENV_KAFKA_AUTO_COMMIT, kafkaAutoCommitFromEnv)
+			} else {
+				*kafkaAutoCommit = kafkaAutoCommitFromEnvBool
+			}
+		}
+
 		//Kafka workers
 		kafkaWorkersFromEnv := os.Getenv(kafka.ENV_KAFKA_WORKERS)
 		if kafkaWorkersFromEnv != "" {
@@ -307,6 +320,8 @@ func main() {
 
 	setupLogger()
 	logger := logf.Log.WithName("entrypoint")
+
+	logger.Info("Full health checks ", "value", fullHealthChecks)
 
 	// Set runtime.GOMAXPROCS to respect container limits if the env var GOMAXPROCS is not set or is invalid, preventing CPU throttling.
 	undo, err := maxprocs.Set(maxprocs.Logger(func(format string, a ...interface{}) {
@@ -347,7 +362,7 @@ func main() {
 	}
 
 	//Start Logger Dispacther
-	err = loghandler.StartDispatcher(*logWorkers, *logWorkBufferSize, *logWriteTimeoutMs, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic)
+	err = loghandler.StartDispatcher(*logWorkers, *logWorkBufferSize, *logWriteTimeoutMs, logger, *sdepName, *namespace, *predictorName, *logKafkaBroker, *logKafkaTopic, *protocol)
 	if err != nil {
 		log.Fatal("Failed to start log dispatcher", err)
 	}
@@ -361,7 +376,7 @@ func main() {
 
 	if *serverType == "kafka" {
 		logger.Info("Starting kafka server")
-		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger)
+		kafkaServer, err := kafka.NewKafkaServer(*kafkaFullGraph, *kafkaWorkers, *sdepName, *namespace, *protocol, *transport, annotations, serverUrl, predictor, *kafkaBroker, *kafkaTopicIn, *kafkaTopicOut, logger, *fullHealthChecks, *kafkaAutoCommit)
 		if err != nil {
 			log.Fatalf("Failed to create kafka server: %v", err)
 		}
@@ -393,7 +408,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	logger.Info("Running http server ", "port", *httpPort)
 	httpStop := make(chan bool, 1)
-	go runHttpServer(&wg, httpStop, createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath)
+	go runHttpServer(&wg, httpStop, createListener(*httpPort, logger), logger, predictor, clientRest, *httpPort, false, serverUrl, *namespace, *protocol, *sdepName, *prometheusPath, *fullHealthChecks)
 
 	logger.Info("Running grpc server ", "port", *grpcPort)
 	grpcStop := make(chan bool, 1)

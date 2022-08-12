@@ -12,7 +12,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.14.0-dev",
+    version="1.15.0-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
@@ -37,6 +37,8 @@ setup(
         "gunicorn >= 19.9.0, < 20.2.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
+        # Addresses https://github.com/SeldonIO/seldon-core/issues/4017
+        "werkzeug < 2.1",
         # Addresses CVE-2020-1971
         "cryptography >= 3.4, < 3.5",
         # Addresses CVE SNYK-PYTHON-PYYAML-590151

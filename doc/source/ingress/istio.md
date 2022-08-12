@@ -12,7 +12,7 @@ helm install seldon-core seldon-core-operator --set istio.enabled=true --repo ht
 
 You need an istio gateway installed in the `istio-system` namespace. By default we assume one called seldon-gateway. For example you can create this with the following yaml:
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -45,7 +45,7 @@ kubectl create -n istio-system secret tls seldon-ssl-cert --key=privkey.pem --ce
 
 and create SSL Istio Gateway using following YAML file
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -105,7 +105,7 @@ More information can be found [here](https://istio.io/latest/docs/reference/conf
 
 You can set the policies to target all the models belonging to a specific namespace, but you must be using istio sidecar proxy, 
 and ensure your seldon operator configuration has the following:
-```
+```yaml
 istio:
   enabled: true
   tlsMode: STRICT
@@ -116,7 +116,7 @@ resolve this issue are:
 - You can specify that you want to allow GET requests to the prometheus endpoint in the `AuthorizationPolicy`
 
 Example:
-```
+```yaml
   - to:
     - operation:
         methods: ["GET"]
@@ -125,7 +125,7 @@ Example:
 ```
 
 - You can also exclude ports in your Istio Operator configuration
-```
+```yaml
   proxy:
         autoInject: enabled
         clusterDomain: cluster.local
@@ -140,7 +140,7 @@ If you saw errors like `Failed to generate bootstrap config: mkdir ./etc/istio/p
 Istio proxy sidecar by default needs to run as root (This changed in version >= 1.7, non-root is the default)
 You can fix this by changing `defaultUserID=0` in your helm chart, or add the following `securityContext` to your istio proxy sidecar.
 
-```
+```yaml
 securityContext:
   runAsUser: 0
 ```

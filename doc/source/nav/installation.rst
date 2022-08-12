@@ -43,8 +43,8 @@ Installation
     :img-top: ../_static/aws_logo.png
 
     +++
-    .. link-button:: #
-        :text: Install on AWS (Coming Soon)
+    .. link-button:: ../install/aws.rst
+        :text: Install on AWS
         :classes: stretched-link
 
     ---
@@ -73,3 +73,4 @@ Installation
     Install Locally </install/kind.rst>
     Install on Google Cloud</install/gcp.rst>
     Install on Azure </install/azure.rst>
+    Install on AWS </install/aws.rst>

@@ -22,7 +22,7 @@ limitations under the License.
 package v1
 
 import (
-	"github.com/kedacore/keda/api/v1alpha1"
+	"github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -644,6 +644,16 @@ func (in *SeldonScaledObjectSpec) DeepCopyInto(out *SeldonScaledObjectSpec) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.IdleReplicaCount != nil {
+		in, out := &in.IdleReplicaCount, &out.IdleReplicaCount
+		*out = new(int32)
+		**out = **in
+	}
+	if in.Fallback != nil {
+		in, out := &in.Fallback, &out.Fallback
+		*out = new(v1alpha1.Fallback)
+		**out = **in
 	}
 }
 

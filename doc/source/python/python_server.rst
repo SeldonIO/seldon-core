@@ -17,10 +17,54 @@ Workers
 
 By default, Seldon will only use a **single worker process**. However,
 it's possible to increase this number through the ``GUNICORN_WORKERS``
-environment variable. This variable can be controlled directly through
-the ``SeldonDeployment`` CRD.
+env var for REST and the ``GRPC_WORKERS`` env var for GRPC. 
+This variable can be controlled directly through the ``SeldonDeployment`` CRD.
 
-For example, to run your model under 4 workers, you could do:
+For example, to run your model under 8 processes (4 RESt and 4 GRPC), you could do:
+
+.. code:: yaml
+    :emphasize-lines: 14-17
+
+    apiVersion: machinelearning.seldon.io/v1
+    kind: SeldonDeployment
+    metadata:
+      name: gunicorn
+    spec:
+      name: worker
+      predictors:
+      - componentSpecs:
+        - spec:
+            containers:
+            - image: seldonio/mock_classifier:1.0
+              name: classifier
+              env:
+              - name: GUNICORN_WORKERS
+                value: '4'
+              - name: GRPC_WORKERS
+                value: '4'
+            terminationGracePeriodSeconds: 1
+        graph:
+          children: []
+          endpoint:
+            type: REST
+          name: classifier
+          type: MODEL
+        labels:
+          version: v1
+        name: example
+        replicas: 1
+
+
+Running only REST server by disabling GRPC server
+-------------------------------------------------------
+
+By default the Seldon models run a REST and GRPC server with a single process each.
+If the machine learning model is loaded in each process, this can result in a large 
+overhead in cases where the model artifacts are very large as there would be an instance
+of the model loaded for each worker. For this case, it is possible to disable the GRPC
+server by setting ``GRPC_WORKERS`` to ``0``, which would end up not starting a GRPC server.
+It is important to note that the GRPC endpoint will still be available in the service 
+orchestrator so GRPC requests would no longer work. An example of this would be as follows:
 
 .. code:: yaml
     :emphasize-lines: 14-15
@@ -38,8 +82,8 @@ For example, to run your model under 4 workers, you could do:
             - image: seldonio/mock_classifier:1.0
               name: classifier
               env:
-              - name: GUNICORN_WORKERS
-                value: '4'
+              - name: GRPC_WORKERS
+                value: '0'
             terminationGracePeriodSeconds: 1
         graph:
           children: []
@@ -51,6 +95,7 @@ For example, to run your model under 4 workers, you could do:
           version: v1
         name: example
         replicas: 1
+
 
 Threads
 -------

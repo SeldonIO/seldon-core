@@ -2,10 +2,13 @@ import json
 from typing import List, Dict, Optional, Union, cast
 import logging
 import numpy as np
+import os
 from .numpy_encoder import NumpyEncoder
 from adserver.base import AlibiDetectModel, ModelResponse
 from alibi_detect.utils.saving import load_detector, Data
+from adserver.constants import ENV_DRIFT_TYPE_FEATURE
 
+DRIFT_TYPE_FEATURE = os.environ.get(ENV_DRIFT_TYPE_FEATURE, "").upper() == "TRUE"
 
 def _append_drift_metrcs(metrics, drift, name):
     metric_found = drift.get(name)
@@ -94,8 +97,10 @@ class AlibiDetectConceptDriftModel(
                 self.batch.shape[0],
                 self.drift_batch_size,
             )
-
-            cd_preds = self.model.predict(self.batch)
+            if DRIFT_TYPE_FEATURE:
+                cd_preds = self.model.predict(self.batch, drift_type='feature')
+            else:
+                cd_preds = self.model.predict(self.batch)
 
             logging.info("Ran drift test")
             self.batch = None
