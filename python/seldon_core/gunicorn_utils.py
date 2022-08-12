@@ -98,7 +98,8 @@ class UserModelApplication(StandaloneApplication):
             tracer = setup_tracing(self.interface_name)
 
             logger.info("Set JAEGER_EXTRA_TAGS %s", self.jaeger_extra_tags)
-            FlaskTracing(tracer, True, self.application, self.jaeger_extra_tags)
+            tracing = FlaskTracing(tracer, True, self.application, self.jaeger_extra_tags)
+            self.user_object.set_tracer(tracing)
         else:
             logger.info("Tracing not active")
         logger.debug("LOADING APP %d", os.getpid())
