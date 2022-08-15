@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/executor
 go 1.17
 
 require (
-	github.com/cloudevents/sdk-go v1.2.0
+	github.com/cloudevents/sdk-go v2.10.1+incompatible
 	github.com/confluentinc/confluent-kafka-go v1.8.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
