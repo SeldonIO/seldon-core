@@ -1,0 +1,8 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+     - image: cimg/base:2022.05
+    steps:
+        - run: echo "Sample CircleCI job."
