@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/cloudevents/sdk-go v1.2.0
-	github.com/confluentinc/confluent-kafka-go v1.8.2
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/golang/protobuf v1.5.2
@@ -65,7 +65,7 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20220502173005-c8bf987b8c21 // indirect
+	google.golang.org/genproto v0.0.0-20220503193339-ba3ae3f07e29 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
