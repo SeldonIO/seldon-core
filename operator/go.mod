@@ -3,7 +3,6 @@ module github.com/seldonio/seldon-core/operator
 go 1.17
 
 require (
-	github.com/Masterminds/semver v1.5.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gogo/protobuf v1.3.2
@@ -12,7 +11,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	go.uber.org/automaxprocs v1.4.0
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.22.0
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20200513175333-ae3da0d240e3
 	istio.io/client-go v0.0.0-20200513180646-f8d9d8ff84e6
@@ -74,7 +73,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a // indirect
 	k8s.io/component-base v0.23.6 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
