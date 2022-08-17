@@ -51,12 +51,12 @@ metadata:
     containerImage: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
-    olm.skipRange: <1.13.1
+    olm.skipRange: ">=1.12.0 <1.14.1-2"
     operators.operatorframework.io/builder: operator-sdk-v1.22.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.14.1
+  name: seldon-operator.v1.14.1-2
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -621,11 +621,10 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
-  replaces: seldon-operator.v1.13.1
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.14.1
+  version: 1.14.1-2
   relatedImages:
   - name: seldon-core-operator-41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282-annotation
     image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282

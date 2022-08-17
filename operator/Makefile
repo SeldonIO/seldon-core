@@ -253,7 +253,7 @@ config/crd/patches/graph_children.yaml:
 #
 ###################################
 
-OPENSHIFT_VERSIONS=v4.8-v4.10
+OPENSHIFT_VERSIONS=v4.8-v4.11
 
 .PHONY: bundle
 recreate_bundle:
