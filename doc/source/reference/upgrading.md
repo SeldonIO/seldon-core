@@ -6,6 +6,41 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+
+## Upgrading to 1.14.1
+
+### OpenShift default storage initializer
+
+In this patch release we fixed the default storage initializer used on OpenShift (both Community and Certified operators).
+The image used now is `seldonio/rclone-storage-initializer:1.14.1` which is the same as one used for the non-OpenShift releases (*).
+
+For Certified operator you will find this image defined as
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:a0280c13136dcc870194af72630b9d2f7fc8bcff4edb54dd3bfbce36741af50c
+```
+in the CSV. This is the same image, just coming from the Red Hat registry.
+
+If you prefer or need to keep using previous storage initializer you can set for Community Operator
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: kfserving/storage-initializer:v0.6.1
+```
+or
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: registry.connect.redhat.com/seldonio/storage-initializer@sha256:52f1e1901fc5de0734515f136847eeb698d48903cf7b6b1cbf273d303bb9029c
+```
+for the Certified one.
+
+(*) Non-OpenShift releases defaulted to Rclone-based storage initializer in Seldon Core version 1.8.
+
+### Rclone Storage Initializer
+
+Rclone storage initializer image is now based on Red Hat's Universal Base Image (UBI8).
+This is not breaking change.
+
+
 ## Upgrading to 1.14
 
 ### CRD V1
