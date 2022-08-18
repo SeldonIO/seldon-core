@@ -8,7 +8,6 @@ services:
 
   agent-mlserver:
     command:
-      - "/bin/agent"
       - "--log-level"
       - "debug"
       - "--config-path"
@@ -52,7 +51,6 @@ services:
 
   agent-triton:
     command:
-      - "/bin/agent"
       - "--log-level"
       - "debug"
       - "--config-path"
@@ -128,7 +126,6 @@ services:
 
   modelgateway:
     command:
-      - "/bin/modelgateway"
       - "--log-level"
       - "debug"
       - "--kafka-config-path"
@@ -150,7 +147,6 @@ services:
 
   pipelinegateway:
     command:
-      - "/bin/pipelinegateway"
       - "--log-level"
       - "debug"
       - "--kafka-config-path"

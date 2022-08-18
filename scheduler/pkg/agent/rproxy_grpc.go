@@ -104,7 +104,7 @@ func (rp *reverseGRPCProxy) Start() error {
 		rp.serverReady = true
 		rp.mu.Unlock()
 		err := rp.grpcServer.Serve(l)
-		rp.logger.Infof("Reverse GRPC proxy stopped with error: %s", err)
+		rp.logger.WithError(err).Infof("Reverse GRPC proxy stopped with error")
 		rp.mu.Lock()
 		rp.serverReady = false
 		rp.mu.Unlock()

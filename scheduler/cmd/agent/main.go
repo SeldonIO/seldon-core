@@ -38,8 +38,13 @@ func makeDirs() (string, string, error) {
 	if err != nil {
 		return modelRepositoryDir, rcloneRepositoryDir, err
 	}
+	_ = os.Chmod(modelRepositoryDir, fs.ModePerm)
 	err = os.MkdirAll(rcloneRepositoryDir, fs.ModePerm)
-	return modelRepositoryDir, rcloneRepositoryDir, err
+	if err != nil {
+		return modelRepositoryDir, rcloneRepositoryDir, err
+	}
+	_ = os.Chmod(rcloneRepositoryDir, fs.ModePerm)
+	return modelRepositoryDir, rcloneRepositoryDir, nil
 }
 
 func getRepositoryHandler(logger log.FieldLogger) repository.ModelRepositoryHandler {

@@ -214,10 +214,10 @@ kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy ki
 
 .PHONY: create-model-folders
 create-model-folders:
-	mkdir -p ./mnt/mlserver/models
-	mkdir -p ./mnt/mlserver/rclone
-	mkdir -p ./mnt/triton/models
-	mkdir -p ./mnt/triton/rclone
+	mkdir -p --mode=0777 ./mnt/mlserver/models
+	mkdir -p --mode=0777 ./mnt/mlserver/rclone
+	mkdir -p --mode=0777 ./mnt/triton/models
+	mkdir -p --mode=0777 ./mnt/triton/rclone
 
 DOCKER_COMPOSE_IMAGES = \
 	SCHEDULER_IMAGE_AND_TAG=${SCHEDULER_IMG} \

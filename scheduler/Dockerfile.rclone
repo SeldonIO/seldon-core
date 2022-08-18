@@ -1,5 +1,7 @@
 FROM rclone/rclone:1.56.2
 
 RUN mkdir -p /rclone && chmod a+rw /rclone && touch /rclone/rclone.conf
+RUN chown -R rclone /rclone
+USER rclone
 CMD ["rcd","--rc-no-auth","--config=/rclone/rclone.conf","--rc-addr=0.0.0.0:5572","--verbose"]
 

@@ -5,7 +5,6 @@ services:
   agent-mlserver:
     network_mode: "host"
     command:
-      - "/bin/agent"
       - "--log-level"
       - "debug"
       - "--config-path"
@@ -30,7 +29,6 @@ services:
   agent-triton:
     network_mode: "host"
     command:
-      - "/bin/agent"
       - "--log-level"
       - "debug"
       - "--config-path"
@@ -100,7 +98,6 @@ services:
         source: ./config
         target: /mnt/config
     command:
-      - "/bin/modelgateway"
       - "--log-level"
       - "debug"
       - "--kafka-config-path"
@@ -119,7 +116,6 @@ services:
         source: ./config
         target: /mnt/config
     command:
-      - "/bin/pipelinegateway"
       - "--log-level"
       - "debug"
       - "--kafka-config-path"

@@ -9,6 +9,15 @@ RUN rm -r apis && mv apis-TEMP apis
 RUN CGO_ENABLED=0 go build -o agent ./cmd/agent/main.go
 
 # Copy binary
-FROM gcr.io/distroless/static:nonroot
+# Need to be careful about: https://github.com/GoogleContainerTools/distroless/issues/718
+# for environments like Openshift that set a random UID
+# if we want to use FROM gcr.io/distroless/static:noroot
+# Keeping with alpine at present to allow setting of volume permissions for docker compose use
+# both iwth shared and bind mounted volumes
+FROM golang:alpine
+RUN addgroup -S agent && adduser -S agent -G agent
+RUN mkdir /mnt/agent && chmod o+rwx /mnt/agent
+VOLUME /mnt/agent
+USER agent
 COPY --from=builder /build/agent /bin/agent
 ENTRYPOINT ["/bin/agent"]
