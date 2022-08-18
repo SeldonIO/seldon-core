@@ -5,7 +5,7 @@ RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubuserconte
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Rclone Storage Initializer" \
       vendor="Seldon Technologies" \
-      version="1.14.1" \
+      version="1.15.0-dev" \
       release="1" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"
