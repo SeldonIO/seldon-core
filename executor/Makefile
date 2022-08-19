@@ -111,6 +111,8 @@ redhat-image-scan:
 		echo $${rh_password_executor} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
 	docker push scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT} --docker-config=${HOME}/.docker/config.json --certification-project-id=5e9b34726c2dde3913c2bb65 --pyxis-api-token=$${pyxis_api_token} --submit
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}

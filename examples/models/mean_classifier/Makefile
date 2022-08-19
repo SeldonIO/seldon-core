@@ -22,12 +22,12 @@ kind_load: build
 
 # https://connect.redhat.com/project/4035711/view
 scan=ospid-c90fdfe6-d054-4598-baa8-7f7aac3ed63a
+project=5ea15983ebed1415210b4b26
 redhat-image-scan:
 	docker pull ${IMAGE_BASE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_mock_model} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMAGE_BASE}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
 	docker push scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION}
-
-
-
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container scan.connect.redhat.com/${scan}/${IMAGE_NAME_BASE}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit

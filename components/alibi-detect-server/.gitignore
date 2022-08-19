@@ -5,3 +5,4 @@ adserver.egg-info
 .coverage
 _seldon_core
 version.txt
+artifacts
