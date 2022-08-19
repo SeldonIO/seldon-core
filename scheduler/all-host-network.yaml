@@ -154,7 +154,6 @@ services:
 
   scheduler:
     command:
-      - "/bin/scheduler"
       - "--log-level"
       - "debug"
       - "--tracing-config-path"

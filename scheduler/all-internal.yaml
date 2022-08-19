@@ -195,7 +195,6 @@ services:
 
   scheduler:
     command:
-      - "/bin/scheduler"
       - "--log-level"
       - "debug"
       - "--pipeline-gateway-host"
