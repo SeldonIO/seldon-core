@@ -9,7 +9,7 @@ formats:
   - epub
 
 python:
-  version: 3.7
+  version: 3.7.10
   install:
     - method: pip
       path: python
