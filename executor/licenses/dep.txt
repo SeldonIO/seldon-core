@@ -228,6 +228,7 @@ github.com/jstemmer/go-junit-report
 github.com/jtolds/gls
 github.com/julienschmidt/httprouter
 github.com/jung-kurt/gofpdf
+github.com/kedacore/keda
 github.com/kedacore/keda/v2
 github.com/kelseyhightower/envconfig
 github.com/kisielk/errcheck
@@ -400,6 +401,7 @@ google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
 gopkg.in/check.v1
 gopkg.in/errgo.v2
+gopkg.in/evanphx/json-patch.v4
 gopkg.in/fsnotify.v1
 gopkg.in/inf.v0
 gopkg.in/ini.v1
