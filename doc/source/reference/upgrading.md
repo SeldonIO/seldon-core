@@ -6,6 +6,11 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.15
+
+### Flask upgrade
+
+With this release of Seldon Core we upgrade Flask dependency to 2.x line. This includes Python wrapper and most pre-packaged model servers. In an unlikely scenario that this causes issues one can fallback to `1.14.1` images.
 
 ## Upgrading to 1.14.1
 
