@@ -70,7 +70,7 @@ func (kc *InferKafkaConsumer) setup() error {
 	consumerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Consumer)
 	// we map topics consistently to consumers and we choose the consumer group.id based on this mapping
 	// for eg. hash(topic1) -> modelgateway-0
-	// this is done by the caller i.e. ConsumerManager (manager.go)
+	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
 	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)

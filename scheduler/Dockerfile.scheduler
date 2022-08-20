@@ -4,6 +4,7 @@ RUN mkdir /build
 ADD . /build/
 WORKDIR /build
 RUN rm -r apis && mv apis-TEMP apis
+RUN mv components-TEMP ../components
 
 # Build the binary
 RUN CGO_ENABLED=0 go build -o scheduler ./cmd/scheduler/main.go

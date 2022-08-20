@@ -132,7 +132,7 @@ services:
       - "/mnt/config/kafka-internal.json"
       - "--scheduler-host"
       - "scheduler"
-      - "--scheduler-port"
+      - "--scheduler-plaintxt-port"
       - ${SCHEDULER_SERVER_PORT}
       - "--envoy-host"
       - "envoy"

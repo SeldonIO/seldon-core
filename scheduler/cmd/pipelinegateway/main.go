@@ -96,10 +96,6 @@ func getEnVar(logger *log.Logger, key string, defaultValue int) int {
 	return defaultValue
 }
 
-func runningInsideK8s() bool {
-	return namespace != ""
-}
-
 func main() {
 	logger := log.New()
 	flag.Parse()

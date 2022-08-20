@@ -65,11 +65,26 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
+.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
+
+.PHONY: .install-golangci-lint
+.ONESHELL: .install-golangci-lint
+.install-golangci-lint:
+	@installed=false
+	if [ -e "${.GOLANGCILINT_PATH}/golangci-lint" ]; then
+		installed=true
+	fi
+	if ! $${installed}; then
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
+	fi
+
 .PHONY: lint
-lint: ## Run go linters against code.
+lint: .install-golangci-lint
 	gofmt -w pkg
 	gofmt -w cmd
-	golangci-lint run --fix
+	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
 .PHONY: test-go
 test-go:
@@ -92,12 +107,17 @@ benchmark-go:
 #####################################
 
 .PHONY: docker-build-scheduler
-docker-build-scheduler: copy-apis
+docker-build-scheduler: copy-apis copy-components
 	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
 
 .PHONY: docker-push-scheduler
 docker-push-scheduler:
 	docker push ${SCHEDULER_IMG}
+
+.PHONY: copy-components
+copy-components:
+	rm -rf components-TEMP
+	cp -r ../components components-TEMP
 
 .PHONY: copy-apis
 copy-apis:
@@ -121,7 +141,7 @@ docker-push-rclone:
 	docker push ${RCLONE_IMG}
 
 .PHONY: docker-build-modelgateway
-docker-build-modelgateway: copy-apis
+docker-build-modelgateway: copy-apis copy-components
 	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway .
 
 .PHONY: docker-push-modelgateway
@@ -280,6 +300,11 @@ start-all: copy-apis
 .PHONY: pull-all
 pull-all: copy-apis
 	${DOCKER_COMPOSE_SERVICE_COMMAND} pull
+
+.PHONY: pull-servers
+pull-servers:
+	docker pull ${MLSERVER_IMG}
+	docker pull ${TRITON_IMG}
 
 .PHONY: stop-all
 stop-all:
@@ -555,6 +580,17 @@ endif
 .PHONY: start-scheduler-local
 start-scheduler-local:
 	./bin/scheduler --db-path "${DB_PATH_LOCAL}"
+
+.PHONY: start-scheduler-local-mtls
+start-scheduler-local-mtls: export SCHEDULER_TLS_FOLDER_PATH=/home/clive/work/scv2/seldon-core-v2/scheduler/config/certs/server
+start-scheduler-local-mtls: 
+	./bin/scheduler --db-path "${DB_PATH_LOCAL}" 
+
+.PHONY: start-scheduler-local-mtls-k8s
+start-scheduler-local-mtls-k8s: export SCHEDULER_TLS_SECRET_NAME=seldon-scheduler-server
+start-scheduler-local-mtls-k8s: export NAMESPACE=seldon-mesh
+start-scheduler-local-mtls-k8s: 
+	./bin/scheduler --db-path "${DB_PATH_LOCAL}" 
 
 .PHONY: clear-scheduler-state
 clear-scheduler-state:

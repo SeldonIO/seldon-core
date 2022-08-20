@@ -26,7 +26,10 @@ func createPipelineUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			pipelineName := args[0]
 			err = schedulerClient.UnloadPipeline(pipelineName, showRequest, showResponse)
 			return err

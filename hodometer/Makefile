@@ -9,6 +9,8 @@ GO_ENV = GO111MODULE=on CGO_ENABLED=0
 
 VERBOSE ?=
 
+KIND_NAME=ansible
+
 # Build information
 VERSION_PACKAGE = $(shell sed -n 's/^module\s\+//p' go.mod)/pkg/hodometer
 BUILD_VERSION ?= $(shell cat ./version.txt)
@@ -19,14 +21,29 @@ RELEASE_TYPE ?= pre-release
 
 ################################################################################
 
+.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
+
+.PHONY: .install-golangci-lint
+.ONESHELL: .install-golangci-lint
+.install-golangci-lint:
+	@installed=false
+	if [ -e "${.GOLANGCILINT_PATH}/golangci-lint" ]; then
+		installed=true
+	fi
+	if ! $${installed}; then
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
+	fi
+
 .PHONY: lint
-lint:
+lint: .install-golangci-lint
 	gofmt -w cmd
 	gofmt -w pkg
-	golangci-lint run --fix
+	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
 .PHONY: build-hodometer
-build-hodometer: test-hodometer
+build-hodometer: test-hodometer 
 	$(GO_ENV) \
 				go build \
 				-o bin/hodometer \
@@ -38,6 +55,8 @@ build-hodometer: test-hodometer
 				-X '$(VERSION_PACKAGE).ReleaseType=$(RELEASE_TYPE)' \
 				" \
 				./cmd/hodometer/
+.PHONY: build-hodometer-local
+build-hodometer-local: copy-apis copy-components build-hodometer
 
 .PHONY: build-receiver
 build-receiver: test-receiver
@@ -66,8 +85,13 @@ copy-apis:
 	rm -rf apis-TEMP
 	cp -r ../apis/mlops/scheduler apis-TEMP
 
+.PHONY: copy-components
+copy-components:
+	rm -rf components-TEMP
+	cp -r ../components components-TEMP
+
 .PHONY: build-hodometer-docker
-build-hodometer-docker: copy-apis
+build-hodometer-docker: copy-apis copy-components
 	docker build \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
@@ -83,3 +107,7 @@ build-receiver-docker:
 .PHONY: push-hodometer-docker
 push-hodometer-docker:
 	docker push ${HODOMETER_IMG}
+
+.PHONY: kind-image-install-hodometer
+kind-image-install-hodometer:
+	kind load -v 3 docker-image ${HODOMETER_IMG} --name ${KIND_NAME}

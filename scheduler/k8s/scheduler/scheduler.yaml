@@ -27,14 +27,28 @@ spec:
         - --pipeline-gateway-host=seldon-pipelinegateway
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --db-path=/mnt/scheduler/db
+        - --allow-plaintxt=$(ALLOW_PLAINTXT)
         image: scheduler:latest
         imagePullPolicy: IfNotPresent
         name: scheduler
+        env:
+          - name: ALLOW_PLAINTXT
+            value: "true"
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: ""
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: ""
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
         ports:
         - name: xds
           containerPort: 9002
         - name: scheduler
           containerPort: 9004
+        - name: scheduler-mtls
+          containerPort: 9044
         - name: agent
           containerPort: 9005
         - name: dataflow

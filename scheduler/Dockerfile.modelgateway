@@ -4,6 +4,7 @@ RUN mkdir /build
 ADD . /build/
 WORKDIR /build
 RUN rm -r apis && mv apis-TEMP apis
+RUN mv components-TEMP ../components
 
 # Build the binary
 RUN go build -o modelgateway ./cmd/modelgateway/main.go

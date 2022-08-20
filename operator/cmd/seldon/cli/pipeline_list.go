@@ -17,7 +17,10 @@ func createPipelineList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			err = schedulerClient.ListPipelines()
 			return err
 		},

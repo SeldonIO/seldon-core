@@ -1,0 +1,73 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seldon-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-ca
+spec:
+  isCA: true
+  commonName: seldon-ca
+  dnsNames:
+  - "*.seldon-mesh.svc"
+  - localhost
+  secretName: cacert
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: seldon-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seldon-ca-issuer
+spec:
+  ca:
+    secretName: cacert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-scheduler-server
+spec:
+  secretName: seldon-scheduler-server
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "seldon-mesh.svc"
+  dnsNames:
+  - "seldon-scheduler"    
+  - "seldon-scheduler.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-scheduler-client
+spec:
+  secretName: seldon-scheduler-client
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "seldon-mesh.svc"
+  dnsNames:
+  - "seldon-scheduler"    
+  - "seldon-scheduler.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer

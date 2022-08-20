@@ -66,6 +66,29 @@ The kafka broker will depend on how you have installed Kafka into your Kubernete
 export SELDON_KAFKA_BROKER=<ip>:<port>
 ```
 
+## Config file
+
+You can create a config file in `$HOME/.config/seldon/cli`
+
+The definition is shown below:
+
+  ```{literalinclude} ../../../../operator/pkg/cli/config.go
+   :language: golang
+   :start-after: // start config struct
+   :end-before: // end config struct
+   ```
+
+An example below shows an example where we connect via TLS to the Seldon scheduler using our scheduler client certificate:
+
+```
+{
+    "schedulerHost": "seldon-scheduler.svc:9044",
+    "tlsKeyPath": "/home/seldon/certs/tls.key",
+    "tlsCrtPath": "/home/seldon/certs/tls.crt",
+    "caCrtPath": "/home/seldon/certs//ca.crt"
+}
+
+```
 
 ```{toctree}
 :maxdepth: 1

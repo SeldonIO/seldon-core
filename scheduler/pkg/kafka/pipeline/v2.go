@@ -305,41 +305,6 @@ func convertTensors(req *NamedTensor) error {
 	return nil
 }
 
-func convertTensorsPrev(req *NamedTensor) error {
-	td := &TensorData{}
-	req.tensorData = td
-	sz := getDataSize(req.Shape)
-	switch req.Datatype {
-	case tyBool:
-		td.boolContents = make([]bool, sz)
-		return json.Unmarshal(req.Data, &td.boolContents)
-	case tyUint8, tyUint16, tyUint32:
-		td.uint32Contents = make([]uint32, sz)
-		return json.Unmarshal(req.Data, &td.uint32Contents)
-	case tyUint64:
-		td.uint64Contents = make([]uint64, sz)
-		return json.Unmarshal(req.Data, &td.uint64Contents)
-	case tyInt8, tyInt16, tyInt32:
-		td.int32Contents = make([]int32, sz)
-		return json.Unmarshal(req.Data, &td.int32Contents)
-	case tyInt64:
-		td.int64Contents = make([]int64, sz)
-		return json.Unmarshal(req.Data, &td.int64Contents)
-	case tyFp16, tyFp32:
-		td.fp32Contents = make([]float32, sz)
-		return json.Unmarshal(req.Data, &td.fp32Contents)
-	case tyFp64:
-		td.fp64Contents = make([]float64, sz)
-		return json.Unmarshal(req.Data, &td.fp64Contents)
-	case tyBytes:
-		td.byteContents = make([][]byte, 1)
-		td.byteContents[0] = make([]byte, sz)
-		return json.Unmarshal(req.Data, &td.byteContents[0])
-	default:
-		return fmt.Errorf("Unknown type %s", req.Datatype)
-	}
-}
-
 func convertToInferenceRequest(data []byte) (*InferenceRequest, error) {
 	req := &InferenceRequest{}
 	err := json.Unmarshal(data, req)

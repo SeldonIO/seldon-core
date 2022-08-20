@@ -35,7 +35,10 @@ func createExperimentStatus() *cobra.Command {
 				return err
 			}
 			experimentName := args[0]
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			err = schedulerClient.ExperimentStatus(experimentName, showRequest, showResponse, wait)
 			return err
 		},

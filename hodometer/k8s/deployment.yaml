@@ -31,6 +31,16 @@ spec:
             value: http://hodometer.seldon.io
           - name: SCHEDULER_HOST
             value: "seldon-scheduler"
-          - name: SCHEDULER_PORT
+          - name: SCHEDULER_PLAINTXT_PORT
             value: "9004"
+          - name: SCHEDULER_TLS_PORT
+            value: "9044"
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: ""
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: ""
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
 

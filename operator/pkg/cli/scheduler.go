@@ -3,6 +3,8 @@ package cli
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +12,10 @@ import (
 	"os"
 	"text/tabwriter"
 	"time"
+
+	"google.golang.org/grpc/credentials/insecure"
+
+	"google.golang.org/grpc/credentials"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -27,29 +33,70 @@ const subscriberName = "seldon CLI"
 type SchedulerClient struct {
 	schedulerHost string
 	callOptions   []grpc.CallOption
+	config        *SeldonCLIConfig
 }
 
-func NewSchedulerClient(schedulerHost string) *SchedulerClient {
+func NewSchedulerClient(schedulerHost string) (*SchedulerClient, error) {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
+	config, err := LoadSeldonCLIConfig()
+	if err != nil {
+		return nil, err
+	}
+	if config.SchedulerHost != "" {
+		schedulerHost = config.SchedulerHost
+	}
 	return &SchedulerClient{
 		schedulerHost: schedulerHost,
 		callOptions:   opts,
+		config:        config,
+	}, nil
+}
+
+func (sc *SchedulerClient) loadKeyPair() (credentials.TransportCredentials, error) {
+	certificate, err := tls.LoadX509KeyPair(sc.config.TlsCrtPath, sc.config.TlsKeyPath)
+	if err != nil {
+		return nil, err
 	}
+
+	ca, err := os.ReadFile(sc.config.CaCrtPath)
+	if err != nil {
+		return nil, err
+	}
+
+	capool := x509.NewCertPool()
+	if !capool.AppendCertsFromPEM(ca) {
+		return nil, fmt.Errorf("Failed to load ca crt from %s", sc.config.CaCrtPath)
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{certificate},
+		RootCAs:      capool,
+	}
+
+	return credentials.NewTLS(tlsConfig), nil
 }
 
 func (sc *SchedulerClient) getConnection() (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
+	opts := []grpc.DialOption{}
+	if sc.config.TlsKeyPath == "" {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		tlsConfig, err := sc.loadKeyPair()
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, grpc.WithTransportCredentials(tlsConfig))
 	}
+	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
+	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
+
 	conn, err := grpc.Dial(sc.schedulerHost, opts...)
 	if err != nil {
 		return nil, err

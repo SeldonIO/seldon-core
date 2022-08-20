@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	logrtest "github.com/go-logr/logr/testing"
+	logrtest "github.com/go-logr/logr/testr"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
@@ -199,7 +199,7 @@ func TestReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			logger := logrtest.TestLogger{T: t}
+			logger := logrtest.New(t)
 			var client client2.Client
 			scheme := runtime.NewScheme()
 			err := appsv1.AddToScheme(scheme)

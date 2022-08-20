@@ -21,6 +21,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -51,6 +53,7 @@ var (
 	envoyPort               uint
 	agentPort               uint
 	schedulerPort           uint
+	schedulerMtlsPort       uint
 	chainerPort             uint
 	namespace               string
 	pipelineGatewayHost     string
@@ -60,6 +63,8 @@ var (
 	tracingConfigPath       string
 	dbPath                  string
 	nodeID                  string
+	//scheduler server
+	allowPlaintxt bool
 )
 
 func init() {
@@ -70,6 +75,9 @@ func init() {
 
 	// The scheduler port to listen for schedule commands
 	flag.UintVar(&schedulerPort, "scheduler-port", 9004, "scheduler server port")
+
+	// The scheduler port to listen for schedule commands
+	flag.UintVar(&schedulerMtlsPort, "scheduler-mtls-port", 9044, "scheduler mtls server port")
 
 	// The agent port to listen for agent subscriptions
 	flag.UintVar(&agentPort, "agent-port", 9005, "agent server port")
@@ -89,6 +97,9 @@ func init() {
 	flag.StringVar(&logLevel, "log-level", "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
 	flag.StringVar(&dbPath, "db-path", "", "State Db path")
+
+	//scheduler server
+	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 }
 
 func getNamespace() string {
@@ -182,13 +193,16 @@ func main() {
 		}
 	}()
 
-	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
-	go func() {
-		err := s.StartGrpcServer(schedulerPort)
-		if err != nil {
-			log.WithError(err).Fatalf("Scheduler start server error")
-		}
-	}()
+	// Attempt to get k8s clientset - continue anyway if we can't
+	clientset, err := k8s.CreateClientset()
+	if err != nil {
+		logger.WithError(err).Warn("Failed to get kubernetes clientset")
+	}
+	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, clientset)
+	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
+	if err != nil {
+		log.WithError(err).Fatalf("Scheduler start servers error")
+	}
 
 	_ = cleaner.NewVersionCleaner(ss, logger, eventHub)
 

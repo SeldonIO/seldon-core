@@ -26,7 +26,10 @@ func createModelUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			modelName := args[0]
 			err = schedulerClient.UnloadModel(modelName, showRequest, showResponse)
 			return err

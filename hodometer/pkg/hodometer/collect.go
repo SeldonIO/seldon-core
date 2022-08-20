@@ -5,7 +5,13 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"time"
 
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	pb "github.com/seldonio/seldon-core/hodometer/apis"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/google/uuid"
@@ -13,12 +19,11 @@ import (
 	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	pb "github.com/seldonio/seldon-core/hodometer/apis"
 )
 
 const (
-	subscriberName = "hodometer"
+	subscriberName        = "hodometer"
+	envSchedulerTLSPrefix = "SCHEDULER"
 )
 
 type Collector interface {
@@ -57,25 +62,52 @@ type modelMetrics struct {
 var _ Collector = (*SeldonCoreCollector)(nil)
 
 type SeldonCoreCollector struct {
-	schedulerClient pb.SchedulerClient
-	k8sClient       kubernetes.Interface
-	logger          logrus.FieldLogger
-	clusterId       string
+	schedulerClient  pb.SchedulerClient
+	k8sClient        kubernetes.Interface
+	logger           logrus.FieldLogger
+	clusterId        string
+	certificateStore *seldontls.CertificateStore
 }
 
 func NewSeldonCoreCollector(
 	logger logrus.FieldLogger,
 	schedulerHost string,
-	schedulerPort uint,
+	schedulerPlaintxtPort uint,
+	schedulerTlsPort uint,
 	clusterId string,
 ) (*SeldonCoreCollector, error) {
 	logger = logger.WithField("source", "SeldonCoreCollector")
-
-	connectOptions := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // TODO - support TLS
+	// Attempt to get k8s clientset - continue anyway if we can't
+	clientset, err := k8s.CreateClientset()
+	if err != nil {
+		logger.WithError(err).Warn("Failed to get kubernetes clientset")
 	}
+	certificateStore, err := seldontls.NewCertificateStore(envSchedulerTLSPrefix, clientset)
+	if err != nil {
+		return nil, err
+	}
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+	}
+	var transCreds credentials.TransportCredentials
+	var port uint
+	if certificateStore == nil {
+		logger.Info("Starting plaintxt client to scheduler")
+		transCreds = insecure.NewCredentials()
+		port = schedulerPlaintxtPort
+	} else {
+		logger.Info("Starting TLS client to scheduler")
+		transCreds = certificateStore.CreateClientTransportCredentials()
+		port = schedulerTlsPort
+	}
+	connectOptions := []grpc.DialOption{
+		grpc.WithTransportCredentials(transCreds),
+		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
+		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
+	}
+	logger.Infof("Connecting to scheduler at %s:%d", schedulerHost, port)
 	conn, err := grpc.Dial(
-		fmt.Sprintf("%s:%d", schedulerHost, schedulerPort),
+		fmt.Sprintf("%s:%d", schedulerHost, port),
 		connectOptions...,
 	)
 	if err != nil {
@@ -88,10 +120,11 @@ func NewSeldonCoreCollector(
 	k8sClient := getKubernetesClientset(logger)
 
 	return &SeldonCoreCollector{
-		schedulerClient: client,
-		k8sClient:       k8sClient,
-		logger:          logger,
-		clusterId:       clusterId,
+		schedulerClient:  client,
+		k8sClient:        k8sClient,
+		logger:           logger,
+		clusterId:        clusterId,
+		certificateStore: certificateStore,
 	}, nil
 }
 

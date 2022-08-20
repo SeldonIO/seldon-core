@@ -11,6 +11,10 @@ spec:
             value: '{{ .Values.opentelemetry.endpoint }}'
           - name: MODELGATEWAY_NUM_WORKERS
             value: '{{ .Values.modelgateway.workers }}'
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'

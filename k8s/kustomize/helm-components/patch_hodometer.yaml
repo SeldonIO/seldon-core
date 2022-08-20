@@ -16,3 +16,7 @@ spec:
             value: '{{ .Values.hodometer.logLevel }}'
           - name: EXTRA_PUBLISH_URLS
             value: '{{ .Values.hodometer.extraPublishUrls }}'
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'

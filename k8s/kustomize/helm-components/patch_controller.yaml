@@ -13,3 +13,8 @@ spec:
           requests:
             cpu: '{{ .Values.controller.resources.requests.cpu }}'
             memory: '{{ .Values.controller.resources.requests.memory }}'
+        env:
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'

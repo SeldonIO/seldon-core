@@ -6,5 +6,6 @@
 /mnt/mlserver
 /mnt/triton
 /apis-TEMP
+/components-TEMP
 cover.out
 data-flow/opentelemetry-javaagent.jar

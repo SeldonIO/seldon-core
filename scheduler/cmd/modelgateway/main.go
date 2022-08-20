@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -17,31 +19,35 @@ import (
 )
 
 const (
-	flagSchedulerHost       = "scheduler-host"
-	flagSchedulerPort       = "scheduler-port"
-	flagEnvoyHost           = "envoy-host"
-	flagEnvoyPort           = "envoy-port"
-	flagLogLevel            = "log-level"
-	defaultSchedulerPort    = 9004
-	defaultEnvoyPort        = 9000
-	kubernetesNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	flagSchedulerHost            = "scheduler-host"
+	flagSchedulerPlaintxtPort    = "scheduler-plaintxt-port"
+	flagSchedulerTlsPort         = "scheduler-tls-port"
+	flagEnvoyHost                = "envoy-host"
+	flagEnvoyPort                = "envoy-port"
+	flagLogLevel                 = "log-level"
+	defaultSchedulerPlaintxtPort = 9004
+	defaultSchedulerTLSPort      = 9044
+	defaultEnvoyPort             = 9000
+	kubernetesNamespacePath      = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 var (
-	schedulerHost     string
-	schedulerPort     int
-	envoyHost         string
-	envoyPort         int
-	kafkaConfigPath   string
-	namespace         string
-	logLevel          string
-	tracingConfigPath string
+	schedulerHost         string
+	schedulerPlaintxtPort int
+	schedulerTlsPort      int
+	envoyHost             string
+	envoyPort             int
+	kafkaConfigPath       string
+	namespace             string
+	logLevel              string
+	tracingConfigPath     string
 )
 
 func init() {
 
 	flag.StringVar(&schedulerHost, flagSchedulerHost, "0.0.0.0", "Scheduler host")
-	flag.IntVar(&schedulerPort, flagSchedulerPort, defaultSchedulerPort, "Scheduler port")
+	flag.IntVar(&schedulerPlaintxtPort, flagSchedulerPlaintxtPort, defaultSchedulerPlaintxtPort, "Scheduler plaintxt port")
+	flag.IntVar(&schedulerTlsPort, flagSchedulerTlsPort, defaultSchedulerTLSPort, "Scheduler TLS port")
 	flag.StringVar(&envoyHost, flagEnvoyHost, "0.0.0.0", "Envoy host")
 	flag.IntVar(&envoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
 	flag.StringVar(&namespace, "namespace", "", "Namespace")
@@ -64,10 +70,6 @@ func updateNamespace() {
 		log.Infof("Setting namespace from k8s file to %s", ns)
 		namespace = ns
 	}
-}
-
-func runningInsideK8s() bool {
-	return namespace != ""
 }
 
 func makeSignalHandler(logger *log.Logger, done chan<- bool) {
@@ -140,9 +142,14 @@ func main() {
 	defer kafkaConsumer.Stop()
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)
-	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
+	// Attempt to get k8s clientset - continue anyway if we can't
+	clientset, err := k8s.CreateClientset()
 	if err != nil {
-		logger.Fatalf("Failed to connect to scheduler")
+		logger.WithError(err).Warn("Failed to get kubernetes clientset")
+	}
+	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort, clientset)
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to connect to scheduler")
 	}
 
 	go func() {

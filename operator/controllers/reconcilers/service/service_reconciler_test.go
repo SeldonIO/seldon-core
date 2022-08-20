@@ -7,7 +7,7 @@ import (
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
 
-	logrtest "github.com/go-logr/logr/testing"
+	logrtest "github.com/go-logr/logr/testr"
 	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
 	testing2 "github.com/seldonio/seldon-core/operatorv2/pkg/utils/testing"
 	appsv1 "k8s.io/api/apps/v1"
@@ -72,7 +72,7 @@ func TestToServices(t *testing.T) {
 
 func TestReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
-	logger := logrtest.TestLogger{T: t}
+	logger := logrtest.New(t)
 	type test struct {
 		name            string
 		reconcilerTime1 *ServiceReconciler

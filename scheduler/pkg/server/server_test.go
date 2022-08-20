@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"k8s.io/client-go/kubernetes/fake"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
@@ -48,7 +50,7 @@ func TestLoadModel(t *testing.T) {
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore))
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, fake.NewSimpleClientset())
 		return s, mockAgent
 	}
 
@@ -154,7 +156,7 @@ func TestUnloadModel(t *testing.T) {
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore))
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, fake.NewSimpleClientset())
 		return s, mockAgent, eventHub
 	}
 

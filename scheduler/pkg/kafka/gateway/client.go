@@ -7,8 +7,12 @@ import (
 	"math"
 	"time"
 
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/cenkalti/backoff/v4"
 
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -18,14 +22,16 @@ import (
 )
 
 const (
-	SubscriberName = "seldon-modelgateway"
+	SubscriberName        = "seldon-modelgateway"
+	envSchedulerTLSPrefix = "SCHEDULER"
 )
 
 type KafkaSchedulerClient struct {
-	logger          logrus.FieldLogger
-	conn            *grpc.ClientConn
-	callOptions     []grpc.CallOption
-	consumerManager *ConsumerManager
+	logger           logrus.FieldLogger
+	conn             *grpc.ClientConn
+	callOptions      []grpc.CallOption
+	consumerManager  *ConsumerManager
+	certificateStore *seldontls.CertificateStore
 }
 
 func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
@@ -41,15 +47,33 @@ func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *Consume
 	}
 }
 
-func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, port int) error {
+func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int, clientset kubernetes.Interface) error {
+	logger := kc.logger.WithField("func", "ConnectToScheduler")
+	var err error
+	kc.certificateStore, err = seldontls.NewCertificateStore(envSchedulerTLSPrefix, clientset)
+	if err != nil {
+		return err
+	}
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
+	var transCreds credentials.TransportCredentials
+	var port int
+	if kc.certificateStore == nil {
+		logger.Info("Starting plaintxt client to scheduler")
+		transCreds = insecure.NewCredentials()
+		port = plainTxtPort
+	} else {
+		logger.Info("Starting TLS client to scheduler")
+		transCreds = kc.certificateStore.CreateClientTransportCredentials()
+		port = tlsPort
+	}
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
+	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return err
@@ -79,7 +103,7 @@ func (kc *KafkaSchedulerClient) Start() error {
 func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
-
+	logger.Info("Subscribing to model status events")
 	stream, err := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
 	if err != nil {
 		return err

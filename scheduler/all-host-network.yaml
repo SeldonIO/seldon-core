@@ -102,7 +102,7 @@ services:
       - "debug"
       - "--kafka-config-path"
       - "/mnt/config/kafka-host.json"
-      - "--scheduler-port"
+      - "--scheduler-plaintxt-port"
       - ${SCHEDULER_SERVER_PORT}
       - "--envoy-port"
       - ${ENVOY_DATA_PORT}

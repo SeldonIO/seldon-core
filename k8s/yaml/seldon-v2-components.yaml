@@ -41,6 +41,20 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: hodometer-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: seldon-leader-election-role
 rules:
 - apiGroups:
@@ -270,8 +284,31 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  creationTimestamp: null
+  name: seldon-manager-tls-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
   name: seldon-scheduler-role
 rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -296,6 +333,18 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  name: hodometer-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: hodometer-role
+subjects:
+- kind: ServiceAccount
+  name: hodometer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
   name: seldon-leader-election-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -313,6 +362,18 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: seldon-manager-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seldon-manager-tls-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seldon-manager-tls-role
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
@@ -457,6 +518,10 @@ spec:
     port: 9004
     protocol: TCP
     targetPort: scheduler
+  - name: scheduler-mtls
+    port: 9044
+    protocol: TCP
+    targetPort: scheduler-mtls
   - name: agent
     port: 9005
     protocol: TCP
@@ -492,19 +557,26 @@ spec:
         - --health-probe-bind-address=:8081
         - --leader-elect
         - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-port=$(SELDON_SCHEDULER_PORT)
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
         - --namespace=$(POD_NAMESPACE)
         command:
         - /manager
         env:
         - name: SELDON_SCHEDULER_SVC
           value: seldon-scheduler
-        - name: SELDON_SCHEDULER_PORT
+        - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
+        - name: SELDON_SCHEDULER_TLS_PORT
+          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: SCHEDULER_TLS_SECRET_NAME
+          value: ""
+        - name: SCHEDULER_TLS_FOLDER_PATH
+          value: ""
         image: seldonio/seldonv2-controller:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -637,8 +709,18 @@ spec:
           value: http://hodometer.seldon.io
         - name: SCHEDULER_HOST
           value: seldon-scheduler
-        - name: SCHEDULER_PORT
+        - name: SCHEDULER_PLAINTXT_PORT
           value: "9004"
+        - name: SCHEDULER_TLS_PORT
+          value: "9044"
+        - name: SCHEDULER_TLS_SECRET_NAME
+          value: ""
+        - name: SCHEDULER_TLS_FOLDER_PATH
+          value: ""
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: seldonio/seldon-hodometer:latest
         imagePullPolicy: IfNotPresent
         name: hodometer
@@ -666,7 +748,8 @@ spec:
       containers:
       - args:
         - --scheduler-host=seldon-scheduler
-        - --scheduler-port=9004
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
         - --envoy-host=seldon-mesh
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
@@ -674,10 +757,22 @@ spec:
         command:
         - /bin/modelgateway
         env:
+        - name: SELDON_SCHEDULER_PLAINTXT_PORT
+          value: "9004"
+        - name: SELDON_SCHEDULER_TLS_PORT
+          value: "9044"
+        - name: SCHEDULER_TLS_SECRET_NAME
+          value: ""
+        - name: SCHEDULER_TLS_FOLDER_PATH
+          value: ""
         - name: MODELGATEWAY_NUM_WORKERS
           value: "8"
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: "100"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: seldonio/seldon-modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
@@ -783,8 +878,20 @@ spec:
         - --pipeline-gateway-host=seldon-pipelinegateway
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --db-path=/mnt/scheduler/db
+        - --allow-plaintxt=$(ALLOW_PLAINTXT)
         command:
         - /bin/scheduler
+        env:
+        - name: ALLOW_PLAINTXT
+          value: "true"
+        - name: SCHEDULER_TLS_SECRET_NAME
+          value: ""
+        - name: SCHEDULER_TLS_FOLDER_PATH
+          value: ""
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: seldonio/seldon-scheduler:latest
         imagePullPolicy: IfNotPresent
         name: scheduler
@@ -793,6 +900,8 @@ spec:
           name: xds
         - containerPort: 9004
           name: scheduler
+        - containerPort: 9044
+          name: scheduler-mtls
         - containerPort: 9005
           name: agent
         - containerPort: 9008

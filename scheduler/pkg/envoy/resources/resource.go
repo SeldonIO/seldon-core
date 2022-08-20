@@ -97,12 +97,6 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 	}
 }
 
-func makeEDSCluster() *cluster.Cluster_EdsClusterConfig {
-	return &cluster.Cluster_EdsClusterConfig{
-		EdsConfig: makeConfigSource(),
-	}
-}
-
 func MakeEndpoint(clusterName string, eps []Endpoint) *endpoint.ClusterLoadAssignment {
 	var endpoints []*endpoint.LbEndpoint
 

@@ -47,9 +47,13 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 		return nil, err
 	}
 
+	scheduler, err := NewSchedulerClient(schedulerHost)
+	if err != nil {
+		return nil, err
+	}
 	kc := &KafkaClient{
 		consumer:        consumer,
-		schedulerClient: NewSchedulerClient(schedulerHost),
+		schedulerClient: scheduler,
 	}
 	return kc, nil
 }

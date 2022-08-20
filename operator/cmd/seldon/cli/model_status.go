@@ -31,7 +31,10 @@ func createModelStatus() *cobra.Command {
 				return err
 			}
 			modelName := args[0]
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			err = schedulerClient.ModelStatus(modelName, showRequest, showResponse, modelWaitCondition)
 			return err
 		},

@@ -98,7 +98,7 @@ func (g *GatewayHttpServer) setupRoutes() {
 	g.router.NewRoute().Path(
 		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
 	g.router.NewRoute().Path(
-		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
+		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferPipeline)
 }
 
 func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, resourceName string, isModel bool) {

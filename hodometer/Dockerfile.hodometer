@@ -6,6 +6,7 @@ WORKDIR /build
 ADD . .
 
 RUN rm -r apis && mv apis-TEMP apis
+RUN mv components-TEMP ../components
 
 ARG GIT_BRANCH
 ARG GIT_COMMIT

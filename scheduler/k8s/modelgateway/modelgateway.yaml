@@ -21,7 +21,8 @@ spec:
         - /bin/modelgateway
         args:
         - --scheduler-host=seldon-scheduler
-        - --scheduler-port=9004
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)        
         - --envoy-host=seldon-mesh
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
@@ -30,10 +31,22 @@ spec:
         imagePullPolicy: IfNotPresent
         name: modelgateway
         env:
+          - name: SELDON_SCHEDULER_PLAINTXT_PORT
+            value: "9004"
+          - name: SELDON_SCHEDULER_TLS_PORT
+            value: "9044"
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: ""
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: ""
           - name: MODELGATEWAY_NUM_WORKERS
             value: "8"
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: "100"
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
         resources:
           requests:
             cpu: 100m

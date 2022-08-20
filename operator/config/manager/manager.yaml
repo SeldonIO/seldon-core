@@ -25,7 +25,8 @@ spec:
         - --health-probe-bind-address=:8081
         - --leader-elect
         - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-port=$(SELDON_SCHEDULER_PORT)
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)        
         - --namespace=$(POD_NAMESPACE)
         image: controller:latest
         imagePullPolicy: IfNotPresent
@@ -33,12 +34,18 @@ spec:
         env:
           - name: SELDON_SCHEDULER_SVC
             value: "seldon-scheduler"
-          - name: SELDON_SCHEDULER_PORT
+          - name: SELDON_SCHEDULER_PLAINTXT_PORT
             value: "9004"
+          - name: SELDON_SCHEDULER_TLS_PORT
+            value: "9044"
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: SCHEDULER_TLS_SECRET_NAME
+            value: ""
+          - name: SCHEDULER_TLS_FOLDER_PATH
+            value: ""
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:

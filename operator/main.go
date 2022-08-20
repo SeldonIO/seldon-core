@@ -19,6 +19,8 @@ package main
 import (
 	"context"
 
+	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+
 	"github.com/seldonio/seldon-core/operatorv2/scheduler"
 
 	"flag"
@@ -54,7 +56,8 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var schedulerHost string
-	var schedulerPort int
+	var schedulerPlaintxtPort int
+	var schedulerTLSPort int
 	var namespace string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
@@ -63,7 +66,8 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&schedulerHost, "scheduler-host", "0.0.0.0", "Scheduler host")
-	flag.IntVar(&schedulerPort, "scheduler-port", 9004, "Scheduler port")
+	flag.IntVar(&schedulerPlaintxtPort, "scheduler-plaintxt-port", 9004, "Scheduler port")
+	flag.IntVar(&schedulerTLSPort, "scheduler-tls-port", 9044, "Scheduler port")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -87,10 +91,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	clientset, err := k8s.CreateClientset()
+	if err != nil {
+		setupLog.Error(err, "Unable to create clientset")
+		os.Exit(1)
+	}
 	// Create and connect to scheduler
-	schedulerClient := scheduler.NewSchedulerClient(logger, mgr.GetClient(),
+	schedulerClient := scheduler.NewSchedulerClient(logger,
+		mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"))
-	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPort)
+	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTLSPort, clientset)
 	if err != nil {
 		setupLog.Error(err, "unable to connect to scheduler")
 		os.Exit(1)

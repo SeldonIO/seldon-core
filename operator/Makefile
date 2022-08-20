@@ -20,7 +20,7 @@ endif
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
-SHELL = /usr/bin/env bash -o pipefail
+#SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
 .PHONY: all
@@ -62,9 +62,25 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
+
+.PHONY: .install-golangci-lint
+.ONESHELL: .install-golangci-lint
+.install-golangci-lint:
+	@installed=false
+	if [ -e "${.GOLANGCILINT_PATH}/golangci-lint" ]; then
+		installed=true
+	fi
+	if ! $${installed}; then
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
+	fi
+
+
 .PHONY: lint
-lint: ## Run go linters against code.
-	golangci-lint run --fix
+lint: .install-golangci-lint
+	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
@@ -95,6 +111,7 @@ generate-cli-docs:
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 	cp -r ../apis apis-TEMP && rm -fr apis-TEMP/python
+	rm -rf components-TEMP && cp -r ../components components-TEMP
 	docker build -t ${IMG} .
 	rm -rf apis-TEMP
 

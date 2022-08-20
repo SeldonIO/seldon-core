@@ -7,14 +7,16 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/client-go/kubernetes"
+
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
 
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -34,6 +36,7 @@ const (
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
 	defaultBatchWaitMillis         = 250 * time.Millisecond
+	envSchedulerTLSPrefix          = "SCHEDULER"
 )
 
 var (
@@ -51,6 +54,8 @@ type SchedulerServer struct {
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
+	certificateStore      *seldontls.CertificateStore
+	clientset             kubernetes.Interface
 }
 
 type ModelEventStream struct {
@@ -101,7 +106,8 @@ type PipelineSubscription struct {
 	fin    chan bool
 }
 
-func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
+func (s *SchedulerServer) startPlaintxtServer(schedulerPort uint) {
+	logger := s.logger.WithField("func", "startPlaintxtServer")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
@@ -111,8 +117,53 @@ func (s *SchedulerServer) StartGrpcServer(schedulerPort uint) error {
 	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
-	s.logger.Printf("Scheduler server running on %d", schedulerPort)
-	return grpcServer.Serve(lis)
+	logger.Printf("Scheduler plain text server running on %d", schedulerPort)
+	go func() {
+		err := grpcServer.Serve(lis)
+		logger.WithError(err).Fatalf("Scheduler plain text server failed on port %d", schedulerPort)
+	}()
+}
+
+func (s *SchedulerServer) startMtlsServer(schedulerTlsPort uint) {
+	logger := s.logger.WithField("func", "startMtlsServer")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerTlsPort))
+	if err != nil {
+		log.Fatalf("failed to create listener: %v", err)
+	}
+	opts := []grpc.ServerOption{}
+	opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
+	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterSchedulerServer(grpcServer, s)
+	s.logger.Printf("mTLS Scheduler server running on %d", schedulerTlsPort)
+	go func() {
+		err := grpcServer.Serve(lis)
+		logger.WithError(err).Fatalf("Scheduler mTLS server failed on port %d", schedulerTlsPort)
+	}()
+}
+
+func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint) error {
+	logger := s.logger.WithField("func", "StartGrpcServers")
+	var err error
+	s.certificateStore, err = seldontls.NewCertificateStore(envSchedulerTLSPrefix, s.clientset)
+	if err != nil {
+		return err
+	}
+	if !allowPlainTxt && s.certificateStore == nil {
+		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
+	}
+	if allowPlainTxt {
+		s.startPlaintxtServer(schedulerPort)
+	} else {
+		logger.Info("Not starting scheduler plain text server")
+	}
+	if s.certificateStore != nil {
+		s.startMtlsServer(schedulerTlsPort)
+	} else {
+		logger.Info("Not starting scheduler mTLS server")
+	}
+	return nil
 }
 
 func NewSchedulerServer(
@@ -122,6 +173,7 @@ func NewSchedulerServer(
 	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
+	clientset kubernetes.Interface,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -144,6 +196,7 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
+		clientset: clientset,
 	}
 
 	eventHub.RegisterModelEventHandler(

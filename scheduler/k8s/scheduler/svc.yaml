@@ -15,6 +15,10 @@ spec:
     port: 9004
     targetPort: scheduler
     protocol: TCP
+  - name: scheduler-mtls
+    port: 9044
+    targetPort: scheduler-mtls
+    protocol: TCP
   - name: agent
     port: 9005
     targetPort: agent

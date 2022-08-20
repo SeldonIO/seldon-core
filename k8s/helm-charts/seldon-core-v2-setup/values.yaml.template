@@ -84,7 +84,14 @@ scheduler:
     registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: #TAG_VERSION_PLACEHOLDER#
-
+  tls:
+    scheduler:
+      server:  
+        secret:
+        folder:
+      client:
+        secret:
+        folder:
 serverConfig:
   rclone:
     image:

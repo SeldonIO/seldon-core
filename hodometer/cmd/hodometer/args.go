@@ -12,13 +12,14 @@ import (
 )
 
 const (
-	envSchedulerHost    = "SCHEDULER_HOST"
-	envSchedulerPort    = "SCHEDULER_PORT"
-	envMetricsLevel     = "METRICS_LEVEL"
-	envLogLevel         = "LOG_LEVEL"
-	envClusterId        = "CLUSTER_ID"
-	envPublishUrl       = "PUBLISH_URL"
-	envExtraPublishUrls = "EXTRA_PUBLISH_URLS"
+	envSchedulerHost         = "SCHEDULER_HOST"
+	envSchedulerPlaintxtPort = "SCHEDULER_PLAINTXT_PORT"
+	envSchedulerTlsPort      = "SCHEDULER_TLS_PORT"
+	envMetricsLevel          = "METRICS_LEVEL"
+	envLogLevel              = "LOG_LEVEL"
+	envClusterId             = "CLUSTER_ID"
+	envPublishUrl            = "PUBLISH_URL"
+	envExtraPublishUrls      = "EXTRA_PUBLISH_URLS"
 )
 
 const (
@@ -27,13 +28,14 @@ const (
 )
 
 type cliArgs struct {
-	schedulerHost    string
-	schedulerPort    uint
-	metricsLevel     hodometer.MetricsLevel
-	logLevel         logrus.Level
-	clusterId        string
-	publishUrl       *url.URL
-	extraPublishUrls []*url.URL
+	schedulerHost         string
+	schedulerPlaintxtPort uint
+	schedulerTlsPort      uint
+	metricsLevel          hodometer.MetricsLevel
+	logLevel              logrus.Level
+	clusterId             string
+	publishUrl            *url.URL
+	extraPublishUrls      []*url.URL
 }
 
 type parseFailure struct {
@@ -46,7 +48,8 @@ func parseArgs() (*cliArgs, []parseFailure, error) {
 	args := &cliArgs{}
 
 	failures = setSchedulerHost(args, failures)
-	failures = setSchedulerPort(args, failures)
+	failures = setSchedulerPlaintxtPort(args, failures)
+	failures = setSchedulerTlsPort(args, failures)
 	failures = setMetricsLevel(args, failures)
 	failures = setLogLevel(args, failures)
 	failures = setClusterId(args, failures)
@@ -74,12 +77,12 @@ func setSchedulerHost(args *cliArgs, failures []parseFailure) []parseFailure {
 	return failures
 }
 
-func setSchedulerPort(args *cliArgs, failures []parseFailure) []parseFailure {
-	schedulerPortFromEnv := os.Getenv(envSchedulerPort)
+func setSchedulerPlaintxtPort(args *cliArgs, failures []parseFailure) []parseFailure {
+	schedulerPortFromEnv := os.Getenv(envSchedulerPlaintxtPort)
 	if schedulerPortFromEnv == "" {
 		failures = append(
 			failures,
-			parseFailure{envSchedulerPort, errors.New("value not set")},
+			parseFailure{envSchedulerPlaintxtPort, errors.New("value not set")},
 		)
 		return failures
 	}
@@ -87,12 +90,32 @@ func setSchedulerPort(args *cliArgs, failures []parseFailure) []parseFailure {
 	if err != nil {
 		failures = append(
 			failures,
-			parseFailure{envSchedulerPort, err},
+			parseFailure{envSchedulerPlaintxtPort, err},
 		)
 		return failures
 	}
+	args.schedulerPlaintxtPort = uint(schedulerPort)
+	return failures
+}
 
-	args.schedulerPort = uint(schedulerPort)
+func setSchedulerTlsPort(args *cliArgs, failures []parseFailure) []parseFailure {
+	schedulerPortFromEnv := os.Getenv(envSchedulerTlsPort)
+	if schedulerPortFromEnv == "" {
+		failures = append(
+			failures,
+			parseFailure{envSchedulerTlsPort, errors.New("value not set")},
+		)
+		return failures
+	}
+	schedulerPort, err := strconv.ParseUint(schedulerPortFromEnv, 10, 64)
+	if err != nil {
+		failures = append(
+			failures,
+			parseFailure{envSchedulerTlsPort, err},
+		)
+		return failures
+	}
+	args.schedulerTlsPort = uint(schedulerPort)
 	return failures
 }
 

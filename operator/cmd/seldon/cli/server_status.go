@@ -34,7 +34,10 @@ func createServerStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			schedulerClient := cli.NewSchedulerClient(schedulerHost)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			if err != nil {
+				return err
+			}
 			err = schedulerClient.ServerStatus(serverName, showRequest, showResponse)
 			return err
 		},

@@ -3,7 +3,6 @@ package cli
 import (
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 
@@ -11,9 +10,8 @@ import (
 )
 
 const (
-	seldonCfgFilepath = ".config/seldon/cli"
-	sessionFilename   = "session"
-	separator         = ","
+	sessionFilename = "session"
+	separator       = ","
 )
 
 func saveStickySessionKeyHttp(headers http.Header) (bool, error) {
@@ -46,11 +44,6 @@ func saveStickySessionKeyGrpc(headers metadata.MD) (bool, error) {
 
 func getStickySessionKeys() ([]string, error) {
 	return loadSessionKeyFromFile()
-}
-
-func getCfgPath() string {
-	usr, _ := user.Current()
-	return filepath.Join(usr.HomeDir, seldonCfgFilepath)
 }
 
 func getCfgSessionPath() string {

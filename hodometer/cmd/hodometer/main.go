@@ -35,7 +35,8 @@ func main() {
 	scc, err := hodometer.NewSeldonCoreCollector(
 		logger,
 		args.schedulerHost,
-		args.schedulerPort,
+		args.schedulerPlaintxtPort,
+		args.schedulerTlsPort,
 		args.clusterId,
 	)
 	if err != nil {
