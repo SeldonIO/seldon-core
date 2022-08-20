@@ -9,45 +9,33 @@ import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
+import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.dataflow.kafka.*
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.*
-import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
+import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsBuilder
 import java.util.concurrent.ConcurrentHashMap
 import io.klogging.logger as coLogger
-
-typealias PipelineId = String
-
-data class PipelineMetadata(
-    val id: PipelineId,
-    val name: String,
-    val version: Int,
-)
-
-data class PipelineTopology(
-    val metadata: PipelineMetadata,
-    val transformers: List<Transformer>,
-)
 
 @OptIn(FlowPreview::class)
 class PipelineSubscriber(
     private val name: String,
     private val kafkaProperties: KafkaProperties,
     private val kafkaDomainParams: KafkaDomainParams,
-    upstreamHost: String,
-    upstreamPort: Int,
+    private val upstreamHost: String,
+    private val upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
-    ) {
+) {
     private val kafkaAdmin = KafkaAdmin(kafkaProperties)
-    private val upstreamHost = upstreamHost
-    private val upstreamPort = upstreamPort
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)
@@ -81,7 +69,6 @@ class PipelineSubscriber(
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
     private suspend fun subscribePipelines() {
-
         client
             .subscribePipelineUpdates(request = makeSubscriptionRequest())
             .onEach { update ->
@@ -119,9 +106,11 @@ class PipelineSubscriber(
     ) {
         kafkaAdmin.ensureTopicsExist(steps)
 
-        val transformers = steps
+        val builder = StreamsBuilder()
+        val topology = steps
             .mapNotNull {
-                transformerFor(
+                stepFor(
+                    builder,
                     metadata.name,
                     it.sourcesList,
                     it.triggersList,
@@ -130,12 +119,11 @@ class PipelineSubscriber(
                     it.inputJoinTy,
                     it.triggersJoinTy,
                     it.batch,
-                    kafkaProperties,
                     kafkaDomainParams,
                 )
             }
-            .also { transformers ->
-                if (transformers.size != steps.size) {
+            .also { topology ->
+                if (topology.size != steps.size) {
                     client.pipelineUpdateEvent(
                         makePipelineUpdateEvent(
                             metadata = metadata,
@@ -148,13 +136,19 @@ class PipelineSubscriber(
                 }
             }
 
+        val pipelineKafkaProperties = kafkaProperties.withAppId(
+            HashUtils.hashIfLong(metadata.name),
+        )
+        val streamsApp = KafkaStreams(builder.build(), pipelineKafkaProperties)
+
+        val pipelineTopology = PipelineTopology(metadata, topology, streamsApp)
         val previous = pipelines
             .putIfAbsent(
                 metadata.id,
-                PipelineTopology(metadata, transformers),
+                pipelineTopology,
             )
         if (previous == null) {
-            transformers.forEach { it.start() }
+            pipelineTopology.start(kafkaDomainParams.useCleanState)
         } else {
             logger.warn("pipeline ${metadata.id} already exists")
         }
@@ -174,15 +168,7 @@ class PipelineSubscriber(
             .remove(metadata.id)
             ?.also { pipeline ->
                 runBlocking {
-                    pipeline.transformers
-                        .asFlow()
-                        .parallel(
-                            scope = this,
-                            concurrency = pipeline.transformers.size,
-                        ) { step ->
-                            cancelPipelineStep(pipeline.metadata, step, "removal requested")
-                        }
-                        .collect()
+                    pipeline.stop()
                 }
             }
         client.pipelineUpdateEvent(
@@ -197,25 +183,13 @@ class PipelineSubscriber(
 
     fun cancelPipelines(reason: String) {
         runBlocking {
-            logger.info("cancelling pipelines")
+            logger.info("cancelling pipelines due to: $reason")
             pipelines.values
-                .flatMap { pipeline ->
-                    pipeline.transformers.map { pipeline.metadata to it }
+                .map { pipeline ->
+                    async { pipeline.stop() }
                 }
-                .asFlow()
-                .parallel(scope = this, concurrency = pipelines.size) { (metadata, transformer) ->
-                    cancelPipelineStep(metadata, transformer, reason)
-                }
-                .collect()
+                .awaitAll()
         }
-    }
-
-    private suspend fun cancelPipelineStep(
-        metadata: PipelineMetadata,
-        transformer: Transformer,
-        reason: String,
-    ) {
-        transformer.stop()
     }
 
     private fun makePipelineUpdateEvent(

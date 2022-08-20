@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.seldon.mlops.chainer.ChainerOuterClass
+import org.apache.kafka.streams.StreamsBuilder
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
@@ -11,7 +12,7 @@ import strikt.api.expectThat
 import strikt.assertions.*
 import java.util.stream.Stream
 
-internal class TransformerTest {
+internal class PipelineStepTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource
@@ -22,13 +23,14 @@ internal class TransformerTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource
-    fun transformerFor(
+    fun stepFor(
         testName: String,
-        expected: Transformer?,
+        expected: PipelineStep?,
         sources: List<TopicName>,
     ) {
         val result =
-            transformerFor(
+            stepFor(
+                StreamsBuilder(),
                 defaultPipelineName,
                 sources,
                 emptyList(),
@@ -37,7 +39,6 @@ internal class TransformerTest {
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 ChainerOuterClass.Batch.getDefaultInstance(),
-                baseKafkaProperties,
                 kafkaDomainParams,
             )
 
@@ -52,9 +53,6 @@ internal class TransformerTest {
     companion object {
         private const val defaultSink = "seldon.namespace.sinkModel.inputs"
         private const val defaultPipelineName = "some-pipeline"
-        private val baseKafkaProperties = getKafkaProperties(
-            KafkaStreamsParams(bootstrapServers = "", numCores = 0),
-        )
         private val kafkaDomainParams = KafkaDomainParams(useCleanState = true, joinWindowMillis = 1_000L)
 
         @JvmStatic
@@ -82,7 +80,7 @@ internal class TransformerTest {
             )
 
         @JvmStatic
-        fun transformerFor(): Stream<Arguments> =
+        fun stepFor(): Stream<Arguments> =
             Stream.of(
                 arguments("no sources", null, emptyList<String>()),
                 arguments(
@@ -155,11 +153,11 @@ internal class TransformerTest {
 
         private fun makeChainerFor(inputTopic: TopicName, tensors: Set<TensorName>?): Chainer =
             Chainer(
+                StreamsBuilder(),
                 inputTopic = inputTopic,
                 tensors = tensors,
                 outputTopic = defaultSink,
                 pipelineName = defaultPipelineName,
-                properties = KafkaProperties(),
                 tensorRenaming = emptyMap(),
                 kafkaDomainParams = kafkaDomainParams,
                 inputTriggerTopics = emptySet(),
@@ -173,11 +171,11 @@ internal class TransformerTest {
             tensorsByTopic: Map<TopicName, Set<TensorName>>?,
         ): Joiner =
             Joiner(
+                StreamsBuilder(),
                 inputTopics = inputTopics,
                 tensorsByTopic = tensorsByTopic,
                 outputTopic = defaultSink,
                 pipelineName = defaultPipelineName,
-                properties = KafkaProperties(),
                 tensorRenaming = emptyMap(),
                 kafkaDomainParams = kafkaDomainParams,
                 joinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
@@ -188,7 +186,7 @@ internal class TransformerTest {
     }
 }
 
-fun Assertion.Builder<Transformer>.isSameTypeAs(other: Transformer) =
+fun Assertion.Builder<PipelineStep>.isSameTypeAs(other: PipelineStep) =
     assert("Same type") {
         when {
             it::class == other::class -> pass()
@@ -196,7 +194,7 @@ fun Assertion.Builder<Transformer>.isSameTypeAs(other: Transformer) =
         }
     }
 
-fun Assertion.Builder<Transformer>.matches(expected: Transformer) =
+fun Assertion.Builder<PipelineStep>.matches(expected: PipelineStep) =
     assert("Type and values are the same") {
         when {
             it is Chainer && expected is Chainer -> expect {

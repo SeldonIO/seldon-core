@@ -1,10 +1,10 @@
-package io.seldon.dataflow.kafka
+package io.seldon.dataflow.kafka.headers
 
-import io.klogging.noCoLogger
+import io.seldon.dataflow.kafka.TRecord
 import org.apache.kafka.streams.kstream.ValueTransformer
 import org.apache.kafka.streams.processor.ProcessorContext
 
-class HeaderFilter(private val pipelineName: String) : ValueTransformer<TRecord, TRecord> {
+class PipelineNameFilter(private val pipelineName: String) : ValueTransformer<TRecord, TRecord> {
     var context: ProcessorContext? = null
 
     override fun init(context: ProcessorContext?) {
@@ -20,10 +20,5 @@ class HeaderFilter(private val pipelineName: String) : ValueTransformer<TRecord,
         return if (shouldProcess) value else null
     }
 
-    override fun close() {
-    }
-
-    companion object {
-        private val logger = noCoLogger(HeaderFilter::class)
-    }
+    override fun close() {}
 }

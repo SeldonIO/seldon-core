@@ -1,6 +1,5 @@
 package io.seldon.dataflow.kafka
 
-import io.seldon.dataflow.Cli
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.TopicConfig
@@ -54,8 +53,11 @@ fun KafkaProperties.withAppId(name: String): KafkaProperties {
 
     properties.putAll(this.toMap())
     this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-$name"
-    //TODO add k8s host name to ensure static membership is only used for consumers from the same pod restarting?
-    this[ConsumerConfig.GROUP_INSTANCE_ID_CONFIG] = "seldon-dataflow-$name" //If set allows static membership which would allow restarts within SESSION_TIMEOUT_MS_CONFIG to happen with no rebalance
+    // TODO add k8s host name to ensure static membership is only used for consumers from the same pod restarting?
+    //
+    // If set, allows static membership which would allow restarts within SESSION_TIMEOUT_MS_CONFIG
+    // to happen with no rebalance
+    this[ConsumerConfig.GROUP_INSTANCE_ID_CONFIG] = "seldon-dataflow-$name"
 
     return properties
 }

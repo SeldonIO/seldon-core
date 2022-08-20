@@ -27,7 +27,7 @@ object Main {
             joinWindowMillis = config[Cli.kafkaJoinWindowMillis],
         )
         val subscriber = PipelineSubscriber(
-            "seldon-dataflow-transformer",
+            "seldon-dataflow-engine",
             kafkaProperties,
             kafkaDomainParams,
             config[Cli.upstreamHost],

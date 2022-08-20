@@ -1,21 +1,18 @@
 package io.seldon.dataflow.kafka
 
-import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
-import java.math.BigInteger
-import java.security.MessageDigest
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+import org.apache.kafka.streams.StreamsBuilder
 
-interface Transformer {
-    fun start()
-    fun stop()
-}
+interface PipelineStep
 
 data class TopicTensors(
     val topicName: TopicName,
     val tensors: Set<TensorName>,
 )
 
-fun transformerFor(
+fun stepFor(
+    builder: StreamsBuilder,
     pipelineName: String,
     sources: List<TopicName>,
     triggerSources: List<TopicName>,
@@ -24,14 +21,13 @@ fun transformerFor(
     joinType: PipelineJoinType,
     triggerJoinType: PipelineJoinType,
     batchProperties: Batch,
-    baseKafkaProperties: KafkaProperties,
     kafkaDomainParams: KafkaDomainParams,
-): Transformer? {
+): PipelineStep? {
     val triggerTopicsToTensors = parseTriggers(triggerSources)
     return when (val result = parseSources(sources)) {
         is SourceProjection.Empty -> null
         is SourceProjection.Single -> Chainer(
-            baseKafkaProperties.withAppId(nameFor(sources, sink, "chainer")),
+            builder,
             result.topicName,
             sink,
             null,
@@ -44,7 +40,7 @@ fun transformerFor(
             triggerTopicsToTensors
         )
         is SourceProjection.SingleSubset -> Chainer(
-            baseKafkaProperties.withAppId(nameFor(sources, sink, "chainer")),
+            builder,
             result.topicName,
             sink,
             result.tensors,
@@ -57,7 +53,7 @@ fun transformerFor(
             triggerTopicsToTensors
         )
         is SourceProjection.Many -> Joiner(
-            baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
+            builder,
             result.topicNames,
             sink,
             null,
@@ -70,7 +66,7 @@ fun transformerFor(
             triggerTopicsToTensors
         )
         is SourceProjection.ManySubsets -> Joiner(
-            baseKafkaProperties.withAppId(nameFor(sources, sink, "joiner")),
+            builder,
             result.tensorsByTopic.keys,
             sink,
             result.tensorsByTopic,
@@ -139,25 +135,9 @@ fun parseSources(sources: List<TopicName>): SourceProjection {
 }
 
 fun parseSource(source: TopicName): Pair<TopicName, TensorName?> {
-    if (source.split(".").size > 5) {
-        return source.substringBeforeLast(".") to source.substringAfterLast(".", "")
+    return if (source.split(".").size > 5) {
+        source.substringBeforeLast(".") to source.substringAfterLast(".", "")
     } else {
-        return source to null
+        source to null
     }
-}
-
-fun md5(input: String): String {
-    val md = MessageDigest.getInstance("MD5")
-    return BigInteger(1, md.digest(input.toByteArray()))
-        .toString(16)
-        .padStart(32, '0')
-}
-
-fun nameFor(sources: List<TopicName>, sink: TopicName, type: String): String {
-    //limit as kstream files based on name can get too long
-    return md5("$type:${sources.joinToString(":")}:$sink").substring(0,10)
-}
-
-object SeldonHeaders {
-    const val pipelineName = "pipeline"
 }

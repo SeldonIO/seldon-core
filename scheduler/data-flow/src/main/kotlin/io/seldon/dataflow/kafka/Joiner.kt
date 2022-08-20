@@ -3,17 +3,16 @@ package io.seldon.dataflow.kafka
 import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
 import io.seldon.mlops.inference.v2.V2Dataplane
-import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.kstream.*
+import org.apache.kafka.streams.kstream.JoinWindows
+import org.apache.kafka.streams.kstream.KStream
 import java.time.Duration
-import java.util.concurrent.CountDownLatch
 
 /**
- * A *transformer* which joins multiple input streams into a single output stream.
+ * A *step* which joins multiple input streams into a single output stream.
  */
 class Joiner(
-    properties: KafkaProperties,
+    builder: StreamsBuilder,
     internal val inputTopics: Set<TopicName>,
     internal val outputTopic: TopicName,
     internal val tensorsByTopic: Map<TopicName, Set<TensorName>>?,
@@ -24,15 +23,21 @@ class Joiner(
     internal val inputTriggerTopics: Set<TopicName>,
     internal val triggerJoinType: PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicName, Set<TensorName>>?,
-) : Transformer, KafkaStreams.StateListener {
-    private val latch = CountDownLatch(1)
-    private val streams: KafkaStreams by lazy {
-        val builder = StreamsBuilder()
-        val s1 = buildTopology(builder, inputTopics)
-        addTriggerTopology(pipelineName, kafkaDomainParams, builder, inputTriggerTopics, triggerTensorsByTopic, triggerJoinType, s1, null)
+) : PipelineStep {
+    init {
+        val dataStream = buildTopology(builder, inputTopics)
+        addTriggerTopology(
+            pipelineName,
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            dataStream,
+            null
+        )
             .headerRemover()
             .to(outputTopic, producerSerde)
-        KafkaStreams(builder.build(), properties)
     }
 
     private fun buildTopology(
@@ -58,61 +63,61 @@ class Joiner(
             ChainType.INPUT_OUTPUT -> buildInputOutputStream(topic, builder)
             else -> buildPassThroughStream(topic, builder)
         }
-        val payloadJoiner = when(chainType) {
+        val payloadJoiner = when (chainType) {
             ChainType.OUTPUT_INPUT, ChainType.INPUT_INPUT -> ::joinRequests
             ChainType.OUTPUT_OUTPUT, ChainType.INPUT_OUTPUT -> ::joinResponses
             else -> throw Exception("Can't join custom data")
         }
 
-       when (joinType) {
-           PipelineJoinType.Any -> {
-               val nextPending = pending
-                   ?.outerJoin(
-                       nextStream,
-                       payloadJoiner,
-                       //JoinWindows.ofTimeDifferenceAndGrace(Duration.ofMillis(1), Duration.ofMillis(1)),
-                       // Required because this "fix" causes outer joins to wait for next record to come in if all streams
-                       // don't produce a record during grace period. https://issues.apache.org/jira/browse/KAFKA-10847
-                       // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
-                       // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
-                       JoinWindows.of(Duration.ofMillis(1)),
-                       joinSerde,
-                   ) ?: nextStream
+        when (joinType) {
+            PipelineJoinType.Any -> {
+                val nextPending = pending
+                    ?.outerJoin(
+                        nextStream,
+                        payloadJoiner,
+                        //JoinWindows.ofTimeDifferenceAndGrace(Duration.ofMillis(1), Duration.ofMillis(1)),
+                        // Required because this "fix" causes outer joins to wait for next record to come in if all streams
+                        // don't produce a record during grace period. https://issues.apache.org/jira/browse/KAFKA-10847
+                        // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
+                        // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
+                        JoinWindows.of(Duration.ofMillis(1)),
+                        joinSerde,
+                    ) ?: nextStream
 
 
-               return buildTopology(builder, inputTopics.minus(topic), nextPending)
-           }
+                return buildTopology(builder, inputTopics.minus(topic), nextPending)
+            }
 
-           PipelineJoinType.Outer -> {
-               val nextPending = pending
-                   ?.outerJoin(
-                       nextStream,
-                       payloadJoiner,
-                       // See above for Any case as this will wait until next record comes in before emitting a result after window
-                       JoinWindows.ofTimeDifferenceWithNoGrace(
-                           Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
-                       ),
-                       joinSerde,
-                   ) ?: nextStream
+            PipelineJoinType.Outer -> {
+                val nextPending = pending
+                    ?.outerJoin(
+                        nextStream,
+                        payloadJoiner,
+                        // See above for Any case as this will wait until next record comes in before emitting a result after window
+                        JoinWindows.ofTimeDifferenceWithNoGrace(
+                            Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
+                        ),
+                        joinSerde,
+                    ) ?: nextStream
 
 
-               return buildTopology(builder, inputTopics.minus(topic), nextPending)
-           }
+                return buildTopology(builder, inputTopics.minus(topic), nextPending)
+            }
 
-           else -> {
-               val nextPending = pending
-                   ?.join(
-                       nextStream,
-                       payloadJoiner,
-                       JoinWindows.ofTimeDifferenceWithNoGrace(
-                           Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
-                       ),
-                       joinSerde,
-                   ) ?: nextStream
+            else -> {
+                val nextPending = pending
+                    ?.join(
+                        nextStream,
+                        payloadJoiner,
+                        JoinWindows.ofTimeDifferenceWithNoGrace(
+                            Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
+                        ),
+                        joinSerde,
+                    ) ?: nextStream
 
-               return buildTopology(builder, inputTopics.minus(topic), nextPending)
-           }
-       }
+                return buildTopology(builder, inputTopics.minus(topic), nextPending)
+            }
+        }
     }
 
     private fun buildPassThroughStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
@@ -122,13 +127,13 @@ class Joiner(
     }
 
     private fun buildInputOutputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
-       return builder
+        return builder
             .stream(topic, consumerSerde)
             .filterForPipeline(pipelineName)
             .unmarshallInferenceV2Request()
             .convertToResponse(topic, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0}
+            .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
     }
 
@@ -139,7 +144,7 @@ class Joiner(
             .unmarshallInferenceV2Response()
             .filterResponses(topic, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0}
+            .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
     }
 
@@ -159,7 +164,7 @@ class Joiner(
             .unmarshallInferenceV2Request()
             .filterRequests(topic, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
-            .filter { _, value -> value.inputsList.size != 0}
+            .filter { _, value -> value.inputsList.size != 0 }
             .marshallInferenceV2Request()
     }
 
@@ -203,31 +208,6 @@ class Joiner(
             .addAllRawOutputContents(rightResponse.rawOutputContentsList)
             .build()
         return response.toByteArray()
-    }
-
-    override fun onChange(s1: KafkaStreams.State, s2: KafkaStreams.State) {
-        logger.info("State (${inputTopics})->${outputTopic} ${s1} ")
-        when(s1) {
-            KafkaStreams.State.RUNNING ->
-                latch.countDown()
-            else -> {}
-        }
-    }
-
-    override fun start() {
-        if (kafkaDomainParams.useCleanState) {
-            streams.cleanUp()
-        }
-        logger.info("starting for ($inputTopics) -> ($outputTopic) joinType:${joinType} triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
-        streams.setStateListener(this)
-        streams.start()
-    }
-
-    override fun stop() {
-        logger.info("stopping joiner ${outputTopic}")
-        streams.close()
-        // Does not clean up everything see https://issues.apache.org/jira/browse/KAFKA-13787
-        streams.cleanUp()
     }
 
     companion object {

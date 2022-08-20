@@ -2,16 +2,13 @@ package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.StreamsBuilder
-import java.util.concurrent.CountDownLatch
 
 /**
- * A *transformer* for a single input stream to a single output stream.
+ * A *step* for a single input stream to a single output stream.
  */
 class Chainer(
-    properties: KafkaProperties,
+    builder: StreamsBuilder,
     internal val inputTopic: TopicName,
     internal val outputTopic: TopicName,
     internal val tensors: Set<TensorName>?,
@@ -22,15 +19,13 @@ class Chainer(
     internal val inputTriggerTopics: Set<TopicName>,
     internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicName, Set<TensorName>>?,
-) : Transformer, KafkaStreams.StateListener {
-    private val latch = CountDownLatch(1)
-    private val streams: KafkaStreams by lazy {
-        val builder = StreamsBuilder()
-            .also {
-                if (batchProperties.size > 0) {
-                    it.addStateStore(BatchProcessor.stateStoreBuilder)
-                }
+) : PipelineStep {
+    init {
+        builder.apply {
+            if (batchProperties.size > 0) {
+                this.addStateStore(BatchProcessor.stateStoreBuilder)
             }
+        }
 
         when (ChainType.create(inputTopic, outputTopic)) {
             ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
@@ -42,8 +37,6 @@ class Chainer(
 
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
-
-        KafkaStreams(builder.build(), properties)
     }
 
     private fun buildPassThroughStream(builder: StreamsBuilder) {
@@ -156,31 +149,6 @@ class Chainer(
         )
             .headerRemover()
             .to(outputTopic, producerSerde)
-    }
-
-    override fun onChange(s1: State, s2: State) {
-        logger.info("State ${inputTopic}->${outputTopic} ${s1} ")
-        when (s1) {
-            State.RUNNING ->
-                latch.countDown()
-            else -> {}
-        }
-    }
-
-    override fun start() {
-        if (kafkaDomainParams.useCleanState) {
-            streams.cleanUp()
-        }
-        logger.info("starting for ($inputTopic) -> ($outputTopic) tensors ${tensors} tensorRenaming ${tensorRenaming} triggers ${inputTriggerTopics} triggerTensorMap ${triggerTensorsByTopic}")
-        streams.setStateListener(this)
-        streams.start()
-        latch.await()
-    }
-
-    override fun stop() {
-        logger.info("stopping chainer ${inputTopic}->${outputTopic}")
-        streams.close()
-        streams.cleanUp()
     }
 
     companion object {
