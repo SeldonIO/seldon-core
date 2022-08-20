@@ -14,13 +14,13 @@ RUN gradle build --no-daemon --info
 ################################################################################
 
 # Some dependencies require glibc, which Alpine does not provide
-FROM azul/zulu-openjdk-debian:17.0.2-17.32.13-jre
+FROM gcr.io/distroless/java17-debian11:latest-amd64
+
+USER 1000
 
 WORKDIR /app
 COPY --from=builder /build/src/data-flow/build/libs/*.jar .
-USER 1000
-
 COPY data-flow/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
 # TODO - inject JAR name & version from build pipeline
-CMD ["java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
