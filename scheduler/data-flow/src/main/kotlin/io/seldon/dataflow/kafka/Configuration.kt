@@ -61,3 +61,12 @@ fun KafkaProperties.withAppId(name: String): KafkaProperties {
 
     return properties
 }
+
+fun KafkaProperties.withStreamThreads(n: Int): KafkaProperties {
+    val properties = KafkaProperties()
+
+    properties.putAll(this.toMap())
+    this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = n
+
+    return properties
+}

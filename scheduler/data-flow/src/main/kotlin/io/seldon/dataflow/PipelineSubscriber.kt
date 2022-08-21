@@ -136,9 +136,14 @@ class PipelineSubscriber(
                 }
             }
 
-        val pipelineKafkaProperties = kafkaProperties.withAppId(
-            HashUtils.hashIfLong(metadata.name),
-        )
+        val pipelineKafkaProperties = kafkaProperties
+            .withAppId(
+                HashUtils.hashIfLong(metadata.name),
+            )
+            .withStreamThreads(
+                PipelineTopology.getNumThreadsFor(topology)
+            )
+
         val streamsApp = KafkaStreams(builder.build(), pipelineKafkaProperties)
 
         val pipelineTopology = PipelineTopology(metadata, topology, streamsApp)

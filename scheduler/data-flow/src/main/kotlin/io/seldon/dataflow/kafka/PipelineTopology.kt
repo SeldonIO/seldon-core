@@ -4,6 +4,9 @@ import io.klogging.noCoLogger
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.StateListener
 import java.util.concurrent.CountDownLatch
+import kotlin.math.floor
+import kotlin.math.log2
+import kotlin.math.max
 
 typealias PipelineId = String
 
@@ -47,5 +50,11 @@ class PipelineTopology(
 
     companion object {
         private val logger = noCoLogger(PipelineTopology::class)
+
+        fun getNumThreadsFor(pipelineSteps: List<PipelineStep>): Int {
+            val numSteps = pipelineSteps.size.toFloat()
+            val scale = floor(log2(numSteps))
+            return max(1, scale.toInt())
+        }
     }
 }
