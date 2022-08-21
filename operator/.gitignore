@@ -25,4 +25,5 @@ bin
 
 self-signed-cert
 vendor
-/generated/
+generated
+artifacts

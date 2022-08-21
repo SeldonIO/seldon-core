@@ -24,8 +24,14 @@ const (
 	GrpcPortName          = "grpc"
 	HttpPortName          = "http"
 
-	TritonDefaultGrpcPort = 2001
-	TritonDefaultHttpPort = 2000
+	TritonDefaultGrpcPort      = 2001
+	TritonDefaultHttpPort      = 2000
+	TritonArgGrpcPort          = "--grpc-port="
+	TritonArgHttpPort          = "--http-port="
+	TritonArgModelRepository   = "--model-repository="
+	TritonArgModelControlMode  = "--model-control-mode="
+	TritonArgLoadModel         = "--load-model="
+	TritonArgStrictModelConfig = "--strict-model-config="
 
 	KFServingProbeLivePath  = "/v2/health/live"
 	KFServingProbeReadyPath = "/v2/health/ready"

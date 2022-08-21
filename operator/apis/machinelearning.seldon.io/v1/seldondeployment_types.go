@@ -71,6 +71,7 @@ const (
 	ANNOTATION_SEPARATE_ENGINE         = "seldon.io/engine-separate-pod"
 	ANNOTATION_HEADLESS_SVC            = "seldon.io/headless-svc"
 	ANNOTATION_NO_ENGINE               = "seldon.io/no-engine"
+	ANNOTATION_NO_STOARGE_INITIALIZER  = "seldon.io/no-storage-initializer"
 	ANNOTATION_CUSTOM_SVC_NAME         = "seldon.io/svc-name"
 	ANNOTATION_LOGGER_WORK_QUEUE_SIZE  = "seldon.io/executor-logger-queue-size"
 	ANNOTATION_LOGGER_WRITE_TIMEOUT_MS = "seldon.io/executor-logger-write-timeout-ms"

@@ -13,3 +13,5 @@ ipython>=7.2.0
 Pygments>=2.4.1,<3
 sphinx-copybutton==0.4.0
 docutils<0.18
+# wrokaround for https://github.com/readthedocs/readthedocs.org/issues/9038
+Jinja2<3.1

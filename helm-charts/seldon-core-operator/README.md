@@ -13,7 +13,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Onca that's done, you should then be able to deploy the chart as:
+Once that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system

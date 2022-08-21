@@ -4,6 +4,9 @@ FROM $BASE_IMAGE:$IMAGE_VERSION
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
+# We are setting default image user as 8888 but s2i build may require root
+LABEL io.openshift.s2i.assemble-user="0"
+
 # This is to install desired version of Python without updating conda version
 # Note: ARGs must be after FROM statement , see source:
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
@@ -42,4 +45,5 @@ RUN mkdir -p /.conda && \
     chown -R 8888 /microservice  && \
     conda clean --yes --index-cache
 
+USER 8888
 EXPOSE 5000

@@ -63,4 +63,5 @@ COPY --from=builder /microservice /microservice
 COPY --from=builder /licenses /licenses
 COPY --from=builder /opt/conda /opt/conda
 
+USER 8888
 ENTRYPOINT ["python", "-m", "alibiexplainer"]
