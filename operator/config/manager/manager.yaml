@@ -85,6 +85,8 @@ spec:
           value: ""
         - name: AMBASSADOR_ENABLED
           value: "true"
+        - name: AMBASSADOR_VERSION
+          value: "v1"
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT

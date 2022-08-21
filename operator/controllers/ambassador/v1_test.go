@@ -1,4 +1,4 @@
-package controllers
+package ambassador
 
 import (
 	"strings"
@@ -17,7 +17,7 @@ const (
 
 func basicAmbassadorTests(t *testing.T, mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, expectedWeight int32, expectedInstanceId string, expectedRetries int, isExplainer bool, isTLS bool) {
 	g := NewGomegaWithT(t)
-	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, isExplainer)
+	s, err := GetAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, isExplainer)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
 	g.Expect(len(parts)).To(Equal(3))
@@ -186,7 +186,7 @@ func circuitBreakerAmbassadorTests(t *testing.T,
 	expectedMaxRetries int,
 ) {
 	g := NewGomegaWithT(t)
-	s, err := getAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
+	s, err := GetAmbassadorConfigs(mlDep, p, "myservice", 9000, 5000, false)
 	g.Expect(err).To(BeNil())
 	parts := strings.Split(s, "---\n")[1:]
 	g.Expect(len(parts)).To(Equal(3))

@@ -226,5 +226,25 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - getambassador.io
+  resources:
+  - mappings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - getambassador.io
+  resources:
+  - mappings/status
+  verbs:
+  - get
+  - patch
+  - update
 {{- end }}
 {{- end }}

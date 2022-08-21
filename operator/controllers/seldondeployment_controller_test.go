@@ -239,6 +239,11 @@ var _ = Describe("Create a Seldon Deployment", func() {
 
 		conditions := duckv1beta1.Conditions{
 			{
+				Type:   machinelearningv1.AmbassadorMappingsReady,
+				Status: "True",
+				Reason: machinelearningv1.AmbassadorMappingNotDefined,
+			},
+			{
 				Type:   machinelearningv1.DeploymentsReady,
 				Status: "True",
 				Reason: "",

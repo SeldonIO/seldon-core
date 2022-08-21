@@ -132,7 +132,7 @@ func TestCleanVirtualServices(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	okList := []*istio.VirtualService{vsvcOk}
-	cleaner := &ResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.New(t)}
+	cleaner := &IstioResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.New(t)}
 	deleted, err := cleaner.cleanUnusedVirtualServices()
 	g.Expect(err).To(BeNil())
 	g.Expect(len(deleted)).To(Equal(2))

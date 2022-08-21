@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
+	"github.com/seldonio/seldon-core/operator/controllers/ambassador"
+	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
 	"net/url"
 	"strconv"
 	"strings"
@@ -106,6 +109,8 @@ type components struct {
 	pdbs                  []*policy.PodDisruptionBudget
 	virtualServices       []*istio.VirtualService
 	destinationRules      []*istio.DestinationRule
+	mappings              []*v2.Mapping
+	tlsContexts           []*v2.TLSContext
 	defaultDeploymentName string
 	addressable           *machinelearningv1.SeldonAddressable
 }
@@ -211,8 +216,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 	istio_gateway := utils.GetEnv(ENV_ISTIO_GATEWAY, "seldon-gateway")
 	istioTLSMode := utils.GetEnv(ENV_ISTIO_TLS_MODE, "")
-	istioRetriesAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES, "")
-	istioRetriesTimeoutAnnotation := getAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES_TIMEOUT, "1")
+	istioRetriesAnnotation := utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES, "")
+	istioRetriesTimeoutAnnotation := utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_RETRIES_TIMEOUT, "1")
 	istioRetries := 0
 	istioRetriesTimeout := 1
 	var err error
@@ -233,8 +238,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{getAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Hosts:    []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
+			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
@@ -411,7 +416,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	c := components{}
 	c.serviceDetails = map[string]*machinelearningv1.ServiceStatus{}
 	seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
-	namespace := getNamespace(mlDep)
+	namespace := utils2.GetNamespace(mlDep)
 
 	engine_http_port, err := getEngineHttpPort()
 	if err != nil {
@@ -527,7 +532,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 						grpcPort := int(svc.Spec.Ports[1].Port)
 
 						externalPorts[i] = httpGrpcPorts{httpPort: httpPort, grpcPort: grpcPort}
-						psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log)
+						psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, httpPort, grpcPort, false, log, &c)
 						if err != nil {
 							return nil, err
 						}
@@ -602,7 +607,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 				}
 			}
 
-			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, false, log)
+			psvc, err := createPredictorService(pSvcName, seldonId, &p, mlDep, engine_http_port, engine_grpc_port, false, log, &c)
 			if err != nil {
 
 				return nil, err
@@ -649,8 +654,9 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 	engine_http_port int,
 	engine_grpc_port int,
 	isExplainer bool,
-	log logr.Logger) (pSvc *corev1.Service, err error) {
-	namespace := getNamespace(mlDep)
+	log logr.Logger,
+	c *components) (pSvc *corev1.Service, err error) {
+	namespace := utils2.GetNamespace(mlDep)
 	psvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pSvcName,
@@ -677,15 +683,25 @@ func createPredictorService(pSvcName string, seldonId string, p *machinelearning
 		psvc.Spec.Ports = append(psvc.Spec.Ports, corev1.ServicePort{Protocol: corev1.ProtocolTCP, Port: int32(engine_grpc_port), TargetPort: intstr.FromInt(engine_grpc_port), Name: "grpc"})
 	}
 
-	if utils.GetEnv("AMBASSADOR_ENABLED", "false") == "true" {
-		//Create top level Service
-		ambassadorConfig, err := getAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
-		if err != nil {
-			return nil, err
+	if utils.GetEnv(ENV_AMBASSADOR_ENABLED, "false") == "true" {
+		if utils.GetEnv(ENV_AMBASSADOR_VERSION, "v1") == "v1" {
+			//Create top level Service
+			ambassadorConfig, err := ambassador.GetAmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
+			if err != nil {
+				return nil, err
+			}
+			psvc.Annotations[AMBASSADOR_ANNOTATION] = ambassadorConfig
+		} else {
+			mappings, tlsContexts, err := ambassador.GetV2AmbassadorConfigs(mlDep, p, pSvcName, engine_http_port, engine_grpc_port, isExplainer)
+			if err != nil {
+				return nil, err
+			}
+			c.mappings = append(c.mappings, mappings...)
+			c.tlsContexts = append(c.tlsContexts, tlsContexts...)
 		}
-		psvc.Annotations[AMBASSADOR_ANNOTATION] = ambassadorConfig
+
 	}
-	if getAnnotation(mlDep, machinelearningv1.ANNOTATION_HEADLESS_SVC, "false") != "false" {
+	if utils2.GetAnnotation(mlDep, machinelearningv1.ANNOTATION_HEADLESS_SVC, "false") != "false" {
 		log.Info("Creating Headless SVC")
 		psvc.Spec.ClusterIP = "None"
 	}
@@ -712,7 +728,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	if pu == nil {
 		return nil
 	}
-	namespace := getNamespace(mlDep)
+	namespace := utils2.GetNamespace(mlDep)
 
 	c.serviceDetails[containerServiceValue] = &machinelearningv1.ServiceStatus{
 		SvcName:      containerServiceValue,
@@ -892,7 +908,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
-			Namespace: getNamespace(mlDep),
+			Namespace: utils2.GetNamespace(mlDep),
 			Labels: map[string]string{
 				machinelearningv1.Label_seldon_id: seldonId,
 				"app":                             depName,
@@ -1011,6 +1027,83 @@ func getPort(name string, ports []corev1.ContainerPort) *corev1.ContainerPort {
 	return nil
 }
 
+func (r *SeldonDeploymentReconciler) createAmbassadorMappings(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	for _, mapping := range components.mappings {
+		if err := controllerutil.SetControllerReference(instance, mapping, r.Scheme); err != nil {
+			return ready, err
+		}
+		found := &v2.Mapping{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: mapping.Name, Namespace: mapping.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			ready = false
+			log.Info("Creating Ambassador Mapping", "namespace", mapping.Namespace, "name", mapping.Name)
+			err = r.Create(context.TODO(), mapping)
+			if err != nil {
+				return ready, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateAmbassadorMapping, "Created AmbassadorMapping %q", mapping.GetName())
+		} else if err != nil {
+			return ready, err
+		} else {
+			// Update the found object and write the result back if there are any changes
+			if !equality.Semantic.DeepEqual(mapping.Spec, found.Spec) {
+				desiredSvc := found.DeepCopy()
+				found.Spec = mapping.Spec
+				log.Info("Updating Ambassador Mapping", "namespace", mapping.Namespace, "name", mapping.Name)
+				err = r.Update(context.TODO(), found)
+				if err != nil {
+					return ready, err
+				}
+
+				// Check if what came back from server modulo the defaults applied by k8s is the same or not
+				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+					ready = false
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateAmbassadorMapping, "Updated Ambassador Mapping %q", mapping.GetName())
+					//For debugging we will show the difference
+					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
+					if err != nil {
+						log.Error(err, "Failed to diff")
+					} else {
+						log.Info(fmt.Sprintf("Difference in Mapping: %v", diff))
+					}
+				} else {
+					log.Info("The Ambassador Mappings are the same - api server defaults ignored")
+				}
+			} else {
+				log.Info("Found identical Ambassador Mapping", "namespace", found.Namespace, "name", found.Name)
+			}
+		}
+	}
+
+	//Cleanup unused Ambassador mappings. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
+	//Only run if we have virtualservices to create - implies we are running with istio active
+	if len(components.mappings) > 0 && ready {
+		cleaner := AmbassadoroResourceCleaner{instance: instance, client: r.Client, mappings: components.mappings, logger: r.Log}
+		deleted, err := cleaner.cleanUnusedAmbassadorMappings()
+		if err != nil {
+			return ready, err
+		}
+		for _, mappingDeleted := range deleted {
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteAmbassadorMapping, "Delete Ambassador mapping %q", mappingDeleted.GetName())
+		}
+	}
+
+	if ready {
+		var reason string
+		if len(components.mappings) > 0 {
+			reason = machinelearningv1.AmbassadorMappingReady
+		} else {
+			reason = machinelearningv1.AmbassadorMappingNotDefined
+		}
+		instance.Status.CreateCondition(machinelearningv1.AmbassadorMappingsReady, true, reason)
+	} else {
+		instance.Status.CreateCondition(machinelearningv1.AmbassadorMappingsReady, false, machinelearningv1.AmbassadorMappingNotReady)
+	}
+
+	return ready, nil
+}
+
 // Create Services specified in components.
 func (r *SeldonDeploymentReconciler) createIstioServices(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
 	ready := true
@@ -1113,7 +1206,7 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 	//Cleanup unused VirtualService. This should usually only happen on Operator upgrades where there is a breaking change to the names of the VirtualServices created
 	//Only run if we have virtualservices to create - implies we are running with istio active
 	if len(components.virtualServices) > 0 && ready {
-		cleaner := ResourceCleaner{instance: instance, client: r.Client, virtualServices: components.virtualServices, logger: r.Log}
+		cleaner := IstioResourceCleaner{instance: instance, client: r.Client, virtualServices: components.virtualServices, logger: r.Log}
 		deleted, err := cleaner.cleanUnusedVirtualServices()
 		if err != nil {
 			return ready, err
@@ -1641,6 +1734,11 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 		return err
 	}
 
+	_, err = r.createAmbassadorMappings(components, instance, log)
+	if err != nil {
+		return err
+	}
+
 	statusCopy := instance.Status.DeepCopy()
 	//delete from copied status the current expected deployments by name
 	for _, deploy := range components.deployments {
@@ -2026,6 +2124,49 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 			Owns(&appsv1.Deployment{}).
 			Owns(&corev1.Service{}).
 			Owns(&istio.VirtualService{}).
+			Complete(r)
+	} else if utils.GetEnv(ENV_AMBASSADOR_VERSION, "v2") == "v1" {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &v2.Mapping{}, ownerKey, func(rawObj client.Object) []string {
+			// grab the deployment object, extract the owner...
+			mapping := rawObj.(*v2.Mapping)
+			owner := metav1.GetControllerOf(mapping)
+			if owner == nil {
+				return nil
+			}
+			// ...make sure it's a SeldonDeployment...
+			if owner.APIVersion != apiGVStr || owner.Kind != "SeldonDeployment" {
+				return nil
+			}
+
+			// ...and if so, return it
+			return []string{owner.Name}
+		}); err != nil {
+			return err
+		}
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &v2.TLSContext{}, ownerKey, func(rawObj client.Object) []string {
+			// grab the deployment object, extract the owner...
+			tlsContext := rawObj.(*v2.TLSContext)
+			owner := metav1.GetControllerOf(tlsContext)
+			if owner == nil {
+				return nil
+			}
+			// ...make sure it's a SeldonDeployment...
+			if owner.APIVersion != apiGVStr || owner.Kind != "SeldonDeployment" {
+				return nil
+			}
+
+			// ...and if so, return it
+			return []string{owner.Name}
+		}); err != nil {
+			return err
+		}
+		return ctrl.NewControllerManagedBy(mgr).
+			Named(name).
+			For(&machinelearningv1.SeldonDeployment{}).
+			Owns(&appsv1.Deployment{}).
+			Owns(&corev1.Service{}).
+			Owns(&v2.Mapping{}).
+			Owns(&v2.TLSContext{}).
 			Complete(r)
 	} else {
 		return ctrl.NewControllerManagedBy(mgr).

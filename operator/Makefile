@@ -163,25 +163,20 @@ docker-push:
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
 
-kind-image-install: docker-build
+kind-image-install: docker-build-no-test
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
 	docker save ${IMG_REDHAT} > operator.tar
 	kind load image-archive operator.tar --name ${KIND_NAME}
 
-# find or download controller-gen
+# find or download controller-gn
 # download controller-gen if necessary
 
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
 	}
 
 CONTROLLER_GEN=$(GOBIN)/controller-gen

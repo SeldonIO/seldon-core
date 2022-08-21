@@ -27,6 +27,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 
+	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -78,6 +79,10 @@ func init() {
 	}
 	if utils.GetEnv(controllers.ENV_ISTIO_ENABLED, "false") == "true" {
 		_ = istio.AddToScheme(scheme)
+	}
+	if utils.GetEnv(controllers.ENV_AMBASSADOR_ENABLED, "false") == "true" &&
+		utils.GetEnv(controllers.ENV_AMBASSADOR_VERSION, "v1") == "v2" {
+		_ = v2.AddToScheme(scheme)
 	}
 	// +kubebuilder:scaffold:scheme
 }

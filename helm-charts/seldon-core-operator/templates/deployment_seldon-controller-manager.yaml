@@ -94,6 +94,8 @@ spec:
           value: '{{ .Values.controllerId }}'
         - name: AMBASSADOR_ENABLED
           value: '{{ .Values.ambassador.enabled }}'
+        - name: AMBASSADOR_VERSION
+          value: '{{ .Values.ambassador.version }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: '{{ .Values.ambassador.singleNamespace }}'
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
