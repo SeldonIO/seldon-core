@@ -1,20 +1,18 @@
 package io.seldon.dataflow.kafka
 
-import io.seldon.dataflow.parallel
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.KafkaFuture
-import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.errors.TopicExistsException
 import java.util.concurrent.ExecutionException
 import io.klogging.logger as coLogger
 
-class KafkaAdmin(kafkaProperties: KafkaProperties) {
-    private val adminClient = Admin.create(kafkaProperties)
+class KafkaAdmin(
+    adminConfig: KafkaAdminProperties,
+    private val streamsConfig: KafkaStreamsParams,
+) {
+    private val adminClient = Admin.create(adminConfig)
 
 
     suspend fun ensureTopicsExist(
@@ -27,7 +25,13 @@ class KafkaAdmin(kafkaProperties: KafkaProperties) {
             .also {
                 logger.info("Topics found are $it")
             }
-            .map { topicName -> NewTopic(topicName, 1, 1).configs(kafkaTopicConfig) }
+            .map { topicName ->
+                NewTopic(
+                    topicName,
+                    streamsConfig.numPartitions,
+                    streamsConfig.replicationFactor.toShort(),
+                ).configs(kafkaTopicConfig)
+            }
             .run { adminClient.createTopics(this) }
             .values()
             .also { topicCreations ->

@@ -30,12 +30,14 @@ import io.klogging.logger as coLogger
 class PipelineSubscriber(
     private val name: String,
     private val kafkaProperties: KafkaProperties,
+    kafkaAdminProperties: KafkaAdminProperties,
+    kafkaStreamsParams: KafkaStreamsParams,
     private val kafkaDomainParams: KafkaDomainParams,
     private val upstreamHost: String,
     private val upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
 ) {
-    private val kafkaAdmin = KafkaAdmin(kafkaProperties)
+    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams)
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)

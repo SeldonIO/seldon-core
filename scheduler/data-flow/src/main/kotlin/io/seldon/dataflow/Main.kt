@@ -3,6 +3,7 @@ package io.seldon.dataflow
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.getKafkaAdminProperties
 import io.seldon.dataflow.kafka.getKafkaProperties
 import kotlinx.coroutines.runBlocking
 
@@ -16,12 +17,14 @@ object Main {
         val config = Cli.configWith(args)
         logger.info("initialised")
 
-        val kafkaProperties = getKafkaProperties(
-            KafkaStreamsParams(
-                bootstrapServers = config[Cli.kafkaBootstrapServers],
-                numCores = config[Cli.numCores],
-            ),
+        val kafkaStreamsParams = KafkaStreamsParams(
+            bootstrapServers = config[Cli.kafkaBootstrapServers],
+            securityProtocol = config[Cli.kafkaSecurityProtocol],
+            numPartitions = config[Cli.kafkaPartitions],
+            replicationFactor = config[Cli.kafkaReplicationFactor],
         )
+        val kafkaProperties = getKafkaProperties(kafkaStreamsParams)
+        val kafkaAdminProperties = getKafkaAdminProperties(kafkaStreamsParams)
         val kafkaDomainParams = KafkaDomainParams(
             useCleanState = config[Cli.kafkaUseCleanState],
             joinWindowMillis = config[Cli.kafkaJoinWindowMillis],
@@ -29,6 +32,8 @@ object Main {
         val subscriber = PipelineSubscriber(
             "seldon-dataflow-engine",
             kafkaProperties,
+            kafkaAdminProperties,
+            kafkaStreamsParams,
             kafkaDomainParams,
             config[Cli.upstreamHost],
             config[Cli.upstreamPort],

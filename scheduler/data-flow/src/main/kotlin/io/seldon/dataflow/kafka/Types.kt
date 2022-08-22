@@ -7,6 +7,7 @@ import org.apache.kafka.streams.kstream.StreamJoined
 import java.util.*
 
 typealias KafkaProperties = Properties
+typealias KafkaAdminProperties = Properties
 typealias TopicName = String
 typealias TensorName = String
 typealias RequestId = String
