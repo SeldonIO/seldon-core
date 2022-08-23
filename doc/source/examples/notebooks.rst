@@ -166,7 +166,6 @@ Ingress
    Ambassador Canary <ambassador_canary>
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
-   Ambassador Custom Config <ambassador_custom>
    Istio Examples <istio_examples> 
    Istio Canary <istio_canary>
 

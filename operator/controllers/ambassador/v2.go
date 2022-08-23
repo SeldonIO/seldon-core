@@ -130,13 +130,15 @@ func getV2Mapping(isREST bool,
 				Bool: &exists,
 			}
 		case 2:
+			trimmed := strings.TrimSpace(parts[1])
 			val = v2.BoolOrString{
-				String: &parts[1],
+				String: &trimmed,
 			}
 		default:
 			return nil, fmt.Errorf("Only a single custom header match is allowed at present but you provided: %s", customHeader)
 		}
-		m.Spec.Headers[parts[0]] = val
+		key := strings.TrimSpace(parts[0])
+		m.Spec.Headers[key] = val
 	}
 
 	if customRegexHeader != "" {
@@ -259,7 +261,7 @@ func getV2TLSConfig(mlDep *machinelearningv1.SeldonDeployment, p *machinelearnin
 func GetV2AmbassadorConfigs(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, serviceName string, engine_http_port, engine_grpc_port int, isExplainer bool) ([]*v2.Mapping, []*v2.TLSContext, error) {
 	var weight *int32
 	// Ignore weight on first predictor and let Ambassador handle this
-	if mlDep.Spec.Predictors[0].Name != p.Name {
+	if p.Shadow || mlDep.Spec.Predictors[0].Name != p.Name {
 		weight = &p.Traffic
 	}
 

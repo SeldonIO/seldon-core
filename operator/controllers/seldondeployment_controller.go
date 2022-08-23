@@ -1876,6 +1876,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups=v1,resources=namespaces,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=getambassador.io,resources=mappings/status,verbs=get;update;patch
 
 func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	//ctx := context.Background()
