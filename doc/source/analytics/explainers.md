@@ -76,7 +76,7 @@ spec:
     replicas: 1
 ```
 
-If you were port forwarding to Ambassador on localhost:8003 then the API call would be:
+If you were port forwarding to Ambassador or istio on localhost:8003 then the API call would be:
 
 ```
 http://localhost:8003/seldon/seldon/income-explainer/default/api/v1.0/explain

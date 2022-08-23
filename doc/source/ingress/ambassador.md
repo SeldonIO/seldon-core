@@ -4,10 +4,9 @@ Seldon Core works well with [Ambassador](https://www.getambassador.io/), allowin
 
 ## Installing Ambassador
 
-You have [two options](https://www.getambassador.io/editions/) when installing Ambassador:
+Seldon Core currently supports the V2 Ambassador API and also for legacy customers the V1 Ambassador API. Follow the [Ambassador docs](https://www.getambassador.io/).
 
-Seldon Core currently supports the V2 Ambassador API and also for legacy customers the V1 Ambassador API. Follow the [Ambassador docs](https://www.getambassador.io/)..
-
+When using the helm install of Seldon Core you can set which version of Ambassador APIs to use with `ambassador.version` which defaults to v2.
 
 ## Ambassador REST
 
@@ -50,7 +49,7 @@ curl -vk https://0.0.0.0/seldon/mymodel/api/v1.0/predictions -d '{"data":{"names
 
 | Annotation | Description |
 |------------|-------------|
-|`seldon.io/ambassador-config:<configuration>`| Custom Ambassador Configuration |
+|`seldon.io/ambassador-config:<configuration>`| Custom Ambassador Configuration (v1 only) |
 |`seldon.io/ambassador-header:<header>`| The header to add to Ambassador configuration |
 |`seldon.io/ambassador-id:<instance id>`| The instance id to be added to Ambassador `ambassador_id` configuration |
 |`seldon.io/ambassador-regex-header:<regex>`| The regular expression header to use for routing via headers|
@@ -183,26 +182,3 @@ Note that your Ambassador instance must be configured with matching `ambassador_
 
 See [AMBASSADOR_ID](https://www.getambassador.io/docs/latest/topics/running/running/#ambassador_id) for details
 
-### Custom Amabassador configuration
-
-The above discussed configurations should cover most cases, however custom configuration is necessary to leverage the full feature-set of Ambassador Edge Stack as a traffic management and authentication tool.  There are two options for configuring Ambassador, based on how you want to manage the configuration: Custom Resource Definitions (CRD's) and Annotations.
-
-Ambassador primarily utilizes [Custom Resource Definitions](https://www.getambassador.io/docs/edge-stack/latest/topics/concepts/gitops-continuous-delivery/#policies-declarative-configuration-and-custom-resource-definitions) for managing configuration.  These are custom `kind` resources that the Kubernetes API can read, and are used to update Ambassador's config in a way that is observable to the cluster as a whole (e.g. you can `kubectl get` these resources).  These CRD's can be managed independent of the Seldon Deploy itself.
-
-Ambassador also supports annotation based configuration, which can be applied to a Seldon Deployment using the `seldon.io/ambassador-config` annotation key.  The overall formatting of the annotation-based config is the same as the CRD based config, except without the `metadata` and `spec` fields.  The following snippets demonstrate the difference between CRD and Annotation based configurations, and are functionally identical.
-
-```yaml
-apiVersion: getambassador.io/v2
-kind: Mapping
-metadata:
-  name: seldon_example_rest_mapping
-spec:
-  prefix: /mycompany/ml/
-  service: production-model-example.seldon:8000
-  timeout_ms: 3000
-```
-
- * `seldon.io/ambassador-config:<configuration>` : The custom ambassador configuration
-    * Example: `"seldon.io/ambassador-config":"apiVersion: ambassador/v2\nkind: Mapping\nname: seldon_example_rest_mapping\nprefix: /mycompany/ml/\nservice: production-model-example.seldon:8000\ntimeout_ms: 3000"`
-
-A worked example for [custom Ambassador config](../examples/ambassador_custom.html) is provided.
