@@ -46,7 +46,7 @@ class PipelineSubscriber(
         .build()
     private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
 
-    private val pipelines = ConcurrentHashMap<PipelineId, PipelineTopology>()
+    private val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
     private val grpcFailurePolicy: RetryPolicy<Throwable> = {
         when (reason) {
             is StatusException,
@@ -57,7 +57,7 @@ class PipelineSubscriber(
     }
 
     suspend fun subscribe() {
-        logger.info("Will connect to ${upstreamHost}:${upstreamPort}")
+        logger.info("will connect to ${upstreamHost}:${upstreamPort}")
         retry(grpcFailurePolicy + binaryExponentialBackoff(50..5_000L)) {
             subscribePipelines()
         }
@@ -106,65 +106,34 @@ class PipelineSubscriber(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
     ) {
-        kafkaAdmin.ensureTopicsExist(steps)
-
-        val builder = StreamsBuilder()
-        val topology = steps
-            .mapNotNull {
-                stepFor(
-                    builder,
-                    metadata.name,
-                    it.sourcesList,
-                    it.triggersList,
-                    it.tensorMapMap,
-                    it.sink,
-                    it.inputJoinTy,
-                    it.triggersJoinTy,
-                    it.batch,
-                    kafkaDomainParams,
+        val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams)
+        if (pipeline.size != steps.size) {
+            client.pipelineUpdateEvent(
+                makePipelineUpdateEvent(
+                    metadata = metadata,
+                    operation = PipelineOperation.Create,
+                    success = false,
+                    reason = "failed to create all pipeline steps"
                 )
-            }
-            .also { topology ->
-                if (topology.size != steps.size) {
-                    client.pipelineUpdateEvent(
-                        makePipelineUpdateEvent(
-                            metadata = metadata,
-                            operation = PipelineOperation.Create,
-                            success = false,
-                            reason = "failed to create all pipeline steps"
-                        )
-                    )
-                    return
-                }
-            }
-
-        val pipelineKafkaProperties = kafkaProperties
-            .withAppId(
-                HashUtils.hashIfLong(metadata.name),
-            )
-            .withStreamThreads(
-                PipelineTopology.getNumThreadsFor(topology)
             )
 
-        val streamsApp = KafkaStreams(builder.build(), pipelineKafkaProperties)
+            return
+        }
 
-        val pipelineTopology = PipelineTopology(metadata, topology, streamsApp)
-        val previous = pipelines
-            .putIfAbsent(
-                metadata.id,
-                pipelineTopology,
-            )
+        val previous = pipelines.putIfAbsent(metadata.id, pipeline)
         if (previous == null) {
-            pipelineTopology.start(kafkaDomainParams.useCleanState)
+            kafkaAdmin.ensureTopicsExist(steps)
+            pipeline.start()
         } else {
             logger.warn("pipeline ${metadata.id} already exists")
         }
+
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
                 success = true,
-                reason = "Created pipeline"
+                reason = "created pipeline"
             )
         )
     }
@@ -183,7 +152,7 @@ class PipelineSubscriber(
                 metadata = metadata,
                 operation = PipelineOperation.Delete,
                 success = true,
-                reason = "Pipeline removed",
+                reason = "pipeline removed",
             )
         )
     }
