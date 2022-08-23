@@ -15,7 +15,6 @@ BurntSushi/toml
 BurntSushi/xgb
 DataDog/datadog-api-client-go
 Huawei/gophercloud
-Masterminds/semver
 NYTimes/gziphandler
 OneOfOne/xxhash
 PuerkitoBio/purell
@@ -84,6 +83,7 @@ elastic/go-elasticsearch
 elazarl/goproxy
 emicklei/go-restful
 emicklei/go-restful-swagger12
+emissary-ingress/emissary
 envoyproxy/go-control-plane
 envoyproxy/protoc-gen-validate
 evanphx/json-patch

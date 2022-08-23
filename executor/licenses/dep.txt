@@ -37,7 +37,6 @@ github.com/BurntSushi/toml
 github.com/BurntSushi/xgb
 github.com/DataDog/datadog-api-client-go
 github.com/Huawei/gophercloud
-github.com/Masterminds/semver
 github.com/NYTimes/gziphandler
 github.com/OneOfOne/xxhash
 github.com/PuerkitoBio/purell
@@ -109,6 +108,7 @@ github.com/elastic/go-elasticsearch/v7
 github.com/elazarl/goproxy
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful-swagger12
+github.com/emissary-ingress/emissary/v3
 github.com/envoyproxy/go-control-plane
 github.com/envoyproxy/protoc-gen-validate
 github.com/evanphx/json-patch
@@ -228,7 +228,6 @@ github.com/jstemmer/go-junit-report
 github.com/jtolds/gls
 github.com/julienschmidt/httprouter
 github.com/jung-kurt/gofpdf
-github.com/kedacore/keda
 github.com/kedacore/keda/v2
 github.com/kelseyhightower/envconfig
 github.com/kisielk/errcheck
@@ -401,7 +400,6 @@ google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
 gopkg.in/check.v1
 gopkg.in/errgo.v2
-gopkg.in/evanphx/json-patch.v4
 gopkg.in/fsnotify.v1
 gopkg.in/inf.v0
 gopkg.in/ini.v1

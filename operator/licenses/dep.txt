@@ -37,7 +37,10 @@ github.com/BurntSushi/toml
 github.com/BurntSushi/xgb
 github.com/DataDog/datadog-api-client-go
 github.com/Huawei/gophercloud
+github.com/MakeNowJust/heredoc
+github.com/Masterminds/goutils
 github.com/Masterminds/semver
+github.com/Masterminds/sprig
 github.com/NYTimes/gziphandler
 github.com/OneOfOne/xxhash
 github.com/PuerkitoBio/purell
@@ -48,6 +51,7 @@ github.com/alecthomas/units
 github.com/andybalholm/brotli
 github.com/antihax/optional
 github.com/antlr/antlr4/runtime/Go/antlr
+github.com/argoproj/argo-rollouts
 github.com/armon/circbuf
 github.com/armon/go-metrics
 github.com/armon/go-radix
@@ -83,6 +87,9 @@ github.com/coreos/go-systemd/v22
 github.com/coreos/pkg
 github.com/cpuguy83/go-md2man/v2
 github.com/creack/pty
+github.com/datawire/dlib
+github.com/datawire/dtest
+github.com/datawire/go-mkopensource
 github.com/davecgh/go-spew
 github.com/deepmap/oapi-codegen
 github.com/denisenkom/go-mssqldb
@@ -92,6 +99,7 @@ github.com/dgryski/go-gk
 github.com/dgryski/go-rendezvous
 github.com/dgryski/go-sip13
 github.com/dimchansky/utfbom
+github.com/docker/distribution
 github.com/docker/spdystream
 github.com/docopt/docopt-go
 github.com/dustin/go-humanize
@@ -104,10 +112,13 @@ github.com/elastic/go-elasticsearch/v7
 github.com/elazarl/goproxy
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful-swagger12
+github.com/emissary-ingress/emissary/v3
 github.com/envoyproxy/go-control-plane
 github.com/envoyproxy/protoc-gen-validate
 github.com/evanphx/json-patch
 github.com/evanphx/json-patch/v5
+github.com/exponent-io/jsonpath
+github.com/fatih/camelcase
 github.com/fatih/color
 github.com/felixge/httpsnoop
 github.com/form3tech-oss/jwt-go
@@ -115,6 +126,7 @@ github.com/fsnotify/fsnotify
 github.com/getkin/kin-openapi
 github.com/getsentry/raven-go
 github.com/ghodss/yaml
+github.com/go-errors/errors
 github.com/go-gl/glfw
 github.com/go-gl/glfw/v3.3/glfw
 github.com/go-kit/kit
@@ -159,6 +171,7 @@ github.com/google/martian
 github.com/google/martian/v3
 github.com/google/pprof
 github.com/google/renameio
+github.com/google/shlex
 github.com/google/uuid
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic
@@ -200,12 +213,14 @@ github.com/hashicorp/vault/api
 github.com/hashicorp/vault/sdk
 github.com/hashicorp/yamux
 github.com/hpcloud/tail
+github.com/huandu/xstrings
 github.com/ianlancetaylor/demangle
 github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
 github.com/influxdata/influxdb-client-go/v2
 github.com/influxdata/line-protocol
 github.com/influxdata/tdigest
+github.com/invopop/yaml
 github.com/jcmturner/aescts/v2
 github.com/jcmturner/dnsutils/v2
 github.com/jcmturner/gofork
@@ -220,6 +235,7 @@ github.com/json-iterator/go
 github.com/jstemmer/go-junit-report
 github.com/jtolds/gls
 github.com/julienschmidt/httprouter
+github.com/kballard/go-shellquote
 github.com/kedacore/keda/v2
 github.com/kelseyhightower/envconfig
 github.com/kisielk/errcheck
@@ -233,6 +249,7 @@ github.com/kr/pty
 github.com/kr/text
 github.com/leodido/go-urn
 github.com/lib/pq
+github.com/liggitt/tabwriter
 github.com/magiconair/properties
 github.com/mailru/easyjson
 github.com/mattn/go-colorable
@@ -245,6 +262,7 @@ github.com/mitchellh/cli
 github.com/mitchellh/copystructure
 github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
+github.com/mitchellh/go-wordwrap
 github.com/mitchellh/gox
 github.com/mitchellh/hashstructure
 github.com/mitchellh/iochan
@@ -254,6 +272,7 @@ github.com/moby/spdystream
 github.com/moby/term
 github.com/modern-go/concurrent
 github.com/modern-go/reflect2
+github.com/monochromegane/go-gitignore
 github.com/munnerz/goautoneg
 github.com/mwitkow/go-conntrack
 github.com/mxk/go-flowrate
@@ -266,6 +285,7 @@ github.com/olekukonko/tablewriter
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/v2
 github.com/onsi/gomega
+github.com/opencontainers/go-digest
 github.com/opentracing/opentracing-go
 github.com/openzipkin/zipkin-go
 github.com/pascaldekloe/goe
@@ -289,6 +309,7 @@ github.com/rcrowley/go-metrics
 github.com/robfig/cron/v3
 github.com/rogpeppe/fastuuid
 github.com/rogpeppe/go-internal
+github.com/russross/blackfriday
 github.com/russross/blackfriday/v2
 github.com/ryanuber/columnize
 github.com/ryanuber/go-glob
@@ -327,6 +348,7 @@ github.com/xdg/scram
 github.com/xdg/stringprep
 github.com/xhit/go-str2duration/v2
 github.com/xiang90/probing
+github.com/xlab/treeprint
 github.com/youmark/pkcs8
 github.com/yuin/goldmark
 go.etcd.io/bbolt
@@ -351,6 +373,7 @@ go.opentelemetry.io/otel/sdk/export/metric
 go.opentelemetry.io/otel/sdk/metric
 go.opentelemetry.io/otel/trace
 go.opentelemetry.io/proto/otlp
+go.starlark.net
 go.uber.org/atomic
 go.uber.org/automaxprocs
 go.uber.org/goleak
@@ -399,6 +422,7 @@ k8s.io/api
 k8s.io/apiextensions-apiserver
 k8s.io/apimachinery
 k8s.io/apiserver
+k8s.io/cli-runtime
 k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
@@ -406,6 +430,8 @@ k8s.io/gengo
 k8s.io/klog
 k8s.io/klog/v2
 k8s.io/kube-openapi
+k8s.io/kubectl
+k8s.io/kubernetes
 k8s.io/metrics
 k8s.io/utils
 knative.dev/hack
@@ -416,8 +442,12 @@ rsc.io/quote/v3
 rsc.io/sampler
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
+sigs.k8s.io/controller-tools
 sigs.k8s.io/custom-metrics-apiserver
+sigs.k8s.io/gateway-api
 sigs.k8s.io/json
+sigs.k8s.io/kustomize/api
+sigs.k8s.io/kustomize/kyaml
 sigs.k8s.io/structured-merge-diff
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml
