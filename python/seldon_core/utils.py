@@ -754,4 +754,5 @@ def setup_tracing(interface_name: str) -> object:
                 config=config_dict, service_name=interface_name, validate=True
             )
     # this call also sets opentracing.tracer
-    return config.initialize_tracer()
+    tracer = config.initialize_tracer() 
+    return tracer

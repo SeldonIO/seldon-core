@@ -237,9 +237,12 @@ class SeldonModelGRPC:
         self.metadata_data = seldon_core.seldon_methods.init_metadata(user_model)
 
     def Predict(self, request_grpc, context):
-        return seldon_core.seldon_methods.predict(
+        scope = self.user_model.tracer.scope_manager.activate(context.get_active_span(), True)
+        predict = seldon_core.seldon_methods.predict(
             self.user_model, request_grpc, self.seldon_metrics
         )
+        scope.close()
+        return predict
 
     def SendFeedback(self, feedback_grpc, context):
         return seldon_core.seldon_methods.send_feedback(

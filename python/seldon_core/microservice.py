@@ -423,7 +423,7 @@ def main():
                 from flask_opentracing import FlaskTracing
 
                 tracer = setup_tracing(args.interface_name)
-
+                user_object.set_tracer(tracer)
                 logger.info("Set JAEGER_EXTRA_TAGS %s", jaeger_extra_tags)
                 FlaskTracing(tracer, True, app, jaeger_extra_tags)
 
@@ -497,6 +497,7 @@ def main():
 
             logger.info("Adding tracer")
             tracer = setup_tracing(args.interface_name)
+            user_object.set_tracer(tracer)
             interceptor = open_tracing_server_interceptor(tracer)
         else:
             interceptor = None

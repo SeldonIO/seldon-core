@@ -54,7 +54,7 @@ class SeldonResponse:
 
 class SeldonComponent:
     def __init__(self, **kwargs):
-        pass
+        self.tracer = None
 
     def tags(self) -> Dict:
         raise SeldonNotImplementedError("tags is not implemented")
@@ -149,6 +149,14 @@ class SeldonComponent:
 
     def init_metadata(self) -> Dict:
         raise SeldonNotImplementedError("init_metadata is not implemented")
+
+    def set_tracer(self, tracer) -> None:
+        self.tracer = tracer
+        logger.info("tracing object set inside SeldonComponent.")
+
+    def set_grpc_tracer(self, tracer) -> None:
+        self.grpc_tracer = tracer
+        logger.info("gRPC tracing object set inside SeldonComponent.")
 
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
