@@ -58,7 +58,7 @@ kind_build_images: build_protos kind_build_operator kind_build_executor kind_bui
 helm_setup:
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-	helm repo add datawire https://www.getambassador.io
+	helm repo add datawire https://app.getambassador.io
 	helm repo update
 
 .PHONY: install_ambassador
