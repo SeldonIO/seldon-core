@@ -39,7 +39,7 @@ docker tag "seldonio/seldon-core-executor:${SOURCE_IMAGE_TAG}" "quay.io/domino/s
 
 if [ "${nopush_flag}" == "" ]; then
 
-  if [ "$(cat ~/.docker/config.json | jq '.auths | has("quay.io")')" == "true" ]; then
+  if [ -f ~/.docker/config.json ] && [ "$(cat ~/.docker/config.json | jq '.auths | has("quay.io")')" == "true" ]; then
     echo -e "[Docker is already logged into quay.io, using existing credentials.]"
   elif [ "${QUAY_USER:-missing}" != "missing" ] && [ "${QUAY_PASSWORD:-missing}" != "missing" ]; then
     echo "$QUAY_PASSWORD" | docker login -u "$QUAY_USER" --password-stdin quay.io

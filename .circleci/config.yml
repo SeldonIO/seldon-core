@@ -1,8 +1,53 @@
 version: 2.1
 
+orbs:
+  go: circleci/go@1.7.1
+
+parameters:
+  kustomize-version:
+    type: string
+    default: v4.5.7
+
 jobs:
-  build:
+  build-and-push:
     docker:
-     - image: cimg/base:2022.05
+     - image: cimg/base:2022.08
+    resource_class: medium
     steps:
-        - run: echo "Sample CircleCI job."
+      - go/install:
+          version: "1.17"
+      - run:
+          name: "Install kustomize"
+          command: |
+            URL=https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/<< pipeline.parameters.kustomize-version >>/kustomize_<< pipeline.parameters.kustomize-version >>_linux_amd64.tar.gz
+            curl -L $URL | tar zx
+
+            [ -w /usr/local/bin ] && SUDO="" || SUDO=sudo
+            $SUDO chmod +x ./kustomize
+            $SUDO mv ./kustomize /usr/local/bin
+      - setup_remote_docker:
+          version: 20.10.14
+      - checkout
+      - run:
+          name: "Docker login"
+          command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+      - run:
+          name: "Seldon-core Domino Build & Push Script"
+          command: ./domino-build.sh
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build-and-push:
+          context:
+            - org-global
+          filters:
+            tags:
+              only: /v\d+(\.\d+)*(-.*)*/
+#      - test:
+#          requires:
+#            - build
+#          filters:
+#            tags:
+#              only: /v\d+(\.\d+)*(-.*)*/
