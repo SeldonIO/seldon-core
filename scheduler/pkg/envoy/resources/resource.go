@@ -213,6 +213,13 @@ func makeModelHttpRoute(r *Route, rt *route.Route) {
 		//	},
 		//},
 	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader,
+		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
+			PresentMatch: false,
+		},
+	}
+
 	rt.Action = createWeightedModelClusterAction(r.Clusters, true)
 	if r.LogPayloads {
 		rt.ResponseHeadersToAdd = modelRouteHeaders
@@ -229,12 +236,19 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *ro
 	}
 
 	rt.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.RouteName,
+		},
+	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{
 			ContainsMatch: wrapRouteHeader(util.GetVersionedModelName(
 				clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
 		},
 	}
+
 	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
@@ -301,6 +315,12 @@ func makeModelGrpcRoute(r *Route, rt *route.Route) {
 		//		},
 		//	},
 		//},
+	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader,
+		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
+			PresentMatch: false,
+		},
 	}
 	rt.Action = createWeightedModelClusterAction(r.Clusters, false)
 	if r.LogPayloads {
@@ -373,6 +393,12 @@ func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route) {
 			ExactMatch: r.RouteName,
 		},
 	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader,
+		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
+			PresentMatch: false,
+		},
+	}
 	rt.Action = createWeightedPipelineClusterAction(r.Clusters, true)
 }
 
@@ -383,6 +409,12 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route) {
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
 			ExactMatch: r.RouteName,
+		},
+	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader,
+		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
+			PresentMatch: false,
 		},
 	}
 	rt.Action = createWeightedPipelineClusterAction(r.Clusters, false)
@@ -401,6 +433,12 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 		Name: SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{
 			ContainsMatch: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
+		},
+	}
+	rt.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
+			ExactMatch: r.RouteName,
 		},
 	}
 	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
@@ -478,7 +516,7 @@ func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) *route.Rou
 	for i := 0; i < len(rts); i++ {
 		rts[i] = &route.Route{
 			Match: &route.RouteMatch{
-				Headers: make([]*route.HeaderMatcher, 1),
+				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
 			},
 		}
 	}

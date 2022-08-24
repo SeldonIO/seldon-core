@@ -47,6 +47,8 @@ For an example see the [local experiments notebook](../../../examples/local-expe
 
 To allow cohorts to get consistent views in an experiment each inference request passes back a response header `x-seldon-route` which can be passed in future requests to an experiment to bypass the random traffic splits and get a prediction from the sequence of models and pipelines used in the initial request.
 
+Note: you must pass the normal `seldon-model` header along with the `x-seldon-route` header.
+
 This is illustrated in the [local experiments notebook](../../../examples/local-experiments.md).
 
 Caveats:

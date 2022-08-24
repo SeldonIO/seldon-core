@@ -138,24 +138,21 @@ func decodeV2Error(response *http.Response, b []byte) error {
 
 }
 
-func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string, stickySesionKeys []string) ([]byte, error) {
+func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string, stickySessionKeys []string) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if stickySesionKeys != nil {
-		for _, stickySessionKey := range stickySesionKeys {
-			req.Header.Add(SeldonRouteHeader, stickySessionKey)
-		}
-	} else {
-		switch inferType {
-		case InferModel:
-			req.Header.Set(SeldonModelHeader, resourceName)
-		case InferPipeline:
-			req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
-		}
+	for _, stickySessionKey := range stickySessionKeys {
+		req.Header.Add(SeldonRouteHeader, stickySessionKey)
+	}
+	switch inferType {
+	case InferModel:
+		req.Header.Set(SeldonModelHeader, resourceName)
+	case InferPipeline:
+		req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
 	}
 
 	for _, header := range headers {
@@ -368,17 +365,14 @@ func (ic *InferenceClient) InferGrpc(resourceName string, data []byte, showReque
 	}
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 	ctx := context.TODO()
-	if stickySessionKeys != nil {
-		for _, stickySessionKey := range stickySessionKeys {
-			ctx = metadata.AppendToOutgoingContext(ctx, SeldonRouteHeader, stickySessionKey)
-		}
-	} else {
-		switch inferType {
-		case InferModel:
-			ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
-		case InferPipeline:
-			ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
-		}
+	for _, stickySessionKey := range stickySessionKeys {
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonRouteHeader, stickySessionKey)
+	}
+	switch inferType {
+	case InferModel:
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
+	case InferPipeline:
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
 	}
 
 	for _, header := range headers {
