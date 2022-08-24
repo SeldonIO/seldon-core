@@ -1,11 +1,13 @@
-service:
-  type: NodePort
+emissary-ingress:
+  service:
+    type: NodePort
 
-  # Note that target http ports need to match your ambassador configurations service_port
-  # https://www.getambassador.io/reference/modules/#the-ambassador-module
-  ports:
-    - name: http
-      port: 80
-      targetPort: 8080
-      # protocol: TCP
-      nodePort: 30080
+    # Note that target http ports need to match your ambassador configurations service_port
+    # https://www.getambassador.io/reference/modules/#the-ambassador-module
+    ports:
+      - name: http
+        port: 80
+        targetPort: 8080
+        # protocol: TCP
+        nodePort: 30080
+      
