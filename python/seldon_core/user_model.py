@@ -154,10 +154,6 @@ class SeldonComponent:
         self.tracer = tracer
         logger.info("tracing object set inside SeldonComponent.")
 
-    def set_grpc_tracer(self, tracer) -> None:
-        self.grpc_tracer = tracer
-        logger.info("gRPC tracing object set inside SeldonComponent.")
-
 
 def client_custom_tags(user_model: SeldonComponent) -> Dict:
     """
