@@ -228,6 +228,7 @@ type SeldonDeploymentSpec struct {
 	Transport   Transport         `json:"transport,omitempty" protobuf:"bytes,7,opt,name=transport"`
 	Replicas    *int32            `json:"replicas,omitempty" protobuf:"bytes,8,opt,name=replicas"`
 	ServerType  ServerType        `json:"serverType,omitempty" protobuf:"bytes,9,opt,name=serverType"`
+	UrlRewrites map[string]string `json:"urlRewrites,omitempty" protobuf:"bytes,10,opt,name=urlRewrites"`
 }
 
 type SSL struct {

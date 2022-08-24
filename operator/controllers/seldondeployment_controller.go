@@ -227,6 +227,37 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			return nil, nil, err
 		}
 	}
+	// Add HTTP routes, if no custom url rewrites get annotation prefix and rewrite or use defaults
+	var routes []*istio_networking.HTTPRoute
+	if mlDep.Spec.UrlRewrites == nil {
+		prefix := getAnnotation(mlDep, ANNOTATION_ISTIO_PREFIX, "/seldon/"+namespace+"/"+mlDep.Name+"/")
+		rewrite := getAnnotation(mlDep, ANNOTATION_ISTIO_REWRITE, "/")
+		mlDep.Spec.UrlRewrites = map[string]string{
+			prefix: rewrite,
+		}
+	}
+	for prefix, rewrite := range mlDep.Spec.UrlRewrites {
+		routes = append(routes, &istio_networking.HTTPRoute{
+			Match: []*istio_networking.HTTPMatchRequest{
+				{
+					Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: prefix}},
+				},
+			},
+			Rewrite: &istio_networking.HTTPRewrite{Uri: rewrite},
+		})
+	}
+	// Append GRPC route
+	routes = append(routes, &istio_networking.HTTPRoute{
+		Match: []*istio_networking.HTTPMatchRequest{
+			{
+				Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
+				Headers: map[string]*istio_networking.StringMatch{
+					"seldon":    {MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+					"namespace": {MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
+				},
+			},
+		},
+	})
 	vsvc := &istio.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      seldonId,
@@ -235,27 +266,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		Spec: istio_networking.VirtualService{
 			Hosts:    []string{getAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
 			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
-			Http: []*istio_networking.HTTPRoute{
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon/" + namespace + "/" + mlDep.Name + "/"}},
-						},
-					},
-					Rewrite: &istio_networking.HTTPRewrite{Uri: "/"},
-				},
-				{
-					Match: []*istio_networking.HTTPMatchRequest{
-						{
-							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
-							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
-								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
-							},
-						},
-					},
-				},
-			},
+			Http:     routes,
 		},
 	}
 
