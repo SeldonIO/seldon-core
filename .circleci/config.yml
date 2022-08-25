@@ -58,8 +58,8 @@ jobs:
             command: |
               echo "Environment Variables"
               env
-              echo "PWD:"
-              pwd
+              echo "Directory Listing:"
+              ls -ltR
 
 workflows:
   version: 2
