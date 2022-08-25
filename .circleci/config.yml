@@ -28,6 +28,8 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
       - checkout
+      - persist_to_workspace:
+          root: /tmp
       - run:
           name: "Docker login"
           command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
@@ -44,6 +46,8 @@ jobs:
         KUSTOMIZE_VERSION: "v4.3.0"
         K3S_KUBECONFIG_MODE: "644"
       steps:
+        - attach_workspace:
+            at: /tmp
         - checkout
         - run:
             name: Install and Launch Kubernetes
