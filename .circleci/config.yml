@@ -45,7 +45,6 @@ jobs:
         K3S_KUBECONFIG_MODE: "644"
       steps:
         - checkout
-        - load_env
       #      - run:
       #          name: Install and Launch Kubernetes
       #          command: curl -sfL https://get.k3s.io | sh -
