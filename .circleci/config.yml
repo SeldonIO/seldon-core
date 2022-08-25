@@ -72,9 +72,9 @@ workflows:
           filters:
             tags:
               only: /v\d+(\.\d+)*(-.*)*/
-#      - test:
-#          requires:
-#            - build
-#          filters:
-#            tags:
-#              only: /v\d+(\.\d+)*(-.*)*/
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v\d+(\.\d+)*(-.*)*/
