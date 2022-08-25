@@ -54,12 +54,24 @@ jobs:
       #            curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
       #            sudo mv /tmp/linux-amd64/helm /usr/local/bin/
         - run:
-            name: Get env and pwd
-            command: |
-              echo "Environment Variables"
-              env
-              echo "Directory Listing:"
-              ls -ltR
+            name: Setup
+            command: ./test/seldon/setup/install-all
+        - run:
+            name: Creating Models
+            command: ./test/seldon/model/create-models
+        - run:
+            name: Pretest Helper
+            command: kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
+            background: true
+        - run:
+            name: Testing Models
+            command: ./test/seldon/model/test-models
+        - run:
+            name: Deleting Models
+            command: ./test/seldon/model/delete-models
+        - run:
+            name: Teardown
+            command: ./test/seldon/setup/unistall-all
 
 workflows:
   version: 2

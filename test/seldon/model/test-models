@@ -5,8 +5,8 @@ echo "Run the following command in a separate terminal:"
 echo ""
 echo "  kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80"
 echo ""
-read -p "Press ENTER to continue... "
-echo ""
+#read -p "Press ENTER to continue... "
+#echo ""
 
 COMPUTE_NAMESPACE=domino-compute
 
