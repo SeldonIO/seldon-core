@@ -45,14 +45,14 @@ jobs:
         K3S_KUBECONFIG_MODE: "644"
       steps:
         - checkout
-      #      - run:
-      #          name: Install and Launch Kubernetes
-      #          command: curl -sfL https://get.k3s.io | sh -
-      #      - run:
-      #          name: Install Helm
-      #          command: |
-      #            curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
-      #            sudo mv /tmp/linux-amd64/helm /usr/local/bin/
+        - run:
+            name: Install and Launch Kubernetes
+            command: curl -sfL https://get.k3s.io | sh -
+        - run:
+            name: Install Helm
+            command: |
+              curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
+              sudo mv /tmp/linux-amd64/helm /usr/local/bin/
         - run:
             name: Setup
             command: ./test/seldon/setup/install-all
