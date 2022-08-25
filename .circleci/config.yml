@@ -46,8 +46,6 @@ test:
     steps:
       - checkout
       - load_env
-      - attach_workspace:
-          at: /tmp/workspace
     #      - run:
     #          name: Install and Launch Kubernetes
     #          command: curl -sfL https://get.k3s.io | sh -
@@ -56,13 +54,13 @@ test:
     #          command: |
     #            curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
     #            sudo mv /tmp/linux-amd64/helm /usr/local/bin/
-          - run:
-              name: Get env and pwd
-              command: |
-                echo "Environment Variables"
-                env
-                echo "PWD:"
-                pwd
+      - run:
+          name: Get env and pwd
+          command: |
+            echo "Environment Variables"
+            env
+            echo "PWD:"
+            pwd
 
 workflows:
   version: 2
