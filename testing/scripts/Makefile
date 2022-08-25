@@ -93,6 +93,7 @@ install_seldon:
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
+		--set ambassador.enabled=true \
 		--set keda.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
