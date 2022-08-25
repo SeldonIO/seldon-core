@@ -6,7 +6,7 @@ set -o nounset -o errexit -o pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-SELDON_CORE_IMAGE_TAG_DEFAULT=`cat /tmp/.seldon-core-image-tag`
+SELDON_CORE_IMAGE_TAG_DEFAULT=`cat ./.seldon-core-image-tag`
 
 SELDON_CORE_IMAGE_TAG=${SELDON_CORE_IMAGE_TAG:-$SELDON_CORE_IMAGE_TAG_DEFAULT}
 
