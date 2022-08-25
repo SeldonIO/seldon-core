@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+MODELS_DIR=$SCRIPT_DIR/../../models
+
+COMPUTE_NAMESPACE=domino-compute
+
+echo ">>> Creating iris model..."
+kubectl apply -f $MODELS_DIR/iris-model.yaml -n $COMPUTE_NAMESPACE
+
+echo ">>> Creating mock classifier model..."
+kubectl apply -f $MODELS_DIR/mock-classifier.yaml -n $COMPUTE_NAMESPACE
+
+sleep 5
+
+echo ">>> Waiting for iris model deployment to become available..."
+kubectl wait deployment.apps/iris-model-default-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=300s
+
+echo ">>> Waiting for mock classifier model deployment to become available..."
+kubectl wait deployment.apps/mock-classifier-model-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=300s
+
+echo ">>> Done deploying models."

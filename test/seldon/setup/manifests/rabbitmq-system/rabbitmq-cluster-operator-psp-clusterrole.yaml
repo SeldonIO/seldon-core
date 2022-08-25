@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: rabbitmq
+    app.kubernetes.io/instance: rabbitmq-cluster
+    app.kubernetes.io/name: rabbitmq-cluster-operator
+  name: rabbitmq-cluster-operator-psp
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - domino-unrestricted
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use

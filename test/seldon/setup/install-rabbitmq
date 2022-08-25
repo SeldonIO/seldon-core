@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Source: https://www.rabbitmq.com/kubernetes/operator/install-operator.html#helm-chart
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Creating namespaces..."
+kubectl create namespace rabbitmq-system
+kubectl create namespace rabbitmq
+
+echo ">>> Creating RBAC resources..."
+kubectl apply -f "$SCRIPT_DIR/manifests/rabbitmq-system"
+
+echo ">>> Installing rabbitmq operator..."
+helm upgrade --install rabbitmq-cluster rabbitmq-cluster-operator \
+    --repo https://charts.bitnami.com/bitnami \
+    --namespace rabbitmq-system
+
+echo ">>> Creating rabbitmq cluster..."
+kubectl apply -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-clusterrole.yaml"
+kubectl apply -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-rolebinding.yaml"
+kubectl apply -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster.yaml" || true
+
+echo ">>> Waiting for RabbitMQ cluster to become ready..."
+kubectl wait RabbitMQCluster/rabbitmq-cluster --for=condition=ALLREPLICASREADY --timeout=300s -n rabbitmq
+
+echo ">>> Creating seldon rabbitmq user..."
+kubectl apply -f "${SCRIPT_DIR}/manifests/rabbitmq/seldon-rabbitmq-user.yaml"

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Deleting RBAC resources..."
+kubectl delete -f $SCRIPT_DIR/manifests/kafka --ignore-not-found=true
+
+echo ">>> Deleting namespace..."
+kubectl delete namespace kafka --ignore-not-found=true
+
+echo ">>> Deleting clusterrole..."
+kubectl delete clusterrole -l "app in (strimzi, my-cluster)"
+
+echo ">>> Deleting clusterrolebinding..."
+kubectl delete clusterrolebinding -l "app in (strimzi, my-cluster)"
+
+echo ">>> Deleting crd..."
+kubectl delete crd -l app=strimzi
+
+echo ">>> Done removing Kafka."

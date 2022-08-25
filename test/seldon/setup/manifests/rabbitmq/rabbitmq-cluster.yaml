@@ -1,0 +1,22 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-cluster
+  namespace: rabbitmq
+  annotations:
+    rabbitmq.com/topology-allowed-namespaces: domino-compute
+spec:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  rabbitmq:
+    additionalConfig: |
+      log.console.level = info
+      channel_max = 1500
+  service:
+    type: ClusterIP

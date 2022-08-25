@@ -1,0 +1,28 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: seldon-user
+  namespace: domino-compute
+spec:
+  tags:
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: seldon-user-permissions
+  namespace: domino-compute
+spec:
+  vhost: "/"
+  userReference:
+    name: seldon-user # name of a user.rabbitmq.com in the same namespace; must specify either spec.userReference or spec.user
+  permissions:
+    write: ".*"
+    configure: ".*"
+    read: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq

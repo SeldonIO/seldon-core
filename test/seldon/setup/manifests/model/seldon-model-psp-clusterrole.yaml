@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: seldon-model
+    app.kubernetes.io/instance: seldon-model
+  name: seldon-model-psp
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - domino-unrestricted
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+$SCRIPT_DIR/cleanup-model
+
+$SCRIPT_DIR/uninstall-rabbitmq
+
+$SCRIPT_DIR/uninstall-seldon-core-dev
+
+$SCRIPT_DIR/uninstall-istio

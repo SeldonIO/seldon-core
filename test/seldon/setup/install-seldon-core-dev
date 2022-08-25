@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-operator.html
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+SELDON_CORE_IMAGE_TAG_DEFAULT=1.15.0-domino-dev-pr16
+
+SELDON_CORE_IMAGE_TAG=${SELDON_CORE_IMAGE_TAG:-$SELDON_CORE_IMAGE_TAG_DEFAULT}
+
+echo ">>> Creating namespace..."
+kubectl create namespace seldon-system
+
+echo ">>> Creating RBAC resources..."
+kubectl apply -f $SCRIPT_DIR/manifests/seldon -n seldon-system
+
+echo ">>> Installing Seldon Core ${SELDON_CORE_IMAGE_TAG}..."
+helm upgrade --install seldon-core seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
+    --set usageMetrics.enabled=true \
+    --set istio.enabled=true \
+    --set keda.enabled=false \
+    --set executor.image.registry="quay.io" \
+    --set executor.image.repository="domino/seldon-core-executor" \
+    --set executor.image.tag="${SELDON_CORE_IMAGE_TAG}" \
+    --set image.registry="quay.io" \
+    --set image.repository="domino/seldon-core-operator" \
+    --set image.tag="${SELDON_CORE_IMAGE_TAG}" \
+    --namespace seldon-system
+
+echo ">>> Creating Seldon gateway..."
+kubectl apply -f $SCRIPT_DIR/manifests/seldon-gateway.yaml -n istio-system
+
+echo ">>> Copying domino-quay-repos secret from domino-compute to seldon-system namespace..."
+kubectl get secret domino-quay-repos -oyaml -n domino-compute | sed 's/domino-compute/seldon-system/' | kubectl -n seldon-system apply -f -
+
+echo ">>> Patching seldon-controller-manager to add imagePullSecrets..."
+kubectl patch deployment seldon-controller-manager -n seldon-system -p '{ "spec": { "template": { "spec": { "imagePullSecrets": [ { "name": "domino-quay-repos" } ] } } } }'
+
+echo ">>> Done installing Seldon Core."

@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: my-cluster
+    app.kubernetes.io/instance: my-cluster
+    app.kubernetes.io/managed-by: strimzi-cluster-operator
+    app.kubernetes.io/name: entity-operator
+    app.kubernetes.io/part-of: strimzi-my-cluster
+    strimzi.io/cluster: my-cluster
+    strimzi.io/kind: Kafka
+    strimzi.io/name: my-cluster-entity-operator
+  name: my-cluster-entity-operator-psp
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - domino-unrestricted
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use

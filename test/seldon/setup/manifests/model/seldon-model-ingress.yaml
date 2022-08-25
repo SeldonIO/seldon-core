@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: seldon-model-ingress
+  namespace: domino-compute
+spec:
+  ingress:
+  - {}
+  podSelector:
+    matchLabels:
+      seldon.io/model: "true"
+  policyTypes:
+  - Ingress

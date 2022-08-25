@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo ""
+echo "Run the following command in a separate terminal:"
+echo ""
+echo "  kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80"
+echo ""
+read -p "Press ENTER to continue... "
+echo ""
+
+COMPUTE_NAMESPACE=domino-compute
+
+echo ">>> Testing iris model..."
+curl -X POST http://localhost:8080/seldon/${COMPUTE_NAMESPACE}/iris-model/api/v1.0/predictions -H 'Content-Type: application/json' -d '{"data": {"ndarray": [[1,2,3,4]] }}'
+
+echo ">>> Testing mock classifier model..."
+curl -X POST http://localhost:8080/seldon/${COMPUTE_NAMESPACE}/mock-classifier/api/v1.0/predictions -H 'Content-Type: application/json' -d '{"data": {"ndarray": [[1.0, 2.0, 5.0]] }}'
+
+#echo ">>> Testing domino model..."
+#curl -X POST http://localhost:8080/seldon/${COMPUTE_NAMESPACE}/model-62e40a364c6cd60f752c38f9/api/v1.0/predictions -H 'Content-Type: application/json' -d '{ "data": { "ndarray": [[0,1]] } }'

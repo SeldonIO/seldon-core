@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Creating namespace..."
+kubectl create namespace seldon-system
+
+echo ">>> Creating RBAC resources..."
+kubectl apply -f $SCRIPT_DIR/manifests/seldon -n seldon-system
+
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-operator.html
+echo ">>> Installing seldon-core..."
+helm upgrade --install seldon-core seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
+    --set usageMetrics.enabled=true \
+    --set istio.enabled=true \
+    --set keda.enabled=false \
+    --namespace seldon-system
+
+echo ">>> Creating Seldon gateway..."
+kubectl apply -f $SCRIPT_DIR/manifests/seldon-gateway.yaml -n istio-system
+
+echo ">>> Done installing Seldon Core."

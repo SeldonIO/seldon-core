@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+MODELS_DIR=$SCRIPT_DIR/../../models
+
+COMPUTE_NAMESPACE=domino-compute
+
+echo ">>> Deleting iris model..."
+kubectl delete -f $MODELS_DIR/iris-model.yaml -n $COMPUTE_NAMESPACE
+
+echo ">>> Deleting mock classifier model..."
+kubectl delete -f $MODELS_DIR/mock-classifier.yaml -n $COMPUTE_NAMESPACE
+
+echo ">>> Done deleting models."

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Uninstalling istio ingress gateway..."
+helm status istio-ingressgateway -n istio-system > /dev/null && helm delete istio-ingressgateway -n istio-system
+
+echo ">>> Uninstalling istiod..."
+helm status istiod -n istio-system > /dev/null && helm delete istiod -n istio-system
+
+echo ">>> Uninstalling istio base..."
+helm status istio-base -n istio-system > /dev/null && helm delete istio-base -n istio-system
+
+echo ">>> Deleting RBAC resources..."
+kubectl delete -f $SCRIPT_DIR/manifests/istio --ignore-not-found=true
+
+echo ">>> Deleting namespace..."
+kubectl delete namespace istio-system --ignore-not-found=true
+
+echo ">>> Deleting cluster-scope resources..."
+kubectl delete clusterrole -l "app in (istio-reader, istiod, istio-ingressgateway)"
+kubectl delete clusterrolebinding -l "app in (istio-reader, istiod, istio-ingressgateway)"
+kubectl get crd -oname | grep 'istio.io' | xargs kubectl delete
+
+echo ">>> Done removing Istio."

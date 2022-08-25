@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Deleting seldon rabbitmq user..."
+kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/seldon-rabbitmq-user.yaml" --ignore-not-found=true || true
+
+echo ">>> Deleting rabbitmq cluster..."
+kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster.yaml" --ignore-not-found=true || true
+kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-rolebinding.yaml" --ignore-not-found=true
+kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-clusterrole.yaml" --ignore-not-found=true
+
+echo ">>> Uninstalling rabbitmq-cluster..."
+helm status rabbitmq-cluster -n rabbitmq-system > /dev/null && helm delete rabbitmq-cluster -n rabbitmq-system
+
+echo ">>> Deleting RBAC resources..."
+kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq-system" --ignore-not-found=true || true
+
+echo ">>> Deleting namespaces..."
+kubectl delete namespace rabbitmq --ignore-not-found=true
+kubectl delete namespace rabbitmq-system --ignore-not-found=true
+
+echo ">>> Done removing rabbitmq."

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Deleting Seldon gateway..."
+kubectl delete -f $SCRIPT_DIR/manifests/seldon-gateway.yaml --ignore-not-found=true
+
+echo ">>> Deleting helm release..."
+helm status seldon-core -n seldon-system > /dev/null && helm delete seldon-core -n seldon-system
+
+echo ">>> Deleting RBAC resources..."
+kubectl delete -f $SCRIPT_DIR/manifests/seldon --ignore-not-found=true
+
+echo ">>> Deleting namespace..."
+kubectl delete namespace seldon-system --ignore-not-found=true
+
+echo ">>> Done removing Seldon Core."
