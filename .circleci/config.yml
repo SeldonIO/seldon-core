@@ -30,6 +30,8 @@ jobs:
       - checkout
       - persist_to_workspace:
           root: /tmp
+          paths:
+            - /tmp
       - run:
           name: "Docker login"
           command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
