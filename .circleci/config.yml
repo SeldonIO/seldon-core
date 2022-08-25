@@ -35,32 +35,32 @@ jobs:
           name: "Seldon-core Domino Build & Push Script"
           command: ./domino-build.sh
 
-test:
-    machine:
-      image: ubuntu-2004:202107-02
-    environment:
-      KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-      HELM_VERSION: "v3.6.3"
-      KUSTOMIZE_VERSION: "v4.3.0"
-      K3S_KUBECONFIG_MODE: "644"
-    steps:
-      - checkout
-      - load_env
-    #      - run:
-    #          name: Install and Launch Kubernetes
-    #          command: curl -sfL https://get.k3s.io | sh -
-    #      - run:
-    #          name: Install Helm
-    #          command: |
-    #            curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
-    #            sudo mv /tmp/linux-amd64/helm /usr/local/bin/
-      - run:
-          name: Get env and pwd
-          command: |
-            echo "Environment Variables"
-            env
-            echo "PWD:"
-            pwd
+  test:
+      machine:
+        image: ubuntu-2004:202107-02
+      environment:
+        KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+        HELM_VERSION: "v3.6.3"
+        KUSTOMIZE_VERSION: "v4.3.0"
+        K3S_KUBECONFIG_MODE: "644"
+      steps:
+        - checkout
+        - load_env
+      #      - run:
+      #          name: Install and Launch Kubernetes
+      #          command: curl -sfL https://get.k3s.io | sh -
+      #      - run:
+      #          name: Install Helm
+      #          command: |
+      #            curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xvz -C /tmp
+      #            sudo mv /tmp/linux-amd64/helm /usr/local/bin/
+        - run:
+            name: Get env and pwd
+            command: |
+              echo "Environment Variables"
+              env
+              echo "PWD:"
+              pwd
 
 workflows:
   version: 2
