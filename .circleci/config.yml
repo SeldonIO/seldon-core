@@ -44,7 +44,7 @@ jobs:
         KUSTOMIZE_VERSION: "v4.3.0"
         K3S_KUBECONFIG_MODE: "644"
       steps:
-        - checkout
+#        - checkout
         - run:
             name: Install and Launch Kubernetes
             command: curl -sfL https://get.k3s.io | sh -
