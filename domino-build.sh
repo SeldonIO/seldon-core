@@ -53,4 +53,5 @@ if [ "${nopush_flag}" == "" ]; then
   echo -e "\n  Pushing executor...\n"
   docker push "quay.io/domino/seldon-core-executor:${TARGET_IMAGE_TAG}"
 
+  echo "${TARGET_IMAGE_TAG}" > /tmp/.seldon-core-image-tag
 fi

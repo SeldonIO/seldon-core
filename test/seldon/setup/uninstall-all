@@ -10,4 +10,3 @@ $SCRIPT_DIR/uninstall-rabbitmq
 
 $SCRIPT_DIR/uninstall-seldon-core-dev
 
-$SCRIPT_DIR/uninstall-istio

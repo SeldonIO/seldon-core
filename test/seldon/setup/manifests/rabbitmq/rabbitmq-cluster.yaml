@@ -4,7 +4,7 @@ metadata:
   name: rabbitmq-cluster
   namespace: rabbitmq
   annotations:
-    rabbitmq.com/topology-allowed-namespaces: domino-compute
+    rabbitmq.com/topology-allowed-namespaces: seldon-regression-test
 spec:
   replicas: 1
   resources:

@@ -3,7 +3,7 @@ apiVersion: rabbitmq.com/v1beta1
 kind: User
 metadata:
   name: seldon-user
-  namespace: domino-compute
+  namespace: seldon-regression-test
 spec:
   tags:
   rabbitmqClusterReference:
