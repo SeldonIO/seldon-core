@@ -17,9 +17,9 @@ kubectl apply -f $MODELS_DIR/mock-classifier.yaml -n $COMPUTE_NAMESPACE
 sleep 5
 
 echo ">>> Waiting for iris model deployment to become available..."
-kubectl wait deployment.apps/iris-model-default-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=300s
+kubectl wait deployment.apps/iris-model-default-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=600s
 
 echo ">>> Waiting for mock classifier model deployment to become available..."
-kubectl wait deployment.apps/mock-classifier-model-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=300s
+kubectl wait deployment.apps/mock-classifier-model-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=600s
 
 echo ">>> Done deploying models."
