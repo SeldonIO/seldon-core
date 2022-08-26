@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+echo ">>> Creating test namespace..."
+kubectl create namespace seldon-regression-test
+
+echo ">>> Creating domino-quay-repos secret for pulling Domino docker images..."
+kubectl create secret -n seldon-regression-test docker-registry domino-quay-repos \
+  --docker-username="${DOCKER_USERNAME}" \
+  --docker-password="${DOCKER_PASSWORD}" \
+  --docker-server="${DOCKER_REGISTRY}"

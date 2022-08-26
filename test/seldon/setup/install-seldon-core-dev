@@ -27,7 +27,7 @@ helm upgrade --install seldon-core seldon-core-operator \
     --set image.tag="${SELDON_CORE_IMAGE_TAG}" \
     --namespace seldon-system
 
-echo ">>> Copying domino-quay-repos secret from domino-compute to seldon-system namespace..."
+echo ">>> Creating domino-quay-repos secret for pulling Domino docker images..."
 kubectl create secret -n seldon-system docker-registry domino-quay-repos \
   --docker-username="${DOCKER_USERNAME}" \
   --docker-password="${DOCKER_PASSWORD}" \

@@ -4,8 +4,7 @@ set -o nounset -o errexit -o pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-echo ">>> Creating namespace..."
-kubectl create namespace seldon-regression-test
+$SCRIPT_DIR/install-test-namespace
 
 $SCRIPT_DIR/install-seldon-core-dev
 
