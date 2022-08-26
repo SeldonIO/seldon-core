@@ -1,0 +1,44 @@
+# Iris sample model
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html#deploy-your-model-using-pre-packaged-model-servers
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: iris-model-rabbitmq
+spec:
+  name: iris
+  transport: rest # grpc is not working with rabbit mq yet
+  serverType: rabbitmq
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: classifier
+        imagePullSecrets:
+        - name: domino-quay-repos
+    svcOrchSpec:
+      env:
+        - name: RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: seldon-user-user-credentials
+              key: username
+              optional: false # same as default; must exist and include a key named "username"
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: seldon-user-user-credentials
+              key: password
+              optional: false # same as default; must exist and include a key named "password"
+        - name: RABBITMQ_BROKER_URL
+          value: amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@rabbitmq-cluster.rabbitmq.svc.cluster.local:5672
+        - name: RABBITMQ_INPUT_QUEUE
+          value: iris-model-rabbitmq-input
+        - name: RABBITMQ_OUTPUT_QUEUE
+          value: iris-model-rabbitmq-output
+    graph:
+      implementation: SKLEARN_SERVER
+      modelUri: gs://seldon-models/v1.14.0-dev/sklearn/iris
+      name: classifier
+    name: default
+    replicas: 2

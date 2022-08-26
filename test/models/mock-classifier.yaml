@@ -1,0 +1,19 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: mock-classifier
+spec:
+  protocol: seldon
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: seldonio/mock_classifier:1.7.0-dev
+          name: classifier
+        imagePullSecrets:
+        - name: domino-quay-repos
+    graph:
+      name: classifier
+      type: MODEL
+    name: model
+    replicas: 1

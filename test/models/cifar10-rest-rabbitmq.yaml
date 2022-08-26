@@ -1,0 +1,68 @@
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/streaming/kafka.html
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: tfserving-cifar10-rabbitmq
+  namespace: seldon
+spec:
+  protocol: tensorflow
+  transport: rest
+  serverType: rabbitmq
+  predictors:
+    - componentSpecs:
+        - spec:
+            containers:
+              - args:
+                  - --port=8500
+                  - --rest_api_port=8501
+                  - --model_name=resnet32
+                  - --model_base_path=gs://seldon-models/tfserving/cifar10/resnet32
+                  - --enable_batching
+                image: tensorflow/serving
+                name: resnet32
+                ports:
+                  - containerPort: 8501
+                    name: http
+            imagePullSecrets:
+            - name: domino-quay-repos
+# This works, leaving it commented out for now:
+#          kedaSpec:
+#            pollingInterval: 15
+#            minReplicaCount: 1
+#            maxReplicaCount: 4
+#            triggers: #reference: https://keda.sh/docs/2.7/scalers/rabbitmq-queue/
+#              - type: rabbitmq
+#                metadata:
+#                  host: amqp://seldon:seldon@rabbitmq-cluster.rabbitmq.svc.cluster.local:5672 # Optional. If not specified, it must be done by using TriggerAuthentication.
+#                  protocol: auto # Optional. Specifies protocol to use, either amqp or http, or auto to autodetect based on the `host` value. Default value is auto.
+#                  mode: QueueLength # QueueLength or MessageRate
+#                  value: "2" # message backlog or publish/sec. target per instance
+#                  queueName: cifar10-rest-input
+      svcOrchSpec:
+        env:
+          - name: RABBITMQ_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: seldon-user-user-credentials
+                key: username
+                optional: false # same as default; must exist and include a key named "username"
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: seldon-user-user-credentials
+                key: password
+                optional: false # same as default; must exist and include a key named "password"
+          - name: RABBITMQ_BROKER_URL
+            value: amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@rabbitmq-cluster.rabbitmq.svc.cluster.local:5672
+          - name: RABBITMQ_INPUT_QUEUE
+            value: cifar10-rest-input
+          - name: RABBITMQ_OUTPUT_QUEUE
+            value: cifar10-rest-output
+      graph:
+        name: resnet32
+        type: MODEL
+        endpoint:
+          service_port: 8501
+      name: model
+      replicas: 1

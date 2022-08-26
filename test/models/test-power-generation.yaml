@@ -1,0 +1,30 @@
+# Test domino wrapper image deployment
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html#deploy-your-model-using-pre-packaged-model-servers
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: test-power-generation
+spec:
+  name: test-power-generation
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+          - name: classifier
+            image: seldon_domino_wrapper:snapshot
+            securityContext:
+              runAsUser: 12574 #ubuntu user
+        imagePullSecrets:
+        - name: domino-quay-repos
+    graph:
+      # `implementation` determines what model image is used by looking up the image from a kubernetes config map
+      # Since we override the image above, this is effectively ignored.
+      implementation: SKLEARN_SERVER
+      # `modelUri` is passed as a parameter when the model image is initialized.  The idea is that the image could then
+      # look up and load the saved model.  For this SeldonWrapper we are ignoring the value of this parameter since
+      # the model image already contains the model.
+      modelUri: gs://seldon-models/v1.14.0-dev/sklearn/iris
+      name: classifier
+    name: default
+    replicas: 1
