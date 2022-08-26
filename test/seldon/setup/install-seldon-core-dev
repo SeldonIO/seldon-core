@@ -29,9 +29,9 @@ helm upgrade --install seldon-core seldon-core-operator \
 
 echo ">>> Copying domino-quay-repos secret from domino-compute to seldon-system namespace..."
 kubectl create secret -n seldon-system docker-registry domino-quay-repos \
-  --docker-username=${DOCKER_USERNAME} \
-  --docker-password=${DOCKER_PASSWORD} \
-  --docker-server=${DOCKER_REGISTRY}
+  --docker-username="${DOCKER_USERNAME}" \
+  --docker-password="${DOCKER_PASSWORD}" \
+  --docker-server=${DOCKER_REGISTRY}"
 
 echo ">>> Patching seldon-controller-manager to add imagePullSecrets..."
 kubectl patch deployment seldon-controller-manager -n seldon-system -p '{ "spec": { "template": { "spec": { "imagePullSecrets": [ { "name": "domino-quay-repos" } ] } } } }'
