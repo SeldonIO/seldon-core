@@ -1878,6 +1878,8 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups=getambassador.io,resources=mappings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=getambassador.io,resources=mappings/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=getambassador.io,resources=tlscontexts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=getambassador.io,resources=tlscontexts/status,verbs=get;update;patch
 
 func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	//ctx := context.Background()
@@ -2102,6 +2104,14 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		return err
 	}
 
+	// Base builder
+	builder := ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&machinelearningv1.SeldonDeployment{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{})
+	
+	// Add istio CRs
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj client.Object) []string {
 			// grab the deployment object, extract the owner...
@@ -2120,14 +2130,10 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		}); err != nil {
 			return err
 		}
-		return ctrl.NewControllerManagedBy(mgr).
-			Named(name).
-			For(&machinelearningv1.SeldonDeployment{}).
-			Owns(&appsv1.Deployment{}).
-			Owns(&corev1.Service{}).
-			Owns(&istio.VirtualService{}).
-			Complete(r)
-	} else if utils.GetEnv(ENV_AMBASSADOR_VERSION, "v2") == "v1" {
+		builder.Owns(&istio.VirtualService{})
+	}
+	// Add Ambassador CRs
+	if utils.GetEnv(ENV_AMBASSADOR_VERSION, "v2") == "v2" {
 		if err := mgr.GetFieldIndexer().IndexField(ctx, &v2.Mapping{}, ownerKey, func(rawObj client.Object) []string {
 			// grab the deployment object, extract the owner...
 			mapping := rawObj.(*v2.Mapping)
@@ -2162,21 +2168,9 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		}); err != nil {
 			return err
 		}
-		return ctrl.NewControllerManagedBy(mgr).
-			Named(name).
-			For(&machinelearningv1.SeldonDeployment{}).
-			Owns(&appsv1.Deployment{}).
-			Owns(&corev1.Service{}).
+		builder.
 			Owns(&v2.Mapping{}).
-			Owns(&v2.TLSContext{}).
-			Complete(r)
-	} else {
-		return ctrl.NewControllerManagedBy(mgr).
-			Named(name).
-			For(&machinelearningv1.SeldonDeployment{}).
-			Owns(&appsv1.Deployment{}).
-			Owns(&corev1.Service{}).
-			Complete(r)
+			Owns(&v2.TLSContext{})
 	}
-
+	return builder.Complete(r)
 }

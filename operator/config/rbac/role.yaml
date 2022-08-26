@@ -94,6 +94,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - getambassador.io
+  resources:
+  - tlscontexts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - getambassador.io
+  resources:
+  - tlscontexts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - keda.sh
   resources:
   - scaledobjects
