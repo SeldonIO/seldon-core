@@ -2110,7 +2110,7 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		For(&machinelearningv1.SeldonDeployment{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{})
-	
+
 	// Add istio CRs
 	if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
 		if err := mgr.GetFieldIndexer().IndexField(ctx, &istio.VirtualService{}, ownerKey, func(rawObj client.Object) []string {

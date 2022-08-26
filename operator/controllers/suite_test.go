@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -205,6 +206,9 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = kedav1alpha1.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = v2.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme
