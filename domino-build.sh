@@ -47,10 +47,14 @@ if [ "${nopush_flag}" == "" ]; then
     error "Push to quay.io requires docker login, either run 'docker login quay.io' or set QUAY_USER and QUAY_PASSWORD before running this script."
   fi
 
+  operator_target="quay.io/domino/seldon-core-operator:${TARGET_IMAGE_TAG}"
   echo -e "\n  Pushing operator...\n"
-  docker push "quay.io/domino/seldon-core-operator:${TARGET_IMAGE_TAG}"
+  docker push "${operator_target}"
+  echo -e "\n  *** Pushed operator to ${operator_target} *** \n"
 
+  executor_target="quay.io/domino/seldon-core-executor:${TARGET_IMAGE_TAG}"
   echo -e "\n  Pushing executor...\n"
-  docker push "quay.io/domino/seldon-core-executor:${TARGET_IMAGE_TAG}"
+  docker push "${executor_target}"
+  echo -e "\n  *** Pushed executor to ${executor_target} *** \n"
 
 fi
