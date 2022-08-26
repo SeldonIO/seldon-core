@@ -4,7 +4,6 @@ apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
   name: tfserving-cifar10-rabbitmq
-  namespace: seldon
 spec:
   protocol: tensorflow
   transport: rest
