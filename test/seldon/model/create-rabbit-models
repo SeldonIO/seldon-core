@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+MODELS_DIR=$SCRIPT_DIR/../../models
+
+COMPUTE_NAMESPACE=seldon-regression-test
+
+echo ">>> Creating iris rabbitmq model..."
+kubectl apply -f $MODELS_DIR/iris-model-rabbitmq.yaml -n $COMPUTE_NAMESPACE
+
+sleep 5
+
+echo ">>> Waiting for iris model deployment to become available..."
+kubectl wait deployment.apps/iris-model-rabbitmq-default-0-classifier -n $COMPUTE_NAMESPACE --for condition=Available=True --timeout=600s
+
+echo ">>> Done deploying models."

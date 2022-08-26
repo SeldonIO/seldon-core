@@ -1,0 +1,32 @@
+#!/bin/bash
+
+COMPUTE_NAMESPACE=seldon-regression-test
+
+RABBITMQ_USER=$(kubectl -n rabbitmq get secret rabbitmq-cluster-default-user -o jsonpath="{.data.username}" | base64 --decode)
+RABBITMQ_PASSWORD=$(kubectl -n rabbitmq get secret rabbitmq-cluster-default-user -o jsonpath="{.data.password}" | base64 --decode)
+EXPECTED_IRIS_RESULT_PAYLOAD='{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162835,0.00366803903943666,0.995633441507447]]},"meta":{"requestPath":{"classifier":"seldonio/sklearnserver:1.14.1"}}}'
+
+echo ">>> Sending predict message to iris rabbitmq model input queue..."
+kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq -- \
+    curl -X POST "http://localhost:15672/api/exchanges/%2F/amq.default/publish" \
+    --user "${RABBITMQ_USER}:${RABBITMQ_PASSWORD}" \
+    -H "Content-type: application/json" \
+    -H "Accept: application/json" \
+    -d '{"properties":{"content_type":"application/json"},"routing_key":"iris-model-rabbitmq-input","payload":"{\"data\": {\"ndarray\": [[1,2,3,4]] }}","payload_encoding":"string"}'
+
+sleep 10 # I wish there was a better way to do this
+
+RESULT_PAYLOAD=$(kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq -- \
+    curl -X POST "http://localhost:15672/api/queues/%2F/iris-model-rabbitmq-output/get" \
+    --user "${RABBITMQ_USER}:${RABBITMQ_PASSWORD}" \
+    -H "Content-type: application/json" \
+    -H "Accept: application/json" \
+    -d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}' | jq -r '.[0].payload')
+
+if [ "${EXPECTED_IRIS_RESULT_PAYLOAD}" != "${RESULT_PAYLOAD}" ]; then
+  echo "UNEXPECTED IRIS MODEL RESULT: ${RESULT_PAYLOAD}"
+  exit 1
+fi
+
+#echo ">>> Testing domino model..."
+#curl -X POST http://localhost:8080/seldon/${COMPUTE_NAMESPACE}/model-62e40a364c6cd60f752c38f9/api/v1.0/predictions -H 'Content-Type: application/json' -d '{ "data": { "ndarray": [[0,1]] } }'

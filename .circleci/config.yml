@@ -66,17 +66,26 @@ jobs:
             name: Setup
             command: ./test/seldon/setup/install-all
         - run:
-            name: Creating Models
+            name: Creating Basic Models
             command: ./test/seldon/model/create-models
         - run:
-            name: Testing Models
+            name: Testing Basic Models
             command: ./test/seldon/model/test-models
         - run:
-            name: Deleting Models
+            name: Deleting Basic Models
             command: ./test/seldon/model/delete-models
         - run:
+            name: Creating RabbitMQ Models
+            command: ./test/seldon/model/create-rabbit-models
+        - run:
+            name: Testing RabbitMQ Models
+            command: ./test/seldon/model/test-rabbit-models
+        - run:
+            name: Deleting RabbitMQ Models
+            command: ./test/seldon/model/delete-rabbit-models
+        - run:
             name: Teardown
-            command: ./test/seldon/setup/unistall-all
+            command: ./test/seldon/setup/uninstall-all
 
 workflows:
   version: 2

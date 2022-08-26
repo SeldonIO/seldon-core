@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o nounset -o errexit -o pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+MODELS_DIR=$SCRIPT_DIR/../../models
+
+COMPUTE_NAMESPACE=seldon-regression-test
+
+echo ">>> Deleting iris rabbitmq model..."
+kubectl delete -f $MODELS_DIR/iris-model-rabbitmq.yaml -n $COMPUTE_NAMESPACE
+
+echo ">>> Done deleting models."
