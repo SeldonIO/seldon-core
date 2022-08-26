@@ -29,9 +29,9 @@ jobs:
           version: 20.10.14
       - checkout
       - persist_to_workspace:
-          root: .
+          root: /tmp/seldon-test
           paths:
-            - .
+            - ./*
       - run:
           name: "Docker login"
           command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
@@ -49,11 +49,11 @@ jobs:
         K3S_KUBECONFIG_MODE: "644"
       steps:
         - attach_workspace:
-            at: .
+            at: /tmp/seldon-test
         - checkout
         - run:
             name: Directory Listing
-            command: ls -ltR
+            command: ls -ltR /tmp
         - run:
             name: Install and Launch Kubernetes
             command: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
