@@ -5,7 +5,7 @@ metadata:
     app: seldon-model
     app.kubernetes.io/instance: seldon-model
   name: seldon-model-psp
-  namespace: domino-compute
+  namespace: seldon-regression-test
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
