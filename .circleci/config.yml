@@ -41,7 +41,7 @@ jobs:
 
   test:
       machine:
-        image: ubuntu-2004:202107-02
+        image: ubuntu-2004:current
       environment:
         KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
         HELM_VERSION: "v3.6.3"
