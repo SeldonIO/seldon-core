@@ -9,8 +9,6 @@ kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/seldon-rabbitmq-user.yaml" -
 
 echo ">>> Deleting rabbitmq cluster..."
 kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster.yaml" --ignore-not-found=true || true
-kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-rolebinding.yaml" --ignore-not-found=true
-kubectl delete -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster-server-psp-clusterrole.yaml" --ignore-not-found=true
 
 echo ">>> Uninstalling rabbitmq-cluster..."
 helm status rabbitmq-cluster -n rabbitmq-system > /dev/null && helm delete rabbitmq-cluster -n rabbitmq-system
