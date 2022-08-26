@@ -23,8 +23,8 @@ RESULT_PAYLOAD=$(kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq 
     -H "Accept: application/json" \
     -d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}' | jq -r '.[0].payload')
 
-if [ "${EXPECTED_IRIS_RESULT_PAYLOAD}" != "${RESULT_PAYLOAD}" ]; then
-  echo "UNEXPECTED IRIS MODEL RESULT: ${RESULT_PAYLOAD}"
+if [ "${EXPECTED_IRIS_RESULT_PAYLOAD}" != "${IRIS_RESULT_PAYLOAD}" ]; then
+  echo "UNEXPECTED IRIS MODEL RESULT: ${IRIS_RESULT_PAYLOAD}"
   exit 1
 fi
 
