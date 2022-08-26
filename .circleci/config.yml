@@ -28,16 +28,16 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
       - checkout
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - ./*
       - run:
           name: "Docker login"
           command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run:
           name: "Seldon-core Domino Build & Push Script"
           command: ./domino-build.sh
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - ./*
 
   test:
       machine:
