@@ -69,10 +69,6 @@ jobs:
             name: Creating Models
             command: ./test/seldon/model/create-models
         - run:
-            name: Pretest Helper
-            command: kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
-            background: true
-        - run:
             name: Testing Models
             command: ./test/seldon/model/test-models
         - run:
