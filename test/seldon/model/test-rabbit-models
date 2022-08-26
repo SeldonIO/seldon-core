@@ -16,7 +16,7 @@ kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq -- \
 
 sleep 10 # I wish there was a better way to do this
 
-RESULT_PAYLOAD=$(kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq -- \
+IRIS_RESULT_PAYLOAD=$(kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c rabbitmq -- \
     curl -X POST "http://localhost:15672/api/queues/%2F/iris-model-rabbitmq-output/get" \
     --user "${RABBITMQ_USER}:${RABBITMQ_PASSWORD}" \
     -H "Content-type: application/json" \
