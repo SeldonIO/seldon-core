@@ -14,7 +14,7 @@ apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
   name: seldon-user-permissions
-  namespace: domino-compute
+  namespace: seldon-regression-test
 spec:
   vhost: "/"
   userReference:

@@ -8,7 +8,7 @@ echo ""
 #read -p "Press ENTER to continue... "
 #echo ""
 
-COMPUTE_NAMESPACE=domino-compute
+COMPUTE_NAMESPACE=seldon-regression-test
 
 echo ">>> Testing iris model..."
 curl -X POST http://localhost:8080/seldon/${COMPUTE_NAMESPACE}/iris-model/api/v1.0/predictions -H 'Content-Type: application/json' -d '{"data": {"ndarray": [[1,2,3,4]] }}'

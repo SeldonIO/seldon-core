@@ -5,7 +5,7 @@ set -o nounset -o errexit -o pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 echo ">>> Deleting all SeldonDeployments..."
-kubectl delete --all sdep -n domino-compute
+kubectl delete --all sdep -n seldon-regression-test
 
 echo ">>> Deleting secret..."
 kubectl delete secret domino-quay-repos --ignore-not-found=true -n seldon-system

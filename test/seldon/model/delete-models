@@ -6,7 +6,7 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 MODELS_DIR=$SCRIPT_DIR/../../models
 
-COMPUTE_NAMESPACE=domino-compute
+COMPUTE_NAMESPACE=seldon-regression-test
 
 echo ">>> Deleting iris model..."
 kubectl delete -f $MODELS_DIR/iris-model.yaml -n $COMPUTE_NAMESPACE
