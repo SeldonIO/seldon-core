@@ -62,11 +62,12 @@ func getV2Mapping(isREST bool,
 				Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
 			},
 			Spec: v2.MappingSpec{
-				Prefix:  prefix,
-				Rewrite: &rewrite,
-				Headers: map[string]v2.BoolOrString{},
-				Service: serviceName + "." + namespace + ":" + strconv.Itoa(engine_port),
-				Timeout: timeoutDur,
+				ClusterTag: "seldon_http",
+				Prefix:     prefix,
+				Rewrite:    &rewrite,
+				Headers:    map[string]v2.BoolOrString{},
+				Service:    serviceName + "." + namespace + ":" + strconv.Itoa(engine_port),
+				Timeout:    timeoutDur,
 			},
 		}
 
@@ -78,6 +79,9 @@ func getV2Mapping(isREST bool,
 		name := "seldon-" + mlDep.ObjectMeta.Name + "-" + coreName + "-grpc"
 		rewrite := ""
 		grpc := true
+		if addNamespace {
+			name = "seldon-" + namespace + "-" + mlDep.ObjectMeta.Name + "-" + coreName + "-grpc"
+		}
 
 		m = &v2.Mapping{
 			ObjectMeta: metav1.ObjectMeta{
@@ -86,6 +90,7 @@ func getV2Mapping(isREST bool,
 				Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
 			},
 			Spec: v2.MappingSpec{
+				ClusterTag:  "seldon_grpc",
 				Prefix:      constants.GRPCRegExMatchAmbassador,
 				GRPC:        &grpc,
 				PrefixRegex: &grpc,
