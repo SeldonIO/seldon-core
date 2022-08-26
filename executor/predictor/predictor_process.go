@@ -100,6 +100,11 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	modelName := p.getModelName(node)
 
 	if callModel || callTransformInput {
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
+		if err != nil {
+			return nil, err
+		}
+
 		//Log Request
 		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
 			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
@@ -108,10 +113,6 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 			}
 		}
 
-		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
-		if err != nil {
-			return nil, err
-		}
 		p.RoutingMutex.Lock()
 		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
