@@ -93,6 +93,8 @@ workflows:
             tags:
               only: /v\d+(\.\d+)*(-.*)*/
       - test:
+          context:
+            - org-global
           requires:
             - build-and-push
           filters:
