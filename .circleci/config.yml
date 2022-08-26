@@ -29,7 +29,7 @@ jobs:
           version: 20.10.14
       - checkout
       - persist_to_workspace:
-          root: ./test
+          root: /tmp/test
           paths:
             - ./*
       - run:
@@ -49,11 +49,11 @@ jobs:
         K3S_KUBECONFIG_MODE: "644"
       steps:
         - attach_workspace:
-            at: ./test
+            at: /tmp/test
         - checkout
         - run:
             name: Directory Listing
-            command: ls -ltR ./test
+            command: ls -ltR /tmp
         - run:
             name: Install and Launch Kubernetes
             command: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
