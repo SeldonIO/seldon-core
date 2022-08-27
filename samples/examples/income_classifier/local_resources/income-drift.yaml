@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-drift
+spec:
+  storageUri: "/mnt/models/drift-detector"
+  requirements:
+    - mlserver
+    - alibi-detect

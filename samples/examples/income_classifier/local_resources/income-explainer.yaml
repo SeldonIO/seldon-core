@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-explainer
+spec:
+  storageUri: "/mnt/models/explainer"
+  explainer:
+    type: anchor_tabular
+    modelRef: income

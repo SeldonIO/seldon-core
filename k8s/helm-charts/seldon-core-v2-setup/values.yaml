@@ -111,8 +111,8 @@ serverConfig:
     image:
       pullPolicy: IfNotPresent
       registry: docker.io
-      repository: cliveseldon/mlserver
-      tag: 1.2.0.dev1
+      repository: seldonio/mlserver
+      tag: 1.2.0.dev5
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     overcommitPercentage: "10"
     modelVolumeStorage: 1Gi

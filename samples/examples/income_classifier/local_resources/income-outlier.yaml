@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-outlier
+spec:
+  storageUri: "/mnt/models/outlier-detector"
+  requirements:
+    - mlserver
+    - alibi-detect

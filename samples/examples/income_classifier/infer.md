@@ -1,6 +1,9 @@
 ## Tabular Income Classifier Production Deployment
 
- * Optionally run the train.ipynb to show how models are created
+To run this notebook you need the inference data. This can be acquired in two ways:
+
+  * Run train.ipynb
+  * `gsutil cp -R gs://seldon-models/scv2/examples/income/infer-data .`
 
 
 ```python
@@ -11,7 +14,7 @@ import requests
 
 
 ```python
-with open('test.npy', 'rb') as f:
+with open('./infer-data/test.npy', 'rb') as f:
     x_ref = np.load(f)
     x_h1 = np.load(f)
     y_ref = np.load(f)
@@ -59,9 +62,8 @@ cat ../../models/income-outlier.yaml
     kind: Model
     metadata:
       name: income-preprocess
-      namespace: seldon-mesh
     spec:
-      storageUri: "/mnt/models/preprocessor"
+      storageUri: "gs://seldon-models/scv2/examples/income/preprocessor"
       requirements:
       - sklearn
     ---
@@ -69,9 +71,8 @@ cat ../../models/income-outlier.yaml
     kind: Model
     metadata:
       name: income
-      namespace: seldon-mesh
     spec:
-      storageUri: "/mnt/models/classifier"
+      storageUri: "gs://seldon-models/scv2/examples/income/classifier"
       requirements:
       - sklearn
     ---
@@ -79,9 +80,8 @@ cat ../../models/income-outlier.yaml
     kind: Model
     metadata:
       name: income-drift
-      namespace: seldon-mesh
     spec:
-      storageUri: "/mnt/models/drift-detector"
+      storageUri: "gs://seldon-models/scv2/examples/income/drift-detector"
       requirements:
         - mlserver
         - alibi-detect
@@ -90,9 +90,8 @@ cat ../../models/income-outlier.yaml
     kind: Model
     metadata:
       name: income-outlier
-      namespace: seldon-mesh
     spec:
-      storageUri: "/mnt/models/outlier-detector"
+      storageUri: "gs://seldon-models/scv2/examples/income/outlier-detector"
       requirements:
         - mlserver
         - alibi-detect
@@ -140,7 +139,6 @@ cat ../../pipelines/income.yaml
     kind: Pipeline
     metadata:
       name: income-production
-      namespace: seldon-mesh
     spec:
       steps:
         - name: income
@@ -180,7 +178,7 @@ seldon pipeline status income-production -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "income-production",
-            "uid": "cbimdu958n94aofi9tjg",
+            "uid": "cc536tg4sl9u21cllbr0",
             "version": 1,
             "steps": [
               {
@@ -208,15 +206,13 @@ seldon pipeline status income-production -w PipelineReady| jq -M .
                 "income-outlier.outputs.is_outlier"
               ]
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
-            "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-07-30T17:14:35.712344628Z"
+            "reason": "created pipeline",
+            "lastChangeTimestamp": "2022-08-27T15:28:52.890372305Z"
           }
         }
       ]
@@ -246,7 +242,7 @@ seldon pipeline inspect income-production.income-drift.outputs.is_drift
 
     ---
     seldon.default.model.income-drift.outputs
-    cbime95vqj3pei2v1gcg:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
+    cc53rdqqojmgf7c4m4d0:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
 ```
 ````
 Show predictions from drift data. Should be drift and probably not outliers.
@@ -272,7 +268,7 @@ seldon pipeline inspect income-production.income-drift.outputs.is_drift
 
     ---
     seldon.default.model.income-drift.outputs
-    cbimeptvqj3pei2v1gd0:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
+    cc53reaqojmgf7c4m4dg:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
 ```
 ````
 Show predictions from outlier data. Should be outliers and probably not drift.
@@ -286,7 +282,7 @@ infer("income-production.pipeline",batchSz,"outlier")
 
     [0 0 1 1 0 1 0 0 1 0 0 0 0 0 1 1 0 0 0 1]
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': [0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1], 'name': 'predict', 'shape': [20], 'datatype': 'INT64'}, {'data': [1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}]}
+    {'model_name': '', 'outputs': [{'data': [0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1], 'name': 'predict', 'shape': [20], 'datatype': 'INT64'}, {'data': [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}]}
 ```
 ````
 
@@ -298,7 +294,7 @@ seldon pipeline inspect income-production.income-drift.outputs.is_drift
 
     ---
     seldon.default.model.income-drift.outputs
-    cbimm05vqj3pei2v1gdg:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
+    cc53rf2qojmgf7c4m4e0:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
 ```
 ````
 ### Explanations
@@ -313,9 +309,8 @@ cat ../../models/income-explainer.yaml
     kind: Model
     metadata:
       name: income-explainer
-      namespace: seldon-mesh
     spec:
-      storageUri: "/mnt/models/explainer"
+      storageUri: "gs://seldon-models/scv2/examples/income/explainer"
       explainer:
         type: anchor_tabular
         modelRef: income
@@ -350,7 +345,7 @@ infer("income-explainer",batchSz,"normal")
 
     [0]
     <Response [200]>
-    {'model_name': 'income-explainer_1', 'model_version': '1', 'id': '577e5c5a-6c15-44d8-93e6-f9c722071ff2', 'parameters': {'content_type': None, 'headers': None}, 'outputs': [{'name': 'explanation', 'shape': [1], 'datatype': 'BYTES', 'parameters': {'content_type': 'str', 'headers': None}, 'data': ['{"meta": {"name": "AnchorTabular", "type": ["blackbox"], "explanations": ["local"], "params": {"seed": 1, "disc_perc": [25, 50, 75], "threshold": 0.95, "delta": 0.1, "tau": 0.15, "batch_size": 100, "coverage_samples": 10000, "beam_size": 1, "stop_on_first": false, "max_anchor_size": null, "min_samples_start": 100, "n_covered_ex": 10, "binary_cache_size": 10000, "cache_margin": 1000, "verbose": false, "verbose_every": 1, "kwargs": {}}, "version": "0.7.0"}, "data": {"anchor": ["Marital Status = Never-Married", "Relationship = Own-child", "Capital Gain <= 0.00"], "precision": 0.9937106918238994, "coverage": 0.06853582554517133, "raw": {"feature": [3, 5, 8], "mean": [0.8059701492537313, 0.9416666666666667, 0.9937106918238994], "precision": [0.8059701492537313, 0.9416666666666667, 0.9937106918238994], "coverage": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], "examples": [{"covered_true": [[44, 4, 1, 1, 5, 0, 4, 1, 0, 1848, 40, 9], [34, 4, 1, 1, 2, 0, 1, 1, 0, 0, 40, 9], [33, 2, 1, 1, 5, 1, 0, 1, 0, 0, 60, 9], [32, 1, 1, 1, 8, 1, 4, 0, 0, 0, 60, 9], [54, 4, 1, 1, 8, 0, 4, 1, 0, 0, 40, 9], [25, 4, 1, 1, 8, 1, 4, 1, 0, 0, 35, 9], [24, 4, 1, 1, 7, 3, 4, 0, 0, 0, 30, 9], [33, 2, 1, 1, 1, 0, 4, 1, 0, 1848, 45, 9], [36, 4, 5, 1, 4, 4, 1, 0, 0, 0, 40, 1], [29, 4, 1, 1, 8, 5, 4, 0, 0, 0, 50, 9]], "covered_false": [[50, 1, 1, 1, 8, 1, 4, 1, 0, 0, 55, 9], [46, 6, 5, 1, 8, 0, 4, 1, 0, 0, 50, 9], [50, 5, 1, 1, 8, 0, 4, 1, 15024, 0, 60, 9], [45, 7, 1, 1, 8, 0, 4, 1, 0, 1977, 60, 9], [45, 4, 5, 1, 8, 0, 4, 1, 0, 0, 65, 9], [42, 2, 1, 1, 1, 1, 4, 0, 99999, 0, 40, 9], [57, 4, 5, 1, 8, 1, 4, 1, 0, 2824, 50, 9], [74, 6, 1, 1, 2, 1, 4, 1, 15831, 0, 8, 3], [45, 6, 1, 1, 6, 1, 4, 1, 14084, 0, 45, 9], [44, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 50, 9]], "uncovered_true": [], "uncovered_false": []}, {"covered_true": [[28, 4, 1, 1, 8, 3, 2, 0, 0, 0, 45, 0], [51, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 9], [41, 4, 1, 1, 1, 3, 4, 0, 0, 0, 40, 9], [41, 7, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [55, 6, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [22, 4, 1, 1, 1, 3, 4, 0, 0, 0, 35, 9], [32, 4, 1, 1, 8, 3, 4, 0, 0, 0, 50, 9], [45, 4, 1, 1, 6, 3, 4, 1, 0, 1902, 40, 9], [29, 4, 2, 1, 5, 3, 1, 1, 0, 0, 60, 1], [36, 7, 5, 1, 5, 3, 4, 1, 5455, 0, 30, 9]], "covered_false": [[44, 4, 1, 1, 6, 3, 4, 1, 7688, 0, 50, 9], [50, 5, 1, 1, 8, 3, 4, 1, 15024, 0, 60, 9], [39, 4, 5, 1, 8, 3, 2, 0, 15020, 0, 60, 9], [66, 4, 1, 1, 8, 3, 4, 1, 99999, 0, 55, 0], [47, 4, 5, 1, 8, 3, 4, 1, 15024, 0, 55, 9], [32, 4, 1, 1, 5, 3, 4, 1, 99999, 0, 50, 9]], "uncovered_true": [], "uncovered_false": []}, {"covered_true": [[31, 4, 1, 1, 8, 3, 4, 1, 0, 1977, 55, 9], [59, 4, 2, 1, 5, 3, 4, 1, 0, 2415, 45, 9], [37, 4, 1, 1, 5, 3, 3, 1, 0, 0, 50, 0], [26, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [35, 4, 1, 1, 6, 3, 1, 1, 0, 0, 50, 0], [43, 4, 5, 1, 8, 3, 1, 1, 0, 0, 40, 1], [61, 2, 5, 1, 5, 3, 4, 0, 0, 0, 70, 9], [49, 6, 1, 1, 2, 3, 4, 1, 0, 0, 50, 9], [45, 2, 5, 1, 5, 3, 4, 1, 0, 0, 37, 9], [48, 2, 5, 1, 5, 3, 4, 0, 0, 1380, 40, 9]], "covered_false": [[36, 4, 1, 1, 6, 3, 4, 1, 0, 2415, 45, 9]], "uncovered_true": [], "uncovered_false": []}], "all_precision": 0, "num_preds": 1000000, "success": true, "names": ["Marital Status = Never-Married", "Relationship = Own-child", "Capital Gain <= 0.00"], "prediction": [0], "instance": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], "instances": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}']}]}
+    {'model_name': 'income-explainer_1', 'model_version': '1', 'id': 'f0c5eabd-4f9e-4eb8-8532-d1a1601f092b', 'parameters': {'content_type': None, 'headers': None}, 'outputs': [{'name': 'explanation', 'shape': [1], 'datatype': 'BYTES', 'parameters': {'content_type': 'str', 'headers': None}, 'data': ['{"meta": {"name": "AnchorTabular", "type": ["blackbox"], "explanations": ["local"], "params": {"seed": 1, "disc_perc": [25, 50, 75], "threshold": 0.95, "delta": 0.1, "tau": 0.15, "batch_size": 100, "coverage_samples": 10000, "beam_size": 1, "stop_on_first": false, "max_anchor_size": null, "min_samples_start": 100, "n_covered_ex": 10, "binary_cache_size": 10000, "cache_margin": 1000, "verbose": false, "verbose_every": 1, "kwargs": {}}, "version": "0.7.0"}, "data": {"anchor": ["Marital Status = Never-Married", "Relationship = Own-child", "Capital Gain <= 0.00"], "precision": 0.9939577039274925, "coverage": 0.06853582554517133, "raw": {"feature": [3, 5, 8], "mean": [0.8047091412742382, 0.9159891598915989, 0.9939577039274925], "precision": [0.8047091412742382, 0.9159891598915989, 0.9939577039274925], "coverage": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], "examples": [{"covered_true": [[41, 4, 1, 1, 5, 1, 4, 0, 0, 1876, 40, 9], [38, 4, 1, 1, 8, 0, 4, 1, 0, 1848, 54, 9], [39, 4, 5, 1, 5, 0, 4, 1, 0, 0, 40, 0], [55, 4, 2, 1, 5, 1, 4, 1, 0, 0, 40, 1], [47, 6, 1, 1, 8, 3, 4, 1, 0, 0, 60, 9], [33, 4, 5, 1, 8, 5, 4, 0, 0, 0, 50, 9], [29, 2, 1, 1, 5, 1, 4, 1, 0, 0, 40, 9], [44, 4, 5, 1, 5, 1, 4, 0, 0, 0, 55, 9], [36, 4, 1, 1, 6, 0, 4, 1, 0, 1977, 35, 9], [70, 4, 1, 1, 1, 1, 4, 1, 0, 0, 40, 9]], "covered_false": [[60, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 45, 9], [26, 4, 1, 1, 5, 3, 4, 1, 10520, 0, 64, 9], [39, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 60, 9], [45, 2, 5, 1, 8, 0, 4, 1, 7688, 0, 50, 9], [36, 4, 1, 1, 5, 0, 4, 1, 0, 1977, 45, 9], [48, 4, 2, 1, 5, 0, 4, 1, 0, 0, 40, 9], [52, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [46, 5, 1, 1, 2, 0, 4, 1, 7298, 0, 40, 0], [44, 6, 1, 1, 8, 0, 4, 1, 0, 2415, 50, 9], [51, 2, 2, 1, 8, 1, 4, 0, 0, 0, 45, 9]], "uncovered_true": [], "uncovered_false": []}, {"covered_true": [[31, 6, 1, 1, 6, 3, 2, 1, 0, 0, 40, 9], [59, 4, 1, 1, 5, 3, 4, 1, 5013, 0, 40, 9], [34, 4, 1, 1, 5, 3, 4, 1, 0, 0, 65, 6], [22, 7, 1, 1, 8, 3, 4, 1, 0, 0, 20, 9], [49, 2, 5, 1, 5, 3, 4, 1, 0, 0, 40, 9], [72, 4, 5, 1, 5, 3, 4, 1, 2329, 0, 60, 9], [34, 4, 1, 1, 5, 3, 4, 0, 0, 0, 40, 9], [38, 4, 5, 1, 8, 3, 4, 1, 0, 1977, 60, 9], [26, 2, 1, 1, 5, 3, 4, 1, 0, 2339, 55, 9], [46, 4, 5, 1, 8, 3, 4, 1, 0, 0, 55, 9]], "covered_false": [[55, 7, 5, 1, 5, 3, 4, 1, 7688, 0, 45, 9], [46, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 55, 9], [64, 4, 1, 1, 8, 3, 4, 1, 27828, 0, 50, 9], [41, 4, 5, 1, 5, 3, 4, 1, 15024, 0, 50, 9], [33, 6, 1, 1, 6, 3, 4, 1, 7298, 0, 80, 9], [51, 6, 5, 1, 8, 3, 4, 1, 25236, 0, 50, 9], [43, 4, 1, 1, 8, 3, 4, 1, 8614, 0, 40, 9], [51, 4, 1, 1, 1, 3, 4, 0, 7688, 0, 20, 9], [37, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 40, 9], [36, 4, 5, 1, 8, 3, 4, 0, 14084, 0, 40, 9]], "uncovered_true": [], "uncovered_false": []}, {"covered_true": [[30, 2, 1, 1, 4, 3, 4, 1, 0, 0, 45, 9], [33, 4, 1, 1, 8, 3, 4, 0, 0, 0, 32, 9], [45, 4, 5, 1, 5, 3, 4, 0, 0, 0, 40, 9], [48, 2, 1, 1, 5, 3, 4, 1, 0, 0, 45, 9], [30, 4, 5, 1, 5, 3, 1, 1, 0, 0, 40, 9], [34, 4, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [47, 2, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [33, 7, 1, 1, 5, 3, 4, 1, 0, 0, 60, 9], [28, 4, 1, 1, 7, 3, 4, 0, 0, 0, 50, 9], [26, 4, 1, 1, 8, 3, 4, 0, 0, 1669, 50, 9]], "covered_false": [[49, 7, 2, 1, 8, 3, 4, 0, 0, 2258, 50, 9]], "uncovered_true": [], "uncovered_false": []}], "all_precision": 0, "num_preds": 1000000, "success": true, "names": ["Marital Status = Never-Married", "Relationship = Own-child", "Capital Gain <= 0.00"], "prediction": [0], "instance": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], "instances": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}']}]}
 ```
 ````
 ### Cleanup
