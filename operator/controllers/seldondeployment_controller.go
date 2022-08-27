@@ -1163,29 +1163,46 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 			instance.Status.Address = components.addressable
 			// Update the found object and write the result back if there are any changes
 			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
-				desiredSvc := found.DeepCopy()
-				desiredSvc.Annotations = svc.Annotations
-				found.Spec = svc.Spec
-				found.Annotations = svc.Annotations
-				log.Info("Updating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
-				err = r.Update(context.TODO(), found)
-				if err != nil {
-					return ready, err
-				}
-
-				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+				// Check if svc selectors have changed - if so then we need to recreate svc
+				if !equality.Semantic.DeepEqual(svc.Spec.Selector, found.Spec.Selector) {
 					ready = false
-					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateService, "Updated Service %q", svc.GetName())
-					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredSvc, found)
+					// Delete the svc as selectors are immutable
+					err = r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					if err != nil {
-						log.Error(err, "Failed to diff")
-					} else {
-						log.Info(fmt.Sprintf("Difference in SVCs: %v", diff))
+						return ready, err
 					}
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteService, "Deleted Service %q", svc.GetName())
+					// Re-create svc
+					err = r.Create(context.TODO(), svc)
+					if err != nil {
+						return ready, err
+					}
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateService, "Recreated Service %q", svc.GetName())
 				} else {
-					log.Info("The SVCs are the same - api server defaults ignored")
+					desiredSvc := found.DeepCopy()
+					desiredSvc.Annotations = svc.Annotations
+					found.Spec = svc.Spec
+					found.Annotations = svc.Annotations
+					log.Info("Updating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
+					err = r.Update(context.TODO(), found)
+					if err != nil {
+						return ready, err
+					}
+
+					// Check if what came back from server modulo the defaults applied by k8s is the same or not
+					if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+						ready = false
+						r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateService, "Updated Service %q", svc.GetName())
+						//For debugging we will show the difference
+						diff, err := kmp.SafeDiff(desiredSvc, found)
+						if err != nil {
+							log.Error(err, "Failed to diff")
+						} else {
+							log.Info(fmt.Sprintf("Difference in SVCs: %v", diff))
+						}
+					} else {
+						log.Info("The SVCs are the same - api server defaults ignored")
+					}
 				}
 			} else {
 				log.Info("Found identical Service", "all", all, "namespace", found.Namespace, "name", found.Name, "status", found.Status)
@@ -1525,6 +1542,18 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Created Deployment %q", deploy.GetName())
 		} else if err != nil {
 			return ready, progressing, err
+		} else if !equality.Semantic.DeepEqual(deploy.Spec.Selector, found.Spec.Selector) {
+			// Need to recreate deployment as selector has changed
+			err = r.Delete(context.TODO(), found, client.PropagationPolicy(metav1.DeletePropagationForeground))
+			if err != nil {
+				return ready, progressing, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsDeleteDeployment, "Deleted Deployment %q", deploy.GetName())
+			err = r.Create(context.TODO(), deploy)
+			if err != nil {
+				return ready, progressing, err
+			}
+			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Recreated Deployment (selector changed) %q", deploy.GetName())
 		} else {
 			identical := true
 			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
