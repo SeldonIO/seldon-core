@@ -6,15 +6,73 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
-## Upgrading to 1.14
+## Upgrading to 1.15
 
-## Request Logger
+### Flask upgrade
 
-The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+With this release of Seldon Core we upgrade Flask dependency to 2.x line. This includes Python wrapper and most pre-packaged model servers. In an unlikely scenario that this causes issues one can fallback to `1.14.1` images.
 
 ## Container Services
 
 The label on services pointing to containers for each node in your inference graph has been changed to stop clashes in key-values for label selectors when you have multiple nodes in your inference graph. This will cause all your existing seldon deployments to be recreated with a rolling update as their service and deployment specs will have changed in the upgrade.
+
+## Upgrading to 1.14.1
+
+### OpenShift default storage initializer
+
+In this patch release we fixed the default storage initializer used on OpenShift (both Community and Certified operators).
+The image used now is `seldonio/rclone-storage-initializer:1.14.1` which is the same as one used for the non-OpenShift releases (*).
+
+For Certified operator you will find this image defined as
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:a0280c13136dcc870194af72630b9d2f7fc8bcff4edb54dd3bfbce36741af50c
+```
+in the CSV. This is the same image, just coming from the Red Hat registry.
+
+If you prefer or need to keep using previous storage initializer you can set for Community Operator
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: kfserving/storage-initializer:v0.6.1
+```
+or
+```yaml
+- name: RELATED_IMAGE_STORAGE_INITIALIZER
+  value: registry.connect.redhat.com/seldonio/storage-initializer@sha256:52f1e1901fc5de0734515f136847eeb698d48903cf7b6b1cbf273d303bb9029c
+```
+for the Certified one.
+
+(*) Non-OpenShift releases defaulted to Rclone-based storage initializer in Seldon Core version 1.8.
+
+### Rclone Storage Initializer
+
+Rclone storage initializer image is now based on Red Hat's Universal Base Image (UBI8).
+This is not breaking change.
+
+
+## Upgrading to 1.14
+
+### CRD V1
+
+Only the v1 versions of the CRD will be supported moving forward. The v1beta1 versions will remain in the Helm chart but will be not updated. Allowing the operator to create the CRDs will result in the v1 CRD being created so will only work on Kubernetes clusters >= 1.18.
+
+### Model Health Checks
+
+We have updated the health checks done by Seldon for the model nodes in your inference graph. If `executor.fullHealthChecks` is set to true then:
+ * For Seldon protocol each node will be probed with `/api/v1.0/health/status`.
+ * For the v2 protocol each node will be probed with `/v2/health/ready`.
+ * For tensorflow just TCP checks will be run on the http endpoint.
+
+By default we have set `executor.fullHealthChecks` to false for 1.14 release as users would need to rebuild their custom python models if they have not implemented the `health_status` method. In future we will default to `true`.
+
+### Request Logger
+
+The Python request logger component example has been deprecated and removed as part of [#4013](https://github.com/SeldonIO/seldon-core/issues/4013).
+
+### Seldon Core Analytics
+
+In this release we change status of [Seldon Core Analytics](../charts/seldon-core-analytics.html) Helm Chart to example only.
+**This chart will not be further updated.** We recommend to install and configure metrics monitoring using [Prometheus Operator](../analytics/analytics.html#metrics-with-prometheus-operator).
 
 ## Upgrading to 1.13
 
@@ -84,7 +142,7 @@ In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/Sel
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.14.0-dev
+  image: seldonio/rclone-storage-initializer:1.15.0-dev
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 

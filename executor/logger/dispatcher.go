@@ -11,7 +11,7 @@ const (
 	ENV_LOGGER_KAFKA_TOPIC  = "LOGGER_KAFKA_TOPIC"
 )
 
-func StartDispatcher(nworkers int, logBufferSize int, writeTimeoutMs int, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string) error {
+func StartDispatcher(nworkers int, logBufferSize int, writeTimeoutMs int, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, protocol string) error {
 	if kafkaBroker == "" {
 		kafkaBroker = os.Getenv(ENV_LOGGER_KAFKA_BROKER)
 	}
@@ -29,7 +29,7 @@ func StartDispatcher(nworkers int, logBufferSize int, writeTimeoutMs int, log lo
 	// Now, create all of our workers.
 	for i := 0; i < nworkers; i++ {
 		log.Info("Starting", "worker", i+1)
-		worker, err := NewWorker(i+1, workQueue, log, sdepName, namespace, predictorName, kafkaBroker, kafkaTopic)
+		worker, err := NewWorker(i+1, workQueue, log, sdepName, namespace, predictorName, kafkaBroker, kafkaTopic, protocol)
 		if err != nil {
 			return err
 		}

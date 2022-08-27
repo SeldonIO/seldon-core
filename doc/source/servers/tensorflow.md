@@ -11,7 +11,7 @@ For REST you need to specify parameters for:
  * signature_name
  * model_name
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -45,7 +45,7 @@ For gRPC you need to specify the following parameters:
  * model_input
  * model_output
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -86,7 +86,7 @@ Try out a [worked notebook](../examples/server_examples.html)
 
 You can utilize Tensorflow Serving's functionality to load multiple models from one model repository as shown in this [example notebook](../examples/protocol_examples.html). You should follow the configuration details as disucussed in the [Tensorflow Serving documentation on advanced configuration](https://www.tensorflow.org/tfx/serving/serving_config).
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:

@@ -92,6 +92,11 @@ func TestChain(t *testing.T) {
 							Contents: &inference.InferTensorContents{IntContents: []int32{1}},
 						},
 					},
+					Parameters: map[string]*inference.InferParameter{
+						"param-1-bool":   {ParameterChoice: &inference.InferParameter_BoolParam{BoolParam: true}},
+						"param-1-int64":  {ParameterChoice: &inference.InferParameter_Int64Param{Int64Param: 42}},
+						"param-1-string": {ParameterChoice: &inference.InferParameter_StringParam{StringParam: "param"}},
+					},
 				},
 			},
 			expected: &payload.ProtoPayload{
@@ -104,6 +109,11 @@ func TestChain(t *testing.T) {
 							Shape:    []int64{1},
 							Contents: &inference.InferTensorContents{IntContents: []int32{1}},
 						},
+					},
+					Parameters: map[string]*inference.InferParameter{
+						"param-1-bool":   {ParameterChoice: &inference.InferParameter_BoolParam{BoolParam: true}},
+						"param-1-int64":  {ParameterChoice: &inference.InferParameter_Int64Param{Int64Param: 42}},
+						"param-1-string": {ParameterChoice: &inference.InferParameter_StringParam{StringParam: "param"}},
 					},
 				},
 			},

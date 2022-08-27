@@ -3,8 +3,6 @@ import contextlib
 import importlib
 import json
 import logging
-import multiprocessing
-import multiprocessing as mp
 import os
 import socket
 import sys
@@ -31,6 +29,16 @@ from seldon_core.gunicorn_utils import (
 )
 from seldon_core.metrics import SeldonMetrics
 from seldon_core.utils import getenv_as_bool, setup_tracing
+
+# This is related to how multiprocessing is implemeneted on MacOS
+# See https://github.com/SeldonIO/seldon-core/issues/3410 for discussion.
+USE_MULTIPROCESS_ENV_NAME = "USE_MULTIPROCESS_PACKAGE"
+USE_MULTIPROCESS = getenv_as_bool(USE_MULTIPROCESS_ENV_NAME, default=False)
+if USE_MULTIPROCESS:
+    import multiprocess as mp
+else:
+    import multiprocessing as mp
+
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +74,11 @@ def start_servers(
        Auxiliary flask process
 
     """
+    if USE_MULTIPROCESS:
+        logger.info("Using alternative multiprocessing library")
+    else:
+        logger.info("Using standard multiprocessing library")
+
     p2 = None
     if target2:
         p2 = mp.Process(target=target2, daemon=False)
@@ -203,15 +216,7 @@ def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     return logger
 
 
-def main():
-    LOG_FORMAT = (
-        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
-    )
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    logger.info("Starting microservice.py:main")
-    logger.info(f"Seldon Core version: {__version__}")
-
-    sys.path.append(os.getcwd())
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
 
@@ -345,7 +350,20 @@ def main():
         help="Number of GPRC workers.",
     )
 
-    args, remaining = parser.parse_known_args()
+    return parser.parse_known_args()
+
+
+def main():
+    LOG_FORMAT = (
+        "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
+    )
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    logger.info("Starting microservice.py:main")
+    logger.info(f"Seldon Core version: {__version__}")
+
+    sys.path.append(os.getcwd())
+
+    args, remaining = parse_args()
 
     if len(remaining) > 0:
         logger.error(
@@ -421,7 +439,7 @@ def main():
             http_port,
             args.single_threaded,
         )
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
     else:
         # Start production server
         def rest_prediction_server():
@@ -461,7 +479,7 @@ def main():
             ).run()
 
         logger.info("REST gunicorn microservice running on port %i", http_port)
-        server1_func = rest_prediction_server
+        server_rest_func = rest_prediction_server
 
     def _wait_forever(server):
         try:
@@ -472,7 +490,7 @@ def main():
 
     def _run_grpc_server(bind_address):
         """Start a server in a subprocess."""
-        logger.info(f"Starting new GRPC server with {args.grpc_threads}.")
+        logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
 
         if args.tracing:
             from grpc_opentracing import open_tracing_server_interceptor
@@ -517,7 +535,9 @@ def main():
         with _reserve_grpc_port() as bind_port:
             bind_address = "0.0.0.0:{}".format(bind_port)
             logger.info(
-                f"GRPC Server Binding to '%s' {bind_address} with {args.workers} processes"
+                "GRPC Server Binding to %s with %d processes.",
+                bind_address,
+                args.grpc_workers,
             )
             sys.stdout.flush()
             workers = []
@@ -525,15 +545,13 @@ def main():
                 # NOTE: It is imperative that the worker subprocesses be forked before
                 # any gRPC servers start up. See
                 # https://github.com/grpc/grpc/issues/16001 for more details.
-                worker = multiprocessing.Process(
-                    target=_run_grpc_server, args=(bind_address,)
-                )
+                worker = mp.Process(target=_run_grpc_server, args=(bind_address,))
                 worker.start()
                 workers.append(worker)
             for worker in workers:
                 worker.join()
 
-    server2_func = grpc_prediction_server if args.grpc_workers > 0 else None
+    server_grpc_func = grpc_prediction_server if args.grpc_workers > 0 else None
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
@@ -555,17 +573,22 @@ def main():
             StandaloneApplication(app, options=options).run()
 
     logger.info("REST metrics microservice running on port %i", metrics_port)
-    metrics_server_func = rest_metrics_server
+    server_metrics_func = rest_metrics_server
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
     ):
-        server3_func = user_object.custom_service
+        server_custom_func = user_object.custom_service
     else:
-        server3_func = None
+        server_custom_func = None
 
     logger.info("Starting servers")
-    start_servers(server1_func, server2_func, server3_func, metrics_server_func)
+    start_servers(
+        server_rest_func,
+        server_grpc_func,
+        server_custom_func,
+        server_metrics_func,
+    )
 
 
 if __name__ == "__main__":

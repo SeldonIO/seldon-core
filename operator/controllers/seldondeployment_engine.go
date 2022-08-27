@@ -43,6 +43,7 @@ const (
 	ENV_EXECUTOR_PROMETHEUS_PATH                 = "EXECUTOR_PROMETHEUS_PATH"
 	ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE  = "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE"
 	ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS = "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS"
+	ENV_EXECUTOR_FULL_HEALTH_CHECKS              = "EXECUTOR_FULL_HEALTH_CHECKS"
 	ENV_EXECUTOR_USER                            = "EXECUTOR_CONTAINER_USER"
 	ENV_USE_EXECUTOR                             = "USE_EXECUTOR"
 
@@ -190,6 +191,11 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		protocol = machinelearningv1.ProtocolSeldon
 	}
 
+	transport := mlDep.Spec.Transport
+	if transport == "" {
+		transport = machinelearningv1.TransportRest
+	}
+
 	serverType := mlDep.Spec.ServerType
 	if serverType == "" {
 		serverType = machinelearningv1.ServerRPC
@@ -230,10 +236,12 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			"--http_port", strconv.Itoa(http_port),
 			"--grpc_port", strconv.Itoa(grpc_port),
 			"--protocol", string(protocol),
+			"--transport", string(transport),
 			"--prometheus_path", getPrometheusPath(mlDep),
 			"--server_type", string(serverType),
 			"--log_work_buffer_size", loggerQSize,
 			"--log_write_timeout_ms", loggerWriteTimeout,
+			fmt.Sprintf("--full_health_checks=%s", utils.GetEnv(ENV_EXECUTOR_FULL_HEALTH_CHECKS, "false")),
 		},
 		ImagePullPolicy:          corev1.PullPolicy(utils.GetEnv("EXECUTOR_CONTAINER_IMAGE_PULL_POLICY", "IfNotPresent")),
 		TerminationMessagePath:   "/dev/termination-log",
@@ -253,13 +261,13 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 			{ContainerPort: int32(http_port), Protocol: corev1.ProtocolTCP, Name: executorMetricsPortName},
 			{ContainerPort: int32(grpc_port), Protocol: corev1.ProtocolTCP, Name: constants.GrpcPortName},
 		},
-		ReadinessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: probeScheme}},
+		ReadinessProbe: &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/ready", Scheme: probeScheme}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,
 			SuccessThreshold:    1,
 			TimeoutSeconds:      60},
-		LivenessProbe: &corev1.Probe{Handler: corev1.Handler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: probeScheme}},
+		LivenessProbe: &corev1.Probe{ProbeHandler: corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Port: intstr.FromInt(http_port), Path: "/live", Scheme: probeScheme}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
 			FailureThreshold:    3,

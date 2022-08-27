@@ -8,5 +8,5 @@ spec:
   image: quay.io/seldon/test-catalog-certified:latest
   displayName: Seldon Core Certified Catalog
   updateStrategy:
-    registryPoll: 
-      interval: 30m
+    registryPoll:
+      interval: 1m

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	logrtesting "github.com/go-logr/logr/testing"
-	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	logrtesting "github.com/go-logr/logr/testr"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
@@ -132,7 +132,7 @@ func TestCleanVirtualServices(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	okList := []*istio.VirtualService{vsvcOk}
-	cleaner := &ResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.TestLogger{}}
+	cleaner := &ResourceCleaner{instance: foundInstance, client: client, virtualServices: okList, logger: logrtesting.New(t)}
 	deleted, err := cleaner.cleanUnusedVirtualServices()
 	g.Expect(err).To(BeNil())
 	g.Expect(len(deleted)).To(Equal(2))

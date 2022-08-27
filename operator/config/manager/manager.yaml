@@ -38,9 +38,21 @@ spec:
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - --log-level=$(MANAGER_LOG_LEVEL)
         - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
+        - --leader-election-resource-lock=$(MANAGER_LEADER_ELECTION_RESOURCE_LOCK)
+        - --leader-election-lease-duration-secs=$(MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS)
+        - --leader-election-renew-deadline-secs=$(MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS)
+        - --leader-election-retry-period-secs=$(MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS)
         env:
         - name: MANAGER_LEADER_ELECTION_ID
           value: "a33bd623.machinelearning.seldon.io"
+        - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
+          value: "0"
+        - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
+          value: "0"
+        - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
+          value: "0"
+        - name: MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS
+          value: ""
         - name: MANAGER_LOG_LEVEL
           value: "INFO"
         - name: WATCH_NAMESPACE
@@ -94,7 +106,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.14.0-dev
+          value: seldonio/seldon-core-executor:1.15.0-dev
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH
@@ -124,6 +136,8 @@ spec:
         - name: EXECUTOR_DEFAULT_MEMORY_LIMIT
           value: "512Mi"
         - name: DEPLOYMENT_NAME_AS_PREFIX
+          value: "false"
+        - name: EXECUTOR_FULL_HEALTH_CHECKS
           value: "false"
         image: controller:latest
         name: manager

@@ -14,7 +14,7 @@ If you use the annotation `seldon.io/engine-separate-pod` you can also set the n
 
 As illustration, a contrived example showing various options is shown below:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -71,7 +71,7 @@ For more details see [a worked example for the above replica settings](../exampl
 
 Its is possible to use the `kubectl scale` command to set the `replicas` value of the SeldonDeployment. For simple inference graphs this can be an easy way to scale them up and down. For example:
 
-```
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:

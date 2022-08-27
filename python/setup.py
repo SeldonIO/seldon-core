@@ -12,7 +12,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.14.0-dev",
+    version="1.15.0-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
@@ -21,7 +21,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.6",
     install_requires=[
-        "Flask<2.0.0",
+        "Flask >= 2.0.0, <3.0.0",
         "jsonschema<4.0.0",
         "Flask-cors<4.0.0",
         "requests<3.0.0",
@@ -37,9 +37,7 @@ setup(
         "gunicorn >= 19.9.0, < 20.2.0",
         "setuptools >= 41.0.0",
         "prometheus_client >= 0.7.1, < 0.9.0",
-        # Addresses https://github.com/SeldonIO/seldon-core/issues/4017
-        "werkzeug < 2.1",
-        # Addresses CVE-2020-1971
+        "werkzeug >= 2.1.1, < 2.3",
         "cryptography >= 3.4, < 3.5",
         # Addresses CVE SNYK-PYTHON-PYYAML-590151
         "PyYAML >= 5.4, < 5.5",
@@ -47,9 +45,6 @@ setup(
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
         "urllib3 == 1.26.5",
-        # Addresses flask dependecy bug https://github.com/pallets/flask/issues/4455
-        "itsdangerous==1.1.0",
-        "markupsafe==1.1.1",
     ],
     extras_require=extras,
     entry_points={

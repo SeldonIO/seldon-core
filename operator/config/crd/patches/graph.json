@@ -1,3 +1,0 @@
-[
-  {"op": "remove", "path": "/spec/validation/openAPIV3Schema/properties/spec/properties/predictors/items/properties/graph/properties/children"}
-]

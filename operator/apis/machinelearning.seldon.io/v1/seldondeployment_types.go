@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/constants"
 	autoscalingv2beta2 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
@@ -71,6 +71,7 @@ const (
 	ANNOTATION_SEPARATE_ENGINE         = "seldon.io/engine-separate-pod"
 	ANNOTATION_HEADLESS_SVC            = "seldon.io/headless-svc"
 	ANNOTATION_NO_ENGINE               = "seldon.io/no-engine"
+	ANNOTATION_NO_STOARGE_INITIALIZER  = "seldon.io/no-storage-initializer"
 	ANNOTATION_CUSTOM_SVC_NAME         = "seldon.io/svc-name"
 	ANNOTATION_LOGGER_WORK_QUEUE_SIZE  = "seldon.io/executor-logger-queue-size"
 	ANNOTATION_LOGGER_WRITE_TIMEOUT_MS = "seldon.io/executor-logger-write-timeout-ms"
@@ -496,6 +497,10 @@ type SeldonScaledObjectSpec struct {
 	// +optional
 	Advanced *kedav1alpha1.AdvancedConfig `json:"advanced,omitempty" protobuf:"bytes,5,opt,name=advanced"`
 	Triggers []kedav1alpha1.ScaleTriggers `json:"triggers" protobuf:"bytes,6,opt,name=triggers"`
+	// +optional
+	IdleReplicaCount *int32 `json:"idleReplicaCount,omitempty" protobuf:"bytes,7,opt,name=idleReplicaCount"`
+	// +optional
+	Fallback *kedav1alpha1.Fallback `json:"fallback,omitempty" protobuf:"bytes,8,opt,name=fallback"`
 }
 
 type SeldonHpaSpec struct {

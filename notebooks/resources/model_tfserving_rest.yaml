@@ -8,7 +8,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - args: 
+        - args:
           - --port=8500
           - --rest_api_port=8501
           - --model_name=halfplustwo
@@ -26,7 +26,7 @@ spec:
       name: halfplustwo
       type: MODEL
       endpoint:
-        http_port: 8501
-        grpc_port: 8500
+        httpPort: 8501
+        grpcPort: 8500
     name: model
     replicas: 1

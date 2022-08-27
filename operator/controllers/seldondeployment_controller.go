@@ -46,7 +46,7 @@ import (
 
 	"encoding/json"
 
-	kedav1alpha1 "github.com/kedacore/keda/api/v1alpha1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 
 	istio_networking "istio.io/api/networking/v1alpha3"
@@ -62,6 +62,8 @@ const (
 	ENV_DEFAULT_ENGINE_SERVER_PORT      = "ENGINE_SERVER_PORT"
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
+
+	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
 
 	// This env var in the operator allows you to change the default path
 	// 		to mount the cert in the containers
@@ -79,7 +81,8 @@ const (
 )
 
 var (
-	envDefaultCertMountPath = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
+	envDefaultCertMountPath               = utils.GetEnv(ENV_DEFAULT_CERT_MOUNT_PATH_NAME, "/cert/")
+	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
 )
 
 // SeldonDeploymentReconciler reconciles a SeldonDeployment object
@@ -139,17 +142,19 @@ func createKeda(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string,
 			Labels:    map[string]string{machinelearningv1.Label_seldon_id: seldonId},
 		},
 		Spec: kedav1alpha1.ScaledObjectSpec{
-			PollingInterval: podSpec.KedaSpec.PollingInterval,
-			CooldownPeriod:  podSpec.KedaSpec.CooldownPeriod,
-			MaxReplicaCount: podSpec.KedaSpec.MaxReplicaCount,
-			MinReplicaCount: podSpec.KedaSpec.MinReplicaCount,
-			Advanced:        podSpec.KedaSpec.Advanced,
-			Triggers:        podSpec.KedaSpec.Triggers,
+			PollingInterval:  podSpec.KedaSpec.PollingInterval,
+			CooldownPeriod:   podSpec.KedaSpec.CooldownPeriod,
+			IdleReplicaCount: podSpec.KedaSpec.IdleReplicaCount,
+			MaxReplicaCount:  podSpec.KedaSpec.MaxReplicaCount,
+			MinReplicaCount:  podSpec.KedaSpec.MinReplicaCount,
+			Advanced:         podSpec.KedaSpec.Advanced,
+			Triggers:         podSpec.KedaSpec.Triggers,
 			ScaleTargetRef: &kedav1alpha1.ScaleTarget{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       deploymentName,
 			},
+			Fallback: podSpec.KedaSpec.Fallback,
 		},
 	}
 	return kedaScaledObj
@@ -767,22 +772,22 @@ func createContainerService(deploy *appsv1.Deployment,
 	// TODO: deprecate and just call httpPort
 	if con.LivenessProbe == nil {
 		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
-			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+			con.LivenessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 		} else {
-			con.LivenessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+			con.LivenessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 60, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 		}
 	}
 	if con.ReadinessProbe == nil {
 		if mlDep.Spec.Transport == machinelearningv1.TransportGrpc || pu.Endpoint.Type == machinelearningv1.GRPC {
-			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+			con.ReadinessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.GrpcPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 		} else {
-			con.ReadinessProbe = &corev1.Probe{Handler: corev1.Handler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
+			con.ReadinessProbe = &corev1.Probe{ProbeHandler: corev1.ProbeHandler{TCPSocket: &corev1.TCPSocketAction{Port: intstr.FromInt(int(pu.Endpoint.HttpPort))}}, InitialDelaySeconds: 20, PeriodSeconds: 5, SuccessThreshold: 1, FailureThreshold: 3, TimeoutSeconds: 1}
 		}
 	}
 
-	// Add livecycle probe
+	// Add lifecycle probe
 	if con.Lifecycle == nil {
-		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.Handler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
+		con.Lifecycle = &corev1.Lifecycle{PreStop: &corev1.LifecycleHandler{Exec: &corev1.ExecAction{Command: []string{"/bin/sh", "-c", "/bin/sleep 10"}}}}
 	}
 
 	//
@@ -798,14 +803,7 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	addPortEnvs(pu, con)
-
-	if pu != nil && len(pu.Parameters) > 0 {
-		paramsEnvVar := corev1.EnvVar{
-			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
-			Value: utils.GetPredictiveUnitAsJson(pu.Parameters),
-		}
-		con.Env = utils.SetEnvVar(con.Env, paramsEnvVar, false)
-	}
+	addModelEnvs(pu, con)
 
 	// Always set the predictive and deployment identifiers
 
@@ -816,6 +814,7 @@ func createContainerService(deploy *appsv1.Deployment,
 
 	con.Env = append(con.Env, []corev1.EnvVar{
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		corev1.EnvVar{Name: MLServerModelNameEnv, Value: con.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
 		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
@@ -828,12 +827,34 @@ func createContainerService(deploy *appsv1.Deployment,
 	metricPort := getPort(predictiveUnitMetricsPortName, con.Ports)
 	if metricPort != nil {
 		con.Env = append(con.Env, []corev1.EnvVar{
-			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
-			corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
+			{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_SERVICE_PORT_METRICS, Value: strconv.Itoa(int(metricPort.ContainerPort))},
+			{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_METRICS_ENDPOINT, Value: getPrometheusPath(mlDep)},
+			{Name: MLServerMetricsPortEnv, Value: strconv.Itoa(int(metricPort.ContainerPort))},
+			{Name: MLServerMetricsEndpointEnv, Value: getPrometheusPath(mlDep)},
 		}...)
 	}
 
 	return svc
+}
+
+func addModelEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {
+	if len(pu.Parameters) > 0 {
+		// Set V1 env vars
+		paramsEnvVar := corev1.EnvVar{
+			Name:  machinelearningv1.ENV_PREDICTIVE_UNIT_PARAMETERS,
+			Value: utils.GetPredictiveUnitAsJson(pu.Parameters),
+		}
+		con.Env = utils.SetEnvVar(con.Env, paramsEnvVar, false)
+	}
+
+	// If storageUri is present, set model URI for V2
+	if len(pu.ModelURI) != 0 {
+		modelURIEnv := corev1.EnvVar{
+			Name:  MLServerModelURIEnv,
+			Value: DefaultModelLocalMountPath,
+		}
+		con.Env = utils.SetEnvVar(con.Env, modelURIEnv, false)
+	}
 }
 
 func addPortEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {

@@ -52,24 +52,16 @@ install-cert-manager:
 	kubectl rollout status deployment.apps/cert-manager-webhook -n cert-manager
 
 
-manifests_all: manifests manifests_v1 manifests_v1_small
+manifests_all: manifests manifests_v1_small
 
 # Install CRDs into a cluster
+# Note use of create to stop too long annotation being created. See https://github.com/kubernetes-sigs/kubebuilder/issues/1140
 install: manifests
-	kustomize build config/crd | kubectl apply -f -
+	kustomize build config/crd | kubectl create -f -
 
 # Install CRDs into a cluster
 uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
-
-# Install V1 CRDs into a cluster
-# Note use of create to stop too long annotation being created. See https://github.com/kubernetes-sigs/kubebuilder/issues/1140
-install_v1: manifests_v1
-	kustomize build config/crd_v1 | kubectl create -f -
-
-# Uninstall V1 CRDs into a cluster
-uninstall_v1:
-	kustomize build config/crd_v1 | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
@@ -122,16 +114,14 @@ deploy-lite: manifests
 
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1beta1
 
 # Commented out alternative is looking ahead to issue that on Openshift our v1 CRD is too large
 # to be installed. This may also affect operator-sdk community operators.
 # See https://github.com/operator-framework/operator-registry/issues/385
 # Solution may be to drop v1alpha2 and v1alpha3 versions to decrease size by 2/3
-manifests_v1: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
-	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1/bases crd:crdVersions=v1
+manifests: controller-gen
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
+	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
 
 manifests_v1_small: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
@@ -165,6 +155,9 @@ docker-build-no-test: generate-resources
 docker-build-redhat: test generate-resources
 	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
+docker-build-redhat-no-test: generate-resources
+	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
@@ -187,11 +180,7 @@ controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
 	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
 	}
 
 CONTROLLER_GEN=$(GOBIN)/controller-gen
@@ -252,11 +241,10 @@ generate-resources:
 	rm -rf generated
 	mkdir generated
 	kustomize build config/default/ -o generated
-	kustomize build config/crd_v1 -o generated
-	cp generated/apiextensions.k8s.io_v1beta1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
+	cp generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
 
-config/crd_v1/patches/graph_children.yaml:
-	python hack/create_graph_openapi_schema.py hack/graph_patch.tmpl.yaml config/crd_v1/patches/graph_children.yaml
+config/crd/patches/graph_children.yaml:
+	python hack/create_graph_openapi_schema.py hack/graph_patch.tmpl.yaml config/crd/patches/graph_children.yaml
 
 
 ###################################
@@ -265,14 +253,15 @@ config/crd_v1/patches/graph_children.yaml:
 #
 ###################################
 
+OPENSHIFT_VERSIONS=v4.8-v4.11
 
 .PHONY: bundle
 recreate_bundle:
 	rm -fr bundle
 	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	echo '  com.redhat.openshift.versions: "v4.8-v4.9"' >> bundle/metadata/annotations.yaml
-	echo 'LABEL com.redhat.openshift.versions=v4.8-v4.9' >> bundle.Dockerfile
+	echo '  com.redhat.openshift.versions: "${OPENSHIFT_VERSIONS}"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=${OPENSHIFT_VERSIONS}' >> bundle.Dockerfile
 
 create_bundle_image:
 	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
@@ -340,6 +329,27 @@ create_certified_bundle:
 	cp -r bundle/manifests bundle-certified
 	mv bundle-certified/manifests/seldon-operator.clusterserviceversion.yaml bundle-certified/manifests/seldon-operator-certified.clusterserviceversion.yaml
 	./hack/update-openshift-certified.sh ${VERSION}
+	cp bundle.Dockerfile bundle-certified.Dockerfile
+	sed -i 's|COPY bundle/manifests|COPY bundle-certified/manifests|g' bundle-certified.Dockerfile
+	sed -i 's|COPY bundle/manifests|COPY bundle-certified/manifests|g' bundle-certified.Dockerfile
+
+create_certified_bundle_image:
+	docker build . -f bundle-certified.Dockerfile -t quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+push_certified_bundle_image:
+	docker push quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+validate_certified_bundle_image:
+	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+opm_index_certified:
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION} --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
+
+opm_push_certified:
+	docker push quay.io/seldon/test-catalog-certified:latest
+
+# this does not include "create_certified_bundle" target to not affect manual pinning of images
+update_openshift_certified: create_certified_bundle_image push_certified_bundle_image validate_certified_bundle_image opm_index_certified opm_push_certified
 
 
 # password can be found at: https://connect.redhat.com/project/1366481/view
@@ -349,6 +359,9 @@ redhat-image-scan:
 		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
 	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
 	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT} --docker-config=${HOME}/.docker/config.json --certification-project-id=5e6352370307ea9e345f6084 --pyxis-api-token=$${pyxis_api_token} --submit
+
 
 
 

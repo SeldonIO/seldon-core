@@ -1,0 +1,33 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: vae-outlier
+  namespace: cifar10
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containers:
+      - image: seldonio/alibi-detect-server:1.15.0-dev
+        imagePullPolicy: IfNotPresent
+        args:
+        - --model_name
+        - cifar10od
+        - --http_port
+        - '8080'
+        - --protocol
+        - tensorflow.http
+        - --storage_uri
+        - s3:outlier-detector/cifar10
+        - --reply_url
+        - http://event-display.cifar10.svc.cluster.local
+        - --event_type
+        - io.seldon.serving.inference.outlier
+        - --event_source
+        - io.seldon.serving.cifar10od
+        - OutlierDetector
+        envFrom:
+        - secretRef:
+            name: seldon-rclone-secret

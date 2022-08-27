@@ -32,14 +32,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-const (
-	ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME = "PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME"
-)
-
-var (
-	PredictiveUnitDefaultEnvSecretRefName = utils.GetEnv(ENV_PREDICTIVE_UNIT_DEFAULT_ENV_SECRET_REF_NAME, "")
-)
-
 type PrePackedInitialiser struct {
 	clientset kubernetes.Interface
 	ctx       context.Context
@@ -143,17 +135,37 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	c := utils.GetContainerForDeployment(deploy, pu.Name)
 	existing := c != nil
 
-	tritonUser := int64(1000)
+	// Define the default arguments
+	args := []string{
+		"/opt/tritonserver/bin/tritonserver",
+		constants.TritonArgGrpcPort + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
+		constants.TritonArgHttpPort + strconv.Itoa(int(pu.Endpoint.HttpPort)),
+	}
+
+	// Triton can support loading models directory from cloud storage modelURI, enabled with "no-storage-initializer" annotation
+	// see: https://github.com/triton-inference-server/server/blob/main/docs/model_repository.md
+	noStorage := strings.ToLower(mlDepSpec.Annotations[machinelearningv1.ANNOTATION_NO_STOARGE_INITIALIZER]) == "true"
+	if !noStorage {
+		args = append(args, constants.TritonArgModelRepository+DefaultModelLocalMountPath)
+		args = append(args, constants.TritonArgStrictModelConfig+"false")
+	} else {
+		args = append(args, constants.TritonArgModelRepository+pu.ModelURI)
+		// Optionally allow "model_control_mode=explicit" and one or more "load_model=model_name" parameters
+		// see: https://github.com/triton-inference-server/server/blob/main/docs/model_management.md
+		for _, paramElement := range pu.Parameters {
+			if strings.ToLower(paramElement.Name) == "model_control_mode" {
+				args = append(args, constants.TritonArgModelControlMode+paramElement.Value)
+			} else if strings.ToLower(paramElement.Name) == "load_model" {
+				args = append(args, constants.TritonArgLoadModel+paramElement.Value)
+			} else if strings.ToLower(paramElement.Name) == "strict_model_config" {
+				args = append(args, constants.TritonArgStrictModelConfig+paramElement.Value)
+			}
+		}
+	}
 
 	cServer := &v1.Container{
 		Name: pu.Name,
-		Args: []string{
-			"/opt/tritonserver/bin/tritonserver",
-			"--grpc-port=" + strconv.Itoa(int(pu.Endpoint.GrpcPort)),
-			"--http-port=" + strconv.Itoa(int(pu.Endpoint.HttpPort)),
-			"--model-repository=" + DefaultModelLocalMountPath,
-			"--strict-model-config=false",
-		},
+		Args: args,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "grpc",
@@ -167,7 +179,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			},
 		},
 		ReadinessProbe: &v1.Probe{
-			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeReadyPath,
 				Port: intstr.FromString("http"),
 			}},
@@ -178,7 +190,7 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			FailureThreshold:    3,
 		},
 		LivenessProbe: &v1.Probe{
-			Handler: v1.Handler{HTTPGet: &v1.HTTPGetAction{
+			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
 				Path: constants.KFServingProbeLivePath,
 				Port: intstr.FromString("http"),
 			}},
@@ -187,9 +199,6 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 			PeriodSeconds:       10,
 			SuccessThreshold:    1,
 			FailureThreshold:    3,
-		},
-		SecurityContext: &v1.SecurityContext{
-			RunAsUser: &tritonUser,
 		},
 		VolumeMounts: []v1.VolumeMount{
 			{
@@ -200,6 +209,12 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 	}
 	cServer.Image = serverConfig.PrepackImageName(mlDepSpec.Protocol, pu)
 
+	envSecretRefName := extractEnvSecretRefName(pu)
+	if noStorage {
+		// Add secrets directly to triton server if not using storage initializer
+		addEnvFromSecret(cServer, envSecretRefName)
+	}
+
 	if existing {
 		// Overwrite core items if not existing or required
 		if c.Image == "" {
@@ -207,6 +222,9 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		}
 		if c.Args == nil {
 			c.Args = cServer.Args
+		}
+		if c.EnvFrom == nil {
+			c.EnvFrom = cServer.EnvFrom
 		}
 		if c.ReadinessProbe == nil {
 			c.ReadinessProbe = cServer.ReadinessProbe
@@ -228,12 +246,14 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		}
 	}
 
-	envSecretRefName := extractEnvSecretRefName(pu)
-	mi := NewModelInitializer(pi.ctx, pi.clientset)
-	_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
-	if err != nil {
-		return err
+	if !noStorage {
+		mi := NewModelInitializer(pi.ctx, pi.clientset)
+		_, err := mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 

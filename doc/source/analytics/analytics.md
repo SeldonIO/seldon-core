@@ -28,38 +28,80 @@ Each metric has the following key value pairs for further filtering which will b
   * model_version
 
 
-## Helm Analytics Chart
+## Metrics with Prometheus Operator
 
-Seldon Core provides an example Helm analytics chart that displays the above Prometheus metrics in Grafana. You can install it with:
+### Installation
 
-```bash
-helm install seldon-core-analytics seldon-core-analytics \
-   --repo https://storage.googleapis.com/seldon-charts \
-   --namespace seldon-system
-```
-
-THe helm charts use the Prometheus and Grafana charts as dependencies, so all the variables from those charts are exposed and can be extended / modified. The `seldon-core-analytics` chart provides default values but you can override them.
-
-Once running you can expose the Grafana dashboard with:
+We recommend to configure Prometheus using [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator).
+The [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack configuration can be easily installed using the [Bitnami Helm Charts](https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus/)
 
 ```bash
-kubectl port-forward svc/seldon-core-analytics-grafana 3000:80 -n seldon-system
+kubectl create namespace seldon-monitoring
+
+helm upgrade --install seldon-monitoring kube-prometheus \
+    --version 6.9.5 \
+	--set fullnameOverride=seldon-monitoring \
+    --namespace seldon-monitoring \
+    --repo https://charts.bitnami.com/bitnami
+
+kubectl rollout status -n seldon-monitoring statefulsets/prometheus-seldon-monitoring-prometheus
 ```
 
-You can then view the dashboard at http://localhost:3000/dashboard/db/prediction-analytics
-
-![dashboard](./dashboard.png)
-
-It is also possible expose Prometheus itself with:
+The following pods should now be present in the `seldon-monitoring` namespace:
 ```bash
-kubectl port-forward svc/seldon-core-analytics-prometheus-seldon 3001:80 -n seldon-system
+$ kubectl get pods -n seldon-monitoring
+NAME                                            READY   STATUS    RESTARTS   AGE
+alertmanager-seldon-monitoring-alertmanager-0   2/2     Running   0          51s
+prometheus-kube-state-metrics-d97b6b5ff-n5z7w   1/1     Running   0          52s
+prometheus-node-exporter-jmffw                  1/1     Running   0          52s
+prometheus-seldon-monitoring-prometheus-0       2/2     Running   0          51s
+seldon-monitoring-operator-6d558f5696-xhq66     1/1     Running   0          52s
 ```
 
-and then access it at http://localhost:3001/
+### Configuration
 
-## Example
+Following `PodMonitor` resource will instruct Prometheus to scrape ports named `metrics` from pods managed by Seldon Core.
+Create `seldon-podmonitor.yaml` file
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: seldon-podmonitor
+  namespace: seldon-monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: seldon-core
+  podMetricsEndpoints:
+    - port: metrics
+      path: /prometheus
+  namespaceSelector:
+    any: true
+```
+and apply it with
+```bash
+kubectl apply -f seldon-podmonitor.yaml
+```
 
-There is [an example notebook you can use to test the metrics](../examples/metrics.html).
+
+### Verification
+
+Assuming that there exist `SeldonDeployment` models running in the cluster one can verify Prometheus metrics by accessing the Prometheus UI.
+
+Expose Prometheus to your localhost with
+```bash
+$ kubectl port-forward -n seldon-monitoring svc/seldon-monitoring-prometheus 9090:9090
+```
+
+You can now head to your browser http://localhost:9090 to access the Prometheus UI.
+Start by verifying at `Status -> Targets` information.
+
+![prometheus-targets](../images/prometheus-targets.png)
+
+Then, head to `Graph` section and query for `seldon_api_executor_client_requests_seconds_count`.
+You should see output similar to following (assuming that your `SeldonDeployments` are receiving some inference requests)
+
+![prometheus-graph](../images/prometheus-graph.png)
 
 
 ## Custom Metrics
@@ -134,7 +176,8 @@ ports:
   protocol: TCP
 ```
 
-This require us to use a following entry
+If you configured Prometheus using Prometheus Operator as discussed above you should be set to go.
+If, however, you are configuring Prometheus not using Prometheus Operator this require us to use a following entry
 ```yaml
   - source_labels: [__meta_kubernetes_pod_container_port_name]
     action: keep
@@ -172,6 +215,7 @@ At present the following Seldon Core wrappers provide integrations with custom m
  * [Python Wrapper](../python/index.html)
 
 
-### Example
 
-There is an [example notebook illustrating a model with custom metrics in python](../examples/custom_metrics.html).
+## Example
+
+There is [an example notebook you can use to test the metrics](../examples/metrics.html).

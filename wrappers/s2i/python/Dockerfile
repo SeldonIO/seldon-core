@@ -4,6 +4,9 @@ FROM $BASE_IMAGE:$IMAGE_VERSION
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
+# We are setting default image user as 8888 but s2i build may require root
+LABEL io.openshift.s2i.assemble-user="0"
+
 # This is to install desired version of Python without updating conda version
 # Note: ARGs must be after FROM statement , see source:
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
@@ -18,7 +21,7 @@ RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 RUN dnf install -y make automake gcc gcc-c++
 
 # Pin pip and setuptools
-RUN pip install pip==20.2 setuptools==46.1
+RUN pip install pip==22.1.2 setuptools==63.1.0
 
 RUN mkdir microservice
 WORKDIR /microservice
@@ -40,6 +43,7 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 RUN mkdir -p /.conda && \
     chmod a+rwx /.conda && \
     chown -R 8888 /microservice  && \
-    conda clean --index-cache
+    conda clean --yes --index-cache
 
+USER 8888
 EXPOSE 5000

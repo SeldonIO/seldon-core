@@ -17,13 +17,14 @@ limitations under the License.
 package v1
 
 import (
+	"os"
+
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -85,13 +86,14 @@ func (r *SeldonDeploymentSpec) checkPredictiveUnits(pu *PredictiveUnit, p *Predi
 		}
 
 	} else if IsPrepack(pu) {
-		if pu.ModelURI == "" {
+		// Only HuggingFace server is allowed for no ModelURI as it can load from Hub
+		if pu.ModelURI == "" && (pu.Implementation == nil || *pu.Implementation != PrepackHuggingFaceName) {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Predictive unit modelUri required when using standalone servers"))
 		}
 		c := GetContainerForPredictiveUnit(p, pu.Name)
 
 		//Current non tensorflow serving prepack servers can not handle tensorflow protocol
-		if r.Protocol == ProtocolTensorflow && (*pu.Implementation == PrepackSklearnName || *pu.Implementation == PrepackXgboostName || *pu.Implementation == PrepackMlflowName) {
+		if r.Protocol == ProtocolTensorflow && (*pu.Implementation == PrepackSklearnName || *pu.Implementation == PrepackXgboostName || *pu.Implementation == PrepackMlflowName || *pu.Implementation == PrepackHuggingFaceName) {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Prepackaged server does not handle tensorflow protocol "+string(*pu.Implementation)))
 		}
 

@@ -10,10 +10,10 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.15.0-dev/sklearn/iris
       name: classifier
     explainer:
       type: AnchorTabular
-      modelUri: gs://seldon-models/alibi/iris_anchor_tabular-python3.7-alibi-0.6.2
+      modelUri: gs://seldon-models/alibi/iris_anchor_tabular-python3.7-alibi-0.7.0
     name: default
     replicas: 1

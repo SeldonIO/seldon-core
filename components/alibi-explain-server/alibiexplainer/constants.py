@@ -1,3 +1,5 @@
 import os
 
 SELDON_LOGLEVEL = os.environ.get("SELDON_LOGLEVEL", "INFO").upper()
+EXPLAIN_RANDOM_SEED = os.environ.get("EXPLAIN_RANDOM_SEED", "True")
+EXPLAIN_RANDOM_SEED_VALUE = os.environ.get("EXPLAIN_RANDOM_SEED_VALUE", 0)

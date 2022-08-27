@@ -92,7 +92,8 @@ Advanced Machine Learning Monitoring
    Model Explainer Example <iris_explainer_poetry>
    Model Explainer V2 protocol Example (Incubating) <iris_anchor_tabular_explainer_v2>
    Outlier Detection on CIFAR10 <outlier_cifar10>
-  
+   Training Outlier Detector for CIFAR10 with Poetry <cifar10_od_poetry>
+
 Batch Processing with Seldon Core
 ---------------------------------
 

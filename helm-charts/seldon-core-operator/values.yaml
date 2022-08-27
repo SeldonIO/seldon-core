@@ -51,7 +51,7 @@ executor:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-core-executor
-    tag: 1.14.0-dev
+    tag: 1.15.0-dev
   resources:
     cpuLimit: 500m
     cpuRequest: 500m
@@ -68,6 +68,8 @@ executor:
     defaultEndpoint: 'http://default-broker'
     workQueueSize: 10000
     writeTimeoutMs: 2000
+  # Whether to run full protocol API based health checks on models in deployment graph. False will just do TCP connects
+  fullHealthChecks: false
 
 
 # ## Seldon Core Controller Manager Options
@@ -75,7 +77,7 @@ image:
   pullPolicy: IfNotPresent
   registry: docker.io
   repository: seldonio/seldon-core-operator
-  tag: 1.14.0-dev
+  tag: 1.15.0-dev
 manager:
   cpuLimit: 500m
   cpuRequest: 100m
@@ -83,6 +85,10 @@ manager:
   memoryRequest: 200Mi
   logLevel: INFO
   leaderElectionID: a33bd623.machinelearning.seldon.io
+  leaderElectionResourceLock:
+  leaderElectionLeaseDurationSecs: 15
+  leaderElectionRenewDeadlineSecs: 10
+  leaderElectionRetryPeriodSecs: 2
   annotations: {}
   containerSecurityContext: {}
   deploymentNameAsPrefix: false
@@ -98,7 +104,7 @@ singleNamespace: false
 storageInitializer:
   cpuLimit: "1"
   cpuRequest: 100m
-  image: seldonio/rclone-storage-initializer:1.14.0-dev
+  image: seldonio/rclone-storage-initializer:1.15.0-dev
   memoryLimit: 1Gi
   memoryRequest: 100Mi
 usageMetrics:
@@ -124,23 +130,23 @@ predictor_servers:
   MLFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.14.0-dev"
+        defaultImageVersion: "1.15.0-dev"
         image: seldonio/mlflowserver
       v2:
-        defaultImageVersion: "1.0.0-mlflow"
+        defaultImageVersion: "1.1.0-mlflow"
         image: seldonio/mlserver
   SKLEARN_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.14.0-dev"
+        defaultImageVersion: "1.15.0-dev"
         image: seldonio/sklearnserver
       v2:
-        defaultImageVersion: "1.0.0-sklearn"
+        defaultImageVersion: "1.1.0-sklearn"
         image: seldonio/mlserver
   TENSORFLOW_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.14.0-dev"
+        defaultImageVersion: "1.15.0-dev"
         image: seldonio/tfserving-proxy
       tensorflow:
         defaultImageVersion: 2.1.0
@@ -148,20 +154,25 @@ predictor_servers:
   XGBOOST_SERVER:
     protocols:
       seldon:
-        defaultImageVersion: "1.14.0-dev"
+        defaultImageVersion: "1.15.0-dev"
         image: seldonio/xgboostserver
       v2:
-        defaultImageVersion: "1.0.0-xgboost"
+        defaultImageVersion: "1.1.0-xgboost"
         image: seldonio/mlserver
   TRITON_SERVER:
     protocols:
       v2:
         defaultImageVersion: "21.08-py3"
         image: nvcr.io/nvidia/tritonserver
+  HUGGINGFACE_SERVER:
+    protocols:
+      v2:
+        defaultImageVersion: "1.1.0-huggingface"
+        image: seldonio/mlserver
   TEMPO_SERVER:
     protocols:
       v2:
-        defaultImageVersion: "1.0.0-slim"
+        defaultImageVersion: "1.1.0-slim"
         image: seldonio/mlserver
 
 # ## Other
@@ -188,5 +199,5 @@ kubeflow: false
 
 # Explainer image
 explainer:
-  image: seldonio/alibiexplainer:1.14.0-dev
-  image_v2: seldonio/mlserver:1.0.0-alibi-explain
+  image: seldonio/alibiexplainer:1.15.0-dev
+  image_v2: seldonio/mlserver:1.1.0-alibi-explain

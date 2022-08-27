@@ -8,7 +8,7 @@ If you run with Openshift RedHat Service Mesh you can work with Seldon by follow
 
 Ensure you create a Gateway in istio-system. For 
 
-```
+```yaml
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -30,7 +30,7 @@ spec:
 
 1. Update the Seldon Core CSV to activate istio. Add:
 
-```
+```yaml
   config:
     env:
     - name: ISTIO_ENABLED
@@ -44,7 +44,7 @@ If you install Seldon Core in a particular namespace you will need to:
 
  1. Add a NetworkPolicy to allow the webhooks to run. For the namespace yoy are running the operator create:
 
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
