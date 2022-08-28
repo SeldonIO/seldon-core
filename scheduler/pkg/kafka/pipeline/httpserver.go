@@ -120,7 +120,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	elapsedTime := time.Since(startTime).Seconds()
 	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
 		for _, val := range vals {
-			w.Header().Set(k, val)
+			w.Header().Add(k, val)
 		}
 	}
 	w.Header().Set(RequestIdHeader, kafkaRequest.key)

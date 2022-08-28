@@ -44,17 +44,13 @@ func convertHttpHeadersToKafkaHeaders(httpHeaders http.Header) []kafka.Header {
 
 func convertKafkaHeadersToHttpHeaders(kafkaHeaders []kafka.Header) http.Header {
 	httpHeaders := make(http.Header)
-	found := make(map[string]bool)
 	for _, kafkaHeader := range kafkaHeaders {
 		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), resources.ExternalHeaderPrefix) {
-			if !found[kafkaHeader.Key] {
-				if val, ok := httpHeaders[kafkaHeader.Key]; ok {
-					val = append(val, string(kafkaHeader.Value))
-					httpHeaders[kafkaHeader.Key] = val
-				} else {
-					httpHeaders[kafkaHeader.Key] = []string{string(kafkaHeader.Value)}
-				}
-				found[kafkaHeader.Key] = true
+			if val, ok := httpHeaders[kafkaHeader.Key]; ok {
+				val = append(val, string(kafkaHeader.Value))
+				httpHeaders[kafkaHeader.Key] = val
+			} else {
+				httpHeaders[kafkaHeader.Key] = []string{string(kafkaHeader.Value)}
 			}
 		}
 	}
@@ -75,17 +71,13 @@ func convertGrpcMetadataToKafkaHeaders(grpcMetadata metadata.MD) []kafka.Header 
 
 func convertKafkaHeadersToGrpcMetadata(kafkaHeaders []kafka.Header) metadata.MD {
 	grpcMetadata := make(metadata.MD)
-	found := make(map[string]bool)
 	for _, kafkaHeader := range kafkaHeaders {
 		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), resources.ExternalHeaderPrefix) {
-			if !found[kafkaHeader.Key] {
-				if val, ok := grpcMetadata[kafkaHeader.Key]; ok {
-					val = append(val, string(kafkaHeader.Value))
-					grpcMetadata[kafkaHeader.Key] = val
-				} else {
-					grpcMetadata[kafkaHeader.Key] = []string{string(kafkaHeader.Value)}
-				}
-				found[kafkaHeader.Key] = true
+			if val, ok := grpcMetadata[kafkaHeader.Key]; ok {
+				val = append(val, string(kafkaHeader.Value))
+				grpcMetadata[kafkaHeader.Key] = val
+			} else {
+				grpcMetadata[kafkaHeader.Key] = []string{string(kafkaHeader.Value)}
 			}
 		}
 	}

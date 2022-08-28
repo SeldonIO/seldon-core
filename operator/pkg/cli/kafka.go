@@ -244,7 +244,17 @@ func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64, key 
 	return nil
 }
 
+func printHeaders(e *kafka.Message) {
+	fmt.Println("Headers")
+	for _, header := range e.Headers {
+		fmt.Printf("\t%s\n", header.String())
+	}
+}
+
 func showKafkaMsg(e *kafka.Message, topic string, tensor string) error {
+	fmt.Printf("Key: %s:\n", string(e.Key))
+	printHeaders(e)
+	fmt.Printf("\t")
 	if strings.HasSuffix(topic, OutputsSpecifier) {
 		return showKafkaOutputMsg(e, tensor)
 	} else {
@@ -256,7 +266,7 @@ func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
 	res := &v2_dataplane.ModelInferResponse{}
 	err := proto.Unmarshal(e.Value, res)
 	if err != nil {
-		fmt.Printf("%s:%s\n", string(e.Key), string(e.Value))
+		fmt.Printf("%s\n", string(e.Value))
 		return nil
 	}
 	err = updateResponseFromRawContents(res)
@@ -266,12 +276,12 @@ func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, output := range res.Outputs {
 			if output.Name == tensor {
-				printProtoWithKey(e.Key, output)
+				printProto(output)
 			}
 		}
 
 	} else {
-		printProtoWithKey(e.Key, res)
+		printProto(res)
 	}
 	return nil
 }
@@ -280,7 +290,7 @@ func showKafkaInputMsg(e *kafka.Message, tensor string) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := proto.Unmarshal(e.Value, req)
 	if err != nil {
-		fmt.Printf("%s:%s\n", string(e.Key), string(e.Value))
+		fmt.Printf("%s\n", string(e.Value))
 		return nil
 	}
 	err = updateRequestFromRawContents(req)
@@ -290,12 +300,12 @@ func showKafkaInputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, input := range req.Inputs {
 			if input.Name == tensor {
-				printProtoWithKey(e.Key, input)
+				printProto(input)
 			}
 		}
 
 	} else {
-		printProtoWithKey(e.Key, req)
+		printProto(req)
 	}
 	return nil
 }
