@@ -138,7 +138,10 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 			}
 		default:
 			// Handle repeat Kubernetes resource calls for same generation
-			if req.GetKubernetesMeta() != nil && lastPipeline.KubernetesMeta != nil {
+			if req.GetKubernetesMeta() != nil &&
+				lastPipeline.KubernetesMeta != nil &&
+				req.GetKubernetesMeta().Generation > 0 &&
+				lastPipeline.KubernetesMeta.Generation > 0 {
 				if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
 					logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
 					return nil, nil

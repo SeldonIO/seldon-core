@@ -1,0 +1,10 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: version-test
+spec:
+  steps:
+    - name: mul10
+  output:
+    steps:
+    - mul10

@@ -155,6 +155,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		Output:         output,
 		KubernetesMeta: kubernetesMeta,
 	}
+	// Ensure we have a UID
 	if pv.UID == "" {
 		pv.UID = xid.New().String()
 	}

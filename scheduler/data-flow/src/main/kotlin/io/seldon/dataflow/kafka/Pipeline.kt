@@ -105,7 +105,7 @@ class Pipeline(
         ): KafkaProperties {
             return kafkaProperties
                 .withAppId(
-                    HashUtils.hashIfLong(metadata.name),
+                    HashUtils.hashIfLong(metadata.id),
                 )
                 .withStreamThreads(
                     getNumThreadsFor(numSteps),

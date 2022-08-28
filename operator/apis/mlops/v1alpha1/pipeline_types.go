@@ -173,6 +173,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	}
 	return &scheduler.Pipeline{
 		Name:           p.GetName(),
+		Uid:            string(p.UID),
 		Steps:          steps,
 		Output:         output,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
