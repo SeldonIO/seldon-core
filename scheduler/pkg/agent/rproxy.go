@@ -74,7 +74,9 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		return res, err
 	}
 
-	if res.StatusCode == http.StatusNotFound {
+	// in the case of triton, a request to a model that is not found is considered a bad request
+	// this is likely to increase latency for genuine bad requests as we will retry twice
+	if res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusBadRequest {
 		internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
 		t.loader(internalModelName)
 

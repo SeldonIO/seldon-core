@@ -163,8 +163,7 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))
 	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
-	if getGrpcErrCode(err) == codes.NotFound {
-		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+	if retryForLazyReload(err) {
 		rp.stateManager.v2Client.LoadModel(internalModelName)
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
@@ -192,8 +191,7 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 	}
 
 	resp, err := rp.getV2GRPCClient().ModelMetadata(ctx, r)
-	if getGrpcErrCode(err) == codes.NotFound {
-		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+	if retryForLazyReload(err) {
 		rp.stateManager.v2Client.LoadModel(internalModelName)
 		resp, err = rp.getV2GRPCClient().ModelMetadata(ctx, r)
 	}
@@ -213,8 +211,7 @@ func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequ
 	}
 
 	resp, err := rp.getV2GRPCClient().ModelReady(ctx, r)
-	if getGrpcErrCode(err) == codes.NotFound {
-		// we do lazy load in case of 404, the idea being that if ml server restarts, state with agent is inconsistent.
+	if retryForLazyReload(err) {
 		rp.stateManager.v2Client.LoadModel(internalModelName)
 		resp, err = rp.getV2GRPCClient().ModelReady(ctx, r)
 	}
@@ -283,4 +280,9 @@ func getGrpcErrCode(err error) codes.Code {
 		}
 	}
 	return codes.Unknown
+}
+
+func retryForLazyReload(err error) bool {
+	// we do lazy load in case of 404 and unavailable (triton), the idea being that if ml server restarts, state with agent is inconsistent.
+	return getGrpcErrCode(err) == codes.NotFound || getGrpcErrCode(err) == codes.Unavailable
 }
