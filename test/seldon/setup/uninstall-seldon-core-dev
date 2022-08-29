@@ -10,9 +10,6 @@ kubectl delete --all sdep -n seldon-regression-test
 echo ">>> Deleting secret..."
 kubectl delete secret domino-quay-repos --ignore-not-found=true -n seldon-system
 
-echo ">>> Deleting Seldon gateway..."
-kubectl delete -f $SCRIPT_DIR/manifests/seldon-gateway.yaml --ignore-not-found=true || true
-
 echo ">>> Deleting helm release..."
 helm status seldon-core -n seldon-system > /dev/null && helm delete seldon-core -n seldon-system
 
