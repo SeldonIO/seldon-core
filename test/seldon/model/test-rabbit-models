@@ -57,5 +57,5 @@ CIFAR10_RESULT_PAYLOAD=$(kubectl -n rabbitmq exec rabbitmq-cluster-server-0 -c r
 
 if [ "${EXPECTED_CIFAR10_RESULT_PAYLOAD}" != "${CIFAR10_RESULT_PAYLOAD}" ]; then
   echo "UNEXPECTED CIFAR10 MODEL RESULT: ${CIFAR10_RESULT_PAYLOAD}"
-########  exit 1
+  exit 1
 fi
