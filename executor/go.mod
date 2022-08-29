@@ -22,7 +22,7 @@ require (
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
-	google.golang.org/grpc v1.46.0
+	google.golang.org/grpc v1.49.0
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.23.6
 	sigs.k8s.io/controller-runtime v0.11.2
