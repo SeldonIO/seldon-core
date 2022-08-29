@@ -1,14 +1,6 @@
 ## Seldon V2 Non Kubernetes Pipeline Examples
 
 
-
-```bash
-which seldon
-```
-
-    /home/clive/work/scv2/seldon-core-v2/operator/bin/seldon
-```
-````
 ### Model Chaining
 
 Chain the output of one model into the next. Also shows chaning the tensor names via `tensorMap` to conform to the inputs of the second model.
@@ -18,7 +10,6 @@ Chain the output of one model into the next. Also shows chaning the tensor names
 cat ./models/tfsimple1.yaml
 cat ./models/tfsimple2.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -39,36 +30,30 @@ cat ./models/tfsimple2.yaml
       - tensorflow
       memory: 100Ki
 ```
-````
 
 ```bash
 seldon model load -f ./models/tfsimple1.yaml 
 seldon model load -f ./models/tfsimple2.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
 seldon model status tfsimple2 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/tfsimples.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -87,22 +72,18 @@ cat ./pipelines/tfsimples.yaml
         steps:
         - tfsimple2
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -147,13 +128,11 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -184,13 +163,11 @@ seldon pipeline infer tfsimples \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -258,12 +235,10 @@ seldon pipeline infer tfsimples --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline inspect tfsimples
 ```
-````{collapse} Expand to see output
 ```json
 
     ---
@@ -285,29 +260,24 @@ seldon pipeline inspect tfsimples
     seldon.default.pipeline.tfsimples.outputs
     cbmbeglvqj3k9ho9hr6g:{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
 ```
-````
 
 ```bash
 seldon pipeline unload tfsimples
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload tfsimple1
 seldon model unload tfsimple2
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 ### Model Join
 
 Join two flows of data from two models as input to a third model.
@@ -318,7 +288,6 @@ cat ./models/tfsimple1.yaml
 cat ./models/tfsimple2.yaml
 cat ./models/tfsimple3.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -348,40 +317,34 @@ cat ./models/tfsimple3.yaml
       - tensorflow
       memory: 100Ki
 ```
-````
 
 ```bash
 seldon model load -f ./models/tfsimple1.yaml 
 seldon model load -f ./models/tfsimple2.yaml 
 seldon model load -f ./models/tfsimple3.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
 seldon model status tfsimple2 -w ModelAvailable | jq -M .
 seldon model status tfsimple3 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/tfsimples-join.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -402,22 +365,18 @@ cat ./pipelines/tfsimples-join.yaml
         steps:
         - tfsimple3
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status join -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -464,13 +423,11 @@ seldon pipeline status join -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer join --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -538,31 +495,26 @@ seldon pipeline infer join --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline unload join
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload tfsimple1
 seldon model unload tfsimple2
 seldon model unload tfsimple3
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 ### Conditional
 
 Shows conditional data flows - one of two models is run based on output tensors from first.
@@ -573,7 +525,6 @@ cat ./models/conditional.yaml
 cat ./models/add10.yaml
 cat ./models/mul10.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -603,40 +554,34 @@ cat ./models/mul10.yaml
       - triton
       - python
 ```
-````
 
 ```bash
 seldon model load -f ./models/conditional.yaml 
 seldon model load -f ./models/add10.yaml 
 seldon model load -f ./models/mul10.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status conditional -w ModelAvailable | jq -M .
 seldon model status add10 -w ModelAvailable | jq -M .
 seldon model status mul10 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/conditional.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -661,22 +606,18 @@ cat ./pipelines/conditional.yaml
         - add10
         stepsJoin: any
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/conditional.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -729,13 +670,11 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -761,13 +700,11 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -793,31 +730,26 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline unload tfsimple-conditional
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload conditional
 seldon model unload add10
 seldon model unload mul10
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
     {}
 ```
-````
 ### Error
 An example which errors when its arguments sum to greater than 100. Shows stopping a pipeline early on error.
 
@@ -825,7 +757,6 @@ An example which errors when its arguments sum to greater than 100. Shows stoppi
 ```bash
 cat ./models/outlier-error.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -837,32 +768,26 @@ cat ./models/outlier-error.yaml
       - triton
       - python
 ```
-````
 
 ```bash
 seldon model load -f ./models/outlier-error.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model status outlier-error -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/error.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -875,22 +800,18 @@ cat ./pipelines/error.yaml
         steps:
         - outlier-error
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/error.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status error -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -923,13 +844,11 @@ seldon pipeline status error -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer error --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -955,13 +874,11 @@ seldon pipeline infer error --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer error --inference-mode grpc \
     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[100,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: rpc error: code = FailedPrecondition desc = rpc error: code = Internal desc = Failed to process the request(s) for model instance 'outlier-error_1_0', message: TritonModelException: Outlier. Input sums to greater than 100
@@ -992,27 +909,22 @@ seldon pipeline infer error --inference-mode grpc \
       /mnt/agent/models/outlier-error_1/1/model.py(108): execute
     
 ```
-````
 
 ```bash
 seldon pipeline unload error
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload outlier-error
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 ### Model Join with Trigger
 
 Shows how steps in a pipeline can be triggered on data appearing. The trigger data is not sent to the step.
@@ -1024,7 +936,6 @@ cat ./models/tfsimple2.yaml
 cat ./models/tfsimple3.yaml
 cat ./models/check.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -1063,7 +974,6 @@ cat ./models/check.yaml
       - triton
       - python
 ```
-````
 
 ```bash
 seldon model load -f ./models/tfsimple1.yaml 
@@ -1071,7 +981,6 @@ seldon model load -f ./models/tfsimple2.yaml
 seldon model load -f ./models/tfsimple3.yaml 
 seldon model load -f ./models/check.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
@@ -1079,7 +988,6 @@ seldon model load -f ./models/check.yaml
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
@@ -1087,7 +995,6 @@ seldon model status tfsimple2 -w ModelAvailable | jq -M .
 seldon model status tfsimple3 -w ModelAvailable | jq -M .
 seldon model status check -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
@@ -1095,12 +1002,10 @@ seldon model status check -w ModelAvailable | jq -M .
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/tfsimples-join-outlier.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -1128,22 +1033,18 @@ cat ./pipelines/tfsimples-join-outlier.yaml
         steps:
         - tfsimple3
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples-join-outlier.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status joincheck -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1202,13 +1103,11 @@ seldon pipeline status joincheck -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer joincheck --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1276,13 +1175,11 @@ seldon pipeline infer joincheck --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer joincheck --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: rpc error: code = FailedPrecondition desc = rpc error: code = Internal desc = Failed to process the request(s) for model instance 'check_1_0', message: TritonModelException: Outlier. Input sums to greater than 100
@@ -1309,17 +1206,14 @@ seldon pipeline infer joincheck --inference-mode grpc \
     
     parse error: Invalid numeric literal at line 1, column 4
 ```
-````
 
 ```bash
 seldon pipeline unload joincheck
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload tfsimple1
@@ -1327,7 +1221,6 @@ seldon model unload tfsimple2
 seldon model unload tfsimple3
 seldon model unload check
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
@@ -1335,7 +1228,6 @@ seldon model unload check
     {}
     {}
 ```
-````
 ### Pipeline Input Tensors
 Access to indivudal tensors in pipeline inputs
 
@@ -1344,7 +1236,6 @@ Access to indivudal tensors in pipeline inputs
 cat ./models/mul10.yaml
 cat ./models/add10.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -1365,36 +1256,30 @@ cat ./models/add10.yaml
       - triton
       - python
 ```
-````
 
 ```bash
 seldon model load -f ./models/mul10.yaml 
 seldon model load -f ./models/add10.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status mul10 -w ModelAvailable | jq -M .
 seldon model status add10 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/pipeline-inputs.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -1418,22 +1303,18 @@ cat ./pipelines/pipeline-inputs.yaml
         - add10
     
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1482,13 +1363,11 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer pipeline-inputs --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1530,29 +1409,24 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline unload pipeline-inputs
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload mul10
 seldon model unload add10
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 ### Trigger Joins
 
 Shows how joins can be used for triggers as well.
@@ -1562,7 +1436,6 @@ Shows how joins can be used for triggers as well.
 cat ./models/mul10.yaml
 cat ./models/add10.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -1583,36 +1456,30 @@ cat ./models/add10.yaml
       - triton
       - python
 ```
-````
 
 ```bash
 seldon model load -f ./models/mul10.yaml 
 seldon model load -f ./models/add10.yaml 
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 seldon model status mul10 -w ModelAvailable | jq -M .
 seldon model status add10 -w ModelAvailable | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```bash
 cat ./pipelines/trigger-joins.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -1638,22 +1505,18 @@ cat ./pipelines/trigger-joins.yaml
         - add10
         stepsJoin: any
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/trigger-joins.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon pipeline status trigger-joins -w PipelineReady | jq -M .
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1705,13 +1568,11 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1737,13 +1598,11 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok3","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -1769,29 +1628,24 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
       ]
     }
 ```
-````
 
 ```bash
 seldon pipeline unload trigger-joins
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload mul10
 seldon model unload add10
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
     {}
 ```
-````
 
 ```python
 

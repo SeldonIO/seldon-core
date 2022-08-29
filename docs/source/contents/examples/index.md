@@ -21,6 +21,7 @@ local-examples.md
 local-experiments.md
 k8s-examples.md
 pipeline-examples.md
-cifar10.md
 explainer-examples.md
+cifar10.md
+income.md
 ```

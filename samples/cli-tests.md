@@ -12,7 +12,6 @@ seldon model load -f ./models/cifar10.yaml
 seldon experiment start -f ./experiments/ab-default-model.yaml 
 seldon pipeline load -f ./pipelines/cifar10.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
@@ -22,12 +21,10 @@ seldon pipeline load -f ./pipelines/cifar10.yaml
     {}
     {}
 ```
-````
 
 ```bash
 seldon model list
 ```
-````{collapse} Expand to see output
 ```json
 
     model		state			reason
@@ -37,12 +34,10 @@ seldon model list
     iris		ModelAvailable		
     tfsimple1	ModelAvailable		
 ```
-````
 
 ```bash
 seldon model metadata cifar10 
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -75,12 +70,10 @@ seldon model metadata cifar10
     	]
     }
 ```
-````
 
 ```bash
 seldon server list
 ```
-````{collapse} Expand to see output
 ```json
 
     server		replicas	models
@@ -88,31 +81,26 @@ seldon server list
     triton		1		2
     mlserver	1		2
 ```
-````
 
 ```bash
 seldon experiment list
 ```
-````{collapse} Expand to see output
 ```json
 
     experiment		active	
     ----------		------	
     experiment-sample	true
 ```
-````
 
 ```bash
 seldon pipeline list
 ```
-````{collapse} Expand to see output
 ```json
 
     pipeline
     --------
     cifar10-production
 ```
-````
 
 ```bash
 seldon model unload iris
@@ -122,7 +110,6 @@ seldon model unload cifar10
 seldon experiment stop experiment-sample
 seldon pipeline unload cifar10-production
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
@@ -132,7 +119,6 @@ seldon pipeline unload cifar10-production
     {}
     {}
 ```
-````
 ### Badly formed model
 
 
@@ -140,7 +126,6 @@ seldon pipeline unload cifar10-production
 ```bash
 cat ./models/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -152,12 +137,10 @@ cat ./models/error-bad-spec.yaml
       requirements:
       - sklearn
 ```
-````
 
 ```bash
 seldon model load -f ./models/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: json: unknown field "storagUri"
@@ -175,12 +158,10 @@ seldon model load -f ./models/error-bad-spec.yaml
     
     json: unknown field "storagUri"
 ```
-````
 
 ```bash
 cat ./pipelines/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -206,12 +187,10 @@ cat ./pipelines/error-bad-spec.yaml
         - add10
         stepsJoin: any
 ```
-````
 
 ```bash
 seldon pipeline load -f ./pipelines/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: json: unknown field "input"
@@ -229,12 +208,10 @@ seldon pipeline load -f ./pipelines/error-bad-spec.yaml
     
     json: unknown field "input"
 ```
-````
 
 ```bash
 cat ./experiments/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Experiment
@@ -249,12 +226,10 @@ cat ./experiments/error-bad-spec.yaml
       - modelName: iris2
         weight: 50
 ```
-````
 
 ```bash
 seldon experiment start -f ./experiments/error-bad-spec.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: json: unknown field "candidate"
@@ -272,14 +247,12 @@ seldon experiment start -f ./experiments/error-bad-spec.yaml
     
     json: unknown field "candidate"
 ```
-````
 ## Failed scheduling
 
 
 ```bash
 seldon model load -f ./models/error-bad-capabilities.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     Error: rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
@@ -297,17 +270,14 @@ seldon model load -f ./models/error-bad-capabilities.yaml
     
     rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
 ```
-````
 
 ```bash
 seldon model unload badcapabilities
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```python
 

@@ -4,7 +4,6 @@
 ```bash
 cat ./models/income.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -15,33 +14,27 @@ cat ./models/income.yaml
       requirements:
       - sklearn
 ```
-````
 
 ```bash
 seldon model load -f ./models/income.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model status income -w ModelAvailable
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model infer income \
   '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}' 
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -67,12 +60,10 @@ seldon model infer income \
     	]
     }
 ```
-````
 
 ```bash
 cat ./models/income-explainer.yaml
 ```
-````{collapse} Expand to see output
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -84,33 +75,27 @@ cat ./models/income-explainer.yaml
         type: anchor_tabular
         modelRef: income
 ```
-````
 
 ```bash
 seldon model load -f ./models/income-explainer.yaml
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model status income-explainer -w ModelAvailable
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model infer income-explainer \
   '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
-````{collapse} Expand to see output
 ```json
 
     {
@@ -139,27 +124,22 @@ seldon model infer income-explainer \
     	]
     }
 ```
-````
 
 ```bash
 seldon model unload income-explainer
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```bash
 seldon model unload income
 ```
-````{collapse} Expand to see output
 ```json
 
     {}
 ```
-````
 
 ```python
 

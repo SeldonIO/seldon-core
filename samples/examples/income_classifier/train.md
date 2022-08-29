@@ -44,8 +44,8 @@ from alibi_detect.utils.perturbation import inject_outlier_tabular
     2022-08-27 16:19:21.016894: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libnvidia-fatbinaryloader.so.396.37: cannot open shared object file: No such file or directory
     2022-08-27 16:19:21.016917: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
     2022-08-27 16:19:21.016936: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (clive-T470p): /proc/driver/nvidia/version does not exist
-```
-````
+
+
 ## Fetch and prepare data
 
 
@@ -115,8 +115,8 @@ y_h1 = Y_low
     ['Associates', 'Bachelors', 'Doctorate', 'Dropout', 'High School grad', 'Masters', 'Prof-School']
     Low education: ['Dropout', 'High School grad', 'Bachelors']
     High education: ['Bachelors', 'Masters', 'Doctorate']
-```
-````
+
+
 ## Drift Detector
 
 
@@ -124,8 +124,7 @@ y_h1 = Y_low
 categories_per_feature = {f: None for f in list(category_map.keys())}
 cd = TabularDrift(x_ref, p_val=.05, categories_per_feature=categories_per_feature)
 ```
-````{collapse} Expand to see output
-```yaml
+
 
 ```python
 preds = cd.predict(x_h0)
@@ -133,8 +132,8 @@ print('Drift? {}'.format(labels[preds['data']['is_drift']]))
 ```
 
     Drift? No!
-```
-````
+
+
 
 ```python
 preds = cd.predict(x_h1)
@@ -142,8 +141,8 @@ print('Drift? {}'.format(labels[preds['data']['is_drift']]))
 ```
 
     Drift? Yes!
-```
-````
+
+
 
 ```python
 from alibi_detect.utils.saving import save_detector
@@ -213,8 +212,8 @@ train_pipeline.fit(x_ref, y_ref)
                                                  (&#x27;onehot&#x27;,
                                                   OneHotEncoder(handle_unknown=&#x27;ignore&#x27;))]),
                                  [1, 2, 3, 4, 5, 6, 7, 11])])</pre></div></div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label sk-toggleable__label-arrow">num</label><div class="sk-toggleable__content"><pre>[0, 8, 9, 10]</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label sk-toggleable__label-arrow">SimpleImputer</label><div class="sk-toggleable__content"><pre>SimpleImputer(strategy=&#x27;median&#x27;)</pre></div></div></div><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label sk-toggleable__label-arrow">StandardScaler</label><div class="sk-toggleable__content"><pre>StandardScaler()</pre></div></div></div></div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label sk-toggleable__label-arrow">cat</label><div class="sk-toggleable__content"><pre>[1, 2, 3, 4, 5, 6, 7, 11]</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label sk-toggleable__label-arrow">SimpleImputer</label><div class="sk-toggleable__content"><pre>SimpleImputer(strategy=&#x27;median&#x27;)</pre></div></div></div><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label sk-toggleable__label-arrow">OneHotEncoder</label><div class="sk-toggleable__content"><pre>OneHotEncoder(handle_unknown=&#x27;ignore&#x27;)</pre></div></div></div></div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label sk-toggleable__label-arrow">RandomForestClassifier</label><div class="sk-toggleable__content"><pre>RandomForestClassifier(n_estimators=50)</pre></div></div></div></div></div></div></div>
-```
-````
+
+
 
 
 ```python
@@ -225,8 +224,8 @@ print('Test accuracy: ', accuracy_score(y_h0, predict_fn(x_h0)))
 
     Train accuracy:  0.983756119270138
     Test accuracy:  0.7774441107774441
-```
-````
+
+
 
 ```python
 from joblib import dump, load
@@ -238,8 +237,8 @@ dump(train_pipeline, './classifier/model.joblib')
 
 
     ['./classifier/model.joblib']
-```
-````
+
+
 
 ## Outlier Detector
 
@@ -253,8 +252,8 @@ dump(preprocessor, './preprocessor/model.joblib')
 
 
     ['./preprocessor/model.joblib']
-```
-````
+
+
 
 
 ```python
@@ -273,8 +272,8 @@ encoder_net = tf.keras.Sequential(
          Dense(10, activation=tf.nn.relu),
         Dense(5, activation=tf.nn.relu)
     ])
-```
-````decoder_net = tf.keras.Sequential(
+
+decoder_net = tf.keras.Sequential(
     [
         InputLayer(input_shape=(latent_dim,)),
         Dense(5, activation=tf.nn.relu),
@@ -282,16 +281,16 @@ encoder_net = tf.keras.Sequential(
         Dense(25, activation=tf.nn.relu),
         Dense(n_features, activation=None)
     ])
-```
-````# initialize outlier detector
+
+# initialize outlier detector
 od = OutlierVAE(threshold=None,  # threshold for outlier score
                 score_type='mse',  # use MSE of reconstruction error for outlier detection
                 encoder_net=encoder_net,  # can also pass VAE model instead
                 decoder_net=decoder_net,  # of separate encoder and decoder
                 latent_dim=latent_dim,
                 samples=5)
-```
-````# train
+
+# train
 od.fit(X_train,
         loss_fn=tf.keras.losses.mse,
          epochs=5,
@@ -299,26 +298,25 @@ od.fit(X_train,
 ```
 
     No threshold level set. Need to infer threshold using `infer_threshold`.
-```
-````
+
+
     71/71 [=] - 1s 16ms/step - loss_ma: 0.3319
     71/71 [=] - 1s 16ms/step - loss_ma: 0.1736
     71/71 [=] - 1s 16ms/step - loss_ma: 0.1604
     71/71 [=] - 1s 16ms/step - loss_ma: 0.1561
     71/71 [=] - 1s 16ms/step - loss_ma: 0.1541
-```
-````
+
+
 
 ```python
 cat_cols = list(category_map.keys())
 num_cols = [col for col in range(x_ref.shape[1]) if col not in cat_cols]
 print(cat_cols, num_cols)
 ```
-````{collapse} Expand to see output
-```yaml
+
     [1, 2, 3, 4, 5, 6, 7, 11] [0, 8, 9, 10]
-```
-````
+
+
 
 ```python
 perc_outlier = 10
@@ -330,8 +328,8 @@ print('{:.2f}% outliers'.format(outlier_perc))
 ```
 
     9.57% outliers
-```
-````
+
+
 
 ```python
 perc_outlier = 100
@@ -347,8 +345,8 @@ print('New threshold: {}'.format(od.threshold))
 ```
 
     New threshold: 0.7029458038525345
-```
-````
+
+
 
 ```python
 save_detector(od, "./outlier-detector")
@@ -356,8 +354,8 @@ save_detector(od, "./outlier-detector")
 
     WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
     WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-```
-````
+
+
 ## Explainer
 
 
@@ -377,8 +375,8 @@ explainer.fit(x_ref, disc_perc=[25, 50, 75])
       'params': {'seed': 1, 'disc_perc': [25, 50, 75]},
       'version': '0.7.0'}
     )
-```
-````
+
+
 
 
 ```python
@@ -388,8 +386,8 @@ print('Prediction: ', class_names[explainer.predictor(x_h0[idx].reshape(1, -1))[
 ```
 
     Prediction:  <=50K
-```
-````
+
+
 
 ```python
 explanation = explainer.explain(x_h0[idx], threshold=0.95)
@@ -399,13 +397,13 @@ print('Coverage: %.2f' % explanation.coverage)
 ```
 
     Could not find an result satisfying the 0.95 precision constraint. Now returning the best non-eligible result.
-```
-````
+
+
     Anchor: Age <= 31.00 AND Hours per week <= 40.00 AND Capital Gain <= 0.00 AND Education = Bachelors AND Capital Loss <= 0.00 AND Workclass = Private AND Country = United-States
     Precision: 0.88
     Coverage: 0.10
-```
-````
+
+
 
 ```python
 from alibi.saving import save_explainer
