@@ -3,7 +3,6 @@ version: 2.1
 orbs:
   go: circleci/go@1.7.1
   helm: circleci/helm@2.0.1
-  k8s: circleci/kubernetes@1.3.1
 
 parameters:
   kustomize-version:
@@ -53,13 +52,11 @@ jobs:
       - attach_workspace:
           at: ~/
       - checkout
-      - k8s/install-kubectl:
-          kubectl-version: v1.23.9
       - helm/install-helm-client:
           version: v3.6.3
       - run:
-          name: Install k3d
-          command: curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.4.6 bash
+          name: Install and Launch Kubernetes
+          command: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
       - run:
           name: Wait for kube-system to be ready
           command: kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
