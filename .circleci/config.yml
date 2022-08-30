@@ -56,10 +56,10 @@ jobs:
           version: v3.6.3
       - run:
           name: Install and Launch Kubernetes
-          command: curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
-      - run:
-          name: Wait for kube-system to be ready
-          command: kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
+          command: |
+            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
+            sleep 10
+            kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
       - run:
           name: Setup
           command: ./test/seldon/setup/install-all
