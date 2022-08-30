@@ -318,16 +318,16 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	if es.cleanExperimentState(experiment) {
+	if resourceName := es.cleanExperimentState(experiment); resourceName != nil {
 		switch experiment.ResourceType {
 		case PipelineResourceType:
 			pipelineEvt = &coordinator.PipelineEventMsg{
-				PipelineName:     *experiment.Default,
+				PipelineName:     *resourceName,
 				ExperimentUpdate: true,
 			}
 		case ModelResourceType:
 			modelEvt = &coordinator.ModelEventMsg{
-				ModelName: *experiment.Default,
+				ModelName: *resourceName,
 			}
 		default:
 			return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)

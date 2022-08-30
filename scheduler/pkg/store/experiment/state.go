@@ -73,11 +73,11 @@ func (es *ExperimentStore) getTotalPipelineReferences() int {
 	return tot
 }
 
-func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) bool {
-	publishEvent := false
+func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) *string {
+	var resourceName *string
 	existingExperiment := es.experiments[experiment.Name]
 	if existingExperiment == nil {
-		return false
+		return nil
 	}
 	// if Baseline changed update
 	if existingExperiment.Default != nil {
@@ -91,11 +91,11 @@ func (es *ExperimentStore) cleanExperimentState(experiment *Experiment) bool {
 		if (experiment.Default != nil && *existingExperiment.Default != *experiment.Default) ||
 			experiment.Default == nil {
 			// Model connected has been changed or removed so need to update it
-			publishEvent = true
+			resourceName = existingExperiment.Default
 		}
 	}
 	es.removeReferences(existingExperiment)
-	return publishEvent
+	return resourceName
 }
 
 func (es *ExperimentStore) updateExperimentState(experiment *Experiment) {

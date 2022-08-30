@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Experiment
+metadata:
+  name: experiment-sample
+spec:
+  default: iris
+  candidates:
+  - modelName: iris
+    weight: 50
+  - modelName: iris3
+    weight: 50
