@@ -16,8 +16,15 @@ helm upgrade --install rabbitmq-cluster rabbitmq-cluster-operator \
     --repo https://charts.bitnami.com/bitnami \
     --namespace rabbitmq-system
 
+sleep 5
+
+echo ">>> wait for rabbitmq operator"
+kubectl wait --for=condition=Available deployments --all -n rabbitmq-system
+
 echo ">>> Creating rabbitmq cluster..."
 kubectl apply -f "${SCRIPT_DIR}/manifests/rabbitmq/rabbitmq-cluster.yaml" || true
+
+sleep 5 # not a great solution for things not being ready for the next step
 
 echo ">>> Waiting for RabbitMQ cluster to become ready..."
 kubectl wait RabbitMQCluster/rabbitmq-cluster --for=condition=ALLREPLICASREADY --timeout=300s -n rabbitmq
