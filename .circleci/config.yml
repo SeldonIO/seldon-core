@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   go: circleci/go@1.7.1
+  helm: circleci/helm@2.0.1
 
 parameters:
   kustomize-version:
@@ -34,6 +35,55 @@ jobs:
       - run:
           name: "Seldon-core Domino Build & Push Script"
           command: ./domino-build.sh
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - ./*
+
+  test:
+    machine:
+      image: ubuntu-2004:current
+    environment:
+      KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+      KUSTOMIZE_VERSION: "v4.3.0"
+      K3S_KUBECONFIG_MODE: "644"
+    resource_class: large
+    steps:
+      - attach_workspace:
+          at: ~/
+      - checkout
+      - helm/install-helm-client:
+          version: v3.6.3
+      - run:
+          name: Install and Launch Kubernetes
+          command: |
+            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
+            sleep 10
+            kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
+      - run:
+          name: Setup
+          command: ./test/seldon/setup/install-all
+      - run:
+          name: Creating Basic Models
+          command: ./test/seldon/model/create-models
+      - run:
+          name: Testing Basic Models
+          command: ./test/seldon/model/test-models
+      - run:
+          name: Deleting Basic Models
+          command: ./test/seldon/model/delete-models
+      - run:
+          name: Creating RabbitMQ Models
+          command: ./test/seldon/model/create-rabbit-models
+      - run:
+          name: Testing RabbitMQ Models
+          command: ./test/seldon/model/test-rabbit-models
+      - run:
+          name: Deleting RabbitMQ Models
+          command: ./test/seldon/model/delete-rabbit-models
+      - run:
+          name: Teardown
+          command: ./test/seldon/setup/uninstall-all
 
 workflows:
   version: 2
@@ -45,9 +95,11 @@ workflows:
           filters:
             tags:
               only: /v\d+(\.\d+)*(-.*)*/
-#      - test:
-#          requires:
-#            - build
-#          filters:
-#            tags:
-#              only: /v\d+(\.\d+)*(-.*)*/
+      - test:
+          context:
+            - org-global
+          requires:
+            - build-and-push
+          filters:
+            tags:
+              only: /v\d+(\.\d+)*(-.*)*/

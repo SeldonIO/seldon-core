@@ -57,4 +57,5 @@ if [ "${nopush_flag}" == "" ]; then
   docker push "${executor_target}"
   echo -e "\n  *** Pushed executor to ${executor_target} *** \n"
 
+  echo "${TARGET_IMAGE_TAG}" > ~/.seldon-core-image-tag
 fi

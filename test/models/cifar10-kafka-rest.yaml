@@ -1,0 +1,54 @@
+# Source: https://docs.seldon.io/projects/seldon-core/en/latest/streaming/kafka.html
+---
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: tfserving-cifar10
+spec:
+  protocol: tensorflow
+  transport: rest
+  serverType: kafka
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - args:
+          - --port=8500
+          - --rest_api_port=8501
+          - --model_name=resnet32
+          - --model_base_path=gs://seldon-models/tfserving/cifar10/resnet32
+          - --enable_batching
+          image: tensorflow/serving
+          name: resnet32
+          ports:
+          - containerPort: 8501
+            name: http
+        imagePullSecrets:
+        - name: domino-quay-repos
+      kedaSpec:
+        pollingInterval: 15
+        minReplicaCount: 1
+        maxReplicaCount: 4
+        triggers:
+        - type: kafka
+          metadata:
+            bootstrapServers: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+            consumerGroup: model.tfserving-cifar10.seldon
+            topic: cifar10-rest-input
+            lagThreshold: "100"
+            offsetResetPolicy: latest
+    svcOrchSpec:
+      env:
+      - name: KAFKA_BROKER
+        value: my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+      - name: KAFKA_INPUT_TOPIC
+        value: cifar10-rest-input
+      - name: KAFKA_OUTPUT_TOPIC
+        value: cifar10-rest-output
+    graph:
+      name: resnet32
+      type: MODEL
+      endpoint:
+        service_port: 8501
+    name: model
+    replicas: 1
