@@ -79,6 +79,16 @@ func TestAsModelDetails(t *testing.T) {
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
 					},
+					Parameters: []ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
+					},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -97,6 +107,16 @@ func TestAsModelDetails(t *testing.T) {
 					Explainer: &scheduler.ExplainerSpec{
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
+					},
+					Parameters: []*scheduler.ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
 					},
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{

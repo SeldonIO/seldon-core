@@ -43,6 +43,12 @@ message ModelSpec {
   optional uint64 memoryBytes = 5; // Requested memory
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
   optional ExplainerSpec explainer = 7; // optional black box explainer details
+  repeated ParameterSpec parameters = 8; // parameters to load with model
+}
+
+message ParameterSpec {
+  string name = 1;
+  string value = 2;
 }
 
 message ExplainerSpec {

@@ -145,3 +145,7 @@ func (t *TritonRepositoryHandler) loadConfigFromBytes(dat []byte) (*pb.ModelConf
 func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
 	return nil
 }
+
+func (t *TritonRepositoryHandler) SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
+	return nil
+}

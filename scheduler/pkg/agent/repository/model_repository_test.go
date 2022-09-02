@@ -209,7 +209,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			rcloneClient := createFakeRcloneClient(200, rclonePath)
 			modelRepoPath := t.TempDir()
 			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
-			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.artifactVersion, test.srcUri, nil, nil)
+			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.artifactVersion, test.srcUri, nil, nil, nil)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

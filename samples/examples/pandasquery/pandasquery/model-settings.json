@@ -1,0 +1,7 @@
+{
+    "name": "income",
+    "implementation": "model.PandasQueryRuntime",
+    "parameters": {
+        "version": "v0.1.0"
+    }
+}

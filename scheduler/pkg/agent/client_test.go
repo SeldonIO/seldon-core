@@ -42,7 +42,7 @@ func (f FakeModelRepository) RemoveModelVersion(modelName string) error {
 	return nil
 }
 
-func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainer *pbs.ExplainerSpec) (*string, error) {
+func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainer *pbs.ExplainerSpec, parameters []*pbs.ParameterSpec) (*string, error) {
 	if f.err != nil {
 		return nil, f.err
 	}

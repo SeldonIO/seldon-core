@@ -40,9 +40,9 @@ func TestSetExplainer(t *testing.T) {
 				Implementation: "mlserver_sklearn.SKLearnModel",
 				Parameters: &ModelParameters{
 					Version: "1",
-					Extra: ExtraParameters{
-						ExplainerType: getStrPr("anchor_tabular"),
-						InferUri:      getStrPr("http://0.0.0.0:9000/v2/models/mymodel/infer"),
+					Extra: map[string]interface{}{
+						explainerTypeKey: "anchor_tabular",
+						inferUriKey:      "http://0.0.0.0:9000/v2/models/mymodel/infer",
 					},
 				},
 			},
@@ -60,10 +60,9 @@ func TestSetExplainer(t *testing.T) {
 				Implementation: "mlserver_sklearn.SKLearnModel",
 				Parameters: &ModelParameters{
 					Version: "1",
-					Extra: ExtraParameters{
-						ExplainerType:  getStrPr("anchor_tabular"),
-						InferUri:       getStrPr("http://0.0.0.0:9000/v2/models/mymodel/infer"),
-						InitParameters: map[string]interface{}{},
+					Extra: map[string]interface{}{
+						explainerTypeKey: "anchor_tabular",
+						inferUriKey:      "http://0.0.0.0:9000/v2/models/mymodel/infer",
 					},
 				},
 			},
@@ -81,11 +80,8 @@ func TestSetExplainer(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			modelSettings, err := m.loadModelSettingsFromFile(settingsFile)
 			g.Expect(err).To(BeNil())
-			g.Expect(modelSettings.Parameters.Extra.ExplainerType).To(Equal(modelSettings.Parameters.Extra.ExplainerType))
-			g.Expect(modelSettings.Parameters.Extra.InferUri).To(Equal(modelSettings.Parameters.Extra.InferUri))
-			for k, v := range test.expected.Parameters.Extra.InitParameters {
-				g.Expect(modelSettings.Parameters.Extra.InitParameters[k]).To(Equal(v))
-			}
+			g.Expect(modelSettings.Parameters.Extra[explainerTypeKey]).To(Equal(test.expected.Parameters.Extra[explainerTypeKey]))
+			g.Expect(modelSettings.Parameters.Extra[inferUriKey]).To(Equal(test.expected.Parameters.Extra[inferUriKey]))
 		})
 	}
 }

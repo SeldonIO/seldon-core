@@ -1,0 +1,23 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: choice
+spec:
+  steps:
+  - name: choice-is-one
+  - name: mul10
+    inputs:
+    - choice.inputs.INPUT
+    triggers:
+    - choice-is-one.outputs.choice
+  - name: choice-is-two
+  - name: add10
+    inputs:
+    - choice.inputs.INPUT
+    triggers:
+    - choice-is-two.outputs.choice
+  output:
+    steps:
+    - mul10
+    - add10
+    stepsJoin: any

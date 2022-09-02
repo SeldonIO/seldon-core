@@ -386,7 +386,9 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	// Copy model artifact
 	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
 		modelWithVersion, pinnedModelVersion, request.GetModelVersion().GetModel().GetModelSpec().ArtifactVersion,
-		request.GetModelVersion().GetModel().GetModelSpec().Uri, config, request.GetModelVersion().GetModel().GetModelSpec().GetExplainer())
+		request.GetModelVersion().GetModel().GetModelSpec().Uri, config,
+		request.GetModelVersion().GetModel().GetModelSpec().GetExplainer(),
+		request.GetModelVersion().GetModel().GetModelSpec().GetParameters())
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err

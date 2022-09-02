@@ -48,6 +48,13 @@ type ModelSpec struct {
 	Logger *LoggingSpec `json:"logger,omitempty"`
 	// Explainer spec
 	Explainer *ExplainerSpec `json:"explainer,omitempty"`
+	// Parameters to load with model
+	Parameters []ParameterSpec `json:"parameters,omitempty"`
+}
+
+type ParameterSpec struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // Either ModelRef or PipelineRef is required
@@ -161,6 +168,16 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 			ModelRef:    m.Spec.Explainer.ModelRef,
 			PipelineRef: m.Spec.Explainer.PipelineRef,
 		}
+	}
+	if len(m.Spec.Parameters) > 0 {
+		var parameters []*scheduler.ParameterSpec
+		for _, param := range m.Spec.Parameters {
+			parameters = append(parameters, &scheduler.ParameterSpec{
+				Name:  param.Name,
+				Value: param.Value,
+			})
+		}
+		md.ModelSpec.Parameters = parameters
 	}
 	// Add storage secret if specified
 	if m.Spec.SecretName != nil {

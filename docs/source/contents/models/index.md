@@ -43,4 +43,5 @@ The proto buffer definitions for the scheduler are outlined [here](../apis/sched
 
 inference-artifacts/index.md
 rclone/index.md
+parameterized-models/index.md
 ```

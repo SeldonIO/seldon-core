@@ -18,10 +18,11 @@ type ModelRepositoryHandler interface {
 	UpdateModelVersion(modelName string, version uint32, path string) error
 	UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
+	SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
 }
 
 type ModelRepository interface {
-	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec) (*string, error)
+	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec, parameters []*scheduler.ParameterSpec) (*string, error)
 	RemoveModelVersion(modelName string) error
 	Ready() error
 }
@@ -51,7 +52,13 @@ func NewModelRepository(logger log.FieldLogger,
 	}
 }
 
-func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec) (*string, error) {
+func (r *V2ModelRepository) DownloadModelVersion(modelName string,
+	version uint32,
+	artifactVersion *uint32,
+	srcUri string,
+	config []byte,
+	explainerSpec *scheduler.ExplainerSpec,
+	parameters []*scheduler.ParameterSpec) (*string, error) {
 	logger := r.logger.WithField("func", "DownloadModelVersion")
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
@@ -101,6 +108,12 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string, version uint3
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Set init parameters inside model
+	err = r.modelrepositoryHandler.SeExtratParameters(modelVersionPathInRepo, parameters)
+	if err != nil {
+		return nil, err
 	}
 
 	// Update global model configuration

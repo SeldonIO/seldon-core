@@ -1,0 +1,12 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: pandasquery
+spec:
+  storageUri: "/mnt/models/pandasquery"
+  requirements:
+  - mlserver
+  - python
+  parameters:
+  - name: query
+    value: "A == 2"

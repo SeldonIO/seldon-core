@@ -14,6 +14,8 @@ import (
 
 const (
 	mlserverConfigFilename = "model-settings.json"
+	inferUriKey            = "infer_uri"
+	explainerTypeKey       = "explainer_type"
 )
 
 type MLServerRepositoryHandler struct {
@@ -51,17 +53,9 @@ type ModelParameters struct {
 	//Version of the model
 	Version string `json:"version,omitempty"`
 	//Format of the model (only available on certain runtimes).
-	Format      string          `json:"format,omitempty"`
-	ContentType string          `json:"content_type,omitempty"`
-	Extra       ExtraParameters `json:"extra,omitempty"`
-}
-
-type ExtraParameters struct {
-	InferUri       *string                `json:"infer_uri,omitempty"`
-	ExplainerType  *string                `json:"explainer_type,omitempty"`
-	InitParameters map[string]interface{} `json:"init_parameters,omitempty"`
-	PredictFn      *string                `json:"predict_fn,omitempty"`
-	//TODO we should add headers here that MLServer can add to request
+	Format      string                 `json:"format,omitempty"`
+	ContentType string                 `json:"content_type,omitempty"`
+	Extra       map[string]interface{} `json:"extra,omitempty"`
 }
 
 // No need to update anything at top level for mlserver
@@ -137,13 +131,16 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 		if ms.Parameters == nil {
 			ms.Parameters = &ModelParameters{}
 		}
-		ms.Parameters.Extra.ExplainerType = &explainerSpec.Type
+		if ms.Parameters.Extra == nil {
+			ms.Parameters.Extra = map[string]interface{}{}
+		}
+		ms.Parameters.Extra[explainerTypeKey] = &explainerSpec.Type
 		if explainerSpec.ModelRef != nil {
 			inferUri := fmt.Sprintf("http://%s:%d/v2/models/%s/infer", envoyHost, envoyPort, *explainerSpec.ModelRef)
-			ms.Parameters.Extra.InferUri = &inferUri
+			ms.Parameters.Extra[inferUriKey] = &inferUri
 		} else if explainerSpec.PipelineRef != nil {
 			inferUri := fmt.Sprintf("http://%s:%d/v2/pipelines/%s/infer", envoyHost, envoyPort, *explainerSpec.PipelineRef)
-			ms.Parameters.Extra.InferUri = &inferUri
+			ms.Parameters.Extra[inferUriKey] = &inferUri
 		}
 		data, err := json.Marshal(ms)
 		if err != nil {
@@ -152,6 +149,28 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 		return os.WriteFile(settingsPath, data, fs.ModePerm)
 	}
 	return nil
+}
+
+func (m *MLServerRepositoryHandler) SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
+	settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
+	ms, err := m.loadModelSettingsFromFile(settingsPath)
+	if err != nil {
+		return err
+	}
+	if ms.Parameters == nil {
+		ms.Parameters = &ModelParameters{}
+	}
+	if ms.Parameters.Extra == nil {
+		ms.Parameters.Extra = map[string]interface{}{}
+	}
+	for _, param := range parameters {
+		ms.Parameters.Extra[param.Name] = param.Value
+	}
+	data, err := json.Marshal(ms)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(settingsPath, data, fs.ModePerm)
 }
 
 func (m *MLServerRepositoryHandler) loadModelSettingsFromFile(path string) (*ModelSettings, error) {
