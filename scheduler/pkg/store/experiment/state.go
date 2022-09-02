@@ -49,11 +49,17 @@ func (es *ExperimentStore) addReferences(experiment *Experiment) {
 	for _, candidate := range experiment.Candidates {
 		es.addReference(candidate.Name, experiment)
 	}
+	if experiment.Mirror != nil {
+		es.addReference(experiment.Mirror.Name, experiment)
+	}
 }
 
 func (es *ExperimentStore) removeReferences(experiment *Experiment) {
 	for _, candidate := range experiment.Candidates {
 		es.removeReference(candidate.Name, experiment)
+	}
+	if experiment.Mirror != nil {
+		es.removeReference(experiment.Mirror.Name, experiment)
 	}
 }
 

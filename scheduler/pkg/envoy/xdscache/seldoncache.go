@@ -10,8 +10,13 @@ import (
 )
 
 const (
-	DefaultListenerAddress        = "0.0.0.0"
-	DefaultListenerPort    uint32 = 9000
+	defaultListenerName           = "seldon_http"
+	defaultListenerAddress        = "0.0.0.0"
+	defaultListenerPort    uint32 = 9000
+
+	mirrorListenerName           = "seldon_mirrors"
+	mirrorListenerAddress        = "0.0.0.0"
+	mirrorListenerPort    uint32 = 9001
 )
 
 type SeldonXDSCache struct {
@@ -51,10 +56,27 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
 		},
 	}, false))
+	xds.logger.Infof("Add grpc pipeline cluster %s host:%s port:%d", resources.PipelineGatewayGrpcClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
 	r = append(r, resources.MakeCluster(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
 		{
 			UpstreamHost: xds.PipelineGatewayDetails.Host,
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
+		},
+	}, true))
+
+	// Add Mirror clusters
+	xds.logger.Infof("Add http mirror cluster %s host:%s port:%d", resources.MirrorHttpClusterName, mirrorListenerAddress, mirrorListenerPort)
+	r = append(r, resources.MakeCluster(resources.MirrorHttpClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: mirrorListenerAddress,
+			UpstreamPort: mirrorListenerPort,
+		},
+	}, false))
+	xds.logger.Infof("Add grpc mirror cluster %s host:%s port:%d", resources.MirrorGrpcClusterName, mirrorListenerAddress, mirrorListenerPort)
+	r = append(r, resources.MakeCluster(resources.MirrorGrpcClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: mirrorListenerAddress,
+			UpstreamPort: mirrorListenerPort,
 		},
 	}, true))
 
@@ -86,51 +108,56 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 		pIdx++
 	}
 
-	return []types.Resource{resources.MakeRoute(routesArray, pipelinesArray)}
+	defaultRoutes, mirrorRoutes := resources.MakeRoute(routesArray, pipelinesArray)
+	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
 
 func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
 	var r []types.Resource
 
 	for _, l := range xds.Listeners {
-		r = append(r, resources.MakeHTTPListener(l.Name, l.Address, l.Port))
+		r = append(r, resources.MakeHTTPListener(l.Name, l.Address, l.Port, l.RouteConfigurationName))
 	}
 
 	return r
 }
 
-//Note: We don;t use endpoints at present as Envoy does not allow strict_dns with EDS
-//func (xds *SeldonXDSCache) EndpointsContents() []types.Resource {
-//	var r []types.Resource
-//
-//	for _, c := range xds.Clusters {
-//		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
-//		for _, value := range c.Endpoints {
-//			endpoints = append(endpoints, value)
-//		}
-//		r = append(r, resources.MakeEndpoint(c.Name, endpoints))
-//	}
-//
-//	return r
-//}
-
-func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32) {
+func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32, isMirror bool) {
 	pipelineRoute, ok := xds.Pipelines[routeName]
 	if !ok {
-		xds.Pipelines[routeName] = resources.PipelineRoute{
-			RouteName: routeName,
-			Clusters: []resources.PipelineTrafficSplits{
-				{
-					PipelineName:  pipelineName,
-					TrafficWeight: trafficWeight,
+		if isMirror {
+			xds.Pipelines[routeName] = resources.PipelineRoute{
+				RouteName: routeName,
+				Mirrors: []resources.PipelineTrafficSplits{
+					{
+						PipelineName:  pipelineName,
+						TrafficWeight: trafficWeight,
+					},
 				},
-			},
+			}
+		} else {
+			xds.Pipelines[routeName] = resources.PipelineRoute{
+				RouteName: routeName,
+				Clusters: []resources.PipelineTrafficSplits{
+					{
+						PipelineName:  pipelineName,
+						TrafficWeight: trafficWeight,
+					},
+				},
+			}
 		}
 	} else {
-		pipelineRoute.Clusters = append(pipelineRoute.Clusters, resources.PipelineTrafficSplits{
-			PipelineName:  pipelineName,
-			TrafficWeight: trafficWeight,
-		})
+		if isMirror {
+			pipelineRoute.Mirrors = append(pipelineRoute.Mirrors, resources.PipelineTrafficSplits{
+				PipelineName:  pipelineName,
+				TrafficWeight: trafficWeight,
+			})
+		} else {
+			pipelineRoute.Clusters = append(pipelineRoute.Clusters, resources.PipelineTrafficSplits{
+				PipelineName:  pipelineName,
+				TrafficWeight: trafficWeight,
+			})
+		}
 		xds.Pipelines[routeName] = pipelineRoute
 	}
 }
@@ -139,11 +166,18 @@ func (xds *SeldonXDSCache) RemovePipelineRoute(pipelineName string) {
 	delete(xds.Pipelines, pipelineName)
 }
 
-func (xds *SeldonXDSCache) AddListener(name string) {
-	xds.Listeners[name] = resources.Listener{
-		Name:    name,
-		Address: DefaultListenerAddress,
-		Port:    DefaultListenerPort,
+func (xds *SeldonXDSCache) AddListeners() {
+	xds.Listeners[defaultListenerName] = resources.Listener{
+		Name:                   defaultListenerName,
+		Address:                defaultListenerAddress,
+		Port:                   defaultListenerPort,
+		RouteConfigurationName: resources.DefaultRouteConfigurationName,
+	}
+	xds.Listeners[mirrorListenerName] = resources.Listener{
+		Name:                   mirrorListenerName,
+		Address:                mirrorListenerAddress,
+		Port:                   mirrorListenerPort,
+		RouteConfigurationName: resources.MirrorRouteConfigurationName,
 	}
 }
 
@@ -155,6 +189,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 	httpClusterName string,
 	grpcClusterName string,
 	logPayloads bool,
+	isMirror bool,
 ) {
 	route, ok := xds.Routes[routeName]
 	if !ok {
@@ -175,7 +210,11 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		HttpCluster:   httpClusterName,
 		GrpcCluster:   grpcClusterName,
 	}
-	route.Clusters = append(route.Clusters, clusterTraffic)
+	if isMirror {
+		route.Mirrors = append(route.Mirrors, clusterTraffic)
+	} else {
+		route.Clusters = append(route.Clusters, clusterTraffic)
+	}
 	xds.Routes[routeName] = route
 }
 
@@ -199,6 +238,27 @@ func (xds *SeldonXDSCache) AddCluster(
 	xds.Clusters[name] = cluster
 }
 
+func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {
+	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
+	if !ok {
+		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
+	}
+	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	if len(httpCluster.Routes) == 0 {
+		delete(xds.Clusters, cluster.HttpCluster)
+	}
+
+	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
+	if !ok {
+		return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
+	}
+	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	if len(grpcCluster.Routes) == 0 {
+		delete(xds.Clusters, cluster.GrpcCluster)
+	}
+	return nil
+}
+
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove routes for model %s", routeName)
@@ -209,22 +269,15 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	}
 	delete(xds.Routes, routeName)
 	for _, cluster := range route.Clusters {
-		httpCluster, ok := xds.Clusters[cluster.HttpCluster]
-		if !ok {
-			return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
+		err := xds.removeRouteFromCluster(routeName, route, cluster)
+		if err != nil {
+			return err
 		}
-		delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-		if len(httpCluster.Routes) == 0 {
-			delete(xds.Clusters, cluster.HttpCluster)
-		}
-
-		grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
-		if !ok {
-			return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
-		}
-		delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-		if len(grpcCluster.Routes) == 0 {
-			delete(xds.Clusters, cluster.GrpcCluster)
+	}
+	for _, mirror := range route.Mirrors {
+		err := xds.removeRouteFromCluster(routeName, route, mirror)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

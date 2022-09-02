@@ -4,8 +4,8 @@ metadata:
   name: experiment-iris
 spec:
   candidates:
-  - modelName: iris
+  - name: iris
     weight: 50
-  - modelName: iris2
+  - name: iris2
     weight: 50
 

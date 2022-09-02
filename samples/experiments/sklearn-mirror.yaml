@@ -1,11 +1,13 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
-  name: experiment-sample
+  name: sklearn-mirror
 spec:
   default: iris
   candidates:
   - name: iris
-    weight: 50
-  - name: iris2
-    weight: 50
+    weight: 100
+  mirror:
+    name: iris2
+    percent: 100
+

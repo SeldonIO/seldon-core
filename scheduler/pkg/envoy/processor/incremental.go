@@ -77,7 +77,7 @@ func NewIncrementalProcessor(
 		batchWaitMillis:  defaultBatchWaitMillis,
 	}
 
-	ip.SetListener("seldon_http")
+	ip.setListeners()
 	hub.RegisterModelEventHandler(
 		modelEventHandlerName,
 		pendingSyncsQueueSize,
@@ -154,10 +154,10 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	}()
 }
 
-func (p *IncrementalProcessor) SetListener(listenerName string) {
+func (p *IncrementalProcessor) setListeners() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.xdsCache.AddListener(listenerName)
+	p.xdsCache.AddListeners()
 }
 
 // newSnapshotVersion increments the current snapshotVersion
@@ -210,7 +210,7 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoy(routeName string) err
 	return p.updateEnvoy()
 }
 
-func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32) {
+func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
 	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 
 	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
@@ -248,7 +248,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		logger.Warnf("model %s has not deployment spec", modelVersion.GetModel().GetMeta().GetName())
 	}
 
-	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads)
+	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads, isMirror)
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -260,7 +260,7 @@ func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion 
 	return trafficLatestModel, trafficLastAvailableModel
 }
 
-func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.ModelSnapshot, weight uint32) error {
+func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.ModelSnapshot, weight uint32, isMirror bool) error {
 	logger := p.logger.WithField("func", "addModelTraffic")
 
 	modelName := model.Name
@@ -289,16 +289,16 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			modelName,
 			lastAvailableModelVersion.GetVersion(),
 			trafficLastAvailableModel)
-		p.updateEnvoyForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel)
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, trafficLatestModel)
+		p.updateEnvoyForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.updateEnvoyForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
 	} else {
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, weight)
+		p.updateEnvoyForModelVersion(routeName, latestModel, server, weight, isMirror)
 	}
 	return nil
 }
 
 func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
-	logger := p.logger.WithField("func", "addExperimentTraffic")
+	logger := p.logger.WithField("func", "addExperimentModelBaselineTraffic")
 	logger.Infof("Trying to setup experiment for %s", model.Name)
 	if exp.Default == nil {
 		return fmt.Errorf("Didn't find baseline in experiment for model %s", model.Name)
@@ -314,7 +314,18 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 		if err != nil {
 			return err
 		}
-		err = p.addModelTraffic(model.Name, candidateModel, candidate.Weight)
+		err = p.addModelTraffic(model.Name, candidateModel, candidate.Weight, false)
+		if err != nil {
+			return err
+		}
+	}
+	if exp.Mirror != nil {
+		mirrorModel, err := p.modelStore.GetModel(exp.Mirror.Name)
+		if err != nil {
+			return err
+		}
+		logger.Infof("Getting mirror model %s to add to model %s", mirrorModel.Name, model.Name)
+		err = p.addModelTraffic(model.Name, mirrorModel, exp.Mirror.Percent, true)
 		if err != nil {
 			return err
 		}
@@ -333,11 +344,11 @@ func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
 			if err != nil {
 				return err
 			}
-			return p.addModelTraffic(model.Name, model, 100)
+			return p.addModelTraffic(model.Name, model, 100, false)
 		}
 	} else {
 		logger.Infof("Handle vanilla no experiment traffic for %s", model.Name)
-		return p.addModelTraffic(model.Name, model, 100)
+		return p.addModelTraffic(model.Name, model, 100, false)
 	}
 	return nil
 }
@@ -346,7 +357,10 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
 		for _, candidate := range exp.Candidates {
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight)
+			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+		}
+		if exp.Mirror != nil {
+			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
 		}
 	case experiment.ModelResourceType:
 		for _, candidate := range exp.Candidates {
@@ -354,7 +368,17 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 			if err != nil {
 				return err
 			}
-			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight)
+			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight, false)
+			if err != nil {
+				return err
+			}
+		}
+		if exp.Mirror != nil {
+			mirrorModel, err := p.modelStore.GetModel(exp.Mirror.Name)
+			if err != nil {
+				return err
+			}
+			err = p.addModelTraffic(routeName, mirrorModel, exp.Mirror.Percent, true)
 			if err != nil {
 				return err
 			}
@@ -417,11 +441,15 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 		}
 		for _, candidate := range exp.Candidates {
 			logger.Infof("Adding pipeline experiment candidate %s %s %d", routeName, candidate.Name, candidate.Weight)
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight)
+			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+		}
+		if exp.Mirror != nil {
+			logger.Infof("Adding pipeline experiment mirror %s %s %d", routeName, exp.Mirror.Name, exp.Mirror.Percent)
+			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
 		}
 	} else {
 		logger.Infof("Adding normal pipeline route %s", routeName)
-		p.xdsCache.AddPipelineRoute(routeName, pip.Name, 100)
+		p.xdsCache.AddPipelineRoute(routeName, pip.Name, 100, false)
 	}
 
 	return p.updateEnvoy()

@@ -16,7 +16,7 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	x := NewSeldonXDSCache(logrus.New(), nil)
 
 	for n := 0; n < int(numResources); n++ {
-		x.AddPipelineRoute(strconv.Itoa(n), strconv.Itoa(n), 100)
+		x.AddPipelineRoute(strconv.Itoa(n), strconv.Itoa(n), 100, false)
 		x.AddRouteClusterTraffic(
 			fmt.Sprintf("model-%d", n),
 			fmt.Sprintf("model-%d", n),
@@ -24,6 +24,7 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 			100,
 			"http",
 			"grpc",
+			false,
 			false,
 		)
 	}

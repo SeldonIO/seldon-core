@@ -32,9 +32,8 @@ func (e *Experiment) AreCandidatesReady() bool {
 func (e *Experiment) IsMirrorReady() bool {
 	if e.Mirror != nil {
 		return e.Mirror.Ready
-	} else {
-		return true
 	}
+	return true
 }
 
 type KubernetesMeta struct {

@@ -102,10 +102,12 @@ func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 	return otelhttp.NewHandler(rp.metrics.AddModelHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
+		rp.logger.Debugf("Received request with host %s and internal header %v", r.Host, r.Header.Values(resources.SeldonInternalModelHeader))
 		rp.rewriteHostHandler(r)
 
 		externalModelName := r.Header.Get(resources.SeldonModelHeader)
 		internalModelName := r.Header.Get(resources.SeldonInternalModelHeader)
+
 		//TODO should we return a 404 if headers not found?
 		if externalModelName == "" || internalModelName == "" {
 			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)

@@ -494,10 +494,10 @@ func TestHandleModelEvents(t *testing.T) {
 					},
 				},
 				Mirror: &Mirror{
-					Name: "model1",
+					Name: "model2",
 				},
 			},
-			modelStates: map[string]store.ModelState{"model1": store.ModelAvailable},
+			modelStates: map[string]store.ModelState{"model1": store.ModelAvailable, "model2": store.ModelAvailable},
 			modelEventMsgs: []coordinator.ModelEventMsg{
 				{
 					ModelName: "model1",

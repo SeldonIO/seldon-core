@@ -24,9 +24,9 @@ func (es *ExperimentStore) validateNoExistingDefault(experiment *Experiment) err
 	return nil
 }
 
-func validateHasCandidates(experiment *Experiment) error {
-	if len(experiment.Candidates) == 0 {
-		return &ExperimentNoCandidates{experimentName: experiment.Name}
+func validateHasCandidateOrMirror(experiment *Experiment) error {
+	if len(experiment.Candidates) == 0 && experiment.Mirror == nil {
+		return &ExperimentNoCandidatesOrMirrors{experimentName: experiment.Name}
 	}
 	return nil
 }
@@ -43,6 +43,23 @@ func validateDefaultModelIsCandidate(experiment *Experiment) error {
 	return nil
 }
 
+func validateNoDuplicateNames(experiment *Experiment) error {
+	names := map[string]bool{}
+	for _, candidate := range experiment.Candidates {
+		if _, ok := names[candidate.Name]; ok {
+			return &ExperimentNoDuplicates{experimentName: experiment.Name, resource: candidate.Name}
+		}
+		names[candidate.Name] = true
+	}
+	if experiment.Mirror != nil {
+		if _, ok := names[experiment.Mirror.Name]; ok {
+			return &ExperimentNoDuplicates{experimentName: experiment.Name, resource: experiment.Mirror.Name}
+		}
+		names[experiment.Mirror.Name] = true
+	}
+	return nil
+}
+
 func (es *ExperimentStore) validate(experiment *Experiment) error {
 	if err := es.validateNoExistingDefault(experiment); err != nil {
 		return err
@@ -50,7 +67,10 @@ func (es *ExperimentStore) validate(experiment *Experiment) error {
 	if err := validateDefaultModelIsCandidate(experiment); err != nil {
 		return err
 	}
-	if err := validateHasCandidates(experiment); err != nil {
+	if err := validateHasCandidateOrMirror(experiment); err != nil {
+		return err
+	}
+	if err := validateNoDuplicateNames(experiment); err != nil {
 		return err
 	}
 	return nil

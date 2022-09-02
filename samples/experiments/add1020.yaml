@@ -5,7 +5,7 @@ metadata:
 spec:
   default: add10
   candidates:
-  - modelName: add10
+  - name: add10
     weight: 50
-  - modelName: add20
+  - name: add20
     weight: 50

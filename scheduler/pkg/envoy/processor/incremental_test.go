@@ -240,7 +240,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 				xdsCache: xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
 			}
 			for _, mv := range test.modelVersions {
-				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic)
+				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
 
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
@@ -296,16 +296,24 @@ func createTestModel(modelName string, serverName string, replicas []int) func(i
 	return f
 }
 
-func createTestExperiment(experimentName string, modelNames []string, defaultModel *string) func(inc *IncrementalProcessor, g *WithT) {
+func createTestExperiment(experimentName string, modelNames []string, defaultModel *string, mirrorName *string) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		var candidates []*experiment.Candidate
+		var mirror *experiment.Mirror
 		for _, modelName := range modelNames {
 			candidates = append(candidates, &experiment.Candidate{Name: modelName, Weight: 1})
+		}
+		if mirrorName != nil {
+			mirror = &experiment.Mirror{
+				Name:    *mirrorName,
+				Percent: 100,
+			}
 		}
 		exp := &experiment.Experiment{
 			Name:       experimentName,
 			Default:    defaultModel,
 			Candidates: candidates,
+			Mirror:     mirror,
 		}
 		err := inc.experimentServer.StartExperiment(exp)
 		g.Expect(err).To(BeNil())
@@ -363,7 +371,7 @@ func TestExperiments(t *testing.T) {
 				createTestServer("server", 2),
 				createTestModel("model1", "server", []int{0}),
 				createTestModel("model2", "server", []int{1}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1")),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   3,
@@ -374,11 +382,22 @@ func TestExperiments(t *testing.T) {
 				createTestServer("server", 2),
 				createTestModel("model1", "server", []int{0}),
 				createTestModel("model2", "server", []int{1}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1")),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 				deleteTestExperiment("exp"),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
+		},
+		{
+			name: "mirror",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", []int{0}),
+				createTestModel("model2", "server", []int{1}),
+				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
 		},
 	}
 	for _, test := range tests {
@@ -391,7 +410,7 @@ func TestExperiments(t *testing.T) {
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
 			}
-			inc.xdsCache.AddListener("listener_0")
+			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}

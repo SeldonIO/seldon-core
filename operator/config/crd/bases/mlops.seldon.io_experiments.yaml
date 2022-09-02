@@ -40,13 +40,13 @@ spec:
               candidates:
                 items:
                   properties:
-                    modelName:
+                    name:
                       type: string
                     weight:
                       format: int32
                       type: integer
                   required:
-                  - modelName
+                  - name
                   - weight
                   type: object
                 type: array
@@ -54,13 +54,13 @@ spec:
                 type: string
               mirror:
                 properties:
-                  model_name:
+                  name:
                     type: string
                   percent:
                     format: int32
                     type: integer
                 required:
-                - model_name
+                - name
                 - percent
                 type: object
               resourceType:

@@ -3,12 +3,15 @@ package resources
 const (
 	PipelineGatewayHttpClusterName = "pipelinegateway_http"
 	PipelineGatewayGrpcClusterName = "pipelinegateway_grpc"
+	MirrorHttpClusterName          = "mirror_http"
+	MirrorGrpcClusterName          = "mirror_grpc"
 )
 
 type Listener struct {
-	Name    string
-	Address string
-	Port    uint32
+	Name                   string
+	Address                string
+	Port                   uint32
+	RouteConfigurationName string
 	//RouteNames []string
 }
 
@@ -16,6 +19,7 @@ type Route struct {
 	RouteName   string
 	LogPayloads bool
 	Clusters    []TrafficSplits
+	Mirrors     []TrafficSplits
 }
 
 type TrafficSplits struct {
@@ -47,6 +51,7 @@ type Endpoint struct {
 type PipelineRoute struct {
 	RouteName string
 	Clusters  []PipelineTrafficSplits
+	Mirrors   []PipelineTrafficSplits
 }
 
 type PipelineTrafficSplits struct {

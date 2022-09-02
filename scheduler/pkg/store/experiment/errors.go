@@ -24,12 +24,12 @@ func (ebe *ExperimentBaselineExists) Error() string {
 	return fmt.Sprintf("Resource %s already in experiment %s as a baseline. A model or pipeline can only appear in one experiment as a baseline", ebe.name, ebe.experimentName)
 }
 
-type ExperimentNoCandidates struct {
+type ExperimentNoCandidatesOrMirrors struct {
 	experimentName string
 }
 
-func (enc *ExperimentNoCandidates) Error() string {
-	return fmt.Sprintf("experiment %s has no candidates", enc.experimentName)
+func (enc *ExperimentNoCandidatesOrMirrors) Error() string {
+	return fmt.Sprintf("experiment %s has no candidates or mirror", enc.experimentName)
 }
 
 type ExperimentDefaultNotFound struct {
@@ -44,4 +44,18 @@ func (enc *ExperimentDefaultNotFound) Is(tgt error) bool {
 
 func (enc *ExperimentDefaultNotFound) Error() string {
 	return fmt.Sprintf("default model/pipeline %s not found in experiment %s candidates", enc.defaultResource, enc.experimentName)
+}
+
+type ExperimentNoDuplicates struct {
+	experimentName string
+	resource       string
+}
+
+func (enc *ExperimentNoDuplicates) Is(tgt error) bool {
+	_, ok := tgt.(*ExperimentNoDuplicates)
+	return ok
+}
+
+func (enc *ExperimentNoDuplicates) Error() string {
+	return fmt.Sprintf("each candidate and mirror must be unique but found resource %s duplicated in experiment %s", enc.resource, enc.experimentName)
 }

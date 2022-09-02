@@ -5,7 +5,7 @@ metadata:
 spec:
   default: iris
   candidate:
-  - modelName: iris
+  - name: iris
     weight: 50
-  - modelName: iris2
+  - name: iris2
     weight: 50

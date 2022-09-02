@@ -43,6 +43,23 @@ Running an experiment between some pipelines is very similar. The difference is 
 ```
 For an example see the [local experiments notebook](../../../examples/local-experiments.md).
 
+## Mirror Experiments
+
+A mirror can be added easily for model or pipeline experiments. An example model mirror experiment is shown below:
+
+```{literalinclude} ../../../../../../samples/experiments/sklearn-mirror.yaml 
+:language: yaml
+```
+For an example see the [local experiments notebook](../../../examples/local-experiments.md).
+
+An example pipeline mirror experiment is shown below:
+
+```{literalinclude} ../../../../../../samples/experiments/addmul10-mirror.yaml 
+:language: yaml
+```
+For an example see the [local experiments notebook](../../../examples/local-experiments.md).
+
+
 ## Sticky Sessions
 
 To allow cohorts to get consistent views in an experiment each inference request passes back a response header `x-seldon-route` which can be passed in future requests to an experiment to bypass the random traffic splits and get a prediction from the sequence of models and pipelines used in the initial request.

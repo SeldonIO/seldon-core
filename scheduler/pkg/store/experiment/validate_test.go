@@ -38,6 +38,52 @@ func TestValidateExperiment(t *testing.T) {
 			},
 		},
 		{
+			name: "duplicate candidate and mirror",
+			store: &ExperimentStore{
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
+			},
+			experiment: &Experiment{
+				Name:    "a",
+				Default: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						Name: "model1",
+					},
+					{
+						Name: "model2",
+					},
+				},
+				Mirror: &Mirror{
+					Name: "model2",
+				},
+			},
+			err: &ExperimentNoDuplicates{experimentName: "a", resource: "model2"},
+		},
+		{
+			name: "duplicate candidate",
+			store: &ExperimentStore{
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
+			},
+			experiment: &Experiment{
+				Name:    "a",
+				Default: getStrPtr("model1"),
+				Candidates: []*Candidate{
+					{
+						Name: "model1",
+					},
+					{
+						Name: "model2",
+					},
+					{
+						Name: "model2",
+					},
+				},
+			},
+			err: &ExperimentNoDuplicates{experimentName: "a", resource: "model2"},
+		},
+		{
 			name: "baseline already exists",
 			store: &ExperimentStore{
 				modelBaselines: map[string]*Experiment{"model1": {Name: "b"}},
@@ -77,7 +123,7 @@ func TestValidateExperiment(t *testing.T) {
 			},
 		},
 		{
-			name: "No Canidadates",
+			name: "No Canidadates or mirrors",
 			store: &ExperimentStore{
 				modelBaselines: map[string]*Experiment{},
 				experiments:    map[string]*Experiment{},
@@ -85,7 +131,20 @@ func TestValidateExperiment(t *testing.T) {
 			experiment: &Experiment{
 				Name: "a",
 			},
-			err: &ExperimentNoCandidates{experimentName: "a"},
+			err: &ExperimentNoCandidatesOrMirrors{experimentName: "a"},
+		},
+		{
+			name: "No Canidadates but mirror",
+			store: &ExperimentStore{
+				modelBaselines: map[string]*Experiment{},
+				experiments:    map[string]*Experiment{},
+			},
+			experiment: &Experiment{
+				Name: "a",
+				Mirror: &Mirror{
+					Name: "model",
+				},
+			},
 		},
 		{
 			name: "Default model is not candidate",

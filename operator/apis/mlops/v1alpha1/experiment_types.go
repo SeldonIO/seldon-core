@@ -43,12 +43,12 @@ type ExperimentSpec struct {
 }
 
 type ExperimentCandidate struct {
-	Name   string `json:"modelName"`
+	Name   string `json:"name"`
 	Weight uint32 `json:"weight"`
 }
 
 type ExperimentMirror struct {
-	Name    string `json:"model_name"`
+	Name    string `json:"name"`
 	Percent uint32 `json:"percent"`
 }
 

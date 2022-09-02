@@ -1,12 +1,14 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Experiment
 metadata:
-  name: addmul10
+  name: addmul10-mirror
 spec:
   default: pipeline-add10
   resourceType: pipeline
   candidates:
   - name: pipeline-add10
-    weight: 50
-  - name: pipeline-mul10
-    weight: 50
+    weight: 100
+  mirror:
+    name: pipeline-mul10
+    percent: 100
+

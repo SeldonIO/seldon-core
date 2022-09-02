@@ -171,15 +171,17 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					}
 				}
 			}
-			if experiment.Mirror != nil && experiment.Mirror.Name == event.ModelName {
-				model, err := es.store.GetModel(event.ModelName)
-				if err != nil {
-					logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
-				} else {
-					if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
-						experiment.Mirror.Ready = true
+			if experiment.Mirror != nil {
+				if experiment.Mirror.Name == event.ModelName {
+					model, err := es.store.GetModel(event.ModelName)
+					if err != nil {
+						logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						experiment.Mirror.Ready = false
+						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+							experiment.Mirror.Ready = true
+						} else {
+							experiment.Mirror.Ready = false
+						}
 					}
 				}
 			}
@@ -221,15 +223,17 @@ func (es *ExperimentStore) handlePipelineEvents(event coordinator.PipelineEventM
 					}
 				}
 			}
-			if experiment.Mirror != nil && experiment.Mirror.Name == event.PipelineName {
-				p, err := es.pipelineStore.GetPipeline(event.PipelineName)
-				if err != nil {
-					logger.WithError(err).Warnf("Failed to get pipeline %s for mirror check for experiment %s", event.PipelineName, experiment.Name)
-				} else {
-					if p.GetLatestPipelineVersion() != nil && p.GetLatestPipelineVersion().State.Status == pipeline.PipelineReady {
-						experiment.Mirror.Ready = true
+			if experiment.Mirror != nil {
+				if experiment.Mirror.Name == event.PipelineName {
+					p, err := es.pipelineStore.GetPipeline(event.PipelineName)
+					if err != nil {
+						logger.WithError(err).Warnf("Failed to get pipeline %s for mirror check for experiment %s", event.PipelineName, experiment.Name)
 					} else {
-						experiment.Mirror.Ready = false
+						if p.GetLatestPipelineVersion() != nil && p.GetLatestPipelineVersion().State.Status == pipeline.PipelineReady {
+							experiment.Mirror.Ready = true
+						} else {
+							experiment.Mirror.Ready = false
+						}
 					}
 				}
 			}
