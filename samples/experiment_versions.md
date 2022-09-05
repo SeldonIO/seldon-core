@@ -70,9 +70,9 @@ cat ./experiments/ab-default-model.yaml
     spec:
       default: iris
       candidates:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 ```
 
@@ -105,7 +105,7 @@ seldon model infer iris -i 50 \
 ```
 ```json
 
-    map[:iris2_1::30 :iris_1::20]
+    map[:iris2_1::26 :iris_1::24]
 ```
 
 ```bash
@@ -119,9 +119,9 @@ cat ./experiments/ab-default-model2.yaml
     spec:
       default: iris
       candidates:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris3
+      - name: iris3
         weight: 50
 ```
 
@@ -154,7 +154,7 @@ seldon model infer iris -i 50 \
 ```
 ```json
 
-    map[:iris3_1::20 :iris_1::30]
+    map[:iris3_1::24 :iris_1::26]
 ```
 
 ```bash
@@ -270,9 +270,9 @@ cat ./experiments/ab-default-model.yaml
     spec:
       default: iris
       candidates:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 ```
 
@@ -307,7 +307,7 @@ seldon model infer iris -i 50 \
 ```
 ```json
 
-    map[:iris2_1::31 :iris_1::19]
+    map[:iris2_1::28 :iris_1::22]
 ```
 
 ```bash
@@ -321,9 +321,9 @@ cat ./experiments/ab-default-model3.yaml
     spec:
       default: iris3
       candidates:
-      - modelName: iris3
+      - name: iris3
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 ```
 
@@ -365,7 +365,7 @@ seldon model infer iris3 -i 50 \
 ```
 ```json
 
-    map[:iris2_1::25 :iris3_1::25]
+    map[:iris2_1::24 :iris3_1::26]
 ```
 
 ```bash
