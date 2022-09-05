@@ -201,6 +201,7 @@ def _set_flask_app_configs(app):
         "DEBUG",
         "EXPLAIN_TEMPLATE_LOADING",
         "JSONIFY_PRETTYPRINT_REGULAR",
+        "JSON_AS_ASCII",
         "JSON_SORT_KEYS",
         "PROPAGATE_EXCEPTIONS",
         "PRESERVE_CONTEXT_ON_EXCEPTION",
