@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

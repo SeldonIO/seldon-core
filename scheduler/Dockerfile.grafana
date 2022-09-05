@@ -8,8 +8,8 @@ ENV GF_AUTH_ANONYMOUS_ENABLED "true"
 ENV GF_AUTH_ANONYMOUS_ORG_ROLE "Admin"
 
 # Add provisioning
-ADD ./config/grafana/provisioning /etc/grafana/provisioning
+ADD ./scheduler/config/grafana/provisioning /etc/grafana/provisioning
 # Add configuration file
-ADD ./config/grafana/grafana.ini /etc/grafana/grafana.ini
+ADD ./scheduler/config/grafana/grafana.ini /etc/grafana/grafana.ini
 # Add dashboard json files
-ADD ./config/grafana/dashboards /etc/grafana/dashboards
+ADD ./scheduler/config/grafana/dashboards /etc/grafana/dashboards

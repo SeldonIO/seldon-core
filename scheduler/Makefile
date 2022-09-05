@@ -26,7 +26,7 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	CGO_ENABLED=0 go build -o bin/scheduler ./cmd/scheduler
+	CGO_ENABLED=0 go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
@@ -34,7 +34,7 @@ build-proxy: test-go
 
 .PHONY: build-agent
 build-agent: test-go
-	CGO_ENABLED=0 go build -o bin/agent ./cmd/agent
+	CGO_ENABLED=0 go build -buildvcs=false -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
 build-modelgateway: test-go
@@ -107,8 +107,8 @@ benchmark-go:
 #####################################
 
 .PHONY: docker-build-scheduler
-docker-build-scheduler: copy-apis copy-components
-	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler .
+docker-build-scheduler: copy-components
+	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler ..
 
 .PHONY: docker-push-scheduler
 docker-push-scheduler:
@@ -119,14 +119,9 @@ copy-components:
 	rm -rf components-TEMP
 	cp -r ../components components-TEMP
 
-.PHONY: copy-apis
-copy-apis:
-	rm -rf apis-TEMP
-	cp -r ../apis apis-TEMP
-
 .PHONY: docker-build-agent
-docker-build-agent: copy-apis
-	docker build -t ${AGENT_IMG} -f Dockerfile.agent .
+docker-build-agent:
+	docker build -t ${AGENT_IMG} -f Dockerfile.agent ..
 
 .PHONY: docker-push-agent
 docker-push-agent:
@@ -134,37 +129,37 @@ docker-push-agent:
 
 .PHONY: docker-build-rclone
 docker-build-rclone:
-	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone .
+	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone ..
 
 .PHONY: docker-push-rclone
 docker-push-rclone:
 	docker push ${RCLONE_IMG}
 
 .PHONY: docker-build-modelgateway
-docker-build-modelgateway: copy-apis copy-components
-	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway .
+docker-build-modelgateway: copy-components
+	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway ..
 
 .PHONY: docker-push-modelgateway
 docker-push-modelgateway:
 	docker push ${MODELGATEWAY_IMG}
 
-docker-build-pipelinegateway: copy-apis
-	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway .
+docker-build-pipelinegateway:
+	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway ..
 
 docker-push-pipelinegateway:
 	docker push ${PIPELINEGATEWAY_IMG}
 
 .PHONY: docker-build-envoy
 docker-build-envoy:
-	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy .
+	docker build -t ${ENVOY_IMG} -f Dockerfile.envoy ..
 
 .PHONY: docker-push-envoy
 docker-push-envoy:
 	docker push ${ENVOY_IMG}
 
 .PHONY: docker-build-dataflow
-docker-build-dataflow: copy-apis data-flow/opentelemetry-javaagent.jar
-	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow .
+docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
+	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow ..
 
 .PHONY: docker-push-dataflow
 docker-push-dataflow:
@@ -172,7 +167,7 @@ docker-push-dataflow:
 
 .PHONY: docker-build-grafana
 docker-build-grafana:
-	docker build -t ${GRAFANA_IMG} -f Dockerfile.grafana .
+	docker build -t ${GRAFANA_IMG} -f Dockerfile.grafana ..
 
 .PHONY: docker-push-grafana
 docker-push-grafana:
@@ -294,11 +289,11 @@ DOCKER_COMPOSE_SERVICE_COMMAND = ${DOCKER_COMPOSE_ENV} ${DOCKER_COMPOSE_BASE_COM
 DOCKER_COMPOSE_SERVICE_HOST_COMMAND = ${DOCKER_COMPOSE_ENV} ${DOCKER_COMPOSE_BASE_COMMAND} ${DOCKER_COMPOSE_HOST} ${DOCKER_COMPOSE_LOCAL_MODELS} ${DOCKER_COMPOSE_PROFILE_LOCAL_METRICS} -p scv2
 
 .PHONY: start-all
-start-all: copy-apis
+start-all:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES}
 
 .PHONY: pull-all
-pull-all: copy-apis
+pull-all:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} pull
 
 .PHONY: pull-servers
@@ -311,7 +306,7 @@ stop-all:
 	${DOCKER_COMPOSE_SERVICE_COMMAND} down ${DOCKER_COMPOSE_REMOVE_VOLUMES}
 
 .PHONY: start-all-host
-start-all-host: copy-apis create-model-folders
+start-all-host: create-model-folders
 	${DOCKER_COMPOSE_SERVICE_HOST_COMMAND} up -d ${DOCKER_COMPOSE_BUILD_IMAGES}
 
 .PHONY: stop-all-host

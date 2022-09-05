@@ -1,24 +1,21 @@
 FROM golang:1.18-alpine as builder
 
-RUN apk add --upgrade make cmake
+RUN apk add --upgrade make
 
 WORKDIR /build
 ADD . .
-
-RUN rm -r apis && mv apis-TEMP apis
-RUN mv components-TEMP ../components
 
 ARG GIT_BRANCH
 ARG GIT_COMMIT
 ARG RELEASE_TYPE
 ARG BUILD_VERSION
 
-RUN make build-hodometer
+RUN make -C hodometer build-hodometer
 
 ################################################################################
 
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /build/bin/hodometer /bin/hodometer
+COPY --from=builder /build/hodometer/bin/hodometer /bin/hodometer
 
 ARG UID=1000
 ARG GID=1000

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"fmt"
 
-	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
+	scheduler "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"

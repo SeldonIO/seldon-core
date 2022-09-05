@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"google.golang.org/protobuf/proto"
 )
 

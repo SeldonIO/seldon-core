@@ -1,15 +1,13 @@
 FROM golang:alpine as builder
 
-RUN mkdir /build
-ADD . /build/
 WORKDIR /build
-RUN rm -r apis && mv apis-TEMP apis
-RUN mv components-TEMP ../components
+COPY . .
 
 # Build the binary
-RUN CGO_ENABLED=0 go build -o scheduler ./cmd/scheduler/main.go
+RUN apk add --no-cache make
+RUN make -C scheduler -o test-go build-scheduler
 
 # Copy binary
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /build/scheduler /bin/scheduler
+COPY --from=builder /build/scheduler/bin/scheduler /bin/scheduler
 ENTRYPOINT ["/bin/scheduler"]

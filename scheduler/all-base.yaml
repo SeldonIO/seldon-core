@@ -10,8 +10,8 @@ services:
 
   agent-mlserver:
     build:
-      dockerfile: ./Dockerfile.agent
-      context: .
+      dockerfile: scheduler/Dockerfile.agent
+      context: ..
     image: "${AGENT_IMAGE_AND_TAG}"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
@@ -30,8 +30,8 @@ services:
 
   agent-triton:
     build:
-      dockerfile: ./Dockerfile.agent
-      context: .
+      dockerfile: scheduler/Dockerfile.agent
+      context: ..
     image: "${AGENT_IMAGE_AND_TAG}"
     environment:
       - SELDON_OVERCOMMIT_PERCENTAGE=${AGENT_OVERCOMMIT_PERCENTAGE}
@@ -50,8 +50,8 @@ services:
 
   dataflow:
     build:
-      dockerfile: ./Dockerfile.dataflow
-      context: .
+      dockerfile: scheduler/Dockerfile.dataflow
+      context: ..
     image: "${DATAFLOW_IMAGE_AND_TAG}"
     depends_on:
       - kafka
@@ -59,8 +59,8 @@ services:
 
   envoy:
     build:
-      dockerfile: ./Dockerfile.envoy
-      context: .
+      dockerfile: scheduler/Dockerfile.envoy
+      context: ..
     image: "${ENVOY_IMAGE_AND_TAG}"
 
   grafana:
@@ -70,8 +70,8 @@ services:
 
   hodometer:
     build:
-      dockerfile: ./../hodometer/Dockerfile.hodometer
-      context: ./../hodometer
+      dockerfile: hodometer/Dockerfile.hodometer
+      context: ..
     image: "${HODOMETER_IMAGE_AND_TAG}"
     environment:
       - LOG_LEVEL=${HODOMETER_LOG_LEVEL}
@@ -83,8 +83,8 @@ services:
 
   hodometer-receiver:
     build:
-      dockerfile: ./../hodometer/Dockerfile.receiver
-      context: ./../hodometer
+      dockerfile: hodometer/Dockerfile.receiver
+      context: ..
     image: "seldonio/hodometer-receiver:latest"
     environment:
       - LISTEN_PORT=${HODOMETER_RECEIVER_PORT}
@@ -109,8 +109,8 @@ services:
 
   modelgateway:
     build:
-      dockerfile: ./Dockerfile.modelgateway
-      context: .
+      dockerfile: scheduler/Dockerfile.modelgateway
+      context: ..
     image: "${MODELGATEWAY_IMAGE_AND_TAG}"
     depends_on:
       - kafka
@@ -133,8 +133,8 @@ services:
 
   pipelinegateway:
     build:
-      dockerfile: ./Dockerfile.pipelinegateway
-      context: .
+      dockerfile: scheduler/Dockerfile.pipelinegateway
+      context: ..
     image: "${PIPELINEGATEWAY_IMAGE_AND_TAG}"
     depends_on:
       - kafka
@@ -145,14 +145,14 @@ services:
 
   rclone-mlserver:
     build:
-      dockerfile: ./Dockerfile.rclone
-      context: .
+      dockerfile: scheduler/Dockerfile.rclone
+      context: ..
     image: "${RCLONE_IMAGE_AND_TAG}"
 
   rclone-triton:
     build:
-      dockerfile: ./Dockerfile.rclone
-      context: .
+      dockerfile: scheduler/Dockerfile.rclone
+      context: ..
     image: "${RCLONE_IMAGE_AND_TAG}"
     command:
       - "rcd"
@@ -168,8 +168,8 @@ services:
         source: ./mnt
         target: /mnt/config
     build:
-      dockerfile: ./Dockerfile.scheduler
-      context: .
+      dockerfile: scheduler/Dockerfile.scheduler
+      context: ..
     image: "${SCHEDULER_IMAGE_AND_TAG}"
 
   mlserver:

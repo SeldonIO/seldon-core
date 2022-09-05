@@ -10,7 +10,7 @@ import (
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-	pb "github.com/seldonio/seldon-core/hodometer/apis"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -62,7 +62,7 @@ type modelMetrics struct {
 var _ Collector = (*SeldonCoreCollector)(nil)
 
 type SeldonCoreCollector struct {
-	schedulerClient  pb.SchedulerClient
+	schedulerClient  scheduler.SchedulerClient
 	k8sClient        kubernetes.Interface
 	logger           logrus.FieldLogger
 	clusterId        string
@@ -113,7 +113,7 @@ func NewSeldonCoreCollector(
 	if err != nil {
 		return nil, err
 	}
-	client := pb.NewSchedulerClient(conn)
+	client := scheduler.NewSchedulerClient(conn)
 
 	clusterId = parseOrCreateClusterId(clusterId)
 
@@ -267,7 +267,7 @@ func (scc *SeldonCoreCollector) updateKubernetesVersion(metrics *kubernetesMetri
 func (scc *SeldonCoreCollector) collectScheduler(ctx context.Context) *schedulerMetrics {
 	logger := scc.logger.WithField("func", "collectScheduler")
 
-	request := &pb.SchedulerStatusRequest{SubscriberName: subscriberName}
+	request := &scheduler.SchedulerStatusRequest{SubscriberName: subscriberName}
 	response, err := scc.schedulerClient.SchedulerStatus(ctx, request)
 	if err != nil {
 		logger.WithError(err).Error("unable to fetch from Seldon Core scheduler")
@@ -282,7 +282,7 @@ func (scc *SeldonCoreCollector) collectScheduler(ctx context.Context) *scheduler
 func (scc *SeldonCoreCollector) collectExperiments(ctx context.Context) *experimentMetrics {
 	logger := scc.logger.WithField("func", "collectExperiments")
 
-	request := &pb.ExperimentStatusRequest{
+	request := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           nil,
 	}
@@ -312,7 +312,7 @@ func (scc *SeldonCoreCollector) collectExperiments(ctx context.Context) *experim
 func (scc *SeldonCoreCollector) collectPipelines(ctx context.Context) *pipelineMetrics {
 	logger := scc.logger.WithField("func", "collectPipelines")
 
-	request := &pb.PipelineStatusRequest{
+	request := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           nil, // Request all pipelines
 		AllVersions:    false,
@@ -339,13 +339,13 @@ func (scc *SeldonCoreCollector) collectPipelines(ctx context.Context) *pipelineM
 	}
 }
 
-func updatePipelineMetrics(metrics *pipelineMetrics, status *pb.PipelineStatusResponse) {
+func updatePipelineMetrics(metrics *pipelineMetrics, status *scheduler.PipelineStatusResponse) {
 	if isPipelineActive(status) {
 		metrics.count++
 	}
 }
 
-func isPipelineActive(p *pb.PipelineStatusResponse) bool {
+func isPipelineActive(p *scheduler.PipelineStatusResponse) bool {
 	if p == nil || len(p.Versions) == 0 {
 		return false
 	}
@@ -356,9 +356,9 @@ func isPipelineActive(p *pb.PipelineStatusResponse) bool {
 			continue
 		}
 
-		if v.State.Status == pb.PipelineVersionState_PipelineCreate ||
-			v.State.Status == pb.PipelineVersionState_PipelineCreating ||
-			v.State.Status == pb.PipelineVersionState_PipelineReady {
+		if v.State.Status == scheduler.PipelineVersionState_PipelineCreate ||
+			v.State.Status == scheduler.PipelineVersionState_PipelineCreating ||
+			v.State.Status == scheduler.PipelineVersionState_PipelineReady {
 			isActive = true
 		}
 	}
@@ -368,7 +368,7 @@ func isPipelineActive(p *pb.PipelineStatusResponse) bool {
 func (scc *SeldonCoreCollector) collectServers(ctx context.Context) *serverMetrics {
 	logger := scc.logger.WithField("func", "collectServers")
 
-	request := &pb.ServerStatusRequest{
+	request := &scheduler.ServerStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           nil,
 	}
@@ -393,7 +393,7 @@ func (scc *SeldonCoreCollector) collectServers(ctx context.Context) *serverMetri
 	}
 }
 
-func updateServerMetrics(metrics *serverMetrics, status *pb.ServerStatusResponse) {
+func updateServerMetrics(metrics *serverMetrics, status *scheduler.ServerStatusResponse) {
 	if status.ExpectedReplicas > 0 || status.AvailableReplicas > 0 {
 		metrics.count++
 		if status.ExpectedReplicas > 0 {
@@ -419,7 +419,7 @@ func updateServerMetrics(metrics *serverMetrics, status *pb.ServerStatusResponse
 func (scc *SeldonCoreCollector) collectModels(ctx context.Context) *modelMetrics {
 	logger := scc.logger.WithField("func", "collectModels")
 
-	request := &pb.ModelStatusRequest{
+	request := &scheduler.ModelStatusRequest{
 		SubscriberName: subscriberName,
 		Model:          nil,
 	}

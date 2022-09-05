@@ -12,43 +12,43 @@ import (
 	fakeDiscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/kubernetes/fake"
 
-	pb "github.com/seldonio/seldon-core/hodometer/apis"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
 func TestUpdatePipelineMetrics(t *testing.T) {
 	type test struct {
 		name     string
-		statuses []*pb.PipelineStatusResponse
+		statuses []*scheduler.PipelineStatusResponse
 		expected pipelineMetrics
 	}
 
 	tests := []test{
 		{
 			name:     "no metrics",
-			statuses: []*pb.PipelineStatusResponse{},
+			statuses: []*scheduler.PipelineStatusResponse{},
 			expected: pipelineMetrics{},
 		},
 		{
 			name: "to-create, creating, and ready pipelines count",
-			statuses: []*pb.PipelineStatusResponse{
+			statuses: []*scheduler.PipelineStatusResponse{
 				{
-					Versions: []*pb.PipelineWithState{
+					Versions: []*scheduler.PipelineWithState{
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineCreate},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineCreate},
 						},
 					},
 				},
 				{
-					Versions: []*pb.PipelineWithState{
+					Versions: []*scheduler.PipelineWithState{
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineCreating},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineCreating},
 						},
 					},
 				},
 				{
-					Versions: []*pb.PipelineWithState{
+					Versions: []*scheduler.PipelineWithState{
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineReady},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineReady},
 						},
 					},
 				},
@@ -57,29 +57,29 @@ func TestUpdatePipelineMetrics(t *testing.T) {
 		},
 		{
 			name: "other statuses do not count",
-			statuses: []*pb.PipelineStatusResponse{
+			statuses: []*scheduler.PipelineStatusResponse{
 				{
-					Versions: []*pb.PipelineWithState{
+					Versions: []*scheduler.PipelineWithState{
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineStatusUnknown},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineStatusUnknown},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineFailed},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineFailed},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineTerminate},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineTerminate},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineFailed},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineFailed},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineTerminate},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineTerminate},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineTerminating},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineTerminating},
 						},
 						{
-							State: &pb.PipelineVersionState{Status: pb.PipelineVersionState_PipelineTerminated},
+							State: &scheduler.PipelineVersionState{Status: scheduler.PipelineVersionState_PipelineTerminated},
 						},
 					},
 				},
@@ -102,19 +102,19 @@ func TestUpdatePipelineMetrics(t *testing.T) {
 func TestUpdateServerMetrics(t *testing.T) {
 	type test struct {
 		name     string
-		statuses []*pb.ServerStatusResponse
+		statuses []*scheduler.ServerStatusResponse
 		expected serverMetrics
 	}
 
 	tests := []test{
 		{
 			name:     "no metrics",
-			statuses: []*pb.ServerStatusResponse{},
+			statuses: []*scheduler.ServerStatusResponse{},
 			expected: serverMetrics{},
 		},
 		{
 			name: "expected replicas count",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas:  5,
 					AvailableReplicas: 0,
@@ -127,7 +127,7 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "available replica counts even when expected unknown",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas:  -1,
 					AvailableReplicas: 5,
@@ -140,7 +140,7 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "expected or available count",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas:  3,
 					AvailableReplicas: 1,
@@ -153,7 +153,7 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "many servers",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas:  1,
 					AvailableReplicas: 0,
@@ -170,10 +170,10 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "overcommit enabled but no models counts",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas: 1,
-					Resources: []*pb.ServerReplicaResources{
+					Resources: []*scheduler.ServerReplicaResources{
 						{
 							OverCommitPercentage: 20,
 						},
@@ -189,10 +189,10 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "overcommit enabled with allocated models",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas: 1,
-					Resources: []*pb.ServerReplicaResources{
+					Resources: []*scheduler.ServerReplicaResources{
 						{
 							OverCommitPercentage: 20,
 							NumLoadedModels:      1,
@@ -209,10 +209,10 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "multi-model without overcommit",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas: 1,
-					Resources: []*pb.ServerReplicaResources{
+					Resources: []*scheduler.ServerReplicaResources{
 						{
 							NumLoadedModels: 10,
 						},
@@ -227,10 +227,10 @@ func TestUpdateServerMetrics(t *testing.T) {
 		},
 		{
 			name: "memory consumption is totalled correctly",
-			statuses: []*pb.ServerStatusResponse{
+			statuses: []*scheduler.ServerStatusResponse{
 				{
 					ExpectedReplicas: 1,
-					Resources: []*pb.ServerReplicaResources{
+					Resources: []*scheduler.ServerReplicaResources{
 						{
 							TotalMemoryBytes: 1,
 						},
@@ -238,7 +238,7 @@ func TestUpdateServerMetrics(t *testing.T) {
 				},
 				{
 					ExpectedReplicas: 1,
-					Resources: []*pb.ServerReplicaResources{
+					Resources: []*scheduler.ServerReplicaResources{
 						{
 							TotalMemoryBytes: 2,
 						},

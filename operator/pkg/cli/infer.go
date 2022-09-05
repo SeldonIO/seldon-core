@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"

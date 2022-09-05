@@ -1,13 +1,28 @@
+.PHONY: build
+build: build-go build-kotlin build-v2-python
+
 PROTOC_IMPORT_PATH := -I.
 
-PROTOC_GO_PATH := --go_opt=paths=source_relative
-PROTOC_GO_OUT := --go_out=.
-PROTOC_GO_GRPC_PATH := --go-grpc_opt=paths=source_relative
-PROTOC_GO_GRPC_OUT := --go-grpc_out=.
-PROTOC_GO_OPTIONS = $(PROTOC_GO_PATH) $(PROTOC_GO_OUT) $(PROTOC_GO_GRPC_PATH) $(PROTOC_GO_GRPC_OUT)
+################################################################################
 
-.PHONY: build
-build:
+### START GO ###
+
+PROTOC_GO_PACKAGE_STYLE := import
+PROTOC_GO_MODULE_PREFIX := github.com/seldonio/seldon-core/scheduler/apis
+PROTOC_GO_OUTPUT_PREFIX := ./go
+
+PROTOC_GO_PATH := --go_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
+PROTOC_GO_MODULE := --go_opt=module=$(PROTOC_GO_MODULE_PREFIX)
+PROTOC_GO_OUT := --go_out=$(PROTOC_GO_OUTPUT_PREFIX)
+PROTOC_GO_GRPC_PATH := --go-grpc_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
+PROTOC_GO_GRPC_MODULE := --go-grpc_opt=module=$(PROTOC_GO_MODULE_PREFIX)
+PROTOC_GO_GRPC_OUT := --go-grpc_out=$(PROTOC_GO_OUTPUT_PREFIX)
+PROTOC_GO_OPTIONS = $(PROTOC_GO_PATH) $(PROTOC_GO_MODULE) $(PROTOC_GO_OUT) $(PROTOC_GO_GRPC_PATH) $(PROTOC_GO_GRPC_MODULE) $(PROTOC_GO_GRPC_OUT)
+
+.PHONY: build-go
+.ONESHELL: build-go
+build-go:
+	mkdir -p $(PROTOC_GO_OUTPUT_PREFIX)
 	protoc \
 		$(PROTOC_IMPORT_PATH) \
 		$(PROTOC_GO_OPTIONS) \
@@ -19,6 +34,13 @@ build:
 		./mlops/chainer/chainer.proto \
 		./mlops/v2_dataplane/v2_dataplane.proto
 
+.PHONY: clean-go
+clean-go:
+	rm -r ./go/mlops
+
+################################################################################
+
+### START PYTHON ###
 
 PROTOC_PYTHON_OUT := --python_out=./python
 PROTOC_PYTHON_OPTIONS = $(PROTOC_PYTHON_OUT)
@@ -29,6 +51,10 @@ build-v2-python:
 		$(PROTOC_IMPORT_PATH) \
 		$(PROTOC_PYTHON_OPTIONS) \
 		./mlops/v2_dataplane/v2_dataplane.proto
+
+################################################################################
+
+### START JVM ###
 
 .PHONY: download-java-protoc
 download-java-protoc:

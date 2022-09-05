@@ -1,0 +1,27 @@
+# Hidden files
+.git
+.github
+
+# Root-level files
+*.md
+
+# Dirs
+ansible
+docs
+k8s
+samples
+service-meshes
+tests
+tracing
+
+# Scheduler dirs
+scheduler/bin
+scheduler/data-flow/build
+scheduler/data-flow/scripts
+scheduler/docs
+scheduler/hack
+scheduler/k8s
+scheduler/mlrepo
+scheduler/mnt
+scheduler/notebooks
+scheduler/venv

@@ -1,16 +1,16 @@
 FROM golang:1.18-alpine AS builder
 
-RUN apk add --upgrade make cmake
+RUN apk add --upgrade make
 
 WORKDIR /build
 COPY . .
 
-RUN make build-receiver
+RUN make -C hodometer build-receiver
 
 ################################################################################
 
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /build/bin/receiver /bin/receiver
+COPY --from=builder /build/hodometer/bin/receiver /bin/receiver
 
 ARG UID=1000
 ARG GID=1000

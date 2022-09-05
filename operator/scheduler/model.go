@@ -9,7 +9,7 @@ import (
 	"github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
 	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"

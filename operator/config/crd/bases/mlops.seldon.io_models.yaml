@@ -84,6 +84,19 @@ spec:
               modelType:
                 description: Model type
                 type: string
+              parameters:
+                description: Parameters to load with model
+                items:
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                  - name
+                  - value
+                  type: object
+                type: array
               preloaded:
                 description: Model already loaded on a server. Don't schedule. Default
                   false

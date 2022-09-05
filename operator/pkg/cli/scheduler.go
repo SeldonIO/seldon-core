@@ -24,7 +24,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/operatorv2/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/grpc"
 )
 
