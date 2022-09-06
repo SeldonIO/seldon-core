@@ -30,5 +30,5 @@ window.onload = function () {
 
 ## gRPC
 
-bli bla blu
+.. mdinclude:: ../../../proto/v2-protocol.md
 

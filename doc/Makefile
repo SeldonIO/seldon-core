@@ -11,7 +11,7 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: clean livehtml livehtml-fast help Makefile
+.PHONY: clean livehtml livehtml-fast help Makefile proto
 
 TAG=master
 
@@ -25,6 +25,13 @@ clean:
 	rm -rf source/_static/cluster-manager/jacoco
 	rm -rf source/python/api
 	rm -rf _build
+
+proto:
+	docker run -it --rm \
+		-v $(PWD)/proto:/out \
+		-v $(PWD)/proto:/protos \
+		pseudomuto/protoc-gen-doc \
+		--doc_opt=/out/template.md,v2-protocol.md
 
 lint: html linkcheck
 
