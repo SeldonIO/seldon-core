@@ -6,7 +6,7 @@ Triton, etc.) and orchestrating frameworks (e.g. Seldon Core, KServe, etc.).
 The spec of the V2 Inference Protocol defines both the endpoints and payload
 schemas for REST and gRPC interfaces.
 
-As part of the V2 Protocol, you can find endpoints for:
+As part of the V2 Protocol definition, you can find dedicated endpoints for:
 
 - Health endpoints, to assess liveness and readiness of your models.
 - Inference endpoints, to interact with your models.
@@ -27,7 +27,7 @@ const HideHeaderPlugin = () => ({
 
 window.onload = function () {
    SwaggerUIBundle({
-      url: "../../_static/dataplane.yaml",
+      url: "../../_static/openapi/v2/dataplane.yaml",
       dom_id: "#swagger-ui-rest",
       presets: [SwaggerUIBundle.presets.apis],
       plugins: [HideHeaderPlugin],
@@ -39,5 +39,5 @@ window.onload = function () {
 
 ## gRPC
 
-.. mdinclude:: ../../../proto/v2-protocol.md
+.. mdinclude:: ../../../../proto/v2/README.md
 
