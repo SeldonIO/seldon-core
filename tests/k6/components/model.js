@@ -4,7 +4,7 @@ const iris = "iris"  // mlserver
 const pytorch_cifar10 = "pytorch_cifar10"
 const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
-const onyx_gpt2 = "onyx_gpt2"
+const onnx_gpt2 = "onnx_gpt2"
 const mlflow_wine = "mlflow_wine"
 
 const models = {
@@ -64,7 +64,7 @@ const models = {
             "memoryBytes": 20000,
         },
     },
-    onyx_gpt2: {
+    onnx_gpt2: {
         "modelTemplate": {
             "uriTemplate": "gs://seldon-models/triton/onnx_gpt2/gpt2",
             "maxUriSuffix": 0,
@@ -133,7 +133,7 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
             "http": {"inputs":[{"name":"input_1","data": data,"datatype":datatype,"shape":shape}]},
             "grpc": {"inputs":[{"name":"input_1","contents":{"fp32_contents":data},"datatype":datatype,"shape":shape}]}
         }
-    } else if (modelName == onyx_gpt2) {
+    } else if (modelName == onnx_gpt2) {
         const shape = [inferBatchSize, 10]
         const data = new Array(10*inferBatchSize).fill(1)
         const datatype = "INT32"
