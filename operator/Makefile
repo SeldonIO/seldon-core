@@ -110,10 +110,7 @@ generate-cli-docs:
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	cp -r ../apis apis-TEMP && rm -fr apis-TEMP/python
-	rm -rf components-TEMP && cp -r ../components components-TEMP
-	docker build -t ${IMG} .
-	rm -rf apis-TEMP
+	docker build -t ${IMG} -f Dockerfile ..
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.

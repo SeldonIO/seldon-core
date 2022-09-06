@@ -3,20 +3,17 @@ FROM golang:1.17 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-ADD components-TEMP /components/
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-RUN go mod download
+COPY operator/go.mod go.mod
+COPY operator/go.sum go.sum
+COPY components /components/
+COPY apis/ /apis/
+COPY operator/apis apis
 
 # Copy the go source
-COPY main.go main.go
-COPY apis/ apis/
-COPY controllers/ controllers/
-COPY scheduler/ scheduler/
-COPY apis-TEMP scheduler/apis
-COPY pkg/ pkg/
+COPY operator/controllers/ controllers/
+COPY operator/scheduler/ scheduler/
+COPY operator/pkg/ pkg/
+COPY operator/main.go main.go
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
