@@ -3,14 +3,23 @@ FROM golang:1.18-alpine AS builder
 RUN apk add --upgrade make
 
 WORKDIR /build
-COPY . .
+# Copy the Go Modules manifests
+COPY hodometer/Makefile Makefile
+COPY hodometer/go.mod go.mod
+COPY hodometer/go.sum go.sum
+COPY components /components/
+COPY apis /apis/
 
-RUN make -C hodometer build-receiver
+# Copy code
+COPY hodometer/cmd cmd
+COPY hodometer/pkg pkg
+
+RUN make build-receiver
 
 ################################################################################
 
 FROM gcr.io/distroless/static:nonroot
-COPY --from=builder /build/hodometer/bin/receiver /bin/receiver
+COPY --from=builder /build/bin/receiver /bin/receiver
 
 ARG UID=1000
 ARG GID=1000

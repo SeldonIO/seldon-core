@@ -56,7 +56,7 @@ build-hodometer: test-hodometer
 				" \
 				./cmd/hodometer/
 .PHONY: build-hodometer-local
-build-hodometer-local: copy-apis copy-components build-hodometer
+build-hodometer-local: copy-components build-hodometer
 
 .PHONY: build-receiver
 build-receiver: test-receiver
@@ -80,29 +80,19 @@ test: test-hodometer test-receiver
 clean:
 	rm bin/*
 
-.PHONY: copy-apis
-copy-apis:
-	rm -rf apis-TEMP
-	cp -r ../apis/mlops/scheduler apis-TEMP
-
-.PHONY: copy-components
-copy-components:
-	rm -rf components-TEMP
-	cp -r ../components components-TEMP
-
 .PHONY: build-hodometer-docker
-build-hodometer-docker: copy-apis copy-components
+build-hodometer-docker: 
 	docker build \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
 		--build-arg RELEASE_TYPE=$(RELEASE_TYPE) \
 		--build-arg BUILD_VERSION=$(BUILD_VERSION) \
 		-t ${HODOMETER_IMG} \
-		-f Dockerfile.hodometer .
+		-f Dockerfile.hodometer ..
 
 .PHONY: build-receiver-docker
 build-receiver-docker:
-	docker build -t ${RECEIVER_IMG} -f Dockerfile.receiver .
+	docker build -t ${RECEIVER_IMG} -f Dockerfile.receiver ..
 
 .PHONY: push-hodometer-docker
 push-hodometer-docker:
