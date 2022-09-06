@@ -8,9 +8,9 @@ schemas for REST and gRPC interfaces.
 
 As part of the V2 Protocol definition, you can find dedicated endpoints for:
 
-- Health endpoints, to assess liveness and readiness of your models.
-- Inference endpoints, to interact with your models.
-- Metadata endpoints, to your modes' metadata (e.g. expected inputs, expected
+- Health endpoints, to assess liveness and readiness of your model.
+- Inference endpoints, to interact with your model.
+- Metadata endpoints, to query your model metadata (e.g. expected inputs, expected
   outputs, etc.).
 - Model repository endpoints, to load and unload models dynamically.
 
