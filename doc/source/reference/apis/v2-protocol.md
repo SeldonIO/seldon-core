@@ -3,8 +3,17 @@
 The V2 Inference Protocol is an industry-wide effort to provide an standardised
 protocol to communicate with different inference servers (e.g. MLServer,
 Triton, etc.) and orchestrating frameworks (e.g. Seldon Core, KServe, etc.).
-The spec for the V2 Inference Protocol defines both the endpoints and payload
+The spec of the V2 Inference Protocol defines both the endpoints and payload
 schemas for REST and gRPC interfaces.
+
+As part of the V2 Protocol, you can find endpoints for:
+
+- Health endpoints, to assess liveness and readiness of your models.
+- Inference endpoints, to interact with your models.
+- Metadata endpoints, to your modes' metadata (e.g. expected inputs, expected
+  outputs, etc.).
+- Model repository endpoints, to load and unload models dynamically.
+
 
 ## REST
 
