@@ -161,7 +161,7 @@ function experimentNamePrefix() {
 
 function inferType() {
     if (__ENV.INFER_TYPE) {
-        return __ENV.INFER_REST
+        return __ENV.INFER_TYPE
     }
     return "REST"
 }
