@@ -15,9 +15,9 @@ ARG PYTHON_VERSION
 ARG CONDA_VERSION
 
 # Install Python / Conda
-RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION}
-RUN pip install pip==21.2.4 setuptools==58.1.0
-RUN dnf install -y make automake gcc gcc-c++
+RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
+    pip install --upgrade pip setuptools wheel && \
+    dnf install -y make automake gcc gcc-c++
 
 # Make home dir
 RUN mkdir microservice
@@ -25,9 +25,7 @@ WORKDIR /microservice
 
 # Install Poetry
 ENV POETRY_HOME /microservice/.poetry
-RUN curl -sSL \
-    https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    | python3
+RUN curl -sSL https://install.python-poetry.org | python3
 
 ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
