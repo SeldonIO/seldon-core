@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.7.12
+FROM continuumio/miniconda3:4.12.0
 
 RUN \
     apt-get update  --allow-releaseinfo-change -y && \
@@ -22,11 +22,8 @@ RUN INSTALL_DIR=/tmp/flatc-install && \
 
 
 # Install python dependencies
-RUN pip install grpcio
-RUN pip install grpcio-tools
-RUN pip install flatbuffers
-RUN pip install twine
-RUN pip install mypy-protobuf
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install grpcio grpcio-tools flatbuffers && twine && mypy-protobuf
 
 # Install latest git
 RUN apt-get upgrade -y
