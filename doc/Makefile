@@ -11,9 +11,17 @@ BUILDDIR      = _build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: clean livehtml livehtml-fast help Makefile
+.PHONY: clean livehtml livehtml-fast help Makefile apis openapi proto
 
 TAG=master
+
+openapi:
+	cp ../openapi/v2/dataplane.yaml ./source/_static/openapi/v2/dataplane.yaml
+
+proto:
+	cp ../proto/v2/dataplane.proto ./source/_static/proto/v2/dataplane.proto
+
+apis: openapi proto
 
 install-dev:
 	pip install -r requirements.txt
@@ -26,9 +34,9 @@ clean:
 	rm -rf source/python/api
 	rm -rf _build
 
-lint: html linkcheck
+lint: html linkcheck apis
 
-linkcheck:
+linkcheck: apis
 	# Check for links reported as broken, ignoring 429 (too many requests)
 	- LINKCHECK=true $(SPHINXBUILD) \
 		-b linkcheck \
@@ -38,12 +46,12 @@ linkcheck:
 	! grep -v '429' _build/output.txt | grep 'broken'
 
 
-livehtml:
+livehtml: apis
 	sphinx-autobuild \
 		-b html \
 		--ignore "*~" -j auto $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)"
 
-livehtml-fast:
+livehtml-fast: apis
 	FAST_BUILD=true sphinx-autobuild \
 		 -b html \
 		 --ignore "*~" \
@@ -53,7 +61,7 @@ livehtml-fast:
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
+%: Makefile apis
 	@$(SPHINXBUILD) \
 		-M $@ \
 		"$(SOURCEDIR)" \

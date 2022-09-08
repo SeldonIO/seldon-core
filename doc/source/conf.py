@@ -64,7 +64,7 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_search.extension",
     "sphinx_copybutton",
-    "sphinx_panels"
+    "sphinx_panels",
 ]
 
 # Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)
@@ -94,6 +94,8 @@ m2r_anonymous_references = True
 # nbsphinx settings
 # nbsphinx_execute = 'auto'
 nbsphinx_execute = "never"
+# Disable require.js, as otherwise it conflicts with Swagger UI
+nbsphinx_requirejs_path = ""
 
 # apidoc settings
 apidoc_module_dir = "../../python/seldon_core"
@@ -195,8 +197,9 @@ if html_theme == "sphinx_material":
         "globaltoc_collapse": True,
         "globaltoc_includehidden": True,
         "repo_type": "github",
-        "version_dropdown": True,
-        "version_dropdown_text": "Versions",
+        # We're currently not providing any past versions info
+        # https://bashtage.github.io/sphinx-material/customization.html#version-dropdown
+        "version_dropdown": False,
         "master_doc": False,
         "nav_links": [
             {
@@ -248,14 +251,14 @@ html_sidebars = {
 # The Seldon Logo located at the top of the navigation bar.
 html_logo = "Seldon_White.png"
 
-html_favicon = 'favicon.ico'
+html_favicon = "favicon.ico"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
-html_css_files = ['theme_overrides.css']
+html_css_files = ["theme_overrides.css"]
 
 html_extra_path = ["_extra"]
 

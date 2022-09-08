@@ -14,7 +14,7 @@ This tokeniser will then be part of an inference graph, so that its output gets 
 ## Creating a Tokeniser
 
 In order to create a custom pre-processing step, the first step will be to [write a **custom runtime**](https://mlserver.readthedocs.io/en/latest/runtimes/custom.html) using [MLServer](https://mlserver.readthedocs.io/en/latest/).
-MLServer is a production-grade inference server, whose main goal is to ease up the serving of models through a REST and gRPC interface compatible with the [V2 Inference Protocol](https://kserve.github.io/website/modelserving/inference_api/).
+MLServer is a production-grade inference server, whose main goal is to ease up the serving of models through a REST and gRPC interface compatible with the [V2 Inference Protocol](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html).
 
 As well as an inference server, MLServer also exposes a *framework* which can be leveraged to easily **write your custom inference runtimes**.
 These custom runtimes can be used to write any custom logic, including (you guessed it!) our tokeniser pre-processor.
