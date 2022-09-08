@@ -2,10 +2,13 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"strings"
 	"time"
+
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -32,6 +35,21 @@ type PipelineTopics struct {
 	pipeline string
 	topics   []string
 	tensor   string
+}
+
+type KafkaInspect struct {
+	Topics []*KafkaInspectTopic `json:"topics"`
+}
+
+type KafkaInspectTopic struct {
+	Name string                      `json:"name"`
+	Msgs []*KafkaInspectTopicMessage `json:"msgs"`
+}
+
+type KafkaInspectTopicMessage struct {
+	Headers map[string]string `json:"headers"`
+	Key     string            `json:"key"`
+	Value   json.RawMessage   `json:"value"`
 }
 
 func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, error) {
@@ -92,7 +110,7 @@ func hasStep(stepName string, response *scheduler.PipelineStatusResponse) bool {
 	return false
 }
 
-func createPipelineTopics(pipelineSpec string, response *scheduler.PipelineStatusResponse) (*PipelineTopics, error) {
+func createPipelineInspectTopics(pipelineSpec string, response *scheduler.PipelineStatusResponse) (*PipelineTopics, error) {
 	parts := strings.Split(pipelineSpec, ".")
 	switch len(parts) {
 	case 1: //Just pipeline - show all steps and pipeline itself
@@ -177,20 +195,44 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 	return res, nil
 }
 
-func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string) error {
+func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool) error {
 	status, err := kc.getPipelineStatus(pipelineStep)
 	if err != nil {
 		return err
 	}
-	pipelineTopics, err := createPipelineTopics(pipelineStep, status)
+	pipelineTopics, err := createPipelineInspectTopics(pipelineStep, status)
 	if err != nil {
 		return err
 	}
 
+	ki := KafkaInspect{}
 	for _, topic := range pipelineTopics.topics {
-		err := kc.readTopic(topic, pipelineTopics.tensor, offset, key)
+		kit, err := kc.createInspectTopic(topic, pipelineTopics.tensor, offset, key, verbose)
 		if err != nil {
 			return err
+		}
+		ki.Topics = append(ki.Topics, kit)
+	}
+
+	if format == InspectFormatJson {
+		b, err := json.Marshal(ki)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s\n", string(b))
+	} else {
+		for _, topic := range ki.Topics {
+			for _, msg := range topic.Msgs {
+				if verbose {
+					fmt.Printf("%s\t%s\t%s\t", topic.Name, msg.Key, msg.Value)
+					for k, v := range msg.Headers {
+						fmt.Printf("\t%s=%s", k, v)
+					}
+					fmt.Println("")
+				} else {
+					fmt.Printf("%s\t%s\t%s\n", topic.Name, msg.Key, msg.Value)
+				}
+			}
 		}
 	}
 
@@ -199,11 +241,13 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 	return nil
 }
 
-func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64, key string) error {
-	fmt.Printf("---\n%s\n", topic)
+func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset int64, key string, verbose bool) (*KafkaInspectTopic, error) {
+	kit := KafkaInspectTopic{
+		Name: topic,
+	}
 	err := kc.subscribeAndSetOffset(topic, offset)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), kafkaTimeoutSeconds*time.Second)
@@ -225,48 +269,62 @@ func (kc *KafkaClient) readTopic(topic string, tensor string, offset int64, key 
 			case *kafka.Message:
 				seen = seen + 1
 				if (string(e.Key) == key) || key == "" {
-					err := showKafkaMsg(e, topic, tensor)
+					kitm, err := createKafkaMsg(e, topic, tensor, verbose)
 					if err != nil {
-						return err
+						return nil, err
 					}
+					kit.Msgs = append(kit.Msgs, kitm)
 				}
 				if seen >= offset {
 					run = false
 				}
 			case kafka.Error:
-				fmt.Printf("Kafka error %s", e.Error())
+				return nil, fmt.Errorf(e.Error())
 			default:
 				continue
 			}
 		}
 	}
 
-	return nil
+	return &kit, nil
 }
 
-func printHeaders(e *kafka.Message) {
-	fmt.Println("Headers")
+func addInspectHeaders(e *kafka.Message, kitm *KafkaInspectTopicMessage) {
+	kitm.Headers = make(map[string]string)
 	for _, header := range e.Headers {
-		fmt.Printf("\t%s\n", header.String())
+		kitm.Headers[header.Key] = string(header.Value)
 	}
 }
 
-func showKafkaMsg(e *kafka.Message, topic string, tensor string) error {
-	fmt.Printf("Key: %s:\n", string(e.Key))
-	printHeaders(e)
-	fmt.Printf("\t")
+func createKafkaMsg(e *kafka.Message, topic string, tensor string, verbose bool) (*KafkaInspectTopicMessage, error) {
+	kitm := KafkaInspectTopicMessage{
+		Key: string(e.Key),
+	}
+	if verbose { // Only add headers in verbose mode
+		addInspectHeaders(e, &kitm)
+	}
+	var err error
 	if strings.HasSuffix(topic, OutputsSpecifier) {
-		return showKafkaOutputMsg(e, tensor)
+		err = addInspectKafkaOutputMsg(e, tensor, &kitm)
 	} else {
-		return showKafkaInputMsg(e, tensor)
+		err = addInspectKafkaInputMsg(e, tensor, &kitm)
 	}
+	return &kitm, err
 }
 
-func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
+func protoTojson(msg proto.Message) (json.RawMessage, error) {
+	b, err := protojson.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func addInspectKafkaOutputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage) error {
 	res := &v2_dataplane.ModelInferResponse{}
 	err := proto.Unmarshal(e.Value, res)
 	if err != nil {
-		fmt.Printf("%s\n", string(e.Value))
+		kitm.Value = json.RawMessage(e.Value)
 		return nil
 	}
 	err = updateResponseFromRawContents(res)
@@ -276,21 +334,27 @@ func showKafkaOutputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, output := range res.Outputs {
 			if output.Name == tensor {
-				printProto(output)
+				kitm.Value, err = protoTojson(output)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
 	} else {
-		printProto(res)
+		kitm.Value, err = protoTojson(res)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func showKafkaInputMsg(e *kafka.Message, tensor string) error {
+func addInspectKafkaInputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := proto.Unmarshal(e.Value, req)
 	if err != nil {
-		fmt.Printf("%s\n", string(e.Value))
+		kitm.Value = json.RawMessage(e.Value)
 		return nil
 	}
 	err = updateRequestFromRawContents(req)
@@ -300,12 +364,18 @@ func showKafkaInputMsg(e *kafka.Message, tensor string) error {
 	if tensor != "" {
 		for _, input := range req.Inputs {
 			if input.Name == tensor {
-				printProto(input)
+				kitm.Value, err = protoTojson(input)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
 	} else {
-		printProto(req)
+		kitm.Value, err = protoTojson(req)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

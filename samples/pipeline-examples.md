@@ -92,7 +92,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "tfsimples",
-            "uid": "cbkk8dnje7k1k4uqoir0",
+            "uid": "cccdkdtjc642bejao6h0",
             "version": 1,
             "steps": [
               {
@@ -114,15 +114,13 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
                 "tfsimple2.outputs"
               ]
             },
-            "kubernetesMeta": {
-              "namespace": "seldon-mesh"
-            }
+            "kubernetesMeta": {}
           },
           "state": {
             "pipelineVersion": 1,
             "status": "PipelineReady",
-            "reason": "Created pipeline",
-            "lastChangeTimestamp": "2022-08-05T06:12:26.321828296Z"
+            "reason": "created pipeline",
+            "lastChangeTimestamp": "2022-09-07T17:51:52.899707821Z"
           }
         }
       ]
@@ -241,24 +239,79 @@ seldon pipeline inspect tfsimples
 ```
 ```json
 
-    ---
-    seldon.default.model.tfsimple1.inputs
-    cbmbeglvqj3k9ho9hr6g:{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-    ---
-    seldon.default.model.tfsimple1.outputs
-    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-    ---
-    seldon.default.model.tfsimple2.inputs
-    cbmbeglvqj3k9ho9hr6g:{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-    ---
-    seldon.default.model.tfsimple2.outputs
-    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
-    ---
-    seldon.default.pipeline.tfsimples.inputs
-    cbmbeglvqj3k9ho9hr6g:{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-    ---
-    seldon.default.pipeline.tfsimples.outputs
-    cbmbeglvqj3k9ho9hr6g:{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+    seldon.default.model.tfsimple1.inputs	cccdkfmbonj8ei29pg80	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+    seldon.default.model.tfsimple1.outputs	cccdkfmbonj8ei29pg80	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    seldon.default.model.tfsimple2.inputs	cccdkfmbonj8ei29pg80	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    seldon.default.model.tfsimple2.outputs	cccdkfmbonj8ei29pg80	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+    seldon.default.pipeline.tfsimples.inputs	cccdkfmbonj8ei29pg80	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+    seldon.default.pipeline.tfsimples.outputs	cccdkfmbonj8ei29pg80	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}],"rawOutputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="]}
+```
+
+```bash
+seldon pipeline inspect tfsimples --format json | jq .topics[0].msgs[0].value
+```
+```json
+
+    [1;39m{
+      [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
+        [1;39m{
+          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"INPUT0"[0m[1;39m,
+          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
+          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
+            [0;32m"1"[0m[1;39m,
+            [0;32m"16"[0m[1;39m
+          [1;39m][0m[1;39m,
+          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
+            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
+              [0;39m1[0m[1;39m,
+              [0;39m2[0m[1;39m,
+              [0;39m3[0m[1;39m,
+              [0;39m4[0m[1;39m,
+              [0;39m5[0m[1;39m,
+              [0;39m6[0m[1;39m,
+              [0;39m7[0m[1;39m,
+              [0;39m8[0m[1;39m,
+              [0;39m9[0m[1;39m,
+              [0;39m10[0m[1;39m,
+              [0;39m11[0m[1;39m,
+              [0;39m12[0m[1;39m,
+              [0;39m13[0m[1;39m,
+              [0;39m14[0m[1;39m,
+              [0;39m15[0m[1;39m,
+              [0;39m16[0m[1;39m
+            [1;39m][0m[1;39m
+          [1;39m}[0m[1;39m
+        [1;39m}[0m[1;39m,
+        [1;39m{
+          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"INPUT1"[0m[1;39m,
+          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
+          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
+            [0;32m"1"[0m[1;39m,
+            [0;32m"16"[0m[1;39m
+          [1;39m][0m[1;39m,
+          [0m[34;1m"contents"[0m[1;39m: [0m[1;39m{
+            [0m[34;1m"intContents"[0m[1;39m: [0m[1;39m[
+              [0;39m1[0m[1;39m,
+              [0;39m2[0m[1;39m,
+              [0;39m3[0m[1;39m,
+              [0;39m4[0m[1;39m,
+              [0;39m5[0m[1;39m,
+              [0;39m6[0m[1;39m,
+              [0;39m7[0m[1;39m,
+              [0;39m8[0m[1;39m,
+              [0;39m9[0m[1;39m,
+              [0;39m10[0m[1;39m,
+              [0;39m11[0m[1;39m,
+              [0;39m12[0m[1;39m,
+              [0;39m13[0m[1;39m,
+              [0;39m14[0m[1;39m,
+              [0;39m15[0m[1;39m,
+              [0;39m16[0m[1;39m
+            [1;39m][0m[1;39m
+          [1;39m}[0m[1;39m
+        [1;39m}[0m[1;39m
+      [1;39m][0m[1;39m
+    [1;39m}[0m
 ```
 
 ```bash
