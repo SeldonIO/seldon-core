@@ -914,7 +914,8 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 					Annotations: map[string]string{},
 				},
 			},
-			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
+			Strategy:                appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
+			ProgressDeadlineSeconds: p.ProgressDeadlineSeconds,
 		},
 	}
 
