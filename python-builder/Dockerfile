@@ -48,9 +48,7 @@ RUN apt-get install curl
 
 # Install Poetry
 ENV POETRY_HOME /var/poetry
-RUN curl -sSL \
-    https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    | python3
+RUN curl -sSL https://install.python-poetry.org | python3
 
 ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
