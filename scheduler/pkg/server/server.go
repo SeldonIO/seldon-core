@@ -106,41 +106,26 @@ type PipelineSubscription struct {
 	fin    chan bool
 }
 
-func (s *SchedulerServer) startPlaintxtServer(schedulerPort uint) {
-	logger := s.logger.WithField("func", "startPlaintxtServer")
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerPort))
+func (s *SchedulerServer) startServer(port uint, secure bool) error {
+	logger := s.logger.WithField("func", "startServer")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("failed to create listener: %v", err)
+		return err
 	}
 	opts := []grpc.ServerOption{}
+	if secure {
+		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
+	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
-	logger.Printf("Scheduler plain text server running on %d", schedulerPort)
+	s.logger.Printf("Scheduler server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
-		logger.WithError(err).Fatalf("Scheduler plain text server failed on port %d", schedulerPort)
+		logger.WithError(err).Fatalf("Scheduler mTLS server failed on port %d mtls:%v", port, secure)
 	}()
-}
-
-func (s *SchedulerServer) startMtlsServer(schedulerTlsPort uint) {
-	logger := s.logger.WithField("func", "startMtlsServer")
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", schedulerTlsPort))
-	if err != nil {
-		log.Fatalf("failed to create listener: %v", err)
-	}
-	opts := []grpc.ServerOption{}
-	opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
-	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
-	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
-	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterSchedulerServer(grpcServer, s)
-	s.logger.Printf("mTLS Scheduler server running on %d", schedulerTlsPort)
-	go func() {
-		err := grpcServer.Serve(lis)
-		logger.WithError(err).Fatalf("Scheduler mTLS server failed on port %d", schedulerTlsPort)
-	}()
+	return nil
 }
 
 func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint) error {
@@ -154,12 +139,18 @@ func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uin
 		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 	if allowPlainTxt {
-		s.startPlaintxtServer(schedulerPort)
+		err := s.startServer(schedulerPort, false)
+		if err != nil {
+			return err
+		}
 	} else {
 		logger.Info("Not starting scheduler plain text server")
 	}
 	if s.certificateStore != nil {
-		s.startMtlsServer(schedulerTlsPort)
+		err := s.startServer(schedulerTlsPort, true)
+		if err != nil {
+			return err
+		}
 	} else {
 		logger.Info("Not starting scheduler mTLS server")
 	}

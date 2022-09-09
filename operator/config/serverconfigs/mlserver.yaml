@@ -50,8 +50,14 @@ spec:
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
         value: "9005"
+      - name: SELDON_SCHEDULER_TLS_PORT
+        value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
       - name: SELDON_SERVER_TYPE
         value: "mlserver"
       - name: SELDON_ENVOY_HOST
@@ -62,6 +68,10 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: MEMORY_REQUEST
         valueFrom:
           resourceFieldRef:

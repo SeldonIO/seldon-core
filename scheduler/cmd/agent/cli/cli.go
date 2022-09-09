@@ -20,6 +20,7 @@ const (
 	envPodName              = "POD_NAME"
 	envSchedulerHost        = "SELDON_SCHEDULER_HOST"
 	envSchedulerPort        = "SELDON_SCHEDULER_PORT"
+	envSchedulerTlsPort     = "SELDON_SCHEDULER_TLS_PORT"
 	envReplicaConfig        = "SELDON_REPLICA_CONFIG"
 	envLogLevel             = "SELDON_LOG_LEVEL"
 	envServerType           = "SELDON_SERVER_TYPE"
@@ -29,25 +30,26 @@ const (
 	envEnvoyHost            = "SELDON_ENVOY_HOST"
 	envEnvoyPort            = "SELDON_ENVOY_PORT"
 
-	flagSchedulerHost        = "scheduler-host"
-	flagSchedulerPort        = "scheduler-port"
-	flagServerName           = "server-name"
-	flagServerIdx            = "server-idx"
-	flagInferenceHttpPort    = "inference-http-port"
-	flagInferenceGrpcPort    = "inference-grpc-port"
-	flagReverseProxyHttpPort = "reverse-proxy-http-port"
-	flagReverseProxyGrpcPort = "reverse-proxy-grpc-port"
-	flagDebugGrpcPort        = "debug-grpc-port"
-	flagMetricsPort          = "metrics-port"
-	flagReplicaConfig        = "replica-config"
-	flagLogLevel             = "log-level"
-	flagServerType           = "server-type"
-	flagMemoryBytes          = "memory-bytes"
-	flagCapabilities         = "capabilities"
-	flagOverCommitPercentage = "over-commit-percentage"
-	flagTracingConfigPath    = "tracing-config-path"
-	flagEnvoyHost            = "envoy-host"
-	flagEnvoyPort            = "envoy-port"
+	flagSchedulerHost         = "scheduler-host"
+	flagSchedulerPlaintxtPort = "scheduler-port"
+	flagSchedulerTlsPort      = "scheduler-tls-port"
+	flagServerName            = "server-name"
+	flagServerIdx             = "server-idx"
+	flagInferenceHttpPort     = "inference-http-port"
+	flagInferenceGrpcPort     = "inference-grpc-port"
+	flagReverseProxyHttpPort  = "reverse-proxy-http-port"
+	flagReverseProxyGrpcPort  = "reverse-proxy-grpc-port"
+	flagDebugGrpcPort         = "debug-grpc-port"
+	flagMetricsPort           = "metrics-port"
+	flagReplicaConfig         = "replica-config"
+	flagLogLevel              = "log-level"
+	flagServerType            = "server-type"
+	flagMemoryBytes           = "memory-bytes"
+	flagCapabilities          = "capabilities"
+	flagOverCommitPercentage  = "over-commit-percentage"
+	flagTracingConfigPath     = "tracing-config-path"
+	flagEnvoyHost             = "envoy-host"
+	flagEnvoyPort             = "envoy-port"
 )
 
 const (
@@ -55,6 +57,7 @@ const (
 	defaultInferenceGrpcPort = 9500
 	defaultRclonePort        = 5572
 	defaultSchedulerPort     = 9005
+	defaultSchedulerTlsPort  = 9055
 	defaultMetricsPort       = 9006
 	defaultEnvoyHost         = "0.0.0.0"
 	defaultEnvoyPort         = 9000
@@ -66,6 +69,7 @@ var (
 	ReplicaIdx           uint
 	SchedulerHost        string
 	SchedulerPort        int
+	SchedulerTlsPort     int
 	RcloneHost           string
 	RclonePort           int
 	InferenceHost        string
@@ -115,6 +119,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateDebugGrpcPort()
 	maybeUpdateSchedulerHost()
 	maybeUpdateSchedulerPort()
+	maybeUpdateSchedulerTlsPort()
 	maybeUpdateMetricsPort()
 	maybeUpdateServerNameAndIndex()
 	maybeUpdateReplicaConfig()
@@ -238,7 +243,11 @@ func maybeUpdateDebugGrpcPort() {
 }
 
 func maybeUpdateSchedulerPort() {
-	maybeUpdatePort(flagSchedulerPort, envSchedulerPort, &SchedulerPort)
+	maybeUpdatePort(flagSchedulerPlaintxtPort, envSchedulerPort, &SchedulerPort)
+}
+
+func maybeUpdateSchedulerTlsPort() {
+	maybeUpdatePort(flagSchedulerTlsPort, envSchedulerTlsPort, &SchedulerTlsPort)
 }
 
 func maybeUpdateMetricsPort() {

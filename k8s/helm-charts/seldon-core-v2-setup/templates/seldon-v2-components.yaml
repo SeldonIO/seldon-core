@@ -45,6 +45,14 @@ rules:
   - secrets
   verbs:
   - get
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
 {{ if .Values.hodometer.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -505,6 +513,10 @@ spec:
     port: 9005
     protocol: TCP
     targetPort: agent
+  - name: agent-mtls
+    port: 9055
+    protocol: TCP
+    targetPort: agent-mtls
   - name: dataflow
     port: 9008
     protocol: TCP
@@ -884,6 +896,10 @@ spec:
           value: '{{ .Values.scheduler.tls.scheduler.server.secret }}'
         - name: SCHEDULER_TLS_FOLDER_PATH
           value: '{{ .Values.scheduler.tls.scheduler.server.folder }}'
+        - name: AGENT_TLS_SECRET_NAME
+          value: '{{ .Values.scheduler.tls.agent.server.secret }}'
+        - name: AGENT_TLS_FOLDER_PATH
+          value: '{{ .Values.scheduler.tls.agent.server.folder }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -903,6 +919,8 @@ spec:
           name: scheduler-mtls
         - containerPort: 9005
           name: agent
+        - containerPort: 9055
+          name: agent-mtls
         - containerPort: 9008
           name: dataflow
         resources:
@@ -970,6 +988,10 @@ spec:
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
+      - name: AGENT_TLS_SECRET_NAME
+        value: '{{ .Values.scheduler.tls.agent.client.secret }}'
+      - name: AGENT_TLS_FOLDER_PATH
+        value: '{{ .Values.scheduler.tls.agent.client.folder }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -982,6 +1004,8 @@ spec:
         value: seldon-scheduler
       - name: SELDON_SCHEDULER_PORT
         value: "9005"
+      - name: SELDON_SCHEDULER_TLS_PORT
+        value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
       - name: SELDON_SERVER_TYPE
@@ -994,6 +1018,10 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: MEMORY_REQUEST
         valueFrom:
           resourceFieldRef:
@@ -1131,6 +1159,10 @@ spec:
         value: '{{ .Values.serverConfig.triton.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.triton.overcommitPercentage }}'
+      - name: AGENT_TLS_SECRET_NAME
+        value: '{{ .Values.scheduler.tls.agent.client.secret }}'
+      - name: AGENT_TLS_FOLDER_PATH
+        value: '{{ .Values.scheduler.tls.agent.client.folder }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1151,6 +1183,10 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: MEMORY_REQUEST
         valueFrom:
           resourceFieldRef:

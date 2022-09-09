@@ -46,6 +46,10 @@ spec:
         value: "9001"
       - name: SELDON_REVERSE_PROXY_GRPC_PORT
         value: "9501"          
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
       - name: SELDON_SCHEDULER_HOST
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
@@ -58,6 +62,10 @@ spec:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
       - name: MEMORY_REQUEST
         valueFrom:
           resourceFieldRef:

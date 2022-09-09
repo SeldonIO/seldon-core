@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"google.golang.org/grpc"
 
@@ -364,7 +366,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 				_ = mlserver.ListenAndServe()
 			}()
 
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(util.GrpcRetryBackoffMillisecs * time.Millisecond)
 
 			defer func() {
 				_ = mlserver.Shutdown(context.Background())

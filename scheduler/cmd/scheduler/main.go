@@ -19,6 +19,8 @@ import (
 	"flag"
 	"math/rand"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
@@ -52,6 +54,7 @@ import (
 var (
 	envoyPort               uint
 	agentPort               uint
+	agentMtlsPort           uint
 	schedulerPort           uint
 	schedulerMtlsPort       uint
 	chainerPort             uint
@@ -76,11 +79,14 @@ func init() {
 	// The scheduler port to listen for schedule commands
 	flag.UintVar(&schedulerPort, "scheduler-port", 9004, "scheduler server port")
 
-	// The scheduler port to listen for schedule commands
+	// The scheduler port to listen for schedule commands using mtls
 	flag.UintVar(&schedulerMtlsPort, "scheduler-mtls-port", 9044, "scheduler mtls server port")
 
 	// The agent port to listen for agent subscriptions
 	flag.UintVar(&agentPort, "agent-port", 9005, "agent server port")
+
+	// The agent port to listen for schedule commands using mtls
+	flag.UintVar(&agentMtlsPort, "agent-mtls-port", 9055, "agent mtls server port")
 
 	// The dataflow port to listen for data flow agents
 	flag.UintVar(&chainerPort, "dataflow-port", 9008, "dataflow server port")
@@ -98,7 +104,7 @@ func init() {
 	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
 	flag.StringVar(&dbPath, "db-path", "", "State Db path")
 
-	//scheduler server
+	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 }
 
@@ -113,6 +119,16 @@ func getNamespace() string {
 	return ns
 }
 
+func makeSignalHandler(logger *log.Logger, done chan<- bool) {
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+
+	<-exit
+
+	logger.Info("shutting down due to SIGTERM or SIGINT")
+	close(done)
+}
+
 func main() {
 	logger := log.New()
 	flag.Parse()
@@ -123,7 +139,15 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
+	done := make(chan bool, 1)
+
 	namespace = getNamespace()
+
+	// Attempt to get k8s clientset - continue anyway if we can't
+	clientset, err := k8s.CreateClientset()
+	if err != nil {
+		logger.WithError(err).Warn("Failed to get kubernetes clientset")
+	}
 
 	// Create event Hub
 	eventHub, err := coordinator.NewEventHub(logger)
@@ -131,6 +155,7 @@ func main() {
 		log.WithError(err).Fatal("Unable to create event hub")
 	}
 	defer eventHub.Close()
+	go makeSignalHandler(logger, done)
 
 	// Create a cache
 	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
@@ -182,7 +207,7 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 	)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, clientset)
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)
@@ -193,11 +218,6 @@ func main() {
 		}
 	}()
 
-	// Attempt to get k8s clientset - continue anyway if we can't
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		logger.WithError(err).Warn("Failed to get kubernetes clientset")
-	}
 	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, clientset)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
@@ -206,15 +226,15 @@ func main() {
 
 	_ = cleaner.NewVersionCleaner(ss, logger, eventHub)
 
-	// TODO - it's subtle (and thus fragile) to use the fact that this method
-	// is blocking to await shutdown.
-	// We should instead use a done channel (as elsewhere) and defer stops/shutdowns
-	// OR use a wait-group as defers runs sequentially.
-	err = as.StartGrpcServer(agentPort)
+	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.Fatalf("Failed to start agent grpc server %s", err.Error())
 	}
 
+	// Wait for completion
+	<-done
+
+	log.Info("Shutting down services")
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()

@@ -13,6 +13,10 @@ spec:
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
+      - name: AGENT_TLS_SECRET_NAME
+        value: '{{ .Values.scheduler.tls.agent.client.secret }}'
+      - name: AGENT_TLS_FOLDER_PATH
+        value: '{{ .Values.scheduler.tls.agent.client.folder }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       name: agent

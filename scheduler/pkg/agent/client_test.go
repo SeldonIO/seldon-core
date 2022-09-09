@@ -175,15 +175,14 @@ func TestClientCreate(t *testing.T) {
 			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0",
-				"default", rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
+				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default", rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(
 				context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn
-			err = client.Start()
+			err = client.Start(fake.NewSimpleClientset())
 			g.Expect(err).To(BeNil())
 			if test.v2Status == 200 && test.modelRepoErr == nil {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(1))
@@ -284,13 +283,13 @@ func TestLoadModel(t *testing.T) {
 			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default",
+				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
+			err := client.Start(fake.NewSimpleClientset())
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.op)
 			if test.success {
@@ -403,7 +402,7 @@ parameters:
 			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default",
+				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
@@ -416,7 +415,7 @@ parameters:
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
+			err := client.Start(fake.NewSimpleClientset())
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.op)
 			if test.success {
@@ -523,13 +522,13 @@ func TestUnloadModel(t *testing.T) {
 			rpGRPC := FakeClientService{err: nil}
 			clientDebug := FakeClientService{err: nil}
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, logger, modelRepository, v2Client, test.replicaConfig, "0.0.0.0", "default",
+				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
+			err := client.Start(fake.NewSimpleClientset())
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.loadOp)
 			g.Expect(err).To(BeNil())

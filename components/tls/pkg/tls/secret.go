@@ -24,6 +24,9 @@ type TlsSecretHandler struct {
 }
 
 func NewTlsSecretHandler(secretName string, namespace string, clientset kubernetes.Interface, logger log.FieldLogger) (*TlsSecretHandler, error) {
+	if clientset == nil {
+		return nil, fmt.Errorf("Need clientset to run TLS Secrets Handler")
+	}
 	return &TlsSecretHandler{
 		secretName: secretName,
 		clientset:  clientset,

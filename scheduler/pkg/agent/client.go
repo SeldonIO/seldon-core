@@ -7,6 +7,10 @@ import (
 	"math"
 	"time"
 
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"google.golang.org/grpc/credentials"
+	"k8s.io/client-go/kubernetes"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -51,12 +55,14 @@ type Client struct {
 }
 
 type SchedulerGrpcClientOptions struct {
-	schedulerHost string
-	schedulerPort int
-	serverName    string
-	replicaIdx    uint32
-	conn          *grpc.ClientConn
-	callOptions   []grpc.CallOption
+	schedulerHost         string
+	schedulerPlaintxtPort int
+	schedulerTlsPort      int
+	serverName            string
+	replicaIdx            uint32
+	conn                  *grpc.ClientConn
+	callOptions           []grpc.CallOption
+	certificateStore      *seldontls.CertificateStore
 }
 
 type KubernetesOptions struct {
@@ -80,12 +86,12 @@ func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 func NewClient(serverName string,
 	replicaIdx uint32,
 	schedulerHost string,
-	schedulerPort int,
+	schedulerPlaintxtPort int,
+	schedulerTlsPort int,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
-	inferenceSvcName string,
 	namespace string,
 	reverseProxyHTTP ClientServiceInterface,
 	reverseProxyGRPC ClientServiceInterface,
@@ -119,11 +125,13 @@ func NewClient(serverName string,
 			ModelRepository: modelRepository,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
-			schedulerHost: schedulerHost,
-			schedulerPort: schedulerPort,
-			serverName:    serverName,
-			replicaIdx:    replicaIdx,
-			callOptions:   opts,
+			schedulerHost:         schedulerHost,
+			schedulerPlaintxtPort: schedulerPlaintxtPort,
+			schedulerTlsPort:      schedulerTlsPort,
+			serverName:            serverName,
+			replicaIdx:            replicaIdx,
+			callOptions:           opts,
+			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
 		},
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
@@ -131,11 +139,11 @@ func NewClient(serverName string,
 	}
 }
 
-func (c *Client) Start() error {
+func (c *Client) Start(clientset kubernetes.Interface) error {
 	logger := c.logger.WithField("func", "Start")
 
 	if c.conn == nil {
-		err := c.createConnection()
+		err := c.createConnection(clientset)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
@@ -155,9 +163,8 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) createConnection() error {
-	c.logger.Infof("Creating connection to %s:%d", c.schedulerHost, c.schedulerPort)
-	conn, err := getConnection(c.schedulerHost, c.schedulerPort)
+func (c *Client) createConnection(clientset kubernetes.Interface) error {
+	conn, err := c.getConnection(c.schedulerHost, c.schedulerPlaintxtPort, c.schedulerTlsPort, clientset)
 	if err != nil {
 		return err
 	}
@@ -262,20 +269,37 @@ func startSubService(service ClientServiceInterface, logger *log.Entry) error {
 	return err
 }
 
-func getConnection(host string, port int) (*grpc.ClientConn, error) {
+func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int, clientset kubernetes.Interface) (*grpc.ClientConn, error) {
+	logger := c.logger.WithField("func", "getConnection")
+	var err error
+	c.certificateStore, err = seldontls.NewCertificateStore(envAgentTLSPrefix, clientset)
+	if err != nil {
+		return nil, err
+	}
 	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
+	}
+	var transCreds credentials.TransportCredentials
+	var port int
+	if c.certificateStore == nil {
+		logger.Info("Starting plaintxt client to agent server")
+		transCreds = insecure.NewCredentials()
+		port = plainTxtPort
+	} else {
+		logger.Info("Starting TLS client to agent server")
+		transCreds = c.certificateStore.CreateClientTransportCredentials()
+		port = tlsPort
 	}
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
 	}
+	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}
-
 	return conn, nil
 }
 

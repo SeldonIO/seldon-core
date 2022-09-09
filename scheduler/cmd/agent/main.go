@@ -210,11 +210,11 @@ func main() {
 		uint32(cli.ReplicaIdx),
 		cli.SchedulerHost,
 		cli.SchedulerPort,
+		cli.SchedulerTlsPort,
 		logger,
 		modelRepository,
 		v2Client,
 		createReplicaConfig(),
-		cli.InferenceSvcName,
 		cli.Namespace,
 		rpHTTP,
 		rpGRPC,
@@ -238,7 +238,7 @@ func main() {
 
 	// Start client grpc server
 	go func() {
-		err = client.Start()
+		err = client.Start(clientset)
 		if err != nil {
 			logger.WithError(err).Error("Failed to initialise client")
 		}

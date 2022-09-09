@@ -38,6 +38,10 @@ spec:
             value: ""
           - name: SCHEDULER_TLS_FOLDER_PATH
             value: ""
+          - name: AGENT_TLS_SECRET_NAME
+            value: ""
+          - name: AGENT_TLS_FOLDER_PATH
+            value: ""
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
@@ -51,6 +55,8 @@ spec:
           containerPort: 9044
         - name: agent
           containerPort: 9005
+        - name: agent-mtls
+          containerPort: 9055
         - name: dataflow
           containerPort: 9008
         resources:

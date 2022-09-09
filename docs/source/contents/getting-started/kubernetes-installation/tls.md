@@ -26,8 +26,8 @@ Certificates will be loaded and used for the desired gRPC services. The secrets 
 
 For the control plane mTLS can be used on gRPC services:
 
- * Scheduler gRPC service: envar service name: SCHEDULER
- * Agent gRPC service: WIP
+ * Scheduler gRPC service: envar service prefix: SCHEDULER
+ * Agent gRPC service: envar service prefix: AGENT
  * Dataflow gRPC service: WIP
 
 ### Helm Control Plane Install
@@ -37,7 +37,9 @@ When installing `seldon-core-v2-setup` you can set the secret names for your cer
 ```bash
 helm install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
      --set scheduler.tls.scheduler.server.secret=seldon-scheduler-server \
-     --set scheduler.tls.scheduler.client.secret=seldon-scheduler-client
+     --set scheduler.tls.scheduler.client.secret=seldon-scheduler-client \
+     --set scheduler.tls.agent.server.secret=seldon-agent-server \
+     --set scheduler.tls.agent.client.secret=seldon-agent-client
 ```
 
 ## Data Plane
@@ -57,13 +59,15 @@ From the project root run:
 
 ### Raw YAML
 
+Raw yaml Certificates can be created with:
+
 ```
-kubectl create -f k8s/yaml/certs.yaml
+kubectl create -f k8s/yaml/certs.yaml -n seldon-mesh
 ```
 
 ### Helm
 
-You can install into the desired namespace, here we use `seldon-mesh` as an example.
+You can install Certificates into the desired namespace, here we use `seldon-mesh` as an example.
 
 ```
 helm install seldon-v2-certs k8s/helm-charts/seldon-core-v2-certs/ -n seldon-mesh

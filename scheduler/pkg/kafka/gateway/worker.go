@@ -90,7 +90,7 @@ func getRestUrl(host string, port int, modelName string) *url.URL {
 
 func getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
 	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 	}
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

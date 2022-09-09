@@ -23,6 +23,10 @@ spec:
     port: 9005
     targetPort: agent
     protocol: TCP
+  - name: agent-mtls
+    port: 9055
+    targetPort: agent-mtls
+    protocol: TCP
   - name: dataflow
     port: 9008
     targetPort: dataflow

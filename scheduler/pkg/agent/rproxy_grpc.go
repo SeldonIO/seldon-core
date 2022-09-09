@@ -11,6 +11,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc/credentials/insecure"
+
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -227,11 +232,28 @@ func (rp *reverseGRPCProxy) getV2GRPCClient() v2.GRPCInferenceServiceClient {
 	return rp.v2GRPCClientPool[i]
 }
 
+func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
+	}
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
+	}
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, plainTxtPort), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
 func createV2CRPCClients(backendGRPCServerHost string, backendGRPCServerPort int, size int) ([]*grpc.ClientConn, []v2.GRPCInferenceServiceClient, error) {
 	conns := make([]*grpc.ClientConn, size)
 	clients := make([]v2.GRPCInferenceServiceClient, size)
 	for i := 0; i < size; i++ {
-		conn, err := getConnection(backendGRPCServerHost, backendGRPCServerPort)
+		conn, err := getV2GrpcConnection(backendGRPCServerHost, backendGRPCServerPort)
 
 		if err != nil {
 			// TODO: this could fail in later iterations, so close earlier connections

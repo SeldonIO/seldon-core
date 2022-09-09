@@ -92,6 +92,13 @@ scheduler:
       client:
         secret:
         folder:
+    agent:
+      server:  
+        secret:
+        folder:
+      client:
+        secret:
+        folder:
 serverConfig:
   rclone:
     image:

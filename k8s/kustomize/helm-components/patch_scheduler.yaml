@@ -14,3 +14,7 @@ spec:
             value: '{{ .Values.scheduler.tls.scheduler.server.secret }}'
           - name: SCHEDULER_TLS_FOLDER_PATH
             value: '{{ .Values.scheduler.tls.scheduler.server.folder }}'
+          - name: AGENT_TLS_SECRET_NAME
+            value: '{{ .Values.scheduler.tls.agent.server.secret }}'
+          - name: AGENT_TLS_FOLDER_PATH
+            value: '{{ .Values.scheduler.tls.agent.server.folder }}'

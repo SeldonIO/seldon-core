@@ -6,6 +6,9 @@ import (
 	"net"
 	"sync"
 
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"k8s.io/client-go/kubernetes"
+
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -23,6 +26,7 @@ const (
 	grpcMaxConcurrentStreams     = 1_000_000
 	pendingSyncsQueueSize    int = 10
 	modelEventHandlerName        = "agent.server.models"
+	envAgentTLSPrefix            = "AGENT"
 )
 
 type ServerKey struct {
@@ -33,10 +37,12 @@ type ServerKey struct {
 type Server struct {
 	mutext sync.RWMutex
 	pb.UnimplementedAgentServiceServer
-	logger    log.FieldLogger
-	agents    map[ServerKey]*AgentSubscriber
-	store     store.ModelStore
-	scheduler scheduler.Scheduler
+	logger           log.FieldLogger
+	agents           map[ServerKey]*AgentSubscriber
+	store            store.ModelStore
+	scheduler        scheduler.Scheduler
+	certificateStore *seldontls.CertificateStore
+	clientset        kubernetes.Interface
 }
 
 type SchedulerAgent interface {
@@ -54,12 +60,14 @@ func NewAgentServer(
 	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
+	clientset kubernetes.Interface,
 ) *Server {
 	s := &Server{
 		logger:    logger.WithField("source", "AgentServer"),
 		agents:    make(map[ServerKey]*AgentSubscriber),
 		store:     store,
 		scheduler: scheduler,
+		clientset: clientset,
 	}
 
 	hub.RegisterModelEventHandler(
@@ -81,18 +89,55 @@ func (s *Server) handleSyncs(event coordinator.ModelEventMsg) {
 	go s.Sync(event.ModelName)
 }
 
-func (s *Server) StartGrpcServer(agentPort uint) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", agentPort))
+func (s *Server) startServer(port uint, secure bool) error {
+	logger := s.logger.WithField("func", "startServer")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("failed to create listener: %v", err)
+		return err
 	}
-	var grpcOptions []grpc.ServerOption
-	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
-	grpcOptions = append(grpcOptions, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
-	grpcServer := grpc.NewServer(grpcOptions...)
+	opts := []grpc.ServerOption{}
+	if secure {
+		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
+	}
+	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
+	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
-	s.logger.Printf("Agent server running on %d", agentPort)
-	return grpcServer.Serve(lis)
+	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
+	go func() {
+		err := grpcServer.Serve(lis)
+		logger.WithError(err).Fatalf("Agent mTLS server failed on port %d mtls:%v", port, secure)
+	}()
+	return nil
+}
+
+func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPort uint) error {
+	logger := s.logger.WithField("func", "StartGrpcServer")
+	var err error
+	s.certificateStore, err = seldontls.NewCertificateStore(envAgentTLSPrefix, s.clientset)
+	if err != nil {
+		return err
+	}
+	if !allowPlainTxt && s.certificateStore == nil {
+		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
+	}
+	if allowPlainTxt {
+		err := s.startServer(agentPort, false)
+		if err != nil {
+			return err
+		}
+	} else {
+		logger.Info("Not starting scheduler plain text server")
+	}
+	if s.certificateStore != nil {
+		err := s.startServer(agentTlsPort, true)
+		if err != nil {
+			return err
+		}
+	} else {
+		logger.Info("Not starting scheduler mTLS server")
+	}
+	return nil
 }
 
 func (s *Server) Sync(modelName string) {

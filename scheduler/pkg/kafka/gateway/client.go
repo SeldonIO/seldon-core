@@ -7,6 +7,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 	"k8s.io/client-go/kubernetes"
 
@@ -55,7 +57,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		return err
 	}
 	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 	}
 	var transCreds credentials.TransportCredentials
 	var port int

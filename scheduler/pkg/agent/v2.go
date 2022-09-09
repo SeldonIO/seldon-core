@@ -78,7 +78,7 @@ type V2ServerError struct {
 var ErrV2BadRequest = errors.New("V2 Bad Request")
 
 func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
-	conn, err := getConnection(host, port)
+	conn, err := getV2GrpcConnection(host, port)
 	if err != nil {
 		// TODO: this could fail in later iterations, so close earlier connections
 		conn.Close()
