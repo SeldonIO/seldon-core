@@ -357,7 +357,6 @@ def _make_rest_server_debug(
     user_object: Any,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
-    *,
     jaeger_extra_tags: List[str],
 ) -> Callable[[], None]:
     """Makes a function that creates a REST debugging server.
@@ -397,7 +396,6 @@ def _make_rest_server_prod(
     user_object: Any,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
-    *,
     jaeger_extra_tags: List[str],
     annotations: Dict[str, str],
 ) -> Callable[[], None]:
