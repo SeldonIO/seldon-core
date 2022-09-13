@@ -172,3 +172,15 @@ spec:
           defaultMode: 420
           secretName: seldon-webhook-server-cert
 {{- end }}
+{{- if .Values.manager.nodeSelector }}
+{{- with .Values.manager.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
+{{- if .Values.manager.tolerations }}
+{{- with .Values.manager.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
