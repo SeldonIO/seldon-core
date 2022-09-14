@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi
+FROM registry.access.redhat.com/ubi9/ubi
 
 #  $ docker build . -t continuumio/miniconda3:latest -t continuumio/miniconda3:4.5.11
 #  $ docker run --rm -it continuumio/miniconda3:latest /bin/bash
@@ -9,16 +9,18 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 
 RUN dnf update -y && \
-    dnf install -y wget bzip2 ca-certificates curl git
+    dnf install -y wget bzip2 ca-certificates curl-minimal git
 
 # MPL based licenses
 RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
 
 ARG CONDA_DOWNLOAD_VERSION
+ARG CONDA_VERSION
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipsy && \
+    /opt/conda/bin/conda install --yes conda=${CONDA_VERSION} && \
+    /opt/conda/bin/conda clean -tipy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
