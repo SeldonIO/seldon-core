@@ -20,7 +20,7 @@ func createPipelineInspect() *cobra.Command {
 	cmdPipelineInspect := &cobra.Command{
 		Use:   "inspect <expression>",
 		Short: "inspect data in a pipeline",
-		Long:  `inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or  pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName`,
+		Long:  `inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
@@ -61,6 +61,6 @@ func createPipelineInspect() *cobra.Command {
 	cmdPipelineInspect.Flags().String(requestIdFlag, "", "request id to show, if not specified will be all messages in offset range")
 	cmdPipelineInspect.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdPipelineInspect.Flags().String(outputFormatFlag, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
-	cmdPipelineInspect.Flags().Bool(verboseFlag, false, "verbose output")
+	cmdPipelineInspect.Flags().Bool(verboseFlag, false, "display more details, such as headers")
 	return cmdPipelineInspect
 }
