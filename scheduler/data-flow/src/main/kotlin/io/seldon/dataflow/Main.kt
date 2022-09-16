@@ -1,10 +1,8 @@
 package io.seldon.dataflow
 
 import io.klogging.noCoLogger
-import io.seldon.dataflow.kafka.KafkaDomainParams
-import io.seldon.dataflow.kafka.KafkaStreamsParams
-import io.seldon.dataflow.kafka.getKafkaAdminProperties
-import io.seldon.dataflow.kafka.getKafkaProperties
+import io.seldon.dataflow.kafka.*
+import io.seldon.dataflow.mtls.CertificateConfig
 import kotlinx.coroutines.runBlocking
 
 object Main {
@@ -17,11 +15,20 @@ object Main {
         val config = Cli.configWith(args)
         logger.info("initialised")
 
+        val tlsCertConfig = CertificateConfig(
+            caCertPath = config[Cli.tlsCACertPath],
+            keyPath = config[Cli.tlsKeyPath],
+            certPath = config[Cli.tlsCertPath],
+        )
+        val kafkaSecurityParams = KafkaSecurityParams(
+            securityProtocol = config[Cli.kafkaSecurityProtocol],
+            certConfig = tlsCertConfig,
+        )
         val kafkaStreamsParams = KafkaStreamsParams(
             bootstrapServers = config[Cli.kafkaBootstrapServers],
-            securityProtocol = config[Cli.kafkaSecurityProtocol],
             numPartitions = config[Cli.kafkaPartitions],
             replicationFactor = config[Cli.kafkaReplicationFactor],
+            security = kafkaSecurityParams,
         )
         val kafkaProperties = getKafkaProperties(kafkaStreamsParams)
         val kafkaAdminProperties = getKafkaAdminProperties(kafkaStreamsParams)

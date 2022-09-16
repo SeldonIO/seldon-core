@@ -13,13 +13,21 @@ object Cli {
     val upstreamPort = Key("upstream.port", intType)
 
     // Kafka
-    private val supportedKafkaProtocols = arrayOf(SecurityProtocol.PLAINTEXT)
+    private val supportedKafkaProtocols = arrayOf(
+        SecurityProtocol.PLAINTEXT,
+        SecurityProtocol.SSL,
+    ) // TODO - move to Kafka package
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
     val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*supportedKafkaProtocols))
     val kafkaPartitions = Key("kafka.partitions.default", intType)
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
     val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
     val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
+
+    // Mutual TLS
+    val tlsCACertPath = Key("tls.ca.path", stringType)
+    val tlsKeyPath = Key("tls.key.path", stringType)
+    val tlsCertPath = Key("tls.cert.path", stringType)
 
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
@@ -40,6 +48,9 @@ object Cli {
             CommandLineOption(kafkaJoinWindowMillis),
             CommandLineOption(upstreamHost),
             CommandLineOption(upstreamPort),
+            CommandLineOption(tlsCACertPath),
+            CommandLineOption(tlsKeyPath),
+            CommandLineOption(tlsCertPath),
             programName = "seldon-dataflow-engine",
         )
         if (unparsedArgs.isNotEmpty()) {

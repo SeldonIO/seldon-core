@@ -1,7 +1,10 @@
 package io.seldon.dataflow.kafka
 
+import io.seldon.dataflow.mtls.CertificateConfig
+import io.seldon.dataflow.mtls.Provider
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.security.auth.SecurityProtocol
 import org.apache.kafka.streams.StreamsConfig
@@ -9,9 +12,14 @@ import java.util.*
 
 data class KafkaStreamsParams(
     val bootstrapServers: String,
-    val securityProtocol: SecurityProtocol,
     val numPartitions: Int,
     val replicationFactor: Int,
+    val security: KafkaSecurityParams,
+)
+
+data class KafkaSecurityParams(
+    val securityProtocol: SecurityProtocol,
+    val certConfig: CertificateConfig,
 )
 
 data class KafkaDomainParams(
@@ -28,7 +36,7 @@ val kafkaTopicConfig = mapOf(
 fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
     return Properties().apply {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
-        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.securityProtocol.toString()
+        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
     }
 }
 
@@ -42,7 +50,18 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
-        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.securityProtocol.toString()
+
+        // Security
+        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
+        if (params.security.securityProtocol == SecurityProtocol.SSL) {
+            val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
+
+            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
+            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+        }
+
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = params.replicationFactor
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
