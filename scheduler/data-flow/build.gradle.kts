@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.21"
     application
 }
 
@@ -17,12 +17,11 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("io.klogging:klogging-jvm:0.4.4")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:3.1.0")
+    implementation("org.apache.kafka:kafka-streams:3.2.2")
     implementation("io.klogging:slf4j-klogging:0.2.5")
 
     // gRPC
