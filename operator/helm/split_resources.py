@@ -184,6 +184,14 @@ if __name__ == "__main__":
                     "memory"
                 ] = helm_value("manager.memoryLimit")
 
+                # NodeSelection & tolerations
+                res["spec"]["template"]["spec"]["nodeSelector"] = helm_value(
+                    "manager.nodeSelector"
+                )
+                res["spec"]["template"]["spec"]["tolerations"] = helm_value(
+                    "manager.tolerations"
+                )
+
                 for env in res["spec"]["template"]["spec"]["containers"][0]["env"]:
                     if env["name"] in HELM_ENV_SUBST:
                         env["value"] = helm_value(HELM_ENV_SUBST[env["name"]])
