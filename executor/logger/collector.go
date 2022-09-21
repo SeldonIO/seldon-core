@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"time"
 )
 
@@ -19,10 +19,12 @@ var (
 )
 
 func QueueLogRequest(req LogRequest) error {
+	timer := time.NewTimer(time.Duration(writeTimeoutMilliseconds) * time.Millisecond)
+	defer timer.Stop()
 	select {
 	case workQueue <- req:
 		return nil
-	case <-time.After(time.Duration(writeTimeoutMilliseconds) * time.Millisecond):
+	case <-timer.C:
 		return errors.New("timed out waiting to queue log request: buffer is full")
 	}
 }
