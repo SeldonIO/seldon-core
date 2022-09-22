@@ -65,6 +65,7 @@ extensions = [
     "sphinx_search.extension",
     "sphinx_copybutton",
     "sphinx_panels",
+    "sphinxcontrib.youtube"
 ]
 
 # Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)
