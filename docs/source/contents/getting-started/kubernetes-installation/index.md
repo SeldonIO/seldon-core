@@ -14,7 +14,7 @@ The Kubernetes operator that is installed runs in namespaced mode so any resourc
 
 ## Operations
 
- * [TLS](tls.md)
+ * [TLS](tls/index.md)
 
 ```{toctree}
 :maxdepth: 1
@@ -23,4 +23,5 @@ The Kubernetes operator that is installed runs in namespaced mode so any resourc
 helm.md
 raw.md
 ansible.md
+tls/index.md
 ```

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"google.golang.org/grpc/credentials"
@@ -22,8 +21,7 @@ import (
 )
 
 const (
-	subscriberName        = "hodometer"
-	envSchedulerTLSPrefix = "SCHEDULER"
+	subscriberName = "hodometer"
 )
 
 type Collector interface {
@@ -77,14 +75,14 @@ func NewSeldonCoreCollector(
 	clusterId string,
 ) (*SeldonCoreCollector, error) {
 	logger = logger.WithField("source", "SeldonCoreCollector")
-	// Attempt to get k8s clientset - continue anyway if we can't
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		logger.WithError(err).Warn("Failed to get kubernetes clientset")
-	}
-	certificateStore, err := seldontls.NewCertificateStore(envSchedulerTLSPrefix, clientset)
-	if err != nil {
-		return nil, err
+	var certificateStore *seldontls.CertificateStore
+	var err error
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
+	if protocol == seldontls.SecurityProtocolSSL {
+		certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return nil, err
+		}
 	}
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),

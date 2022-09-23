@@ -25,9 +25,13 @@ object Cli {
     val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
 
     // Mutual TLS
-    val tlsCACertPath = Key("tls.ca.path", stringType)
-    val tlsKeyPath = Key("tls.key.path", stringType)
-    val tlsCertPath = Key("tls.cert.path", stringType)
+    val tlsCACertPath = Key("tls.client.ca.path", stringType)
+    val tlsKeyPath = Key("tls.client.key.path", stringType)
+    val tlsCertPath = Key("tls.client.cert.path", stringType)
+    val brokerCACertPath = Key("tls.broker.ca.path", stringType)
+    val clientSecret = Key("tls.client.secret", stringType)
+    val brokerSecret = Key("tls.broker.secret", stringType)
+    val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
 
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
@@ -51,6 +55,10 @@ object Cli {
             CommandLineOption(tlsCACertPath),
             CommandLineOption(tlsKeyPath),
             CommandLineOption(tlsCertPath),
+            CommandLineOption(brokerCACertPath),
+            CommandLineOption(clientSecret),
+            CommandLineOption(brokerSecret),
+            CommandLineOption(endpointIdentificationAlgorithm),
             programName = "seldon-dataflow-engine",
         )
         if (unparsedArgs.isNotEmpty()) {

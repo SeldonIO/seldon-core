@@ -585,10 +585,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: ""
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: ""
         image: seldonio/seldonv2-controller:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -637,7 +633,7 @@ spec:
       containers:
       - env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
-          value: seldon-kafka-plain-bootstrap.kafka:9092
+          value: seldon-kafka-plain-bootstrap.seldon-mesh:9092
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -654,6 +650,10 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: seldonio/seldon-dataflow-engine:latest
         imagePullPolicy: IfNotPresent
         name: dataflow-engine
@@ -663,6 +663,7 @@ spec:
             memory: 1G
       securityContext:
         runAsUser: 8888
+      serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
 ---
 apiVersion: apps/v1
@@ -725,10 +726,6 @@ spec:
           value: "9004"
         - name: SCHEDULER_TLS_PORT
           value: "9044"
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: ""
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: ""
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -773,10 +770,6 @@ spec:
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: ""
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: ""
         - name: MODELGATEWAY_NUM_WORKERS
           value: "8"
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
@@ -834,6 +827,11 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/pipelinegateway
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: seldonio/seldon-pipelinegateway:latest
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
@@ -896,14 +894,6 @@ spec:
         env:
         - name: ALLOW_PLAINTXT
           value: "true"
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: ""
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: ""
-        - name: AGENT_TLS_SECRET_NAME
-          value: ""
-        - name: AGENT_TLS_FOLDER_PATH
-          value: ""
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

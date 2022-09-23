@@ -5,22 +5,19 @@ import (
 	"crypto/x509"
 )
 
-const (
-	DefaultKeyName = "tls.key"
-	DefaultCrtName = "tls.crt"
-	DefaultCaName  = "ca.crt"
-)
-
-type Certificate struct {
+type CertificateWrapper struct {
 	Certificate *tls.Certificate
 	Ca          *x509.CertPool
+	KeyPath     string
+	CrtPath     string
+	CaPath      string
 }
 
 type UpdateCertificateHandler interface {
-	UpdateCertificate(cert *Certificate)
+	UpdateCertificate(cert *CertificateWrapper)
 }
 
 type CertificateManager interface {
-	GetCertificateAndWatch(updater UpdateCertificateHandler) (*Certificate, error)
+	GetCertificateAndWatch(updater UpdateCertificateHandler) (*CertificateWrapper, error)
 	Stop()
 }

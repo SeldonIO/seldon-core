@@ -1,0 +1,15 @@
+kafka:
+  bootstrap: seldon-kafka-tls-bootstrap.seldon-mesh.svc.cluster.local:9093
+
+security:
+  kafka:
+    protocol: SSL
+    ssl:
+      client:
+        secret: seldon
+        key: /tmp/certs/kafka/client/user.key
+        crt: /tmp/certs/kafka/client/user.crt
+        ca: /tmp/certs/kafka/client/ca.crt
+      broker:
+        secret: seldon-cluster-ca-cert
+        ca: /tmp/certs/kafka/broker/ca.crt

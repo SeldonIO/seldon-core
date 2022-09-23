@@ -9,10 +9,8 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-	"k8s.io/client-go/kubernetes"
-
 	"github.com/cenkalti/backoff/v4"
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -24,8 +22,7 @@ import (
 )
 
 const (
-	SubscriberName        = "seldon-modelgateway"
-	envSchedulerTLSPrefix = "SCHEDULER"
+	SubscriberName = "seldon-modelgateway"
 )
 
 type KafkaSchedulerClient struct {
@@ -49,12 +46,15 @@ func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *Consume
 	}
 }
 
-func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int, clientset kubernetes.Interface) error {
+func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int) error {
 	logger := kc.logger.WithField("func", "ConnectToScheduler")
 	var err error
-	kc.certificateStore, err = seldontls.NewCertificateStore(envSchedulerTLSPrefix, clientset)
-	if err != nil {
-		return err
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
+	if protocol == seldontls.SecurityProtocolSSL {
+		kc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return err
+		}
 	}
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
@@ -81,7 +81,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		return err
 	}
 	kc.conn = conn
-	kc.logger.Info("Connected to scheduler")
+	logger.Info("Connected to scheduler")
 	return nil
 }
 

@@ -3,6 +3,8 @@ kind: Kafka
 metadata:
   name: seldon
 spec:
+  entityOperator:
+    userOperator: {}
   kafka:
     version: 3.2.0
     replicas: 3
@@ -15,6 +17,8 @@ spec:
         port: 9093
         type: loadbalancer
         tls: true
+        authentication:
+          type: tls
     readinessProbe:
       initialDelaySeconds: 15
       timeoutSeconds: 5

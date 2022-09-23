@@ -5,11 +5,9 @@ import (
 	"math"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
-
 	"google.golang.org/grpc/credentials/insecure"
 
-	tls2 "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,17 +17,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	envManagerTLSPrefix = "SCHEDULER"
-)
-
 type SchedulerClient struct {
 	client.Client
 	logger           logr.Logger
 	conn             *grpc.ClientConn
 	callOptions      []grpc.CallOption
 	recorder         record.EventRecorder
-	certificateStore *tls2.CertificateStore
+	certificateStore *tls.CertificateStore
 }
 
 func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) *SchedulerClient {
@@ -46,11 +40,14 @@ func NewSchedulerClient(logger logr.Logger, client client.Client, recorder recor
 	}
 }
 
-func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int, clientset kubernetes.Interface) error {
+func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int) error {
 	var err error
-	s.certificateStore, err = tls2.NewCertificateStore(envManagerTLSPrefix, clientset)
-	if err != nil {
-		return err
+	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
+	if protocol == tls.SecurityProtocolSSL {
+		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return err
+		}
 	}
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),

@@ -23,8 +23,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -143,12 +141,6 @@ func main() {
 
 	namespace = getNamespace()
 
-	// Attempt to get k8s clientset - continue anyway if we can't
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		logger.WithError(err).Warn("Failed to get kubernetes clientset")
-	}
-
 	// Create event Hub
 	eventHub, err := coordinator.NewEventHub(logger)
 	if err != nil {
@@ -207,7 +199,7 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 	)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, clientset)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub)
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)
@@ -218,7 +210,7 @@ func main() {
 		}
 	}()
 
-	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, clientset)
+	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Scheduler start servers error")

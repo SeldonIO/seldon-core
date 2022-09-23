@@ -95,6 +95,10 @@ func (km *KafkaManager) createProducer() error {
 
 	producerConfigMap := config.CloneKafkaConfigMap(km.kafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfigMap)
+	if err != nil {
+		return err
+	}
 	km.logger.Infof("Creating producer with config %v", producerConfigMap)
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
 	return err
@@ -196,7 +200,8 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 		return nil, err
 	}
 	go func() {
-		<-deliveryChan
+		evt := <-deliveryChan
+		logger.Infof("Received delivery event %s", evt.String())
 		span.End()
 	}()
 	km.mu.RUnlock()

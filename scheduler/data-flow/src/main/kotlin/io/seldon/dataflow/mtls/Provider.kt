@@ -3,6 +3,7 @@ package io.seldon.dataflow.mtls
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.nio.charset.Charset
 import java.nio.file.attribute.PosixFilePermission
 import java.security.KeyFactory
 import java.security.KeyStore
@@ -10,9 +11,13 @@ import java.security.PrivateKey
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import kotlin.io.path.Path
 import kotlin.io.path.setPosixFilePermissions
+import java.nio.file.Files
+import java.util.Base64
+
 
 // TODO - dynamically reload certificates.  Can KafkaStreams handle this or does it need to pause?
 object Provider {
@@ -38,7 +43,7 @@ object Provider {
         val trustStore = KeyStore.getInstance(storeType)
         trustStore.load(null, password.toCharArray())
 
-        certsFromFile(certPaths.caCertPath)
+        certsFromFile(certPaths.brokerCaCertPath)
             .forEach { cert ->
                 val subjectName = (cert as X509Certificate).subjectX500Principal.name
                 trustStore.setCertificateEntry(
@@ -73,12 +78,13 @@ object Provider {
 
         val privateKey = privateKeyFromFile(certPaths.keyPath)
         val certs = certsFromFile(certPaths.certPath)
+        val caCerts = certsFromFile(certPaths.caCertPath)
         // TODO - check if CA certs are required as part of the chain.  Docs imply this, but unclear.
         keyStore.setKeyEntry(
             keyName,
             privateKey,
-            charArrayOf(), // No password
-            certs.toTypedArray(),
+            password.toCharArray(), // No password
+            certs.union(caCerts).toTypedArray(),
         )
 
         FileOutputStream(location)
@@ -89,19 +95,22 @@ object Provider {
         return location.absolutePath to password
     }
 
-    private fun privateKeyFromFile(fileName: FilePath): PrivateKey {
-        val keyFile = File(fileName)
-        val keySpec = FileInputStream(keyFile)
-            .use {
-                PKCS8EncodedKeySpec(it.readBytes())
-            }
-        return KeyFactory
-            .getInstance(keyType)
-            .generatePrivate(keySpec)
+    @Throws(Exception::class)
+    fun privateKeyFromFile(filename: FilePath): RSAPrivateKey {
+        val file = File(filename)
+        val key = String(Files.readAllBytes(file.toPath()), Charset.defaultCharset())
+        val privateKeyPEM = key
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace(System.lineSeparator().toRegex(), "")
+            .replace("-----END PRIVATE KEY-----", "")
+        val encoded: ByteArray = Base64.getDecoder().decode(privateKeyPEM)
+        val keyFactory = KeyFactory.getInstance("RSA")
+        val keySpec = PKCS8EncodedKeySpec(encoded)
+        return keyFactory.generatePrivate(keySpec) as RSAPrivateKey
     }
 
     private fun generatePassword(): KeystorePassword {
-        TODO("generate random password")
+        return "changeit"
     }
 
     private fun generateLocation(): File {

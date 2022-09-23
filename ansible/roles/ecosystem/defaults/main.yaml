@@ -1,7 +1,8 @@
 repo_root_dir: "{{ inventory_dir }}/.."
 
 seldon_mesh_namespace: seldon-mesh
-kafka_namespace: kafka
+kafka_namespace: seldon-mesh
+strimzi_kafka_namespace: kafka
 
 # Installation on/off flags
 install_prometheus: true

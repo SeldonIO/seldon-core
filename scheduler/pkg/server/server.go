@@ -7,8 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
-
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
@@ -36,7 +34,6 @@ const (
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
 	defaultBatchWaitMillis         = 250 * time.Millisecond
-	envSchedulerTLSPrefix          = "SCHEDULER"
 )
 
 var (
@@ -55,7 +52,6 @@ type SchedulerServer struct {
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
 	certificateStore      *seldontls.CertificateStore
-	clientset             kubernetes.Interface
 }
 
 type ModelEventStream struct {
@@ -131,9 +127,12 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint) error {
 	logger := s.logger.WithField("func", "StartGrpcServers")
 	var err error
-	s.certificateStore, err = seldontls.NewCertificateStore(envSchedulerTLSPrefix, s.clientset)
-	if err != nil {
-		return err
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
+	if protocol == seldontls.SecurityProtocolSSL {
+		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return err
+		}
 	}
 	if !allowPlainTxt && s.certificateStore == nil {
 		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
@@ -164,7 +163,6 @@ func NewSchedulerServer(
 	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
-	clientset kubernetes.Interface,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -187,7 +185,6 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
-		clientset: clientset,
 	}
 
 	eventHub.RegisterModelEventHandler(

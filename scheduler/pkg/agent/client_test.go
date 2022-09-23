@@ -182,7 +182,7 @@ func TestClientCreate(t *testing.T) {
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn
-			err = client.Start(fake.NewSimpleClientset())
+			err = client.Start()
 			g.Expect(err).To(BeNil())
 			if test.v2Status == 200 && test.modelRepoErr == nil {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(1))
@@ -289,7 +289,7 @@ func TestLoadModel(t *testing.T) {
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start(fake.NewSimpleClientset())
+			err := client.Start()
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.op)
 			if test.success {
@@ -415,7 +415,7 @@ parameters:
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start(fake.NewSimpleClientset())
+			err := client.Start()
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.op)
 			if test.success {
@@ -528,7 +528,7 @@ func TestUnloadModel(t *testing.T) {
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start(fake.NewSimpleClientset())
+			err := client.Start()
 			g.Expect(err).To(BeNil())
 			err = client.LoadModel(test.loadOp)
 			g.Expect(err).To(BeNil())

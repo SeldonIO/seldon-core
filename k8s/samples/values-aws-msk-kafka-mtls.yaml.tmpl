@@ -1,0 +1,11 @@
+kafka:
+  bootstrap: <MSK Broker Endpoints>
+
+security:
+  kafka:
+    protocol: SSL
+    ssl:
+      client:
+        secret: aws-msk-client
+      broker:
+        secret: aws-msk-broker-ca

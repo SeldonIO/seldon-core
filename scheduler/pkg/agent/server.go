@@ -7,8 +7,6 @@ import (
 	"sync"
 
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-	"k8s.io/client-go/kubernetes"
-
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -26,7 +24,6 @@ const (
 	grpcMaxConcurrentStreams     = 1_000_000
 	pendingSyncsQueueSize    int = 10
 	modelEventHandlerName        = "agent.server.models"
-	envAgentTLSPrefix            = "AGENT"
 )
 
 type ServerKey struct {
@@ -42,7 +39,6 @@ type Server struct {
 	store            store.ModelStore
 	scheduler        scheduler.Scheduler
 	certificateStore *seldontls.CertificateStore
-	clientset        kubernetes.Interface
 }
 
 type SchedulerAgent interface {
@@ -60,14 +56,12 @@ func NewAgentServer(
 	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
-	clientset kubernetes.Interface,
 ) *Server {
 	s := &Server{
 		logger:    logger.WithField("source", "AgentServer"),
 		agents:    make(map[ServerKey]*AgentSubscriber),
 		store:     store,
 		scheduler: scheduler,
-		clientset: clientset,
 	}
 
 	hub.RegisterModelEventHandler(
@@ -106,7 +100,11 @@ func (s *Server) startServer(port uint, secure bool) error {
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
-		logger.WithError(err).Fatalf("Agent mTLS server failed on port %d mtls:%v", port, secure)
+		if err != nil {
+			logger.WithError(err).Fatalf("Agent server failed on port %d mtls:%v", port, secure)
+		} else {
+			logger.Infof("Agent serving stopped on port %d mtls:%v", port, secure)
+		}
 	}()
 	return nil
 }
@@ -114,9 +112,12 @@ func (s *Server) startServer(port uint, secure bool) error {
 func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPort uint) error {
 	logger := s.logger.WithField("func", "StartGrpcServer")
 	var err error
-	s.certificateStore, err = seldontls.NewCertificateStore(envAgentTLSPrefix, s.clientset)
-	if err != nil {
-		return err
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
+	if protocol == seldontls.SecurityProtocolSSL {
+		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return err
+		}
 	}
 	if !allowPlainTxt && s.certificateStore == nil {
 		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)

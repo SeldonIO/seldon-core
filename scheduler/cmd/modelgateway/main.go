@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -142,12 +140,7 @@ func main() {
 	defer kafkaConsumer.Stop()
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)
-	// Attempt to get k8s clientset - continue anyway if we can't
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		logger.WithError(err).Warn("Failed to get kubernetes clientset")
-	}
-	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort, clientset)
+	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to connect to scheduler")
 	}

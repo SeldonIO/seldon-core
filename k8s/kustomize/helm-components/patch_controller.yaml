@@ -14,7 +14,13 @@ spec:
             cpu: '{{ .Values.controller.resources.requests.cpu }}'
             memory: '{{ .Values.controller.resources.requests.memory }}'
         env:
-          - name: SCHEDULER_TLS_SECRET_NAME
-            value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
-          - name: SCHEDULER_TLS_FOLDER_PATH
-            value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'
+          - name: CONTROL_PLANE_SECURITY_PROTOCOL
+            value: '{{ .Values.security.controlplane.protocol }}'            
+          - name: CONTROL_PLANE_TLS_SECRET_NAME
+            value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+          - name: CONTROL_PLANE_TLS_KEY_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.key }}'
+          - name: CONTROL_PLANE_TLS_CRT_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.crt }}'
+          - name: CONTROL_PLANE_TLS_CA_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.ca }}'

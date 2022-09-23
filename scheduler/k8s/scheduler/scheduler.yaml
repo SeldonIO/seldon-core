@@ -34,14 +34,6 @@ spec:
         env:
           - name: ALLOW_PLAINTXT
             value: "true"
-          - name: SCHEDULER_TLS_SECRET_NAME
-            value: ""
-          - name: SCHEDULER_TLS_FOLDER_PATH
-            value: ""
-          - name: AGENT_TLS_SECRET_NAME
-            value: ""
-          - name: AGENT_TLS_FOLDER_PATH
-            value: ""
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

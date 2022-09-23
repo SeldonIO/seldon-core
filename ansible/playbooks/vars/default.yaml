@@ -8,6 +8,7 @@ seldon_monitoring_prometheus_operator_values:
       metric-labels-allowlist: pods=[*]
 
 # Strimzi Kafka Configuration
+strimzi_kafka_namespace: seldon-mesh
 strimzi_kafka_install_prometheus_operator: false
 strimzi_kafka_create_prometheus_instance: false
 strimzi_kafka_create_cluster: false

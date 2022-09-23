@@ -10,8 +10,30 @@ spec:
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
         name: dataflow-engine
         env:
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: '{{ .Values.kafka.bootstrap }}'
+        - name: SELDON_KAFKA_REPLICATION_FACTOR
+          value: '{{ .Values.kafka.topics.replicationFactor }}'        
+        - name: SELDON_KAFKA_PARTITIONS_DEFAULT
+          value: '{{ .Values.kafka.topics.numPartitions }}'        
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
+        - name: SELDON_KAFKA_SECURITY_PROTOCOL
+          value: '{{ .Values.security.kafka.protocol }}'            
+        - name: SELDON_TLS_CLIENT_SECRET
+          value: '{{ .Values.security.kafka.ssl.client.secret }}'
+        - name: SELDON_TLS_CLIENT_KEY_PATH
+          value: '{{ .Values.security.kafka.ssl.client.key }}'
+        - name: SELDON_TLS_CLIENT_CERT_PATH
+          value: '{{ .Values.security.kafka.ssl.client.crt }}'
+        - name: SELDON_TLS_CLIENT_CA_PATH
+          value: '{{ .Values.security.kafka.ssl.client.ca }}'
+        - name: SELDON_TLS_BROKER_SECRET
+          value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+        - name: SELDON_TLS_BROKER_CA_PATH
+          value: '{{ .Values.security.kafka.ssl.broker.ca }}'
+        - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: '{{ .Values.security.kafka.ssl.broker.endpointIdentificationAlgorithm }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.requests.cpu }}'

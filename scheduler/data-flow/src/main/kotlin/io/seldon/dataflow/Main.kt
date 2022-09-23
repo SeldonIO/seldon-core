@@ -13,12 +13,16 @@ object Main {
         Logging.configure()
 
         val config = Cli.configWith(args)
-        logger.info("initialised")
+        logger.info("initialised with ssl ${config[Cli.kafkaSecurityProtocol]}")
 
         val tlsCertConfig = CertificateConfig(
             caCertPath = config[Cli.tlsCACertPath],
             keyPath = config[Cli.tlsKeyPath],
             certPath = config[Cli.tlsCertPath],
+            brokerCaCertPath = config[Cli.brokerCACertPath],
+            clientSecret = config[Cli.clientSecret],
+            brokerSecret = config[Cli.brokerSecret],
+            endpointIdentificationAlgorithm = config[Cli.endpointIdentificationAlgorithm],
         )
         val kafkaSecurityParams = KafkaSecurityParams(
             securityProtocol = config[Cli.kafkaSecurityProtocol],

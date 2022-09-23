@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
@@ -19,37 +21,53 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs = 10000
-	DefaultNumWorkers    = 8
-	EnvVarNumWorkers     = "MODELGATEWAY_NUM_WORKERS"
+	pollTimeoutMillisecs        = 10000
+	DefaultNumWorkers           = 8
+	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
+	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
+	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
+	defaultReplicationFactor    = 1
+	defaultNumPartitions        = 1
 )
 
 type InferKafkaConsumer struct {
-	logger           log.FieldLogger
-	mu               sync.Mutex
-	loadedModels     map[string]bool
-	subscribedTopics map[string]bool
-	workers          []*InferWorker
-	consumer         *kafka.Consumer
-	producer         *kafka.Producer
-	done             chan bool
-	tracer           trace.Tracer
-	topicNamer       *kafka2.TopicNamer
-	consumerConfig   *ConsumerConfig
-	adminClient      *kafka.AdminClient
-	consumerName     string
+	logger            log.FieldLogger
+	mu                sync.Mutex
+	loadedModels      map[string]bool
+	subscribedTopics  map[string]bool
+	workers           []*InferWorker
+	consumer          *kafka.Consumer
+	producer          *kafka.Producer
+	done              chan bool
+	tracer            trace.Tracer
+	topicNamer        *kafka2.TopicNamer
+	consumerConfig    *ConsumerConfig
+	adminClient       *kafka.AdminClient
+	consumerName      string
+	replicationFactor int
+	numPartitions     int
 }
 
 func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaConsumer, error) {
+	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
+	if err != nil {
+		return nil, err
+	}
+	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
+	if err != nil {
+		return nil, err
+	}
 	ic := &InferKafkaConsumer{
-		logger:           logger.WithField("source", "InferConsumer"),
-		done:             make(chan bool),
-		tracer:           consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:       kafka2.NewTopicNamer(consumerConfig.Namespace),
-		loadedModels:     make(map[string]bool),
-		subscribedTopics: make(map[string]bool),
-		consumerConfig:   consumerConfig,
-		consumerName:     consumerName,
+		logger:            logger.WithField("source", "InferConsumer"),
+		done:              make(chan bool),
+		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
+		topicNamer:        kafka2.NewTopicNamer(consumerConfig.Namespace),
+		loadedModels:      make(map[string]bool),
+		subscribedTopics:  make(map[string]bool),
+		consumerConfig:    consumerConfig,
+		consumerName:      consumerName,
+		replicationFactor: replicationFactor,
+		numPartitions:     numPartitions,
 	}
 	return ic, ic.setup()
 }
@@ -60,6 +78,10 @@ func (kc *InferKafkaConsumer) setup() error {
 
 	producerConfigMap := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfigMap)
+	if err != nil {
+		return err
+	}
 	kc.logger.Infof("Creating producer with config %v", producerConfigMap)
 	kc.producer, err = kafka.NewProducer(&producerConfigMap)
 	if err != nil {
@@ -72,6 +94,10 @@ func (kc *InferKafkaConsumer) setup() error {
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
+	err = config.AddKafkaSSLOptions(consumerConfig)
+	if err != nil {
+		return err
+	}
 	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
@@ -136,8 +162,8 @@ func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
 	for _, topicName := range topicNames {
 		topicSpecs = append(topicSpecs, kafka.TopicSpecification{
 			Topic:             topicName,
-			NumPartitions:     1,
-			ReplicationFactor: 1,
+			NumPartitions:     kc.numPartitions,
+			ReplicationFactor: kc.replicationFactor,
 		})
 	}
 	results, err := kc.adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))

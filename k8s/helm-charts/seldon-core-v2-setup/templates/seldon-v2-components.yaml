@@ -555,10 +555,16 @@ spec:
         command:
         - /manager
         env:
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: '{{ .Values.security.controlplane.protocol }}'
+        - name: CONTROL_PLANE_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+        - name: CONTROL_PLANE_TLS_KEY_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.key }}'
+        - name: CONTROL_PLANE_TLS_CRT_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.crt }}'
+        - name: CONTROL_PLANE_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.ca }}'
         - name: SELDON_SCHEDULER_SVC
           value: seldon-scheduler
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
@@ -618,10 +624,31 @@ spec:
     spec:
       containers:
       - env:
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: '{{ .Values.kafka.bootstrap }}'
+        - name: SELDON_KAFKA_REPLICATION_FACTOR
+          value: '{{ .Values.kafka.topics.replicationFactor }}'
+        - name: SELDON_KAFKA_PARTITIONS_DEFAULT
+          value: '{{ .Values.kafka.topics.numPartitions }}'
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
-        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
-          value: seldon-kafka-plain-bootstrap.kafka:9092
+        - name: SELDON_KAFKA_SECURITY_PROTOCOL
+          value: '{{ .Values.security.kafka.protocol }}'
+        - name: SELDON_TLS_CLIENT_SECRET
+          value: '{{ .Values.security.kafka.ssl.client.secret }}'
+        - name: SELDON_TLS_CLIENT_KEY_PATH
+          value: '{{ .Values.security.kafka.ssl.client.key }}'
+        - name: SELDON_TLS_CLIENT_CERT_PATH
+          value: '{{ .Values.security.kafka.ssl.client.crt }}'
+        - name: SELDON_TLS_CLIENT_CA_PATH
+          value: '{{ .Values.security.kafka.ssl.client.ca }}'
+        - name: SELDON_TLS_BROKER_SECRET
+          value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+        - name: SELDON_TLS_BROKER_CA_PATH
+          value: '{{ .Values.security.kafka.ssl.broker.ca }}'
+        - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: '{{ .Values.security.kafka.ssl.broker.endpointIdentificationAlgorithm
+            }}'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -636,6 +663,10 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository
           }}:{{ .Values.dataflow.image.tag }}'
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
@@ -646,6 +677,7 @@ spec:
             memory: '{{ .Values.dataflow.resources.requests.memory }}'
       securityContext:
         runAsUser: 8888
+      serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
 ---
 apiVersion: apps/v1
@@ -706,10 +738,16 @@ spec:
           value: '{{ .Values.hodometer.logLevel }}'
         - name: EXTRA_PUBLISH_URLS
           value: '{{ .Values.hodometer.extraPublishUrls }}'
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: '{{ .Values.security.controlplane.protocol }}'
+        - name: CONTROL_PLANE_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+        - name: CONTROL_PLANE_TLS_KEY_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.key }}'
+        - name: CONTROL_PLANE_TLS_CRT_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.crt }}'
+        - name: CONTROL_PLANE_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.ca }}'
         - name: PUBLISH_URL
           value: http://hodometer.seldon.io
         - name: SCHEDULER_HOST
@@ -765,10 +803,34 @@ spec:
           value: '{{ .Values.opentelemetry.endpoint }}'
         - name: MODELGATEWAY_NUM_WORKERS
           value: '{{ .Values.modelgateway.workers }}'
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: '{{ .Values.scheduler.tls.scheduler.client.secret }}'
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: '{{ .Values.scheduler.tls.scheduler.client.folder }}'
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: '{{ .Values.kafka.topics.replicationFactor }}'
+        - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+          value: '{{ .Values.kafka.topics.numPartitions }}'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: '{{ .Values.security.controlplane.protocol }}'
+        - name: CONTROL_PLANE_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+        - name: CONTROL_PLANE_TLS_KEY_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.key }}'
+        - name: CONTROL_PLANE_TLS_CRT_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.crt }}'
+        - name: CONTROL_PLANE_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.ca }}'
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: '{{ .Values.security.kafka.protocol }}'
+        - name: KAFKA_CLIENT_TLS_SECRET_NAME
+          value: '{{ .Values.security.kafka.ssl.client.secret }}'
+        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.key }}'
+        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.crt }}'
+        - name: KAFKA_CLIENT_TLS_CA_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.ca }}'
+        - name: KAFKA_BROKER_TLS_SECRET_NAME
+          value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+        - name: KAFKA_BROKER_TLS_CA_LOCATION
+          value: '{{ .Values.security.kafka.ssl.broker.ca }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -830,6 +892,25 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/pipelinegateway
+        env:
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: '{{ .Values.security.kafka.protocol }}'
+        - name: KAFKA_CLIENT_TLS_SECRET_NAME
+          value: '{{ .Values.security.kafka.ssl.client.secret }}'
+        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.key }}'
+        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.crt }}'
+        - name: KAFKA_CLIENT_TLS_CA_LOCATION
+          value: '{{ .Values.security.kafka.ssl.client.ca }}'
+        - name: KAFKA_BROKER_TLS_SECRET_NAME
+          value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+        - name: KAFKA_BROKER_TLS_CA_LOCATION
+          value: '{{ .Values.security.kafka.ssl.broker.ca }}'
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository
           }}:{{ .Values.pipelinegateway.image.tag }}'
         imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
@@ -892,14 +973,16 @@ spec:
         command:
         - /bin/scheduler
         env:
-        - name: SCHEDULER_TLS_SECRET_NAME
-          value: '{{ .Values.scheduler.tls.scheduler.server.secret }}'
-        - name: SCHEDULER_TLS_FOLDER_PATH
-          value: '{{ .Values.scheduler.tls.scheduler.server.folder }}'
-        - name: AGENT_TLS_SECRET_NAME
-          value: '{{ .Values.scheduler.tls.agent.server.secret }}'
-        - name: AGENT_TLS_FOLDER_PATH
-          value: '{{ .Values.scheduler.tls.agent.server.folder }}'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: '{{ .Values.security.controlplane.protocol }}'
+        - name: CONTROL_PLANE_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.server.secret }}'
+        - name: CONTROL_PLANE_TLS_KEY_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.key }}'
+        - name: CONTROL_PLANE_TLS_CRT_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.crt }}'
+        - name: CONTROL_PLANE_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.ca }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -988,10 +1071,16 @@ spec:
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
-      - name: AGENT_TLS_SECRET_NAME
-        value: '{{ .Values.scheduler.tls.agent.client.secret }}'
-      - name: AGENT_TLS_FOLDER_PATH
-        value: '{{ .Values.scheduler.tls.agent.client.folder }}'
+      - name: CONTROL_PLANE_SECURITY_PROTOCOL
+        value: '{{ .Values.security.controlplane.protocol }}'
+      - name: CONTROL_PLANE_TLS_SECRET_NAME
+        value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+      - name: CONTROL_PLANE_TLS_KEY_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.key }}'
+      - name: CONTROL_PLANE_TLS_CRT_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.crt }}'
+      - name: CONTROL_PLANE_TLS_CA_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.ca }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1008,6 +1097,10 @@ spec:
         value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
       - name: SELDON_SERVER_TYPE
         value: mlserver
       - name: SELDON_ENVOY_HOST
@@ -1159,10 +1252,16 @@ spec:
         value: '{{ .Values.serverConfig.triton.serverCapabilities }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.triton.overcommitPercentage }}'
-      - name: AGENT_TLS_SECRET_NAME
-        value: '{{ .Values.scheduler.tls.agent.client.secret }}'
-      - name: AGENT_TLS_FOLDER_PATH
-        value: '{{ .Values.scheduler.tls.agent.client.folder }}'
+      - name: CONTROL_PLANE_SECURITY_PROTOCOL
+        value: '{{ .Values.security.controlplane.protocol }}'
+      - name: CONTROL_PLANE_TLS_SECRET_NAME
+        value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+      - name: CONTROL_PLANE_TLS_KEY_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.key }}'
+      - name: CONTROL_PLANE_TLS_CRT_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.crt }}'
+      - name: CONTROL_PLANE_TLS_CA_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.ca }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1171,6 +1270,10 @@ spec:
         value: "9001"
       - name: SELDON_REVERSE_PROXY_GRPC_PORT
         value: "9501"
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
       - name: SELDON_SCHEDULER_HOST
         value: seldon-scheduler
       - name: SELDON_SCHEDULER_PORT

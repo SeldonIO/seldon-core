@@ -1,3 +1,29 @@
+security:
+  controlplane:
+    protocol: PLAINTEXT
+    ssl:
+      server:
+        secret:
+      client:
+        secret:
+      key: /tmp/certs/controlplane/tls.key
+      crt: /tmp/certs/controlplane/tls.crt
+      ca: /tmp/certs/controlplane/ca.crt
+  kafka:
+    protocol: PLAINTEXT
+    ssl:
+      client:
+        secret:
+        key: /tmp/certs/kafka/client/tls.key
+        crt: /tmp/certs/kafka/client/tls.crt
+        ca: /tmp/certs/kafka/client/ca.crt
+      broker:
+        secret:
+        ca: /tmp/certs/kafka/broker/ca.crt
+        endpointIdentificationAlgorithm:
+  dataplane:
+    protocol: PLAINTEXT
+  
 opentelemetry:
   endpoint: seldon-collector:4317
   enable: true
@@ -15,7 +41,8 @@ hodometer:
   extraPublishUrls: ""
 
 kafka:
-  bootstrap: seldon-kafka-plain-bootstrap.kafka:9092
+  debug:
+  bootstrap: seldon-kafka-plain-bootstrap.seldon-mesh:9092
   consumer:
     sessionTimeoutMs: 6000
     autoOffsetReset: earliest
@@ -24,6 +51,9 @@ kafka:
   producer:
     lingerMs: 0
     messageMaxBytes: 1000000000
+  topics:
+    replicationFactor: 1
+    numPartitions: 1
 
 modelgateway:
   image:
@@ -84,21 +114,7 @@ scheduler:
     registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: latest
-  tls:
-    scheduler:
-      server:  
-        secret:
-        folder:
-      client:
-        secret:
-        folder:
-    agent:
-      server:  
-        secret:
-        folder:
-      client:
-        secret:
-        folder:
+      
 serverConfig:
   rclone:
     image:

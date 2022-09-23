@@ -7,6 +7,10 @@ data class CertificateConfig(
     val caCertPath: FilePath,
     val keyPath: FilePath,
     val certPath: FilePath,
+    val brokerCaCertPath: FilePath,
+    val clientSecret: String,
+    val brokerSecret: String,
+    val endpointIdentificationAlgorithm: String,
 )
 
 data class KeystoreConfig(

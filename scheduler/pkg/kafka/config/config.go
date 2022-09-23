@@ -10,6 +10,7 @@ import (
 
 type KafkaConfig struct {
 	BootstrapServers string          `json:"bootstrap.servers,omitempty"`
+	Debug            string          `json:"debug,omitempty"`
 	Consumer         kafka.ConfigMap `json:"consumer,omitempty"`
 	Producer         kafka.ConfigMap `json:"producer,omitempty"`
 	Streams          kafka.ConfigMap `json:"streams,omitempty"`
@@ -17,6 +18,7 @@ type KafkaConfig struct {
 
 const (
 	KafkaBootstrapServers = "bootstrap.servers"
+	KafkaDebug            = "debug"
 )
 
 func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
@@ -63,6 +65,11 @@ func NewKafkaConfig(path string) (*KafkaConfig, error) {
 	}
 	if _, ok := kc.Streams[KafkaBootstrapServers]; !ok {
 		kc.Streams[KafkaBootstrapServers] = kc.BootstrapServers
+	}
+
+	if kc.Debug != "" {
+		kc.Consumer[KafkaDebug] = kc.Debug
+		kc.Producer[KafkaDebug] = kc.Debug
 	}
 	return &kc, nil
 }

@@ -35,10 +35,6 @@ spec:
             value: "9004"
           - name: SELDON_SCHEDULER_TLS_PORT
             value: "9044"
-          - name: SCHEDULER_TLS_SECRET_NAME
-            value: ""
-          - name: SCHEDULER_TLS_FOLDER_PATH
-            value: ""
           - name: MODELGATEWAY_NUM_WORKERS
             value: "8"
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS

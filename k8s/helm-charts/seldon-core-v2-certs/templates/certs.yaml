@@ -35,9 +35,9 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: seldon-scheduler-server
+  name: seldon-controlplane-server
 spec:
-  secretName: seldon-scheduler-server
+  secretName: seldon-controlplane-server
   duration: 2160h
   renewBefore: 360h
   commonName: "seldon-mesh.svc"
@@ -55,49 +55,9 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: seldon-scheduler-client
+  name: seldon-controlplane-client
 spec:
-  secretName: seldon-scheduler-client
-  duration: 2160h
-  renewBefore: 360h
-  commonName: "seldon-mesh.svc"
-  dnsNames:
-  - "seldon-scheduler"    
-  - "seldon-scheduler.svc"
-  - localhost
-  usages:
-  - server auth
-  - client auth
-  issuerRef:
-    name: seldon-ca-issuer
-    kind: Issuer
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: seldon-agent-server
-spec:
-  secretName: seldon-agent-server
-  duration: 2160h
-  renewBefore: 360h
-  commonName: "seldon-mesh.svc"
-  dnsNames:
-  - "seldon-scheduler"    
-  - "seldon-scheduler.svc"
-  - localhost
-  usages:
-  - server auth
-  - client auth
-  issuerRef:
-    name: seldon-ca-issuer
-    kind: Issuer
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: seldon-agent-client
-spec:
-  secretName: seldon-agent-client
+  secretName: seldon-controlplane-client
   duration: 2160h
   renewBefore: 360h
   commonName: "seldon-mesh.svc"

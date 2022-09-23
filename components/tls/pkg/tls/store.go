@@ -14,16 +14,48 @@ import (
 
 const (
 	envSecretSuffix = "_TLS_SECRET_NAME"
-	envFolderSuffix = "_TLS_FOLDER_PATH"
 	envNamespace    = "POD_NAMESPACE"
 )
 
+type funcTLSServerOption struct {
+	f func(options *CertificateStoreOptions)
+}
+
+func (fdo *funcTLSServerOption) apply(do *CertificateStoreOptions) {
+	fdo.f(do)
+}
+
+func newFuncServerOption(f func(options *CertificateStoreOptions)) *funcTLSServerOption {
+	return &funcTLSServerOption{
+		f: f,
+	}
+}
+
+type TLSServerOption interface {
+	apply(options *CertificateStoreOptions)
+}
+
 type CertificateStore struct {
-	prefix             string
+	opts               CertificateStoreOptions
 	logger             logrus.FieldLogger
 	mu                 sync.RWMutex
 	certificateManager CertificateManager
-	certificate        *Certificate
+	certificate        *CertificateWrapper
+}
+
+type CertificateStoreOptions struct {
+	caOnly    bool
+	prefix    string
+	clientset kubernetes.Interface
+}
+
+func (c CertificateStoreOptions) String() string {
+	return fmt.Sprintf("prefix=%s clientset=%v caOnly=%v",
+		c.prefix, c.clientset, c.caOnly)
+}
+
+func getDefaultCertificateStoreOptions() CertificateStoreOptions {
+	return CertificateStoreOptions{}
 }
 
 func getEnvVarKey(prefix string, suffix string) string {
@@ -38,34 +70,54 @@ func getEnv(prefix string, suffix string) (string, bool) {
 	return secretName, ok
 }
 
-func NewCertificateStore(prefix string, clientset kubernetes.Interface) (*CertificateStore, error) {
-	logger := logrus.New()
-	if secretName, ok := getEnv(prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new certificate store for %s from secret %s", prefix, secretName)
+func Prefix(prefix string) TLSServerOption {
+	return newFuncServerOption(func(o *CertificateStoreOptions) {
+		o.prefix = prefix
+	})
+}
+
+func ClientSet(clientSet kubernetes.Interface) TLSServerOption {
+	return newFuncServerOption(func(o *CertificateStoreOptions) {
+		o.clientset = clientSet
+	})
+}
+
+func CaOnly(caOnly bool) TLSServerOption {
+	return newFuncServerOption(func(o *CertificateStoreOptions) {
+		o.caOnly = caOnly
+	})
+}
+
+func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
+	opts := getDefaultCertificateStoreOptions()
+	for _, o := range opt {
+		o.apply(&opts)
+	}
+	logger := logrus.New().WithField("source", "CertificateStore")
+	logger.Infof("Options:%s", opts.String())
+	if secretName, ok := getEnv(opts.prefix, envSecretSuffix); ok {
+		logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
 		namespace, ok := os.LookupEnv(envNamespace)
 		if !ok {
 			return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
 		}
-		manager, err := NewTlsSecretHandler(secretName, namespace, clientset, logger)
+		manager, err := NewTlsSecretHandler(secretName, namespace, opts, logger)
 		if err != nil {
 			return nil, err
 		}
-		return createCertStoreFromManager(prefix, logger, manager)
-	}
-	if folderPath, ok := getEnv(prefix, envFolderSuffix); ok {
-		logger.Infof("Starting new certificate store for %s from path %s", prefix, folderPath)
-		manager, err := NewTlsFolderHandler(folderPath, logger)
+		return createCertStoreFromManager(opts, logger, manager)
+	} else {
+		manager, err := NewTlsFolderHandler(opts, logger)
 		if err != nil {
 			return nil, err
 		}
-		return createCertStoreFromManager(prefix, logger, manager)
+		return createCertStoreFromManager(opts, logger, manager)
 	}
-	return nil, nil
 }
 
-func createCertStoreFromManager(prefix string, logger logrus.FieldLogger, manager CertificateManager) (*CertificateStore, error) {
+func createCertStoreFromManager(opts CertificateStoreOptions, logger logrus.FieldLogger, manager CertificateManager) (*CertificateStore, error) {
 	certStore := CertificateStore{
-		prefix:             prefix,
+		opts:               opts,
 		logger:             logger,
 		certificateManager: manager,
 	}
@@ -77,9 +129,9 @@ func createCertStoreFromManager(prefix string, logger logrus.FieldLogger, manage
 	return &certStore, nil
 }
 
-func (m *CertificateStore) UpdateCertificate(certificate *Certificate) {
+func (m *CertificateStore) UpdateCertificate(certificate *CertificateWrapper) {
 	logger := m.logger.WithField("func", "UpdateCertificate")
-	logger.Infof("Updating certificate %s", m.prefix)
+	logger.Infof("Updating certificate %s", m.opts.prefix)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.certificate = certificate
@@ -112,4 +164,8 @@ func (s *CertificateStore) CreateServerTransportCredentials() credentials.Transp
 		ClientCAs:      s.certificate.Ca,
 	}
 	return credentials.NewTLS(tlsConfig)
+}
+
+func (s *CertificateStore) GetCertificate() *CertificateWrapper {
+	return s.certificate
 }

@@ -1,7 +1,9 @@
 package io.seldon.dataflow.kafka
 
+import io.seldon.dataflow.Cli
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.Provider
+import io.seldon.dataflow.mtls.K8sSecretsProvider
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
@@ -37,6 +39,20 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
     return Properties().apply {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
+        if (params.security.securityProtocol == SecurityProtocol.SSL) {
+            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
+            if (params.security.certConfig.clientSecret != "" &&
+                    params.security.certConfig.brokerSecret != "") {
+                K8sSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
+            }
+            val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
+
+            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
+            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+        }
     }
 }
 
@@ -54,10 +70,16 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         // Security
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
         if (params.security.securityProtocol == SecurityProtocol.SSL) {
+            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
+            if (params.security.certConfig.clientSecret != "" &&
+                params.security.certConfig.brokerSecret != "") {
+                K8sSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
+            }
             val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
 
             this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
             this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
             this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
         }

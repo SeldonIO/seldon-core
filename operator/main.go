@@ -19,8 +19,6 @@ package main
 import (
 	"context"
 
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
-
 	"github.com/seldonio/seldon-core/operatorv2/scheduler"
 
 	"flag"
@@ -91,16 +89,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	clientset, err := k8s.CreateClientset()
-	if err != nil {
-		setupLog.Error(err, "Unable to create clientset")
-		os.Exit(1)
-	}
 	// Create and connect to scheduler
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"))
-	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTLSPort, clientset)
+	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTLSPort)
 	if err != nil {
 		setupLog.Error(err, "unable to connect to scheduler")
 		os.Exit(1)

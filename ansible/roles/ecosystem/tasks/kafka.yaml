@@ -5,7 +5,7 @@
 
 - name: Enable KRaft
   shell:
-      " kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n {{ kafka_namespace }} "
+      " kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n {{ strimzi_kafka_namespace }} "
   tags: kraft
   when: ecosystem_enable_kraft | bool
 

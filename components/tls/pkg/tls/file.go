@@ -5,15 +5,20 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"istio.io/pkg/filewatcher"
 )
 
+const (
+	envKeyLocationSuffix = "_TLS_KEY_LOCATION"
+	envCrtLocationSuffix = "_TLS_CRT_LOCATION"
+	envCaLocationSuffix  = "_TLS_CA_LOCATION"
+)
+
 type TlsFolderHandler struct {
-	folderPath   string
+	opts         CertificateStoreOptions
 	certFilePath string
 	keyFilePath  string
 	caFilePath   string
@@ -22,57 +27,82 @@ type TlsFolderHandler struct {
 	watcher      filewatcher.FileWatcher
 }
 
-func NewTlsFolderHandler(folderPath string, logger log.FieldLogger) (*TlsFolderHandler, error) {
+func NewTlsFolderHandler(opts CertificateStoreOptions, logger log.FieldLogger) (*TlsFolderHandler, error) {
+	var certFilePath, keyFilePath string
+	var ok bool
+	if !opts.caOnly {
+		certFilePath, ok = getEnv(opts.prefix, envCrtLocationSuffix)
+		if !ok {
+			return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envCrtLocationSuffix)
+		}
+		keyFilePath, ok = getEnv(opts.prefix, envKeyLocationSuffix)
+		if !ok {
+			return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envKeyLocationSuffix)
+		}
+	}
+	caFilePath, ok := getEnv(opts.prefix, envCaLocationSuffix)
+	if !ok {
+		return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envCaLocationSuffix)
+	}
+
 	return &TlsFolderHandler{
-		folderPath:   folderPath,
-		certFilePath: filepath.Join(folderPath, DefaultCrtName),
-		keyFilePath:  filepath.Join(folderPath, DefaultKeyName),
-		caFilePath:   filepath.Join(folderPath, DefaultCaName),
+		opts:         opts,
+		certFilePath: certFilePath,
+		keyFilePath:  keyFilePath,
+		caFilePath:   caFilePath,
 		watcher:      filewatcher.NewWatcher(),
 		logger:       logger,
 	}, nil
 }
 
-func (t *TlsFolderHandler) loadCertificate() (*Certificate, error) {
-	certificate, err := tls.LoadX509KeyPair(t.certFilePath, t.keyFilePath)
-	if err != nil {
-		return nil, err
+func (t *TlsFolderHandler) loadCertificate() (*CertificateWrapper, error) {
+	var err error
+	c := CertificateWrapper{
+		KeyPath: t.keyFilePath,
+		CrtPath: t.certFilePath,
+		CaPath:  t.caFilePath,
+	}
+	if !t.opts.caOnly {
+		certificate, err := tls.LoadX509KeyPair(t.certFilePath, t.keyFilePath)
+		if err != nil {
+			return nil, err
+		}
+		c.Certificate = &certificate
 	}
 
-	data, err := os.ReadFile(t.caFilePath)
+	caRaw, err := os.ReadFile(t.caFilePath)
 	if err != nil {
 		return nil, err
 	}
 
 	capool := x509.NewCertPool()
-	if !capool.AppendCertsFromPEM(data) {
+	if !capool.AppendCertsFromPEM(caRaw) {
 		return nil, fmt.Errorf("Failed to load ca crt from %s", t.caFilePath)
 	}
-
-	return &Certificate{
-		Certificate: &certificate,
-		Ca:          capool,
-	}, nil
+	c.Ca = capool
+	return &c, nil
 }
 
 func (t *TlsFolderHandler) reloadCertificate() {
 	logger := t.logger.WithField("func", "reloadCertificate")
 	cert, err := t.loadCertificate()
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to reload certificate at %s", t.folderPath)
+		logger.WithError(err).Error("Failed to reload certificate")
 		return
 	}
 	t.updater.UpdateCertificate(cert)
 }
 
-func (t *TlsFolderHandler) GetCertificateAndWatch(updater UpdateCertificateHandler) (*Certificate, error) {
+func (t *TlsFolderHandler) GetCertificateAndWatch(updater UpdateCertificateHandler) (*CertificateWrapper, error) {
 	cert, err := t.loadCertificate()
 	if err != nil {
 		return nil, err
 	}
 	t.updater = updater
-	addFileWatcher(t.watcher, t.keyFilePath, t.reloadCertificate)
-	addFileWatcher(t.watcher, t.certFilePath, t.reloadCertificate)
+	if !t.opts.caOnly {
+		addFileWatcher(t.watcher, t.keyFilePath, t.reloadCertificate)
+		addFileWatcher(t.watcher, t.certFilePath, t.reloadCertificate)
+	}
 	addFileWatcher(t.watcher, t.caFilePath, t.reloadCertificate)
 	return cert, nil
 }
@@ -100,15 +130,17 @@ func addFileWatcher(fileWatcher filewatcher.FileWatcher, file string, callback f
 
 func (t *TlsFolderHandler) Stop() {
 	logger := t.logger.WithField("func", "Stop")
-	err := t.watcher.Remove(t.keyFilePath)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to stop watch on %s", t.keyFilePath)
+	if !t.opts.caOnly {
+		err := t.watcher.Remove(t.keyFilePath)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to stop watch on %s", t.keyFilePath)
+		}
+		err = t.watcher.Remove(t.certFilePath)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to stop watch on %s", t.certFilePath)
+		}
 	}
-	err = t.watcher.Remove(t.certFilePath)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to stop watch on %s", t.certFilePath)
-	}
-	err = t.watcher.Remove(t.caFilePath)
+	err := t.watcher.Remove(t.caFilePath)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to stop watch on %s", t.caFilePath)
 	}

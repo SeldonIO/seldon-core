@@ -14,6 +14,8 @@ const (
 	requestIdFlag    = "request-id"
 	outputFormatFlag = "format"
 	verboseFlag      = "verbose"
+	namespaceFlag    = "namespace"
+	defaultNamespace = "default"
 )
 
 func createPipelineInspect() *cobra.Command {
@@ -47,12 +49,16 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			namespace, err := cmd.Flags().GetString(namespaceFlag)
+			if err != nil {
+				return err
+			}
 			data := []byte(args[0])
 			kc, err := cli.NewKafkaClient(kafkaBroker, schedulerHost)
 			if err != nil {
 				return err
 			}
-			err = kc.InspectStep(string(data), offset, requestId, format, verbose)
+			err = kc.InspectStep(string(data), offset, requestId, format, verbose, namespace)
 			return err
 		},
 	}
@@ -61,6 +67,7 @@ func createPipelineInspect() *cobra.Command {
 	cmdPipelineInspect.Flags().String(requestIdFlag, "", "request id to show, if not specified will be all messages in offset range")
 	cmdPipelineInspect.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
 	cmdPipelineInspect.Flags().String(outputFormatFlag, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
+	cmdPipelineInspect.Flags().String(namespaceFlag, defaultNamespace, fmt.Sprintf("namespace. Default %s", defaultNamespace))
 	cmdPipelineInspect.Flags().Bool(verboseFlag, false, "display more details, such as headers")
 	return cmdPipelineInspect
 }

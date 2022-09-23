@@ -2,6 +2,7 @@ package tls
 
 import (
 	"context"
+	"fmt"
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
 	v1 "k8s.io/api/core/v1"
@@ -18,10 +19,10 @@ func TestWatchFolderCertificate(t *testing.T) {
 	err := copy.Copy("testdata/cert1", tmpFolder)
 	g.Expect(err).To(BeNil())
 	prefix := "SCHEDULER"
-	key := "SCHEDULER_TLS_FOLDER_PATH"
-	t.Setenv(key, tmpFolder)
-	clientset := fake.NewSimpleClientset()
-	cs, err := NewCertificateStore(prefix, clientset)
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envCrtLocationSuffix), fmt.Sprintf("%s/tls.crt", tmpFolder))
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
+	cs, err := NewCertificateStore(Prefix(prefix))
 	g.Expect(err).To(BeNil())
 	c1, err := cs.GetServerCertificate(nil)
 	g.Expect(c1).ToNot(BeNil())
@@ -56,11 +57,14 @@ func TestWatchSecretCertificate(t *testing.T) {
 		},
 	}
 	prefix := "SCHEDULER"
-	key := "SCHEDULER_TLS_SECRET_NAME"
-	t.Setenv(key, sec.Name)
+	tmpFolder := t.TempDir()
+	t.Setenv("SCHEDULER_TLS_SECRET_NAME", sec.Name)
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envCrtLocationSuffix), fmt.Sprintf("%s/tls.crt", tmpFolder))
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
 	t.Setenv("POD_NAMESPACE", sec.Namespace)
 	clientset := fake.NewSimpleClientset(&sec)
-	cs, err := NewCertificateStore(prefix, clientset)
+	cs, err := NewCertificateStore(Prefix(prefix), ClientSet(clientset))
 	g.Expect(err).To(BeNil())
 	c1, err := cs.GetServerCertificate(nil)
 	g.Expect(c1).ToNot(BeNil())
@@ -86,4 +90,40 @@ func TestWatchSecretCertificate(t *testing.T) {
 	g.Expect(c2).ToNot(BeNil())
 	g.Expect(err).To(BeNil())
 	g.Expect(c1.Certificate).ToNot(Equal(c2.Certificate))
+}
+
+func TestWatchSecretCertificateWithCa(t *testing.T) {
+	g := NewGomegaWithT(t)
+	ca, err := os.ReadFile("testdata/cert1/ca.crt")
+	g.Expect(err).To(BeNil())
+	sec := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "certs", Namespace: "default"},
+		Data: map[string][]byte{
+			"ca.crt": ca,
+		},
+	}
+	prefix := "SCHEDULER"
+	tmpFolder := t.TempDir()
+	t.Setenv("SCHEDULER_TLS_SECRET_NAME", sec.Name)
+	t.Setenv(fmt.Sprintf("%s%s", prefix, envCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
+	t.Setenv("POD_NAMESPACE", sec.Namespace)
+	clientset := fake.NewSimpleClientset(&sec)
+	cs, err := NewCertificateStore(Prefix(prefix), ClientSet(clientset), CaOnly(true))
+	g.Expect(err).To(BeNil())
+	caCreated := cs.GetCertificate().Ca
+	g.Expect(caCreated).ToNot(BeNil())
+	ca, err = os.ReadFile("testdata/cert2/ca.crt")
+	g.Expect(err).To(BeNil())
+	sec2 := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "certs", Namespace: "default"},
+		Data: map[string][]byte{
+			"ca.crt": ca,
+		},
+	}
+	_, err = clientset.CoreV1().Secrets(sec.Namespace).Update(context.Background(), &sec2, metav1.UpdateOptions{})
+	g.Expect(err).To(BeNil())
+	time.Sleep(time.Millisecond * 500)
+	caCreated2 := cs.GetCertificate().Ca
+	g.Expect(caCreated2).ToNot(BeNil())
+	g.Expect(caCreated).ToNot(Equal(caCreated2))
 }

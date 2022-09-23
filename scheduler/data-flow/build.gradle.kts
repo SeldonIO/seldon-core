@@ -34,6 +34,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
+    // k8s
+    implementation("io.kubernetes:client-java:15.0.1")
+
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
     testImplementation("io.strikt:strikt-core:0.34.1")
@@ -67,6 +70,7 @@ tasks.withType<KotlinCompile> {
 val dataflowMainClass = "io.seldon.dataflow.Main"
 
 tasks.withType<Jar> {
+
     manifest {
         attributes["Main-Class"] = dataflowMainClass
     }
@@ -75,9 +79,10 @@ tasks.withType<Jar> {
         configurations.runtimeClasspath
             .get()
             .map { if (it is Directory) it else zipTree(it) }
-    )
+    ) { exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")}
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
 }
 
 application {

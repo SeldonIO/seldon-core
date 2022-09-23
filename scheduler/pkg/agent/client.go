@@ -9,8 +9,6 @@ import (
 
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 	"google.golang.org/grpc/credentials"
-	"k8s.io/client-go/kubernetes"
-
 	"google.golang.org/grpc/credentials/insecure"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -139,11 +137,11 @@ func NewClient(serverName string,
 	}
 }
 
-func (c *Client) Start(clientset kubernetes.Interface) error {
+func (c *Client) Start() error {
 	logger := c.logger.WithField("func", "Start")
 
 	if c.conn == nil {
-		err := c.createConnection(clientset)
+		err := c.createConnection()
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
@@ -163,8 +161,8 @@ func (c *Client) Start(clientset kubernetes.Interface) error {
 	return nil
 }
 
-func (c *Client) createConnection(clientset kubernetes.Interface) error {
-	conn, err := c.getConnection(c.schedulerHost, c.schedulerPlaintxtPort, c.schedulerTlsPort, clientset)
+func (c *Client) createConnection() error {
+	conn, err := c.getConnection(c.schedulerHost, c.schedulerPlaintxtPort, c.schedulerTlsPort)
 	if err != nil {
 		return err
 	}
@@ -269,12 +267,15 @@ func startSubService(service ClientServiceInterface, logger *log.Entry) error {
 	return err
 }
 
-func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int, clientset kubernetes.Interface) (*grpc.ClientConn, error) {
+func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	logger := c.logger.WithField("func", "getConnection")
 	var err error
-	c.certificateStore, err = seldontls.NewCertificateStore(envAgentTLSPrefix, clientset)
-	if err != nil {
-		return nil, err
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
+	if protocol == seldontls.SecurityProtocolSSL {
+		c.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		if err != nil {
+			return nil, err
+		}
 	}
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
@@ -300,11 +301,13 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int, clien
 	if err != nil {
 		return nil, err
 	}
+	logger.Infof("Connected to scheduler at %s:%d", host, port)
 	return conn, nil
 }
 
 func (c *Client) StartService() error {
-	c.logger.Infof("Call subscribe to scheduler")
+	logger := c.logger.WithField("func", "StartService")
+	logger.Info("Call subscribe to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 
 	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
@@ -314,10 +317,11 @@ func (c *Client) StartService() error {
 		LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
 		Shared:               true,
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
-	}, grpc_retry.WithMax(100)) //TODO make configurable
+	}, grpc_retry.WithMax(1)) //TODO make configurable
 	if err != nil {
 		return err
 	}
+	logger.Info("Subscribed to scheduler")
 
 	go c.metrics.AddServerReplicaMetrics(
 		c.stateManager.totalMainMemoryBytes,

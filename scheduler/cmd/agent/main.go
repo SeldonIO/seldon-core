@@ -238,7 +238,7 @@ func main() {
 
 	// Start client grpc server
 	go func() {
-		err = client.Start(clientset)
+		err = client.Start()
 		if err != nil {
 			logger.WithError(err).Error("Failed to initialise client")
 		}
