@@ -25,7 +25,7 @@ WORKDIR /microservice
 
 # Install Poetry
 ENV POETRY_HOME /microservice/.poetry
-RUN curl -sSL https://install.python-poetry.org | python3
+RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.1.15
 
 ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
