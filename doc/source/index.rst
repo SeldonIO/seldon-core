@@ -17,6 +17,10 @@ Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language
 
 Seldon handles scaling to thousands of production machine learning models and provides advanced machine learning capabilities out of the box including Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests, Canaries and more.
 
+.. youtube:: 5Q-03We8aDE
+   :width: 100%
+
+   
 Quick Links
 -----------
 

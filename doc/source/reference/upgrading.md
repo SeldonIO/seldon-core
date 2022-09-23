@@ -12,6 +12,10 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 With this release of Seldon Core we upgrade Flask dependency to 2.x line. This includes Python wrapper and most pre-packaged model servers. In an unlikely scenario that this causes issues one can fallback to `1.14.1` images.
 
+## Services and Deployments Update
+
+The label on services pointing to containers for each node in your inference graph has been changed to stop clashes in key-values for label selectors when you have multiple nodes in your inference graph. This will cause all your existing seldon deployments to be recreated as their service and deployment specs will have changed in the upgrade. **This will cause some downtime in availability**.
+
 ## Upgrading to 1.14.1
 
 ### OpenShift default storage initializer
