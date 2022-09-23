@@ -2163,7 +2163,8 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		builder.Owns(&istio.VirtualService{})
 	}
 	// Add Ambassador CRs
-	if utils.GetEnv(ENV_AMBASSADOR_VERSION, "v2") == "v2" {
+	if utils.GetEnv(ENV_AMBASSADOR_ENABLED, "false") == "true" &&
+		utils.GetEnv(ENV_AMBASSADOR_VERSION, "v2") == "v2" {
 		if err := mgr.GetFieldIndexer().IndexField(ctx, &v2.Mapping{}, ownerKey, func(rawObj client.Object) []string {
 			// grab the deployment object, extract the owner...
 			mapping := rawObj.(*v2.Mapping)
