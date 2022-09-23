@@ -46,7 +46,7 @@ spec:
         - name: MANAGER_LEADER_ELECTION_ID
           value: "a33bd623.machinelearning.seldon.io"
         - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
-          value: "0"
+          value: ""
         - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
           value: "0"
         - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
