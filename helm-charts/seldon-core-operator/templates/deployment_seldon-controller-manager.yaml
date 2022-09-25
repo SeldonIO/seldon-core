@@ -160,11 +160,13 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
+      nodeSelector: '{{ .Values.manager.nodeSelector }}'
       priorityClassName: '{{ .Values.manager.priorityClassName }}'
       securityContext:
         runAsUser: {{ .Values.managerUserID }}
       serviceAccountName: '{{ .Values.serviceAccount.name }}'
       terminationGracePeriodSeconds: 10
+      tolerations: '{{ .Values.manager.tolerations }}'
 {{- if not .Values.managerCreateResources }}
       volumes:
       - name: cert
