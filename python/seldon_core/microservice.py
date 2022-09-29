@@ -9,7 +9,7 @@ import sys
 import time
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
@@ -155,7 +155,7 @@ def parse_parameters(parameters: Dict) -> Dict:
     return parsed_parameters
 
 
-def load_annotations() -> Dict:
+def load_annotations() -> Dict[str, str]:
     """
     Attempt to load annotations
 
@@ -216,7 +216,7 @@ def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     return logger
 
 
-def parse_args():
+def parse_args() -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
 
@@ -492,6 +492,44 @@ def _run_grpc_server(
     _wait_forever(server)
 
 
+def _make_grpc_server(
+    user_object: Any,
+    seldon_metrics: SeldonMetrics,
+    args: argparse.Namespace,
+    annotations: Dict[str, str],
+) -> Callable[[], None]:
+    def server():
+        with _reserve_grpc_port(args.grpc_port) as bind_port:
+            bind_address = "0.0.0.0:{}".format(bind_port)
+            logger.info(
+                "GRPC Server Binding to %s with %d processes.",
+                bind_address,
+                args.grpc_workers,
+            )
+            sys.stdout.flush()
+            workers = []
+            for _ in range(args.grpc_workers):
+                # NOTE: It is imperative that the worker subprocesses be forked before
+                # any gRPC servers start up. See
+                # https://github.com/grpc/grpc/issues/16001 for more details.
+                worker = mp.Process(
+                    target=_run_grpc_server,
+                    args=(
+                        user_object,
+                        seldon_metrics,
+                        args,
+                        annotations,
+                        bind_address,
+                    ),
+                )
+                worker.start()
+                workers.append(worker)
+            for worker in workers:
+                worker.join()
+
+    return server
+
+
 @contextlib.contextmanager
 def _reserve_grpc_port(grpc_port: int):
     """Find and reserve a port for all subprocesses to use."""
@@ -555,7 +593,6 @@ def main():
     user_object = user_class(**parameters)
 
     http_port = args.http_port
-    grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
@@ -584,36 +621,11 @@ def main():
             annotations=annotations,
         )
 
-    def grpc_prediction_server():
-        with _reserve_grpc_port(args.grpc_port) as bind_port:
-            bind_address = "0.0.0.0:{}".format(bind_port)
-            logger.info(
-                "GRPC Server Binding to %s with %d processes.",
-                bind_address,
-                args.grpc_workers,
-            )
-            sys.stdout.flush()
-            workers = []
-            for _ in range(args.grpc_workers):
-                # NOTE: It is imperative that the worker subprocesses be forked before
-                # any gRPC servers start up. See
-                # https://github.com/grpc/grpc/issues/16001 for more details.
-                worker = mp.Process(
-                    target=_run_grpc_server,
-                    args=(
-                        user_object,
-                        seldon_metrics,
-                        args,
-                        annotations,
-                        bind_address,
-                    ),
-                )
-                worker.start()
-                workers.append(worker)
-            for worker in workers:
-                worker.join()
-
-    server_grpc_func = grpc_prediction_server if args.grpc_workers > 0 else None
+    server_grpc_func = None
+    if args.grpc_workers > 0:
+        server_grpc_func = _make_grpc_server(
+            user_object, seldon_metrics, args, annotations=annotations
+        )
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
