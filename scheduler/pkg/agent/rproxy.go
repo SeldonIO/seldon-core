@@ -16,6 +16,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	log "github.com/sirupsen/logrus"
@@ -41,13 +42,18 @@ type reverseHTTPProxy struct {
 	servicePort           uint
 	mu                    sync.RWMutex
 	metrics               metrics.AgentMetricsHandler
+	modelLagStats         interfaces.ModelScalingStats
+	modelLastUsedStats    interfaces.ModelScalingStats
 }
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
 type lazyModelLoadTransport struct {
 	loader func(string) *V2Err
 	http.RoundTripper
-	metrics metrics.AgentMetricsHandler
+	metrics            metrics.AgentMetricsHandler
+	modelLagStats      interfaces.ModelScalingStats
+	modelLastUsedStats interfaces.ModelScalingStats
+	logger             log.FieldLogger
 }
 
 // RoundTrip implements http.RoundTripper for the Transport type.
@@ -59,6 +65,29 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 	externalModelName := req.Header.Get(resources.SeldonModelHeader)
 	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+
+	// to sync between Inc and Dec call running in go routines
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		err := t.modelLagStats.IncDefault(internalModelName)
+		if err != nil {
+			t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+		}
+		wg.Done()
+		err = t.modelLastUsedStats.IncDefault(internalModelName)
+		if err != nil {
+			t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+		}
+	}()
+	defer func() {
+		wg.Wait() // make sure that Inc is called first
+		err := t.modelLagStats.DecDefault(internalModelName)
+		if err != nil {
+			t.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
+		}
+	}()
+
 	startTime := time.Now()
 	if req.Body != nil {
 		originalBody, err = io.ReadAll(req.Body)
@@ -93,17 +122,11 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 }
 
-// need to rewrite the host of the outbound request with the host of the incoming request
-// (added by ReverseProxy)
-func (rp *reverseHTTPProxy) rewriteHostHandler(r *http.Request) {
-	r.Host = r.URL.Host
-}
-
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 	return otelhttp.NewHandler(rp.metrics.AddModelHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
 		rp.logger.Debugf("Received request with host %s and internal header %v", r.Host, r.Header.Values(resources.SeldonInternalModelHeader))
-		rp.rewriteHostHandler(r)
+		rewriteHostHandler(r)
 
 		externalModelName := r.Header.Get(resources.SeldonModelHeader)
 		internalModelName := r.Header.Get(resources.SeldonInternalModelHeader)
@@ -146,7 +169,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
 		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
-	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics}
+	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelLagStats, rp.modelLastUsedStats, rp.logger}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.servicePort)), Handler: rp.addHandlers(proxy)}
 	// TODO: check for errors? we rely for now on Ready
@@ -186,8 +209,8 @@ func (rp *reverseHTTPProxy) Ready() bool {
 	return rp.serverReady
 }
 
-func (rp *reverseHTTPProxy) SetState(stateManager *LocalStateManager) {
-	rp.stateManager = stateManager
+func (rp *reverseHTTPProxy) SetState(stateManager interface{}) {
+	rp.stateManager = stateManager.(*LocalStateManager)
 }
 
 func (rp *reverseHTTPProxy) Name() string {
@@ -200,6 +223,8 @@ func NewReverseHTTPProxy(
 	backendHTTPServerPort uint,
 	servicePort uint,
 	metrics metrics.AgentMetricsHandler,
+	modeLagStats interfaces.ModelScalingStats,
+	modeLastUsedStats interfaces.ModelScalingStats,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{
@@ -208,6 +233,8 @@ func NewReverseHTTPProxy(
 		backendHTTPServerPort: backendHTTPServerPort,
 		servicePort:           servicePort,
 		metrics:               metrics,
+		modelLagStats:         modeLagStats,
+		modelLastUsedStats:    modeLastUsedStats,
 	}
 
 	return &rp
@@ -218,4 +245,10 @@ func rewritePath(path string, modelName string) string {
 	// ${3}, i.e. versions/<ver_num> is removed
 	s := fmt.Sprintf("${1}%s${4}", modelName)
 	return re.ReplaceAllString(path, s)
+}
+
+// need to rewrite the host of the outbound request with the host of the incoming request
+// (added by ReverseProxy)
+func rewriteHostHandler(r *http.Request) {
+	r.Host = r.URL.Host
 }

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -50,9 +51,18 @@ type reverseGRPCProxy struct {
 	mu                    sync.RWMutex
 	metrics               metrics.AgentMetricsHandler
 	callOptions           []grpc.CallOption
+	modelLagStats         interfaces.ModelScalingStats
+	modelLastUsedStats    interfaces.ModelScalingStats
 }
 
-func NewReverseGRPCProxy(metricsHandler metrics.AgentMetricsHandler, logger log.FieldLogger, backendGRPCServerHost string, backendGRPCServerPort uint, servicePort uint) *reverseGRPCProxy {
+func NewReverseGRPCProxy(
+	metricsHandler metrics.AgentMetricsHandler,
+	logger log.FieldLogger, backendGRPCServerHost string,
+	backendGRPCServerPort uint,
+	servicePort uint,
+	modelLagStats interfaces.ModelScalingStats,
+	modelLastUsedStats interfaces.ModelScalingStats,
+) *reverseGRPCProxy {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -64,11 +74,13 @@ func NewReverseGRPCProxy(metricsHandler metrics.AgentMetricsHandler, logger log.
 		port:                  servicePort,
 		metrics:               metricsHandler,
 		callOptions:           opts,
+		modelLagStats:         modelLagStats,
+		modelLastUsedStats:    modelLastUsedStats,
 	}
 }
 
-func (rp *reverseGRPCProxy) SetState(sm *LocalStateManager) {
-	rp.stateManager = sm
+func (rp *reverseGRPCProxy) SetState(sm interface{}) {
+	rp.stateManager = sm.(*LocalStateManager)
 }
 
 func (rp *reverseGRPCProxy) Start() error {
@@ -157,6 +169,28 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	}
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
+
+	// to sync between Inc and Dec call running in go routines
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		err := rp.modelLagStats.IncDefault(internalModelName)
+		if err != nil {
+			logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+		}
+		wg.Done()
+		err = rp.modelLastUsedStats.IncDefault(internalModelName)
+		if err != nil {
+			logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+		}
+	}()
+	defer func() {
+		wg.Wait() // make sure that Inc is called first
+		err := rp.modelLagStats.DecDefault(internalModelName)
+		if err != nil {
+			logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
+		}
+	}()
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)

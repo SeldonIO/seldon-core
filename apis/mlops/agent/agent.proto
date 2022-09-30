@@ -22,7 +22,6 @@ message ModelEventMessage {
       UNLOAD_FAILED = 5;
       REMOVED = 6; // unloaded and removed from local PVC
       REMOVE_FAILED = 7;
-      SCALE_UP_REQUEST = 8;
       RSYNC = 9; // Ask server for all models that need to be loaded
       }
   Event event = 5;
@@ -31,6 +30,24 @@ message ModelEventMessage {
 }
 
 message ModelEventResponse {
+
+}
+
+message ModelScalingTriggerMessage {
+  string serverName = 1;
+  uint32 replicaIdx = 2;
+  string modelName = 3;
+  uint32 modelVersion = 4;
+  enum Trigger {
+      SCALE_UP = 0;
+      SCALE_DOWN = 1;
+      }
+  Trigger trigger = 5;
+  uint32 amount = 6;  // number of replicas required
+  map<string,uint32> metrics = 7;  // optional metrics to expose to the scheduler
+}
+
+message ModelScalingTriggerResponse {
 
 }
 
@@ -74,6 +91,7 @@ message ModelVersion {
 service AgentService {
   rpc AgentEvent(ModelEventMessage) returns (ModelEventResponse) {};
   rpc Subscribe(AgentSubscribeRequest) returns (stream ModelOperationMessage) {};
+  rpc ModelScalingTrigger(stream ModelScalingTriggerMessage) returns (ModelScalingTriggerResponse) {};
 }
 
 // [END Services]

@@ -11,90 +11,102 @@ import (
 )
 
 const (
-	envServerHttpPort       = "SELDON_SERVER_HTTP_PORT"
-	envServerGrpcPort       = "SELDON_SERVER_GRPC_PORT"
-	envReverseProxyHttpPort = "SELDON_REVERSE_PROXY_HTTP_PORT"
-	envReverseProxyGrpcPort = "SELDON_REVERSE_PROXY_GRPC_PORT"
-	envDebugGrpcPort        = "SELDON_DEBUG_GRPC_PORT"
-	envMetricsPort          = "SELDON_METRICS_PORT"
-	envPodName              = "POD_NAME"
-	envSchedulerHost        = "SELDON_SCHEDULER_HOST"
-	envSchedulerPort        = "SELDON_SCHEDULER_PORT"
-	envSchedulerTlsPort     = "SELDON_SCHEDULER_TLS_PORT"
-	envReplicaConfig        = "SELDON_REPLICA_CONFIG"
-	envLogLevel             = "SELDON_LOG_LEVEL"
-	envServerType           = "SELDON_SERVER_TYPE"
-	envMemoryRequest        = "MEMORY_REQUEST"
-	envCapabilities         = "SELDON_SERVER_CAPABILITIES"
-	envOverCommitPercentage = "SELDON_OVERCOMMIT_PERCENTAGE"
-	envEnvoyHost            = "SELDON_ENVOY_HOST"
-	envEnvoyPort            = "SELDON_ENVOY_PORT"
+	envServerHttpPort                = "SELDON_SERVER_HTTP_PORT"
+	envServerGrpcPort                = "SELDON_SERVER_GRPC_PORT"
+	envReverseProxyHttpPort          = "SELDON_REVERSE_PROXY_HTTP_PORT"
+	envReverseProxyGrpcPort          = "SELDON_REVERSE_PROXY_GRPC_PORT"
+	envDebugGrpcPort                 = "SELDON_DEBUG_GRPC_PORT"
+	envMetricsPort                   = "SELDON_METRICS_PORT"
+	envPodName                       = "POD_NAME"
+	envSchedulerHost                 = "SELDON_SCHEDULER_HOST"
+	envSchedulerPort                 = "SELDON_SCHEDULER_PORT"
+	envSchedulerTlsPort              = "SELDON_SCHEDULER_TLS_PORT"
+	envReplicaConfig                 = "SELDON_REPLICA_CONFIG"
+	envLogLevel                      = "SELDON_LOG_LEVEL"
+	envServerType                    = "SELDON_SERVER_TYPE"
+	envMemoryRequest                 = "MEMORY_REQUEST"
+	envCapabilities                  = "SELDON_SERVER_CAPABILITIES"
+	envOverCommitPercentage          = "SELDON_OVERCOMMIT_PERCENTAGE"
+	envEnvoyHost                     = "SELDON_ENVOY_HOST"
+	envEnvoyPort                     = "SELDON_ENVOY_PORT"
+	envModelInferenceLagThreshold    = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
+	envModelInactiveSecondsThreshold = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
+	envScalingStatsPeriodSeconds     = "SELDON_SCALING_STATS_PERIOD_SECONDS"
 
-	flagSchedulerHost         = "scheduler-host"
-	flagSchedulerPlaintxtPort = "scheduler-port"
-	flagSchedulerTlsPort      = "scheduler-tls-port"
-	flagServerName            = "server-name"
-	flagServerIdx             = "server-idx"
-	flagInferenceHttpPort     = "inference-http-port"
-	flagInferenceGrpcPort     = "inference-grpc-port"
-	flagReverseProxyHttpPort  = "reverse-proxy-http-port"
-	flagReverseProxyGrpcPort  = "reverse-proxy-grpc-port"
-	flagDebugGrpcPort         = "debug-grpc-port"
-	flagMetricsPort           = "metrics-port"
-	flagReplicaConfig         = "replica-config"
-	flagLogLevel              = "log-level"
-	flagServerType            = "server-type"
-	flagMemoryBytes           = "memory-bytes"
-	flagCapabilities          = "capabilities"
-	flagOverCommitPercentage  = "over-commit-percentage"
-	flagTracingConfigPath     = "tracing-config-path"
-	flagEnvoyHost             = "envoy-host"
-	flagEnvoyPort             = "envoy-port"
+	flagSchedulerHost                 = "scheduler-host"
+	flagSchedulerPlaintxtPort         = "scheduler-port"
+	flagSchedulerTlsPort              = "scheduler-tls-port"
+	flagServerName                    = "server-name"
+	flagServerIdx                     = "server-idx"
+	flagInferenceHttpPort             = "inference-http-port"
+	flagInferenceGrpcPort             = "inference-grpc-port"
+	flagReverseProxyHttpPort          = "reverse-proxy-http-port"
+	flagReverseProxyGrpcPort          = "reverse-proxy-grpc-port"
+	flagDebugGrpcPort                 = "debug-grpc-port"
+	flagMetricsPort                   = "metrics-port"
+	flagReplicaConfig                 = "replica-config"
+	flagLogLevel                      = "log-level"
+	flagServerType                    = "server-type"
+	flagMemoryBytes                   = "memory-bytes"
+	flagCapabilities                  = "capabilities"
+	flagOverCommitPercentage          = "over-commit-percentage"
+	flagTracingConfigPath             = "tracing-config-path"
+	flagEnvoyHost                     = "envoy-host"
+	flagEnvoyPort                     = "envoy-port"
+	flagModelInferenceLagThreshold    = "model-inference-lag-threshold"
+	flagModelInactiveSecondsThreshold = "model-inactive-seconds-threshold"
+	flagScalingStatsPeriodSeconds     = "scaling-stats-period-seconds"
 )
 
 const (
-	defaultInferenceHttpPort = 8080
-	defaultInferenceGrpcPort = 9500
-	defaultRclonePort        = 5572
-	defaultSchedulerPort     = 9005
-	defaultSchedulerTlsPort  = 9055
-	defaultMetricsPort       = 9006
-	defaultEnvoyHost         = "0.0.0.0"
-	defaultEnvoyPort         = 9000
+	defaultInferenceHttpPort        = 8080
+	defaultInferenceGrpcPort        = 9500
+	defaultRclonePort               = 5572
+	defaultSchedulerPort            = 9005
+	defaultSchedulerTlsPort         = 9055
+	defaultMetricsPort              = 9006
+	defaultEnvoyHost                = "0.0.0.0"
+	defaultEnvoyPort                = 9000
+	statsPeriodSecondsDefault       = 5
+	lagThresholdDefault             = 30
+	lastUsedThresholdSecondsDefault = 30
 )
 
 var (
-	agentHost            string
-	ServerName           string
-	ReplicaIdx           uint
-	SchedulerHost        string
-	SchedulerPort        int
-	SchedulerTlsPort     int
-	RcloneHost           string
-	RclonePort           int
-	InferenceHost        string
-	InferenceHttpPort    int
-	InferenceGrpcPort    int
-	ReverseProxyHttpPort int
-	ReverseProxyGrpcPort int
-	DebugGrpcPort        int
-	MetricsPort          int
-	AgentFolder          string
-	Namespace            string
-	ReplicaConfigStr     string
-	InferenceSvcName     string
-	ConfigPath           string
-	LogLevel             string
-	ServerType           string
-	memoryBytes          int
-	MemoryBytes64        uint64
-	capabilitiesList     string
-	Capabilities         []string
-	OverCommitPercentage int
-	serverTypes          = [...]string{"mlserver", "triton"}
-	TracingConfigPath    string
-	EnvoyHost            string
-	EnvoyPort            int
+	agentHost                     string
+	ServerName                    string
+	ReplicaIdx                    uint
+	SchedulerHost                 string
+	SchedulerPort                 int
+	SchedulerTlsPort              int
+	RcloneHost                    string
+	RclonePort                    int
+	InferenceHost                 string
+	InferenceHttpPort             int
+	InferenceGrpcPort             int
+	ReverseProxyHttpPort          int
+	ReverseProxyGrpcPort          int
+	DebugGrpcPort                 int
+	MetricsPort                   int
+	AgentFolder                   string
+	Namespace                     string
+	ReplicaConfigStr              string
+	InferenceSvcName              string
+	ConfigPath                    string
+	LogLevel                      string
+	ServerType                    string
+	memoryBytes                   int
+	MemoryBytes64                 uint64
+	capabilitiesList              string
+	Capabilities                  []string
+	OverCommitPercentage          int
+	serverTypes                   = [...]string{"mlserver", "triton"}
+	TracingConfigPath             string
+	EnvoyHost                     string
+	EnvoyPort                     int
+	ModelInferenceLagThreshold    int
+	ModelInactiveSecondsThreshold int
+	ScalingStatsPeriodSeconds     int
 )
 
 func init() {
@@ -127,6 +139,59 @@ func updateFlagsFromEnv() {
 	maybeUpdateServerType()
 	maybeUpdateEnvoyHost()
 	maybeUpdateEnvoyPort()
+	maybeUpdateModelInferenceLagThreshold()
+	maybeUpdateModelInactiveSecondsThreshold()
+	maybeUpdateScalingStatsPeriodSeconds()
+}
+
+func maybeUpdateModelInferenceLagThreshold() {
+	maybeUpdateFromIntEnv(
+		flagModelInferenceLagThreshold,
+		envModelInferenceLagThreshold,
+		&ModelInferenceLagThreshold,
+		"inference lag threshold",
+	)
+}
+
+func maybeUpdateModelInactiveSecondsThreshold() {
+	maybeUpdateFromIntEnv(
+		flagModelInactiveSecondsThreshold,
+		envModelInactiveSecondsThreshold,
+		&ModelInactiveSecondsThreshold,
+		"inactive model seconds threshold",
+	)
+}
+
+func maybeUpdateScalingStatsPeriodSeconds() {
+	maybeUpdateFromIntEnv(
+		flagScalingStatsPeriodSeconds,
+		envScalingStatsPeriodSeconds,
+		&ScalingStatsPeriodSeconds,
+		"scaling stats period seconds",
+	)
+}
+
+func maybeUpdateFromIntEnv(flag string, env string, param *int, tag string) {
+	if isFlagPassed(flag) {
+		return
+	}
+
+	valueFromEnv, found, parsed := getEnvUint(env)
+	if !found {
+		return
+	}
+	if !parsed {
+		log.Fatalf(
+			"Failed to parse %s for %s",
+			env, tag)
+	}
+
+	log.Infof(
+		tag,
+		env,
+		int(valueFromEnv),
+	)
+	*param = int(valueFromEnv)
 }
 
 func maybeUpdateOverCommitPercentage() {

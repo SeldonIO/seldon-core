@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -153,7 +154,10 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 		"localhost",
 		uint(serverPort),
 		uint(rpPort),
-		fakeMetricsHandler{})
+		fakeMetricsHandler{},
+		modelscaling.NewModelReplicaLagsKeeper(),
+		modelscaling.NewModelReplicaLastUsedKeeper(),
+	)
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -247,6 +251,14 @@ func TestReverseProxySmoke(t *testing.T) {
 				bodyString := string(bodyBytes)
 				g.Expect(strings.Contains(bodyString, test.modelToLoad)).To(BeTrue())
 			}
+
+			//  test model scaling stats
+			if test.statusCode == http.StatusOK {
+				g.Expect(rpHTTP.modelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
+				g.Expect(rpHTTP.modelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+
+			}
+
 			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
 			g.Expect(rpHTTP.Ready()).To(BeFalse())
@@ -390,7 +402,8 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			req.Header.Set("contentType", "application/json")
 			httpClient := http.DefaultClient
 			metricsHandler := newFakeMetricsHandler()
-			httpClient.Transport = &lazyModelLoadTransport{loader, http.DefaultTransport, metricsHandler}
+			httpClient.Transport = &lazyModelLoadTransport{
+				loader, http.DefaultTransport, metricsHandler, modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(), log.New()}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)

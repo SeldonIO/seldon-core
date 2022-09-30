@@ -1,4 +1,4 @@
-package cache
+package interfaces
 
 type CacheManager interface {
 	// add a new node with specific id and priority/value

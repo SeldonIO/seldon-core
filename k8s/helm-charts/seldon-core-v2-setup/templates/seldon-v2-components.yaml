@@ -1069,8 +1069,14 @@ spec:
       env:
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
+      - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
+        value: '{{ .Values.serverConfig.agent.modelInferenceLagThreshold }}'
+      - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
+        value: '{{ .Values.serverConfig.agent.modelInactiveSecondsThreshold }}'
+      - name: SELDON_SCALING_STATS_PERIOD_SECONDS
+        value: '{{ .Values.serverConfig.agent.scalingStatsPeriodSeconds }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '{{ .Values.serverConfig.mlserver.overcommitPercentage }}'
+        value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: '{{ .Values.security.controlplane.protocol }}'
       - name: CONTROL_PLANE_TLS_SECRET_NAME
@@ -1122,7 +1128,7 @@ spec:
             resource: requests.memory
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
-      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent
       ports:
       - containerPort: 9501
@@ -1250,8 +1256,14 @@ spec:
       env:
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.triton.serverCapabilities }}'
+      - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
+        value: '{{ .Values.serverConfig.agent.modelInferenceLagThreshold }}'
+      - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
+        value: '{{ .Values.serverConfig.agent.modelInactiveSecondsThreshold }}'
+      - name: SELDON_SCALING_STATS_PERIOD_SECONDS
+        value: '{{ .Values.serverConfig.agent.scalingStatsPeriodSeconds }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '{{ .Values.serverConfig.triton.overcommitPercentage }}'
+        value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: '{{ .Values.security.controlplane.protocol }}'
       - name: CONTROL_PLANE_TLS_SECRET_NAME
@@ -1297,7 +1309,7 @@ spec:
             resource: requests.memory
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
-      imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent
       ports:
       - containerPort: 9501

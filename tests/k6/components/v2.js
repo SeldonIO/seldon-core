@@ -14,6 +14,8 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         'Host': modelName,
         // we add here either .model or .pipeline to test dataflow
         'seldon-model': generateDataFlowName(modelName, pipelineSuffix),
+        // disable response compression
+        'Accept-Encoding': 'entity',
     };
     if (viaEnvoy != true) {
         headers['seldon-internal-model'] = modelName

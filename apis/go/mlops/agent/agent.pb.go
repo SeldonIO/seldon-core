@@ -32,7 +32,6 @@ const (
 	ModelEventMessage_UNLOAD_FAILED    ModelEventMessage_Event = 5
 	ModelEventMessage_REMOVED          ModelEventMessage_Event = 6 // unloaded and removed from local PVC
 	ModelEventMessage_REMOVE_FAILED    ModelEventMessage_Event = 7
-	ModelEventMessage_SCALE_UP_REQUEST ModelEventMessage_Event = 8
 	ModelEventMessage_RSYNC            ModelEventMessage_Event = 9 // Ask server for all models that need to be loaded
 )
 
@@ -47,7 +46,6 @@ var (
 		5: "UNLOAD_FAILED",
 		6: "REMOVED",
 		7: "REMOVE_FAILED",
-		8: "SCALE_UP_REQUEST",
 		9: "RSYNC",
 	}
 	ModelEventMessage_Event_value = map[string]int32{
@@ -59,7 +57,6 @@ var (
 		"UNLOAD_FAILED":    5,
 		"REMOVED":          6,
 		"REMOVE_FAILED":    7,
-		"SCALE_UP_REQUEST": 8,
 		"RSYNC":            9,
 	}
 )
@@ -89,6 +86,52 @@ func (x ModelEventMessage_Event) Number() protoreflect.EnumNumber {
 // Deprecated: Use ModelEventMessage_Event.Descriptor instead.
 func (ModelEventMessage_Event) EnumDescriptor() ([]byte, []int) {
 	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{0, 0}
+}
+
+type ModelScalingTriggerMessage_Trigger int32
+
+const (
+	ModelScalingTriggerMessage_SCALE_UP   ModelScalingTriggerMessage_Trigger = 0
+	ModelScalingTriggerMessage_SCALE_DOWN ModelScalingTriggerMessage_Trigger = 1
+)
+
+// Enum value maps for ModelScalingTriggerMessage_Trigger.
+var (
+	ModelScalingTriggerMessage_Trigger_name = map[int32]string{
+		0: "SCALE_UP",
+		1: "SCALE_DOWN",
+	}
+	ModelScalingTriggerMessage_Trigger_value = map[string]int32{
+		"SCALE_UP":   0,
+		"SCALE_DOWN": 1,
+	}
+)
+
+func (x ModelScalingTriggerMessage_Trigger) Enum() *ModelScalingTriggerMessage_Trigger {
+	p := new(ModelScalingTriggerMessage_Trigger)
+	*p = x
+	return p
+}
+
+func (x ModelScalingTriggerMessage_Trigger) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ModelScalingTriggerMessage_Trigger) Descriptor() protoreflect.EnumDescriptor {
+	return file_mlops_agent_agent_proto_enumTypes[1].Descriptor()
+}
+
+func (ModelScalingTriggerMessage_Trigger) Type() protoreflect.EnumType {
+	return &file_mlops_agent_agent_proto_enumTypes[1]
+}
+
+func (x ModelScalingTriggerMessage_Trigger) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ModelScalingTriggerMessage_Trigger.Descriptor instead.
+func (ModelScalingTriggerMessage_Trigger) EnumDescriptor() ([]byte, []int) {
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{2, 0}
 }
 
 type ModelOperationMessage_Operation int32
@@ -124,11 +167,11 @@ func (x ModelOperationMessage_Operation) String() string {
 }
 
 func (ModelOperationMessage_Operation) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_agent_agent_proto_enumTypes[1].Descriptor()
+	return file_mlops_agent_agent_proto_enumTypes[2].Descriptor()
 }
 
 func (ModelOperationMessage_Operation) Type() protoreflect.EnumType {
-	return &file_mlops_agent_agent_proto_enumTypes[1]
+	return &file_mlops_agent_agent_proto_enumTypes[2]
 }
 
 func (x ModelOperationMessage_Operation) Number() protoreflect.EnumNumber {
@@ -137,7 +180,7 @@ func (x ModelOperationMessage_Operation) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ModelOperationMessage_Operation.Descriptor instead.
 func (ModelOperationMessage_Operation) EnumDescriptor() ([]byte, []int) {
-	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{4, 0}
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{6, 0}
 }
 
 type ModelEventMessage struct {
@@ -273,6 +316,139 @@ func (*ModelEventResponse) Descriptor() ([]byte, []int) {
 	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{1}
 }
 
+type ModelScalingTriggerMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ServerName   string                             `protobuf:"bytes,1,opt,name=serverName,proto3" json:"serverName,omitempty"`
+	ReplicaIdx   uint32                             `protobuf:"varint,2,opt,name=replicaIdx,proto3" json:"replicaIdx,omitempty"`
+	ModelName    string                             `protobuf:"bytes,3,opt,name=modelName,proto3" json:"modelName,omitempty"`
+	ModelVersion uint32                             `protobuf:"varint,4,opt,name=modelVersion,proto3" json:"modelVersion,omitempty"`
+	Trigger      ModelScalingTriggerMessage_Trigger `protobuf:"varint,5,opt,name=trigger,proto3,enum=seldon.mlops.agent.ModelScalingTriggerMessage_Trigger" json:"trigger,omitempty"`
+	Amount       uint32                             `protobuf:"varint,6,opt,name=amount,proto3" json:"amount,omitempty"`                                                                                           // number of replicas required
+	Metrics      map[string]uint32                  `protobuf:"bytes,7,rep,name=metrics,proto3" json:"metrics,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"` // optional metrics to expose to the scheduler
+}
+
+func (x *ModelScalingTriggerMessage) Reset() {
+	*x = ModelScalingTriggerMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mlops_agent_agent_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ModelScalingTriggerMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ModelScalingTriggerMessage) ProtoMessage() {}
+
+func (x *ModelScalingTriggerMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_mlops_agent_agent_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ModelScalingTriggerMessage.ProtoReflect.Descriptor instead.
+func (*ModelScalingTriggerMessage) Descriptor() ([]byte, []int) {
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ModelScalingTriggerMessage) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
+}
+
+func (x *ModelScalingTriggerMessage) GetReplicaIdx() uint32 {
+	if x != nil {
+		return x.ReplicaIdx
+	}
+	return 0
+}
+
+func (x *ModelScalingTriggerMessage) GetModelName() string {
+	if x != nil {
+		return x.ModelName
+	}
+	return ""
+}
+
+func (x *ModelScalingTriggerMessage) GetModelVersion() uint32 {
+	if x != nil {
+		return x.ModelVersion
+	}
+	return 0
+}
+
+func (x *ModelScalingTriggerMessage) GetTrigger() ModelScalingTriggerMessage_Trigger {
+	if x != nil {
+		return x.Trigger
+	}
+	return ModelScalingTriggerMessage_SCALE_UP
+}
+
+func (x *ModelScalingTriggerMessage) GetAmount() uint32 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *ModelScalingTriggerMessage) GetMetrics() map[string]uint32 {
+	if x != nil {
+		return x.Metrics
+	}
+	return nil
+}
+
+type ModelScalingTriggerResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ModelScalingTriggerResponse) Reset() {
+	*x = ModelScalingTriggerResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mlops_agent_agent_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ModelScalingTriggerResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ModelScalingTriggerResponse) ProtoMessage() {}
+
+func (x *ModelScalingTriggerResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mlops_agent_agent_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ModelScalingTriggerResponse.ProtoReflect.Descriptor instead.
+func (*ModelScalingTriggerResponse) Descriptor() ([]byte, []int) {
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{3}
+}
+
 type AgentSubscribeRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -289,7 +465,7 @@ type AgentSubscribeRequest struct {
 func (x *AgentSubscribeRequest) Reset() {
 	*x = AgentSubscribeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_agent_agent_proto_msgTypes[2]
+		mi := &file_mlops_agent_agent_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -302,7 +478,7 @@ func (x *AgentSubscribeRequest) String() string {
 func (*AgentSubscribeRequest) ProtoMessage() {}
 
 func (x *AgentSubscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_agent_agent_proto_msgTypes[2]
+	mi := &file_mlops_agent_agent_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -315,7 +491,7 @@ func (x *AgentSubscribeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentSubscribeRequest.ProtoReflect.Descriptor instead.
 func (*AgentSubscribeRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{2}
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AgentSubscribeRequest) GetServerName() string {
@@ -376,7 +552,7 @@ type ReplicaConfig struct {
 func (x *ReplicaConfig) Reset() {
 	*x = ReplicaConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_agent_agent_proto_msgTypes[3]
+		mi := &file_mlops_agent_agent_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -389,7 +565,7 @@ func (x *ReplicaConfig) String() string {
 func (*ReplicaConfig) ProtoMessage() {}
 
 func (x *ReplicaConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_agent_agent_proto_msgTypes[3]
+	mi := &file_mlops_agent_agent_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,7 +578,7 @@ func (x *ReplicaConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReplicaConfig.ProtoReflect.Descriptor instead.
 func (*ReplicaConfig) Descriptor() ([]byte, []int) {
-	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{3}
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ReplicaConfig) GetInferenceSvc() string {
@@ -459,7 +635,7 @@ type ModelOperationMessage struct {
 func (x *ModelOperationMessage) Reset() {
 	*x = ModelOperationMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_agent_agent_proto_msgTypes[4]
+		mi := &file_mlops_agent_agent_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -472,7 +648,7 @@ func (x *ModelOperationMessage) String() string {
 func (*ModelOperationMessage) ProtoMessage() {}
 
 func (x *ModelOperationMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_agent_agent_proto_msgTypes[4]
+	mi := &file_mlops_agent_agent_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -485,7 +661,7 @@ func (x *ModelOperationMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelOperationMessage.ProtoReflect.Descriptor instead.
 func (*ModelOperationMessage) Descriptor() ([]byte, []int) {
-	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{4}
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ModelOperationMessage) GetOperation() ModelOperationMessage_Operation {
@@ -514,7 +690,7 @@ type ModelVersion struct {
 func (x *ModelVersion) Reset() {
 	*x = ModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_agent_agent_proto_msgTypes[5]
+		mi := &file_mlops_agent_agent_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -527,7 +703,7 @@ func (x *ModelVersion) String() string {
 func (*ModelVersion) ProtoMessage() {}
 
 func (x *ModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_agent_agent_proto_msgTypes[5]
+	mi := &file_mlops_agent_agent_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -540,7 +716,7 @@ func (x *ModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelVersion.ProtoReflect.Descriptor instead.
 func (*ModelVersion) Descriptor() ([]byte, []int) {
-	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{5}
+	return file_mlops_agent_agent_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ModelVersion) GetModel() *scheduler.Model {
@@ -564,7 +740,7 @@ var file_mlops_agent_agent_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x12, 0x73, 0x65, 0x6c, 0x64, 0x6f,
 	0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x1a, 0x1f, 0x6d,
 	0x6c, 0x6f, 0x70, 0x73, 0x2f, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2f, 0x73,
-	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd8,
+	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc2,
 	0x03, 0x0a, 0x11, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73,
 	0x73, 0x61, 0x67, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4e, 0x61,
 	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
@@ -583,7 +759,7 @@ var file_mlops_agent_agent_proto_rawDesc = []byte{
 	0x61, 0x67, 0x65, 0x12, 0x32, 0x0a, 0x14, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65,
 	0x4d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x42, 0x79, 0x74, 0x65, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28,
 	0x04, 0x52, 0x14, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x4d, 0x65, 0x6d, 0x6f,
-	0x72, 0x79, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0xaf, 0x01, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e,
+	0x72, 0x79, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0x99, 0x01, 0x0a, 0x05, 0x45, 0x76, 0x65, 0x6e,
 	0x74, 0x12, 0x11, 0x0a, 0x0d, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x5f, 0x45, 0x56, 0x45,
 	0x4e, 0x54, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x4c, 0x4f, 0x41, 0x44, 0x5f, 0x46, 0x41, 0x49,
 	0x4c, 0x5f, 0x4d, 0x45, 0x4d, 0x4f, 0x52, 0x59, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x4c, 0x4f,
@@ -592,10 +768,39 @@ var file_mlops_agent_agent_proto_rawDesc = []byte{
 	0x44, 0x45, 0x44, 0x10, 0x04, 0x12, 0x11, 0x0a, 0x0d, 0x55, 0x4e, 0x4c, 0x4f, 0x41, 0x44, 0x5f,
 	0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x05, 0x12, 0x0b, 0x0a, 0x07, 0x52, 0x45, 0x4d, 0x4f,
 	0x56, 0x45, 0x44, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x52, 0x45, 0x4d, 0x4f, 0x56, 0x45, 0x5f,
-	0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x07, 0x12, 0x14, 0x0a, 0x10, 0x53, 0x43, 0x41, 0x4c,
-	0x45, 0x5f, 0x55, 0x50, 0x5f, 0x52, 0x45, 0x51, 0x55, 0x45, 0x53, 0x54, 0x10, 0x08, 0x12, 0x09,
-	0x0a, 0x05, 0x52, 0x53, 0x59, 0x4e, 0x43, 0x10, 0x09, 0x22, 0x14, 0x0a, 0x12, 0x4d, 0x6f, 0x64,
-	0x65, 0x6c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x46, 0x41, 0x49, 0x4c, 0x45, 0x44, 0x10, 0x07, 0x12, 0x09, 0x0a, 0x05, 0x52, 0x53, 0x59, 0x4e,
+	0x43, 0x10, 0x09, 0x22, 0x14, 0x0a, 0x12, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xc4, 0x03, 0x0a, 0x1a, 0x4d, 0x6f,
+	0x64, 0x65, 0x6c, 0x53, 0x63, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69, 0x67, 0x67, 0x65,
+	0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x72, 0x65, 0x70, 0x6c,
+	0x69, 0x63, 0x61, 0x49, 0x64, 0x78, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0a, 0x72, 0x65,
+	0x70, 0x6c, 0x69, 0x63, 0x61, 0x49, 0x64, 0x78, 0x12, 0x1c, 0x0a, 0x09, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x6f, 0x64,
+	0x65, 0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x22, 0x0a, 0x0c, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56,
+	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0c, 0x6d, 0x6f,
+	0x64, 0x65, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x50, 0x0a, 0x07, 0x74, 0x72,
+	0x69, 0x67, 0x67, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x36, 0x2e, 0x73, 0x65,
+	0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74,
+	0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x63, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69,
+	0x67, 0x67, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x54, 0x72, 0x69, 0x67,
+	0x67, 0x65, 0x72, 0x52, 0x07, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x12, 0x55, 0x0a, 0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x18,
+	0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x3b, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d,
+	0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c,
+	0x53, 0x63, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x45, 0x6e, 0x74,
+	0x72, 0x79, 0x52, 0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x1a, 0x3a, 0x0a, 0x0c, 0x4d,
+	0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b,
+	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x27, 0x0a, 0x07, 0x54, 0x72, 0x69, 0x67, 0x67,
+	0x65, 0x72, 0x12, 0x0c, 0x0a, 0x08, 0x53, 0x43, 0x41, 0x4c, 0x45, 0x5f, 0x55, 0x50, 0x10, 0x00,
+	0x12, 0x0e, 0x0a, 0x0a, 0x53, 0x43, 0x41, 0x4c, 0x45, 0x5f, 0x44, 0x4f, 0x57, 0x4e, 0x10, 0x01,
+	0x22, 0x1d, 0x0a, 0x1b, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x63, 0x61, 0x6c, 0x69, 0x6e, 0x67,
+	0x54, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
 	0xb2, 0x02, 0x0a, 0x15, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69,
 	0x62, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x73, 0x65, 0x72,
 	0x76, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73,
@@ -653,7 +858,7 @@ var file_mlops_agent_agent_proto_rawDesc = []byte{
 	0x6f, 0x70, 0x73, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x4d, 0x6f,
 	0x64, 0x65, 0x6c, 0x52, 0x05, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65,
 	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x76, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x32, 0xd4, 0x01, 0x0a, 0x0c, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x53, 0x65,
+	0x73, 0x69, 0x6f, 0x6e, 0x32, 0xd0, 0x02, 0x0a, 0x0c, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x53, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5d, 0x0a, 0x0a, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x45, 0x76,
 	0x65, 0x6e, 0x74, 0x12, 0x25, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f,
 	0x70, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x45, 0x76,
@@ -666,12 +871,19 @@ var file_mlops_agent_agent_proto_rawDesc = []byte{
 	0x63, 0x72, 0x69, 0x62, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x29, 0x2e, 0x73,
 	0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e,
 	0x74, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x30, 0x01, 0x42, 0x3c, 0x5a, 0x3a, 0x67,
-	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e,
-	0x69, 0x6f, 0x2f, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2d, 0x63, 0x6f, 0x72, 0x65, 0x2f, 0x73,
-	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x6d, 0x6c,
-	0x6f, 0x70, 0x73, 0x2f, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x00, 0x30, 0x01, 0x12, 0x7a, 0x0a, 0x13, 0x4d,
+	0x6f, 0x64, 0x65, 0x6c, 0x53, 0x63, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69, 0x67, 0x67,
+	0x65, 0x72, 0x12, 0x2e, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70,
+	0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x63, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x1a, 0x2f, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70,
+	0x73, 0x2e, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x63, 0x61,
+	0x6c, 0x69, 0x6e, 0x67, 0x54, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0x00, 0x28, 0x01, 0x42, 0x3c, 0x5a, 0x3a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x69, 0x6f, 0x2f, 0x73,
+	0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2d, 0x63, 0x6f, 0x72, 0x65, 0x2f, 0x73, 0x63, 0x68, 0x65, 0x64,
+	0x75, 0x6c, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2f,
+	0x61, 0x67, 0x65, 0x6e, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -686,35 +898,43 @@ func file_mlops_agent_agent_proto_rawDescGZIP() []byte {
 	return file_mlops_agent_agent_proto_rawDescData
 }
 
-var file_mlops_agent_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_mlops_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_mlops_agent_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_mlops_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_mlops_agent_agent_proto_goTypes = []interface{}{
-	(ModelEventMessage_Event)(0),         // 0: seldon.mlops.agent.ModelEventMessage.Event
-	(ModelOperationMessage_Operation)(0), // 1: seldon.mlops.agent.ModelOperationMessage.Operation
-	(*ModelEventMessage)(nil),            // 2: seldon.mlops.agent.ModelEventMessage
-	(*ModelEventResponse)(nil),           // 3: seldon.mlops.agent.ModelEventResponse
-	(*AgentSubscribeRequest)(nil),        // 4: seldon.mlops.agent.AgentSubscribeRequest
-	(*ReplicaConfig)(nil),                // 5: seldon.mlops.agent.ReplicaConfig
-	(*ModelOperationMessage)(nil),        // 6: seldon.mlops.agent.ModelOperationMessage
-	(*ModelVersion)(nil),                 // 7: seldon.mlops.agent.ModelVersion
-	(*scheduler.Model)(nil),              // 8: seldon.mlops.scheduler.Model
+	(ModelEventMessage_Event)(0),            // 0: seldon.mlops.agent.ModelEventMessage.Event
+	(ModelScalingTriggerMessage_Trigger)(0), // 1: seldon.mlops.agent.ModelScalingTriggerMessage.Trigger
+	(ModelOperationMessage_Operation)(0),    // 2: seldon.mlops.agent.ModelOperationMessage.Operation
+	(*ModelEventMessage)(nil),               // 3: seldon.mlops.agent.ModelEventMessage
+	(*ModelEventResponse)(nil),              // 4: seldon.mlops.agent.ModelEventResponse
+	(*ModelScalingTriggerMessage)(nil),      // 5: seldon.mlops.agent.ModelScalingTriggerMessage
+	(*ModelScalingTriggerResponse)(nil),     // 6: seldon.mlops.agent.ModelScalingTriggerResponse
+	(*AgentSubscribeRequest)(nil),           // 7: seldon.mlops.agent.AgentSubscribeRequest
+	(*ReplicaConfig)(nil),                   // 8: seldon.mlops.agent.ReplicaConfig
+	(*ModelOperationMessage)(nil),           // 9: seldon.mlops.agent.ModelOperationMessage
+	(*ModelVersion)(nil),                    // 10: seldon.mlops.agent.ModelVersion
+	nil,                                     // 11: seldon.mlops.agent.ModelScalingTriggerMessage.MetricsEntry
+	(*scheduler.Model)(nil),                 // 12: seldon.mlops.scheduler.Model
 }
 var file_mlops_agent_agent_proto_depIdxs = []int32{
-	0, // 0: seldon.mlops.agent.ModelEventMessage.event:type_name -> seldon.mlops.agent.ModelEventMessage.Event
-	5, // 1: seldon.mlops.agent.AgentSubscribeRequest.replicaConfig:type_name -> seldon.mlops.agent.ReplicaConfig
-	7, // 2: seldon.mlops.agent.AgentSubscribeRequest.loadedModels:type_name -> seldon.mlops.agent.ModelVersion
-	1, // 3: seldon.mlops.agent.ModelOperationMessage.operation:type_name -> seldon.mlops.agent.ModelOperationMessage.Operation
-	7, // 4: seldon.mlops.agent.ModelOperationMessage.modelVersion:type_name -> seldon.mlops.agent.ModelVersion
-	8, // 5: seldon.mlops.agent.ModelVersion.model:type_name -> seldon.mlops.scheduler.Model
-	2, // 6: seldon.mlops.agent.AgentService.AgentEvent:input_type -> seldon.mlops.agent.ModelEventMessage
-	4, // 7: seldon.mlops.agent.AgentService.Subscribe:input_type -> seldon.mlops.agent.AgentSubscribeRequest
-	3, // 8: seldon.mlops.agent.AgentService.AgentEvent:output_type -> seldon.mlops.agent.ModelEventResponse
-	6, // 9: seldon.mlops.agent.AgentService.Subscribe:output_type -> seldon.mlops.agent.ModelOperationMessage
-	8, // [8:10] is the sub-list for method output_type
-	6, // [6:8] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	0,  // 0: seldon.mlops.agent.ModelEventMessage.event:type_name -> seldon.mlops.agent.ModelEventMessage.Event
+	1,  // 1: seldon.mlops.agent.ModelScalingTriggerMessage.trigger:type_name -> seldon.mlops.agent.ModelScalingTriggerMessage.Trigger
+	11, // 2: seldon.mlops.agent.ModelScalingTriggerMessage.metrics:type_name -> seldon.mlops.agent.ModelScalingTriggerMessage.MetricsEntry
+	8,  // 3: seldon.mlops.agent.AgentSubscribeRequest.replicaConfig:type_name -> seldon.mlops.agent.ReplicaConfig
+	10, // 4: seldon.mlops.agent.AgentSubscribeRequest.loadedModels:type_name -> seldon.mlops.agent.ModelVersion
+	2,  // 5: seldon.mlops.agent.ModelOperationMessage.operation:type_name -> seldon.mlops.agent.ModelOperationMessage.Operation
+	10, // 6: seldon.mlops.agent.ModelOperationMessage.modelVersion:type_name -> seldon.mlops.agent.ModelVersion
+	12, // 7: seldon.mlops.agent.ModelVersion.model:type_name -> seldon.mlops.scheduler.Model
+	3,  // 8: seldon.mlops.agent.AgentService.AgentEvent:input_type -> seldon.mlops.agent.ModelEventMessage
+	7,  // 9: seldon.mlops.agent.AgentService.Subscribe:input_type -> seldon.mlops.agent.AgentSubscribeRequest
+	5,  // 10: seldon.mlops.agent.AgentService.ModelScalingTrigger:input_type -> seldon.mlops.agent.ModelScalingTriggerMessage
+	4,  // 11: seldon.mlops.agent.AgentService.AgentEvent:output_type -> seldon.mlops.agent.ModelEventResponse
+	9,  // 12: seldon.mlops.agent.AgentService.Subscribe:output_type -> seldon.mlops.agent.ModelOperationMessage
+	6,  // 13: seldon.mlops.agent.AgentService.ModelScalingTrigger:output_type -> seldon.mlops.agent.ModelScalingTriggerResponse
+	11, // [11:14] is the sub-list for method output_type
+	8,  // [8:11] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_mlops_agent_agent_proto_init() }
@@ -748,7 +968,7 @@ func file_mlops_agent_agent_proto_init() {
 			}
 		}
 		file_mlops_agent_agent_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AgentSubscribeRequest); i {
+			switch v := v.(*ModelScalingTriggerMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -760,7 +980,7 @@ func file_mlops_agent_agent_proto_init() {
 			}
 		}
 		file_mlops_agent_agent_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ReplicaConfig); i {
+			switch v := v.(*ModelScalingTriggerResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -772,7 +992,7 @@ func file_mlops_agent_agent_proto_init() {
 			}
 		}
 		file_mlops_agent_agent_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelOperationMessage); i {
+			switch v := v.(*AgentSubscribeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -784,6 +1004,30 @@ func file_mlops_agent_agent_proto_init() {
 			}
 		}
 		file_mlops_agent_agent_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ReplicaConfig); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mlops_agent_agent_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ModelOperationMessage); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mlops_agent_agent_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ModelVersion); i {
 			case 0:
 				return &v.state
@@ -801,8 +1045,8 @@ func file_mlops_agent_agent_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mlops_agent_agent_proto_rawDesc,
-			NumEnums:      2,
-			NumMessages:   6,
+			NumEnums:      3,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

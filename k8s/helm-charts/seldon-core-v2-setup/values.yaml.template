@@ -129,6 +129,10 @@ serverConfig:
       registry: docker.io
       repository: seldonio/seldon-agent
       tag: #TAG_VERSION_PLACEHOLDER#
+    overcommitPercentage: "10"
+    scalingStatsPeriodSeconds: "20"
+    modelInferenceLagThreshold: "30"
+    modelInactiveSecondsThreshold: "600"
 
   mlserver:
     image:
@@ -137,7 +141,6 @@ serverConfig:
       repository: seldonio/mlserver
       tag: 1.2.0.dev5
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
-    overcommitPercentage: "10"
     modelVolumeStorage: 1Gi
     resources:
       memory: 1G
@@ -149,7 +152,6 @@ serverConfig:
       repository: nvidia/tritonserver
       tag: 22.05-py3
     serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
-    overcommitPercentage: "10"
     modelVolumeStorage: 1Gi
     resources:
       memory: 1G

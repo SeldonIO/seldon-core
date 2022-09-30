@@ -3,11 +3,12 @@ package cache
 import (
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	log "github.com/sirupsen/logrus"
 )
 
 type CacheTransactionManager struct {
-	cache     CacheManager
+	cache     interfaces.CacheManager
 	itemLocks sync.Map
 	logger    log.FieldLogger
 }
@@ -141,7 +142,7 @@ func (tx *CacheTransactionManager) Peek() (string, int64, error) {
 	return tx.cache.Peek()
 }
 
-func newCacheTransactionManager(cache CacheManager, logger log.FieldLogger) *CacheTransactionManager {
+func newCacheTransactionManager(cache interfaces.CacheManager, logger log.FieldLogger) *CacheTransactionManager {
 	return &CacheTransactionManager{
 		cache:     cache,
 		itemLocks: sync.Map{},

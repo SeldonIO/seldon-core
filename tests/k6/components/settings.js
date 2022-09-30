@@ -173,6 +173,14 @@ function doWarmup() {
     return true
 }
 
+
+function requestRate() {
+    if (__ENV.REQUEST_RATE) {
+        return __ENV.REQUEST_RATE
+    }
+    return 10
+}
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -200,5 +208,6 @@ export function getConfig() {
         "modelName" : modelName(),
         "inferType" : inferType(),
         "doWarmup": doWarmup(),
+        "requestRate": requestRate(),
     }
 }

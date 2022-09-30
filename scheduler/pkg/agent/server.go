@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 
@@ -47,7 +48,7 @@ type SchedulerAgent interface {
 
 type AgentSubscriber struct {
 	finished chan<- bool
-	mutext   sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
+	mutex    sync.Mutex // grpc streams are not thread safe for sendMsg https://github.com/grpc/grpc-go/issues/2355
 	stream   pb.AgentService_SubscribeServer
 }
 
@@ -171,12 +172,12 @@ func (s *Server) Sync(modelName string) {
 				continue
 			}
 
-			as.mutext.Lock()
+			as.mutex.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
 			})
-			as.mutext.Unlock()
+			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
@@ -198,12 +199,12 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
 				continue
 			}
-			as.mutext.Lock()
+			as.mutex.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
 			})
-			as.mutext.Unlock()
+			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				continue
@@ -247,6 +248,21 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.ModelEventResponse{}, nil
+}
+
+func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerServer) error {
+	for {
+		message, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.ModelScalingTriggerResponse{})
+		}
+		if err != nil {
+			return err
+		}
+		logger := s.logger.WithField("func", "ModelScalingTrigger")
+		logger.Infof("Received Event from server %s:%d for model %s:%d",
+			message.GetServerName(), message.GetReplicaIdx(), message.GetModelName(), message.GetModelVersion())
+	}
 }
 
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {

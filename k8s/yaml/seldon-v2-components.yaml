@@ -977,6 +977,12 @@ spec:
         value: mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
+      - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
+        value: "30"
+      - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
+        value: "600"
+      - name: SELDON_SCALING_STATS_PERIOD_SECONDS
+        value: "20"
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1144,6 +1150,12 @@ spec:
         value: triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
+      - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
+        value: "30"
+      - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
+        value: "600"
+      - name: SELDON_SCALING_STATS_PERIOD_SECONDS
+        value: "20"
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT

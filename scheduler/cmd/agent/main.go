@@ -15,6 +15,7 @@ import (
 
 	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton"
 
@@ -26,6 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/cmd/agent/cli"
@@ -183,12 +185,29 @@ func main() {
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
+	modelLagStatsWrapper := modelscaling.ModelScalingStatsWrapper{
+		Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+		Operator:  interfaces.Gte,
+		Threshold: uint(cli.ModelInferenceLagThreshold),
+		Reset:     true,
+		EventType: modelscaling.ScaleUpEvent,
+	}
+	modelLastUsedStatsWrapper := modelscaling.ModelScalingStatsWrapper{
+		Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+		Operator:  interfaces.Gte,
+		Threshold: uint(cli.ModelInactiveSecondsThreshold),
+		Reset:     false,
+		EventType: modelscaling.ScaleDownEvent,
+	}
+
 	rpHTTP := agent.NewReverseHTTPProxy(
 		logger,
 		cli.InferenceHost,
 		uint(cli.InferenceHttpPort),
 		uint(cli.ReverseProxyHttpPort),
 		promMetrics,
+		modelLagStatsWrapper.Stats,
+		modelLastUsedStatsWrapper.Stats,
 	)
 	defer func() { _ = rpHTTP.Stop() }()
 
@@ -198,11 +217,17 @@ func main() {
 		cli.InferenceHost,
 		uint(cli.InferenceGrpcPort),
 		uint(cli.ReverseProxyGrpcPort),
+		modelLagStatsWrapper.Stats,
+		modelLastUsedStatsWrapper.Stats,
 	)
 	defer func() { _ = rpGRPC.Stop() }()
 
-	clientDebugService := agent.NewClientDebug(logger, uint(cli.DebugGrpcPort))
-	defer func() { _ = clientDebugService.Stop() }()
+	agentDebugService := agent.NewAgentDebug(logger, uint(cli.DebugGrpcPort))
+	defer func() { _ = agentDebugService.Stop() }()
+
+	modelScalingService := modelscaling.NewStatsAnalyserService(
+		[]modelscaling.ModelScalingStatsWrapper{modelLagStatsWrapper, modelLastUsedStatsWrapper}, logger, uint(cli.ScalingStatsPeriodSeconds))
+	defer func() { _ = modelScalingService.Stop() }()
 
 	// Create Agent
 	client := agent.NewClient(
@@ -218,7 +243,8 @@ func main() {
 		cli.Namespace,
 		rpHTTP,
 		rpGRPC,
-		clientDebugService,
+		agentDebugService,
+		modelScalingService,
 		promMetrics,
 	)
 

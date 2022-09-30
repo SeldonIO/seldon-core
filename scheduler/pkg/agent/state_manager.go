@@ -22,7 +22,7 @@ type LocalStateManager struct {
 	cache                *cache.CacheTransactionManager
 	totalMainMemoryBytes uint64
 	overCommitPercentage uint32
-	// because of race conditions we might occassionatly go into negative memory
+	// because of race conditions we might occasionally go into negative memory
 	availableMainMemoryBytes int64
 	// lock for `availableMainMemoryBytes`
 	mu      sync.RWMutex

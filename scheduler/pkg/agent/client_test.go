@@ -13,7 +13,9 @@ import (
 	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -54,26 +56,26 @@ func (f FakeModelRepository) Ready() error {
 	return nil
 }
 
-type FakeClientService struct {
+type FakeDependencyService struct {
 	err error
 }
 
-func (f FakeClientService) SetState(state *LocalStateManager) {
+func (f FakeDependencyService) SetState(state interface{}) {
 }
 
-func (f FakeClientService) Start() error {
+func (f FakeDependencyService) Start() error {
 	return f.err
 }
 
-func (f FakeClientService) Ready() bool {
+func (f FakeDependencyService) Ready() bool {
 	return f.err == nil
 }
 
-func (f FakeClientService) Stop() error {
+func (f FakeDependencyService) Stop() error {
 	return f.err
 }
 
-func (f FakeClientService) Name() string {
+func (f FakeDependencyService) Name() string {
 	return "FakeService"
 }
 
@@ -171,11 +173,30 @@ func TestClientCreate(t *testing.T) {
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			rpHTTP := FakeClientService{err: nil}
-			rpGRPC := FakeClientService{err: nil}
-			clientDebug := FakeClientService{err: nil}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			lags := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     true,
+				EventType: modelscaling.ScaleUpEvent,
+			}
+			lastUsed := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     false,
+				EventType: modelscaling.ScaleDownEvent,
+			}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default", rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
+				"mlserver", 1, "scheduler", 9002, 9055,
+				logger, modelRepository, v2Client,
+				test.replicaConfig, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.DialContext(
 				context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -279,12 +300,29 @@ func TestLoadModel(t *testing.T) {
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
-			rpHTTP := FakeClientService{err: nil}
-			rpGRPC := FakeClientService{err: nil}
-			clientDebug := FakeClientService{err: nil}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			lags := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     true,
+				EventType: modelscaling.ScaleUpEvent,
+			}
+			lastUsed := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     false,
+				EventType: modelscaling.ScaleDownEvent,
+			}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
+				"mlserver", 1, "scheduler", 9002, 9055,
+				logger, modelRepository, v2Client, test.replicaConfig, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -300,6 +338,12 @@ func TestLoadModel(t *testing.T) {
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()
 				// we have only one version in the test
 				g.Expect(proto.Clone(loadedVersions[0])).To(Equal(proto.Clone(test.op.ModelVersion)))
+				// we have set model stats state
+				versionedModelName := util.GetVersionedModelName(test.op.GetModelVersion().Model.Meta.Name, test.op.GetModelVersion().GetVersion())
+				_, err := lags.Stats.Get(versionedModelName)
+				g.Expect(err).To(BeNil())
+				_, err = lastUsed.Stats.Get(versionedModelName)
+				g.Expect(err).To(BeNil())
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
@@ -398,12 +442,30 @@ parameters:
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
-			rpHTTP := FakeClientService{err: nil}
-			rpGRPC := FakeClientService{err: nil}
-			clientDebug := FakeClientService{err: nil}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			lags := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     true,
+				EventType: modelscaling.ScaleUpEvent,
+			}
+			lastUsed := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     false,
+				EventType: modelscaling.ScaleDownEvent,
+			}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
+				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository,
+				v2Client, test.replicaConfig, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService,
+				newFakeMetricsHandler())
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -518,12 +580,29 @@ func TestUnloadModel(t *testing.T) {
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
-			rpHTTP := FakeClientService{err: nil}
-			rpGRPC := FakeClientService{err: nil}
-			clientDebug := FakeClientService{err: nil}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			lags := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     true,
+				EventType: modelscaling.ScaleUpEvent,
+			}
+			lastUsed := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     false,
+				EventType: modelscaling.ScaleDownEvent,
+			}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			client := NewClient(
-				"mlserver", 1, "scheduler", 9002, 9055, logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, clientDebug, newFakeMetricsHandler())
+				"mlserver", 1, "scheduler", 9002, 9055, logger,
+				modelRepository, v2Client, test.replicaConfig, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -540,6 +619,12 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				// check model scaling stats removed
+				versionedModelName := util.GetVersionedModelName(test.unloadOp.GetModelVersion().Model.Meta.Name, test.unloadOp.GetModelVersion().GetVersion())
+				_, err := lags.Stats.Get(versionedModelName)
+				g.Expect(err).ToNot(BeNil())
+				_, err = lastUsed.Stats.Get(versionedModelName)
+				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))

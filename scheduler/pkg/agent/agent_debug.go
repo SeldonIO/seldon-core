@@ -20,7 +20,7 @@ const (
 	GRPCDebugServicePort = 7777
 )
 
-type ClientDebug struct {
+type agentDebug struct {
 	pbad.UnimplementedAgentDebugServiceServer
 	logger       log.FieldLogger
 	stateManager *LocalStateManager
@@ -30,18 +30,18 @@ type ClientDebug struct {
 	mu           sync.RWMutex
 }
 
-func NewClientDebug(logger log.FieldLogger, port uint) *ClientDebug {
-	return &ClientDebug{
+func NewAgentDebug(logger log.FieldLogger, port uint) *agentDebug {
+	return &agentDebug{
 		logger: logger,
 		port:   port,
 	}
 }
 
-func (cd *ClientDebug) SetState(sm *LocalStateManager) {
-	cd.stateManager = sm
+func (cd *agentDebug) SetState(sm interface{}) {
+	cd.stateManager = sm.(*LocalStateManager)
 }
 
-func (cd *ClientDebug) Start() error {
+func (cd *agentDebug) Start() error {
 	if cd.stateManager == nil {
 		return fmt.Errorf("set state before starting the debug service")
 	}
@@ -70,7 +70,7 @@ func (cd *ClientDebug) Start() error {
 	return nil
 }
 
-func (cd *ClientDebug) Stop() error {
+func (cd *agentDebug) Stop() error {
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
 	cd.grpcServer.GracefulStop()
@@ -78,17 +78,17 @@ func (cd *ClientDebug) Stop() error {
 	return nil
 }
 
-func (cd *ClientDebug) Ready() bool {
+func (cd *agentDebug) Ready() bool {
 	cd.mu.RLock()
 	defer cd.mu.RUnlock()
 	return cd.serverReady
 }
 
-func (rp *ClientDebug) Name() string {
-	return "ClientDebug GRPC service"
+func (rp *agentDebug) Name() string {
+	return "AgentDebug GRPC service"
 }
 
-func (cd *ClientDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
+func (cd *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
 	numModels := cd.stateManager.modelVersions.numModels()
 	models := make([]*pbad.ModelReplicaState, numModels)
 	i := 0

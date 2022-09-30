@@ -13,11 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func setupService(numModels int, modelPrefix string, capacity int) *ClientDebug {
+func setupService(numModels int, modelPrefix string, capacity int) *agentDebug {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	stateManager := setupLocalTestManager(numModels, modelPrefix, nil, capacity, 1)
-	clientDebugService := NewClientDebug(logger, GRPCDebugServicePort)
+	clientDebugService := NewAgentDebug(logger, GRPCDebugServicePort)
 	clientDebugService.SetState(stateManager)
 	return clientDebugService
 }

@@ -16,6 +16,8 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -30,23 +32,17 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-type ClientServiceInterface interface {
-	SetState(state *LocalStateManager)
-	Start() error
-	Ready() bool
-	Stop() error
-	Name() string
-}
-
 type Client struct {
-	logger             log.FieldLogger
-	configChan         chan config.AgentConfiguration
-	replicaConfig      *agent.ReplicaConfig
-	stateManager       *LocalStateManager
-	rpHTTP             ClientServiceInterface
-	rpGRPC             ClientServiceInterface
-	clientDebugService ClientServiceInterface
-	metrics            metrics.AgentMetricsHandler
+	logger                   log.FieldLogger
+	configChan               chan config.AgentConfiguration
+	replicaConfig            *agent.ReplicaConfig
+	stateManager             *LocalStateManager
+	rpHTTP                   interfaces.DependencyServiceInterface
+	rpGRPC                   interfaces.DependencyServiceInterface
+	agentDebugService        interfaces.DependencyServiceInterface
+	modelScalingService      interfaces.DependencyServiceInterface
+	metrics                  metrics.AgentMetricsHandler
+	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -91,9 +87,10 @@ func NewClient(serverName string,
 	v2Client *V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	namespace string,
-	reverseProxyHTTP ClientServiceInterface,
-	reverseProxyGRPC ClientServiceInterface,
-	clientDebugService ClientServiceInterface,
+	reverseProxyHTTP interfaces.DependencyServiceInterface,
+	reverseProxyGRPC interfaces.DependencyServiceInterface,
+	agentDebugService interfaces.DependencyServiceInterface,
+	modelScalingService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 ) *Client {
 
@@ -106,19 +103,20 @@ func NewClient(serverName string,
 	stateManager := NewLocalStateManager(
 		modelState, logger, v2Client, replicaConfig.GetMemoryBytes(), replicaConfig.GetOverCommitPercentage(), metrics)
 
-	clientDebugService.SetState(stateManager)
+	agentDebugService.SetState(stateManager)
 	reverseProxyHTTP.SetState(stateManager)
 	reverseProxyGRPC.SetState(stateManager)
 
 	return &Client{
-		logger:             logger.WithField("Name", "Client"),
-		configChan:         make(chan config.AgentConfiguration),
-		stateManager:       stateManager,
-		replicaConfig:      replicaConfig,
-		rpHTTP:             reverseProxyHTTP,
-		rpGRPC:             reverseProxyGRPC,
-		clientDebugService: clientDebugService,
-		metrics:            metrics,
+		logger:              logger.WithField("Name", "Client"),
+		configChan:          make(chan config.AgentConfiguration),
+		stateManager:        stateManager,
+		replicaConfig:       replicaConfig,
+		rpHTTP:              reverseProxyHTTP,
+		rpGRPC:              reverseProxyGRPC,
+		agentDebugService:   agentDebugService,
+		modelScalingService: modelScalingService,
+		metrics:             metrics,
 		ClientServices: ClientServices{
 			ModelRepository: modelRepository,
 		},
@@ -158,6 +156,7 @@ func (c *Client) Start() error {
 		c.logger.WithError(err).Fatal("Failed to start client")
 		return err
 	}
+
 	return nil
 }
 
@@ -210,8 +209,13 @@ func (c *Client) WaitReady() error {
 		return err
 	}
 
-	// debug service
-	if err := startSubService(c.clientDebugService, logger); err != nil {
+	// agent debug service
+	if err := startSubService(c.agentDebugService, logger); err != nil {
+		return err
+	}
+
+	// model scaling service
+	if err := startSubService(c.modelScalingService, logger); err != nil {
 		return err
 	}
 
@@ -244,8 +248,7 @@ func (c *Client) UnloadAllModels() error {
 	return nil
 }
 
-func startSubService(service ClientServiceInterface, logger *log.Entry) error {
-	// debug service
+func startSubService(service interfaces.DependencyServiceInterface, logger *log.Entry) error {
 	logger.Infof("Starting and waiting for %s", service.Name())
 	err := service.Start()
 	if err != nil {
@@ -326,6 +329,17 @@ func (c *Client) StartService() error {
 	go c.metrics.AddServerReplicaMetrics(
 		c.stateManager.totalMainMemoryBytes,
 		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
+
+	// start stream to server
+	clientStream, err := grpcClient.ModelScalingTrigger(context.Background())
+	if err != nil {
+		return err
+	}
+	c.modelScalingClientStream = clientStream
+	defer func() {
+		_, _ = clientStream.CloseAndRecv()
+	}()
+	go c.consumeModelScalingEvents()
 
 	for {
 		operation, err := stream.Recv()
@@ -431,6 +445,13 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 		return err
 	}
 
+	// add pointers in model scaling stats
+	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Add on
+	// each one of them
+	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
+		logger.WithError(err).Warnf("Cannot add model %s to scaling service", modelWithVersion)
+	}
+
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
 }
@@ -461,6 +482,13 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	if err := c.stateManager.UnloadModelVersion(modifiedModelVersionRequest); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
+	}
+
+	// remove pointers in model scaling stats
+	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Delete on
+	// each one of them
+	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
+		logger.WithError(err).Warnf("Cannot delete model %s from scaling service", modelWithVersion)
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
@@ -494,6 +522,46 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
 	return err
+}
+
+func (c *Client) sendModelScalingTriggerEvent(
+	modelName string, modelVersion uint32, scalingType modelscaling.ModelScalingEventType, amount uint32, data map[string]uint32) error {
+	triggerType := agent.ModelScalingTriggerMessage_SCALE_UP
+	if scalingType == modelscaling.ScaleDownEvent {
+		triggerType = agent.ModelScalingTriggerMessage_SCALE_DOWN
+	}
+	err := c.modelScalingClientStream.Send(&agent.ModelScalingTriggerMessage{
+		ServerName:   c.serverName,
+		ReplicaIdx:   c.replicaIdx,
+		ModelName:    modelName,
+		ModelVersion: modelVersion,
+		Trigger:      triggerType,
+		Amount:       amount,
+		Metrics:      data,
+	})
+	return err
+}
+
+func (c *Client) consumeModelScalingEvents() {
+	ch := c.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
+	for c.modelScalingService.Ready() {
+		e := <-ch
+		modelName, modelVersion, err := util.GetOrignalModelNameAndVersion(e.StatsData.ModelName)
+		if err != nil {
+			c.logger.WithError(err).Warnf("Trigger model scaling event model %s failed", e.StatsData.ModelName)
+			continue
+		} else {
+			c.logger.Debugf("Trigger model scaling event %d for model %s:%d with value %d",
+				e.EventType, modelName, modelVersion, e.StatsData.Value)
+		}
+		err = c.sendModelScalingTriggerEvent(
+			modelName, modelVersion, e.EventType, e.StatsData.Value, nil,
+		)
+		if err != nil {
+			c.logger.WithError(err).Warnf("Trigger model scaling event model %s failed", e.StatsData.ModelName)
+			continue
+		}
+	}
 }
 
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
