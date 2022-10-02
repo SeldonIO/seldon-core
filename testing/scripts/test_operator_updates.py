@@ -6,6 +6,7 @@ from seldon_e2e_utils import (
     retry_run,
     wait_for_rollout,
     wait_for_status,
+    API_ISTIO_GATEWAY
 )
 
 SELDON_VERSIONS_TO_TEST = [
@@ -24,7 +25,7 @@ def test_cluster_update(namespace, seldon_version):
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
-    assert_model("mymodel", namespace, initial=True)
+    assert_model("mymodel", namespace, initial=True, endpoint=API_ISTIO_GATEWAY)
 
     # Upgrade to source code version cluster-wide.
     def _upgrade_seldon():
@@ -32,11 +33,12 @@ def test_cluster_update(namespace, seldon_version):
             "helm upgrade seldon "
             "../../helm-charts/seldon-core-operator "
             "--namespace seldon-system "
+            "--set ambassador.enabled=true "
             "--wait",
             attempts=2,
         )
 
-    assert_model_during_op(_upgrade_seldon, "mymodel", namespace)
+    assert_model_during_op(_upgrade_seldon, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
 
 
 @pytest.mark.flaky(max_runs=2)
@@ -47,7 +49,7 @@ def test_namespace_update(namespace, seldon_version):
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
-    assert_model("mymodel", namespace, initial=True)
+    assert_model("mymodel", namespace, initial=True, endpoint=API_ISTIO_GATEWAY)
 
     # Label namespace to deploy a single operator
     retry_run(
@@ -61,6 +63,8 @@ def test_namespace_update(namespace, seldon_version):
             "../../helm-charts/seldon-core-operator "
             f"--namespace {namespace} "
             "--set crd.create=false "
+            "--set ambassador.enabled=true "
+            "--set istio.enabled=true "
             "--set singleNamespace=true "
             "--wait",
             attempts=2,
@@ -70,10 +74,12 @@ def test_namespace_update(namespace, seldon_version):
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
 
-    assert_model_during_op(_install_namespace_scoped, "mymodel", namespace)
+    assert_model_during_op(_install_namespace_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
 
     # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
     retry_run(f"helm delete seldon --namespace {namespace}")
+
 
 
 @pytest.mark.sequential
@@ -83,7 +89,7 @@ def test_label_update(namespace, seldon_version):
     retry_run(f"kubectl apply -f ../resources/graph1.json -n {namespace}")
     wait_for_status("mymodel", namespace)
     wait_for_rollout("mymodel", namespace)
-    assert_model("mymodel", namespace, initial=True)
+    assert_model("mymodel", namespace, initial=True, endpoint=API_ISTIO_GATEWAY)
 
     controller_id = f"seldon-{namespace}"
 
@@ -96,6 +102,8 @@ def test_label_update(namespace, seldon_version):
             "../../helm-charts/seldon-core-operator "
             f"--namespace {namespace} "
             "--set crd.create=false "
+            "--set ambassador.enabled=true "
+            "--set istio.enabled=true "
             f"--set controllerId={controller_id} "
             "--wait",
             attempts=2,
@@ -112,7 +120,8 @@ def test_label_update(namespace, seldon_version):
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
 
-    assert_model_during_op(_install_label_scoped, "mymodel", namespace)
+    assert_model_during_op(_install_label_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
 
     # Delete all resources (webhooks, etc.) before deleting namespace
+    retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
     retry_run(f"helm delete {controller_id} --namespace {namespace}")
