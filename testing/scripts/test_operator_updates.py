@@ -1,12 +1,12 @@
 import pytest
 
 from seldon_e2e_utils import (
+    API_ISTIO_GATEWAY,
     assert_model,
     assert_model_during_op,
     retry_run,
     wait_for_rollout,
     wait_for_status,
-    API_ISTIO_GATEWAY
 )
 
 SELDON_VERSIONS_TO_TEST = [
@@ -38,7 +38,9 @@ def test_cluster_update(namespace, seldon_version):
             attempts=2,
         )
 
-    assert_model_during_op(_upgrade_seldon, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
+    assert_model_during_op(
+        _upgrade_seldon, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY
+    )
 
 
 @pytest.mark.flaky(max_runs=2)
@@ -74,12 +76,13 @@ def test_namespace_update(namespace, seldon_version):
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
 
-    assert_model_during_op(_install_namespace_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
+    assert_model_during_op(
+        _install_namespace_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY
+    )
 
     # Delete all resources (webhooks, etc.) before deleting namespace
     retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
     retry_run(f"helm delete seldon --namespace {namespace}")
-
 
 
 @pytest.mark.sequential
@@ -120,7 +123,9 @@ def test_label_update(namespace, seldon_version):
         wait_for_status("mymodel", namespace)
         wait_for_rollout("mymodel", namespace)
 
-    assert_model_during_op(_install_label_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY)
+    assert_model_during_op(
+        _install_label_scoped, "mymodel", namespace, endpoint=API_ISTIO_GATEWAY
+    )
 
     # Delete all resources (webhooks, etc.) before deleting namespace
     retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
