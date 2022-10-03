@@ -43,6 +43,7 @@ def test_cluster_update(namespace, seldon_version):
     )
 
 
+@pytest.mark.skip(reason="test is flaky due to webhooks")
 @pytest.mark.flaky(max_runs=2)
 @pytest.mark.sequential
 @pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
@@ -84,6 +85,7 @@ def test_namespace_update(namespace, seldon_version):
     retry_run(f"helm delete seldon --namespace {namespace}")
 
 
+@pytest.mark.skip(reason="test is flaky due to webhooks")
 @pytest.mark.sequential
 @pytest.mark.parametrize("seldon_version", SELDON_VERSIONS_TO_TEST, indirect=True)
 def test_label_update(namespace, seldon_version):
