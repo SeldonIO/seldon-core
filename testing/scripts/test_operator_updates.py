@@ -81,7 +81,6 @@ def test_namespace_update(namespace, seldon_version):
     )
 
     # Delete all resources (webhooks, etc.) before deleting namespace
-    retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
     retry_run(f"helm delete seldon --namespace {namespace}")
 
 
@@ -128,5 +127,4 @@ def test_label_update(namespace, seldon_version):
     )
 
     # Delete all resources (webhooks, etc.) before deleting namespace
-    retry_run("kubectl delete validatingwebhookconfiguration -lapp=seldon")
     retry_run(f"helm delete {controller_id} --namespace {namespace}")
