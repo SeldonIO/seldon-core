@@ -1,15 +1,18 @@
 # Helm Install
 
-We provide two Helm charts.
+We provide several Helm charts.
 
  * `seldon-core-v2-crds` : cluster wide install of custom resources
  * `seldon-core-v2-setup` : installation of core components
  * `seldon-core-v2-servers` : a default set of servers
+ * `seldon-core-v2-certs` : a default set of certificates for TLS
 
 The Helm charts can be found within the `k8s/helm-charts` folder.
 
 Assuming you have installed any ecosystem components: Jaeger, Prometheus, Kafka as discussed [here](./index.md) you can follow the
 following steps.
+
+The Helm charts are provided as part of the repository. To use the instructions below clone the repostitory. They will be published in future.
 
 ## Install the CRDs
 

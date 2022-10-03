@@ -21,4 +21,5 @@ contents/architecture/index
 contents/faqs/index
 contents/metrics/index
 contents/performance-tests/index
+contents/development/index
 ```

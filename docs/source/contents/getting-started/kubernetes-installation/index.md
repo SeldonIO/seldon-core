@@ -1,10 +1,36 @@
 # Kubernetes Installation
 
+## Prerequisites
+
+### A running Kubernetes Cluster
+
 You will need a running Kubernetes cluster or can create a local KinD one for testing via [Ansible](ansible.md).
 
-You will also need to install our ecosystem components. For this we provide directions for [Ansible](ansible.md) to install these which includes Kafka, Prometheus, OpenTelemetry and Jeager. These are all optional except for Kafka if you wish to use Pipelines.
+### Install Ecosystem Components
 
-To install Seldon Core V2 itself you can choose:
+You will also need to install our ecosystem components. For this we provide directions for [Ansible](ansible.md) to install these.
+
+```{list-table}
+:header-rows: 1
+
+* - Component
+  - Summary
+* - Kafka
+  - Required for inference Pipeline usage.
+* - Prometheus
+  - (Optional) Exposes metrics.
+* - Grafana
+  - (Optional) UI for metrics.
+* - OpenTelemetry
+  - (Optional) Exposes tracing.
+* - Jaeger
+  - (Optional) UI for traces.
+
+```
+
+### Install
+
+To install Seldon Core V2 itself you can choose from the following. At presdent, all require a clone of the source repository.
 
  * [Helm chart](helm.md)
  * [Raw yaml](raw.md)

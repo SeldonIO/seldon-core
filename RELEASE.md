@@ -1,4 +1,3 @@
-# Release Process
 
 This document summarize the release process for Seldon Core V2.
 This document is meant mainly at the maintainers.

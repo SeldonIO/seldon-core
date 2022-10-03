@@ -49,7 +49,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - MLServer
   - `python`
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/custom/README.md)
-  - TBC  
+  - [example](../../examples/pandasquery.md)
 * - Custom Python
   - Triton
   - `triton-python`

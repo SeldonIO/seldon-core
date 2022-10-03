@@ -9,18 +9,18 @@
 
 There are three core resources you will use:
 
- * Models - for deploying single machine learning models, custom transformation logic, drift detectors and outliers detectors.
- * Pipelines - for connecting together flows of data between models
- * Experiments - for testing new versions of models
+ * [Models](../models/index.md) - for deploying single machine learning models, custom transformation logic, drift detectors and outliers detectors.
+ * [Pipelines](../pipelines/index.md) - for connecting together flows of data transformations between Models with a synchronous path and multiple asynchronous paths.
+ * [Experiments](../experiments/index.md) - for testing new versions of models
 
 By default the standard installation will deploy MLServer and Triton inference servers which provide support for a wide range of machine learning model artifacts including Tensorflow models, PyTorch models, SKlearn models, XGBoost models, ONNX models, TensorRT models, custom python models and many more. For advanced use, the creation of new inference servers is manged by two resources:
 
- * Servers - for deploying sets of replicas of core inference servers (MLServer or Triton).
- * ServerConfigs - for defining server configurations
+ * [Servers](../servers/index.md) - for deploying sets of replicas of core inference servers (MLServer or Triton by default).
+ * [ServerConfigs](../kubernetes/resources/serverconfig/index.md) - for defining server configurations including custom servers.
 
 ## API for Inference
 
-Once deployed models can be called using the Seldon V2 inference protocol. This protocol created by Seldon, NVIDIA and the KServe projects is supported by MLServer and Triton inference servers and allows REST and gRPC calls to your model.
+Once deployed models can be called using the [Seldon V2 inference protocol](../apis/inference/v2.md). This protocol created by Seldon, NVIDIA and the KServe projects is supported by MLServer and Triton inference servers amingst others and allows REST and gRPC calls to your model.
 
 Your model is exposed via our internal Envoy gateway. If you wish to expose your models in Kubernetes outside the cluster you are free to use any Service Mesh or Ingress technology. Various examples are provided for service mesh integration.
 
@@ -31,7 +31,6 @@ Metrics are exposed for scrapping by Prometheus. For Kubernetes we provide examp
 ## Pipeline requirements
 
 Pipelines are built upon Kafka streaming technology.
-
 
 
 ```{toctree}

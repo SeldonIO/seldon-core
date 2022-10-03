@@ -4,22 +4,21 @@ Seldon V2 APIs provide a state of the art solution for machine learning inferenc
 
 ## Features
 
- * A single platform for inference.
-   * Deploy a wide range of model artifacts and custom models with a single solution.
+ * A single platform for inference of wide range of standard and custom artifacts.
  * Deploy locally in Docker during development and testing of models.
  * Deploy at scale on Kubernetes for production.
  * Deploy single models to multi-step pipelines.
- * Save infrastructure costs by deploys multiple models transparently in inference servers.
+ * Save infrastructure costs by deploying multiple models transparently in inference servers.
  * Overcommit on resources to deploy more models than available memory.
- * Dynamically extended models with pipelines with a data-centric perspective backed by Kafka
- * Explain individual models and pipeliens with state of the art explanation techniques
- * Deploy drift and outlier detectors alongside models
+ * Dynamically extended models with pipelines with a data-centric perspective backed by Kafka.
+ * Explain individual models and pipelines with state of the art explanation techniques.
+ * Deploy drift and outlier detectors alongside models.
  * Kubernetes Service mesh agnostic - use the service mesh of your choice.
 
 
-## Core features and comparison to V1 Seldon Core APIs
+## Core features and comparison to Seldon Core V1 APIs
 
-Out V2 APIs separate out core tasks into separate resources allowing users to get started fast with deploying a Model and the progressing to more complex Pipelines, Explainers and Experiments.
+Our V2 APIs separate out core tasks into separate resources allowing users to get started fast with deploying a Model and the progressing to more complex Pipelines, Explanations and Experiments.
 
 ![intro](intro.png)
 

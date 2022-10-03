@@ -38,6 +38,10 @@ If you have set the local model folder as above then this would be looking at `/
 
 The default local install will provide Jaeger tracing at `http://0.0.0.0:16686/search`.
 
+## Metrics
+
+The default local install wille expose Grafana at `http://localhost:3000`.
+
 ## Undeploy
 
 From the project root run:
