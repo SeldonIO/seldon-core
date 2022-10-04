@@ -59,7 +59,7 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
-	if config.Kafka.Bootstrap != "" {
+	if config.Kafka != nil && config.Kafka.Bootstrap != "" {
 		kafkaBroker = config.Kafka.Bootstrap
 	}
 	consumerConfig := kafka.ConfigMap{
