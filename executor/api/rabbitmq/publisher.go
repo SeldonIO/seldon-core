@@ -47,12 +47,6 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 	default:
 	}
 
-	_, err := p.DeclareQueue(p.queueName)
-	if err != nil {
-		p.log.Error(err, "error declaring rabbitmq queue", "uri", p.uri)
-		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
-	}
-
 	body, err := payload.GetBytes()
 	if err != nil {
 		p.log.Error(err, "error retrieving payload bytes")

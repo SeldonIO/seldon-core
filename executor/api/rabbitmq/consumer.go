@@ -50,12 +50,6 @@ func (c *consumer) Consume(
 	default:
 	}
 
-	_, err := c.DeclareQueue(c.queueName)
-	if err != nil {
-		c.log.Error(err, "error declaring rabbitmq queue", "uri", c.uri)
-		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
-	}
-
 	// default exchange with queue name as name is the same as a direct exchange routed to the queue
 	deliveries, err := c.channel.Consume(
 		c.queueName,   // name

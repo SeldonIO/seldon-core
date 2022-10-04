@@ -152,8 +152,6 @@ func TestRabbitMqServer(t *testing.T) {
 
 		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
 			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
-		mockRmqChan.On("QueueDeclare", inputQueue, queueDurable, queueAutoDelete, queueExclusive,
-			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 
 		mockDeliveries := make(chan amqp.Delivery, 1)
 		mockDeliveries <- testDelivery
@@ -193,8 +191,6 @@ func TestRabbitMqServer(t *testing.T) {
 
 		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
 			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
-		mockRmqChan.On("QueueDeclare", inputQueue, queueDurable, queueAutoDelete, queueExclusive,
-			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 
 		mockDeliveries := make(chan amqp.Delivery, 1)
 		mockDeliveries <- invalidDelivery
@@ -226,9 +222,6 @@ func TestRabbitMqServer(t *testing.T) {
 			Body:         []byte(`{ "data": { "ndarray": [[1,2,3,4]] } }`),
 			Headers:      testHeaders,
 		}
-
-		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
-			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 
 		publisher := &publisher{*mockConn, outputQueue}
 
