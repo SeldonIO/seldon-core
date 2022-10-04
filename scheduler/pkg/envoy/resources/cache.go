@@ -1,5 +1,7 @@
 package resources
 
+import "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+
 const (
 	PipelineGatewayHttpClusterName = "pipelinegateway_http"
 	PipelineGatewayGrpcClusterName = "pipelinegateway_grpc"
@@ -57,4 +59,10 @@ type PipelineRoute struct {
 type PipelineTrafficSplits struct {
 	PipelineName  string
 	TrafficWeight uint32
+}
+
+type Secret struct {
+	Name                 string
+	ValidationSecretName string
+	Certificate          tls.CertificateStoreHandler
 }

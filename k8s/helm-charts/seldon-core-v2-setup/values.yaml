@@ -1,28 +1,67 @@
+# Security settings
 security:
   controlplane:
     protocol: PLAINTEXT
     ssl:
       server:
-        secret:
+        secret: seldon-controlplane-server
+        clientValidationSecret: seldon-controlplane-client
+        keyPath: /tmp/certs/cps/tls.key
+        crtPath: /tmp/certs/cps/tls.crt
+        caPath: /tmp/certs/cps/ca.crt
+        clientCaPath: /tmp/certs/cpc/ca.crt
       client:
-        secret:
-      key: /tmp/certs/controlplane/tls.key
-      crt: /tmp/certs/controlplane/tls.crt
-      ca: /tmp/certs/controlplane/ca.crt
+        secret: seldon-controlplane-client
+        serverValidationSecret: seldon-controlplane-server
+        keyPath: /tmp/certs/cpc/tls.key
+        crtPath: /tmp/certs/cpc/tls.crt
+        caPath: /tmp/certs/cpc/ca.crt
+        serverCaPath: /tmp/certs/cps/ca.crt
   kafka:
     protocol: PLAINTEXT
     ssl:
       client:
         secret:
-        key: /tmp/certs/kafka/client/tls.key
-        crt: /tmp/certs/kafka/client/tls.crt
-        ca: /tmp/certs/kafka/client/ca.crt
-      broker:
-        secret:
-        ca: /tmp/certs/kafka/broker/ca.crt
+        brokerValidationSecret:
+        keyPath: /tmp/certs/kafka/client/tls.key
+        crtPath: /tmp/certs/kafka/client/tls.crt
+        caPath: /tmp/certs/kafka/client/ca.crt
+        brokerCaPath: /tmp/certs/kafka/broker/ca.crt
         endpointIdentificationAlgorithm:
-  dataplane:
+  envoy:
     protocol: PLAINTEXT
+    ssl:
+      upstream:
+        server:
+          secret: seldon-upstream-server
+          clientValidationSecret: seldon-upstream-client
+          keyPath: /tmp/certs/dus/tls.key
+          crtPath: /tmp/certs/dus/tls.crt
+          caPath: /tmp/certs/dus/ca.crt
+          clientCaPath: /tmp/certs/duc/ca.crt
+        client:
+          secret: seldon-upstream-client
+          serverValidationSecret: seldon-upstream-server
+          keyPath: /tmp/certs/duc/tls.key
+          crtPath: /tmp/certs/duc/tls.crt
+          caPath: /tmp/certs/duc/ca.crt
+          serverCaPath: /tmp/certs/dus/ca.crt
+      downstream:
+        server:
+          secret: seldon-downstream-server
+          clientValidationSecret:
+          keyPath: /tmp/certs/dds/tls.key
+          crtPath: /tmp/certs/dds/tls.crt
+          caPath: /tmp/certs/dds/ca.crt
+          clientCaPath: /tmp/certs/ddc/ca.crt
+        client:
+          mtls: false
+          secret:
+          serverValidationSecret: seldon-downstream-server
+          keyPath: /tmp/certs/ddc/tls.key
+          crtPath: /tmp/certs/ddc/tls.crt
+          caPath: /tmp/certs/ddc/ca.crt
+          serverCaPath: /tmp/certs/dds/ca.crt
   
 opentelemetry:
   endpoint: seldon-collector:4317

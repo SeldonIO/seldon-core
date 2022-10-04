@@ -113,6 +113,8 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
+      - name: REQUESTS_CA_BUNDLE
+        value: "/mnt/certs/ca.crt"
       resources:
         requests:
           cpu: '0.1'
@@ -152,6 +154,9 @@ spec:
       - mountPath: /mnt/agent
         name: mlserver-models
         readOnly: true
+      - mountPath: /mnt/certs
+        name: downstream-ca-certs
+        readOnly: true
     securityContext:
       fsGroup: 2000
       runAsUser: 1000
@@ -163,6 +168,10 @@ spec:
     - name: tracing-config-volume
       configMap:
         name: seldon-tracing
+    - name: downstream-ca-certs
+      secret:
+        secretName: seldon-downstream-server
+        optional: true
   volumeClaimTemplates:
   - name: mlserver-models
     spec:

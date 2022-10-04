@@ -46,8 +46,10 @@ func NewSchedulerClient(schedulerHost string) (*SchedulerClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	if config.SchedulerHost != "" {
-		schedulerHost = config.SchedulerHost
+
+	// Overwrite host if set in config
+	if config.Controlplane != nil && config.Controlplane.SchedulerHost != "" {
+		schedulerHost = config.Controlplane.SchedulerHost
 	}
 	return &SchedulerClient{
 		schedulerHost: schedulerHost,
@@ -57,19 +59,19 @@ func NewSchedulerClient(schedulerHost string) (*SchedulerClient, error) {
 }
 
 func (sc *SchedulerClient) loadKeyPair() (credentials.TransportCredentials, error) {
-	certificate, err := tls.LoadX509KeyPair(sc.config.TlsCrtPath, sc.config.TlsKeyPath)
+	certificate, err := tls.LoadX509KeyPair(sc.config.Controlplane.CrtPath, sc.config.Controlplane.KeyPath)
 	if err != nil {
 		return nil, err
 	}
 
-	ca, err := os.ReadFile(sc.config.CaCrtPath)
+	ca, err := os.ReadFile(sc.config.Controlplane.CaPath)
 	if err != nil {
 		return nil, err
 	}
 
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(ca) {
-		return nil, fmt.Errorf("Failed to load ca crt from %s", sc.config.CaCrtPath)
+		return nil, fmt.Errorf("Failed to load ca crt from %s", sc.config.Controlplane.CaPath)
 	}
 
 	tlsConfig := &tls.Config{
@@ -85,7 +87,7 @@ func (sc *SchedulerClient) getConnection() (*grpc.ClientConn, error) {
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
 	opts := []grpc.DialOption{}
-	if sc.config.TlsKeyPath == "" {
+	if sc.config.Controlplane == nil || sc.config.Controlplane.KeyPath == "" {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
 		tlsConfig, err := sc.loadKeyPair()

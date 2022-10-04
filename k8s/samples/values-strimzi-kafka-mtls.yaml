@@ -7,9 +7,8 @@ security:
     ssl:
       client:
         secret: seldon
-        key: /tmp/certs/kafka/client/user.key
-        crt: /tmp/certs/kafka/client/user.crt
-        ca: /tmp/certs/kafka/client/ca.crt
-      broker:
-        secret: seldon-cluster-ca-cert
-        ca: /tmp/certs/kafka/broker/ca.crt
+        brokerValidationSecret: seldon-cluster-ca-cert        
+        keyPath: /tmp/certs/kafka/client/user.key
+        crtPath: /tmp/certs/kafka/client/user.crt
+        caPath: /tmp/certs/kafka/client/ca.crt
+        brokerCa: /tmp/certs/kafka/broker/ca.crt

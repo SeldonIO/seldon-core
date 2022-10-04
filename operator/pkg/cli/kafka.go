@@ -59,6 +59,8 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
+
+	// Overwrite broker if set in config
 	if config.Kafka != nil && config.Kafka.Bootstrap != "" {
 		kafkaBroker = config.Kafka.Bootstrap
 	}
@@ -68,11 +70,11 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 		"auto.offset.reset": "largest",
 	}
 
-	if config.Kafka != nil && config.Kafka.ClientSSL != nil && config.Kafka.BrokerSSL != nil {
+	if config.Kafka != nil {
 		consumerConfig["security.protocol"] = "ssl"
-		consumerConfig["ssl.ca.location"] = config.Kafka.BrokerSSL.CaPath
-		consumerConfig["ssl.key.location"] = config.Kafka.ClientSSL.KeyPath
-		consumerConfig["ssl.certificate.location"] = config.Kafka.ClientSSL.CrtPath
+		consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
+		consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
+		consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
 	}
 
 	consumer, err := kafka.NewConsumer(&consumerConfig)

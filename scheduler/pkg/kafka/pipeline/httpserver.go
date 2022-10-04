@@ -7,8 +7,9 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"path"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"github.com/gorilla/mux"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -22,13 +23,13 @@ const (
 )
 
 type GatewayHttpServer struct {
-	port    int
-	router  *mux.Router
-	server  *http.Server
-	logger  log.FieldLogger
-	ssl     *TLSDetails
-	gateway PipelineInferer
-	metrics metrics.PipelineMetricsHandler
+	port       int
+	router     *mux.Router
+	server     *http.Server
+	logger     log.FieldLogger
+	gateway    PipelineInferer
+	metrics    metrics.PipelineMetricsHandler
+	tlsOptions *util.TLSOptions
 }
 
 type TLSDetails struct {
@@ -37,14 +38,14 @@ type TLSDetails struct {
 	KeyFilename   string
 }
 
-func NewGatewayHttpServer(port int, logger log.FieldLogger, ssl *TLSDetails, gateway PipelineInferer, metrics metrics.PipelineMetricsHandler) *GatewayHttpServer {
+func NewGatewayHttpServer(port int, logger log.FieldLogger, gateway PipelineInferer, metrics metrics.PipelineMetricsHandler, tlsOptions *util.TLSOptions) *GatewayHttpServer {
 	return &GatewayHttpServer{
-		port:    port,
-		router:  mux.NewRouter(),
-		logger:  logger.WithField("source", "GatewayHttpServer"),
-		ssl:     ssl,
-		gateway: gateway,
-		metrics: metrics,
+		port:       port,
+		router:     mux.NewRouter(),
+		logger:     logger.WithField("source", "GatewayHttpServer"),
+		gateway:    gateway,
+		metrics:    metrics,
+		tlsOptions: tlsOptions,
 	}
 }
 
@@ -70,15 +71,10 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 	// Create a listener at the desired port.
 	var lis net.Listener
 	var err error
-	if g.ssl != nil && len(g.ssl.CertMountPath) > 0 {
+	if g.tlsOptions.TLS {
 		g.logger.Infof("Creating TLS listener on port %d", g.port)
-		certPath := path.Join(g.ssl.CertMountPath, g.ssl.CertFilename)
-		keyPath := path.Join(g.ssl.CertMountPath, g.ssl.KeyFilename)
-		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
-		if err != nil {
-			log.Fatalf("Error certificate could not be found: %v", err)
-		}
-		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", g.port), &tls.Config{Certificates: []tls.Certificate{cert}})
+
+		lis, err = tls.Listen("tcp", fmt.Sprintf(":%d", g.port), g.tlsOptions.Cert.CreateServerTLSConfig())
 		if err != nil {
 			log.Fatalf("failed to create listener: %v", err)
 		}

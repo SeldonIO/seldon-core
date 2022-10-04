@@ -48,7 +48,10 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			inferenceClient := cli.NewInferenceClient(inferenceHost)
+			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			if err != nil {
+				return err
+			}
 			iterations, err := cmd.Flags().GetInt(inferenceIterationsFlag)
 			if err != nil {
 				return err

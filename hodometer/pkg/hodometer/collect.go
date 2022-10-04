@@ -79,7 +79,8 @@ func NewSeldonCoreCollector(
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
 			return nil, err
 		}

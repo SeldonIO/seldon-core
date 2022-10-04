@@ -63,7 +63,7 @@ func NewIncrementalProcessor(
 	pipelineHandler pipeline.PipelineHandler,
 	hub *coordinator.EventHub,
 	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
-) *IncrementalProcessor {
+) (*IncrementalProcessor, error) {
 	ip := &IncrementalProcessor{
 		cache:            cache,
 		nodeID:           nodeID,
@@ -77,7 +77,11 @@ func NewIncrementalProcessor(
 		batchWaitMillis:  defaultBatchWaitMillis,
 	}
 
-	ip.setListeners()
+	err := ip.setListeners()
+	if err != nil {
+		return nil, err
+	}
+
 	hub.RegisterModelEventHandler(
 		modelEventHandlerName,
 		pendingSyncsQueueSize,
@@ -97,7 +101,7 @@ func NewIncrementalProcessor(
 		ip.handlePipelinesEvents,
 	)
 
-	return ip
+	return ip, nil
 }
 
 func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
@@ -154,10 +158,15 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	}()
 }
 
-func (p *IncrementalProcessor) setListeners() {
+func (p *IncrementalProcessor) setListeners() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	err := p.xdsCache.SetupTLS()
+	if err != nil {
+		return err
+	}
 	p.xdsCache.AddListeners()
+	return nil
 }
 
 // newSnapshotVersion increments the current snapshotVersion
@@ -183,6 +192,7 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 			rsrc.ClusterType:  p.xdsCache.ClusterContents(),  // clusters
 			rsrc.RouteType:    p.xdsCache.RouteContents(),    // routes
 			rsrc.ListenerType: p.xdsCache.ListenerContents(), // listeners
+			rsrc.SecretType:   p.xdsCache.SecretContents(),   // Secrets
 		})
 	if err != nil {
 		return err

@@ -71,3 +71,86 @@ spec:
   issuerRef:
     name: seldon-ca-issuer
     kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-upstream-server
+spec:
+  secretName: seldon-upstream-server
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "*.seldon-mesh.svc"
+  dnsNames:
+  - "seldon-mesh"    
+  - "*.seldon-mesh"    
+  - "*.seldon-mesh.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-upstream-client
+spec:
+  secretName: seldon-upstream-client
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "*.seldon-mesh.svc"
+  dnsNames:
+  - "seldon-mesh"
+  - "*.seldon-mesh"    
+  - "*.seldon-mesh.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-downstream-server
+spec:
+  secretName: seldon-downstream-server
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "seldon-mesh.svc"
+  dnsNames:
+  - "seldon-mesh"    
+  - "seldon-mesh.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seldon-downstream-client
+spec:
+  secretName: seldon-downstream-client
+  duration: 2160h
+  renewBefore: 360h
+  commonName: "*.seldon-mesh.svc"
+  dnsNames:
+  - "seldon-mesh"    
+  - "*.seldon-mesh"    
+  - "*.seldon-mesh.svc"
+  - localhost
+  usages:
+  - server auth
+  - client auth
+  issuerRef:
+    name: seldon-ca-issuer
+    kind: Issuer

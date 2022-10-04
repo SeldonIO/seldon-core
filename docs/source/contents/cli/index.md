@@ -68,7 +68,7 @@ export SELDON_KAFKA_BROKER=<ip>:<port>
 
 ## Config file
 
-You can create a config file in `$HOME/.config/seldon/cli`
+You can create a config file in `$HOME/.config/seldon/cli`. The settings will override any environment variable settings.
 
 The definition is shown below:
 
@@ -82,10 +82,13 @@ An example below shows an example where we connect via TLS to the Seldon schedul
 
 ```
 {
-    "schedulerHost": "seldon-scheduler.svc:9044",
-    "tlsKeyPath": "/home/seldon/certs/tls.key",
-    "tlsCrtPath": "/home/seldon/certs/tls.crt",
-    "caCrtPath": "/home/seldon/certs//ca.crt"
+    "controlplane":{
+	"schedulerHost": "seldon-scheduler.svc:9044",
+	"tls"; true,
+	"keyPath": "/home/certs/seldon-scheduler-client/tls.key",
+	"crtPath": "/home/certs/seldon-scheduler-client/tls.crt",
+	"caPath": "/home/certs/seldon-scheduler-client/ca.crt"
+    }
 }
 
 ```

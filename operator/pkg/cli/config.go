@@ -9,27 +9,34 @@ import (
 
 // start config struct
 type SeldonCLIConfig struct {
-	SchedulerHost string       `json:"schedulerHost,omitempty"`
-	TlsKeyPath    string       `json:"tlsKeyPath,omitempty"`
-	TlsCrtPath    string       `json:"tlsCrtPath,omitempty"`
-	CaCrtPath     string       `json:"caCrtPath,omitempty"`
-	Kafka         *KafkaConfig `json:"kafka,omitempty"`
+	Dataplane    *Dataplane    `json:"dataplane,omitempty"`
+	Controlplane *ControlPlane `json:"controlplane,omitempty"`
+	Kafka        *KafkaConfig  `json:"kafka,omitempty"`
+}
+
+type Dataplane struct {
+	InferHost     string `json:"inferHost,omitempty"`
+	Tls           bool   `json:"tls,omitempty"`
+	SkipSSLVerify bool   `json:"skipSSLVerify,omitempty"`
+	KeyPath       string `json:"keyPath,omitempty"`
+	CrtPath       string `json:"crtPath,omitempty"`
+	CaPath        string `json:"caPath,omitempty"`
+}
+
+type ControlPlane struct {
+	SchedulerHost string `json:"schedulerHost,omitempty"`
+	Tls           bool   `json:"tls,omitempty"`
+	KeyPath       string `json:"keyPath,omitempty"`
+	CrtPath       string `json:"crtPath,omitempty"`
+	CaPath        string `json:"caPath,omitempty"`
 }
 
 type KafkaConfig struct {
-	Bootstrap string     `json:"bootstrap,omitempty"`
-	ClientSSL *ClientSSL `json:"clientSSL,omitempty"`
-	BrokerSSL *BrokerSSL `json:"brokerSSL,omitempty"`
-}
-
-type ClientSSL struct {
-	KeyPath string `json:"keyPath,omitempty"`
-	CrtPath string `json:"crtPath,omitempty"`
-	CaPath  string `json:"caPath,omitempty"`
-}
-
-type BrokerSSL struct {
-	CaPath string `json:"caPath,omitempty"`
+	Bootstrap string `json:"bootstrap,omitempty"`
+	Tls       bool   `json:"tls,omitempty"`
+	KeyPath   string `json:"keyPath,omitempty"`
+	CrtPath   string `json:"crtPath,omitempty"`
+	CaPath    string `json:"caPath,omitempty"`
 }
 
 // end config struct

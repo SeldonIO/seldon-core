@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -12,47 +13,60 @@ import (
 )
 
 const (
-	envKeyLocationSuffix = "_TLS_KEY_LOCATION"
-	envCrtLocationSuffix = "_TLS_CRT_LOCATION"
-	envCaLocationSuffix  = "_TLS_CA_LOCATION"
+	EnvKeyLocationSuffix = "_TLS_KEY_LOCATION"
+	EnvCrtLocationSuffix = "_TLS_CRT_LOCATION"
+	EnvCaLocationSuffix  = "_TLS_CA_LOCATION"
 )
 
 type TlsFolderHandler struct {
-	opts         CertificateStoreOptions
+	prefix       string
 	certFilePath string
 	keyFilePath  string
 	caFilePath   string
-	updater      UpdateCertificateHandler
 	logger       log.FieldLogger
 	watcher      filewatcher.FileWatcher
+	validation   bool
+	cert         *CertificateWrapper
+	mu           sync.RWMutex
 }
 
-func NewTlsFolderHandler(opts CertificateStoreOptions, logger log.FieldLogger) (*TlsFolderHandler, error) {
+func NewTlsFolderHandler(prefix string, validation bool, logger log.FieldLogger) (*TlsFolderHandler, error) {
 	var certFilePath, keyFilePath string
 	var ok bool
-	if !opts.caOnly {
-		certFilePath, ok = getEnv(opts.prefix, envCrtLocationSuffix)
+	if !validation {
+		certFilePath, ok = getEnv(prefix, EnvCrtLocationSuffix)
 		if !ok {
-			return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envCrtLocationSuffix)
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCrtLocationSuffix)
 		}
-		keyFilePath, ok = getEnv(opts.prefix, envKeyLocationSuffix)
+		keyFilePath, ok = getEnv(prefix, EnvKeyLocationSuffix)
 		if !ok {
-			return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envKeyLocationSuffix)
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvKeyLocationSuffix)
 		}
 	}
-	caFilePath, ok := getEnv(opts.prefix, envCaLocationSuffix)
+	caFilePath, ok := getEnv(prefix, EnvCaLocationSuffix)
 	if !ok {
-		return nil, fmt.Errorf("Failed to find %s%s", opts.prefix, envCaLocationSuffix)
+		if validation {
+			return nil, nil // Allow ca only to be optional and return nil
+		} else {
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCaLocationSuffix)
+		}
 	}
 
 	return &TlsFolderHandler{
-		opts:         opts,
+		prefix:       prefix,
 		certFilePath: certFilePath,
 		keyFilePath:  keyFilePath,
 		caFilePath:   caFilePath,
 		watcher:      filewatcher.NewWatcher(),
 		logger:       logger,
+		validation:   validation,
 	}, nil
+}
+
+func (t *TlsFolderHandler) GetCertificate() *CertificateWrapper {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	return t.cert
 }
 
 func (t *TlsFolderHandler) loadCertificate() (*CertificateWrapper, error) {
@@ -62,12 +76,21 @@ func (t *TlsFolderHandler) loadCertificate() (*CertificateWrapper, error) {
 		CrtPath: t.certFilePath,
 		CaPath:  t.caFilePath,
 	}
-	if !t.opts.caOnly {
+	if !t.validation {
 		certificate, err := tls.LoadX509KeyPair(t.certFilePath, t.keyFilePath)
 		if err != nil {
 			return nil, err
 		}
 		c.Certificate = &certificate
+		// Load raw versions
+		c.CrtRaw, err = os.ReadFile(t.certFilePath)
+		if err != nil {
+			return nil, err
+		}
+		c.KeyRaw, err = os.ReadFile(t.keyFilePath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	caRaw, err := os.ReadFile(t.caFilePath)
@@ -80,31 +103,36 @@ func (t *TlsFolderHandler) loadCertificate() (*CertificateWrapper, error) {
 		return nil, fmt.Errorf("Failed to load ca crt from %s", t.caFilePath)
 	}
 	c.Ca = capool
+	c.CaRaw = caRaw
 	return &c, nil
 }
 
 func (t *TlsFolderHandler) reloadCertificate() {
 	logger := t.logger.WithField("func", "reloadCertificate")
-	cert, err := t.loadCertificate()
+	var err error
+	t.mu.Lock()
+	t.cert, err = t.loadCertificate()
+	t.mu.Unlock()
 	if err != nil {
 		logger.WithError(err).Error("Failed to reload certificate")
 		return
 	}
-	t.updater.UpdateCertificate(cert)
 }
 
-func (t *TlsFolderHandler) GetCertificateAndWatch(updater UpdateCertificateHandler) (*CertificateWrapper, error) {
-	cert, err := t.loadCertificate()
+func (t *TlsFolderHandler) GetCertificateAndWatch() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	var err error
+	t.cert, err = t.loadCertificate()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	t.updater = updater
-	if !t.opts.caOnly {
+	if !t.validation {
 		addFileWatcher(t.watcher, t.keyFilePath, t.reloadCertificate)
 		addFileWatcher(t.watcher, t.certFilePath, t.reloadCertificate)
 	}
 	addFileWatcher(t.watcher, t.caFilePath, t.reloadCertificate)
-	return cert, nil
+	return nil
 }
 
 // Utility function as used in istio to use filewatcher.
@@ -130,7 +158,7 @@ func addFileWatcher(fileWatcher filewatcher.FileWatcher, file string, callback f
 
 func (t *TlsFolderHandler) Stop() {
 	logger := t.logger.WithField("func", "Stop")
-	if !t.opts.caOnly {
+	if !t.validation {
 		err := t.watcher.Remove(t.keyFilePath)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to stop watch on %s", t.keyFilePath)

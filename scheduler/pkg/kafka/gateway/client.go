@@ -51,7 +51,8 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		kc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		kc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
 			return err
 		}

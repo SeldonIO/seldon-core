@@ -149,15 +149,16 @@ func main() {
 	defer eventHub.Close()
 	go makeSignalHandler(logger, done)
 
-	// Create a cache
-	cache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
-
 	// Start xDS server
-	go func() {
-		ctx := context.Background()
-		srv := serverv3.NewServer(ctx, cache, nil)
-		server.RunServer(ctx, srv, envoyPort)
-	}()
+	// Create a cache
+	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
+	ctx := context.Background()
+	srv := serverv3.NewServer(ctx, xdsCache, nil)
+	xdsServer := server.NewXDSServer(srv, logger)
+	err = xdsServer.StartXDSServer(envoyPort)
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to start envoy xDS server")
+	}
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
@@ -193,7 +194,10 @@ func main() {
 		HttpPort: pipelineGatewayHttpPort,
 		GrpcPort: pipelineGatewayGrpcPort,
 	}
-	_ = processor.NewIncrementalProcessor(cache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails)
+	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails)
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to create incremental processor")
+	}
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,

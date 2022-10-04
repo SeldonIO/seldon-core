@@ -1,10 +1,11 @@
 package server
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"net"
+
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	log "github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"
 
@@ -21,6 +22,19 @@ const (
 	grpcMaxConcurrentStreams = 1000000
 )
 
+type XDSServer struct {
+	srv3             serverv3.Server
+	certificateStore *seldontls.CertificateStore
+	logger           log.FieldLogger
+}
+
+func NewXDSServer(server serverv3.Server, logger log.FieldLogger) *XDSServer {
+	return &XDSServer{
+		srv3:   server,
+		logger: logger,
+	}
+}
+
 func registerServer(grpcServer *grpc.Server, server serverv3.Server) {
 	// register services
 	discoverygrpc.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
@@ -32,25 +46,36 @@ func registerServer(grpcServer *grpc.Server, server serverv3.Server) {
 	runtimeservice.RegisterRuntimeDiscoveryServiceServer(grpcServer, server)
 }
 
-// RunServer starts an xDS server at the given port.
-func RunServer(ctx context.Context, srv3 serverv3.Server, port uint) {
-	// gRPC golang library sets a very small upper bound for the number gRPC/h2
-	// streams over a single TCP connection. If a proxy multiplexes requests over
-	// a single connection to the management server, then it might lead to
-	// availability problems.
+// StartXDSServer starts an xDS server at the given port.
+func (x *XDSServer) StartXDSServer(port uint) error {
+	logger := x.logger.WithField("func", "StartXDSServer")
+	var err error
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
+	if protocol == seldontls.SecurityProtocolSSL {
+		x.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneServer),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneClient))
+		if err != nil {
+			return err
+		}
+	}
+	secure := x.certificateStore != nil
 	var grpcOptions []grpc.ServerOption
+	if secure {
+		grpcOptions = append(grpcOptions, grpc.Creds(x.certificateStore.CreateServerTransportCredentials()))
+	}
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	grpcServer := grpc.NewServer(grpcOptions...)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-
-	registerServer(grpcServer, srv3)
-
-	log.Printf("management server listening on %d\n", port)
-	if err = grpcServer.Serve(lis); err != nil {
-		log.Println(err)
-	}
+	registerServer(grpcServer, x.srv3)
+	logger.Infof("Starting xDS envoy server on port %d with secure: %v", port, secure)
+	go func() {
+		if err = grpcServer.Serve(lis); err != nil {
+			logger.WithError(err).Fatalf("Envoy xDS server failed on port %d mtls:%v", port, secure)
+		}
+	}()
+	return nil
 }

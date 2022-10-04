@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 )
@@ -20,11 +22,14 @@ const (
 
 type MLServerRepositoryHandler struct {
 	logger log.FieldLogger
+	SSL    bool
 }
 
 func NewMLServerRepositoryHandler(logger log.FieldLogger) *MLServerRepositoryHandler {
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
 	return &MLServerRepositoryHandler{
 		logger: logger,
+		SSL:    protocol == seldontls.SecurityProtocolSSL,
 	}
 }
 
@@ -135,11 +140,15 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 			ms.Parameters.Extra = map[string]interface{}{}
 		}
 		ms.Parameters.Extra[explainerTypeKey] = &explainerSpec.Type
+		scheme := "http"
+		if m.SSL {
+			scheme = "https"
+		}
 		if explainerSpec.ModelRef != nil {
-			inferUri := fmt.Sprintf("http://%s:%d/v2/models/%s/infer", envoyHost, envoyPort, *explainerSpec.ModelRef)
+			inferUri := fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.ModelRef)
 			ms.Parameters.Extra[inferUriKey] = &inferUri
 		} else if explainerSpec.PipelineRef != nil {
-			inferUri := fmt.Sprintf("http://%s:%d/v2/pipelines/%s/infer", envoyHost, envoyPort, *explainerSpec.PipelineRef)
+			inferUri := fmt.Sprintf("%s://%s:%d/v2/pipelines/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.PipelineRef)
 			ms.Parameters.Extra[inferUriKey] = &inferUri
 		}
 		data, err := json.Marshal(ms)

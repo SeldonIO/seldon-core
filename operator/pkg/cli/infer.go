@@ -3,13 +3,18 @@ package cli
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc/credentials"
 
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -56,9 +61,9 @@ const (
 
 type InferenceClient struct {
 	host        string
-	httpClient  *http.Client
 	callOptions []grpc.CallOption
 	counts      map[string]int
+	config      *SeldonCLIConfig
 }
 
 type V2Error struct {
@@ -87,16 +92,70 @@ type V2MetadataTensor struct {
 	Shape    []int  `json:"shape"`
 }
 
-func NewInferenceClient(host string) *InferenceClient {
+func NewInferenceClient(host string) (*InferenceClient, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
+
+	config, err := LoadSeldonCLIConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	// Overwrite host if set in config
+	if config.Dataplane != nil && config.Dataplane.InferHost != "" {
+		host = config.Dataplane.InferHost
+	}
+
 	return &InferenceClient{
 		host:        host,
-		httpClient:  http.DefaultClient,
 		callOptions: opts,
 		counts:      make(map[string]int),
+		config:      config,
+	}, nil
+}
+
+func (ic *InferenceClient) createTLSConfig() (*tls.Config, error) {
+	tlsConfig := &tls.Config{}
+
+	if ic.config.Dataplane.KeyPath != "" && ic.config.Dataplane.CrtPath != "" {
+		certificate, err := tls.LoadX509KeyPair(ic.config.Dataplane.CrtPath, ic.config.Dataplane.KeyPath)
+		if err != nil {
+			return nil, err
+		}
+		tlsConfig.Certificates = []tls.Certificate{certificate}
+	}
+
+	if ic.config.Dataplane.CaPath != "" {
+		ca, err := os.ReadFile(ic.config.Dataplane.CaPath)
+		if err != nil {
+			return nil, err
+		}
+
+		capool := x509.NewCertPool()
+		if !capool.AppendCertsFromPEM(ca) {
+			return nil, fmt.Errorf("Failed to load ca crt from %s", ic.config.Dataplane.CaPath)
+		}
+		tlsConfig.RootCAs = capool
+	}
+
+	if ic.config.Dataplane.SkipSSLVerify {
+		tlsConfig.InsecureSkipVerify = true
+	}
+
+	return tlsConfig, nil
+}
+
+func (ic *InferenceClient) createGrpcTransportCredentials() (credentials.TransportCredentials, error) {
+	if ic.config.Dataplane != nil && ic.config.Dataplane.Tls {
+		tlsConfig, err := ic.createTLSConfig()
+		if err != nil {
+			return nil, err
+		}
+		return credentials.NewTLS(tlsConfig), nil
+	} else {
+		return insecure.NewCredentials(), nil
 	}
 }
 
@@ -104,8 +163,13 @@ func (ic *InferenceClient) getConnection() (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
+	transCreds, err := ic.createGrpcTransportCredentials()
+	if err != nil {
+		return nil, err
+	}
+
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
@@ -117,8 +181,12 @@ func (ic *InferenceClient) getConnection() (*grpc.ClientConn, error) {
 }
 
 func (ic *InferenceClient) getUrl(path string) *url.URL {
+	scheme := "http"
+	if ic.config.Dataplane != nil && ic.config.Dataplane.Tls {
+		scheme = "https"
+	}
 	return &url.URL{
-		Scheme: "http",
+		Scheme: scheme,
 		Host:   ic.host,
 		Path:   path,
 	}
@@ -138,7 +206,23 @@ func decodeV2Error(response *http.Response, b []byte) error {
 
 }
 
-func (ic *InferenceClient) call(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string, stickySessionKeys []string) ([]byte, error) {
+func (ic *InferenceClient) createHttpClient() (*http.Client, error) {
+	if ic.config.Dataplane != nil && ic.config.Dataplane.Tls {
+		tlsConfig, err := ic.createTLSConfig()
+		if err != nil {
+			return nil, err
+		}
+		t := &http.Transport{
+			TLSClientConfig: tlsConfig,
+		}
+		client := http.Client{Transport: t, Timeout: 15 * time.Second}
+		return &client, nil
+	} else {
+		return http.DefaultClient, nil
+	}
+}
+
+func (ic *InferenceClient) httpCall(resourceName string, path string, data []byte, inferType InferType, showHeaders bool, headers []string, stickySessionKeys []string) ([]byte, error) {
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
@@ -168,8 +252,12 @@ func (ic *InferenceClient) call(resourceName string, path string, data []byte, i
 			fmt.Printf("Request header %s:%v\n", k, v)
 		}
 	}
-
-	response, err := ic.httpClient.Do(req)
+	req.Close = true
+	client, err := ic.createHttpClient()
+	if err != nil {
+		return nil, err
+	}
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +303,11 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 		return err
 	}
 	req.Header.Set(SeldonModelHeader, modelName)
-	response, err := ic.httpClient.Do(req)
+	client, err := ic.createHttpClient()
+	if err != nil {
+		return err
+	}
+	response, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -240,7 +332,7 @@ func (ic *InferenceClient) InferRest(resourceName string, data []byte, showReque
 	}
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 	for i := 0; i < iterations; i++ {
-		res, err := ic.call(resourceName, path, data, inferType, showHeaders, headers, stickySessionKeys)
+		res, err := ic.httpCall(resourceName, path, data, inferType, showHeaders, headers, stickySessionKeys)
 		if err != nil {
 			return err
 		}

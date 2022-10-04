@@ -17,6 +17,8 @@ From the project root run:
 make deploy-local
 ```
 
+Note: Triton and MLServer are large images at present (11G and 9G respectively) so will take time to download on first usage.
+
 ### Local Models
 
 To deploy with a local folder available for loading models set the enviroment variable `LOCAL_MODEL_FOLDER` to the folder, e.g.:

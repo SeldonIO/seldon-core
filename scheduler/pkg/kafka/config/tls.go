@@ -11,26 +11,19 @@ const (
 )
 
 func AddKafkaSSLOptions(config kafka.ConfigMap) error {
-	var cs, ca *tls.CertificateStore
+	var cs *tls.CertificateStore
 	var err error
 	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixKafka)
 	if protocol == tls.SecurityProtocolSSL {
-		cs, err = tls.NewCertificateStore(tls.Prefix(EnvKafkaClientPrefix))
-		if err != nil {
-			return err
-		}
-		// Allow CA of Broker to be found at separate location
-		ca, err = tls.NewCertificateStore(tls.Prefix(EnvKafkaBrokerPrefix), tls.CaOnly(true))
+		cs, err = tls.NewCertificateStore(tls.Prefix(EnvKafkaClientPrefix),
+			tls.ValidationPrefix(EnvKafkaBrokerPrefix))
 		if err != nil {
 			return err
 		}
 	}
 	if cs != nil {
 		cert := cs.GetCertificate()
-		var caCert *tls.CertificateWrapper
-		if ca != nil {
-			caCert = ca.GetCertificate()
-		}
+		caCert := cs.GetValidationCertificate()
 		config["security.protocol"] = "ssl"
 		// issue is that ca.pem does not work with multiple certificiates defined
 		// see https://github.com/confluentinc/confluent-kafka-go/issues/827

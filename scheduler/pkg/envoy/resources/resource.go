@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+
 	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 
 	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
@@ -39,7 +41,6 @@ import (
 	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
 	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
-	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -60,9 +61,10 @@ const (
 	ExternalHeaderPrefix          = "x-"
 	DefaultRouteConfigurationName = "listener_0"
 	MirrorRouteConfigurationName  = "listener_1"
+	TLSRouteConfigurationName     = "listener_tls"
 )
 
-func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Cluster {
+func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
 	if isGrpc {
 		// Need to ensure http 2 is used
 		// https://github.com/envoyproxy/go-control-plane/blob/d1a10d9a9366e8ab48f3f76b44a35930bac46fec/envoy/extensions/upstreams/http/v3/http_protocol_options.pb.go#L165-L166
@@ -87,6 +89,7 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			LoadAssignment:                MakeEndpoint(clusterName, eps),
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
+			TransportSocket:               createUpstreamTransportSocket(clientSecret),
 		}
 	} else {
 		return &cluster.Cluster{
@@ -96,6 +99,7 @@ func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool) *cluster.Clust
 			LbPolicy:             cluster.Cluster_LEAST_REQUEST,
 			LoadAssignment:       MakeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
+			TransportSocket:      createUpstreamTransportSocket(clientSecret),
 		}
 	}
 }
@@ -816,7 +820,10 @@ end
 	return luaAny
 }
 
-func MakeHTTPListener(listenerName, address string, port uint32, routeConfigurationName string) *listener.Listener {
+func MakeHTTPListener(listenerName, address string,
+	port uint32,
+	routeConfigurationName string,
+	serverSecret *Secret) *listener.Listener {
 
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
@@ -873,16 +880,19 @@ func MakeHTTPListener(listenerName, address string, port uint32, routeConfigurat
 				},
 			},
 		},
-		FilterChains: []*listener.FilterChain{{
-			Filters: []*listener.Filter{
-				{
-					Name: wellknown.HTTPConnectionManager,
-					ConfigType: &listener.Filter_TypedConfig{
-						TypedConfig: pbst,
+		FilterChains: []*listener.FilterChain{
+			{
+				Filters: []*listener.Filter{
+					{
+						Name: wellknown.HTTPConnectionManager,
+						ConfigType: &listener.Filter_TypedConfig{
+							TypedConfig: pbst,
+						},
 					},
 				},
+				TransportSocket: createDownstreamTransportSocket(serverSecret), // Add TLS if needed
 			},
-		}},
+		},
 	}
 }
 

@@ -14,9 +14,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc/credentials/insecure"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -51,6 +48,7 @@ type reverseGRPCProxy struct {
 	mu                    sync.RWMutex
 	metrics               metrics.AgentMetricsHandler
 	callOptions           []grpc.CallOption
+	tlsOptions            util.TLSOptions
 	modelLagStats         interfaces.ModelScalingStats
 	modelLastUsedStats    interfaces.ModelScalingStats
 }
@@ -84,6 +82,11 @@ func (rp *reverseGRPCProxy) SetState(sm interface{}) {
 }
 
 func (rp *reverseGRPCProxy) Start() error {
+	var err error
+	rp.tlsOptions, err = util.CreateUpstreamDataplaneServerTLSOptions()
+	if err != nil {
+		return err
+	}
 	if rp.stateManager == nil {
 		rp.logger.Error("Set state before starting reverse proxy service")
 		return fmt.Errorf("State not set, aborting")
@@ -99,6 +102,9 @@ func (rp *reverseGRPCProxy) Start() error {
 		grpc.MaxRecvMsgSize(math.MaxInt32),
 		grpc.MaxSendMsgSize(math.MaxInt32),
 	}
+	if rp.tlsOptions.TLS {
+		opts = append(opts, grpc.Creds(rp.tlsOptions.Cert.CreateServerTransportCredentials()))
+	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
 	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), rp.metrics.UnaryServerInterceptor())))
 	grpcServer := grpc.NewServer(opts...)
@@ -106,7 +112,7 @@ func (rp *reverseGRPCProxy) Start() error {
 
 	rp.logger.Infof("Setting grpc v2 client pool on port %d", rp.backendGRPCServerPort)
 
-	conns, clients, err := createV2CRPCClients(rp.backendGRPCServerHost, int(rp.backendGRPCServerPort), maxConnsPerHostGRPC)
+	conns, clients, err := rp.createV2CRPCClients(rp.backendGRPCServerHost, int(rp.backendGRPCServerPort), maxConnsPerHostGRPC)
 	if err != nil {
 		return err
 	}
@@ -266,26 +272,13 @@ func (rp *reverseGRPCProxy) getV2GRPCClient() v2.GRPCInferenceServiceClient {
 	return rp.v2GRPCClientPool[i]
 }
 
-func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-	}
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
-	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, plainTxtPort), opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
-}
-
-func createV2CRPCClients(backendGRPCServerHost string, backendGRPCServerPort int, size int) ([]*grpc.ClientConn, []v2.GRPCInferenceServiceClient, error) {
+func (rp *reverseGRPCProxy) createV2CRPCClients(backendGRPCServerHost string, backendGRPCServerPort int, size int) ([]*grpc.ClientConn, []v2.GRPCInferenceServiceClient, error) {
+	var err error
 	conns := make([]*grpc.ClientConn, size)
 	clients := make([]v2.GRPCInferenceServiceClient, size)
+	if err != nil {
+		return nil, nil, err
+	}
 	for i := 0; i < size; i++ {
 		conn, err := getV2GrpcConnection(backendGRPCServerHost, backendGRPCServerPort)
 

@@ -1,11 +1,15 @@
 package xdscache
 
 import (
+	"fmt"
 	"testing"
+
+	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	. "github.com/onsi/gomega"
+	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -247,4 +251,67 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcClusterModel1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
+}
+
+func TestSetupTLS(t *testing.T) {
+	g := NewGomegaWithT(t)
+	logger := log.New()
+
+	type test struct {
+		name         string
+		setTLS       bool
+		envsPrefixes []string
+		err          bool
+	}
+
+	tests := []test{
+		{
+			name:         "no tls",
+			setTLS:       false,
+			envsPrefixes: []string{},
+			err:          false,
+		},
+		{
+			name:         "only downstream server",
+			setTLS:       true,
+			envsPrefixes: []string{seldontls.EnvSecurityPrefixEnvoyDownstreamServer},
+			err:          true,
+		},
+		{
+			name:         "tls ok",
+			setTLS:       true,
+			envsPrefixes: []string{seldontls.EnvSecurityPrefixEnvoyUpstreamServer, seldontls.EnvSecurityPrefixEnvoyDownstreamServer, seldontls.EnvSecurityPrefixEnvoyUpstreamClient},
+			err:          false,
+		},
+		{
+			name:         "tls ok with downstream mtls",
+			setTLS:       true,
+			envsPrefixes: []string{seldontls.EnvSecurityPrefixEnvoyUpstreamServer, seldontls.EnvSecurityPrefixEnvoyDownstreamServer, seldontls.EnvSecurityPrefixEnvoyUpstreamClient, seldontls.EnvSecurityPrefixEnvoyDownstreamClient},
+			err:          false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			if test.setTLS {
+				t.Setenv(fmt.Sprintf("%s%s", seldontls.EnvSecurityPrefixEnvoy, seldontls.EnvSecurityProtocolSuffix), seldontls.SecurityProtocolSSL)
+			}
+			// Setup envs for cert for each prefix
+			for _, envPrefix := range test.envsPrefixes {
+				tmpFolder := t.TempDir()
+				err := copy.Copy("testdata", tmpFolder)
+				g.Expect(err).To(BeNil())
+				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvCrtLocationSuffix), fmt.Sprintf("%s/tls.crt", tmpFolder))
+				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
+				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
+			}
+			err := c.SetupTLS()
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
+	}
 }

@@ -686,7 +686,28 @@ spec:
         app: seldon-envoy
     spec:
       containers:
-      - image: seldonio/seldon-envoy:latest
+      - env:
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: PLAINTEXT
+        - name: ENVOY_XDS_CLIENT_TLS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: seldon-controlplane-client
+              optional: true
+        - name: ENVOY_XDS_CLIENT_TLS_CRT
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: seldon-controlplane-client
+              optional: true
+        - name: ENVOY_XDS_SERVER_TLS_CA
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: seldon-controlplane-server
+              optional: true
+        image: seldonio/seldon-envoy:latest
         imagePullPolicy: IfNotPresent
         name: envoy
         ports:
@@ -1053,6 +1074,8 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
+      - name: REQUESTS_CA_BUNDLE
+        value: /mnt/certs/ca.crt
       image: seldonio/mlserver:1.2.0.dev5
       imagePullPolicy: IfNotPresent
       lifecycle:
@@ -1094,6 +1117,9 @@ spec:
       - mountPath: /mnt/agent
         name: mlserver-models
         readOnly: true
+      - mountPath: /mnt/certs
+        name: downstream-ca-certs
+        readOnly: true
     securityContext:
       fsGroup: 2000
       runAsNonRoot: true
@@ -1107,6 +1133,10 @@ spec:
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
+    - name: downstream-ca-certs
+      secret:
+        optional: true
+        secretName: seldon-downstream-server
   volumeClaimTemplates:
   - name: mlserver-models
     spec:

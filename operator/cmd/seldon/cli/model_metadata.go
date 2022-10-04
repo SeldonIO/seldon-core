@@ -19,8 +19,10 @@ func createModelMetadata() *cobra.Command {
 				return err
 			}
 			modelName := args[0]
-			inferenceClient := cli.NewInferenceClient(inferenceHost)
-
+			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			if err != nil {
+				return err
+			}
 			err = inferenceClient.ModelMetadata(modelName)
 			return err
 		},

@@ -2,4 +2,8 @@ FROM envoyproxy/envoy:v1.19.1
 COPY scheduler/config/envoy.yaml /etc/envoy.yaml
 COPY scheduler/config/envoy-local.yaml /etc/envoy-local.yaml
 COPY scheduler/config/envoy-compose.yaml /etc/envoy-compose.yaml
-CMD /usr/local/bin/envoy -c /etc/envoy.yaml
+COPY scheduler/config/envoy-tls.yaml /etc/envoy-tls.yaml
+COPY scheduler/envoy/tls_certificate_sds_secret.yaml /etc/tls_certificate_sds_secret.yaml
+COPY scheduler/envoy/validation_context_sds_secret.yaml /etc/validation_context_sds_secret.yaml
+COPY scheduler/envoy/start-envoy.sh /
+CMD /start-envoy.sh

@@ -44,7 +44,8 @@ func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsP
 	var err error
 	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
 	if protocol == tls.SecurityProtocolSSL {
-		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlane))
+		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+			tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
 			return err
 		}

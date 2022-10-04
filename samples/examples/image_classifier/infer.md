@@ -10,82 +10,7 @@ We show an image classifier (CIFAR10) with associated outlier and drift detector
  
 ### Model Training (optional for notebook)
 
-Here we describe how we created the artifacts. This is not needed to run this notebook but will help you to apply these techniques to your own models.
-
-#### Outlier Detection Model
-
-Follow the Alibi-Detect outlier detector example [CIFAR10 VAE Outlier example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/od_vae_cifar10.html).
-
-Use the `save_detector` command to save the trained outlier detector as shown in the notebook.
-
-Create a MLServer model settings file: `model-settings.json`:
-
-```json
-{
-  "name": "cifar10-outlier-detect",
-  "implementation": "mlserver_alibi_detect.AlibiDetectRuntime",
-  "parameters": {
-    "uri": "./",
-    "version": "v0.1.0"
-  }
-}
-
-```
-
-Save to local or remote storage the directory. Here we saved to Google Storage:
-
-```bash
-gsutil ls -R gs://seldon-models/mlserver/alibi-detect/cifar10-outlier 
-
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/:
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/OutlierVAE.dill
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/meta.dill
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model-settings.json
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/:
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/checkpoint
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/decoder_net.h5
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/encoder_net.h5
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/vae.ckpt.data-00000-of-00001
-gs://seldon-models/mlserver/alibi-detect/cifar10-outlier/model/vae.ckpt.index
-
-```
- 
- ### Drift Detector
- 
-Follow the Alibi-Detect drift detection example [CIFAR10 KS Drift example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/cd_ks_cifar10.html).
-
-Use the `save_detector` command to save the trained outlier detector as shown in the notebook.
-
-Create a MLServer model settings file: `model-settings.json`:
-
-```json
-{
-  "name": "cifar10-drift",
-  "implementation": "mlserver_alibi_detect.AlibiDetectRuntime",
-  "parameters": {
-    "uri": "./",
-    "version": "v0.1.0"
-  }
-}
-```
-
-Save to local or remote storage the directory. Here we saved to Google Storage:
-
-```bash
-gsutil ls -R gs://seldon-models/mlserver/alibi-detect/cifar10-drift 
-
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/:
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/KSDrift.dill
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/meta.dill
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/model-settings.json
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/model/:
-gs://seldon-models/mlserver/alibi-detect/cifar10-drift/model/encoder.h5
-
-```
- 
- 
+To run local training run the [training notebook](train.ipynb).
 
 
 ```python
@@ -101,8 +26,8 @@ import matplotlib.pyplot as plt
 tf.keras.backend.clear_session()
 ```
 
-    2022-08-27 16:53:42.032240: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-    2022-08-27 16:53:42.032263: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+    2022-10-02 18:04:26.133356: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+    2022-10-02 18:04:26.133380: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 
 
 
@@ -300,7 +225,7 @@ def show(X):
         {
           "pipeline": {
             "name": "cifar10-production",
-            "uid": "cc53s9vj8rquhcji649g",
+            "uid": "ccss9k24u1vus3q1e1j0",
             "version": 1,
             "steps": [
               {
@@ -328,7 +253,7 @@ def show(X):
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-08-27T15:54:16.298169764Z"
+            "lastChangeTimestamp": "2022-10-02T17:05:20.544270105Z"
           }
         }
       ]
@@ -469,9 +394,7 @@ infer("cifar10-production.pipeline",20, "normal")
 !seldon pipeline inspect cifar10-production.cifar10-drift.outputs.is_drift
 ```
 
-    ---
-    seldon.default.model.cifar10-drift.outputs
-    cc53sbaqojmgf7c4m4eg:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
+    seldon.default.model.cifar10-drift.outputs	ccss9m9atu79k6fs0pl0	{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
 
 
 
@@ -608,9 +531,7 @@ infer("cifar10-production.pipeline",20, "drift")
 !seldon pipeline inspect cifar10-production.cifar10-drift.outputs.is_drift
 ```
 
-    ---
-    seldon.default.model.cifar10-drift.outputs
-    cc53sd2qojmgf7c4m4f0:{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
+    seldon.default.model.cifar10-drift.outputs	ccss9r9atu79k6fs0plg	{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
 
 
 
@@ -625,7 +546,7 @@ infer("cifar10-production.pipeline",1, "outlier")
 
 
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [1], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}], 'rawOutputContents': ['sWg8N9bEWDmywK02Ou/SPLls1zV0qE03fUl5P2bELDbb1184OFk9OQ==']}
+    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [1], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}], 'rawOutputContents': ['bQQEOIOIsTcLMH44kVfIPnSnCDeWpW84pqAbPzCURTcYdg46Da5eOA==']}
 
 
 
@@ -643,14 +564,14 @@ infer("cifar10-production.pipeline",1, "ok")
     {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [0], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}], 'rawOutputContents': ['JRx5MgYnrDCDAC802B7sPd4qOzQ1js82tXtiP3my0DFHup8zpZSiMQ==']}
 
 
+Use the seldon CLI to look at the outputs from the CIFAR10 model. It will decide the Triton binary outputs for us.
+
 
 ```python
 !seldon pipeline inspect cifar10-production.cifar10.outputs
 ```
 
-    ---
-    seldon.default.model.cifar10.outputs
-    cc53sg2qojmgf7c4m4g0:{"modelName":"cifar10_1","modelVersion":"1","outputs":[{"name":"fc10","datatype":"FP32","shape":["1","10"],"contents":{"fp32Contents":[1.4500107e-8,1.2525738e-9,1.6298331e-7,0.115293205,1.7431327e-7,0.000006185636,0.8847001,6.0738867e-9,7.437898e-8,4.7317195e-9]}}],"rawOutputContents":["JRx5MgYnrDCDAC802B7sPd4qOzQ1js82tXtiP3my0DFHup8zpZSiMQ=="]}
+    seldon.default.model.cifar10.outputs	ccssa0patu79k6fs0pmg	{"modelName":"cifar10_1","modelVersion":"1","outputs":[{"name":"fc10","datatype":"FP32","shape":["1","10"],"contents":{"fp32Contents":[1.4500107e-8,1.2525738e-9,1.6298331e-7,0.115293205,1.7431327e-7,0.000006185636,0.8847001,6.0738867e-9,7.437898e-8,4.7317195e-9]}}],"rawOutputContents":["JRx5MgYnrDCDAC802B7sPd4qOzQ1js82tXtiP3my0DFHup8zpZSiMQ=="]}
 
 
 

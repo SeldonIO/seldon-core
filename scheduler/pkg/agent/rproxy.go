@@ -3,6 +3,7 @@ package agent
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -13,6 +14,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
@@ -42,6 +45,7 @@ type reverseHTTPProxy struct {
 	servicePort           uint
 	mu                    sync.RWMutex
 	metrics               metrics.AgentMetricsHandler
+	tlsOptions            util.TLSOptions
 	modelLagStats         interfaces.ModelScalingStats
 	modelLastUsedStats    interfaces.ModelScalingStats
 }
@@ -155,11 +159,15 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 }
 
 func (rp *reverseHTTPProxy) Start() error {
+	var err error
 	if rp.stateManager == nil {
 		rp.logger.Error("Set state before starting reverse proxy service")
 		return fmt.Errorf("State not set, aborting")
 	}
-
+	rp.tlsOptions, err = util.CreateUpstreamDataplaneServerTLSOptions()
+	if err != nil {
+		return err
+	}
 	backend := rp.getBackEndPath()
 	proxy := httputil.NewSingleHostReverseProxy(backend)
 	t := &http.Transport{
@@ -171,14 +179,27 @@ func (rp *reverseHTTPProxy) Start() error {
 	}
 	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelLagStats, rp.modelLastUsedStats, rp.logger}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
-	rp.server = &http.Server{Addr: ":" + strconv.Itoa(int(rp.servicePort)), Handler: rp.addHandlers(proxy)}
+	var tlsConfig *tls.Config
+	if rp.tlsOptions.TLS {
+		tlsConfig = rp.tlsOptions.Cert.CreateServerTLSConfig()
+	}
+	rp.server = &http.Server{
+		Addr:      ":" + strconv.Itoa(int(rp.servicePort)),
+		Handler:   rp.addHandlers(proxy),
+		TLSConfig: tlsConfig,
+	}
 	// TODO: check for errors? we rely for now on Ready
 	go func() {
 		rp.mu.Lock()
 		rp.serverReady = true
 		rp.mu.Unlock()
-		err := rp.server.ListenAndServe()
-		rp.logger.WithError(err).Info("HTTP/REST reverse proxy debug service stopped")
+		if rp.tlsOptions.TLS {
+			err := rp.server.ListenAndServeTLS("", "")
+			rp.logger.WithError(err).Info("HTTPS/REST reverse proxy debug service stopped")
+		} else {
+			err := rp.server.ListenAndServe()
+			rp.logger.WithError(err).Info("HTTP/REST reverse proxy debug service stopped")
+		}
 		rp.mu.Lock()
 		rp.serverReady = false
 		rp.mu.Unlock()

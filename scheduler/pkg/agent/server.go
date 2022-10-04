@@ -115,7 +115,8 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneServer),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneClient))
 		if err != nil {
 			return err
 		}

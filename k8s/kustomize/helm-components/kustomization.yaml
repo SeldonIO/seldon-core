@@ -4,6 +4,7 @@ kind: Kustomization
 bases:
 - ../componentsNoConfig
 
+# May need to add x-kubernetes-patch values for new things you want to patch if missing
 openapi:
   path: crd-schema.json
 

@@ -114,7 +114,7 @@ func benchmarkModelUpdate(
 
 		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		pipelineStore := pipeline.NewPipelineStore(logger, eventHub)
-		ip := NewIncrementalProcessor(
+		ip, err := NewIncrementalProcessor(
 			cache.NewSnapshotCache(false, cache.IDHash{}, logger),
 			"some node",
 			logger,
@@ -128,6 +128,7 @@ func benchmarkModelUpdate(
 				GrpcPort: 2,
 			},
 		)
+		require.NoError(b, err)
 
 		ip.batchWaitMillis = time.Duration(batchWaitMillis) * time.Millisecond
 

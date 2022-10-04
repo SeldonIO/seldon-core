@@ -3,6 +3,7 @@ package tls
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"google.golang.org/grpc/credentials"
 )
 
 type CertificateWrapper struct {
@@ -11,13 +12,25 @@ type CertificateWrapper struct {
 	KeyPath     string
 	CrtPath     string
 	CaPath      string
-}
-
-type UpdateCertificateHandler interface {
-	UpdateCertificate(cert *CertificateWrapper)
+	KeyRaw      []byte
+	CrtRaw      []byte
+	CaRaw       []byte
 }
 
 type CertificateManager interface {
-	GetCertificateAndWatch(updater UpdateCertificateHandler) (*CertificateWrapper, error)
+	GetCertificateAndWatch() error
+	GetCertificate() *CertificateWrapper
+	Stop()
+}
+
+type CertificateStoreHandler interface {
+	GetServerCertificate(*tls.ClientHelloInfo) (*tls.Certificate, error)
+	GetClientCertificate(*tls.CertificateRequestInfo) (*tls.Certificate, error)
+	CreateClientTLSConfig() *tls.Config
+	CreateClientTransportCredentials() credentials.TransportCredentials
+	CreateServerTLSConfig() *tls.Config
+	CreateServerTransportCredentials() credentials.TransportCredentials
+	GetCertificate() *CertificateWrapper
+	GetValidationCertificate() *CertificateWrapper
 	Stop()
 }

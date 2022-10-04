@@ -21,6 +21,27 @@ spec:
       - name: envoy
         image: envoy:latest
         imagePullPolicy: IfNotPresent
+        env:
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: PLAINTEXT
+        - name: ENVOY_XDS_CLIENT_TLS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: seldon-controlplane-client
+              key: tls.key
+              optional: true 
+        - name: ENVOY_XDS_CLIENT_TLS_CRT
+          valueFrom:
+            secretKeyRef:
+              name: seldon-controlplane-client
+              key: tls.crt
+              optional: true 
+        - name: ENVOY_XDS_SERVER_TLS_CA
+          valueFrom:
+            secretKeyRef:
+              name: seldon-controlplane-server
+              key: ca.crt
+              optional: true 
         ports:
         - name: http
           containerPort: 9000

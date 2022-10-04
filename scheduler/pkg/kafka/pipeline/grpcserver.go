@@ -6,6 +6,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -26,14 +28,16 @@ type GatewayGrpcServer struct {
 	gateway    PipelineInferer
 	logger     log.FieldLogger
 	metrics    metrics.PipelineMetricsHandler
+	tlsOptions *util.TLSOptions
 }
 
-func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.PipelineMetricsHandler) *GatewayGrpcServer {
+func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.PipelineMetricsHandler, tlsOptions *util.TLSOptions) *GatewayGrpcServer {
 	return &GatewayGrpcServer{
-		port:    port,
-		gateway: gateway,
-		logger:  logger.WithField("source", "GatewayGrpcServer"),
-		metrics: metricsHandler,
+		port:       port,
+		gateway:    gateway,
+		logger:     logger.WithField("source", "GatewayGrpcServer"),
+		metrics:    metricsHandler,
+		tlsOptions: tlsOptions,
 	}
 }
 
@@ -54,6 +58,9 @@ func (g *GatewayGrpcServer) Start() error {
 	}
 	logger.Infof("Starting grpc server on port %d", g.port)
 	opts := []grpc.ServerOption{}
+	if g.tlsOptions.TLS {
+		opts = append(opts, grpc.Creds(g.tlsOptions.Cert.CreateServerTransportCredentials()))
+	}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
 	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	g.grpcServer = grpc.NewServer(opts...)

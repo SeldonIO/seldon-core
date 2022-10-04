@@ -21,14 +21,32 @@ spec:
         value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: '{{ .Values.security.controlplane.protocol }}'            
-      - name: CONTROL_PLANE_TLS_SECRET_NAME
+      - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
         value: '{{ .Values.security.controlplane.ssl.client.secret }}'
-      - name: CONTROL_PLANE_TLS_KEY_LOCATION
-        value: '{{ .Values.security.controlplane.ssl.key }}'
-      - name: CONTROL_PLANE_TLS_CRT_LOCATION
-        value: '{{ .Values.security.controlplane.ssl.crt }}'
-      - name: CONTROL_PLANE_TLS_CA_LOCATION
-        value: '{{ .Values.security.controlplane.ssl.ca }}'
+      - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+        value: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret }}'
+      - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.client.keyPath }}'
+      - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.client.crtPath }}'
+      - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
+      - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+        value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
+      - name: ENVOY_SECURITY_PROTOCOL
+        value: '{{ .Values.security.envoy.protocol }}'            
+      - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+        value: '{{ .Values.security.envoy.ssl.upstream.server.secret }}'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+        value: '{{ .Values.security.envoy.ssl.upstream.server.clientValidationSecret }}'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_KEY_LOCATION
+        value: '{{ .Values.security.envoy.ssl.upstream.server.keyPath }}'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CRT_LOCATION
+        value: '{{ .Values.security.envoy.ssl.upstream.server.crtPath }}'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+        value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+        value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent

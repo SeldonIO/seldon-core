@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/credentials"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
 
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
@@ -60,24 +62,27 @@ type V2Error struct {
 }
 
 func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
-	grpcClient, err := getGrpcClient(consumer.consumerConfig.InferenceServerConfig.Host, consumer.consumerConfig.InferenceServerConfig.GrpcPort)
-	if err != nil {
-		return nil, err
-	}
-
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
-	return &InferWorker{
+	iw := &InferWorker{
 		logger:      logger.WithField("source", "KafkaInferWorker"),
-		grpcClient:  grpcClient,
 		httpClient:  &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 		consumer:    consumer,
 		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
 		callOptions: opts,
 		topicNamer:  topicNamer,
-	}, nil
+	}
+	// Create HTTP and gRPC clients
+	grpcClient, err := iw.getGrpcClient(consumer.consumerConfig.InferenceServerConfig.Host, consumer.consumerConfig.InferenceServerConfig.GrpcPort)
+	if err != nil {
+		return nil, err
+	}
+	iw.grpcClient = grpcClient
+	iw.httpClient = iw.getHttpClient()
+
+	return iw, nil
 }
 
 func getRestUrl(host string, port int, modelName string) *url.URL {
@@ -88,12 +93,32 @@ func getRestUrl(host string, port int, modelName string) *url.URL {
 	}
 }
 
-func getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
+func (iw *InferWorker) getHttpClient() *http.Client {
+	if iw.consumer.tlsClientOptions.tls {
+		t := &http.Transport{
+			TLSClientConfig: iw.consumer.tlsClientOptions.certificateStore.CreateClientTLSConfig(),
+		}
+		return &http.Client{Transport: otelhttp.NewTransport(t)}
+	} else {
+		return &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
+	}
+}
+
+func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
+	logger := iw.logger.WithField("func", "getGrpcClient")
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 	}
+	var creds credentials.TransportCredentials
+	if iw.consumer.tlsClientOptions.tls {
+		logger.Info("Creating TLS credentials")
+		creds = iw.consumer.tlsClientOptions.certificateStore.CreateClientTransportCredentials()
+	} else {
+		logger.Info("Creating insecure credentials")
+		creds = insecure.NewCredentials()
+	}
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(creds),
 		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
 	}
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)

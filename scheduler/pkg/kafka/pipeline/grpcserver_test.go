@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"google.golang.org/grpc/credentials/insecure"
 
 	. "github.com/onsi/gomega"
@@ -98,7 +100,7 @@ func TestGrpcServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{})
+	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{})
 	go func() {
 		err := grpcServer.Start()
 		g.Expect(err).To(BeNil())

@@ -6,8 +6,10 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+	"k8s.io/client-go/kubernetes"
 	"os"
 	"path/filepath"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
@@ -17,36 +19,45 @@ import (
 )
 
 type TlsSecretHandler struct {
-	opts          CertificateStoreOptions
+	clientset     kubernetes.Interface
 	secretName    string
 	namespace     string
 	stopper       chan struct{}
-	updater       UpdateCertificateHandler
 	logger        log.FieldLogger
 	folderHandler *TlsFolderHandler
+	validation    bool
+	cert          *CertificateWrapper
+	mu            sync.RWMutex
 }
 
-func NewTlsSecretHandler(secretName string, namespace string, opts CertificateStoreOptions, logger log.FieldLogger) (*TlsSecretHandler, error) {
-	if opts.clientset == nil {
+func NewTlsSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, validationSecret bool, logger log.FieldLogger) (*TlsSecretHandler, error) {
+	if clientset == nil {
 		var err error
-		opts.clientset, err = k8s.CreateClientset()
+		clientset, err = k8s.CreateClientset()
 		if err != nil {
 			logger.WithError(err).Error("Failed to create clientset for TLS secret handler")
 			return nil, err
 		}
 	}
-	folderHandler, err := NewTlsFolderHandler(opts, logger)
+	folderHandler, err := NewTlsFolderHandler(prefix, validationSecret, logger)
 	if err != nil {
 		return nil, err
 	}
 	return &TlsSecretHandler{
-		opts:          opts,
+		clientset:     clientset,
 		secretName:    secretName,
 		namespace:     namespace,
 		stopper:       make(chan struct{}),
 		logger:        logger,
 		folderHandler: folderHandler,
+		validation:    validationSecret,
 	}, nil
+}
+
+func (t *TlsSecretHandler) GetCertificate() *CertificateWrapper {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	return t.cert
 }
 
 func (s *TlsSecretHandler) Stop() {
@@ -54,7 +65,7 @@ func (s *TlsSecretHandler) Stop() {
 }
 
 func (s *TlsSecretHandler) getTlsCertificate(secretName string) (*CertificateWrapper, error) {
-	secret, err := s.opts.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +95,7 @@ func saveCert(data []byte, path string) error {
 
 func (s *TlsSecretHandler) saveCertificateFromSecret(secret *corev1.Secret) (*CertificateWrapper, error) {
 	c := CertificateWrapper{}
-	if !s.opts.caOnly {
+	if !s.validation {
 		var err error
 		dataKey := filepath.Base(s.folderHandler.keyFilePath)
 		key, ok := secret.Data[dataKey]
@@ -92,6 +103,7 @@ func (s *TlsSecretHandler) saveCertificateFromSecret(secret *corev1.Secret) (*Ce
 			return nil, fmt.Errorf("Failed to find %s in secret %s", dataKey, secret.Name)
 		}
 		c.KeyPath = s.folderHandler.keyFilePath
+		c.KeyRaw = key
 		err = saveCert(key, s.folderHandler.keyFilePath)
 		if err != nil {
 			return nil, err
@@ -102,6 +114,7 @@ func (s *TlsSecretHandler) saveCertificateFromSecret(secret *corev1.Secret) (*Ce
 			return nil, fmt.Errorf("Failed to find %s in secret %s", dataKey, secret.Name)
 		}
 		c.CrtPath = s.folderHandler.certFilePath
+		c.CrtRaw = crt
 		err = saveCert(crt, s.folderHandler.certFilePath)
 		if err != nil {
 			return nil, err
@@ -119,6 +132,7 @@ func (s *TlsSecretHandler) saveCertificateFromSecret(secret *corev1.Secret) (*Ce
 		return nil, fmt.Errorf("Failed to find %s in secret %s", dataKey, secret.Name)
 	}
 	c.CaPath = s.folderHandler.caFilePath
+	c.CaRaw = ca
 	err := saveCert(ca, s.folderHandler.caFilePath)
 	if err != nil {
 		return nil, err
@@ -134,31 +148,31 @@ func (s *TlsSecretHandler) saveCertificateFromSecret(secret *corev1.Secret) (*Ce
 }
 
 func (s *TlsSecretHandler) onAdd(obj interface{}) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onAdd")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("TLS Secret %s added", s.secretName)
-		cert, err := s.saveCertificateFromSecret(secret)
+		var err error
+		s.cert, err = s.saveCertificateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract TLS certificate from secret %s", secret.Name)
-		}
-		if s.updater != nil {
-			s.updater.UpdateCertificate(cert)
 		}
 	}
 }
 
 func (s *TlsSecretHandler) onUpdate(oldObj, newObj interface{}) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onUpdate")
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("TLS Secret %s updated", s.secretName)
-		cert, err := s.saveCertificateFromSecret(secret)
+		var err error
+		s.cert, err = s.saveCertificateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract TLS certificate from secret %s", secret.Name)
-		}
-		if s.updater != nil {
-			s.updater.UpdateCertificate(cert)
 		}
 	}
 }
@@ -171,13 +185,15 @@ func (s *TlsSecretHandler) onDelete(obj interface{}) {
 	}
 }
 
-func (s *TlsSecretHandler) GetCertificateAndWatch(updater UpdateCertificateHandler) (*CertificateWrapper, error) {
-	cert, err := s.getTlsCertificate(s.secretName)
+func (s *TlsSecretHandler) GetCertificateAndWatch() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var err error
+	s.cert, err = s.getTlsCertificate(s.secretName)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	s.updater = updater
-	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.opts.clientset, 0, informers.WithNamespace(s.namespace))
+	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.clientset, 0, informers.WithNamespace(s.namespace))
 	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    s.onAdd,
 		UpdateFunc: s.onUpdate,
@@ -185,5 +201,5 @@ func (s *TlsSecretHandler) GetCertificateAndWatch(updater UpdateCertificateHandl
 	})
 	coreInformers.WaitForCacheSync(s.stopper)
 	coreInformers.Start(s.stopper)
-	return cert, nil
+	return nil
 }

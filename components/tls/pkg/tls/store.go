@@ -2,14 +2,13 @@ package tls
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/credentials"
 	"k8s.io/client-go/kubernetes"
 	"os"
 	"strings"
-	"sync"
-
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/credentials"
 )
 
 const (
@@ -36,22 +35,23 @@ type TLSServerOption interface {
 }
 
 type CertificateStore struct {
-	opts               CertificateStoreOptions
-	logger             logrus.FieldLogger
-	mu                 sync.RWMutex
+	opts   CertificateStoreOptions
+	logger logrus.FieldLogger
+
 	certificateManager CertificateManager
-	certificate        *CertificateWrapper
+	validationManager  CertificateManager
 }
 
 type CertificateStoreOptions struct {
-	caOnly    bool
-	prefix    string
-	clientset kubernetes.Interface
+	prefix           string
+	validationPrefix string
+	clientset        kubernetes.Interface
+	validationOnly   bool
 }
 
 func (c CertificateStoreOptions) String() string {
-	return fmt.Sprintf("prefix=%s clientset=%v caOnly=%v",
-		c.prefix, c.clientset, c.caOnly)
+	return fmt.Sprintf("prefix=%s validationPrefix=%s clientset=%v",
+		c.prefix, c.validationPrefix, c.clientset)
 }
 
 func getDefaultCertificateStoreOptions() CertificateStoreOptions {
@@ -63,11 +63,11 @@ func getEnvVarKey(prefix string, suffix string) string {
 }
 
 func getEnv(prefix string, suffix string) (string, bool) {
-	secretName, ok := os.LookupEnv(getEnvVarKey(prefix, suffix))
+	val, ok := os.LookupEnv(getEnvVarKey(prefix, suffix))
 	if ok {
-		ok = strings.TrimSpace(secretName) != ""
+		ok = strings.TrimSpace(val) != ""
 	}
-	return secretName, ok
+	return val, ok
 }
 
 func Prefix(prefix string) TLSServerOption {
@@ -76,15 +76,21 @@ func Prefix(prefix string) TLSServerOption {
 	})
 }
 
-func ClientSet(clientSet kubernetes.Interface) TLSServerOption {
+func ValidationPrefix(prefix string) TLSServerOption {
 	return newFuncServerOption(func(o *CertificateStoreOptions) {
-		o.clientset = clientSet
+		o.validationPrefix = prefix
 	})
 }
 
-func CaOnly(caOnly bool) TLSServerOption {
+func ValidationOnly(validationOnly bool) TLSServerOption {
 	return newFuncServerOption(func(o *CertificateStoreOptions) {
-		o.caOnly = caOnly
+		o.validationOnly = validationOnly
+	})
+}
+
+func ClientSet(clientSet kubernetes.Interface) TLSServerOption {
+	return newFuncServerOption(func(o *CertificateStoreOptions) {
+		o.clientset = clientSet
 	})
 }
 
@@ -95,77 +101,194 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 	}
 	logger := logrus.New().WithField("source", "CertificateStore")
 	logger.Infof("Options:%s", opts.String())
-	if secretName, ok := getEnv(opts.prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
-		namespace, ok := os.LookupEnv(envNamespace)
-		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+	var err error
+	var manager CertificateManager
+	var validationManager CertificateManager
+	if !opts.validationOnly {
+		if secretName, ok := getEnv(opts.prefix, envSecretSuffix); ok {
+			logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
+			namespace, ok := os.LookupEnv(envNamespace)
+			if !ok {
+				return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+			}
+			manager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.prefix, false, logger)
+			if err != nil {
+				return nil, err
+			}
+
+			// optionally add a validation secret ca
+			if opts.validationPrefix != "" {
+				if secretName, ok := getEnv(opts.validationPrefix, envSecretSuffix); ok {
+					logger.Infof("Starting new certificate store for %s from secret %s", opts.validationPrefix, secretName)
+					validationManager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.validationPrefix, true, logger)
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+		} else {
+			manager, err = NewTlsFolderHandler(opts.prefix, false, logger)
+			if err != nil {
+				return nil, err
+			}
+			validationFolderHandler, err := NewTlsFolderHandler(opts.validationPrefix, true, logger)
+			if validationFolderHandler != nil {
+				validationManager = validationFolderHandler
+			}
+			if err != nil {
+				return nil, err
+			}
 		}
-		manager, err := NewTlsSecretHandler(secretName, namespace, opts, logger)
-		if err != nil {
-			return nil, err
+	} else if opts.validationPrefix != "" {
+		logger.Info("Just looking for validation cert")
+		if secretName, ok := getEnv(opts.validationPrefix, envSecretSuffix); ok {
+			namespace, ok := os.LookupEnv(envNamespace)
+			if !ok {
+				return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+			}
+			logger.Infof("Starting new certificate store for %s from secret %s", opts.validationPrefix, secretName)
+			validationManager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.validationPrefix, true, logger)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			validationFolderHandler, err := NewTlsFolderHandler(opts.validationPrefix, true, logger)
+			if validationFolderHandler != nil {
+				validationManager = validationFolderHandler
+			}
+			if err != nil {
+				return nil, err
+			}
 		}
-		return createCertStoreFromManager(opts, logger, manager)
-	} else {
-		manager, err := NewTlsFolderHandler(opts, logger)
-		if err != nil {
-			return nil, err
-		}
-		return createCertStoreFromManager(opts, logger, manager)
 	}
+
+	return createCertStoreFromManager(opts, logger, manager, validationManager)
 }
 
-func createCertStoreFromManager(opts CertificateStoreOptions, logger logrus.FieldLogger, manager CertificateManager) (*CertificateStore, error) {
+func createCertStoreFromManager(opts CertificateStoreOptions, logger logrus.FieldLogger, manager CertificateManager, validationManager CertificateManager) (*CertificateStore, error) {
 	certStore := CertificateStore{
 		opts:               opts,
 		logger:             logger,
 		certificateManager: manager,
+		validationManager:  validationManager,
 	}
-	cert, err := manager.GetCertificateAndWatch(&certStore)
-	if err != nil {
-		return nil, err
+	var err error
+	// Set cert if available
+	if manager != nil {
+		logger.Infof("Getting certificate for %s", opts.prefix)
+		err = manager.GetCertificateAndWatch()
+		if err != nil {
+			return nil, err
+		}
 	}
-	certStore.certificate = cert
+	// Set validation cert if available
+	if validationManager != nil {
+		logger.Infof("Getting validation certificate for %s", opts.validationPrefix)
+		err = validationManager.GetCertificateAndWatch()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &certStore, nil
 }
 
-func (m *CertificateStore) UpdateCertificate(certificate *CertificateWrapper) {
-	logger := m.logger.WithField("func", "UpdateCertificate")
-	logger.Infof("Updating certificate %s", m.opts.prefix)
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.certificate = certificate
+func (s *CertificateStore) GetServerCertificate(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cert := s.certificateManager.GetCertificate()
+	if cert != nil {
+		return cert.Certificate, nil
+	} else {
+		return nil, fmt.Errorf("Nil certificate for %s", s.opts.String())
+	}
 }
 
-func (m *CertificateStore) GetServerCertificate(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.certificate.Certificate, nil
+func (s *CertificateStore) GetClientCertificate(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	cert := s.certificateManager.GetCertificate()
+	if cert != nil {
+		return cert.Certificate, nil
+	} else {
+		return nil, fmt.Errorf("Nil certificate for %s", s.opts.String())
+	}
 }
 
-func (m *CertificateStore) GetClientCertificate(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.certificate.Certificate, nil
+func (s *CertificateStore) getCetificates() (*CertificateWrapper, *CertificateWrapper) {
+	var certificate *CertificateWrapper
+	var validationCA *CertificateWrapper
+	if s.certificateManager != nil {
+		certificate = s.certificateManager.GetCertificate()
+	}
+	if s.validationManager != nil {
+		validationCA = s.validationManager.GetCertificate()
+	}
+	return certificate, validationCA
+}
+
+func (s *CertificateStore) CreateClientTLSConfig() *tls.Config {
+	logger := s.logger.WithField("func", "CreateClientTransportCredentials")
+	var rootCAs *x509.CertPool
+	certificate, validationCA := s.getCetificates()
+	if certificate != nil {
+		rootCAs = certificate.Ca
+		logger.Info("Using rootCA from cert resource")
+	}
+	if validationCA != nil {
+		rootCAs = validationCA.Ca
+		logger.Info("Using rootCA from validation resource")
+	}
+	// Create tlsConfig
+	tlsConfig := &tls.Config{
+		RootCAs: rootCAs,
+	}
+	// Add updater method
+	if certificate != nil {
+		tlsConfig.GetClientCertificate = s.GetClientCertificate
+	}
+	return tlsConfig
 }
 
 func (s *CertificateStore) CreateClientTransportCredentials() credentials.TransportCredentials {
-	tlsConfig := &tls.Config{
-		GetClientCertificate: s.GetClientCertificate,
-		RootCAs:              s.certificate.Ca,
-	}
-	return credentials.NewTLS(tlsConfig)
+	return credentials.NewTLS(s.CreateClientTLSConfig())
 }
 
-func (s *CertificateStore) CreateServerTransportCredentials() credentials.TransportCredentials {
+func (s *CertificateStore) CreateServerTLSConfig() *tls.Config {
+	certificate, validationCA := s.getCetificates()
+	// Assumes there is always a cert for a server
+	clientCAs := certificate.Ca
+	if validationCA != nil {
+		clientCAs = validationCA.Ca
+	}
 	tlsConfig := &tls.Config{
 		ClientAuth:     tls.RequireAndVerifyClientCert,
 		GetCertificate: s.GetServerCertificate,
-		ClientCAs:      s.certificate.Ca,
+		ClientCAs:      clientCAs,
 	}
-	return credentials.NewTLS(tlsConfig)
+	return tlsConfig
+}
+
+func (s *CertificateStore) CreateServerTransportCredentials() credentials.TransportCredentials {
+	return credentials.NewTLS(s.CreateServerTLSConfig())
 }
 
 func (s *CertificateStore) GetCertificate() *CertificateWrapper {
-	return s.certificate
+	if s.certificateManager != nil {
+		return s.certificateManager.GetCertificate()
+	} else {
+		return nil
+	}
+}
+
+func (s *CertificateStore) GetValidationCertificate() *CertificateWrapper {
+	if s.validationManager != nil {
+		return s.validationManager.GetCertificate()
+	} else {
+		return nil
+	}
+}
+
+func (s *CertificateStore) Stop() {
+	if s.certificateManager != nil {
+		s.certificateManager.Stop()
+	}
+	if s.validationManager != nil {
+		s.validationManager.Stop()
+	}
 }

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 
@@ -147,7 +149,12 @@ func main() {
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, nil, km, promMetrics)
+	tlsOptions, err := util.CreateUpstreamDataplaneServerTLSOptions()
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to create TLS Options")
+	}
+
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions)
 	go func() {
 		if err := httpServer.Start(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
@@ -157,7 +164,7 @@ func main() {
 		}
 	}()
 
-	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics)
+	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")

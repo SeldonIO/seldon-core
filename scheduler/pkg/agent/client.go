@@ -275,7 +275,8 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		c.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlane))
+		c.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
 			return nil, err
 		}

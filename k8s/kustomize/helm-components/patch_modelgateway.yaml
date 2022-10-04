@@ -17,28 +17,48 @@ spec:
             value: '{{ .Values.kafka.topics.numPartitions }}'        
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'            
-          - name: CONTROL_PLANE_TLS_SECRET_NAME
+          - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
             value: '{{ .Values.security.controlplane.ssl.client.secret }}'
-          - name: CONTROL_PLANE_TLS_KEY_LOCATION
-            value: '{{ .Values.security.controlplane.ssl.key }}'
-          - name: CONTROL_PLANE_TLS_CRT_LOCATION
-            value: '{{ .Values.security.controlplane.ssl.crt }}'
-          - name: CONTROL_PLANE_TLS_CA_LOCATION
-            value: '{{ .Values.security.controlplane.ssl.ca }}'
+          - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+            value: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.keyPath }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.crtPath }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
+          - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
           - name: KAFKA_SECURITY_PROTOCOL
             value: '{{ .Values.security.kafka.protocol }}'            
           - name: KAFKA_CLIENT_TLS_SECRET_NAME
             value: '{{ .Values.security.kafka.ssl.client.secret }}'
           - name: KAFKA_CLIENT_TLS_KEY_LOCATION
-            value: '{{ .Values.security.kafka.ssl.client.key }}'
+            value: '{{ .Values.security.kafka.ssl.client.keyPath }}'
           - name: KAFKA_CLIENT_TLS_CRT_LOCATION
-            value: '{{ .Values.security.kafka.ssl.client.crt }}'
+            value: '{{ .Values.security.kafka.ssl.client.crtPath }}'
           - name: KAFKA_CLIENT_TLS_CA_LOCATION
-            value: '{{ .Values.security.kafka.ssl.client.ca }}'
+            value: '{{ .Values.security.kafka.ssl.client.caPath }}'
           - name: KAFKA_BROKER_TLS_SECRET_NAME
-            value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+            value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
           - name: KAFKA_BROKER_TLS_CA_LOCATION
-            value: '{{ .Values.security.kafka.ssl.broker.ca }}'
+            value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
+          - name: ENVOY_SECURITY_PROTOCOL
+            value: '{{ .Values.security.envoy.protocol }}'            
+          - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+            value: '{{ .Values.security.envoy.ssl.downstream.client.mtls }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+            value: '{{ .Values.security.envoy.ssl.downstream.client.secret }}'
+          - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+            value: '{{ .Values.security.envoy.ssl.downstream.client.serverValidationSecret }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.keyPath }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.crtPath }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.caPath }}'
+          - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.serverCaPath }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'

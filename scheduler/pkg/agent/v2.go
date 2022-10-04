@@ -13,6 +13,13 @@ import (
 	"strconv"
 	"time"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -76,6 +83,24 @@ type V2ServerError struct {
 }
 
 var ErrV2BadRequest = errors.New("V2 Bad Request")
+
+func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
+	}
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, plainTxtPort), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
 
 func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
 	conn, err := getV2GrpcConnection(host, port)

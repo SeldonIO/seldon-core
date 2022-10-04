@@ -7,10 +7,10 @@ Create a Kafka User `seldon` in the namespace seldon was installed. This assumes
 ```
 
 ```
-kubectl create kafka/strimzi/user.yaml -n seldon-mesh
+kubectl create -f kafka/strimzi/user.yaml -n seldon-mesh
 ```
 
-Install seldon with mTLS secrets from Strimzi using a custom values file. This sets the secret created by Strimzi for the user created above and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster. 
+Install seldon with the Strimzi certificate secrets using a custom values file. This sets the secret created by Strimzi for the user created above (`seldon`) and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster (`seldon-cluster-ca-cert`). 
 
 ```{literalinclude} ../../../../../../k8s/samples/values-strimzi-kafka-mtls.yaml
 :language: yaml

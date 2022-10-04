@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
 	. "github.com/onsi/gomega"
@@ -131,7 +133,7 @@ func TestHttpServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	httpServer := NewGatewayHttpServer(port, logrus.New(), nil, mockInferer, fakePipelineMetricsHandler{})
+	httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{})
 	go func() {
 		err := httpServer.Start()
 		g.Expect(err).To(Equal(http.ErrServerClosed))

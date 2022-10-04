@@ -23,17 +23,17 @@ spec:
         - name: SELDON_TLS_CLIENT_SECRET
           value: '{{ .Values.security.kafka.ssl.client.secret }}'
         - name: SELDON_TLS_CLIENT_KEY_PATH
-          value: '{{ .Values.security.kafka.ssl.client.key }}'
+          value: '{{ .Values.security.kafka.ssl.client.keyPath }}'
         - name: SELDON_TLS_CLIENT_CERT_PATH
-          value: '{{ .Values.security.kafka.ssl.client.crt }}'
+          value: '{{ .Values.security.kafka.ssl.client.crtPath }}'
         - name: SELDON_TLS_CLIENT_CA_PATH
-          value: '{{ .Values.security.kafka.ssl.client.ca }}'
+          value: '{{ .Values.security.kafka.ssl.client.caPath }}'
         - name: SELDON_TLS_BROKER_SECRET
-          value: '{{ .Values.security.kafka.ssl.broker.secret }}'
+          value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_BROKER_CA_PATH
-          value: '{{ .Values.security.kafka.ssl.broker.ca }}'
+          value: '{{ .Values.security.kafka.ssl.client.brokerCa }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
-          value: '{{ .Values.security.kafka.ssl.broker.endpointIdentificationAlgorithm }}'
+          value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.requests.cpu }}'

@@ -221,7 +221,10 @@ kind-image-install-triton:
 	kind load -v 3 docker-image ${TRITON_IMG} --name ${KIND_NAME}
 
 .PHONY: kind-image-install-all
-kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway kind-image-install-pipelinegateway kind-image-install-dataflow kind-image-install-mlserver kind-image-install-triton
+kind-image-install-all: kind-image-install-scheduler kind-image-install-envoy kind-image-install-agent kind-image-install-rclone kind-image-install-modelgateway kind-image-install-pipelinegateway kind-image-install-dataflow
+
+.PHONY: kind-image-install-servers
+kind-image-install-servers: kind-image-install-mlserver kind-image-install-triton
 
 #####################################
 # Start with Docker Compose
