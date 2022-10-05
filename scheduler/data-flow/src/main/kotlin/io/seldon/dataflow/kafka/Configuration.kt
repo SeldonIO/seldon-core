@@ -103,12 +103,11 @@ fun KafkaProperties.withAppId(name: String): KafkaProperties {
     val properties = KafkaProperties()
 
     properties.putAll(this.toMap())
-    this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-$name"
+    properties[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-$name"
     // TODO add k8s host name to ensure static membership is only used for consumers from the same pod restarting?
     //
     // If set, allows static membership which would allow restarts within SESSION_TIMEOUT_MS_CONFIG
     // to happen with no rebalance
-    this[ConsumerConfig.GROUP_INSTANCE_ID_CONFIG] = "seldon-dataflow-$name"
 
     return properties
 }
