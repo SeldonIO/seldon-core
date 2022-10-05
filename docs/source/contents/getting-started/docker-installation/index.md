@@ -2,11 +2,10 @@
 
 ## Preparation
 
- 1. Git clone seldon-core-v2
-        git clone https://github.com/SeldonIO/seldon-core-v2
+ 1. `git clone https://github.com/SeldonIO/seldon-core-v2`
  2. Build [Seldon CLI](../cli.md)
  3. Install [Docker Compose](https://docs.docker.com/compose/install/).
- 4. Install `make`.
+ 4. Install `make`. This will depend on your version of Linux, for example on Ubuntu run `sudo apt-get install build-essential`.
 
 
 ## Deploy
@@ -17,7 +16,18 @@ From the project root run:
 make deploy-local
 ```
 
+This will run with `latest` images for the componnets.
+
 Note: Triton and MLServer are large images at present (11G and 9G respectively) so will take time to download on first usage.
+
+### Run a particular version
+
+To run a particular release set the environment variable `CUSTOM_IMAGE_TAG` to the desired version before running the command, e.g.:
+
+```
+export CUSTOM_IMAGE_TAG=0.2.0
+make deploy-local
+```
 
 ### Local Models
 
