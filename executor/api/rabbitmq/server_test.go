@@ -92,9 +92,10 @@ func TestRabbitMqServer(t *testing.T) {
 		testPuid,
 	)
 	invalidErrorPublishing := amqp.Publishing{
-		ContentType: "application/json",
-		Body:        []byte(invalidErrorJsonResponse),
-		Headers:     testHeaders,
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		Body:         []byte(invalidErrorJsonResponse),
+		Headers:      testHeaders,
 	}
 
 	t.Run("create server", func(t *testing.T) {
@@ -235,7 +236,8 @@ func TestRabbitMqServer(t *testing.T) {
 				error1Text,
 				testPuid,
 			)),
-			Headers: testHeaders,
+			DeliveryMode: amqp.Persistent,
+			Headers:      testHeaders,
 		}
 		mockRmqChan.On("Publish", "", outputQueue, true, false, generatedErrorPublishing1).Return(nil)
 		pl1, _ := DeliveryToPayload(testDelivery)
@@ -253,7 +255,8 @@ func TestRabbitMqServer(t *testing.T) {
 		error2Text := "error 2"
 		error2 := errors.New(error2Text)
 		generatedErrorPublishing2 := amqp.Publishing{
-			ContentType: "application/json",
+			ContentType:  "application/json",
+			DeliveryMode: amqp.Persistent,
 			Body: []byte(fmt.Sprintf(
 				`{"status":{"info":"Prediction Failed","reason":"%v","status":"FAILURE"},"meta":{"puid":"%v"}}`,
 				error2Text,

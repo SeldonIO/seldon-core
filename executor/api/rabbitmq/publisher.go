@@ -56,6 +56,7 @@ func (p *publisher) Publish(payload SeldonPayloadWithHeaders) error {
 		Headers:         StringMapToTable(payload.Headers),
 		ContentType:     payload.GetContentType(),
 		ContentEncoding: payload.GetContentEncoding(),
+		DeliveryMode:    amqp.Persistent,
 		Body:            body,
 	}
 	err = p.channel.Publish(amqpExchange, p.queueName, publishMandatory, publishImmediate, message)
