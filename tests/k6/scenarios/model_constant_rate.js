@@ -30,16 +30,16 @@ export default function (config) {
 
     if (config.inferType === "REST") {
         if (config.modelName !== "") {
-            inferHttp(httpEndpoint, config.modelName, model.inference.http, true, "")
+            inferHttp(httpEndpoint, config.modelName, model.inference.http, config.isEnvoy, "")
         } else {
-            inferHttp(httpEndpoint, modelName, model.inference.http, true, "")
+            inferHttp(httpEndpoint, modelName, model.inference.http, config.isEnvoy, "")
         }
     } else {
         connectV2Grpc(grpcEndpoint)
         if (config.modelName !== "") {
-            inferGrpc(config.modelName, model.inference.grpc, true, "")
+            inferGrpc(config.modelName, model.inference.grpc, config.isEnvoy, "")
         } else {
-            inferGrpc(modelName, model.inference.grpc, true, "")
+            inferGrpc(modelName, model.inference.grpc, config.isEnvoy, "")
         }
         disconnectV2Grpc()
     }

@@ -167,6 +167,29 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	}
 }
 
+func (rp *reverseGRPCProxy) scalingMetricsSetup(wg *sync.WaitGroup, internalModelName string) {
+
+	err := rp.modelLagStats.IncDefault(internalModelName)
+	if err != nil {
+		rp.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+	}
+	wg.Done()
+	err = rp.modelLastUsedStats.IncDefault(internalModelName)
+	if err != nil {
+		rp.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+	}
+
+}
+
+func (rp *reverseGRPCProxy) scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string) {
+	wg.Wait() // make sure that Inc is called first
+	err := rp.modelLagStats.DecDefault(internalModelName)
+	if err != nil {
+		rp.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
+	}
+
+}
+
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
@@ -176,33 +199,17 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	// to sync between Inc and Dec call running in go routines
+	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() {
-		err := rp.modelLagStats.IncDefault(internalModelName)
-		if err != nil {
-			logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-		}
-		wg.Done()
-		err = rp.modelLastUsedStats.IncDefault(internalModelName)
-		if err != nil {
-			logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-		}
-	}()
-	defer func() {
-		wg.Wait() // make sure that Inc is called first
-		err := rp.modelLagStats.DecDefault(internalModelName)
-		if err != nil {
-			logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
-		}
-	}()
+	go rp.scalingMetricsSetup(&wg, internalModelName)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
 	if err != nil {
 		elapsedTime := time.Since(startTime).Seconds()
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
+		go rp.scalingMetricsTearDown(&wg, internalModelName)
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 	var trailer metadata.MD
@@ -220,6 +227,7 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if errTrailer != nil {
 		logger.WithError(errTrailer).Error("Failed to set trailers")
 	}
+	go rp.scalingMetricsTearDown(&wg, internalModelName)
 	return resp, err
 }
 

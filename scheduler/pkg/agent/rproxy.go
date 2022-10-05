@@ -60,6 +60,29 @@ type lazyModelLoadTransport struct {
 	logger             log.FieldLogger
 }
 
+func (t *lazyModelLoadTransport) scalingMetricsSetup(wg *sync.WaitGroup, internalModelName string) {
+
+	err := t.modelLagStats.IncDefault(internalModelName)
+	if err != nil {
+		t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+	}
+	wg.Done()
+	err = t.modelLastUsedStats.IncDefault(internalModelName)
+	if err != nil {
+		t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
+	}
+
+}
+
+func (t *lazyModelLoadTransport) scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string) {
+	wg.Wait() // make sure that Inc is called first
+	err := t.modelLagStats.DecDefault(internalModelName)
+	if err != nil {
+		t.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
+	}
+
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
@@ -70,33 +93,17 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	externalModelName := req.Header.Get(resources.SeldonModelHeader)
 	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
 
-	// to sync between Inc and Dec call running in go routines
+	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func() {
-		err := t.modelLagStats.IncDefault(internalModelName)
-		if err != nil {
-			t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-		}
-		wg.Done()
-		err = t.modelLastUsedStats.IncDefault(internalModelName)
-		if err != nil {
-			t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-		}
-	}()
-	defer func() {
-		wg.Wait() // make sure that Inc is called first
-		err := t.modelLagStats.DecDefault(internalModelName)
-		if err != nil {
-			t.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
-		}
-	}()
+	go t.scalingMetricsSetup(&wg, internalModelName)
 
 	startTime := time.Now()
 	if req.Body != nil {
 		originalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
+		go t.scalingMetricsTearDown(&wg, internalModelName)
 		return nil, err
 	}
 
@@ -104,6 +111,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
+		go t.scalingMetricsTearDown(&wg, internalModelName)
 		return res, err
 	}
 
@@ -121,7 +129,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 	elapsedTime := time.Since(startTime).Seconds()
 	go t.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(res.StatusCode))
-
+	go t.scalingMetricsTearDown(&wg, internalModelName)
 	return res, err
 
 }
