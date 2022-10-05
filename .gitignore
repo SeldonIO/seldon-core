@@ -25,6 +25,7 @@ cluster-manager/.m2/
 /*.iws
 *.iml
 .idea
+/pkg
 
 /bin/
 *~
