@@ -151,9 +151,6 @@ func TestRabbitMqServer(t *testing.T) {
 			Headers:      testHeaders,
 		}
 
-		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
-			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
-
 		mockDeliveries := make(chan amqp.Delivery, 1)
 		mockDeliveries <- testDelivery
 		close(mockDeliveries)
@@ -189,9 +186,6 @@ func TestRabbitMqServer(t *testing.T) {
 			Headers:      testHeaders,
 			Redelivered:  true,
 		}
-
-		mockRmqChan.On("QueueDeclare", outputQueue, queueDurable, queueAutoDelete, queueExclusive,
-			queueNoWait, queueArgs).Return(amqp.Queue{}, nil)
 
 		mockDeliveries := make(chan amqp.Delivery, 1)
 		mockDeliveries <- invalidDelivery

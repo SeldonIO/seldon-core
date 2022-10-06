@@ -145,13 +145,6 @@ func (rs *SeldonRabbitMQServer) serve(conn *connection) error {
 		}
 	}
 
-	// create output queue immediately instead of waiting until the first time we publish a response
-	_, err = conn.DeclareQueue(rs.OutputQueueName)
-	if err != nil {
-		rs.Log.Error(err, "error declaring rabbitmq queue", "uri", conn.uri)
-		return fmt.Errorf("error '%w' declaring rabbitmq queue", err)
-	}
-
 	producer := &publisher{*conn, rs.OutputQueueName}
 
 	// consumer creates input queue if it doesn't exist
