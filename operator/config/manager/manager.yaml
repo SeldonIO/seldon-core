@@ -137,5 +137,5 @@ spec:
             cpu: 100m
             memory: 200Mi
       terminationGracePeriodSeconds: 10
-      nodeSelector: []
-      tolerations: {}
+      nodeSelector: {}
+      tolerations: []

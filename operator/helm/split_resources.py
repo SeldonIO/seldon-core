@@ -493,6 +493,14 @@ if __name__ == "__main__":
             fdata = fdata.replace(
                 "'{{ .Values.managerUserID }}'", "{{ .Values.managerUserID }}"
             )
+            # make sure nodeSelector is not quoted as its a map
+            fdata = fdata.replace(
+                "'{{ .Values.manager.nodeSelector }}'", "{{ .Values.manager.nodeSelector }}"
+            )
+            # make sure tolerations is not quoted as its a list
+            fdata = fdata.replace(
+                "'{{ .Values.manager.tolerations }}'", "{{ .Values.manager.tolerations }}"
+            )
 
             if not kind == "namespace":
                 if (

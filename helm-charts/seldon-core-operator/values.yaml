@@ -89,8 +89,8 @@ manager:
   containerSecurityContext: {}
   deploymentNameAsPrefix: false
   priorityClassName:
-  nodeSelector: []
-  tolerations: {}
+  nodeSelector: {}
+  tolerations: []
 rbac:
   configmap:
     create: true
