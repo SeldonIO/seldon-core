@@ -8,6 +8,11 @@ Download from a recent release from https://github.com/SeldonIO/seldon-core-v2/r
 
 It is dynamically linked and will require and nix architetcure and glibc 2.25+.
 
+```
+mv seldon-linux-amd64 seldon
+chmod u+x seldon
+```
+
 Add to your PATH.
 
 ## Local build (requires Go)
@@ -18,7 +23,7 @@ cd seldon-core-v2/operator
 make build-seldon
 ```
 
-Add to your PATH.
+Add `<project-root>/operator/bin` to your PATH.
 
 
 
