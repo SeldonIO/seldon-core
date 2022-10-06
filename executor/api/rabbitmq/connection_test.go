@@ -49,6 +49,7 @@ func setupConnect(fn func(adapter *mockDialerAdapter, conn *mockConnection, chan
 		defaultDialerAdapter = origAdapter
 		connectionRetryDelay = origRetryDelay
 	}
+
 	return fixture, reset
 }
 
@@ -57,6 +58,7 @@ func TestNewConnection(t *testing.T) {
 
 	t.Run("connect", func(t *testing.T) {
 		f, reset := setupConnect(func(adapter *mockDialerAdapter, conn *mockConnection, channel *mockChannel) {
+			channel.On("Qos", 1, 0, true).Return(nil)
 			conn.On("Channel").Return(channel, nil)
 			adapter.On("Dial", uri).Return(conn, nil)
 		})
@@ -70,10 +72,12 @@ func TestNewConnection(t *testing.T) {
 
 		f.adapter.AssertExpectations(t)
 		f.connection.AssertExpectations(t)
+		f.channel.AssertExpectations(t)
 	})
 
 	t.Run("reconnect", func(t *testing.T) {
 		f, reset := setupConnect(func(adapter *mockDialerAdapter, conn *mockConnection, channel *mockChannel) {
+			channel.On("Qos", 1, 0, true).Return(nil)
 			conn.On("Channel").Return(channel, nil)
 			adapter.On("Dial", uri).Return(nil, errors.New("test dial error")).Once()
 			adapter.On("Dial", uri).Return(conn, nil).Once()
@@ -89,6 +93,7 @@ func TestNewConnection(t *testing.T) {
 		f.adapter.AssertExpectations(t)
 		f.adapter.AssertNumberOfCalls(t, "Dial", 2)
 		f.connection.AssertExpectations(t)
+		f.channel.AssertExpectations(t)
 	})
 
 	t.Run("channel_failure", func(t *testing.T) {

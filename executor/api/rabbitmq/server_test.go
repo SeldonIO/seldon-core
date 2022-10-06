@@ -159,6 +159,7 @@ func TestRabbitMqServer(t *testing.T) {
 			amqp.Table{}).Return(mockDeliveries, nil)
 		mockRmqChan.On("Publish", "", outputQueue, publishMandatory, publishImmediate,
 			mock.MatchedBy(func(p amqp.Publishing) bool { return true })).Return(nil)
+		mockRmqChan.On("Ack", uint64(0), false).Return(nil)
 
 		err := testServer.serve(mockConn)
 
@@ -195,6 +196,7 @@ func TestRabbitMqServer(t *testing.T) {
 			amqp.Table{}).Return(mockDeliveries, nil)
 		mockRmqChan.On("Publish", "", outputQueue, publishMandatory, publishImmediate,
 			invalidErrorPublishing).Return(nil)
+		mockRmqChan.On("Reject", uint64(0), false).Return(nil)
 
 		err := testServer.serve(mockConn)
 

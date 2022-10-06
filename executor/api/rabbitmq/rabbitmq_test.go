@@ -65,13 +65,23 @@ func (m *mockChannel) Consume(
 }
 
 func (m *mockChannel) Ack(tag uint64, multiple bool) error {
-	return nil
+	args := m.Called(tag, multiple)
+	return args.Error(0)
 }
+
 func (m *mockChannel) Nack(tag uint64, multiple bool, requeue bool) error {
-	return nil
+	args := m.Called(tag, multiple, requeue)
+	return args.Error(0)
 }
+
 func (m *mockChannel) Reject(tag uint64, requeue bool) error {
-	return nil
+	args := m.Called(tag, requeue)
+	return args.Error(0)
+}
+
+func (m *mockChannel) Qos(prefetchCount int, prefetchSize int, global bool) error {
+	args := m.Called(prefetchCount, prefetchSize, global)
+	return args.Error(0)
 }
 
 type TestPayload struct {

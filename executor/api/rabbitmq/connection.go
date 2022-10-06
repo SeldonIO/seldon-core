@@ -77,6 +77,7 @@ func (c *connection) Close() error {
 
 // implements retry logic with delays for establishing AMQP connections.
 func (c *connection) connect() error {
+
 	ticker := time.NewTicker(connectionRetryDelay)
 	defer ticker.Stop()
 
@@ -107,6 +108,17 @@ func (c *connection) connect() error {
 			c.log.Error(err, "error creating rabbitmq channel", "uri", c.uri)
 			return fmt.Errorf("error '%w' creating rabbitmq channel to %q", err, c.uri)
 		}
+
+		err = c.channel.Qos(
+			1,
+			0,
+			true,
+		)
+		if err != nil {
+			c.log.Error(err, "error setting rabbitmq Qos")
+			return fmt.Errorf("error '%w' error setting rabbitmq Qos", err)
+		}
+
 		return nil
 	}
 
