@@ -1,7 +1,7 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
-  name: iris
+  name: iris-pipeline
 spec:
   steps:
     - name: iris

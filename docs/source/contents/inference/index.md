@@ -13,7 +13,7 @@ You can make synchronous inference requests via REST or gRPC or asynchronous req
 
  1. If you are runing Seldon locally via Docker compose by deafult the endpoint will be `0.0.0.0:9000`
  2. If you are running in Kubernetes Seldon creates a single Service `seldon-mesh` in the namespace Seldon is installed to, usually `seldon-mesh`. If this has be exposed via a load balancer this can be found via:
- 
+
  ```bash
  kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
  ```
@@ -41,7 +41,7 @@ A similar gRPC request using grpcurl to the same model might look like:
 ```
 grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
         -plaintext \
-	-import-path apis \	
+	-import-path apis \
 	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
 	-rpc-header seldon-model:iris \
 	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
@@ -50,6 +50,27 @@ grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_con
 The above request was run from the project root folder allowing reference to the protos defined in the apis folder.
 
 For Pipelines a synchronous request is possible if the Pipeline has an outputs section in the spec.
+
+### Using Python Tritonclient
+
+You can also use Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
+
+A short self-contained example corresponding to the above requests is
+```python
+import tritonclient.http as httpclient
+import numpy as np
+
+client = httpclient.InferenceServerClient(
+    url=f"172.19.255.9:80",
+    verbose=False,
+)
+
+inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
+inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"), binary_data=False)
+
+result = client.infer("iris", inputs)
+print("result is:", result.as_numpy("predict"))
+```
 
 ## Asynchronous requests
 

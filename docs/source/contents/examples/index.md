@@ -7,10 +7,11 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Kubernetes examples](k8s-examples.md)
  * [Pipeline examples](pipeline-examples.md)
  * [Explainer examples](explainer-examples.md)
-
+ 
 ## Making inference requests
 
  * [Inference examples](inference.md)  
+ * [Tritonclient examples](tritonclient-examples.md)
 
 ## Advanced Examples
 
@@ -31,4 +32,5 @@ cifar10.md
 income.md
 pandasquery.md
 inference.md
+tritonclient-examples.md
 ```
