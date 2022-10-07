@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 tf.keras.backend.clear_session()
 ```
 
-    2022-10-02 18:04:26.133356: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-    2022-10-02 18:04:26.133380: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+    2022-10-06 16:32:05.092402: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+    2022-10-06 16:32:05.092425: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 
 
 
@@ -225,8 +225,8 @@ def show(X):
         {
           "pipeline": {
             "name": "cifar10-production",
-            "uid": "ccss9k24u1vus3q1e1j0",
-            "version": 1,
+            "uid": "ccvfa5t4nntrbfkuk5hg",
+            "version": 2,
             "steps": [
               {
                 "name": "cifar10"
@@ -250,10 +250,10 @@ def show(X):
             "kubernetesMeta": {}
           },
           "state": {
-            "pipelineVersion": 1,
+            "pipelineVersion": 2,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-02T17:05:20.544270105Z"
+            "lastChangeTimestamp": "2022-10-06T15:32:39.926431438Z"
           }
         }
       ]
@@ -386,7 +386,7 @@ infer("cifar10-production.pipeline",20, "normal")
 
 
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [20, 10], 'datatype': 'FP32'}, {'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}], 'rawOutputContents': ['CRx5MvEmrDCaAC80yx7sPdQqOzRRjs82t3tiP5Wy0DE1up8zppSiMUO3qTWauacxz0PQMM3dETKvihcwIqqfMP6uHjC/1Jo0wjAhOprXfz/ehGM/t/8pNrr5BznIr9c9k7XLN1+C1DYyJNU6s7Y9N1YmrjpFGjg7YuIMNuMSHjOy7q06mJe2NwiYfz+lcCA5JBzpNsDAXjcau4E4Q+22NIb9Ozcm/n8/ODFWNFMRljN5ZQ8zp+1hM/jzojRu2zsz7ewONcIhhTc1DSs6NEVaPD2vxjWSBHo/LRNROFk+GDpSuAk8D0WvNqBDdTn1XvM4AujfNRi1HjAgYH8/Y2KHOOVyGzseLt8zyFXRM8SGGzQEN2s1CKzUMojJrDHrxZYuI97SLBlGBzAu9x00HYI7NlCEbTHQ/38/elUjMN+yzy5CjS84a4hYM6pyrDPVIgI0/QPpMWy+WDJrEkwyUtTfMDz9fz8X8wwzPeS2PeUFFzQQv9w0JbNoP8nNbzWg9sw67mwROSeOGDdd4wI1XBjsNPHDKDnyab80WcGbPeiKZD/4Xpo6ggsuO1u73jzekIw25ghfNyor+TUUgLM18CTcM82jFDLQl5U2prl1N/09qTV8tzMyGPl/P1q+rjhhbdE0aR+JOGNfATOrDtwzG6j8Nfr7ATpdNBQ4OxqTNDTYfz/IaaI2/DRtNhenEDrcoqk0+L9/P/szpTmq3Vg1fanbNdibOzYtGc02aOLNOIi7izTZLe85Wt+zNi1j8DcIW/M4Ck+QOA5kFDcYTTs4IysVOCAa1zu4H34/7zzvO2cn7TVM26M01GrcPJXQuDU5Y5A501q7NpyDfjZfQcs54xF3P+V8OT4u5+03MPRQOfLZ+zv9wRk50RclOKA2eThDY5o4Q6NMP/Z+ODzXCtMtXQZcJsYN0yYAAIA/5gveKIuWAS+Ucloq6sqYJ+hGriZ7RlEnPQCEMrV4qzCmmRE0zv9/PwidPS5i7PEyvmEkNlZJEC9Lcsw0MD6+LWQjATon8+g21CntNzPjbD9KZB83HXK9OcrqlD2wxQk0IxCJOtoVmTQ=']}
+    {'model_name': '', 'outputs': [{'data': [1.4500082e-08, 1.2525715e-09, 1.6298364e-07, 0.11529311, 1.7431313e-07, 6.1856485e-06, 0.88470024, 6.073899e-09, 7.437885e-08, 4.73172e-09, 1.2644817e-06, 4.88144e-09, 1.5153264e-09, 8.4905425e-09, 5.513056e-10, 1.1617127e-09, 5.7728744e-10, 2.8839528e-07, 0.0006148928, 0.99938357, 0.88874614, 2.5331808e-06, 0.00012967634, 0.105315745, 2.4284038e-05, 6.3332695e-06, 0.0016261397, 1.1307816e-05, 0.0013286571, 0.002809183, 2.0993398e-06, 3.680442e-08, 0.0013269989, 2.1766682e-05, 0.99841356, 0.00015300752, 6.947217e-06, 1.3277109e-05, 6.18605e-05, 3.4072772e-07, 1.1205097e-05, 0.99997175, 1.9948209e-07, 6.9880706e-08, 3.338707e-08, 5.260304e-08, 3.0352362e-07, 4.37389e-08, 5.3243895e-07, 1.5870555e-05, 0.00065251003, 0.013322163, 1.4803151e-06, 0.97663224, 4.9847342e-05, 0.00058076304, 0.008405762, 5.223446e-06, 0.00023390213, 0.0001160483, 1.6682318e-06, 5.7737415e-10, 0.9975605, 6.4556276e-05, 0.0023719606, 1.03926354e-07, 9.7479244e-08, 1.4484527e-07, 8.762438e-07, 2.4758279e-08, 5.0287703e-09, 6.8563676e-11, 5.993221e-12, 4.921233e-10, 1.4711688e-07, 2.7940907e-06, 3.456325e-09, 0.99999714, 5.9420524e-10, 9.445044e-11, 4.1854808e-05, 5.041549e-08, 8.0302314e-08, 1.2119865e-07, 6.781646e-09, 1.2616152e-08, 1.1878551e-08, 1.628573e-09, 0.9999578, 3.281738e-08, 0.08930252, 1.4065115e-07, 4.111721e-07, 0.9089835, 8.9333895e-07, 0.0015637465, 0.00013868857, 9.093003e-06, 4.875963e-07, 4.397615e-07, 0.00016094722, 3.5653608e-07, 0.076052375, 0.89274454, 0.001177757, 0.0026557152, 0.027188947, 4.18919e-06, 1.3293908e-05, 1.8564508e-06, 1.3373815e-06, 1.0251267e-07, 8.651978e-09, 4.4582193e-06, 1.4646363e-05, 1.2609522e-06, 1.0460891e-08, 0.9998946, 8.332422e-05, 3.9008867e-07, 6.53852e-05, 3.0121907e-08, 1.02472164e-07, 1.8824388e-06, 0.0004958507, 3.5334717e-05, 2.739997e-07, 0.99939275, 4.840291e-06, 3.5346593e-06, 0.00055180624, 3.15972e-07, 0.99902296, 0.0003150998, 8.0788834e-07, 1.6366099e-06, 2.7955884e-06, 6.112407e-06, 9.817333e-05, 2.6027215e-07, 0.00045619791, 5.3606173e-06, 2.8656412e-05, 0.00011604099, 6.881177e-05, 8.844783e-06, 4.4656073e-05, 3.5564542e-05, 0.0065643936, 0.9926715, 0.007300965, 1.7669344e-06, 3.0520675e-07, 0.026906408, 1.3769774e-06, 0.00027539747, 5.5836076e-06, 3.7925556e-06, 0.00038767883, 0.9651167, 0.1811405, 2.8360253e-05, 0.00019927393, 0.007685893, 0.00014663483, 3.9361246e-05, 5.94171e-05, 7.361781e-05, 0.7993662, 0.011260739, 2.3992737e-11, 7.6336457e-16, 1.4644799e-15, 1, 2.4652111e-14, 1.1785965e-10, 1.9402042e-13, 4.2408475e-15, 1.2092895e-15, 2.9042784e-15, 1.536693e-08, 1.2476195e-09, 1.3560074e-07, 0.999997, 4.3113096e-11, 2.8163587e-08, 2.4494798e-06, 1.3122778e-10, 3.808112e-07, 2.1628116e-11, 0.0004926233, 6.9424455e-06, 2.827208e-05, 0.9253418, 9.500489e-06, 0.0003613391, 0.07271345, 1.2831038e-07, 0.001045708, 2.851437e-07], 'name': 'fc10', 'shape': [20, 10], 'datatype': 'FP32'}, {'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}]}
 
 
 
@@ -394,7 +394,7 @@ infer("cifar10-production.pipeline",20, "normal")
 !seldon pipeline inspect cifar10-production.cifar10-drift.outputs.is_drift
 ```
 
-    seldon.default.model.cifar10-drift.outputs	ccss9m9atu79k6fs0pl0	{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["0"]}}
+    seldon.default.model.cifar10-drift.outputs	ccvfa7pi3pn0vadt0di0	{"name":"is_drift", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["0"]}}
 
 
 
@@ -523,7 +523,7 @@ infer("cifar10-production.pipeline",20, "drift")
 
 
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [20, 10], 'datatype': 'FP32'}, {'data': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}], 'rawOutputContents': ['1M3eMCFl3C/cUvA5KrBuP0Xg3jSP4Aw3uomJPdTueDAoMCEx6rwLL1u1rjrZcAs3o6htP2N/oTuhl+E7Bna8OQHG6TkQE0M3aDdsPel6jjZcLc82+rKNNiFiFTwwvR8/QKsUOLlYODm+MlU3OaxsNae7uz6jhyU1KYA0OBO6lTVRu3g/9GBsO5PPmTkLHu04hFAcOiNWgzddU8I8NA+CNfQAuTWWldAzJoHiPTiaYz97L0o40eYbOOw5fjnaVaA0r5sDNdkSgTKvbiA1Nj89NAlBjD6Eyzk/zY58OKIy7zh2MQA5XmvDNRQ5xzbrWwszxF3mMtLKqzLDAA855NtpP+kFgjS35as0EdmwPTeukzHv0KwxHQRCMdHlLzq9Myk4nyVaPzNBwT3kurA8dVkkOz/sGjuYRFE5eNnVPD8GKDhJm6E1lGNmM1QEZz6OIUQ/jwACOSgviTjYMgQ8PFLtNGmaFzW1J1Ez5h0qOCMUrTUKsw4+uldwPrzqgzwsjMY7qngaP6BNHDdvxqI518oDNwC6TjiV+481gd0hPqLJVj9lhoA6/agLOquEZzqryY42s27yOcapUjVeQAU4rgqzNbNP7T4k/jU8G5sAP8MnEzgdNLc8aoLcN2C6AzpLa4o44mihM05zZzMzXsw+x8cZP+MNWji1Hqo2MG6oOECFCzXUcJg1xYinMiSTFjO6AOUyGRrtOphZfz/laB04/GOWNWyFNDoo3Fc1tOUFNoxKwTLXVAwzhIKxMEsTfj/fCU47AASFO9vbMjH7JJ05bue1M5yKCTfJgOg2qiNTNtTeKjSMKYw84bJ6P8i2iDmiPB82ti5aOxpIsTQqZBs2f0pPM8uRBDDE5hkvuybWObuSfz9eB540YaZ2MpX4pDqQVNwwP0SRMCIBdzCWQbozMULkMe4+Qj97xXY+MZ4oOfsgmDT8CKM4k93RMxSuJTWmjgozSbhpNtpdNzWbgkE/9U14PoktHTrRefs4d9U7OpWQ2jXOYjY5EzY6NGhkITZ5CBI02cI5PwxYjD466Fc3XOG7N367STnPDno0JncBOIF46DE=']}
+    {'model_name': '', 'outputs': [{'data': [1.6211126e-09, 4.0089623e-10, 0.00045838102, 0.93237555, 4.15139e-07, 8.396934e-06, 0.067157224, 9.056127e-10, 2.3455957e-09, 1.2709092e-10, 0.0013329195, 8.31132e-06, 0.92835444, 0.0049285158, 0.0068845307, 0.0003594609, 0.00044588748, 1.1627344e-05, 0.057670027, 4.2462384e-06, 6.1743613e-06, 4.222963e-06, 0.009117634, 0.6239805, 3.544544e-05, 0.00017580659, 1.2707604e-05, 8.816747e-07, 0.36666605, 6.166467e-07, 4.3034703e-05, 1.115552e-06, 0.9716082, 0.003606853, 0.0002933709, 0.000113066366, 0.00059629255, 1.5656527e-05, 0.023721391, 9.69018e-07, 1.3783852e-06, 9.712964e-08, 0.11059789, 0.88907194, 4.8204773e-05, 3.7169844e-05, 0.00024244905, 2.9864788e-07, 4.902785e-07, 1.5026147e-08, 5.976571e-07, 1.7624993e-07, 0.27393368, 0.72576165, 6.0214476e-05, 0.00011405839, 0.00012225457, 1.455988e-06, 5.937307e-06, 3.244706e-08, 2.6818164e-08, 1.9999252e-08, 0.00013637826, 0.9135115, 2.4218687e-07, 3.2018372e-07, 0.08635152, 4.298069e-09, 5.029612e-09, 2.8233054e-09, 0.00067099655, 4.0340925e-05, 0.85213655, 0.09436264, 0.021573491, 0.0025077735, 0.0023639349, 0.00019957346, 0.026104674, 4.006014e-05, 1.2040629e-06, 5.3641614e-08, 0.22560245, 0.766137, 0.00012397974, 6.5414526e-05, 0.008068763, 4.4204523e-07, 5.647658e-07, 4.8697718e-08, 4.0559004e-05, 1.2895365e-06, 0.13935485, 0.23470965, 0.016103141, 0.0060591903, 0.6034037, 9.316398e-06, 0.00031046892, 7.855436e-06, 4.9287453e-05, 1.072755e-06, 0.15807153, 0.8390142, 0.0009805678, 0.00053276104, 0.000883172, 4.255407e-06, 0.00046240314, 7.847815e-07, 3.1769618e-05, 1.3339647e-06, 0.46349868, 0.011107955, 0.5023667, 3.5084562e-05, 0.022363717, 2.6286772e-05, 0.00050250255, 6.600338e-05, 7.516225e-08, 5.3888748e-08, 0.39915618, 0.6007046, 5.1988183e-05, 5.0699696e-06, 8.031388e-05, 5.197544e-07, 1.135772e-06, 1.9503554e-08, 3.505842e-08, 2.6659439e-08, 0.0018089443, 0.99746084, 3.7529408e-05, 1.120497e-06, 0.00068863365, 8.041411e-07, 1.995225e-06, 2.2502057e-08, 3.267345e-08, 1.291554e-09, 0.9924819, 0.003143899, 0.0040593147, 2.6027382e-09, 0.00029972926, 8.470566e-08, 8.198109e-06, 6.9291314e-06, 3.146221e-06, 1.5913548e-07, 0.017109655, 0.979292, 0.00026076124, 2.372814e-06, 0.0033292002, 3.302128e-07, 2.3155103e-06, 4.8263697e-08, 4.8228505e-10, 1.3997253e-10, 0.00040846117, 0.9983327, 2.9435154e-07, 1.4356915e-08, 0.001258629, 1.6031141e-09, 1.0569535e-09, 8.9859686e-10, 8.67323e-08, 6.6431984e-09, 0.75877273, 0.2409877, 0.0001608066, 2.8336203e-07, 7.774119e-05, 9.772625e-08, 6.1720607e-07, 3.2260367e-08, 3.4826974e-06, 6.8309384e-07, 0.75589913, 0.24248488, 0.000599586, 0.00011991303, 0.00071652926, 1.6284345e-06, 0.0001739368, 1.7342272e-07, 2.4049314e-06, 1.3600392e-07, 0.7256294, 0.27410924, 1.2869068e-05, 2.2397078e-05, 0.000192387, 2.3288452e-07, 3.0866962e-05, 6.7657884e-09], 'name': 'fc10', 'shape': [20, 10], 'datatype': 'FP32'}, {'data': [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0], 'name': 'is_outlier', 'shape': [1, 20], 'datatype': 'INT64'}]}
 
 
 
@@ -531,7 +531,7 @@ infer("cifar10-production.pipeline",20, "drift")
 !seldon pipeline inspect cifar10-production.cifar10-drift.outputs.is_drift
 ```
 
-    seldon.default.model.cifar10-drift.outputs	ccss9r9atu79k6fs0plg	{"name":"is_drift","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["1"]}}
+    seldon.default.model.cifar10-drift.outputs	ccvfac1i3pn0vadt0dig	{"name":"is_drift", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["1"]}}
 
 
 
@@ -546,7 +546,7 @@ infer("cifar10-production.pipeline",1, "outlier")
 
 
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [1], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}], 'rawOutputContents': ['bQQEOIOIsTcLMH44kVfIPnSnCDeWpW84pqAbPzCURTcYdg46Da5eOA==']}
+    {'model_name': '', 'outputs': [{'data': [0.0007882897, 0.00011240715, 8.967017e-05, 0.015603337, 3.67151e-05, 0.008521079, 0.97396415, 6.24793e-06, 0.0008641859, 1.3902612e-05], 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [1], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}]}
 
 
 
@@ -561,7 +561,7 @@ infer("cifar10-production.pipeline",1, "ok")
 
 
     <Response [200]>
-    {'model_name': '', 'outputs': [{'data': None, 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [0], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}], 'rawOutputContents': ['JRx5MgYnrDCDAC802B7sPd4qOzQ1js82tXtiP3my0DFHup8zpZSiMQ==']}
+    {'model_name': '', 'outputs': [{'data': [1.4500107e-08, 1.2525738e-09, 1.6298331e-07, 0.115293205, 1.7431327e-07, 6.185636e-06, 0.8847001, 6.0738867e-09, 7.437898e-08, 4.7317195e-09], 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [0], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64'}]}
 
 
 Use the seldon CLI to look at the outputs from the CIFAR10 model. It will decide the Triton binary outputs for us.
@@ -571,7 +571,7 @@ Use the seldon CLI to look at the outputs from the CIFAR10 model. It will decide
 !seldon pipeline inspect cifar10-production.cifar10.outputs
 ```
 
-    seldon.default.model.cifar10.outputs	ccssa0patu79k6fs0pmg	{"modelName":"cifar10_1","modelVersion":"1","outputs":[{"name":"fc10","datatype":"FP32","shape":["1","10"],"contents":{"fp32Contents":[1.4500107e-8,1.2525738e-9,1.6298331e-7,0.115293205,1.7431327e-7,0.000006185636,0.8847001,6.0738867e-9,7.437898e-8,4.7317195e-9]}}],"rawOutputContents":["JRx5MgYnrDCDAC802B7sPd4qOzQ1js82tXtiP3my0DFHup8zpZSiMQ=="]}
+    seldon.default.model.cifar10.outputs	ccvfafpi3pn0vadt0djg	{"modelName":"cifar10_1", "modelVersion":"1", "outputs":[{"name":"fc10", "datatype":"FP32", "shape":["1", "10"], "contents":{"fp32Contents":[1.4500107e-8, 1.2525738e-9, 1.6298331e-7, 0.115293205, 1.7431327e-7, 0.000006185636, 0.8847001, 6.0738867e-9, 7.437898e-8, 4.7317195e-9]}}]}
 
 
 

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"testing"
 
@@ -867,6 +868,110 @@ func TestConvertRequestToV2(t *testing.T) {
 			v2, err := convertRequestToV2([]byte(test.inp), test.modelName, test.modelVersion)
 			g.Expect(err).To(BeNil())
 			g.Expect(v2).To(Equal(test.out))
+		})
+	}
+}
+
+func TestUpdateResponseFromRawContents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name string
+		res  *v2_dataplane.ModelInferResponse
+		err  bool
+	}
+
+	i := 100
+	bInt64 := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bInt64, uint64(i))
+	tests := []test{
+		{
+			name: "no raw contents",
+			res: &v2_dataplane.ModelInferResponse{
+				Outputs: []*v2_dataplane.ModelInferResponse_InferOutputTensor{
+					{
+						Name: "t1",
+					},
+				},
+			},
+			err: false,
+		},
+		{
+			name: "raw contents bytes",
+			res: &v2_dataplane.ModelInferResponse{
+				Outputs: []*v2_dataplane.ModelInferResponse_InferOutputTensor{
+					{
+						Name:     "t1",
+						Datatype: tyBytes,
+					},
+				},
+				RawOutputContents: [][]byte{
+					[]byte("result"),
+				},
+			},
+			err: false,
+		},
+		{
+			name: "raw contents int",
+			res: &v2_dataplane.ModelInferResponse{
+				Outputs: []*v2_dataplane.ModelInferResponse_InferOutputTensor{
+					{
+						Name:     "t1",
+						Datatype: tyUint64,
+					},
+				},
+				RawOutputContents: [][]byte{
+					bInt64,
+				},
+			},
+			err: false,
+		},
+		{
+			name: "error raw contents cant find place",
+			res: &v2_dataplane.ModelInferResponse{
+				Outputs: []*v2_dataplane.ModelInferResponse_InferOutputTensor{
+					{
+						Name:     "t1",
+						Datatype: tyUint64,
+						Contents: &v2_dataplane.InferTensorContents{},
+					},
+				},
+				RawOutputContents: [][]byte{
+					bInt64,
+				},
+			},
+			err: true,
+		},
+		{
+			name: "mixed raw and normal contents",
+			res: &v2_dataplane.ModelInferResponse{
+				Outputs: []*v2_dataplane.ModelInferResponse_InferOutputTensor{
+					{
+						Name:     "t1",
+						Datatype: tyUint64,
+						Contents: &v2_dataplane.InferTensorContents{},
+					},
+					{
+						Name:     "t1",
+						Datatype: tyUint64,
+					},
+				},
+				RawOutputContents: [][]byte{
+					bInt64,
+				},
+			},
+			err: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := updateResponseFromRawContents(test.res)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
 		})
 	}
 }

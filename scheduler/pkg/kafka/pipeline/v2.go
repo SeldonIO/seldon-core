@@ -1,6 +1,8 @@
 package pipeline
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 
@@ -180,6 +182,11 @@ func ConvertV2ResponseBytesToJson(res []byte) ([]byte, error) {
 }
 
 func convertV2ResponseToJson(response *v2_dataplane.ModelInferResponse) ([]byte, error) {
+	// First copy across any raw response payload if exists
+	err := updateResponseFromRawContents(response)
+	if err != nil {
+		return nil, err
+	}
 	infRes := convertV2toInferenceResponse(response)
 	return json.Marshal(infRes)
 }
@@ -217,6 +224,56 @@ func convertV2InferOutputToNamedTensor(v2Output *v2_dataplane.ModelInferResponse
 		Parameters: createParametersFromv2(v2Output.Parameters),
 		tensorData: td,
 	}
+}
+
+func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
+	outputIdx := 0
+	for _, rawOutput := range res.RawOutputContents {
+		contents := &v2_dataplane.InferTensorContents{}
+		for ; outputIdx < len(res.Outputs); outputIdx++ {
+			if res.Outputs[outputIdx].Contents == nil {
+				break
+			}
+		}
+		if outputIdx == len(res.Outputs) {
+			return fmt.Errorf("Ran out of output contents to fill raw contents of length %d", len(res.RawOutputContents))
+		}
+		output := res.Outputs[outputIdx]
+		output.Contents = contents
+		var err error
+		switch output.Datatype {
+		case tyBool:
+			output.Contents.BoolContents = make([]bool, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.BoolContents)
+		case tyUint8, tyUint16, tyUint32:
+			output.Contents.UintContents = make([]uint32, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.UintContents)
+		case tyUint64:
+			output.Contents.Uint64Contents = make([]uint64, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.Uint64Contents)
+		case tyInt8, tyInt16, tyInt32:
+			output.Contents.IntContents = make([]int32, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.IntContents)
+		case tyInt64:
+			output.Contents.Int64Contents = make([]int64, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.Int64Contents)
+		case tyFp16, tyFp32:
+			output.Contents.Fp32Contents = make([]float32, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.Fp32Contents)
+		case tyFp64:
+			output.Contents.Fp64Contents = make([]float64, getDataSize(output.Shape))
+			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.Fp64Contents)
+		case tyBytes:
+			output.Contents.BytesContents = make([][]byte, 1)
+			output.Contents.BytesContents[0] = rawOutput
+		}
+		if err != nil {
+			return err
+		}
+	}
+	// Clear the raw contents now we have copied
+	res.RawOutputContents = nil
+	return nil
 }
 
 func convertV2toInferenceResponse(resV2 *v2_dataplane.ModelInferResponse) *InferenceResponse {

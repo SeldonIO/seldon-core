@@ -6,7 +6,11 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Local experiments](local-experiments.md)
  * [Kubernetes examples](k8s-examples.md)
  * [Pipeline examples](pipeline-examples.md)
- * [Explainer examples](explainer-examples.md)  
+ * [Explainer examples](explainer-examples.md)
+
+## Making inference requests
+
+ * [Inference examples](inference.md)  
 
 ## Advanced Examples
 
@@ -26,4 +30,5 @@ explainer-examples.md
 cifar10.md
 income.md
 pandasquery.md
+inference.md
 ```
