@@ -2,11 +2,16 @@ package io.seldon.dataflow
 
 import com.natpryce.konfig.*
 import io.klogging.noCoLogger
+import io.klogging.Level
 import org.apache.kafka.common.security.auth.SecurityProtocol
 
 object Cli {
     private const val envVarPrefix = "SELDON_"
     private val logger = noCoLogger(Cli::class)
+
+    // General setup
+    val logLevelApplication = Key("log.level.app", enumType(*Level.values()))
+    val logLevelKafka = Key("log.level.kafka", enumType(*Level.values()))
 
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
@@ -33,6 +38,28 @@ object Cli {
     val brokerSecret = Key("tls.broker.secret", stringType)
     val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
 
+    fun args(): List<Key<Any>> {
+        return listOf(
+            logLevelApplication,
+            logLevelKafka,
+            upstreamHost,
+            upstreamPort,
+            kafkaBootstrapServers,
+            kafkaSecurityProtocol,
+            kafkaPartitions,
+            kafkaReplicationFactor,
+            kafkaUseCleanState,
+            kafkaJoinWindowMillis,
+            tlsCACertPath,
+            tlsKeyPath,
+            tlsCertPath,
+            brokerCACertPath,
+            clientSecret,
+            brokerSecret,
+            endpointIdentificationAlgorithm,
+        )
+    }
+
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
         val fromEnv = EnvironmentVariables(prefix = envVarPrefix)
@@ -44,21 +71,7 @@ object Cli {
     private fun parseArguments(rawArgs: Array<String>): Configuration {
         val (config, unparsedArgs) = parseArgs(
             rawArgs,
-            CommandLineOption(kafkaBootstrapServers),
-            CommandLineOption(kafkaSecurityProtocol),
-            CommandLineOption(kafkaPartitions),
-            CommandLineOption(kafkaReplicationFactor),
-            CommandLineOption(kafkaUseCleanState),
-            CommandLineOption(kafkaJoinWindowMillis),
-            CommandLineOption(upstreamHost),
-            CommandLineOption(upstreamPort),
-            CommandLineOption(tlsCACertPath),
-            CommandLineOption(tlsKeyPath),
-            CommandLineOption(tlsCertPath),
-            CommandLineOption(brokerCACertPath),
-            CommandLineOption(clientSecret),
-            CommandLineOption(brokerSecret),
-            CommandLineOption(endpointIdentificationAlgorithm),
+            *this.args().map { CommandLineOption(it) }.toTypedArray(),
             programName = "seldon-dataflow-engine",
         )
         if (unparsedArgs.isNotEmpty()) {

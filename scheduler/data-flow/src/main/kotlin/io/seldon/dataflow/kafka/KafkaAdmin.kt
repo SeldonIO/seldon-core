@@ -14,7 +14,6 @@ class KafkaAdmin(
 ) {
     private val adminClient = Admin.create(adminConfig)
 
-
     suspend fun ensureTopicsExist(
         steps: List<PipelineStepUpdate>,
     ) {

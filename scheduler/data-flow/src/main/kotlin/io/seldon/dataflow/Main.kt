@@ -13,7 +13,13 @@ object Main {
         Logging.configure()
 
         val config = Cli.configWith(args)
-        logger.info("initialised with ssl ${config[Cli.kafkaSecurityProtocol]}")
+        Logging.configure(
+            appLevel = config[Cli.logLevelApplication],
+            kafkaLevel = config[Cli.logLevelKafka],
+        )
+
+        val effectiveArgs = Cli.args().map { arg -> arg.name to config[arg] }
+        logger.info { "initialised with config $effectiveArgs" }
 
         val tlsCertConfig = CertificateConfig(
             caCertPath = config[Cli.tlsCACertPath],
