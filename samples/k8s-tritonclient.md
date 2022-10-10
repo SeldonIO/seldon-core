@@ -100,10 +100,10 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
     model ready: True
     model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
 ```
-#### Against Model
-
 
 ```python
+# Against model
+
 binary_data = False
 
 inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
@@ -121,10 +121,10 @@ result.as_numpy("predict")
     array([2])
 ```
 
-#### Against Pipeline
-
 
 ```python
+# Agaist pipeline
+
 binary_data = False
 
 inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
@@ -147,6 +147,8 @@ result.as_numpy("predict")
 // Not supported with MLServer currently. 
 
 ## With Tritonserver
+
+- Note: binary data support in HTTP is blocked by https://github.com/SeldonIO/seldon-core-v2/issues/475
 
 ### Deploy Model and Pipeline
 
@@ -220,10 +222,10 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
     model ready: True
     model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
 ```
-#### Against Model
-
 
 ```python
+# Against model (no binary data)
+
 binary_data = False
 
 inputs = [
@@ -249,6 +251,8 @@ result.as_numpy("OUTPUT0")
 
 
 ```python
+# Against model (with binary data)
+
 binary_data = True
 
 inputs = [
@@ -272,10 +276,10 @@ result.as_numpy("OUTPUT0")
           dtype=int32)
 ```
 
-#### Against Pipeline
-
 
 ```python
+# Against Pipeline (no binary data)
+
 binary_data = False
 
 inputs = [
@@ -301,7 +305,7 @@ result.as_numpy("OUTPUT0")
 
 
 ```python
-# binary data does not work with http behind pipeline: no opened issue yet
+## binary data does not work with http behind pipeline
 
 # import numpy as np
 
@@ -374,10 +378,10 @@ print(grpc_triton_client.get_model_metadata(model_name, headers=headers))
     }
     
 ```
-#### Against Model
-
 
 ```python
+# Against Model
+
 model_name = "tfsimple1"
 headers = {"seldon-model": model_name}
 
@@ -402,10 +406,10 @@ result.as_numpy("OUTPUT0")
           dtype=int32)
 ```
 
-#### Against Pipeline
-
 
 ```python
+# Against Pipeline
+
 model_name = "tfsimple.pipeline"
 headers = {"seldon-model": model_name}
 
