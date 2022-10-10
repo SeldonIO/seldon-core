@@ -1,0 +1,6 @@
+collections:
+  - name: https://github.com/SeldonIO/ansible-k8s-collection.git
+    type: git
+    version: ddad72dcff53dd8ca05ca477f74df7992fd489fc
+  - name: kubernetes.core
+    version: 2.3.0

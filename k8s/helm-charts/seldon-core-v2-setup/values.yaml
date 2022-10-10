@@ -62,7 +62,7 @@ security:
           crtPath: /tmp/certs/ddc/tls.crt
           caPath: /tmp/certs/ddc/ca.crt
           serverCaPath: /tmp/certs/dds/ca.crt
-  
+
 opentelemetry:
   endpoint: seldon-collector:4317
   enable: true
@@ -153,7 +153,7 @@ scheduler:
     registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: latest
-      
+
 serverConfig:
   rclone:
     image:

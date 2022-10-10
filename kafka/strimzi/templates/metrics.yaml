@@ -1,74 +1,4 @@
-apiVersion: kafka.strimzi.io/v1beta2
-kind: Kafka
-metadata:
-  name: seldon
-spec:
-  entityOperator:
-    userOperator: {}
-  kafka:
-    version: 3.2.0
-    replicas: 3
-    listeners:
-      - name: plain
-        port: 9092
-        type: loadbalancer
-        tls: false
-      - name: tls
-        port: 9093
-        type: loadbalancer
-        tls: true
-        authentication:
-          type: tls
-    readinessProbe:
-      initialDelaySeconds: 15
-      timeoutSeconds: 5
-    livenessProbe:
-      initialDelaySeconds: 15
-      timeoutSeconds: 5
-    config:
-      auto.create.topics.enable: true
-      offsets.topic.replication.factor: 1
-      transaction.state.log.replication.factor: 1
-      transaction.state.log.min.isr: 1
-      default.replication.factor: 1
-      min.insync.replicas: 1
-      inter.broker.protocol.version: "3.2"
-    template:
-      pod:
-        tmpDirSizeLimit: 100Mi
-    storage:
-      type: jbod
-      volumes:
-      - id: 0
-        type: persistent-claim
-        size: 200Gi
-        deleteClaim: false
-    metricsConfig:
-      type: jmxPrometheusExporter
-      valueFrom:
-        configMapKeyRef:
-          name: kafka-metrics
-          key: kafka-metrics-config.yml
-  # zookeeper settings should not be use in case of STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft (raft)
-  # to enable raft run:
-  # `kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n kafka`
-  # which is the default with ansible install
-  zookeeper:
-    replicas: 1
-    readinessProbe:
-      initialDelaySeconds: 15
-      timeoutSeconds: 5
-    livenessProbe:
-      initialDelaySeconds: 15
-      timeoutSeconds: 5
-    storage:
-      type: persistent-claim
-      size: 100Gi
-      deleteClaim: false
-  kafkaExporter:
-    topicRegex: ".*"
-    groupRegex: ".*"
----
+{{- if .Values.metrics.enabled }}
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -231,4 +161,4 @@ data:
       labels:
         replicaId: "$2"
         memberType: "$3"
-
+{{- end }}

@@ -1,0 +1,54 @@
+cluster:
+  name: "seldon"
+  version: "3.2.0"
+
+metrics:
+  enabled: true
+
+broker:
+  replicas: 3
+
+  plaintext:
+    enabled: true
+    port: 9092
+    listenerType: internal
+
+  tls:
+    enabled: true
+    port: 9093
+    listenerType: internal
+
+  readiness:
+    initialDelaySeconds: 15
+    timeoutSeconds: 5
+
+  liveness:
+    initialDelaySeconds: 15
+    timeoutSeconds: 5
+
+  interBrokerProtocolVersion: "3.2"
+
+  tmpDirSizeLimit: 100Mi
+
+  pvcSize: 100Gi
+
+topic:
+  autoCreate: true
+  offsetReplicationFactor: 1
+  txStateReplicationFactor: 1
+  txStateMinISR: 1
+  defaultReplicationFactor: 1
+  minISR: 1
+
+zookeeper:
+  replicas: 1
+
+  readiness:
+    initialDelaySeconds: 15
+    timeoutSeconds: 5
+
+  liveness:
+    initialDelaySeconds: 15
+    timeoutSeconds: 5
+
+    pvcSize: 100Gi

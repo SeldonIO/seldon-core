@@ -9,7 +9,9 @@ seldon_monitoring_prometheus_operator_values:
 
 # Strimzi Kafka Configuration
 strimzi_kafka_namespace: seldon-mesh
+strimzi_kafka_create_cluster: false
+strimzi_kafka_add_feature_gates: true
 strimzi_kafka_install_prometheus_operator: false
 strimzi_kafka_create_prometheus_instance: false
-strimzi_kafka_create_cluster: false
+strimzi_kafka_install_grafana: false
 strimzi_kafka_grafana_prometheus_url: "http://seldon-monitoring-prometheus.{{ seldon_monitoring_namespace }}.svc:9090"

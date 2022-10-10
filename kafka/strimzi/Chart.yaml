@@ -1,0 +1,14 @@
+apiVersion: v2
+type: application
+
+version: 0.1.0
+appVersion: "0.2.0-dev"
+name: "seldon-core-v2-kafka"
+description: "A Kafka cluster suitable for Seldon Core v2"
+maintainers:
+  - name: Seldon Technologies Ltd
+    email: hello@seldon.io
+    url: www.seldon.io
+home: https://docs.seldon.io/projects/seldon-core-v2
+sources:
+  - https://github.com/SeldonIO/seldon-core-v2/kafka/strimzi

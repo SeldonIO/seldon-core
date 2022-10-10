@@ -2,7 +2,9 @@ repo_root_dir: "{{ inventory_dir }}/.."
 
 seldon_mesh_namespace: seldon-mesh
 kafka_namespace: seldon-mesh
-strimzi_kafka_namespace: kafka
+
+kafka_wait_timeout: "300s"
+kafka_cluster_values: {}
 
 # Installation on/off flags
 install_prometheus: true
