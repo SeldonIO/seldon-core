@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -55,12 +56,12 @@ func LoadSeldonCLIConfig() (*SeldonCLIConfig, error) {
 
 	byteValue, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to load CLI config from %s: %s", path, err.Error())
 	}
 	cfg := SeldonCLIConfig{}
 	err = json.Unmarshal(byteValue, &cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to load CLI config from %s: %s", path, err.Error())
 	}
 	return &cfg, nil
 }
