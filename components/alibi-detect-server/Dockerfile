@@ -23,7 +23,10 @@ RUN wget https://downloads.rclone.org/v1.55.1/rclone-v1.55.1-linux-amd64.zip && 
 
 
 # Install Python / Conda
-RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
+RUN conda install --yes -c conda-forge \
+      python=${PYTHON_VERSION} \
+      conda=${CONDA_VERSION} \
+      c-compiler cxx-compiler && \
     pip install --upgrade pip setuptools wheel && \
     dnf install -y make automake gcc gcc-c++
 

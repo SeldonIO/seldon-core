@@ -4,6 +4,8 @@ SHELL:=/bin/bash
 PYTHON_VERSION=3.8.10
 
 CONDA_DOWNLOAD_VERSION=py38_4.13.0
+# Downgrading Conda to < 4.14 until this issue gets fixed
+# https://github.com/conda/conda/issues/11847
 CONDA_VERSION=4.13.0
 
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g'`
@@ -74,7 +76,7 @@ after_build_image_seldon_core_check:
 
 
 build_conda_base:
-	docker build -f Dockerfile.conda --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${CONDA_BASE_IMAGE}:${IMAGE_VERSION} .
+	docker build --no-cache -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${CONDA_BASE_IMAGE}:${IMAGE_VERSION} .
 
 push_to_dockerhub_conda_base:
 	docker push $(CONDA_BASE_IMAGE):$(IMAGE_VERSION)
