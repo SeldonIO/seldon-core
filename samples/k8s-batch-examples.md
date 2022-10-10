@@ -95,10 +95,10 @@ kubectl apply -f pipelines/tfsimple.yaml -n ${NAMESPACE}
 ```
 ```json
 
-    model.mlops.seldon.io/iris unchanged
-    pipeline.mlops.seldon.io/iris-pipeline unchanged
-    model.mlops.seldon.io/tfsimple1 unchanged
-    pipeline.mlops.seldon.io/tfsimple unchanged
+    model.mlops.seldon.io/iris created
+    pipeline.mlops.seldon.io/iris-pipeline created
+    model.mlops.seldon.io/tfsimple1 created
+    pipeline.mlops.seldon.io/tfsimple created
 ```
 
 ```bash
@@ -131,7 +131,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
     {
       "model_name": "iris_1",
       "model_version": "1",
-      "id": "5b88fb3f-b467-4c36-b172-0ca81ecfab2e",
+      "id": "3e60ef91-4422-4989-85c6-05d54a0c7473",
       "parameters": {
         "content_type": null,
         "headers": null
@@ -177,145 +177,145 @@ seldon pipeline infer iris-pipeline --inference-host ${MESH_IP}:80 \
 
 ```bash
 seldon model infer tfsimple --inference-host ${MESH_IP}:80 \
-  '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq .
+  '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ```json
 
-    [1;39m{
-      [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m"tfsimple_1"[0m[1;39m,
-      [0m[34;1m"model_version"[0m[1;39m: [0m[0;32m"1"[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m2[0m[1;39m,
-            [0;39m4[0m[1;39m,
-            [0;39m6[0m[1;39m,
-            [0;39m8[0m[1;39m,
-            [0;39m10[0m[1;39m,
-            [0;39m12[0m[1;39m,
-            [0;39m14[0m[1;39m,
-            [0;39m16[0m[1;39m,
-            [0;39m18[0m[1;39m,
-            [0;39m20[0m[1;39m,
-            [0;39m22[0m[1;39m,
-            [0;39m24[0m[1;39m,
-            [0;39m26[0m[1;39m,
-            [0;39m28[0m[1;39m,
-            [0;39m30[0m[1;39m,
-            [0;39m32[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "model_name": "tfsimple_1",
+      "model_version": "1",
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ],
+          "data": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            22,
+            24,
+            26,
+            28,
+            30,
+            32
+          ]
+        }
+      ]
+    }
 ```
 
 ```bash
 seldon pipeline infer tfsimple-pipeline --inference-host ${MESH_IP}:80 \
-  '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq .
+  '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ```json
 
-    [1;39m{
-      [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m2[0m[1;39m,
-            [0;39m4[0m[1;39m,
-            [0;39m6[0m[1;39m,
-            [0;39m8[0m[1;39m,
-            [0;39m10[0m[1;39m,
-            [0;39m12[0m[1;39m,
-            [0;39m14[0m[1;39m,
-            [0;39m16[0m[1;39m,
-            [0;39m18[0m[1;39m,
-            [0;39m20[0m[1;39m,
-            [0;39m22[0m[1;39m,
-            [0;39m24[0m[1;39m,
-            [0;39m26[0m[1;39m,
-            [0;39m28[0m[1;39m,
-            [0;39m30[0m[1;39m,
-            [0;39m32[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m,
-            [0;39m0[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT1"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "model_name": "",
+      "outputs": [
+        {
+          "data": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            22,
+            24,
+            26,
+            28,
+            30,
+            32
+          ],
+          "name": "OUTPUT0",
+          "shape": [
+            1,
+            16
+          ],
+          "datatype": "INT32"
+        },
+        {
+          "data": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "name": "OUTPUT1",
+          "shape": [
+            1,
+            16
+          ],
+          "datatype": "INT32"
+        }
+      ]
+    }
 ```
 ## MLServer Iris Batch Job
 
 
 ```bash
-cat batch-inputs/iris-input.txt | head -n 1 | jq .
+cat batch-inputs/iris-input.txt | head -n 1 | jq -M .
 ```
 ```yaml
-    [1;39m{
-      [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"predict"[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m0.38606369295833043[0m[1;39m,
-            [0;39m0.006894049558299753[0m[1;39m,
-            [0;39m0.6104082981607108[0m[1;39m,
-            [0;39m0.3958954239450676[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"FP64"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m4[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "inputs": [
+        {
+          "name": "predict",
+          "data": [
+            0.38606369295833043,
+            0.006894049558299753,
+            0.6104082981607108,
+            0.3958954239450676
+          ],
+          "datatype": "FP64",
+          "shape": [
+            1,
+            4
+          ]
+        }
+      ]
+    }
 ```
 
 ```bash
 %%bash
-mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris-output.txt --workers 5
+mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris-output.txt --workers 5 
 ```
 ```bash
-    2022-10-10 08:40:18,854 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 08:40:18,857 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 08:40:18,857 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-    2022-10-10 08:40:18,857 [mlserver] INFO - output file path: /tmp/iris-output.txt
-    2022-10-10 08:40:19,066 [mlserver] INFO - Time taken: 0.21 seconds
+    2022-10-10 10:12:51,214 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-10-10 10:12:51,217 [mlserver] INFO - Server url: 172.19.255.12
+    2022-10-10 10:12:51,217 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+    2022-10-10 10:12:51,217 [mlserver] INFO - output file path: /tmp/iris-output.txt
+    2022-10-10 10:12:51,408 [mlserver] INFO - Time taken: 0.19 seconds
 ```
 
 ```bash
@@ -323,40 +323,40 @@ mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris
 mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-input.txt -o /tmp/iris-pipeline-output.txt --workers 5
 ```
 ```bash
-    2022-10-10 08:40:20,849 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 08:40:20,852 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 08:40:20,852 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-    2022-10-10 08:40:20,852 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
-    2022-10-10 08:40:21,307 [mlserver] INFO - Time taken: 0.45 seconds
+    2022-10-10 10:12:53,067 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-10-10 10:12:53,071 [mlserver] INFO - Server url: 172.19.255.12
+    2022-10-10 10:12:53,071 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+    2022-10-10 10:12:53,071 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
+    2022-10-10 10:12:53,374 [mlserver] INFO - Time taken: 0.30 seconds
 ```
 
 ```bash
-cat /tmp/iris-output.txt | head -n 1 | jq .
+cat /tmp/iris-output.txt | head -n 1 | jq -M .
 ```
 ```yaml
-    [1;39m{
-      [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m"iris_1"[0m[1;39m,
-      [0m[34;1m"model_version"[0m[1;39m: [0m[0;32m"1"[0m[1;39m,
-      [0m[34;1m"id"[0m[1;39m: [0m[0;32m"08359080-6fe2-4429-8c37-cc6276f4340b"[0m[1;39m,
-      [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"content_type"[0m[1;39m: [0m[1;30mnull[0m[1;39m,
-        [0m[34;1m"headers"[0m[1;39m: [0m[1;30mnull[0m[1;39m,
-        [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
-      [1;39m}[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"predict"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT64"[0m[1;39m,
-          [0m[34;1m"parameters"[0m[1;39m: [0m[1;30mnull[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m0[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "model_name": "iris_1",
+      "model_version": "1",
+      "id": "75470ffc-e56f-4e41-9b3f-c0b5c236833f",
+      "parameters": {
+        "content_type": null,
+        "headers": null,
+        "batch_index": 0
+      },
+      "outputs": [
+        {
+          "name": "predict",
+          "shape": [
+            1
+          ],
+          "datatype": "INT64",
+          "parameters": null,
+          "data": [
+            0
+          ]
+        }
+      ]
+    }
 ```
 
 ```bash
@@ -386,77 +386,77 @@ cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
 
 
 ```bash
-cat batch-inputs/tfsimple-input.txt | head -n 1 | jq .
+cat batch-inputs/tfsimple-input.txt | head -n 1 | jq -M .
 ```
 ```yaml
-    [1;39m{
-      [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"INPUT0"[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m75[0m[1;39m,
-            [0;39m39[0m[1;39m,
-            [0;39m9[0m[1;39m,
-            [0;39m44[0m[1;39m,
-            [0;39m32[0m[1;39m,
-            [0;39m97[0m[1;39m,
-            [0;39m99[0m[1;39m,
-            [0;39m40[0m[1;39m,
-            [0;39m13[0m[1;39m,
-            [0;39m27[0m[1;39m,
-            [0;39m25[0m[1;39m,
-            [0;39m36[0m[1;39m,
-            [0;39m18[0m[1;39m,
-            [0;39m77[0m[1;39m,
-            [0;39m62[0m[1;39m,
-            [0;39m60[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"INPUT1"[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m39[0m[1;39m,
-            [0;39m7[0m[1;39m,
-            [0;39m14[0m[1;39m,
-            [0;39m58[0m[1;39m,
-            [0;39m13[0m[1;39m,
-            [0;39m88[0m[1;39m,
-            [0;39m98[0m[1;39m,
-            [0;39m66[0m[1;39m,
-            [0;39m97[0m[1;39m,
-            [0;39m57[0m[1;39m,
-            [0;39m49[0m[1;39m,
-            [0;39m3[0m[1;39m,
-            [0;39m49[0m[1;39m,
-            [0;39m63[0m[1;39m,
-            [0;39m37[0m[1;39m,
-            [0;39m12[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m
+    {
+      "inputs": [
+        {
+          "name": "INPUT0",
+          "data": [
+            75,
+            39,
+            9,
+            44,
+            32,
+            97,
+            99,
+            40,
+            13,
+            27,
+            25,
+            36,
+            18,
+            77,
+            62,
+            60
+          ],
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "data": [
+            39,
+            7,
+            14,
+            58,
+            13,
+            88,
+            98,
+            66,
+            97,
+            57,
+            49,
+            3,
+            49,
+            63,
+            37,
+            12
+          ],
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ]
+    }
 ```
 
 ```bash
 %%bash
-mlserver infer -u ${MESH_IP} -m tfsimple -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5
+mlserver infer -u ${MESH_IP} -m tfsimple -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5 -b
 ```
 ```bash
-    2022-10-10 08:40:23,543 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 08:40:23,546 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 08:40:23,546 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-    2022-10-10 08:40:23,546 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
-    2022-10-10 08:40:23,733 [mlserver] INFO - Time taken: 0.19 seconds
+    2022-10-10 10:12:55,454 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-10-10 10:12:55,457 [mlserver] INFO - Server url: 172.19.255.12
+    2022-10-10 10:12:55,457 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+    2022-10-10 10:12:55,457 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
+    2022-10-10 10:12:55,628 [mlserver] INFO - Time taken: 0.17 seconds
 ```
 
 ```bash
@@ -464,147 +464,147 @@ mlserver infer -u ${MESH_IP} -m tfsimple -i batch-inputs/tfsimple-input.txt -o /
 mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-pipeline-output.txt --workers 5
 ```
 ```bash
-    2022-10-10 08:40:25,397 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 08:40:25,400 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 08:40:25,400 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-    2022-10-10 08:40:25,400 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
-    2022-10-10 08:40:25,752 [mlserver] INFO - Time taken: 0.35 seconds
+    2022-10-10 10:12:57,269 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-10-10 10:12:57,273 [mlserver] INFO - Server url: 172.19.255.12
+    2022-10-10 10:12:57,273 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+    2022-10-10 10:12:57,273 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
+    2022-10-10 10:12:57,592 [mlserver] INFO - Time taken: 0.32 seconds
 ```
 
 ```bash
-cat /tmp/tfsimple-output.txt | head -n 1 | jq .
+cat /tmp/tfsimple-output.txt | head -n 1 | jq -M .
 ```
 ```yaml
-    [1;39m{
-      [0m[34;1m"id"[0m[1;39m: [0m[0;32m"168eef39-0510-4729-b8df-3d0ec063df55"[0m[1;39m,
-      [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m"tfsimple_1"[0m[1;39m,
-      [0m[34;1m"model_version"[0m[1;39m: [0m[0;32m"1"[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{}[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m114[0m[1;39m,
-            [0;39m46[0m[1;39m,
-            [0;39m23[0m[1;39m,
-            [0;39m102[0m[1;39m,
-            [0;39m45[0m[1;39m,
-            [0;39m185[0m[1;39m,
-            [0;39m197[0m[1;39m,
-            [0;39m106[0m[1;39m,
-            [0;39m110[0m[1;39m,
-            [0;39m84[0m[1;39m,
-            [0;39m74[0m[1;39m,
-            [0;39m39[0m[1;39m,
-            [0;39m67[0m[1;39m,
-            [0;39m140[0m[1;39m,
-            [0;39m99[0m[1;39m,
-            [0;39m72[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT1"[0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{}[0m[1;39m,
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m36[0m[1;39m,
-            [0;39m32[0m[1;39m,
-            [0;39m-5[0m[1;39m,
-            [0;39m-14[0m[1;39m,
-            [0;39m19[0m[1;39m,
-            [0;39m9[0m[1;39m,
-            [0;39m1[0m[1;39m,
-            [0;39m-26[0m[1;39m,
-            [0;39m-84[0m[1;39m,
-            [0;39m-30[0m[1;39m,
-            [0;39m-24[0m[1;39m,
-            [0;39m33[0m[1;39m,
-            [0;39m-31[0m[1;39m,
-            [0;39m14[0m[1;39m,
-            [0;39m25[0m[1;39m,
-            [0;39m48[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m,
-      [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
-      [1;39m}[0m[1;39m
-    [1;39m}[0m
+    {
+      "id": "ac7e8eb2-3e13-4b8d-9e9d-9633b12964c3",
+      "model_name": "tfsimple_1",
+      "model_version": "1",
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ],
+          "parameters": {},
+          "data": [
+            114,
+            46,
+            23,
+            102,
+            45,
+            185,
+            197,
+            106,
+            110,
+            84,
+            74,
+            39,
+            67,
+            140,
+            99,
+            72
+          ]
+        },
+        {
+          "name": "OUTPUT1",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ],
+          "parameters": {},
+          "data": [
+            36,
+            32,
+            -5,
+            -14,
+            19,
+            9,
+            1,
+            -26,
+            -84,
+            -30,
+            -24,
+            33,
+            -31,
+            14,
+            25,
+            48
+          ]
+        }
+      ],
+      "parameters": {
+        "batch_index": 0
+      }
+    }
 ```
 
 ```bash
-cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq .
+cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
 ```
 ```yaml
-    [1;39m{
-      [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m114[0m[1;39m,
-            [0;39m46[0m[1;39m,
-            [0;39m23[0m[1;39m,
-            [0;39m102[0m[1;39m,
-            [0;39m45[0m[1;39m,
-            [0;39m185[0m[1;39m,
-            [0;39m197[0m[1;39m,
-            [0;39m106[0m[1;39m,
-            [0;39m110[0m[1;39m,
-            [0;39m84[0m[1;39m,
-            [0;39m74[0m[1;39m,
-            [0;39m39[0m[1;39m,
-            [0;39m67[0m[1;39m,
-            [0;39m140[0m[1;39m,
-            [0;39m99[0m[1;39m,
-            [0;39m72[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT0"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m
-        [1;39m}[0m[1;39m,
-        [1;39m{
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m36[0m[1;39m,
-            [0;39m32[0m[1;39m,
-            [0;39m-5[0m[1;39m,
-            [0;39m-14[0m[1;39m,
-            [0;39m19[0m[1;39m,
-            [0;39m9[0m[1;39m,
-            [0;39m1[0m[1;39m,
-            [0;39m-26[0m[1;39m,
-            [0;39m-84[0m[1;39m,
-            [0;39m-30[0m[1;39m,
-            [0;39m-24[0m[1;39m,
-            [0;39m33[0m[1;39m,
-            [0;39m-31[0m[1;39m,
-            [0;39m14[0m[1;39m,
-            [0;39m25[0m[1;39m,
-            [0;39m48[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"OUTPUT1"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m,
-            [0;39m16[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT32"[0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m,
-      [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
-      [1;39m}[0m[1;39m
-    [1;39m}[0m
+    {
+      "model_name": "",
+      "outputs": [
+        {
+          "data": [
+            63,
+            75,
+            152,
+            77,
+            159,
+            124,
+            92,
+            42,
+            93,
+            155,
+            101,
+            151,
+            103,
+            109,
+            139,
+            105
+          ],
+          "name": "OUTPUT0",
+          "shape": [
+            1,
+            16
+          ],
+          "datatype": "INT32"
+        },
+        {
+          "data": [
+            13,
+            -21,
+            14,
+            39,
+            33,
+            38,
+            -42,
+            -26,
+            -33,
+            -37,
+            -31,
+            -47,
+            -41,
+            75,
+            57,
+            37
+          ],
+          "name": "OUTPUT1",
+          "shape": [
+            1,
+            16
+          ],
+          "datatype": "INT32"
+        }
+      ],
+      "parameters": {
+        "batch_index": 4
+      }
+    }
 ```
 ## Cleanup
 
