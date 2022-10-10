@@ -3,7 +3,7 @@
 
 # For SKLearn you need a pickle and the following:
 scikit-learn==0.20.3 # See https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
-joblib==0.13.2
+joblib==1.2.0
 
 # For XGBoost you need v 0.82 and an xgboost export (not a pickle)
 #xgboost==0.82
