@@ -56,7 +56,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
     <project.reporting.outputEncoding>
     UTF-8</project.reporting.outputEncoding>
     <grpc.version>1.25.0</grpc.version>
-    <pb.version>3.11.1</pb.version>
+    <pb.version>3.16.3</pb.version>
     <start-class>io.seldon.wrapper.App</start-class>
   </properties>
   <distributionManagement>
