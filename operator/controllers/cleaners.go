@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
 
 	"github.com/go-logr/logr"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
@@ -10,14 +11,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type ResourceCleaner struct {
+type IstioResourceCleaner struct {
 	instance        *machinelearningv1.SeldonDeployment
 	client          client.Client
 	virtualServices []*istio.VirtualService
 	logger          logr.Logger
 }
 
-func (r *ResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService, error) {
+func (r *IstioResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService, error) {
 	deleted := []*istio.VirtualService{}
 	vlist := &istio.VirtualServiceList{}
 	err := r.client.List(context.Background(), vlist, &client.ListOptions{Namespace: r.instance.Namespace})
@@ -35,6 +36,38 @@ func (r *ResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualService,
 					r.logger.Info("Will delete VirtualService", "name", vsvc.Name, "namespace", vsvc.Namespace)
 					r.client.Delete(context.Background(), &vsvc, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					deleted = append(deleted, vsvc.DeepCopy())
+				}
+			}
+		}
+	}
+	return deleted, err
+}
+
+type AmbassadoroResourceCleaner struct {
+	instance *machinelearningv1.SeldonDeployment
+	client   client.Client
+	mappings []*v2.Mapping
+	logger   logr.Logger
+}
+
+func (a *AmbassadoroResourceCleaner) cleanUnusedAmbassadorMappings() ([]*v2.Mapping, error) {
+	deleted := []*v2.Mapping{}
+	mlist := &v2.MappingList{}
+	err := a.client.List(context.Background(), mlist, &client.ListOptions{Namespace: a.instance.Namespace})
+	for _, mapping := range mlist.Items {
+		for _, ownerRef := range mapping.OwnerReferences {
+			if ownerRef.UID == a.instance.GetUID() {
+				found := false
+				for _, expectedMapping := range a.mappings {
+					if expectedMapping.Name == mapping.Name {
+						found = true
+						break
+					}
+				}
+				if !found {
+					a.logger.Info("Will delete Ambassador Maping", "name", mapping.Name, "namespace", mapping.Namespace)
+					a.client.Delete(context.Background(), &mapping, client.PropagationPolicy(metav1.DeletePropagationForeground))
+					deleted = append(deleted, mapping.DeepCopy())
 				}
 			}
 		}

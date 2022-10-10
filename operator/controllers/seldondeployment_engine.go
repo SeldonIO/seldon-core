@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"fmt"
+	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
 	"os"
 	"strconv"
 	"strings"
@@ -214,13 +215,13 @@ func createExecutorContainer(mlDep *machinelearningv1.SeldonDeployment, p *machi
 		probeScheme = corev1.URISchemeHTTPS
 	}
 
-	loggerQSize := getAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WORK_QUEUE_SIZE, executorReqLoggerWorkQueueSize)
+	loggerQSize := utils2.GetAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WORK_QUEUE_SIZE, executorReqLoggerWorkQueueSize)
 	_, err := strconv.Atoi(loggerQSize)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", loggerQSize, ENV_EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE, err)
 	}
 
-	loggerWriteTimeout := getAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WRITE_TIMEOUT_MS, executorReqLoggerWriteTimeoutMs)
+	loggerWriteTimeout := utils2.GetAnnotation(mlDep, machinelearningv1.ANNOTATION_LOGGER_WRITE_TIMEOUT_MS, executorReqLoggerWriteTimeoutMs)
 	_, err = strconv.Atoi(loggerWriteTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse %s as integer for %s. %w", executorReqLoggerWriteTimeoutMs, ENV_EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS, err)
@@ -291,7 +292,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	// Set replicas to zero to ensure this doesn't cause a diff in the resulting deployment created
 	var replicasCopy int32 = 0
 	pCopy.Replicas = &replicasCopy
-	predictorB64, err := getEngineVarJson(pCopy)
+	predictorB64, err := utils2.GetEngineVarJson(pCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +349,7 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		}
 	}
 
-	engineEnvVarsFromAnnotations := getEngineEnvAnnotations(mlDep)
+	engineEnvVarsFromAnnotations := utils2.GetEngineEnvAnnotations(mlDep)
 	for _, envVar := range engineEnvVarsFromAnnotations {
 		//don't add env vars that are already present in svcOrchSpec
 		if _, ok := svcOrchEnvMap[envVar.Name]; ok {
@@ -379,7 +380,7 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      depName,
-			Namespace: getNamespace(mlDep),
+			Namespace: utils2.GetNamespace(mlDep),
 			Labels: map[string]string{
 				machinelearningv1.Label_svc_orch:   "true",
 				machinelearningv1.Label_seldon_app: seldonId,

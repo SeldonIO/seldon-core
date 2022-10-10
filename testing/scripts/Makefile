@@ -58,20 +58,17 @@ kind_build_images: build_protos kind_build_operator kind_build_executor kind_bui
 helm_setup:
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-	helm repo add datawire https://www.getambassador.io
+	helm repo add datawire https://app.getambassador.io
 	helm repo update
 
 .PHONY: install_ambassador
 install_ambassador:
-	helm upgrade ambassador \
-		datawire/ambassador \
-		-f ../resources/ambassador_values.yaml \
-		--set image.repository=quay.io/datawire/ambassador \
-		--set crds.keep=false \
-		--set enableAES=false \
-		--namespace seldon \
-		--set replicaCount=1 \
-		--wait --install
+	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/3.1.0/aes-crds.yaml
+	kubectl wait --timeout=90s --for=condition=available deployment emissary-apiext -n emissary-system
+	helm install -n ambassador --create-namespace edge-stack datawire/edge-stack \
+		-f ../resources/ambassador_values.yaml
+	kubectl rollout status  -n ambassador deployment/edge-stack -w
+	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
 .PHONY: install_jaeger
 install_jaeger:
@@ -96,6 +93,7 @@ install_seldon:
 		../../helm-charts/seldon-core-operator \
 		--namespace seldon-system \
 		--set istio.enabled=true \
+		--set ambassador.enabled=true \
 		--set keda.enabled=true \
 		--set istio.gateway=istio-system/seldon-gateway \
 		--set certManager.enabled=false \
@@ -131,7 +129,7 @@ install_metrics:
 kind_setup: create_namespaces helm_setup install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
 
 port-forward-ambassador:
-	kubectl port-forward $$(kubectl get pods -n seldon -l app.kubernetes.io/name=ambassador -o jsonpath='{.items[0].metadata.name}') -n seldon 8003:8080
+	kubectl port-forward $$(kubectl get pods -n ambassador -l app.kubernetes.io/instance=edge-stack  -o jsonpath='{.items[0].metadata.name}') -n ambassador 8005:8080
 
 .PHONY: s2i_build_base_images
 s2i_build_base_images:

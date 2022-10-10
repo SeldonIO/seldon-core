@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
 	"sort"
 	"strconv"
 	"strings"
@@ -94,7 +95,7 @@ func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, 
 
 func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
-	if !isEmptyExplainer(p.Explainer) {
+	if !utils2.IsEmptyExplainer(p.Explainer) {
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
@@ -266,7 +267,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log, c)
 		if err != nil {
 			return err
 		}
@@ -286,7 +287,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
 		if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
+			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, utils2.GetNamespace(mlDep), httpPort, grpcPort)
 			c.virtualServices = append(c.virtualServices, vsvcs...)
 			c.destinationRules = append(c.destinationRules, dstRule...)
 		}
@@ -324,7 +325,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
@@ -345,7 +346,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 		},
 		Spec: istio_networking.VirtualService{
 			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{

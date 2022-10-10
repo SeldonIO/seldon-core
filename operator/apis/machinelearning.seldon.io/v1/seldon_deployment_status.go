@@ -50,27 +50,31 @@ type SeldonDeploymentStatus struct {
 }
 
 const (
-	DeploymentsReady     apis.ConditionType = "DeploymentsReady"
-	ServicesReady        apis.ConditionType = "ServicesReady"
-	KedaReady            apis.ConditionType = "KedaReady"
-	VirtualServicesReady apis.ConditionType = "istioVirtualServicesReady"
-	HpasReady            apis.ConditionType = "HpasReady"
-	PdbsReady            apis.ConditionType = "PdbsReady"
+	DeploymentsReady        apis.ConditionType = "DeploymentsReady"
+	ServicesReady           apis.ConditionType = "ServicesReady"
+	KedaReady               apis.ConditionType = "KedaReady"
+	VirtualServicesReady    apis.ConditionType = "istioVirtualServicesReady"
+	HpasReady               apis.ConditionType = "HpasReady"
+	PdbsReady               apis.ConditionType = "PdbsReady"
+	AmbassadorMappingsReady apis.ConditionType = "AmbassadorMappingsReady"
 
-	SvcNotReadyReason        string = "Not all services created"
-	SvcReadyReason           string = "All services created"
-	KedaNotDefinedReason     string = "No KEDA resources defined"
-	KedaNotReadyReason       string = "KEDA resources not ready"
-	KedaReadyReason          string = "All KEDA resources ready"
-	HpaNotDefinedReason      string = "No HPAs defined"
-	HpaNotReadyReason        string = "HPAs not ready"
-	HpaReadyReason           string = "All HPAs resources ready"
-	PdbNotDefinedReason      string = "No PDBs defined"
-	PdbNotReadyReason        string = "PDBs not ready"
-	PdbReadyReason           string = "All PDBs resources ready"
-	VirtualServiceNotDefined string = "No VirtualServices defined"
-	VirtualServiceNotReady   string = "Not all VirtualServices created"
-	VirtualServiceReady      string = "All VirtualServices created"
+	SvcNotReadyReason           string = "Not all services created"
+	SvcReadyReason              string = "All services created"
+	KedaNotDefinedReason        string = "No KEDA resources defined"
+	KedaNotReadyReason          string = "KEDA resources not ready"
+	KedaReadyReason             string = "All KEDA resources ready"
+	HpaNotDefinedReason         string = "No HPAs defined"
+	HpaNotReadyReason           string = "HPAs not ready"
+	HpaReadyReason              string = "All HPAs resources ready"
+	PdbNotDefinedReason         string = "No PDBs defined"
+	PdbNotReadyReason           string = "PDBs not ready"
+	PdbReadyReason              string = "All PDBs resources ready"
+	VirtualServiceNotDefined    string = "No VirtualServices defined"
+	VirtualServiceNotReady      string = "Not all VirtualServices created"
+	VirtualServiceReady         string = "All VirtualServices created"
+	AmbassadorMappingNotDefined string = "No Ambassador Mappaings defined"
+	AmbassadorMappingNotReady   string = "Not all Ambassador Mappings created"
+	AmbassadorMappingReady      string = "All Ambassador Mappings created"
 )
 
 // InferenceService Ready condition is depending on predictor and route readiness condition
@@ -81,6 +85,7 @@ var conditionSet = apis.NewLivingConditionSet(
 	VirtualServicesReady,
 	HpasReady,
 	PdbsReady,
+	AmbassadorMappingsReady,
 )
 
 var _ apis.ConditionsAccessor = (*SeldonDeploymentStatus)(nil)

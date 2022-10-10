@@ -9,7 +9,8 @@ namespaceOverride: ""
 
 # If you have ambassador installed you can just use the enabled flag
 ambassador:
-  enabled: true
+  enabled: false
+  version: v2
   singleNamespace: false
 # When activating Istio, respecive virtual services will be created
 # You must make sure you create the seldon-gateway as well
