@@ -1,5 +1,5 @@
 kafka:
-  bootstrap: seldon-kafka-tls-bootstrap.seldon-mesh.svc.cluster.local:9093
+  bootstrap: seldon-kafka-bootstrap.seldon-mesh.svc.cluster.local:9093
 
 security:
   kafka:

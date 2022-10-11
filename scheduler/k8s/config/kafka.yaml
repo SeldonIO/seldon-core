@@ -5,7 +5,7 @@ metadata:
 data:
   kafka.json: |-
    {
-      "bootstrap.servers": "seldon-kafka-plain-bootstrap.seldon-mesh:9092",
+      "bootstrap.servers": "seldon-kafka-bootstrap.seldon-mesh:9092",
       "consumer":{
          "session.timeout.ms":6000,
          "auto.offset.reset":"earliest",

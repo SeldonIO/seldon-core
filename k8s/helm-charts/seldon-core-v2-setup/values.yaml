@@ -81,7 +81,7 @@ hodometer:
 
 kafka:
   debug:
-  bootstrap: seldon-kafka-plain-bootstrap.seldon-mesh:9092
+  bootstrap: seldon-kafka-bootstrap.seldon-mesh:9092
   consumer:
     sessionTimeoutMs: 6000
     autoOffsetReset: earliest

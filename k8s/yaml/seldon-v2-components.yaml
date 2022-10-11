@@ -409,7 +409,7 @@ apiVersion: v1
 data:
   kafka.json: |-
     {
-       "bootstrap.servers": "seldon-kafka-plain-bootstrap.seldon-mesh:9092",
+       "bootstrap.servers": "seldon-kafka-bootstrap.seldon-mesh:9092",
        "consumer":{
           "session.timeout.ms":6000,
           "auto.offset.reset":"earliest",
@@ -633,7 +633,7 @@ spec:
       containers:
       - env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
-          value: seldon-kafka-plain-bootstrap.seldon-mesh:9092
+          value: seldon-kafka-bootstrap.seldon-mesh:9092
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT

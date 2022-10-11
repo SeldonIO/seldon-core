@@ -51,4 +51,4 @@ zookeeper:
     initialDelaySeconds: 15
     timeoutSeconds: 5
 
-    pvcSize: 100Gi
+  pvcSize: 100Gi
