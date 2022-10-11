@@ -1280,8 +1280,6 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
-      - name: REQUESTS_CA_BUNDLE
-        value: /mnt/certs/ca.crt
       image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository
         }}:{{ .Values.serverConfig.mlserver.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'

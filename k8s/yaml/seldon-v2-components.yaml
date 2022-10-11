@@ -1074,8 +1074,6 @@ spec:
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
-      - name: REQUESTS_CA_BUNDLE
-        value: /mnt/certs/ca.crt
       image: seldonio/mlserver:1.2.0.dev5
       imagePullPolicy: IfNotPresent
       lifecycle:
