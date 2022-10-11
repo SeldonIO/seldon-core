@@ -1,7 +1,7 @@
 SELDON_NAMESPACE?=seldon-mesh
 
 .PHONY: deploy-local
-deploy-local:
+deploy-local: undeploy-local
 	make -C scheduler pull-all start-all
 
 .PHONY: undeploy-local
