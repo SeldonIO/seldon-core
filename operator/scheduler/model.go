@@ -19,13 +19,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) error {
+func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("LoadModel")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
 	md, err := model.AsSchedulerModel()
 	if err != nil {
-		return err
+		return err, false
 	}
 	loadModelRequest := scheduler.LoadModelRequest{
 		Model: md,
@@ -34,12 +34,12 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 	logger.Info("Load", "model name", model.Name)
 	_, err = grcpClient.LoadModel(ctx, &loadModelRequest, grpc_retry.WithMax(2))
 	if err != nil {
-		return err
+		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
-	return nil
+	return nil, false
 }
 
-func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) error {
+func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 
@@ -55,9 +55,9 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	logger.Info("Unload", "model name", model.Name)
 	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
 	if err != nil {
-		return err
+		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
-	return nil
+	return nil, false
 }
 
 func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {

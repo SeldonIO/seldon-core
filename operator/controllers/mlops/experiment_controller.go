@@ -19,6 +19,7 @@ package mlops
 import (
 	"context"
 
+	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
@@ -44,7 +45,7 @@ type ExperimentReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, experiment *mlopsv1alpha1.Experiment) (bool, error) {
+func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, experiment *mlopsv1alpha1.Experiment) (bool, error) {
 
 	// Check if we are being deleted or not
 	if experiment.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
@@ -59,8 +60,16 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, experiment *
 	} else { // experiment is being deleted
 		if utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
 			// Handle unload in scheduler
-			if err := r.Scheduler.StopExperiment(ctx, experiment); err != nil {
-				return true, err
+			if err, retry := r.Scheduler.StopExperiment(ctx, experiment); err != nil {
+				if retry {
+					return true, err
+				} else {
+					experiment.ObjectMeta.Finalizers = utils.RemoveStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
+					if errUpdate := r.Update(ctx, experiment); errUpdate != nil {
+						logger.Error(err, "Failed to remove finalizer", "experiment", experiment.Name)
+						return true, err
+					}
+				}
 			}
 		}
 		// Stop reconciliation as the item is being deleted
@@ -97,17 +106,30 @@ func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, err
 	}
 
-	stop, err := r.handleFinalizer(ctx, experiment)
+	stop, err := r.handleFinalizer(ctx, logger, experiment)
 	if stop {
 		return reconcile.Result{}, err
 	}
 
-	err = r.Scheduler.StartExperiment(ctx, experiment)
+	err, retry := r.Scheduler.StartExperiment(ctx, experiment)
 	if err != nil {
-		return reconcile.Result{}, err
+		r.updateStatusFromError(ctx, logger, experiment, err)
+		if retry {
+			return ctrl.Result{}, err
+		} else {
+			return ctrl.Result{}, nil
+		}
+
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *ExperimentReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, experiment *mlopsv1alpha1.Experiment, err error) {
+	experiment.Status.CreateAndSetCondition(mlopsv1alpha1.ModelReady, false, err.Error())
+	if errSet := r.Status().Update(ctx, experiment); errSet != nil {
+		logger.Error(errSet, "Failed to set status for experiment on error", "model", experiment.Name, "error", err.Error())
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

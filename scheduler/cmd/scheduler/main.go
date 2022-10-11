@@ -168,26 +168,8 @@ func main() {
 	}
 
 	ps := pipeline.NewPipelineStore(logger, eventHub)
-	if dbPath != "" {
-		err := ps.InitialiseOrRestoreDB(dbPath)
-		if err != nil {
-			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", dbPath)
-		}
-	} else {
-		log.Warn("Not running with scheduler pipeline DB")
-	}
-
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
-	if dbPath != "" {
-		err := es.InitialiseOrRestoreDB(dbPath)
-		if err != nil {
-			log.WithError(err).Fatalf("Failed to initialise experiment db at %s", dbPath)
-		}
-	} else {
-		log.Warn("Not running with scheduler experiment DB")
-	}
 
 	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
 		Host:     pipelineGatewayHost,
@@ -213,6 +195,22 @@ func main() {
 			log.WithError(err).Fatalf("Chainer server start error")
 		}
 	}()
+
+	// Load pipelines and experiments from DB
+	// Do here after other services created so eventHub events will be handled on pipeline/experiment load
+	// If we start earlier events will be sent but not received by services that start listening "late" to eventHub
+	if dbPath != "" {
+		err := ps.InitialiseOrRestoreDB(dbPath)
+		if err != nil {
+			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", dbPath)
+		}
+		err = es.InitialiseOrRestoreDB(dbPath)
+		if err != nil {
+			log.WithError(err).Fatalf("Failed to initialise experiment db at %s", dbPath)
+		}
+	} else {
+		log.Warn("Not running with scheduler local DB")
+	}
 
 	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)

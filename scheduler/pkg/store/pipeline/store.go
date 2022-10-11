@@ -129,9 +129,7 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		lastPipeline := pipeline.GetLatestPipelineVersion()
 
 		switch lastPipeline.State.Status {
-		case PipelineTerminate:
-			return nil, &PipelineTerminatingErr{pipeline: req.Name}
-		case PipelineTerminating, PipelineTerminated:
+		case PipelineTerminate, PipelineTerminating, PipelineTerminated:
 			pipeline = &Pipeline{
 				Name:        req.Name,
 				LastVersion: 0,

@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) error {
+func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StartExperiment")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	req := &scheduler.StartExperimentRequest{
@@ -22,10 +22,10 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
 	_, err := grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(2))
-	return err
+	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
-func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) error {
+func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StopExperiment")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	req := &scheduler.StopExperimentRequest{
@@ -33,7 +33,7 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
 	_, err := grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(2))
-	return err
+	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
 func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context) error {

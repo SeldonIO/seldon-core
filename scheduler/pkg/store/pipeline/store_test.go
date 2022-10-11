@@ -162,7 +162,7 @@ func TestAddPipeline(t *testing.T) {
 			expectedVersion: 1,
 		},
 		{
-			name: "version failed when previous terminate state",
+			name: "version ok when previous terminate state",
 			proto: &scheduler.Pipeline{
 				Name: "pipeline",
 				Steps: []*scheduler.PipelineStep{
@@ -190,7 +190,7 @@ func TestAddPipeline(t *testing.T) {
 					},
 				},
 			},
-			err: &PipelineTerminatingErr{pipeline: "pipeline"},
+			expectedVersion: 1,
 		},
 	}
 

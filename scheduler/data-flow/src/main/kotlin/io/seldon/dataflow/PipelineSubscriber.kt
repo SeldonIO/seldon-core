@@ -68,6 +68,7 @@ class PipelineSubscriber(
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
     private suspend fun subscribePipelines() {
+        logger.info("Subscribing to pipeline updates")
         client
             .subscribePipelineUpdates(request = makeSubscriptionRequest())
             .onEach { update ->

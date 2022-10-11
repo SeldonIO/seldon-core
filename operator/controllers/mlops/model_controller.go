@@ -19,6 +19,8 @@ package mlops
 import (
 	"context"
 
+	"github.com/go-logr/logr"
+
 	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
 
 	"k8s.io/client-go/tools/record"
@@ -45,7 +47,7 @@ type ModelReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-func (r *ModelReconciler) handleFinalizer(ctx context.Context, model *mlopsv1alpha1.Model) (bool, error) {
+func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, model *mlopsv1alpha1.Model) (bool, error) {
 
 	// Check if we are being deleted or not
 	if model.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
@@ -60,8 +62,16 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, model *mlopsv1alp
 	} else { // model is being deleted
 		if utils.ContainsStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName) {
 			// Handle unload in scheduler
-			if err := r.Scheduler.UnloadModel(ctx, model); err != nil {
-				return true, err
+			if err, retry := r.Scheduler.UnloadModel(ctx, model); err != nil {
+				if retry {
+					return true, err
+				} else {
+					model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+					if errUpdate := r.Update(ctx, model); errUpdate != nil {
+						logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+						return true, err
+					}
+				}
 			}
 		}
 		// Stop reconciliation as the item is being deleted
@@ -90,18 +100,29 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return reconcile.Result{}, err
 	}
 
-	stop, err := r.handleFinalizer(ctx, model)
+	stop, err := r.handleFinalizer(ctx, logger, model)
 	if stop {
 		return reconcile.Result{}, err
 	}
 
-	err = r.Scheduler.LoadModel(ctx, model)
+	err, retry := r.Scheduler.LoadModel(ctx, model)
 	if err != nil {
-		logger.Error(err, "Failed in call to load model")
-		return ctrl.Result{}, err
+		r.updateStatusFromError(ctx, logger, model, err)
+		if retry {
+			return ctrl.Result{}, err
+		} else {
+			return ctrl.Result{}, nil
+		}
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *ModelReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, model *mlopsv1alpha1.Model, err error) {
+	model.Status.CreateAndSetCondition(mlopsv1alpha1.ModelReady, false, err.Error())
+	if errSet := r.Status().Update(ctx, model); errSet != nil {
+		logger.Error(errSet, "Failed to set status for model on error", "model", model.Name, "error", err.Error())
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.

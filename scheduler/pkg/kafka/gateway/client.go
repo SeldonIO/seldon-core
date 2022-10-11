@@ -107,9 +107,9 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
 	logger.Info("Subscribing to model status events")
-	stream, err := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
-	if err != nil {
-		return err
+	stream, errSub := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+	if errSub != nil {
+		return errSub
 	}
 	for {
 		event, err := stream.Recv()

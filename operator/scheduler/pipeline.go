@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
+func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
 	logger := s.logger.WithName("LoadPipeline")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	req := scheduler.LoadPipelineRequest{
@@ -22,10 +22,10 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
 	_, err := grcpClient.LoadPipeline(ctx, &req, grpc_retry.WithMax(2))
-	return err
+	return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 }
 
-func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
+func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
 	logger := s.logger.WithName("UnloadPipeline")
 	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	req := scheduler.UnloadPipelineRequest{
@@ -34,11 +34,11 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	logger.Info("Unload", "pipeline name", pipeline.Name)
 	_, err := grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(2))
 	if err != nil {
-		return err
+		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 	}
 	pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, "Pipeline terminating")
-	err = s.updatePipelineStatusImpl(pipeline)
-	return err
+	_ = s.updatePipelineStatusImpl(pipeline)
+	return nil, false
 }
 
 func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
