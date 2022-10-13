@@ -173,6 +173,7 @@ services:
     image: "${SCHEDULER_IMAGE_AND_TAG}"
 
   mlserver:
+    user: "1000:1000"    
     image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
     command:
       - "mlserver"
@@ -184,6 +185,7 @@ services:
 
 
   triton:
+    user: "1000:1000"    
     image: "${SERVER_TRITON_IMAGE_AND_TAG}"
     command:
       - "/opt/tritonserver/bin/tritonserver"
