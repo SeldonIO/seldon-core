@@ -52,7 +52,7 @@ seldon model infer iris \
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "43364ced-5bb4-4903-9a8a-0688e28a5876",
+    	"id": "0cae46c3-9c74-4e0b-b291-0d724c52c94c",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -111,6 +111,8 @@ seldon model unload iris
     {}
 ```
 ### Tensorflow Model
+
+We run a simple tensorflow model. Note the requirements section specifying `tensorflow`.
 
 
 ```bash
@@ -336,10 +338,6 @@ seldon model infer tfsimple1 --inference-mode grpc \
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
       ]
     }
 ```
@@ -355,7 +353,7 @@ seldon model unload tfsimple1
 ```
 ### Experiment
 
-We will use two SKlearn Iris classification models to illustrate experiments.
+We will use two SKlearn Iris classification models to illustrate an experiment.
 
 
 ```bash
@@ -416,13 +414,13 @@ seldon model status iris2 | jq -M .
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-08-05T06:13:33.202712680Z"
+              "lastChangeTimestamp": "2022-10-12T14:10:36.434248012Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-08-05T06:13:33.202712680Z"
+            "lastChangeTimestamp": "2022-10-12T14:10:36.434248012Z"
           },
           "modelDefn": {
             "meta": {
@@ -453,13 +451,13 @@ seldon model status iris2 | jq -M .
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-08-05T06:13:33.454597451Z"
+              "lastChangeTimestamp": "2022-10-12T14:10:37.091062717Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-08-05T06:13:33.454597451Z"
+            "lastChangeTimestamp": "2022-10-12T14:10:37.091062717Z"
           },
           "modelDefn": {
             "meta": {
@@ -495,9 +493,9 @@ cat ./experiments/ab-default-model.yaml
     spec:
       default: iris
       candidates:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 ```
 Start the experiment.
@@ -531,13 +529,15 @@ Run a set of calls and record which route the traffic took. There should be roug
 
 
 ```bash
-seldon model infer iris -i 50 \
+seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
 
-    map[:iris2_1::24 :iris_1::26]
+    map[:iris2_1::42 :iris_1::58]
 ```
+Run one more request
+
 
 ```bash
 seldon model infer iris \
@@ -546,9 +546,9 @@ seldon model infer iris \
 ```json
 
     {
-    	"model_name": "iris_1",
+    	"model_name": "iris2_1",
     	"model_version": "1",
-    	"id": "77d6ccee-ea17-4e3d-b58c-64989b3a5ef5",
+    	"id": "b73cf845-cf52-453e-a456-946ba696c4a1",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -568,7 +568,8 @@ seldon model infer iris \
     	]
     }
 ```
-Use sticky session key passed by last infer request to ensure same route is taken each time.
+Use sticky session key passed by last infer request to ensure same route is taken each time. 
+We will test REST and gRPC.
 
 
 ```bash
@@ -577,7 +578,7 @@ seldon model infer iris -s -i 50 \
 ```
 ```json
 
-    map[:iris_1::50]
+    map[:iris2_1::50]
 ```
 
 ```bash
@@ -586,7 +587,7 @@ seldon model infer iris --inference-mode grpc -s -i 50\
 ```
 ```json
 
-    map[:iris_1::50]
+    map[:iris2_1::50]
 ```
 Stop the experiment
 
@@ -597,6 +598,17 @@ seldon experiment stop experiment-sample
 ```json
 
     {}
+```
+Show the requests all go to original model now.
+
+
+```bash
+seldon model infer iris -i 100 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+```
+```json
+
+    map[:iris_1::100]
 ```
 Unload both models.
 

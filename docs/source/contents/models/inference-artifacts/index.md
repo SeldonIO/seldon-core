@@ -92,6 +92,15 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - TBC
 ```
 
+## Creating MLServer artifacts
+
+For [MLServer](https://github.com/SeldonIO/MLServer) targeted models you will need to create a model-settings.json file to help MLServer load your model and place this alongside your artifact. See the [MLServer project](https://mlserver.readthedocs.io/en/latest/reference/model-settings.html)  for details.
+
+
+## Creating Triton artifacts
+
+For [Triton inference server](https://github.com/triton-inference-server/server) models you will need to create [a configuration config.pbtxt file](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/model_configuration.md) alongside your artifact.
+
 ## Notes
 
  * The `tag` field represents the tag you need to add to the `requirements` part of the Model spec for your artifact to be loaded on a compatible server. e.g. for an sklearn model:

@@ -2,13 +2,26 @@
 
 This section will provide some examples to allow operations with Seldon to be tested so you can run your own models, experiments, pipelines and explainers.
 
- * [Local examples](local-examples.md)
- * [Local experiments](local-experiments.md)
- * [Kubernetes examples](k8s-examples.md)
- * [Pipeline examples](pipeline-examples.md)
- * [Explainer examples](explainer-examples.md)
+## Getting Started Examples
 
-## Making inference requests
+ * [Local examples](local-examples.md)
+ * [Kubernetes examples](k8s-examples.md)
+
+## Pipelines
+
+* [Pipeline examples](pipeline-examples.md)
+
+## Explainers
+
+* [Explainer examples](explainer-examples.md)
+
+## Experiments
+
+ * [Local experiments](local-experiments.md)
+ * [Experiment version examples](experiment-versions.md)
+
+
+## Making Inference Requests
 
  * [Inference examples](inference.md)
  * [Tritonclient examples](tritonclient-examples.md)
@@ -25,13 +38,14 @@ This section will provide some examples to allow operations with Seldon to be te
 :hidden:
 
 local-examples.md
-local-experiments.md
 k8s-examples.md
 pipeline-examples.md
 explainer-examples.md
+local-experiments.md
+experiment-versions.md
+inference.md
+tritonclient-examples.md
 cifar10.md
 income.md
 pandasquery.md
-inference.md
-tritonclient-examples.md
 ```

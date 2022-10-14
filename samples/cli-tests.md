@@ -247,6 +247,27 @@ seldon experiment start -f ./experiments/error-bad-spec.yaml
     
     json: unknown field "candidate"
 ```
+
+```bash
+seldon pipeline load -f ./pipelines/error-step-name.yaml
+```
+```json
+
+    Error: rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
+    Usage:
+      seldon pipeline load [flags]
+    
+    Flags:
+      -f, --file-path string        pipeline file to load
+      -h, --help                    help for load
+          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
+    
+    Global Flags:
+      -r, --show-request    show request
+      -o, --show-response   show response (default true)
+    
+    rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
+```
 ## Failed scheduling
 
 
@@ -277,8 +298,4 @@ seldon model unload badcapabilities
 ```json
 
     {}
-```
-
-```python
-
 ```
