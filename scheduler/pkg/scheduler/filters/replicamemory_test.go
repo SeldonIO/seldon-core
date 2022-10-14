@@ -8,19 +8,23 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 )
 
-func getTestModelWithMemory(requiredmemory *uint64) *store.ModelVersion {
+func getTestModelWithMemory(requiredmemory *uint64, serverName string, replicaId int) *store.ModelVersion {
 
+	replicas := map[int]store.ReplicaStatus{}
+	if replicaId >= 0 {
+		replicas[replicaId] = store.ReplicaStatus{State: store.Loading}
+	}
 	return store.NewModelVersion(
 		&pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: requiredmemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 		1,
-		"server",
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
+		serverName,
+		replicas,
 		false,
 		store.ModelProgressing)
 }
 
-func getTestServerReplicaWithMemory(availableMemory uint64) *store.ServerReplica {
-	return store.NewServerReplica("svc", 8080, 5001, 1, nil, []string{}, availableMemory, availableMemory, nil, 100)
+func getTestServerReplicaWithMemory(availableMemory uint64, serverName string, replicaId int) *store.ServerReplica {
+	return store.NewServerReplica("svc", 8080, 5001, replicaId, store.NewServer(serverName, true), []string{}, availableMemory, availableMemory, nil, 100)
 }
 
 func TestReplicaMemoryFilter(t *testing.T) {
@@ -35,9 +39,10 @@ func TestReplicaMemoryFilter(t *testing.T) {
 
 	memory := uint64(100)
 	tests := []test{
-		{name: "EnoughMemory", model: getTestModelWithMemory(&memory), server: getTestServerReplicaWithMemory(100), expected: true},
-		{name: "NoMemorySpecified", model: getTestModelWithMemory(nil), server: getTestServerReplicaWithMemory(200), expected: true},
-		{name: "NotEnoughMemory", model: getTestModelWithMemory(&memory), server: getTestServerReplicaWithMemory(50), expected: false},
+		{name: "EnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(100, "server1", 0), expected: true},
+		{name: "NoMemorySpecified", model: getTestModelWithMemory(nil, "", -1), server: getTestServerReplicaWithMemory(200, "server1", 0), expected: true},
+		{name: "NotEnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(50, "server1", 0), expected: false},
+		{name: "ModelAlreadyLoaded", model: getTestModelWithMemory(&memory, "server1", 0), server: getTestServerReplicaWithMemory(0, "server1", 0), expected: true}, // note not enough memory on server replica
 	}
 
 	for _, test := range tests {

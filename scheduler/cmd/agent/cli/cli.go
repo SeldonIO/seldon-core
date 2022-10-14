@@ -187,6 +187,7 @@ func maybeUpdateFromIntEnv(flag string, env string, param *int, tag string) {
 	}
 
 	log.Infof(
+		"Setting %s from env %s with value %d",
 		tag,
 		env,
 		int(valueFromEnv),

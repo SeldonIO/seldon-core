@@ -73,9 +73,9 @@ type ExplainerSpec struct {
 type ScalingSpec struct {
 	// Number of replicas - default 1
 	Replicas *int32 `json:"replicas,omitempty"`
-	// Min number of replicas - default equal to replicas
+	// Min number of replicas - default equal to 0
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	// Max number of replicas - default equal to replicas
+	// Max number of replicas - default equal to 0
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 }
 
@@ -192,21 +192,33 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		md.ModelSpec.Requirements = append(md.ModelSpec.Requirements, *m.Spec.ModelType)
 	}
 	// Set Replicas
-	//TODO add min/max replicas
 	if m.Spec.Replicas != nil {
 		md.DeploymentSpec.Replicas = uint32(*m.Spec.Replicas)
 	} else {
-		md.DeploymentSpec.Replicas = 1
+		if m.Spec.MinReplicas != nil {
+			// set replicas to the min replicas if not set
+			md.DeploymentSpec.Replicas = uint32(*m.Spec.MinReplicas)
+		} else {
+			md.DeploymentSpec.Replicas = 1
+		}
 	}
 
 	if m.Spec.MinReplicas != nil {
 		md.DeploymentSpec.MinReplicas = uint32(*m.Spec.MinReplicas)
+		if md.DeploymentSpec.Replicas < md.DeploymentSpec.MinReplicas {
+			return nil, fmt.Errorf("Number of replicas %d should be >= min replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MinReplicas)
+		}
 	} else {
-		md.DeploymentSpec.MinReplicas = 1
+		md.DeploymentSpec.MinReplicas = 0
 	}
 
 	if m.Spec.MaxReplicas != nil {
 		md.DeploymentSpec.MaxReplicas = uint32(*m.Spec.MaxReplicas)
+		if md.DeploymentSpec.Replicas > md.DeploymentSpec.MaxReplicas {
+			return nil, fmt.Errorf("Number of replicas %d should be <= max replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MaxReplicas)
+		}
+	} else {
+		md.DeploymentSpec.MaxReplicas = 0
 	}
 
 	// Set memory bytes

@@ -482,10 +482,10 @@ func (m *ModelVersion) IsDeleted() bool {
 	return m.deleted
 }
 
-func (m *ModelVersion) SetReplicaState(replicaIdx int, state ReplicaStatus) {
+func (m *ModelVersion) SetReplicaState(replicaIdx int, state ModelReplicaState, reason string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.replicas[replicaIdx] = state
+	m.replicas[replicaIdx] = ReplicaStatus{State: state, Timestamp: time.Now(), Reason: reason}
 }
 
 func (m *ModelVersion) DeleteReplica(replicaIdx int) {
@@ -585,6 +585,10 @@ func (s *ServerReplica) GetMemory() uint64 {
 
 func (s *ServerReplica) GetCapabilities() []string {
 	return s.capabilities
+}
+
+func (s *ServerReplica) GetServerName() string {
+	return s.server.name
 }
 
 func (s *ServerReplica) GetReplicaIdx() int {

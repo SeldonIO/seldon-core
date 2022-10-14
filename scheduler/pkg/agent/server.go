@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -13,6 +14,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
@@ -22,9 +24,10 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams     = 1_000_000
-	pendingSyncsQueueSize    int = 10
-	modelEventHandlerName        = "agent.server.models"
+	grpcMaxConcurrentStreams          = 1_000_000
+	pendingSyncsQueueSize         int = 10
+	modelEventHandlerName             = "agent.server.models"
+	modelScalingCoolingOffSeconds     = 300
 )
 
 type ServerKey struct {
@@ -263,6 +266,13 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 		logger := s.logger.WithField("func", "ModelScalingTrigger")
 		logger.Infof("Received Event from server %s:%d for model %s:%d",
 			message.GetServerName(), message.GetReplicaIdx(), message.GetModelName(), message.GetModelVersion())
+
+		// so far we do not care about oder of scaling events. the first one should win
+		go func() {
+			if err := s.applyModelScaling(message); err != nil {
+				logger.WithError(err).Debugf("Could not scale model %s", message.GetModelName())
+			}
+		}()
 	}
 }
 
@@ -325,5 +335,113 @@ func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentS
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {
+
+	modelName := message.ModelName
+	model, err := s.store.GetModel(modelName)
+	if err != nil {
+		return err
+	}
+	if model == nil {
+		return fmt.Errorf("Model %s not found", modelName)
+	}
+
+	// TODO: consider the case when scaling down a model that failed to scale up, hence not available
+	lastAvailableModelVersion := model.GetLastAvailableModel()
+	if lastAvailableModelVersion == nil {
+		return fmt.Errorf("Stable model version %s not found", modelName)
+	}
+
+	modelProto, err := createScalingPseudoRequest(message, lastAvailableModelVersion)
+	if err != nil {
+		return err
+	}
+
+	return s.updateAndSchedule(modelProto)
+}
+
+func (s *Server) updateAndSchedule(modelProtos *pbs.Model) error {
+	modelName := modelProtos.GetMeta().GetName()
+	if err := s.store.UpdateModel(&pbs.LoadModelRequest{
+		Model: modelProtos,
+	}); err != nil {
+		return err
+	}
+
+	return s.scheduler.Schedule(modelName)
+}
+
+func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, lastAvailableModelVersion *store.ModelVersion) (*pbs.Model, error) {
+	//TODO: update model state
+
+	modelName := message.ModelName
+
+	if lastAvailableModelVersion.GetVersion() != message.GetModelVersion() {
+		return nil, fmt.Errorf(
+			"Model version %s not matching (expected: %d - actual: %d)",
+			modelName, lastAvailableModelVersion.GetVersion(), message.GetModelVersion())
+	}
+
+	modelProtos := lastAvailableModelVersion.GetModel() // this is a clone of the protos
+	numReplicas := len(lastAvailableModelVersion.GetAssignment())
+
+	if !isModelStable(lastAvailableModelVersion) {
+		return nil, fmt.Errorf("Model %s has changed status recently, skip scaling", modelName)
+	}
+
+	if desiredNumReplicas, err := calculateDesiredNumReplicas(modelProtos, message.Trigger, numReplicas); err != nil {
+		return nil, err
+	} else {
+		modelProtos.DeploymentSpec.Replicas = uint32(desiredNumReplicas)
+	}
+	return modelProtos, nil
+}
+
+func isModelStable(modelVersion *store.ModelVersion) bool {
+	return modelVersion.ModelState().Timestamp.Before(time.Now().Add(-modelScalingCoolingOffSeconds * time.Second))
+}
+
+func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTriggerMessage_Trigger, numReplicas int) (int, error) {
+
+	if trigger == pb.ModelScalingTriggerMessage_SCALE_UP {
+		if err := checkModelScalingWithinRange(model, numReplicas+1); err != nil {
+			return 0, err
+		} else {
+			return numReplicas + 1, nil
+		}
+	} else if trigger == pb.ModelScalingTriggerMessage_SCALE_DOWN {
+		if err := checkModelScalingWithinRange(model, numReplicas-1); err != nil {
+			return 0, err
+		} else {
+			return numReplicas - 1, nil
+		}
+	}
+	return 0, fmt.Errorf("event not supported")
+}
+
+// we autoscale if at least min or max replicas is set and that we are within the range
+// if a user therefore sets only the number of replicas then autoscaling will not be activated
+// which is hidden in this logic unfortunately as we reject the scaling up / down event.
+// a side effect is that we do not go below 1 replica of a model
+func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error {
+	minReplicas := model.DeploymentSpec.GetMinReplicas()
+	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
+
+	if (minReplicas == 0) && (maxReplicas == 0) {
+		// no autoscaling
+		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
+	}
+
+	if targetNumReplicas < int(minReplicas) || (targetNumReplicas < 1) {
+		return fmt.Errorf("Violating min replicas %d / %d for model %s", minReplicas, targetNumReplicas, model.GetMeta().GetName())
+	}
+
+	if targetNumReplicas > int(maxReplicas) && (maxReplicas > 0) {
+		return fmt.Errorf("Violating max replicas %d / %d for model %s", maxReplicas, targetNumReplicas, model.GetMeta().GetName())
+	}
+
 	return nil
 }

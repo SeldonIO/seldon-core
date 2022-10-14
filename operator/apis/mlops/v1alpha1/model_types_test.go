@@ -18,6 +18,7 @@ func TestAsModelDetails(t *testing.T) {
 		error   bool
 	}
 	replicas := int32(4)
+	replicas1 := int32(1)
 	secret := "secret"
 	modelType := "sklearn"
 	server := "server"
@@ -53,7 +54,8 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 1,
+					MinReplicas: 0,
+					MaxReplicas: 0,
 				},
 			},
 		},
@@ -122,7 +124,8 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					LogPayloads: true,
-					MinReplicas: 1,
+					MinReplicas: 0,
+					MaxReplicas: 0,
 				},
 			},
 		},
@@ -155,9 +158,148 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 1,
+					MinReplicas: 0,
+					MaxReplicas: 0,
 				},
 			},
+		},
+		{
+			name: "simple min replica",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "foo",
+					Namespace:       "default",
+					ResourceVersion: "1",
+					Generation:      1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						StorageURI: "gs://test",
+					},
+					ScalingSpec: ScalingSpec{MinReplicas: &replicas},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri: "gs://test",
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    4,
+					MinReplicas: 4,
+					MaxReplicas: 0,
+				},
+			},
+		},
+		{
+			name: "simple max replica",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "foo",
+					Namespace:       "default",
+					ResourceVersion: "1",
+					Generation:      1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						StorageURI: "gs://test",
+					},
+					ScalingSpec: ScalingSpec{MaxReplicas: &replicas},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri: "gs://test",
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 0,
+					MaxReplicas: 4,
+				},
+			},
+		},
+		{
+			name: "range violation min",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "foo",
+					Namespace:       "default",
+					ResourceVersion: "1",
+					Generation:      1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						StorageURI: "gs://test",
+					},
+					ScalingSpec: ScalingSpec{MinReplicas: &replicas, Replicas: &replicas1},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri: "gs://test",
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 0,
+					MaxReplicas: 4,
+				},
+			},
+			error: true,
+		},
+		{
+			name: "range violation max",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "foo",
+					Namespace:       "default",
+					ResourceVersion: "1",
+					Generation:      1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						StorageURI: "gs://test",
+					},
+					ScalingSpec: ScalingSpec{Replicas: &replicas, MaxReplicas: &replicas1},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri: "gs://test",
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 0,
+					MaxReplicas: 4,
+				},
+			},
+			error: true,
 		},
 	}
 	for _, test := range tests {

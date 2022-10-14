@@ -2,6 +2,7 @@ package agent
 
 import (
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -72,7 +73,7 @@ func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey 
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
 		if mv.GetVersion() == version {
-			mv.SetReplicaState(replicaIdx, store.ReplicaStatus{State: desiredState, Reason: reason})
+			mv.SetReplicaState(replicaIdx, desiredState, reason)
 		}
 	}
 	return nil
@@ -126,7 +127,7 @@ func TestSync(t *testing.T) {
 			name:      "simple",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				ServerKey{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -154,7 +155,7 @@ func TestSync(t *testing.T) {
 			name:      "OlderVersions",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				ServerKey{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -205,6 +206,331 @@ func TestSync(t *testing.T) {
 				for replicaIdx, rs := range expectedVersionState.expectedStates {
 					g.Expect(mv.ReplicaState()[replicaIdx].State).To(Equal(rs.State))
 				}
+			}
+		})
+	}
+}
+
+func TestCalculateDesiredReplicas(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                string
+		trigger             pb.ModelScalingTriggerMessage_Trigger
+		previousNumReplicas int
+		minNumReplicas      int
+		maxNumReplicas      int
+		expectedNumReplicas int
+		err                 bool
+	}
+	tests := []test{
+		{
+			name:                "scale up",
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			previousNumReplicas: 1,
+			minNumReplicas:      1,
+			maxNumReplicas:      0,
+			expectedNumReplicas: 2,
+			err:                 false,
+		},
+		{
+			name:                "scale down",
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			previousNumReplicas: 2,
+			minNumReplicas:      1,
+			maxNumReplicas:      0,
+			expectedNumReplicas: 1,
+			err:                 false,
+		},
+		{
+			name:                "cannot scale down",
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			previousNumReplicas: 1,
+			minNumReplicas:      0,
+			maxNumReplicas:      2,
+			expectedNumReplicas: 0,
+			err:                 true,
+		},
+		{
+			name:                "scaling not enabled",
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			previousNumReplicas: 2,
+			minNumReplicas:      0,
+			maxNumReplicas:      0,
+			expectedNumReplicas: 0,
+			err:                 true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			dummyModel := pbs.Model{
+				Meta:       nil,
+				ModelSpec:  nil,
+				StreamSpec: nil,
+				DeploymentSpec: &pbs.DeploymentSpec{
+					Replicas:    uint32(test.previousNumReplicas),
+					MinReplicas: uint32(test.minNumReplicas),
+					MaxReplicas: uint32(test.maxNumReplicas),
+				},
+			}
+			numReplicas, err := calculateDesiredNumReplicas(
+				&dummyModel, test.trigger, test.previousNumReplicas)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(numReplicas).To(Equal(test.expectedNumReplicas))
+			}
+		})
+	}
+}
+
+func TestModelScalingProtos(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                string
+		store               *mockStore
+		trigger             pb.ModelScalingTriggerMessage_Trigger
+		triggerModelName    string
+		triggerModelVersion int
+		expectedReplicas    uint32
+		lastUpdate          time.Time
+		isError             bool
+	}
+	tests := []test{
+		{
+			name: "scale up not enabled",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    1,
+			isError:             true,
+		},
+		{
+			name: "scale up within range no max",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             false,
+		},
+		{
+			name: "scale up within range",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 2},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             false,
+		},
+		{
+			name: "scale up not within range",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    1,
+			isError:             true,
+		},
+		{
+			name: "scale down within range",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    1,
+			isError:             false,
+		},
+		{
+			name: "scale down not within range",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 2, MaxReplicas: 3},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             true,
+		},
+		{
+			name: "scale down not enabled",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             true,
+		},
+		{
+			name: "model not stable",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			lastUpdate:          time.Now(),
+			isError:             true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			model, _ := test.store.GetModel(test.triggerModelName)
+			// TODO: consider the case where we are scaling down which the latest model failed to scale up, hence not available
+			lastAvailableModelVersion := model.GetLastAvailableModel()
+			state := lastAvailableModelVersion.ModelState()
+			state.Timestamp = test.lastUpdate
+			protos, err := createScalingPseudoRequest(&pb.ModelScalingTriggerMessage{
+				ModelName:    test.triggerModelName,
+				ModelVersion: uint32(test.triggerModelVersion),
+				Trigger:      test.trigger,
+			}, lastAvailableModelVersion)
+			if !test.isError {
+				g.Expect(err).To(BeNil())
+				g.Expect(protos.GetDeploymentSpec().GetReplicas()).To(Equal(test.expectedReplicas))
+			} else {
+				g.Expect(err).NotTo(BeNil())
 			}
 		})
 	}

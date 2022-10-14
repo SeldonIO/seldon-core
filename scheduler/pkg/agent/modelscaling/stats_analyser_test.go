@@ -1,6 +1,8 @@
 package modelscaling
 
 import (
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,6 +16,25 @@ const (
 	lagThresholdDefault             = 30
 	lastUsedThresholdSecondsDefault = 30
 )
+
+func scalingMetricsSetup(
+	wg *sync.WaitGroup, internalModelName string,
+	modelLagStats, modelLastUsedStats interfaces.ModelScalingStats) error {
+	err := modelLagStats.IncDefault(internalModelName)
+	wg.Done()
+	if err != nil {
+		return err
+	}
+	return modelLastUsedStats.IncDefault(internalModelName)
+}
+
+func scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string,
+	modelLagStats, modelLastUsedStats interfaces.ModelScalingStats, jobsWg *sync.WaitGroup) error {
+	wg.Wait() // make sure that Inc is called first
+	err := modelLagStats.DecDefault(internalModelName)
+	jobsWg.Done()
+	return err
+}
 
 func TestStatsAnalyserSmoke(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -75,6 +96,88 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	time.Sleep(time.Millisecond * 100) // for the service to actually stop
 
 	g.Expect(service.isReady).To(BeFalse())
+
+	t.Logf("Done!")
+}
+
+func TestStatsAnalyserSoak(t *testing.T) {
+	numberIterations := 1000
+	numberModels := 100
+
+	g := NewGomegaWithT(t)
+	dummyModelPrefix := "model_"
+
+	t.Logf("Start!")
+
+	lags := NewModelReplicaLagsKeeper()
+	lastUsed := NewModelReplicaLastUsedKeeper()
+	service := NewStatsAnalyserService(
+		[]ModelScalingStatsWrapper{
+			{
+				Stats:     lags,
+				Operator:  interfaces.Gte,
+				Threshold: lagThresholdDefault,
+				Reset:     true,
+				EventType: ScaleUpEvent,
+			},
+			{
+				Stats:     lastUsed,
+				Operator:  interfaces.Gte,
+				Threshold: lastUsedThresholdSecondsDefault,
+				Reset:     false,
+				EventType: ScaleDownEvent,
+			},
+		},
+		log.New(),
+		statsPeriodSecondsDefault,
+	)
+
+	err := service.Start()
+
+	time.Sleep(time.Millisecond * 100) // for the service to actually start
+
+	g.Expect(err).To(BeNil())
+	g.Expect(service.isReady).To(BeTrue())
+
+	for j := 0; j < numberModels; j++ {
+		err := service.AddModel(dummyModelPrefix + strconv.Itoa(j))
+		g.Expect(err).To(BeNil())
+	}
+
+	ch := service.GetEventChannel()
+
+	var jobsWg sync.WaitGroup
+	jobsWg.Add(numberIterations * numberModels)
+
+	for i := 0; i < numberIterations; i++ {
+		for j := 0; j < numberModels; j++ {
+			var wg sync.WaitGroup
+			wg.Add(1)
+			setupFn := func(x int) {
+				err := scalingMetricsSetup(&wg, dummyModelPrefix+strconv.Itoa(x), lags, lastUsed)
+				g.Expect(err).To(BeNil())
+			}
+			teardownFn := func(x int) {
+				err := scalingMetricsTearDown(&wg, dummyModelPrefix+strconv.Itoa(x), lags, lastUsed, &jobsWg)
+				g.Expect(err).To(BeNil())
+			}
+			go setupFn(j)
+			go teardownFn(j)
+		}
+	}
+	go func() {
+		// dump messages on the floor
+		<-ch
+	}()
+	jobsWg.Wait()
+
+	// delete
+	for j := 0; j < numberModels; j++ {
+		err := service.DeleteModel(dummyModelPrefix + strconv.Itoa(j))
+		g.Expect(err).To(BeNil())
+	}
+
+	_ = service.Stop()
 
 	t.Logf("Done!")
 }

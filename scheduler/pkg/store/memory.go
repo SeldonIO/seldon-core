@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
@@ -195,7 +194,9 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.
 	if ok {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
 		// will match latest generation value. Previous generation values might be ignored by manager.
-		model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
+		if req.GetKubernetesMeta() != nil { // k8s meta can be nil if unload is called directly using scheduler grpc api
+			model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
+		}
 		model.deleted = true
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return &coordinator.ModelEventMsg{
@@ -320,7 +321,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 				"Setting model %s version %d on server %s replica %d to LoadRequested",
 				modelKey, modelVersion.version, serverKey, replica.GetReplicaIdx(),
 			)
-			modelVersion.SetReplicaState(replica.GetReplicaIdx(), ReplicaStatus{State: LoadRequested})
+			modelVersion.SetReplicaState(replica.GetReplicaIdx(), LoadRequested, "")
 			m.updateReservedMemory(LoadRequested, serverKey, replica.GetReplicaIdx(), modelVersion.GetRequiredMemory())
 			updated = true
 		} else {
@@ -343,7 +344,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 					"Setting model %s version %d on server %s replica %d to UnloadRequested",
 					modelKey, modelVersion.version, serverKey, replicaIdx,
 				)
-				modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{State: UnloadRequested})
+				modelVersion.SetReplicaState(replicaIdx, UnloadRequested, "")
 				updated = true
 			} else {
 				logger.Debugf(
@@ -402,7 +403,7 @@ func (m *MemoryStore) unloadVersionModelsImpl(modelKey string, version uint32) (
 				replicaIdx,
 				existingState.State.String(),
 			)
-			modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{State: UnloadRequested})
+			modelVersion.SetReplicaState(replicaIdx, UnloadRequested, "")
 			updated = true
 		} else {
 			logger.Debugf(
@@ -495,11 +496,7 @@ func (m *MemoryStore) updateModelStateImpl(
 		latestModel := model.Latest()
 		isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
 
-		modelVersion.SetReplicaState(replicaIdx, ReplicaStatus{
-			State:     desiredState,
-			Reason:    reason,
-			Timestamp: time.Now(),
-		})
+		modelVersion.SetReplicaState(replicaIdx, desiredState, reason)
 		logger.Debugf(
 			"Setting model %s version %d on server %s replica %d to %s",
 			modelKey, version, serverKey, replicaIdx, desiredState.String(),

@@ -40,8 +40,8 @@ func (lagKeeper *lagKeeper) dec() {
 	// therfore we cannot use `AddUint32(&x, ^uint32(0))`.
 	// the for loop is essentially to make sure that no concurrent requests have
 	// changed the value of the `lag` while we are decrementing it.
-	old := lagKeeper.get()
 	for {
+		old := lagKeeper.get()
 		if old > 0 {
 			new := old - 1
 			swapped := atomic.CompareAndSwapUint32(&lagKeeper.lag, old, new)

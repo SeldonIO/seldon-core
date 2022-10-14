@@ -24,16 +24,16 @@ type SimpleScheduler struct {
 }
 
 type SchedulerConfig struct {
-	serverFilters  []ServerFilter
+	serverFilters  []filters.ServerFilter
 	serverSorts    []sorters.ServerSorter
-	replicaFilters []ReplicaFilter
+	replicaFilters []filters.ReplicaFilter
 	replicaSorts   []sorters.ReplicaSorter
 }
 
 func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
-		serverFilters:  []ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
-		replicaFilters: []ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}},
+		serverFilters:  []filters.ServerFilter{filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
+		replicaFilters: []filters.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}},
 		serverSorts:    []sorters.ServerSorter{},
 		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}
@@ -129,7 +129,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			}
 
 			// we need a lock here, we could have many goroutines at sorting
-			// without the store being reflected and hence storing on stale values
+			// without the store being reflected and hence sorting on stale values
 			s.muSortAndUpdate.Lock()
 			s.sortReplicas(candidateReplicas)
 			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])

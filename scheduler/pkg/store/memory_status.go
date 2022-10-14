@@ -11,7 +11,7 @@ const (
 	modelUpdateEventSource  = "memory.status.model.update"
 )
 
-type replicaStateStatistics struct {
+type modelVersionStateStatistics struct {
 	replicasAvailable    uint32
 	replicasLoading      uint32
 	replicasLoadFailed   uint32
@@ -23,8 +23,8 @@ type replicaStateStatistics struct {
 	lastFailedReason     string
 }
 
-func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *replicaStateStatistics {
-	s := replicaStateStatistics{}
+func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *modelVersionStateStatistics {
+	s := modelVersionStateStatistics{}
 	for _, replicaState := range modelVersion.ReplicaState() {
 		switch replicaState.State {
 		case Available:
@@ -55,7 +55,7 @@ func calcReplicaStateStatistics(modelVersion *ModelVersion, deleted bool) *repli
 	return &s
 }
 
-func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *replicaStateStatistics, deleted bool) {
+func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *modelVersionStateStatistics, deleted bool) {
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := stats.latestTime
@@ -112,7 +112,7 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	logger := m.logger.WithField("func", "updateModelStatus")
-	stats := calcReplicaStateStatistics(modelVersion, deleted)
+	stats := calcModelVersionStatistics(modelVersion, deleted)
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
