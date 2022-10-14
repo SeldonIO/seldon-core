@@ -1,0 +1,10 @@
+{
+    "name": "income-preprocess",
+    "implementation": "mlserver_sklearn.SKLearnModel",
+    "parameters": {
+        "version": "v0.1.0",
+	"extra": {
+	    "predict_fn": "transform"
+	}
+    }
+}

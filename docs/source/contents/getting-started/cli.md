@@ -6,7 +6,7 @@ Seldon Core V2 can be managed via a CLI tool.
 
 Download from a recent release from https://github.com/SeldonIO/seldon-core-v2/releases.
 
-It is dynamically linked and will require and nix architetcure and glibc 2.25+.
+It is dynamically linked and will require and *nix architecture and glibc 2.25+.
 
 ```
 mv seldon-linux-amd64 seldon

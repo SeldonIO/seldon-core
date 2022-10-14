@@ -18,6 +18,7 @@ const (
 	mlserverConfigFilename = "model-settings.json"
 	inferUriKey            = "infer_uri"
 	explainerTypeKey       = "explainer_type"
+	sslVerifyPath          = "ssl_verify_path"
 )
 
 type MLServerRepositoryHandler struct {
@@ -143,6 +144,7 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 		scheme := "http"
 		if m.SSL {
 			scheme = "https"
+			ms.Parameters.Extra[sslVerifyPath] = "/mnt/certs/ca.crt"
 		}
 		if explainerSpec.ModelRef != nil {
 			inferUri := fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.ModelRef)

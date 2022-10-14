@@ -1,0 +1,7 @@
+{
+    "name": "income",
+    "implementation": "mlserver_sklearn.SKLearnModel",
+    "parameters": {
+        "version": "v0.1.0"
+    }
+}
