@@ -160,7 +160,10 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
-      nodeSelector: {{ .Values.manager.nodeSelector }}
+      nodeSelector:
+{{- with .Values.manager.nodeSelector }}
+{{- toYaml . | nindent 8}}
+{{- end }}
       priorityClassName: '{{ .Values.manager.priorityClassName }}'
       securityContext:
         runAsUser: {{ .Values.managerUserID }}

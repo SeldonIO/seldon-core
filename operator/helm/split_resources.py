@@ -33,6 +33,7 @@ HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabil
 HELM_CRD_ANNOTATIONS_WITH_START = '{{- with .Values.crd.annotations }}\n'
 HELM_ANNOTATIONS_TOYAML4 = '{{- toYaml . | nindent 4}}\n'
 HELM_ANNOTATIONS_TOYAML8 = '{{- toYaml . | nindent 8}}\n'
+HELM_CONTROLER_DEP_NODESELECTOR_WITH_START = '{{- with .Values.manager.nodeSelector }}\n'
 HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = '{{- with .Values.manager.annotations }}\n'
 HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START = '{{- with .Values.manager.containerSecurityContext }}\n'
 HELM_IF_END = "{{- end }}\n"
@@ -184,10 +185,7 @@ if __name__ == "__main__":
                     "memory"
                 ] = helm_value("manager.memoryLimit")
 
-                # NodeSelection & tolerations
-                res["spec"]["template"]["spec"]["nodeSelector"] = helm_value(
-                    "manager.nodeSelector"
-                )
+                # tolerations
                 res["spec"]["template"]["spec"]["tolerations"] = helm_value(
                     "manager.tolerations"
                 )
@@ -457,6 +455,14 @@ if __name__ == "__main__":
                 )
 
                 fdata = re.sub(
+                   r"(.*nodeSelector:).*\n",
+                    r"\1\n" + HELM_CONTROLER_DEP_NODESELECTOR_WITH_START +
+                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END,
+                    fdata,
+                    re.M,
+                )
+
+                fdata = re.sub(
                     r"(.*volumeMounts:\n.*\n.*\n.*\n)",
                     HELM_CREATERESOURCES_IF_START + r"\1" + HELM_IF_END,
                     fdata,
@@ -492,10 +498,6 @@ if __name__ == "__main__":
             # make sure managerUserID is not quoted as its an int
             fdata = fdata.replace(
                 "'{{ .Values.managerUserID }}'", "{{ .Values.managerUserID }}"
-            )
-            # make sure nodeSelector is not quoted as its a map
-            fdata = fdata.replace(
-                "'{{ .Values.manager.nodeSelector }}'", "{{ .Values.manager.nodeSelector }}"
             )
             # make sure tolerations is not quoted as its a list
             fdata = fdata.replace(
