@@ -2,9 +2,17 @@
 
 ## Development Requirements
 
- * Go 1.17+
+ * Go 1.17+ with glibc development libraries installed.
+    * e.g. for Ubunti systems: `sudo apt-get install libc6-dev`
  * Java JDK 17+ and Kotlin 1.6.10+
  * Kubebuilder V2
+ * Docker and docker-compose
+
+## Testing resources
+
+ * Kind
+ * k6
+ * unix utils: jq, curl, grpcurl
 
 ## Release Process
 

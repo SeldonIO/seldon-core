@@ -76,16 +76,6 @@ We skip SSL Verify as these are internal self-signed certificates. For productio
 
 The installer/cluster controller for Seldon needs to provide the certificates. As part of Seldon we provide an example set of certificate issuers and certificates using [cert-manager](https://cert-manager.io/).
 
-From the project root run:
-
-### Raw YAML
-
-Raw yaml Certificates can be created with:
-
-```
-kubectl create -f k8s/yaml/certs.yaml -n seldon-mesh
-```
-
 ### Helm
 
 You can install Certificates into the desired namespace, here we use `seldon-mesh` as an example.
