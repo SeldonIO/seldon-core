@@ -73,9 +73,12 @@ prep-artifacts:
 	# Package helm charts
 	helm package k8s/helm-charts/seldon-core-v2-crds -d .release
 	helm package k8s/helm-charts/seldon-core-v2-setup -d .release
+	helm package k8s/helm-charts/seldon-core-v2-servers -d .release
+	helm package k8s/helm-charts/seldon-core-v2-certs -d .release
 	# Add yaml files
 	cp k8s/yaml/seldon-v2-components.yaml .release/
 	cp k8s/yaml/seldon-v2-crds.yaml .release/
 	cp k8s/yaml/seldon-v2-servers.yaml .release/
+	cp k8s/yaml/certs.yaml .release/
 	# Build CLI
 	make -C operator build-seldon && mv operator/bin/seldon .release/seldon-linux-amd64
