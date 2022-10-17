@@ -199,6 +199,10 @@ func main() {
 		Reset:     false,
 		EventType: modelscaling.ScaleDownEvent,
 	}
+	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
+		modelLagStatsWrapper.Stats,
+		modelLastUsedStatsWrapper.Stats,
+	)
 
 	rpHTTP := agent.NewReverseHTTPProxy(
 		logger,
@@ -206,8 +210,7 @@ func main() {
 		uint(cli.InferenceHttpPort),
 		uint(cli.ReverseProxyHttpPort),
 		promMetrics,
-		modelLagStatsWrapper.Stats,
-		modelLastUsedStatsWrapper.Stats,
+		modelScalingStatsCollector,
 	)
 	defer func() { _ = rpHTTP.Stop() }()
 
@@ -217,8 +220,7 @@ func main() {
 		cli.InferenceHost,
 		uint(cli.InferenceGrpcPort),
 		uint(cli.ReverseProxyGrpcPort),
-		modelLagStatsWrapper.Stats,
-		modelLastUsedStatsWrapper.Stats,
+		modelScalingStatsCollector,
 	)
 	defer func() { _ = rpGRPC.Stop() }()
 

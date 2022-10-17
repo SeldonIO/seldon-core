@@ -18,20 +18,13 @@ const (
 )
 
 func scalingMetricsSetup(
-	wg *sync.WaitGroup, internalModelName string,
-	modelLagStats, modelLastUsedStats interfaces.ModelScalingStats) error {
-	err := modelLagStats.IncDefault(internalModelName)
-	wg.Done()
-	if err != nil {
-		return err
-	}
-	return modelLastUsedStats.IncDefault(internalModelName)
+	wg *sync.WaitGroup, internalModelName string, modelScalingStatsCollector *DataPlaneStatsCollector) error {
+	return modelScalingStatsCollector.ScalingMetricsSetup(wg, internalModelName)
 }
 
 func scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string,
-	modelLagStats, modelLastUsedStats interfaces.ModelScalingStats, jobsWg *sync.WaitGroup) error {
-	wg.Wait() // make sure that Inc is called first
-	err := modelLagStats.DecDefault(internalModelName)
+	jobsWg *sync.WaitGroup, modelScalingStatsCollector *DataPlaneStatsCollector) error {
+	err := modelScalingStatsCollector.ScalingMetricsTearDown(wg, internalModelName)
 	jobsWg.Done()
 	return err
 }
@@ -111,6 +104,7 @@ func TestStatsAnalyserSoak(t *testing.T) {
 
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
+	modelScalingStatsCollector := NewDataPlaneStatsCollector(lags, lastUsed)
 	service := NewStatsAnalyserService(
 		[]ModelScalingStatsWrapper{
 			{
@@ -154,11 +148,11 @@ func TestStatsAnalyserSoak(t *testing.T) {
 			var wg sync.WaitGroup
 			wg.Add(1)
 			setupFn := func(x int) {
-				err := scalingMetricsSetup(&wg, dummyModelPrefix+strconv.Itoa(x), lags, lastUsed)
+				err := scalingMetricsSetup(&wg, dummyModelPrefix+strconv.Itoa(x), modelScalingStatsCollector)
 				g.Expect(err).To(BeNil())
 			}
 			teardownFn := func(x int) {
-				err := scalingMetricsTearDown(&wg, dummyModelPrefix+strconv.Itoa(x), lags, lastUsed, &jobsWg)
+				err := scalingMetricsTearDown(&wg, dummyModelPrefix+strconv.Itoa(x), &jobsWg, modelScalingStatsCollector)
 				g.Expect(err).To(BeNil())
 			}
 			go setupFn(j)

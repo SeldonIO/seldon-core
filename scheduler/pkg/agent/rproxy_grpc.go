@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -37,20 +37,19 @@ const (
 
 type reverseGRPCProxy struct {
 	v2.UnimplementedGRPCInferenceServiceServer
-	logger                log.FieldLogger
-	stateManager          *LocalStateManager
-	grpcServer            *grpc.Server
-	serverReady           bool
-	backendGRPCServerHost string
-	backendGRPCServerPort uint
-	v2GRPCClientPool      []v2.GRPCInferenceServiceClient
-	port                  uint // service port
-	mu                    sync.RWMutex
-	metrics               metrics.AgentMetricsHandler
-	callOptions           []grpc.CallOption
-	tlsOptions            util.TLSOptions
-	modelLagStats         interfaces.ModelScalingStats
-	modelLastUsedStats    interfaces.ModelScalingStats
+	logger                     log.FieldLogger
+	stateManager               *LocalStateManager
+	grpcServer                 *grpc.Server
+	serverReady                bool
+	backendGRPCServerHost      string
+	backendGRPCServerPort      uint
+	v2GRPCClientPool           []v2.GRPCInferenceServiceClient
+	port                       uint // service port
+	mu                         sync.RWMutex
+	metrics                    metrics.AgentMetricsHandler
+	callOptions                []grpc.CallOption
+	tlsOptions                 util.TLSOptions
+	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 }
 
 func NewReverseGRPCProxy(
@@ -58,22 +57,20 @@ func NewReverseGRPCProxy(
 	logger log.FieldLogger, backendGRPCServerHost string,
 	backendGRPCServerPort uint,
 	servicePort uint,
-	modelLagStats interfaces.ModelScalingStats,
-	modelLastUsedStats interfaces.ModelScalingStats,
+	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
 ) *reverseGRPCProxy {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	return &reverseGRPCProxy{
-		logger:                logger.WithField("Source", "GRPCProxy"),
-		backendGRPCServerHost: backendGRPCServerHost,
-		backendGRPCServerPort: backendGRPCServerPort,
-		port:                  servicePort,
-		metrics:               metricsHandler,
-		callOptions:           opts,
-		modelLagStats:         modelLagStats,
-		modelLastUsedStats:    modelLastUsedStats,
+		logger:                     logger.WithField("Source", "GRPCProxy"),
+		backendGRPCServerHost:      backendGRPCServerHost,
+		backendGRPCServerPort:      backendGRPCServerPort,
+		port:                       servicePort,
+		metrics:                    metricsHandler,
+		callOptions:                opts,
+		modelScalingStatsCollector: modelScalingStatsCollector,
 	}
 }
 
@@ -167,29 +164,6 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	}
 }
 
-func (rp *reverseGRPCProxy) scalingMetricsSetup(wg *sync.WaitGroup, internalModelName string) {
-
-	err := rp.modelLagStats.IncDefault(internalModelName)
-	if err != nil {
-		rp.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-	}
-	wg.Done()
-	err = rp.modelLastUsedStats.IncDefault(internalModelName)
-	if err != nil {
-		rp.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-	}
-
-}
-
-func (rp *reverseGRPCProxy) scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string) {
-	wg.Wait() // make sure that Inc is called first
-	err := rp.modelLagStats.DecDefault(internalModelName)
-	if err != nil {
-		rp.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
-	}
-
-}
-
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
@@ -202,14 +176,22 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go rp.scalingMetricsSetup(&wg, internalModelName)
+	go func() {
+		err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName)
+		rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+	}()
+	defer func() {
+		go func() {
+			err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName)
+			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}()
+	}()
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
 	if err != nil {
 		elapsedTime := time.Since(startTime).Seconds()
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
-		go rp.scalingMetricsTearDown(&wg, internalModelName)
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
 	var trailer metadata.MD
@@ -227,7 +209,6 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if errTrailer != nil {
 		logger.WithError(errTrailer).Error("Failed to set trailers")
 	}
-	go rp.scalingMetricsTearDown(&wg, internalModelName)
 	return resp, err
 }
 

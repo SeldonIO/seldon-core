@@ -19,7 +19,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
 	log "github.com/sirupsen/logrus"
@@ -36,51 +36,26 @@ const (
 )
 
 type reverseHTTPProxy struct {
-	stateManager          *LocalStateManager
-	logger                log.FieldLogger
-	server                *http.Server
-	serverReady           bool
-	backendHTTPServerHost string
-	backendHTTPServerPort uint
-	servicePort           uint
-	mu                    sync.RWMutex
-	metrics               metrics.AgentMetricsHandler
-	tlsOptions            util.TLSOptions
-	modelLagStats         interfaces.ModelScalingStats
-	modelLastUsedStats    interfaces.ModelScalingStats
+	stateManager               *LocalStateManager
+	logger                     log.FieldLogger
+	server                     *http.Server
+	serverReady                bool
+	backendHTTPServerHost      string
+	backendHTTPServerPort      uint
+	servicePort                uint
+	mu                         sync.RWMutex
+	metrics                    metrics.AgentMetricsHandler
+	tlsOptions                 util.TLSOptions
+	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 }
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
 type lazyModelLoadTransport struct {
 	loader func(string) *V2Err
 	http.RoundTripper
-	metrics            metrics.AgentMetricsHandler
-	modelLagStats      interfaces.ModelScalingStats
-	modelLastUsedStats interfaces.ModelScalingStats
-	logger             log.FieldLogger
-}
-
-func (t *lazyModelLoadTransport) scalingMetricsSetup(wg *sync.WaitGroup, internalModelName string) {
-
-	err := t.modelLagStats.IncDefault(internalModelName)
-	if err != nil {
-		t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-	}
-	wg.Done()
-	err = t.modelLastUsedStats.IncDefault(internalModelName)
-	if err != nil {
-		t.logger.WithError(err).Warnf("Cannot increment metrics for %s", internalModelName)
-	}
-
-}
-
-func (t *lazyModelLoadTransport) scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string) {
-	wg.Wait() // make sure that Inc is called first
-	err := t.modelLagStats.DecDefault(internalModelName)
-	if err != nil {
-		t.logger.WithError(err).Warnf("Cannot decrement metrics for %s", internalModelName)
-	}
-
+	metrics                    metrics.AgentMetricsHandler
+	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
+	logger                     log.FieldLogger
 }
 
 // RoundTrip implements http.RoundTripper for the Transport type.
@@ -96,14 +71,23 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go t.scalingMetricsSetup(&wg, internalModelName)
+	go func() {
+		err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName)
+		t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+	}()
+	defer func() {
+		go func() {
+			err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName)
+			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}()
+	}()
 
 	startTime := time.Now()
 	if req.Body != nil {
 		originalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
-		go t.scalingMetricsTearDown(&wg, internalModelName)
+
 		return nil, err
 	}
 
@@ -111,7 +95,6 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
-		go t.scalingMetricsTearDown(&wg, internalModelName)
 		return res, err
 	}
 
@@ -129,7 +112,6 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 	elapsedTime := time.Since(startTime).Seconds()
 	go t.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(res.StatusCode))
-	go t.scalingMetricsTearDown(&wg, internalModelName)
 	return res, err
 
 }
@@ -185,7 +167,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     maxConnsPerHostHTTP,
 		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
 	}
-	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelLagStats, rp.modelLastUsedStats, rp.logger}
+	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelScalingStatsCollector, rp.logger}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
 	if rp.tlsOptions.TLS {
@@ -252,18 +234,16 @@ func NewReverseHTTPProxy(
 	backendHTTPServerPort uint,
 	servicePort uint,
 	metrics metrics.AgentMetricsHandler,
-	modeLagStats interfaces.ModelScalingStats,
-	modeLastUsedStats interfaces.ModelScalingStats,
+	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{
-		logger:                logger.WithField("Source", "HTTPProxy"),
-		backendHTTPServerHost: backendHTTPServerHost,
-		backendHTTPServerPort: backendHTTPServerPort,
-		servicePort:           servicePort,
-		metrics:               metrics,
-		modelLagStats:         modeLagStats,
-		modelLastUsedStats:    modeLastUsedStats,
+		logger:                     logger.WithField("Source", "HTTPProxy"),
+		backendHTTPServerHost:      backendHTTPServerHost,
+		backendHTTPServerPort:      backendHTTPServerPort,
+		servicePort:                servicePort,
+		metrics:                    metrics,
+		modelScalingStatsCollector: modelScalingStatsCollector,
 	}
 
 	return &rp

@@ -2,21 +2,62 @@
 
 Autoscaling in Seldon applies to various concerns:
 
- * Autoscaling of inference servers
- * Autoscaling of models
+ * Inference servers autoscaling
+ * Model autoscaling
  * Model memory overcommit
 
-## Autoscaling of models
+## Inference servers autoscaling
 
 ```{note}
-Autoscaling of models is in the roadmap.
+Autoscaling of inference servers is in the roadmap.
 ```
 
-As each server can serve multiple models, models can scale across the available replicas of the server.
+Autoscaling of servers will be via HPA or KEDA.
 
-Autoscaling will be provided internally as well as allowing external use via HPA or KEDA.
+## Model autoscaling
 
-## Model memory Overcommit
+As each model server can serve multiple models, models can scale across the available replicas of the server according to load.
 
-Servers can hold more models than available memory if overcommit is swictched on (default yes). This allows under utilized models to be moved from inference server memory to allow for other models to take their place. If traffic patterns for inference of models vary then this can allow more models than available server memory to be run on the Seldon system.
+Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom resource. Then according to load the system will scale the number of `Replicas` within this range. 
+
+For example the following model will be deployed at first with 1 replica and it can scale up according to load.
+```{literalinclude} ../../../../../../samples/models/tfsimple_scaling.yaml 
+:language: yaml
+```
+
+Note that model autoscaling will not attempt to add extra servers if the desired number of replicas cannot be currently fulfilled by the current provisioned number of servers. This is a process left to be done by server autoscaling.
+
+If only `Replicas` is specified by the user, autoscaling of models is disabled and the system will have exactly the number of replicas of this model deployed regardless of inference load.
+
+### Architecture
+
+The model autoscaling architecture is designed such as each agent decides on which models to scale up / down according to some defined internal metrics and then sends a triggering message to the scheduler. The current metrics are collected from the data plane (inference path), representing a proxy on how loaded is a given model with fulfilling inference requests.
+
+![architecture](../../architecture/autoscaling_architecture.png)
+
+
+### Agent autoscaling stats collection
+
+#### Scale up logic:
+The main idea is that we keep the "lag" for each model. We define the "lag" as the different between incoming and outgoing requests in a given time period. If the lag crosses a threshold, then we trigger a model scale up event. This threshold can be defined via `SELDON_MODEL_INFERENCE_LAG_THRESHOLD` inference server environment variable.
+
+#### Scale down logic:
+For now we keep things simple and we trigger model scale down events if a model has not been used for a number of seconds. This is defined in `SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD` inference server environment variable.
+
+Each agent checks the above stats periodically and if any model hits the corresponding threshold, then the agent sends an event to the scheduler to request model scaling.
+
+How often this process executes can be defined via `SELDON_SCALING_STATS_PERIOD_SECONDS` inference server environment variable.
+
+### Scheduler autoscaling
+
+![state](../../architecture/scheduler_autoscaling_state_diagram.png)
+
+The scheduler will perform model autoscale if:
+* The model is stable (no state change in the last 5 minutes) and available.
+* The desired number of replicas is within range. Note we always have a least 1 replica of any deployed model and we rely on over commit to reduce the resources used further.
+* For scaling up, there is enough capacity for the new model replica.
+
+## Model memory overcommit
+
+Servers can hold more models than available memory if overcommit is swictched on (default yes). This allows under utilized models to be moved from inference server memory to allow for other models to take their place. Note that these evicted models are still registered and in the case future inference requests arrive, the system will reload the models back to memory before serving the requests. If traffic patterns for inference of models vary then this can allow more models than available server memory to be run on the system.
 

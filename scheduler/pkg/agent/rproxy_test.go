@@ -149,14 +149,17 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
 	v2Client := NewV2Client("localhost", serverPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
+	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
+		modelscaling.NewModelReplicaLagsKeeper(),
+		modelscaling.NewModelReplicaLastUsedKeeper(),
+	)
 	rp := NewReverseHTTPProxy(
 		logger,
 		"localhost",
 		uint(serverPort),
 		uint(rpPort),
 		fakeMetricsHandler{},
-		modelscaling.NewModelReplicaLagsKeeper(),
-		modelscaling.NewModelReplicaLastUsedKeeper(),
+		modelScalingStatsCollector,
 	)
 	rp.SetState(localCacheManager)
 	return rp
@@ -254,8 +257,8 @@ func TestReverseProxySmoke(t *testing.T) {
 
 			//  test model scaling stats
 			if test.statusCode == http.StatusOK {
-				g.Expect(rpHTTP.modelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
-				g.Expect(rpHTTP.modelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
+				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
 			}
 
@@ -402,8 +405,10 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			req.Header.Set("contentType", "application/json")
 			httpClient := http.DefaultClient
 			metricsHandler := newFakeMetricsHandler()
+			modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
+				modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper())
 			httpClient.Transport = &lazyModelLoadTransport{
-				loader, http.DefaultTransport, metricsHandler, modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(), log.New()}
+				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)

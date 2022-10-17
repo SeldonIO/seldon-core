@@ -100,14 +100,17 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 
 	v2Client := NewV2Client("localhost", backEndServerPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
+	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
+		modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(),
+	)
 	rp := NewReverseGRPCProxy(
 		newFakeMetricsHandler(),
 		logger,
 		"localhost",
 		uint(backEndGRPCPort),
 		uint(rpPort),
-		modelscaling.NewModelReplicaLagsKeeper(),
-		modelscaling.NewModelReplicaLastUsedKeeper())
+		modelScalingStatsCollector,
+	)
 	rp.SetState(localCacheManager)
 	return rp
 }
@@ -201,8 +204,8 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model scaling stats")
-	g.Expect(rpGRPC.modelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
-	g.Expect(rpGRPC.modelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
+	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
 	responseMeta, errMeta := doMeta("_0")
 	g.Expect(responseMeta.Name).To(Equal(dummyModelNamePrefix + "_0"))
