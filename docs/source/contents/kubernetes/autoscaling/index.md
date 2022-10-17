@@ -21,7 +21,7 @@ As each model server can serve multiple models, models can scale across the avai
 Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom resource. Then according to load the system will scale the number of `Replicas` within this range. 
 
 For example the following model will be deployed at first with 1 replica and it can scale up according to load.
-```{literalinclude} ../../../../../../samples/models/tfsimple_scaling.yaml 
+```{literalinclude} ../../../../../samples/models/tfsimple_scaling.yaml
 :language: yaml
 ```
 
