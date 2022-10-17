@@ -3749,11 +3749,11 @@ spec:
                     type: object
                 type: object
               maxReplicas:
-                description: Max number of replicas - default equal to replicas
+                description: Max number of replicas - default equal to 0
                 format: int32
                 type: integer
               minReplicas:
-                description: Min number of replicas - default equal to replicas
+                description: Min number of replicas - default equal to 0
                 format: int32
                 type: integer
               podSpec:

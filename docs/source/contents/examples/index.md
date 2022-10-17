@@ -27,6 +27,10 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Tritonclient examples](tritonclient-examples.md)
  * [Batch Inference examples](batch-examples.md)
 
+## Misc
+
+ * [Huggingface models](huggingface.md)
+
 ## Advanced Examples
 
  * [Production image classifier with drift and outlier monitoring](cifar10.md)
@@ -45,6 +49,7 @@ local-experiments.md
 experiment-versions.md
 inference.md
 tritonclient-examples.md
+huggingface.md
 cifar10.md
 income.md
 pandasquery.md

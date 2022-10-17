@@ -26,7 +26,7 @@ services:
       - SELDON_ENVOY_HOST=envoy
       - SELDON_ENVOY_PORT=${ENVOY_DATA_PORT}
       - SELDON_SERVER_TYPE=mlserver
-      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
+      - SELDON_SERVER_CAPABILITIES=mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
 
   agent-triton:
     build:

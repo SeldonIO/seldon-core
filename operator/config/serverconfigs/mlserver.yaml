@@ -35,7 +35,7 @@ spec:
       name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+        value: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD

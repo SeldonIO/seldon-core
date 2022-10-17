@@ -25,6 +25,11 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - `dali`
   - [docs](https://github.com/triton-inference-server/dali_backend)
   - TBC
+* - Huggingface
+  - MLServer
+  - `huggingface`
+  - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/huggingface/README.md)
+  - [example](../../examples/huggingface.md)
 * - LightGBM
   - MLServer
   - `lightgbm`

@@ -193,7 +193,7 @@ spec:
                     type: integer
                 type: object
               maxReplicas:
-                description: Max number of replicas - default equal to replicas
+                description: Max number of replicas - default equal to 0
                 format: int32
                 type: integer
               memory:
@@ -204,7 +204,7 @@ spec:
                 pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                 x-kubernetes-int-or-string: true
               minReplicas:
-                description: Min number of replicas - default equal to replicas
+                description: Min number of replicas - default equal to 0
                 format: int32
                 type: integer
               modelType:
@@ -11329,11 +11329,11 @@ spec:
                     type: object
                 type: object
               maxReplicas:
-                description: Max number of replicas - default equal to replicas
+                description: Max number of replicas - default equal to 0
                 format: int32
                 type: integer
               minReplicas:
-                description: Min number of replicas - default equal to replicas
+                description: Min number of replicas - default equal to 0
                 format: int32
                 type: integer
               podSpec:
