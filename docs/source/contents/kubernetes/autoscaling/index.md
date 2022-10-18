@@ -27,6 +27,8 @@ For example the following model will be deployed at first with 1 replica and it 
 
 Note that model autoscaling will not attempt to add extra servers if the desired number of replicas cannot be currently fulfilled by the current provisioned number of servers. This is a process left to be done by server autoscaling.
 
+Additionally when the system autoscales, the initial model spec is not changed (e.g. the number of `Replicas`) and therefore the user cannot reset the number of replicas back to the initial specified value without an explict change.
+
 If only `Replicas` is specified by the user, autoscaling of models is disabled and the system will have exactly the number of replicas of this model deployed regardless of inference load.
 
 ### Architecture
