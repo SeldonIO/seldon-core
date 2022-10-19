@@ -62,7 +62,7 @@ security:
           crtPath: /tmp/certs/ddc/tls.crt
           caPath: /tmp/certs/ddc/ca.crt
           serverCaPath: /tmp/certs/dds/ca.crt
-  
+
 opentelemetry:
   endpoint: seldon-collector:4317
   enable: true
@@ -146,6 +146,8 @@ envoy:
     registry: docker.io
     repository: seldonio/seldon-envoy
     tag: #TAG_VERSION_PLACEHOLDER#
+  service:
+    type: LoadBalancer
 
 scheduler:
   image:
@@ -153,7 +155,9 @@ scheduler:
     registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: #TAG_VERSION_PLACEHOLDER#
-      
+  service:
+    type: LoadBalancer
+
 serverConfig:
   rclone:
     image:

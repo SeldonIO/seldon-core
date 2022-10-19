@@ -465,7 +465,7 @@ spec:
     targetPort: envoy-admin
   selector:
     app: seldon-envoy
-  type: LoadBalancer
+  type: '{{ .Values.envoy.service.type }}'
 ---
 apiVersion: v1
 kind: Service
@@ -523,7 +523,7 @@ spec:
     targetPort: dataflow
   selector:
     control-plane: seldon-scheduler
-  type: LoadBalancer
+  type: '{{ .Values.scheduler.service.type }}'
 ---
 apiVersion: apps/v1
 kind: Deployment

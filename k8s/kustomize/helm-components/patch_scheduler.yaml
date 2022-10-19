@@ -50,3 +50,10 @@ spec:
             value: '{{ .Values.security.envoy.ssl.downstream.server.caPath }}'
           - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
             value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler
+spec:
+  type: '{{ .Values.scheduler.service.type }}'
