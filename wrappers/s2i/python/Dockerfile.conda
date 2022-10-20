@@ -1,18 +1,16 @@
-FROM registry.access.redhat.com/ubi9/ubi
-
-#  $ docker build . -t continuumio/miniconda3:latest -t continuumio/miniconda3:4.5.11
-#  $ docker run --rm -it continuumio/miniconda3:latest /bin/bash
-#  $ docker push continuumio/miniconda3:latest
-#  $ docker push continuumio/miniconda3:4.5.11
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 
-RUN dnf update -y && \
-    dnf install -y wget bzip2 ca-certificates curl-minimal git
+RUN microdnf update -y && \
+    microdnf install -y \
+      wget bzip2 ca-certificates \
+      curl-minimal
 
 # MPL based licenses
-RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
+RUN wget -O certifi-python-certifi.tar.gz \
+    https://github.com/certifi/python-certifi/archive/master.tar.gz
 
 ARG CONDA_DOWNLOAD_VERSION
 ARG CONDA_VERSION
@@ -29,7 +27,6 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD
 ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
 RUN chmod +x /usr/bin/tini
-RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical && \
-    yum remove vim-minimal -y # CVE-2022-2175
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
+
 CMD [ "/bin/bash" ]
