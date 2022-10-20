@@ -21,7 +21,7 @@ The label on services pointing to containers for each node in your inference gra
 ### OpenShift default storage initializer
 
 In this patch release we fixed the default storage initializer used on OpenShift (both Community and Certified operators).
-The image used now is `seldonio/rclone-storage-initializer:1.14.1` which is the same as one used for the non-OpenShift releases (*).
+The image used now is `seldonio/rclone-storage-initializer:1.15.0` which is the same as one used for the non-OpenShift releases (*).
 
 For Certified operator you will find this image defined as
 ```yaml
@@ -142,7 +142,7 @@ In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/Sel
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.15.0-dev
+  image: seldonio/rclone-storage-initializer:1.15.0
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 
