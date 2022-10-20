@@ -17,7 +17,7 @@ ARG CONDA_VERSION
 # Install Python / Conda
 RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
     pip install --upgrade pip setuptools wheel && \
-    dnf install -y make automake gcc gcc-c++
+    microdnf install -y git make automake gcc gcc-c++
 
 # Make home dir
 RUN mkdir microservice
@@ -49,13 +49,10 @@ RUN python -m spacy download en_core_web_md
 COPY alibiexplainer alibiexplainer
 COPY README.md README.md
 
-
 FROM base as final
 WORKDIR /microservice
 
-RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
-# CVE https://github.com/SeldonIO/seldon-core/issues/2960
-RUN yum remove -y nodejs httpd
+RUN microdnf -y update
 
 COPY --from=builder /microservice /microservice
 COPY --from=builder /licenses /licenses
