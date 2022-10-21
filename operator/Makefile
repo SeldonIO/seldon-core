@@ -2,9 +2,10 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-operator
+IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
+
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
-IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
+IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
 KIND_NAME ?= kind
 
@@ -351,15 +352,16 @@ opm_push_certified:
 update_openshift_certified: create_certified_bundle_image push_certified_bundle_image validate_certified_bundle_image opm_index_certified opm_push_certified
 
 
-# password can be found at: https://connect.redhat.com/project/1366481/view
+# password can be found at: https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview
+project=5e6352370307ea9e345f6084
 redhat-image-scan:
 	docker pull ${IMG_REDHAT}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+		echo $${rh_password_operator} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
+	docker tag ${IMG_REDHAT} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		preflight check container scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT} --docker-config=${HOME}/.docker/config.json --certification-project-id=5e6352370307ea9e345f6084 --pyxis-api-token=$${pyxis_api_token} --submit
+		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 
 
