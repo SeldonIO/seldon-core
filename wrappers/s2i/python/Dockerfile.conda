@@ -5,7 +5,9 @@ ENV PATH /opt/conda/bin:$PATH
 
 RUN microdnf update -y && \
     microdnf install -y \
-      wget bzip2 ca-certificates \
+      wget \
+      bzip2 \
+      ca-certificates \
       curl-minimal
 
 # MPL based licenses

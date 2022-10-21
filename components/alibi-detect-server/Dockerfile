@@ -17,8 +17,12 @@ ARG CONDA_VERSION
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
 RUN microdnf update -y && \
     microdnf install -y \
-      unzip mesa-libGL \
-      make automake gcc gcc-c++
+      unzip \
+      mesa-libGL \
+      make \
+      automake \
+      gcc \
+      gcc-c++
 
 # Install Rclone Binary to be present in the image
 RUN wget https://downloads.rclone.org/v1.55.1/rclone-v1.55.1-linux-amd64.zip && \
@@ -68,6 +72,8 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
+
+RUN microdnf update -y
 
 COPY --from=builder /microservice /microservice
 COPY --from=builder /opt/conda /opt/conda

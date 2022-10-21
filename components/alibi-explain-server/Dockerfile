@@ -15,7 +15,8 @@ ARG PYTHON_VERSION
 ARG CONDA_VERSION
 
 # Install Python / Conda
-RUN conda install --yes python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
+RUN microdnf update -y && \
+    conda install --yes -c conda-forge python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
     pip install --upgrade pip setuptools wheel && \
     microdnf install -y git make automake gcc gcc-c++
 
