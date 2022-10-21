@@ -2,9 +2,10 @@ SELDON_CORE_DIR=../..
 SHELL := /bin/bash
 
 VERSION := $(shell cat ../../version.txt)
+REPO=seldonio
 IMAGE=alibiexplainer
 
-BASE_IMAGE ?= seldonio/conda-ubi8
+BASE_IMAGE ?= ${REPO}/conda-ubi8
 PYTHON_VERSION ?= 3.7.10
 CONDA_VERSION ?= 4.7.12
 
@@ -53,31 +54,30 @@ fmt:
 	black . --exclude "(proto|.eggs|.tox)"
 
 docker-build: build_apis
-	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t seldonio/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
 
 docker-build-gpu:
-	docker build --file=Dockerfile.gpu -t seldonio/${IMAGE}-gpu:${VERSION} .
+	docker build --file=Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .
 
 docker-push:
-	docker push seldonio/${IMAGE}:${VERSION}
+	docker push ${REPO}/${IMAGE}:${VERSION}
 
 docker-push-gpu:
-	docker push seldonio/${IMAGE}-gpu:${VERSION}
+	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image seldonio/${IMAGE}:${VERSION} --name ${KIND_NAME}
+	kind load docker-image ${REPO}/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
-# password can be found at: https://connect.redhat.com/project/3987291/view
-scan=ospid-02f3e15b-c16f-4353-affa-61d5f3c6408b
+# password can be found at: https://connect.redhat.com/projects/5e9c884a014eb1d2cfa8f217/overview
 project=5e9c884a014eb1d2cfa8f217
 redhat-image-scan:
-	docker pull seldonio/${IMAGE}:${VERSION}
+	docker pull ${REPO}/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_alibi_explain} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag seldonio/${IMAGE}:${VERSION} scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION}
-	docker push scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION}
+		echo $${rh_password_alibi_explain} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
+	docker tag ${REPO}/${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		preflight check container scan.connect.redhat.com/${scan}/${IMAGE}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
+		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 clean:
 	rm -rf test_models
@@ -95,7 +95,7 @@ test_models/explainers/anchor_tabular:
 	python tests/make_test_models.py --model anchor_tabular --model_dir test_models/explainers/anchor_tabular
 
 anchor_tabular_model: test_models/sklearn/iris
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' seldonio/sklearnserver:${VERSION}
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' ${REPO}/sklearnserver:${VERSION}
 
 anchor_tabular_predict:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -104,7 +104,7 @@ anchor_tabular: test_models/explainers/anchor_tabular
 	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_docker: test_models/explainers/anchor_tabular
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_explain:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -120,7 +120,7 @@ test_models/sklearn/moviesentiment:
 	gsutil cp -r gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2 test_models/sklearn
 
 anchor_text_model: test_models/sklearn/moviesentiment
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/moviesentiment_sklearn_0.24.2"}]' seldonio/sklearnserver:${VERSION}
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/moviesentiment_sklearn_0.24.2"}]' ${REPO}/sklearnserver:${VERSION}
 
 
 anchor_text_predict:
@@ -130,7 +130,7 @@ anchor_text:
 	python -m alibiexplainer --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
 
 anchor_text_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
 
 anchor_text_explain:
 	curl -d '{"data": {"ndarray":["a visually exquisite but narratively opaque and emotionally vapid experience of style and mystification"]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -160,7 +160,7 @@ anchor_images: test_models/explainers/anchor_image
 	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri "${PWD}/test_models/explainers/anchor_image" --predictor_host localhost:8501 AnchorImages
 
 anchor_images_docker: test_models/explainers/anchor_image
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:8501 AnchorImages
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:8501 AnchorImages
 
 anchor_images_explain:
 	curl -d @./tests/data/input.json  -X POST http://localhost:8080/v1/models/resnet32:explain    -H "Content-Type: application/json"
@@ -180,7 +180,7 @@ test_models/explainers/kernel_shap:
 	python tests/make_test_models.py --model kernel_shap --model_dir test_models/explainers/kernel_shap
 
 kernel_shap_model: test_models/sklearn/wine/model-py36-0.23.2
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/wine/model-py36-0.23.2"},{"type":"STRING","name":"method","value":"decision_function"}]' seldonio/sklearnserver:${VERSION}
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/wine/model-py36-0.23.2"},{"type":"STRING","name":"method","value":"decision_function"}]' ${REPO}/sklearnserver:${VERSION}
 
 kernel_shap_predict:
 	curl -d '{"data": {"ndarray":[[-0.24226334,  0.26757916,  0.42085937,  0.7127641 ,  0.84067236, -1.27747161, -0.60582812, -0.9706341 , -0.5873972 ,  2.42611713, -2.06608025, -1.55017035, -0.86659858]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -191,7 +191,7 @@ kernel_shap: test_models/explainers/kernel_shap
 
 
 kernel_shap_docker: test_models/explainers/kernel_shap
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri /models/explainers/kernel_shap --predictor_host localhost:9000 KernelShap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri /models/explainers/kernel_shap --predictor_host localhost:9000 KernelShap
 
 
 kernel_shap_explain:
@@ -210,7 +210,7 @@ integrated_gradients: test_models/keras/imdb
 
 
 integrated_gradients_docker: test_models/keras/imdb
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/keras/imdb IntegratedGradients --layer 1
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/keras/imdb IntegratedGradients --layer 1
 
 integrated_gradients_explain:
 	curl -d '{"data": {"ndarray":[[   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1, 591,  202,   14,   31,    6,  717,   10,   10,    2,    2,    5, 4,  360,    7,    4,  177, 5760,  394,  354,    4,  123,    9, 1035, 1035, 1035,   10,   10,   13,   92,  124,   89,  488, 7944, 100,   28, 1668,   14,   31,   23,   27, 7479,   29,  220,  468, 8,  124,   14,  286,  170,    8,  157,   46,    5,   27,  239, 16,  179,    2,   38,   32,   25, 7944,  451,  202,   14,    6, 717]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -229,7 +229,7 @@ tree_shap: test_models/explainers/tree_shap
 	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/tree_shap TreeShap
 
 tree_shap_docker: test_models/explainers/tree_shap
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/explainers/tree_shap TreeShap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/explainers/tree_shap TreeShap
 
 tree_shap_explain:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -247,7 +247,7 @@ test_models/explainers/ale:
 	python tests/make_test_models.py --model ale --model_dir test_models/explainers/ale
 
 ale_model: test_models/sklearn/iris-0.23.2/lr_model
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris-0.23.2/lr_model"},{"type":"STRING","name":"method","value":"decision_function"}]' seldonio/sklearnserver:${VERSION}
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris-0.23.2/lr_model"},{"type":"STRING","name":"method","value":"decision_function"}]' ${REPO}/sklearnserver:${VERSION}
 
 ale_predict:
 	curl -d '{"data": {"ndarray":[[6.1, 2.8, 4.7, 1.2]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -258,7 +258,7 @@ ale: test_models/explainers/ale
 
 
 ale_docker: test_models/explainers/ale
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/ale --predictor_host localhost:9000 ALE
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/ale --predictor_host localhost:9000 ALE
 
 
 ale_explain:
@@ -289,7 +289,7 @@ ale_explain:
 #
 #
 #anchor_images_triton_docker: test_models/explainers/anchor_image
-#	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models seldonio/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
+#	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
 #
 #
 #anchor_images_triton_explain:
