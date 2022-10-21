@@ -7,8 +7,7 @@ SELDON_CORE_DIR=../..
 
 BASE_IMAGE ?= seldonio/conda-ubi8
 PYTHON_VERSION ?= 3.7.10
-CONDA_VERSION ?= 4.7.12
-
+CONDA_VERSION ?= 4.13.0
 
 
 get_local_repo: clean
