@@ -198,7 +198,7 @@ After these are finished (approx 1.5 hours) you will need to manually publish im
 publish
 
  * https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview (Seldon Core Operator)
- * https://connect.redhat.com/project/3977851/view (Seldon Executor)
+ * https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/overview (Seldon Executor)
  * https://connect.redhat.com/project/5912261/view (Seldon SKLearn Server)
  * https://connect.redhat.com/project/5912271/view (MLFlow Seldon Server)
  * https://connect.redhat.com/project/5912301/view (Seldon XGBoost Server)
