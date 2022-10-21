@@ -3,7 +3,7 @@ SHELL:=/bin/bash
 
 PYTHON_VERSION=3.8.10
 
-CONDA_DOWNLOAD_VERSION=py38_4.13.0
+CONDA_DOWNLOAD_VERSION=py38_4.12.0
 # Downgrading Conda to < 4.14 until this issue gets fixed
 # https://github.com/conda/conda/issues/11847
 CONDA_VERSION=4.13.0
