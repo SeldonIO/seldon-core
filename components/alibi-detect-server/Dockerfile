@@ -14,21 +14,30 @@ FROM base as builder
 ARG PYTHON_VERSION
 ARG CONDA_VERSION
 
+# mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
+RUN microdnf update -y && \
+    microdnf install -y \
+      unzip mesa-libGL \
+      make automake gcc gcc-c++
+
 # Install Rclone Binary to be present in the image
-RUN yum install -y unzip
 RUN wget https://downloads.rclone.org/v1.55.1/rclone-v1.55.1-linux-amd64.zip && \
     unzip rclone-v1.55.1-linux-amd64.zip && \
     mv rclone-v1.55.1-linux-amd64/rclone /usr/bin/rclone && \
     rm -rf rclone-v1.55.1-linux-amd64.zip rclone-v1.55.1-linux-amd64
 
-
 # Install Python / Conda
+# Note that we need to force Conda to use the system's std-c++ library, as
+# otherwise PyStan won't compile with Conda's older stdc++ library:
+# https://github.com/stan-dev/pystan/issues/294#issuecomment-870711100
 RUN conda install --yes -c conda-forge \
       python=${PYTHON_VERSION} \
-      conda=${CONDA_VERSION} \
-      c-compiler cxx-compiler && \
+      conda=${CONDA_VERSION} && \
     pip install --upgrade pip setuptools wheel && \
-    dnf install -y make automake gcc gcc-c++
+    cd /opt/conda/lib && \
+      rm libstdc++.so libstdc++.so.6 && \
+      ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so && \
+      ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so.6
 
 # Make home dir
 RUN mkdir microservice
@@ -59,12 +68,6 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
-
-# this is to avoid "ImportError: libGL.so.1" from opencv
-RUN yum install -y mesa-libGL
-RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
-# CVE https://github.com/SeldonIO/seldon-core/issues/2960
-RUN yum remove -y nodejs httpd
 
 COPY --from=builder /microservice /microservice
 COPY --from=builder /opt/conda /opt/conda
