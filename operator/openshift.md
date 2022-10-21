@@ -200,7 +200,7 @@ publish
  * https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview (Seldon Core Operator)
  * https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/overview (Seldon Executor)
  * https://connect.redhat.com/projects/5fb94ae7888dca360c9231e1/overview (Seldon SKLearn Server)
- * https://connect.redhat.com/project/5912271/view (MLFlow Seldon Server)
+ * https://connect.redhat.com/projects/5fb94ef5cfcfc6ed71445fa0/overview (MLFlow Seldon Server)
  * https://connect.redhat.com/project/5912301/view (Seldon XGBoost Server)
  * https://connect.redhat.com/project/4098071/view (Seldon Tensorflow Serving)
  * https://connect.redhat.com/project/5912311/view (Seldon Tensorflow Serving Proxy)
