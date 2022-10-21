@@ -16,7 +16,7 @@ In this guide, we illustrate the steps needed to wrap your own python model in a
 To check everything is working you can run
 
 ```bash
-s2i usage seldonio/seldon-core-s2i-python3:1.15.0-dev
+s2i usage seldonio/seldon-core-s2i-python3:1.15.0
 ```
 
 
