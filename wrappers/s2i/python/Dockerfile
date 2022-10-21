@@ -19,7 +19,7 @@ RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-cert
 
 RUN microdnf update -y && \
     microdnf install -y make automake gcc gcc-c++ && \
-    conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
+    conda install -c conda-forge --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Pin pip and setuptools
 RUN pip install pip==22.1.2 setuptools==63.1.0
