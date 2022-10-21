@@ -40,7 +40,7 @@ func GetCmd() *cobra.Command {
 	var cmdPipeline = &cobra.Command{
 		Use:   "pipeline <subcomand>",
 		Short: "manage pipelines",
-		Long:  `pipelines allow you to join modles together into inference graphs.`,
+		Long:  `pipelines allow you to join models together into inference graphs.`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("pipeline subcommand required")

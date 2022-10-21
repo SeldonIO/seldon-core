@@ -76,7 +76,7 @@ func createModelInfer() *cobra.Command {
 	}
 	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
 	cmdModelInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
-	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, env.GetString(EnvInfer, DefaultInferHost)), "seldon inference host")
+	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
 	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
 	cmdModelInfer.Flags().Bool(showHeadersFlag, false, "show headers")

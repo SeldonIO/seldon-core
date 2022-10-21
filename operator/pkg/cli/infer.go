@@ -248,10 +248,14 @@ func (ic *InferenceClient) httpCall(resourceName string, path string, data []byt
 	}
 
 	if showHeaders {
+		fmt.Printf("> %s %s %s\n", req.Method, req.URL.Path, req.Proto)
+		fmt.Printf("> Host: %s\n", req.Host)
 		for k, v := range req.Header {
-			fmt.Printf("Request header %s:%v\n", k, v)
+			fmt.Printf("> %s:%v\n", k, v)
 		}
+		fmt.Println()
 	}
+
 	req.Close = true
 	client, err := ic.createHttpClient()
 	if err != nil {
@@ -269,11 +273,14 @@ func (ic *InferenceClient) httpCall(resourceName string, path string, data []byt
 	if err != nil {
 		return nil, err
 	}
+
 	if showHeaders {
 		for k, v := range response.Header {
-			fmt.Printf("Response header %s:%v\n", k, v)
+			fmt.Printf("< %s:%v\n", k, v)
 		}
+		fmt.Println()
 	}
+
 	if response.StatusCode != http.StatusOK {
 		return nil, decodeV2Error(response, b)
 	}
