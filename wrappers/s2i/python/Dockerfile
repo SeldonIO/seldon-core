@@ -17,8 +17,9 @@ ARG CONDA_VERSION
 # MPL based licenses
 RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
 
-RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
-RUN dnf install -y make automake gcc gcc-c++
+RUN microdnf update -y && \
+    microdnf install -y make automake gcc gcc-c++ && \
+    conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Pin pip and setuptools
 RUN pip install pip==22.1.2 setuptools==63.1.0
@@ -33,8 +34,6 @@ COPY version.txt /microservice/version.txt
 COPY _python/python/licenses/license.txt .
 COPY _python /microservice
 RUN cd /microservice/python && pip install .
-
-RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
 # Default user is 8888 so changing for permissiosn to modify (needed in mlflow
 # server).
