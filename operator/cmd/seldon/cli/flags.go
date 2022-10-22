@@ -12,6 +12,7 @@ const (
 	kafkaBrokerFlag         = "kafka-broker"
 	showHeadersFlag         = "show-headers"
 	addHeaderFlag           = "header"
+	authorityFlag           = "authority"
 
 	// Defaults
 

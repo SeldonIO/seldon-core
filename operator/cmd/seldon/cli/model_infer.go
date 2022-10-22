@@ -60,6 +60,10 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			authority, err := cmd.Flags().GetString(authorityFlag)
+			if err != nil {
+				return err
+			}
 			modelName := args[0]
 			// Get inference data
 			var data []byte
@@ -70,10 +74,11 @@ func createModelInfer() *cobra.Command {
 			} else {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
-			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers, stickySesion)
+			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers, authority, stickySesion)
 			return err
 		},
 	}
+
 	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
 	cmdModelInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
 	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
@@ -81,5 +86,7 @@ func createModelInfer() *cobra.Command {
 	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
 	cmdModelInfer.Flags().Bool(showHeadersFlag, false, "show headers")
 	cmdModelInfer.Flags().StringArray(addHeaderFlag, []string{}, fmt.Sprintf("add header key%svalue", cli.HeaderSeparator))
+	cmdModelInfer.Flags().String(authorityFlag, "", "authority (HTTP/2) or virtual host (HTTP/1)")
+
 	return cmdModelInfer
 }

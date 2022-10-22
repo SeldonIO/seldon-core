@@ -48,6 +48,10 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			authority, err := cmd.Flags().GetString(authorityFlag)
+			if err != nil {
+				return err
+			}
 			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
 			if err != nil {
 				return err
@@ -67,10 +71,11 @@ func createPipelineInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers, stickySesion)
+			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers, authority, stickySesion)
 			return err
 		},
 	}
+
 	cmdPipelineInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
 	cmdPipelineInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
 	cmdPipelineInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
@@ -78,5 +83,7 @@ func createPipelineInfer() *cobra.Command {
 	cmdPipelineInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
 	cmdPipelineInfer.Flags().Bool(showHeadersFlag, false, "show headers")
 	cmdPipelineInfer.Flags().StringArray(addHeaderFlag, []string{}, fmt.Sprintf("add header key%svalue", cli.HeaderSeparator))
+	cmdPipelineInfer.Flags().String(authorityFlag, "", "authority (HTTP/2) or virtual host (HTTP/1)")
+
 	return cmdPipelineInfer
 }
