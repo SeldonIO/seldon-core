@@ -44,7 +44,7 @@ setup(
         # Addresses CVE PRISMA-2021-0020
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
-        "urllib3 == 1.26.5",
+        "urllib3 >= 1.26.5, < 1.27",
     ],
     extras_require=extras,
     entry_points={
