@@ -10,6 +10,8 @@ contents/getting-started/index
 contents/tutorials/index
 contents/servers/index
 contents/models/index
+contents/drift/index
+contents/outlier/index
 contents/experiments/index
 contents/pipelines/index
 contents/inference/index

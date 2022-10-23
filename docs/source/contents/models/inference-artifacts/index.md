@@ -52,12 +52,12 @@ To run your model inside Seldon you must supply an inference artifact that can b
   - TBC
 * - Custom Python
   - MLServer
-  - `python`
+  - `python, mlserver`
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/custom/README.md)
   - [example](../../examples/pandasquery.md)
 * - Custom Python
   - Triton
-  - `triton-python`
+  - `python, triton`
   - [docs](https://github.com/triton-inference-server/python_backend)
   - TBC  
 * - PyTorch
