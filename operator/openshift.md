@@ -186,7 +186,12 @@ make update_openshift_certified
 
 
 
-Then push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+Then push all images to redhat. Requires:
+* download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+* creation of [pyxis api](https://connect.redhat.com/account/api-keys) key under `~/.config/seldon/seldon-core/pyxie-api-key.sh` in format:
+```
+api_key=<key here
+```
 
 ```
 cd {project_base_folder}/marketplaces/redhat
