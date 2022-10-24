@@ -18,3 +18,15 @@ patchesStrategicMerge:
 - patch_pipelinegateway.yaml
 - patch_scheduler.yaml
 - patch_triton.yaml
+
+patches:
+- path: patch_scheduler_service.yaml
+  target:
+    version: v1
+    kind: Service
+    name: scheduler
+- path: patch_envoy_service.yaml
+  target:
+    version: v1
+    kind: Service
+    name: mesh

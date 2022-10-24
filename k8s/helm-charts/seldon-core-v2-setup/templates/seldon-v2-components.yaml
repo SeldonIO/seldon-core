@@ -455,7 +455,7 @@ metadata:
   namespace: '{{ .Release.Namespace }}'
 spec:
   ports:
-  - name: http2
+  - name: '{{ .Values.serviceGRPCPrefix }}data'
     port: 80
     protocol: TCP
     targetPort: http
@@ -497,27 +497,27 @@ metadata:
   namespace: '{{ .Release.Namespace }}'
 spec:
   ports:
-  - name: xds
+  - name: '{{ .Values.serviceGRPCPrefix }}xds'
     port: 9002
     protocol: TCP
     targetPort: xds
-  - name: scheduler
+  - name: '{{ .Values.serviceGRPCPrefix }}scheduler'
     port: 9004
     protocol: TCP
     targetPort: scheduler
-  - name: scheduler-mtls
+  - name: '{{ .Values.serviceGRPCPrefix }}scheduler-mtls'
     port: 9044
     protocol: TCP
     targetPort: scheduler-mtls
-  - name: agent
+  - name: '{{ .Values.serviceGRPCPrefix }}agent'
     port: 9005
     protocol: TCP
     targetPort: agent
-  - name: agent-mtls
+  - name: '{{ .Values.serviceGRPCPrefix }}agent-mtls'
     port: 9055
     protocol: TCP
     targetPort: agent-mtls
-  - name: dataflow
+  - name: '{{ .Values.serviceGRPCPrefix }}dataflow'
     port: 9008
     protocol: TCP
     targetPort: dataflow

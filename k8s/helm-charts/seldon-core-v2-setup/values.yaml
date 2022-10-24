@@ -198,3 +198,8 @@ serverConfig:
     modelVolumeStorage: 1Gi
     resources:
       memory: 1G
+
+# For use with service meshes like Istio, which require specific prefixes for
+# the names of ports handling gRPC/HTTP2 traffic.
+# For Istio, use 'grpc-' or 'http2-', noting the trailing '-'.
+serviceGRPCPrefix: ""
