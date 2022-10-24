@@ -206,7 +206,7 @@ publish
  * https://connect.redhat.com/projects/5fb955facfcfc6ed71445fa2/overview (Seldon Tensorflow Serving Proxy)
  * https://connect.redhat.com/projects/5e9c884a014eb1d2cfa8f217/overview (Seldon Alibi Explainer Wrapper)
  * https://connect.redhat.com/projects/5e9d53076c2dde3913c2bb66/overview (Alibi Detect Server)
- * https://connect.redhat.com/project/4035711/view (Seldon Dummy Model)
+ * https://connect.redhat.com/projects/5ea15983ebed1415210b4b26/overview (Seldon Dummy Model)
  * https://connect.redhat.com/project/3986991/view (Seldon Storage Initializer)
  * https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/images (Rclone Storage Initializer)
 
