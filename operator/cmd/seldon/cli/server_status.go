@@ -1,28 +1,20 @@
 package cli
 
 import (
-	"os"
-
 	"k8s.io/utils/env"
 
 	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
 	"github.com/spf13/cobra"
 )
 
-const serverNameFlag = "server-name"
-
 func createServerStatus() *cobra.Command {
 	cmdServerStatus := &cobra.Command{
 		Use:   "status",
 		Short: "get status for server",
 		Long:  `get the status for a server`,
-		Args:  cobra.MinimumNArgs(0),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
-			if err != nil {
-				return err
-			}
-			serverName, err := cmd.Flags().GetString(serverNameFlag)
 			if err != nil {
 				return err
 			}
@@ -34,6 +26,8 @@ func createServerStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			serverName := args[0]
+
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
 			if err != nil {
 				return err
@@ -42,10 +36,8 @@ func createServerStatus() *cobra.Command {
 			return err
 		},
 	}
-	cmdServerStatus.Flags().StringP(serverNameFlag, "s", "", "server name")
-	if err := cmdServerStatus.MarkFlagRequired(serverNameFlag); err != nil {
-		os.Exit(-1)
-	}
+
 	cmdServerStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
+
 	return cmdServerStatus
 }
