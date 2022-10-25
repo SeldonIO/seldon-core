@@ -71,7 +71,20 @@ func createPipelineInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			err = inferenceClient.Infer(pipelineName, inferMode, data, showRequest, showResponse, iterations, cli.InferPipeline, showHeaders, headers, authority, stickySesion)
+			callOpts := &cli.CallOptions{
+				InferProtocol: inferMode,
+				InferType:     cli.InferPipeline,
+				StickySession: stickySesion,
+				Iterations:    iterations,
+			}
+
+			logOpts := &cli.LogOptions{
+				ShowHeaders:  showHeaders,
+				ShowRequest:  showRequest,
+				ShowResponse: showResponse,
+			}
+
+			err = inferenceClient.Infer(pipelineName, data, headers, authority, callOpts, logOpts)
 			return err
 		},
 	}

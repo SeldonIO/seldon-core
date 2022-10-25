@@ -36,7 +36,7 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			stickySesion, err := cmd.Flags().GetBool(stickySessionFlag)
+			stickySession, err := cmd.Flags().GetBool(stickySessionFlag)
 			if err != nil {
 				return err
 			}
@@ -65,6 +65,7 @@ func createModelInfer() *cobra.Command {
 				return err
 			}
 			modelName := args[0]
+
 			// Get inference data
 			var data []byte
 			if len(args) > 1 {
@@ -74,7 +75,28 @@ func createModelInfer() *cobra.Command {
 			} else {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
-			err = inferenceClient.Infer(modelName, inferMode, data, showRequest, showResponse, iterations, cli.InferModel, showHeaders, headers, authority, stickySesion)
+
+			callOpts := &cli.CallOptions{
+				InferProtocol: inferMode,
+				InferType:     cli.InferModel,
+				StickySession: stickySession,
+				Iterations:    iterations,
+			}
+
+			logOpts := &cli.LogOptions{
+				ShowHeaders:  showHeaders,
+				ShowRequest:  showRequest,
+				ShowResponse: showResponse,
+			}
+
+			err = inferenceClient.Infer(
+				modelName,
+				data,
+				headers,
+				authority,
+				callOpts,
+				logOpts,
+			)
 			return err
 		},
 	}

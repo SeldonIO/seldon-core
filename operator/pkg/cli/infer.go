@@ -5,6 +5,8 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -14,16 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/grpc/credentials"
-
-	"google.golang.org/grpc/credentials/insecure"
-
-	"encoding/binary"
-	"encoding/json"
-
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -90,6 +87,19 @@ type V2MetadataTensor struct {
 	Name     string `json:"name"`
 	Datatype string `json:"datatype"`
 	Shape    []int  `json:"shape"`
+}
+
+type LogOptions struct {
+	ShowHeaders  bool
+	ShowRequest  bool
+	ShowResponse bool
+}
+
+type CallOptions struct {
+	InferProtocol string // REST or gRPC
+	InferType     InferType
+	StickySession bool
+	Iterations    int
 }
 
 func NewInferenceClient(host string) (*InferenceClient, error) {
@@ -159,23 +169,29 @@ func (ic *InferenceClient) createGrpcTransportCredentials() (credentials.Transpo
 	}
 }
 
-func (ic *InferenceClient) getConnection(authority string) (*grpc.ClientConn, error) {
+func (ic *InferenceClient) newGRPCConnection(authority string, logOpts *LogOptions) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
-	transCreds, err := ic.createGrpcTransportCredentials()
+	creds, err := ic.createGrpcTransportCredentials()
 	if err != nil {
 		return nil, err
 	}
+	metadataLoggerUnary := getMetadataLoggingUnaryInterceptor(authority, logOpts)
+	retryUnary := grpc_retry.UnaryClientInterceptor(retryOpts...)
+	retryStream := grpc_retry.StreamClientInterceptor(retryOpts...)
 
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(transCreds),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
-	}
-
-	if authority != "" {
-		opts = append(opts, grpc.WithAuthority(authority))
+		grpc.WithAuthority(authority),
+		grpc.WithTransportCredentials(creds),
+		grpc.WithStreamInterceptor(retryStream),
+		grpc.WithChainUnaryInterceptor(
+			// Ordering is important here, as each interceptor effectively invokes the next.
+			// If we used the retry interceptor before the metadata-logging one, we might see
+			// the metadata being logged multiple times, which is undesirable.
+			metadataLoggerUnary,
+			retryUnary,
+		),
 	}
 
 	conn, err := grpc.Dial(ic.host, opts...)
@@ -183,6 +199,70 @@ func (ic *InferenceClient) getConnection(authority string) (*grpc.ClientConn, er
 		return nil, err
 	}
 	return conn, nil
+}
+
+func getMetadataLoggingUnaryInterceptor(authority string, logOpts *LogOptions) grpc.UnaryClientInterceptor {
+	interceptor := func(
+		ctx context.Context,
+		method string,
+		req interface{},
+		reply interface{},
+		cc *grpc.ClientConn,
+		invoker grpc.UnaryInvoker,
+		opts ...grpc.CallOption,
+	) error {
+		if logOpts.ShowRequest {
+			i, ok := req.(*v2_dataplane.ModelInferRequest)
+			if ok {
+				printProto(i)
+			}
+		}
+
+		if logOpts.ShowHeaders {
+			host := authority
+			if host == "" {
+				host = cc.Target()
+			}
+
+			fmt.Printf("> %s HTTP/2\n", method)
+			fmt.Printf("> Host: %s\n", host)
+
+			md, ok := metadata.FromOutgoingContext(ctx)
+			if ok {
+				for k, v := range md {
+					fmt.Printf("> %s:%v\n", k, v)
+				}
+			}
+
+			fmt.Println()
+		}
+
+		var headers, trailers metadata.MD
+		respHeaders := grpc.Header(&headers)
+		respTrailers := grpc.Trailer(&trailers)
+		opts = append(opts, respHeaders, respTrailers)
+
+		err := invoker(ctx, method, req, reply, cc, opts...)
+		if err != nil {
+			return err
+		}
+
+		if logOpts.ShowHeaders {
+			for k, v := range headers {
+				fmt.Printf("< %s:%v\n", k, v)
+			}
+
+			for k, v := range trailers {
+				fmt.Printf("<< %s:%v\n", k, v)
+			}
+
+			fmt.Println()
+		}
+
+		return nil
+	}
+
+	return interceptor
 }
 
 func (ic *InferenceClient) getUrl(path string) *url.URL {
@@ -237,41 +317,26 @@ func (ic *InferenceClient) httpCall(
 	authority string,
 	stickySessionKeys []string,
 ) ([]byte, error) {
+	hs, err := validateHeaders(headers)
+	if err != nil {
+		return nil, err
+	}
+
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
+	req.Close = true
 
 	if authority != "" {
 		req.Host = authority
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	for _, stickySessionKey := range stickySessionKeys {
-		req.Header.Add(SeldonRouteHeader, stickySessionKey)
-	}
-
-	switch inferType {
-	case InferModel:
-		req.Header.Set(SeldonModelHeader, resourceName)
-	case InferPipeline:
-		req.Header.Set(SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
-	}
-
-	for _, header := range headers {
-		parts := strings.Split(header, HeaderSeparator)
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("Badly formed header %s: use key%sval", header, HeaderSeparator)
-		}
-
-		err := ic.rejectVirtualHostHeader(parts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set(parts[0], parts[1])
-	}
+	addContentTypeToRequest(req)
+	addStickySessionToRequest(req, stickySessionKeys)
+	addSeldonModelHeaderToRequest(req, inferType, resourceName)
+	addHeadersToRequest(req, hs)
 
 	if showHeaders {
 		fmt.Printf("> %s %s %s\n", req.Method, req.URL.Path, req.Proto)
@@ -282,7 +347,6 @@ func (ic *InferenceClient) httpCall(
 		fmt.Println()
 	}
 
-	req.Close = true
 	client, err := ic.createHttpClient()
 	if err != nil {
 		return nil, err
@@ -321,12 +385,32 @@ func (ic *InferenceClient) httpCall(
 	return b, nil
 }
 
-func (ic *InferenceClient) rejectVirtualHostHeader(header string) error {
-	normalised := strings.ToLower(strings.TrimSpace(header))
-	if "host" == normalised || "authority" == normalised || ":authority" == normalised {
-		return fmt.Errorf("Setting %s via headers is not supported, please use '--authority' instead", header)
+func addContentTypeToRequest(r *http.Request) {
+	r.Header.Set("Content-Type", "application/json")
+}
+
+func addStickySessionToRequest(r *http.Request, stickySessionKeys []string) {
+	for _, k := range stickySessionKeys {
+		r.Header.Add(SeldonRouteHeader, k)
 	}
-	return nil
+}
+
+func addSeldonModelHeaderToRequest(r *http.Request, inferType InferType, resourceName string) {
+	var headerValue string
+	switch inferType {
+	case InferModel:
+		headerValue = resourceName
+	case InferPipeline:
+		headerValue = resourceName + "." + SeldonPipelineHeader
+	}
+
+	r.Header.Set(SeldonModelHeader, headerValue)
+}
+
+func addHeadersToRequest(r *http.Request, headers map[string]string) {
+	for k, v := range headers {
+		r.Header.Set(k, v)
+	}
 }
 
 func (ic *InferenceClient) updateSummary(modelNames []string) {
@@ -373,36 +457,38 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 func (ic *InferenceClient) InferRest(
 	resourceName string,
 	data []byte,
-	showRequest bool,
-	showResponse bool,
-	iterations int,
-	inferType InferType,
-	showHeaders bool,
 	headers []string,
 	authority string,
 	stickySessionKeys []string,
+	callOptions *CallOptions,
+	logOptions *LogOptions,
 ) error {
-	if showRequest {
+	if logOptions.ShowRequest {
 		printPrettyJson(data)
 	}
+
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
-	for i := 0; i < iterations; i++ {
-		res, err := ic.httpCall(resourceName, path, data, inferType, showHeaders, headers, authority, stickySessionKeys)
+
+	for i := 0; i < callOptions.Iterations; i++ {
+		res, err := ic.httpCall(resourceName, path, data, callOptions.InferType, logOptions.ShowHeaders, headers, authority, stickySessionKeys)
 		if err != nil {
 			return err
 		}
+
 		v2InferResponse := V2InferenceResponse{}
 		err = json.Unmarshal(res, &v2InferResponse)
 		if err != nil {
 			return err
 		}
-		if iterations == 1 {
-			if showResponse {
+
+		if callOptions.Iterations == 1 {
+			if logOptions.ShowResponse {
 				printPrettyJson(res)
 			}
 		}
 	}
-	if iterations > 1 {
+
+	if callOptions.Iterations > 1 {
 		fmt.Printf("%v\n", ic.counts)
 	}
 	return nil
@@ -509,76 +595,45 @@ func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
 func (ic *InferenceClient) InferGrpc(
 	resourceName string,
 	data []byte,
-	showRequest bool,
-	showResponse bool,
-	iterations int,
-	inferType InferType,
-	showHeaders bool,
 	headers []string,
 	authority string,
 	stickySessionKeys []string,
+	callOptions *CallOptions,
+	logOptions *LogOptions,
 ) error {
-	req := &v2_dataplane.ModelInferRequest{}
-	err := protojson.Unmarshal(data, req)
+	hs, err := validateHeaders(headers)
 	if err != nil {
 		return err
 	}
 
-	req.ModelName = resourceName
-	if showRequest {
-		printProto(req)
-	}
+	ctx := context.Background()
+	ctx = addHeadersToContext(ctx, hs)
+	ctx = addStickySessionToContext(ctx, stickySessionKeys)
+	ctx = addSeldonModelHeaderToContext(ctx, callOptions.InferType, resourceName)
 
-	conn, err := ic.getConnection(authority)
+	req := &v2_dataplane.ModelInferRequest{}
+	err = protojson.Unmarshal(data, req)
+	if err != nil {
+		return err
+	}
+	req.ModelName = resourceName
+
+	conn, err := ic.newGRPCConnection(authority, logOptions)
 	if err != nil {
 		return err
 	}
 
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
-	ctx := context.TODO()
-	for _, stickySessionKey := range stickySessionKeys {
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonRouteHeader, stickySessionKey)
-	}
 
-	switch inferType {
-	case InferModel:
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, resourceName)
-	case InferPipeline:
-		ctx = metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, fmt.Sprintf("%s.%s", resourceName, SeldonPipelineHeader))
-	}
-
-	for _, header := range headers {
-		parts := strings.Split(header, HeaderSeparator)
-		if len(parts) != 2 {
-			return fmt.Errorf("Badly formed header %s: use key%sval", header, HeaderSeparator)
-		}
-
-		err := ic.rejectVirtualHostHeader(parts[0])
+	for i := 0; i < callOptions.Iterations; i++ {
+		var header metadata.MD
+		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header))
 		if err != nil {
 			return err
 		}
 
-		ctx = metadata.AppendToOutgoingContext(ctx, parts[0], parts[1])
-	}
-
-	if showHeaders {
-		md, ok := metadata.FromOutgoingContext(ctx)
-		if ok {
-			for k, v := range md {
-				fmt.Printf("Request metadata %s:%v\n", k, v)
-			}
-		}
-	}
-
-	for i := 0; i < iterations; i++ {
-		var header, trailer metadata.MD
-		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header), grpc.Trailer(&trailer))
-		if err != nil {
-			return err
-		}
-
-		if iterations == 1 {
-			if showResponse {
+		if callOptions.Iterations == 1 {
+			if logOptions.ShowResponse {
 				err := updateResponseFromRawContents(res)
 				if err != nil {
 					return err
@@ -593,49 +648,89 @@ func (ic *InferenceClient) InferGrpc(
 		if err != nil {
 			return err
 		}
-
-		if showHeaders {
-			for k, v := range header {
-				fmt.Printf("Response header %s:%v\n", k, v)
-			}
-			for k, v := range trailer {
-				fmt.Printf("Response trailer %s:%v\n", k, v)
-			}
-		}
 	}
 
-	if iterations > 1 {
+	if callOptions.Iterations > 1 {
 		fmt.Printf("%v\n", ic.counts)
 	}
 	return nil
 }
 
+func validateHeaders(headers []string) (map[string]string, error) {
+	hs := make(map[string]string, len(headers))
+
+	for _, header := range headers {
+		parts := strings.Split(header, HeaderSeparator)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("Badly formed header %s: use key%sval", header, HeaderSeparator)
+		}
+
+		err := rejectVirtualHostHeader(parts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		hs[parts[0]] = parts[1]
+	}
+
+	return hs, nil
+}
+
+func rejectVirtualHostHeader(header string) error {
+	normalised := strings.ToLower(strings.TrimSpace(header))
+	if "host" == normalised || "authority" == normalised || ":authority" == normalised {
+		return fmt.Errorf("Setting %s via headers is not supported, please use '--authority' instead", header)
+	}
+	return nil
+}
+
+func addHeadersToContext(ctx context.Context, headers map[string]string) context.Context {
+	for k, v := range headers {
+		ctx = metadata.AppendToOutgoingContext(ctx, k, v)
+	}
+	return ctx
+}
+
+func addStickySessionToContext(ctx context.Context, stickySessionKeys []string) context.Context {
+	for _, k := range stickySessionKeys {
+		ctx = metadata.AppendToOutgoingContext(ctx, SeldonRouteHeader, k)
+	}
+	return ctx
+}
+
+func addSeldonModelHeaderToContext(ctx context.Context, inferType InferType, resourceName string) context.Context {
+	var headerValue string
+	switch inferType {
+	case InferModel:
+		headerValue = resourceName
+	case InferPipeline:
+		headerValue = resourceName + "." + SeldonPipelineHeader
+	}
+
+	return metadata.AppendToOutgoingContext(ctx, SeldonModelHeader, headerValue)
+}
+
 func (ic *InferenceClient) Infer(
 	modelName string,
-	inferMode string,
 	data []byte,
-	showRequest bool,
-	showResponse bool,
-	iterations int,
-	inferType InferType,
-	showHeaders bool,
 	headers []string,
 	authority string,
-	stickySesion bool,
+	callOptions *CallOptions,
+	logOptions *LogOptions,
 ) error {
 	var stickySessionKeys []string
 	var err error
-	if stickySesion {
+	if callOptions.StickySession {
 		stickySessionKeys, err = getStickySessionKeys()
 		if err != nil {
 			return err
 		}
 	}
-	switch inferMode {
+	switch callOptions.InferProtocol {
 	case "rest":
-		return ic.InferRest(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers, authority, stickySessionKeys)
+		return ic.InferRest(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
 	case "grpc":
-		return ic.InferGrpc(modelName, data, showRequest, showResponse, iterations, inferType, showHeaders, headers, authority, stickySessionKeys)
+		return ic.InferGrpc(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
 	default:
 		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}
