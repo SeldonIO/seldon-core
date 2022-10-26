@@ -11,7 +11,7 @@ seldon-core = { path = "_seldon_core", develop = false }
 alibi-detect = "0.9.0"
 numpy = "1.21.5"
 cloudevents = "1.2.0"
-tensorflow = "2.7.0"
+tensorflow = "2.7.2"
 scikit-learn = "0.24.2"
 
 elasticsearch = "7.9.1"
@@ -25,6 +25,7 @@ google-cloud-core = "1.4.1"
 google-cloud-storage = "1.31.2"
 transformers = "^4.0"
 dill = "0.3.2"
+joblib = "1.2.0"
 
 pystan = "2.19.1.1"
 fbprophet = "0.6"
