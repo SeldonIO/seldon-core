@@ -22,6 +22,7 @@ protobuf = "^3.17.3"
 joblib = "1.2.0"
 
 werkzeug = "^2.1.1"
+pillow = "^9.0.1"
 
 shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
 
