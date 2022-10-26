@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	offsetFlag       = "offset"
-	requestIdFlag    = "request-id"
-	outputFormatFlag = "format"
-	verboseFlag      = "verbose"
-	namespaceFlag    = "namespace"
+	flagOffset       = "offset"
+	flagRequestId    = "request-id"
+	flagOutputFormat = "format"
+	flagVerbose      = "verbose"
+	flagNamespace    = "namespace"
 	defaultNamespace = "default"
 )
 
@@ -25,31 +25,31 @@ func createPipelineInspect() *cobra.Command {
 		Long:  `inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			kafkaBroker, err := cmd.Flags().GetString(kafkaBrokerFlag)
+			kafkaBroker, err := cmd.Flags().GetString(flagKafkaBroker)
 			if err != nil {
 				return err
 			}
-			offset, err := cmd.Flags().GetInt64(offsetFlag)
+			offset, err := cmd.Flags().GetInt64(flagOffset)
 			if err != nil {
 				return err
 			}
-			requestId, err := cmd.Flags().GetString(requestIdFlag)
+			requestId, err := cmd.Flags().GetString(flagRequestId)
 			if err != nil {
 				return err
 			}
-			format, err := cmd.Flags().GetString(outputFormatFlag)
+			format, err := cmd.Flags().GetString(flagOutputFormat)
 			if err != nil {
 				return err
 			}
-			verbose, err := cmd.Flags().GetBool(verboseFlag)
+			verbose, err := cmd.Flags().GetBool(flagVerbose)
 			if err != nil {
 				return err
 			}
-			namespace, err := cmd.Flags().GetString(namespaceFlag)
+			namespace, err := cmd.Flags().GetString(flagNamespace)
 			if err != nil {
 				return err
 			}
@@ -62,12 +62,12 @@ func createPipelineInspect() *cobra.Command {
 			return err
 		},
 	}
-	cmdPipelineInspect.Flags().String(kafkaBrokerFlag, env.GetString(EnvKafka, DefaultKafkaHost), "kafka broker")
-	cmdPipelineInspect.Flags().Int64(offsetFlag, 1, "message offset to start reading from, i.e. default 1 is the last message only")
-	cmdPipelineInspect.Flags().String(requestIdFlag, "", "request id to show, if not specified will be all messages in offset range")
-	cmdPipelineInspect.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
-	cmdPipelineInspect.Flags().String(outputFormatFlag, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
-	cmdPipelineInspect.Flags().String(namespaceFlag, defaultNamespace, fmt.Sprintf("namespace. Default %s", defaultNamespace))
-	cmdPipelineInspect.Flags().Bool(verboseFlag, false, "display more details, such as headers")
+	cmdPipelineInspect.Flags().String(flagKafkaBroker, env.GetString(envKafka, defaultKafkaHost), "kafka broker")
+	cmdPipelineInspect.Flags().Int64(flagOffset, 1, "message offset to start reading from, i.e. default 1 is the last message only")
+	cmdPipelineInspect.Flags().String(flagRequestId, "", "request id to show, if not specified will be all messages in offset range")
+	cmdPipelineInspect.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdPipelineInspect.Flags().String(flagOutputFormat, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
+	cmdPipelineInspect.Flags().String(flagNamespace, defaultNamespace, fmt.Sprintf("namespace. Default %s", defaultNamespace))
+	cmdPipelineInspect.Flags().Bool(flagVerbose, false, "display more details, such as headers")
 	return cmdPipelineInspect
 }

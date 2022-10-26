@@ -75,8 +75,8 @@ func GetCmd() *cobra.Command {
 
 	var rootCmd = &cobra.Command{Use: "seldon"}
 
-	rootCmd.PersistentFlags().BoolP(showRequestFlag, "r", false, "show request")
-	rootCmd.PersistentFlags().BoolP(showResponseFlag, "o", true, "show response")
+	rootCmd.PersistentFlags().BoolP(flagShowRequest, "r", false, "show request")
+	rootCmd.PersistentFlags().BoolP(flagShowResponse, "o", true, "show response")
 	rootCmd.DisableAutoGenTag = true
 
 	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline)

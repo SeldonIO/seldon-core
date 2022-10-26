@@ -423,7 +423,7 @@ func (ic *InferenceClient) updateSummary(modelNames []string) {
 	}
 }
 
-func (ic *InferenceClient) ModelMetadata(modelName string) error {
+func (ic *InferenceClient) ModelMetadata(modelName string, authority string) error {
 	path := fmt.Sprintf("/v2/models/%s", modelName)
 	v2Url := ic.getUrl(path)
 	req, err := http.NewRequest("GET", v2Url.String(), nil)
@@ -431,10 +431,13 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 		return err
 	}
 	req.Header.Set(SeldonModelHeader, modelName)
+	req.Host = authority
+
 	client, err := ic.createHttpClient()
 	if err != nil {
 		return err
 	}
+
 	response, err := client.Do(req)
 	if err != nil {
 		return err
@@ -447,6 +450,7 @@ func (ic *InferenceClient) ModelMetadata(modelName string) error {
 	if err != nil {
 		return err
 	}
+
 	if response.StatusCode != http.StatusOK {
 		return decodeV2Error(response, b)
 	}

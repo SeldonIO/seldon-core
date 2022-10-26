@@ -32,11 +32,12 @@ const subscriberName = "seldon CLI"
 
 type SchedulerClient struct {
 	schedulerHost string
+	authority     string
 	callOptions   []grpc.CallOption
 	config        *SeldonCLIConfig
 }
 
-func NewSchedulerClient(schedulerHost string) (*SchedulerClient, error) {
+func NewSchedulerClient(schedulerHost string, authority string) (*SchedulerClient, error) {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -53,6 +54,7 @@ func NewSchedulerClient(schedulerHost string) (*SchedulerClient, error) {
 	}
 	return &SchedulerClient{
 		schedulerHost: schedulerHost,
+		authority:     authority,
 		callOptions:   opts,
 		config:        config,
 	}, nil
@@ -82,22 +84,30 @@ func (sc *SchedulerClient) loadKeyPair() (credentials.TransportCredentials, erro
 	return credentials.NewTLS(tlsConfig), nil
 }
 
-func (sc *SchedulerClient) getConnection() (*grpc.ClientConn, error) {
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
-	}
-	opts := []grpc.DialOption{}
+func (sc *SchedulerClient) newConnection() (*grpc.ClientConn, error) {
+	var creds credentials.TransportCredentials
 	if sc.config.Controlplane == nil || sc.config.Controlplane.KeyPath == "" {
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		creds = insecure.NewCredentials()
 	} else {
-		tlsConfig, err := sc.loadKeyPair()
+		tlsCreds, err := sc.loadKeyPair()
 		if err != nil {
 			return nil, err
 		}
-		opts = append(opts, grpc.WithTransportCredentials(tlsConfig))
+		creds = tlsCreds
 	}
-	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
-	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
+
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+	}
+	streamInterceptor := grpc_retry.StreamClientInterceptor(retryOpts...)
+	unaryInterceptor := grpc_retry.UnaryClientInterceptor(retryOpts...)
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+		grpc.WithStreamInterceptor(streamInterceptor),
+		grpc.WithUnaryInterceptor(unaryInterceptor),
+		grpc.WithAuthority(sc.authority),
+	}
 
 	conn, err := grpc.Dial(sc.schedulerHost, opts...)
 	if err != nil {
@@ -152,7 +162,7 @@ func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -173,7 +183,7 @@ func (sc *SchedulerClient) ListModels() error {
 	req := &scheduler.ModelStatusRequest{
 		SubscriberName: subscriberName,
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -229,7 +239,7 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 		printProto(req)
 	}
 
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -300,7 +310,7 @@ func (sc *SchedulerClient) ServerStatus(serverName string, showRequest bool, sho
 		printProto(req)
 	}
 
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -345,7 +355,7 @@ func (sc *SchedulerClient) ListServers() error {
 	req := &scheduler.ServerStatusRequest{
 		SubscriberName: subscriberName,
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -397,7 +407,7 @@ func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showR
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -426,7 +436,7 @@ func (sc *SchedulerClient) StartExperiment(data []byte, showRequest bool, showRe
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -448,7 +458,7 @@ func (sc *SchedulerClient) StopExperiment(experimentName string, showRequest boo
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -472,7 +482,7 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest b
 		printProto(req)
 	}
 
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -531,7 +541,7 @@ func (sc *SchedulerClient) ListExperiments() error {
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -588,7 +598,7 @@ func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showRespo
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -610,7 +620,7 @@ func (sc *SchedulerClient) UnloadPipeline(pipelineName string, showRequest bool,
 	if showRequest {
 		printProto(req)
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -634,7 +644,7 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool,
 		printProto(req)
 	}
 
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}
@@ -701,7 +711,7 @@ func (sc *SchedulerClient) ListPipelines() error {
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
 	}
-	conn, err := sc.getConnection()
+	conn, err := sc.newConnection()
 	if err != nil {
 		return err
 	}

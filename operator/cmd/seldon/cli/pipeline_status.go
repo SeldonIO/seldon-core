@@ -14,32 +14,41 @@ func createPipelineStatus() *cobra.Command {
 		Long:  `status of a pipeline`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
-			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			showRequest, err := cmd.Flags().GetBool(flagShowRequest)
 			if err != nil {
 				return err
 			}
-			waitCondition, err := cmd.Flags().GetString(waitConditionFlag)
+			showResponse, err := cmd.Flags().GetBool(flagShowResponse)
 			if err != nil {
 				return err
 			}
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			waitCondition, err := cmd.Flags().GetString(flagWaitCondition)
 			if err != nil {
 				return err
 			}
 			pipelineName := args[0]
+
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			if err != nil {
+				return err
+			}
+
 			err = schedulerClient.PipelineStatus(pipelineName, showRequest, showResponse, waitCondition)
 			return err
 		},
 	}
-	cmdPipelineStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
-	cmdPipelineStatus.Flags().StringP(waitConditionFlag, "w", "", "pipeline wait condition")
+
+	cmdPipelineStatus.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdPipelineStatus.Flags().String(flagAuthority, "", helpAuthority)
+	cmdPipelineStatus.Flags().StringP(flagWaitCondition, "w", "", "pipeline wait condition")
+
 	return cmdPipelineStatus
 }

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	experimentWaitFlag = "wait"
+	flagExperimentWait = "wait"
 )
 
 func createExperimentStatus() *cobra.Command {
@@ -18,32 +18,41 @@ func createExperimentStatus() *cobra.Command {
 		Long:  `get status for experiment`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
-			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			showRequest, err := cmd.Flags().GetBool(flagShowRequest)
 			if err != nil {
 				return err
 			}
-			wait, err := cmd.Flags().GetBool(experimentWaitFlag)
+			showResponse, err := cmd.Flags().GetBool(flagShowResponse)
+			if err != nil {
+				return err
+			}
+			wait, err := cmd.Flags().GetBool(flagExperimentWait)
 			if err != nil {
 				return err
 			}
 			experimentName := args[0]
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
 			if err != nil {
 				return err
 			}
+
 			err = schedulerClient.ExperimentStatus(experimentName, showRequest, showResponse, wait)
 			return err
 		},
 	}
-	cmdExperimentStatus.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
-	cmdExperimentStatus.Flags().BoolP(experimentWaitFlag, "w", false, "wait for experiment to be active")
+
+	cmdExperimentStatus.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdExperimentStatus.Flags().String(flagAuthority, "", helpAuthority)
+	cmdExperimentStatus.Flags().BoolP(flagExperimentWait, "w", false, "wait for experiment to be active")
+
 	return cmdExperimentStatus
 }

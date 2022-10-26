@@ -82,7 +82,7 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 		return nil, err
 	}
 
-	scheduler, err := NewSchedulerClient(schedulerHost)
+	scheduler, err := NewSchedulerClient(schedulerHost, "")
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.PipelineStatusResponse, error) {
 	parts := strings.Split(pipelineSpec, ".")
 	pipeline := parts[0]
-	conn, err := kc.schedulerClient.getConnection()
+	conn, err := kc.schedulerClient.newConnection()
 	if err != nil {
 		return nil, err
 	}

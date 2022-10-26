@@ -13,18 +13,27 @@ func createPipelineList() *cobra.Command {
 		Long:  `list pipelines`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
+
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			if err != nil {
+				return err
+			}
+
 			err = schedulerClient.ListPipelines()
 			return err
 		},
 	}
-	cmdPipelineList.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
+
+	cmdPipelineList.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdPipelineList.Flags().String(flagAuthority, "", helpAuthority)
+
 	return cmdPipelineList
 }

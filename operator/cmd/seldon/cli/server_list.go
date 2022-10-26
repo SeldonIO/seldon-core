@@ -13,18 +13,27 @@ func createServerList() *cobra.Command {
 		Long:  `get the available servers, their replicas and loaded models`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
+
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			if err != nil {
+				return err
+			}
+
 			err = schedulerClient.ListServers()
 			return err
 		},
 	}
-	cmdServerList.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
+
+	cmdServerList.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdServerList.Flags().String(flagAuthority, "", helpAuthority)
+
 	return cmdServerList
 }

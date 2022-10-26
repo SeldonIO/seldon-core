@@ -9,10 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	stickySessionFlag = "sticky-session"
-)
-
 func createModelInfer() *cobra.Command {
 	cmdModelInfer := &cobra.Command{
 		Use:   "infer <modelName> (data)",
@@ -20,47 +16,43 @@ func createModelInfer() *cobra.Command {
 		Long:  `call a model with a given input and get a prediction`,
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inferenceHost, err := cmd.Flags().GetString(inferenceHostFlag)
+			inferenceHost, err := cmd.Flags().GetString(flagInferenceHost)
 			if err != nil {
 				return err
 			}
-			filename, err := cmd.Flags().GetString(fileFlag)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
-			showRequest, err := cmd.Flags().GetBool(showRequestFlag)
+			filename, err := cmd.Flags().GetString(flagFile)
 			if err != nil {
 				return err
 			}
-			showResponse, err := cmd.Flags().GetBool(showResponseFlag)
+			showRequest, err := cmd.Flags().GetBool(flagShowRequest)
 			if err != nil {
 				return err
 			}
-			stickySession, err := cmd.Flags().GetBool(stickySessionFlag)
+			showResponse, err := cmd.Flags().GetBool(flagShowResponse)
 			if err != nil {
 				return err
 			}
-			showHeaders, err := cmd.Flags().GetBool(showHeadersFlag)
+			stickySession, err := cmd.Flags().GetBool(flagStickySession)
 			if err != nil {
 				return err
 			}
-			inferMode, err := cmd.Flags().GetString(inferenceModeFlag)
+			showHeaders, err := cmd.Flags().GetBool(flagShowHeaders)
 			if err != nil {
 				return err
 			}
-			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			inferMode, err := cmd.Flags().GetString(flagInferenceMode)
 			if err != nil {
 				return err
 			}
-			iterations, err := cmd.Flags().GetInt(inferenceIterationsFlag)
+			iterations, err := cmd.Flags().GetInt(flagInferenceIterations)
 			if err != nil {
 				return err
 			}
-			headers, err := cmd.Flags().GetStringArray(addHeaderFlag)
-			if err != nil {
-				return err
-			}
-			authority, err := cmd.Flags().GetString(authorityFlag)
+			headers, err := cmd.Flags().GetStringArray(flagAddHeader)
 			if err != nil {
 				return err
 			}
@@ -76,13 +68,17 @@ func createModelInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
+			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			if err != nil {
+				return err
+			}
+
 			callOpts := &cli.CallOptions{
 				InferProtocol: inferMode,
 				InferType:     cli.InferModel,
 				StickySession: stickySession,
 				Iterations:    iterations,
 			}
-
 			logOpts := &cli.LogOptions{
 				ShowHeaders:  showHeaders,
 				ShowRequest:  showRequest,
@@ -101,14 +97,14 @@ func createModelInfer() *cobra.Command {
 		},
 	}
 
-	cmdModelInfer.Flags().StringP(fileFlag, "f", "", "inference payload file")
-	cmdModelInfer.Flags().BoolP(stickySessionFlag, "s", false, "use sticky session from last infer (only works with inference to experiments)")
-	cmdModelInfer.Flags().String(inferenceHostFlag, env.GetString(EnvInfer, DefaultInferHost), "seldon inference host")
-	cmdModelInfer.Flags().String(inferenceModeFlag, "rest", "inference mode rest or grpc")
-	cmdModelInfer.Flags().IntP(inferenceIterationsFlag, "i", 1, "inference iterations")
-	cmdModelInfer.Flags().Bool(showHeadersFlag, false, "show headers")
-	cmdModelInfer.Flags().StringArray(addHeaderFlag, []string{}, fmt.Sprintf("add header key%svalue", cli.HeaderSeparator))
-	cmdModelInfer.Flags().String(authorityFlag, "", "authority (HTTP/2) or virtual host (HTTP/1)")
+	cmdModelInfer.Flags().StringP(flagFile, "f", "", helpFileInference)
+	cmdModelInfer.Flags().BoolP(flagStickySession, "s", false, helpStickySession)
+	cmdModelInfer.Flags().String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
+	cmdModelInfer.Flags().String(flagInferenceMode, "rest", helpInferenceMode)
+	cmdModelInfer.Flags().IntP(flagInferenceIterations, "i", 1, helpInferenceIterations)
+	cmdModelInfer.Flags().Bool(flagShowHeaders, false, helpShowHeaders)
+	cmdModelInfer.Flags().StringArray(flagAddHeader, []string{}, helpAddHeader)
+	cmdModelInfer.Flags().String(flagAuthority, "", helpAuthority)
 
 	return cmdModelInfer
 }

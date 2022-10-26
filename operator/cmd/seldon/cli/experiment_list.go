@@ -13,18 +13,27 @@ func createExperimentList() *cobra.Command {
 		Long:  `get list of experiments and whether they are active`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(schedulerHostFlag)
+			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost)
+			authority, err := cmd.Flags().GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
+
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			if err != nil {
+				return err
+			}
+
 			err = schedulerClient.ListExperiments()
 			return err
 		},
 	}
-	cmdExperimentList.Flags().String(schedulerHostFlag, env.GetString(EnvScheduler, DefaultScheduleHost), "seldon scheduler host")
+
+	cmdExperimentList.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	cmdExperimentList.Flags().String(flagAuthority, "", helpAuthority)
+
 	return cmdExperimentList
 }
