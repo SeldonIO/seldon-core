@@ -21,6 +21,8 @@ fastapi = "^0.73.0"
 protobuf = "^3.17.3"
 joblib = "1.2.0"
 
+werkzeug = "^2.1.1"
+
 shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
 
 [tool.poetry.dev-dependencies]
