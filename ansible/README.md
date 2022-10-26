@@ -7,6 +7,10 @@ ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-co
 
 Once installed you can use the following Playbooks that you will find in [ansible](https://github.com/SeldonIO/seldon-core-v2/tree/master/ansible) folder of Seldon Core V2 repository.
 
+Further requirements:
+  * Kubectl
+  * Helm 
+
 ### Create Kind Cluster
 
 ```bash

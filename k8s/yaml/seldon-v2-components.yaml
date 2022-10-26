@@ -478,7 +478,7 @@ metadata:
   name: seldon-mesh
 spec:
   ports:
-  - name: http2
+  - name: data
     port: 80
     protocol: TCP
     targetPort: http
