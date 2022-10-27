@@ -57,7 +57,6 @@ kind_build_images: build_protos kind_build_operator kind_build_executor kind_bui
 .PHONY: helm_setup
 helm_setup:
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
-	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo add datawire https://app.getambassador.io
 	helm repo update
 
@@ -72,13 +71,9 @@ install_ambassador:
 
 .PHONY: install_jaeger
 install_jaeger:
-	helm upgrade jaeger-operator \
-		jaegertracing/jaeger-operator \
-		--set rbac.clusterRole=true \
-		--namespace seldon \
-		--version 2.25.0 \
-		--wait --install
-	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+	kubectl create namespace observability
+	kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
+	kubectl apply -f ../resources/jaeger.yaml
 
 
 #install_cert_manager:
