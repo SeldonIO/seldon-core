@@ -2,6 +2,7 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 REPO=seldonio
 IMAGE=alibi-detect-server
+KIND_NAME=kind
 
 SELDON_CORE_DIR=../..
 
@@ -111,7 +112,7 @@ docker-push-gpu:
 	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image ${REPO}/${IMAGE}:${VERSION}
+	kind load docker-image ${REPO}/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 #
 # RedHat
