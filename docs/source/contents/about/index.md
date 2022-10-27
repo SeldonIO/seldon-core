@@ -47,3 +47,11 @@ Seldon V2 supports any V2 protocol inference server. At present we include Seldo
 Seldon core v2 can be integrated with any Kubernetes service mesh. There are current examples with istio, Ambassador and Traefic.
 
 ![mesh](mesh.png)
+
+## Publication
+
+These features are influenced by our position paper on the next generation of ML model serving frameworks:
+
+*Title*: [Desiderata for next generation of ML model serving](http://arxiv.org/abs/2210.14665)
+
+*Workshop*: Challenges in deploying and monitoring ML systems workshop - NeurIPS 2022
