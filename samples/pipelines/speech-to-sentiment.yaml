@@ -1,0 +1,19 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: speech-to-sentiment
+spec:
+  steps:
+    - name: whisper
+    - name: sentiment
+      inputs:
+      - whisper
+      tensorMap:
+        whisper.outputs.output: args
+    - name: sentiment-explainer
+      inputs:
+      - whisper
+  output:
+    steps:
+    - sentiment
+    - whisper

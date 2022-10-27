@@ -110,7 +110,7 @@ seldon pipeline infer --show-headers --header X-foo=bar tfsimples \
 
 ## Request IDs
 
-For both model and pipeline request the response will contain a `x-request-id` response header. For pipeline requests this can be used to inspect the pipeline steps via the CLI, e.g.:
+For both model and pipeline requests the response will contain a `x-request-id` response header. For pipeline requests this can be used to inspect the pipeline steps via the CLI, e.g.:
 
 ```
 seldon pipeline inspect tfsimples --request-id carjjolvqj3j2pfbut10 --offset 10
@@ -119,3 +119,7 @@ seldon pipeline inspect tfsimples --request-id carjjolvqj3j2pfbut10 --offset 10
 The `--offset` parameter specifies how many messages (from the latest) you want to search to find your request. If not specified the last request will be shown.
 
 `x-request-id` will also appear in tracing spans.
+
+If `x-request-id` is passed in by the caller then this will be used. It is the caller's responsibility to ensure it is unique.
+
+The IDs generated are [XIDs](https://github.com/rs/xid).

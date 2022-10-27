@@ -16,7 +16,7 @@ sed -zri 's/cat([^\n]*)\n```\n/cat\1\n```\n```yaml/g' $1
 sed -zri 's/MESH_IP([^\n]*)\n```\n/MESH_IP\1\n```\n```bash/g' $1
 # Close blocks after indented areas
 sed -zri 's/([ ]{3}[^\n]*\n)\n/\1```/g'  $1
-# After a bash seldon block add a json block
-sed -zri 's/(```bash\nseldon[^`]*```)/\1\n```json/g' $1
-# After a kubectl block add a json block
-sed -zri 's/(```bash\nkubectl[^`]*```)/\1\n```json/g' $1
+# specific to when this is used as confuses nbconvert
+sed -zri  's/([ ]*AudioRecorder\(audio=Audio)/```\n\1/g' $1
+# ensure blocks not started are started with a json block
+sed -zri 's/\n\n([ ]{4})/\n```json\n\1/g' $1

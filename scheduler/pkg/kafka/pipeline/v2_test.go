@@ -288,6 +288,27 @@ func TestConvertToInferenceRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "parameters",
+			input: `{"id": "53c3f354-6f29-415d-9128-1d15978318e8", "parameters": {"content_type": "str", "headers": null}, "inputs": [{"name": "predict", "shape": [1], "datatype": "BYTES", "parameters": {"content_type": "str", "headers": null}, "data": ["Hello world"]}], "outputs": []}
+`,
+			expected: &InferenceRequest{
+				Id:         "53c3f354-6f29-415d-9128-1d15978318e8",
+				Parameters: map[string]interface{}{"content_type": "str", "headers": nil},
+				Inputs: []*NamedTensor{
+					{
+						Name:       "predict",
+						Datatype:   tyBytes,
+						Shape:      []int64{1},
+						Parameters: map[string]interface{}{"content_type": "str", "headers": nil},
+						tensorData: &TensorData{
+							byteContents: [][]byte{[]byte("Hello world")},
+						},
+					},
+				},
+				Outputs: []*RequestOutput{},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -972,6 +993,48 @@ func TestUpdateResponseFromRawContents(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 			}
+		})
+	}
+}
+
+func TestResponseV2ParametersToJson(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		input    map[string]*v2_dataplane.InferParameter
+		expected string
+	}
+	tests := []test{
+		{
+			name: "bool",
+			input: map[string]*v2_dataplane.InferParameter{"foo": {
+				ParameterChoice: &v2_dataplane.InferParameter_BoolParam{BoolParam: true},
+			}},
+			expected: `{"foo":true}`,
+		},
+		{
+			name: "int64",
+			input: map[string]*v2_dataplane.InferParameter{"foo": {
+				ParameterChoice: &v2_dataplane.InferParameter_Int64Param{Int64Param: 3},
+			}},
+			expected: `{"foo":3}`,
+		},
+		{
+			name: "string",
+			input: map[string]*v2_dataplane.InferParameter{"foo": {
+				ParameterChoice: &v2_dataplane.InferParameter_StringParam{StringParam: "bar"},
+			}},
+			expected: `{"foo":"bar"}`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resMap := createParametersFromv2(test.input)
+			jStr, err := json.Marshal(resMap)
+			g.Expect(err).To(BeNil())
+			g.Expect(string(jStr)).To(Equal(test.expected))
 		})
 	}
 }

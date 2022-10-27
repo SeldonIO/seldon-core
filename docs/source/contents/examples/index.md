@@ -7,6 +7,10 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Local examples](local-examples.md)
  * [Kubernetes examples](k8s-examples.md)
 
+## Models
+
+ * [Huggingface models](huggingface.md)
+
 ## Pipelines
 
 * [Pipeline examples](pipeline-examples.md)
@@ -27,12 +31,9 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Tritonclient examples](tritonclient-examples.md)
  * [Batch Inference examples](batch-examples.md)
 
-## Misc
-
- * [Huggingface models](huggingface.md)
-
 ## Advanced Examples
 
+ * [Huggingface speech to sentiment with explanations pipeline](speech-to-sentiment.md)
  * [Production image classifier with drift and outlier monitoring](cifar10.md)
  * [Production income classifier with drift, outlier and explanations](income.md)
  * [Conditional pipeline with pandas query model](pandasquery.md)
@@ -43,13 +44,14 @@ This section will provide some examples to allow operations with Seldon to be te
 
 local-examples.md
 k8s-examples.md
+huggingface.md
 pipeline-examples.md
 explainer-examples.md
 local-experiments.md
 experiment-versions.md
 inference.md
 tritonclient-examples.md
-huggingface.md
+speech-to-sentiment.md
 cifar10.md
 income.md
 pandasquery.md

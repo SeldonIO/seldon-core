@@ -130,8 +130,8 @@ func TestGrpcServer(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(proto.Equal(res, test.res)).To(BeTrue())
-				g.Expect(header.Get(RequestIdHeader)).ToNot(BeNil())
-				g.Expect(header.Get(RequestIdHeader)[0]).To(Equal(testRequestId))
+				g.Expect(header.Get(util.RequestIdHeader)).ToNot(BeNil())
+				g.Expect(header.Get(util.RequestIdHeader)[0]).To(Equal(testRequestId))
 			}
 		})
 	}

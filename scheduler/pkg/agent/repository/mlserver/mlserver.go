@@ -43,12 +43,20 @@ type Settings struct {
 
 // MLServer model settings. Only a subset of fields included as needed
 type ModelSettings struct {
-	Name            string           `json:"name"`
-	Platform        string           `json:"platform,omitempty"`
-	Versions        []string         `json:"versions,omitempty"`
-	ParallelWorkers int              `json:"parallel_workers"`
-	Implementation  string           `json:"implementation,omitempty"`
-	Parameters      *ModelParameters `json:"parameters,omitempty"`
+	Name            string                 `json:"name"`
+	Inputs          []ModelMetadataTensors `json:"inputs,omitempty"`
+	Outputs         []ModelMetadataTensors `json:"outputs,omitempty"`
+	Platform        string                 `json:"platform,omitempty"`
+	Versions        []string               `json:"versions,omitempty"`
+	ParallelWorkers int                    `json:"parallel_workers"`
+	Implementation  string                 `json:"implementation,omitempty"`
+	Parameters      *ModelParameters       `json:"parameters,omitempty"`
+}
+
+type ModelMetadataTensors struct {
+	Name     string  `json:"name,omitempty"`
+	Shape    []int64 `json:"shape,omitempty"`
+	Datatype string  `json:"datatype,omitempty"`
 }
 
 // MLServer model parameters.

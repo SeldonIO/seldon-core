@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -16,7 +18,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/rs/xid"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"github.com/sirupsen/logrus"
@@ -24,11 +25,10 @@ import (
 
 const (
 	pollTimeoutMillisecs = 10000
-	RequestIdHeader      = "x-request-id"
 )
 
 type PipelineInferer interface {
-	Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error)
+	Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error)
 }
 
 type KafkaManager struct {
@@ -154,7 +154,7 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 	}
 }
 
-func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error) {
+func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 	km.mu.RLock()
 	pipeline, err := km.loadOrStorePipeline(resourceName, isModel)
@@ -162,7 +162,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 		km.mu.RUnlock()
 		return nil, err
 	}
-	key := xid.New().String()
+	key := requestId
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
@@ -187,7 +187,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	}
 
 	ctx, span := km.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(RequestIdHeader, key))
+	span.SetAttributes(attribute.String(util.RequestIdHeader, key))
 	// Add trace headers
 	carrier := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
@@ -147,7 +149,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 				_, span := c.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(RequestIdHeader, string(e.Key)))
+				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
 
 				request := val.(*Request)
 				request.mu.Lock()

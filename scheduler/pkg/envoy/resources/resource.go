@@ -829,7 +829,8 @@ func MakeHTTPListener(listenerName, address string,
 	manager := &hcm.HttpConnectionManager{
 		CodecType:                    hcm.HttpConnectionManager_AUTO,
 		StatPrefix:                   "http",
-		AlwaysSetRequestIdInResponse: true,
+		AlwaysSetRequestIdInResponse: false,
+		GenerateRequestId:            &wrappers.BoolValue{Value: false},
 		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
 			Rds: &hcm.Rds{
 				ConfigSource:    makeConfigSource(),

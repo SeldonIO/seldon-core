@@ -1,0 +1,4 @@
+torchaudio
+ipywebrtc
+ffmpeg-python
+spacy

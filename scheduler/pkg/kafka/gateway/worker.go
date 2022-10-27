@@ -14,8 +14,6 @@ import (
 
 	"google.golang.org/grpc/credentials"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
-
 	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
 	"go.opentelemetry.io/otel/attribute"
 
@@ -234,7 +232,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 	}
 
 	ctx, span := iw.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(pipeline.RequestIdHeader, string(job.msg.Key)))
+	span.SetAttributes(attribute.String(util.RequestIdHeader, string(job.msg.Key)))
 	carrierOut := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrierOut)
 
@@ -266,8 +264,8 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(resources.SeldonModelHeader, job.modelName)
-	if reqId, ok := job.headers[pipeline.RequestIdHeader]; ok {
-		req.Header[pipeline.RequestIdHeader] = []string{reqId}
+	if reqId, ok := job.headers[util.RequestIdHeader]; ok {
+		req.Header[util.RequestIdHeader] = []string{reqId}
 	}
 	response, err := iw.httpClient.Do(req)
 	if err != nil {
@@ -297,8 +295,8 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 
 	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, job.modelName)
-	if reqId, ok := job.headers[pipeline.RequestIdHeader]; ok {
-		ctx = metadata.AppendToOutgoingContext(ctx, pipeline.RequestIdHeader, reqId)
+	if reqId, ok := job.headers[util.RequestIdHeader]; ok {
+		ctx = metadata.AppendToOutgoingContext(ctx, util.RequestIdHeader, reqId)
 	}
 	var header, trailer metadata.MD
 	opts := append(iw.callOptions, grpc.Header(&header))

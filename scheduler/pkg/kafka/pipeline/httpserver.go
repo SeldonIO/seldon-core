@@ -97,6 +97,19 @@ func (g *GatewayHttpServer) setupRoutes() {
 		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferPipeline)
 }
 
+// Get or create a request ID
+func (g *GatewayHttpServer) getRequestId(req *http.Request) string {
+	requestIds := req.Header[util.RequestIdHeaderCanonical]
+	var requestId string
+	if len(requestIds) > 0 {
+		requestId = requestIds[0]
+	} else {
+		g.logger.Warning("Failed to find request ID - will generate one")
+		requestId = util.CreateRequestId()
+	}
+	return requestId
+}
+
 func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, resourceName string, isModel bool) {
 	logger := g.logger.WithField("func", "infer")
 	startTime := time.Now()
@@ -105,21 +118,21 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	dataProto, err := ConvertRequestToV2Bytes(data, "", "")
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to convert bytes to v2 request for resource %s", resourceName)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	kafkaRequest, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto, convertHttpHeadersToKafkaHeaders(req.Header))
+
+	kafkaRequest, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto, convertHttpHeadersToKafkaHeaders(req.Header), g.getRequestId(req))
 	elapsedTime := time.Since(startTime).Seconds()
 	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
 		for _, val := range vals {
 			w.Header().Add(k, val)
 		}
 	}
-	w.Header().Set(RequestIdHeader, kafkaRequest.key)
+	w.Header().Set(util.RequestIdHeader, kafkaRequest.key)
 	if err != nil {
 		logger.WithError(err).Error("Failed to call infer")
 		w.WriteHeader(http.StatusInternalServerError)

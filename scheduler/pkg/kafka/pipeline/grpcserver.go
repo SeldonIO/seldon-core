@@ -79,10 +79,19 @@ func extractHeader(key string, md metadata.MD) string {
 	return ""
 }
 
+// Get or create a requestId
+func (g *GatewayGrpcServer) getRequestId(md metadata.MD) string {
+	requestId := extractHeader(util.RequestIdHeader, md)
+	if requestId == "" {
+		requestId = util.CreateRequestId()
+	}
+	return requestId
+}
+
 func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find metadata looking for %s", resources.SeldonModelHeader))
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", resources.SeldonModelHeader, resources.SeldonInternalModelHeader))
 	}
 	g.logger.Debugf("Seldon model header %v and seldon internal model header %v", md[resources.SeldonModelHeader], md[resources.SeldonInternalModelHeader])
 	header := extractHeader(resources.SeldonInternalModelHeader, md) // Internal model header has precedence
@@ -99,14 +108,14 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md))
+	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md), g.getRequestId(md))
 	elapsedTime := time.Since(startTime).Seconds()
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.FailedPrecondition.String())
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	meta := convertKafkaHeadersToGrpcMetadata(kafkaRequest.headers)
-	meta[RequestIdHeader] = []string{kafkaRequest.key}
+	meta[util.RequestIdHeader] = []string{kafkaRequest.key}
 	err = grpc.SendHeader(ctx, meta)
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Internal.String())

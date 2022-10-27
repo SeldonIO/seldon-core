@@ -164,6 +164,23 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	}
 }
 
+func (rp *reverseGRPCProxy) addRequestIdToTrailer(ctx context.Context, trailer metadata.MD) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		md = metadata.MD{}
+	}
+	requestIds := md.Get(util.RequestIdHeader)
+	trailerRequestIds := trailer.Get(util.RequestIdHeader)
+	rp.logger.Infof("Request ids %s and trailer request ids %s", requestIds, trailerRequestIds)
+	if len(trailerRequestIds) == 0 {
+		if len(requestIds) == 0 {
+			trailer.Set(util.RequestIdHeader, util.CreateRequestId())
+		} else {
+			trailer.Append(util.RequestIdHeader, requestIds...)
+		}
+	}
+}
+
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
@@ -201,6 +218,8 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		rp.stateManager.v2Client.LoadModel(internalModelName)
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
+
+	rp.addRequestIdToTrailer(ctx, trailer)
 
 	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()

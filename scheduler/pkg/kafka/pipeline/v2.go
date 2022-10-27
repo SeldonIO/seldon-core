@@ -196,11 +196,11 @@ func createParametersFromv2(v2Params map[string]*v2_dataplane.InferParameter) ma
 	for k, v := range v2Params {
 		switch pval := v.ParameterChoice.(type) {
 		case *v2_dataplane.InferParameter_BoolParam:
-			params[k] = pval
+			params[k] = pval.BoolParam
 		case *v2_dataplane.InferParameter_StringParam:
-			params[k] = pval
+			params[k] = pval.StringParam
 		case *v2_dataplane.InferParameter_Int64Param:
-			params[k] = pval
+			params[k] = pval.Int64Param
 		}
 	}
 	return params

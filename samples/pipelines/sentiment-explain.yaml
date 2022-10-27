@@ -1,0 +1,15 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: sentiment-explain
+spec:
+  steps:
+    - name: sentiment
+      tensorMap:
+        sentiment-explain.inputs.predict: args
+    - name: sentiment-transform
+      inputs:
+      - sentiment
+  output:
+    steps:
+    - sentiment-transform

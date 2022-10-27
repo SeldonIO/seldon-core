@@ -58,6 +58,18 @@ type lazyModelLoadTransport struct {
 	logger                     log.FieldLogger
 }
 
+func addRequestIdToResponse(req *http.Request, res *http.Response) {
+	resRequestIds := res.Header[util.RequestIdHeaderCanonical]
+	reqRequestIds := req.Header[util.RequestIdHeaderCanonical]
+	if len(resRequestIds) == 0 {
+		if len(reqRequestIds) == 0 {
+			res.Header[util.RequestIdHeaderCanonical] = []string{util.CreateRequestId()}
+		} else {
+			res.Header[util.RequestIdHeaderCanonical] = reqRequestIds
+		}
+	}
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
@@ -109,6 +121,8 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		req2.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
 	}
+
+	addRequestIdToResponse(req, res)
 
 	elapsedTime := time.Since(startTime).Seconds()
 	go t.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(res.StatusCode))

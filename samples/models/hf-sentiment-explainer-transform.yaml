@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: sentiment-transform
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-transform"
+  requirements:
+  - mlserver
+  - python

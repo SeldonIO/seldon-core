@@ -9,8 +9,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
-
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
 
@@ -300,7 +298,7 @@ func (kc *InferKafkaConsumer) Serve() {
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 				_, span := kc.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(pipeline.RequestIdHeader, string(e.Key)))
+				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
 
 				headers := collectHeaders(e.Headers)
 

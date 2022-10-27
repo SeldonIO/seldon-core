@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
@@ -239,4 +241,59 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	t.Logf("Done")
 
+}
+
+func TestAddRequestIdToTrailer(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name               string
+		ctx                context.Context
+		trailer            metadata.MD
+		expectNewRequestId bool
+		expectedRequestId  string
+	}
+	tests := []test{
+		{
+			name:               "No request id in incoming context",
+			ctx:                context.TODO(),
+			trailer:            metadata.MD{},
+			expectNewRequestId: true,
+		},
+		{
+			name:               "request id already in incoming context",
+			ctx:                metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{util.RequestIdHeader: "1234"})),
+			trailer:            metadata.MD{},
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+		{
+			name:               "request id already in trailer",
+			ctx:                context.TODO(),
+			trailer:            metadata.New(map[string]string{util.RequestIdHeader: "1234"}),
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+		{
+			name:               "request id in context and in trailer",
+			ctx:                metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{util.RequestIdHeader: "9999"})),
+			trailer:            metadata.New(map[string]string{util.RequestIdHeader: "1234"}),
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rp := reverseGRPCProxy{
+				logger: log.New(),
+			}
+			rp.addRequestIdToTrailer(test.ctx, test.trailer)
+			data := test.trailer.Get(util.RequestIdHeader)
+			if test.expectNewRequestId {
+				g.Expect(len(data)).To(Equal(1))
+			} else {
+				g.Expect(data[0]).To(Equal(test.expectedRequestId))
+			}
+		})
+	}
 }

@@ -28,7 +28,7 @@ type fakePipelineInferer struct {
 	key  string
 }
 
-func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header) (*Request, error) {
+func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error) {
 	if f.err != nil {
 		return nil, f.err
 	} else {
@@ -160,8 +160,8 @@ func TestHttpServer(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
 			if resp.StatusCode == http.StatusOK {
-				g.Expect(resp.Header.Get(RequestIdHeader)).ToNot(BeNil())
-				g.Expect(resp.Header.Get(RequestIdHeader)).To(Equal(testRequestId))
+				g.Expect(resp.Header.Get(util.RequestIdHeader)).ToNot(BeNil())
+				g.Expect(resp.Header.Get(util.RequestIdHeader)).To(Equal(testRequestId))
 			}
 			defer resp.Body.Close()
 		})

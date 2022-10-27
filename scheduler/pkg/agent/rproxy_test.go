@@ -417,3 +417,64 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 		})
 	}
 }
+
+func TestAddRequestIdToResponse(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name               string
+		req                *http.Request
+		res                *http.Response
+		expectNewRequestId bool
+		expectedRequestId  string
+	}
+	tests := []test{
+		{
+			name: "no request id present",
+			req: &http.Request{
+				Header: map[string][]string{},
+			},
+			res:                &http.Response{Header: map[string][]string{}},
+			expectNewRequestId: true,
+		},
+		{
+			name: "request id in request",
+			req: &http.Request{
+				Header: map[string][]string{util.RequestIdHeaderCanonical: {"1234"}},
+			},
+			res:                &http.Response{Header: map[string][]string{}},
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+		{
+			name: "request id in response",
+			req: &http.Request{
+				Header: map[string][]string{},
+			},
+			res:                &http.Response{Header: map[string][]string{util.RequestIdHeaderCanonical: {"1234"}}},
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+		{
+			name: "request id in request and response",
+			req: &http.Request{
+				Header: map[string][]string{util.RequestIdHeaderCanonical: {"9999"}},
+			},
+			res:                &http.Response{Header: map[string][]string{util.RequestIdHeaderCanonical: {"1234"}}},
+			expectNewRequestId: false,
+			expectedRequestId:  "1234",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			addRequestIdToResponse(test.req, test.res)
+			headers := test.res.Header[util.RequestIdHeaderCanonical]
+			if test.expectNewRequestId {
+				g.Expect(len(headers)).To(Equal(1))
+			} else {
+				g.Expect(headers[0]).To(Equal(test.expectedRequestId))
+			}
+		})
+	}
+}
