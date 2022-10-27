@@ -2,7 +2,8 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-executor
-IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+# IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
+IMG ?= afakharany/seldon-core-executor
 IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
 IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
 

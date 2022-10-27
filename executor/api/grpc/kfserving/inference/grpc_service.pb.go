@@ -24,11 +24,11 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-//@@
-//@@.. cpp:var:: message ServerLiveRequest
-//@@
-//@@   Request message for ServerLive.
-//@@
+// @@
+// @@.. cpp:var:: message ServerLiveRequest
+// @@
+// @@   Request message for ServerLive.
+// @@
 type ServerLiveRequest struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -60,11 +60,11 @@ func (m *ServerLiveRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ServerLiveRequest proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message ServerLiveResponse
-//@@
-//@@   Response message for ServerLive.
-//@@
+// @@
+// @@.. cpp:var:: message ServerLiveResponse
+// @@
+// @@   Response message for ServerLive.
+// @@
 type ServerLiveResponse struct {
 	//@@
 	//@@  .. cpp:var:: bool live
@@ -109,11 +109,11 @@ func (m *ServerLiveResponse) GetLive() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ServerReadyRequest
-//@@
-//@@   Request message for ServerReady.
-//@@
+// @@
+// @@.. cpp:var:: message ServerReadyRequest
+// @@
+// @@   Request message for ServerReady.
+// @@
 type ServerReadyRequest struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -145,11 +145,11 @@ func (m *ServerReadyRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ServerReadyRequest proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message ServerReadyResponse
-//@@
-//@@   Response message for ServerReady.
-//@@
+// @@
+// @@.. cpp:var:: message ServerReadyResponse
+// @@
+// @@   Response message for ServerReady.
+// @@
 type ServerReadyResponse struct {
 	//@@
 	//@@  .. cpp:var:: bool ready
@@ -194,11 +194,11 @@ func (m *ServerReadyResponse) GetReady() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ModelReadyRequest
-//@@
-//@@   Request message for ModelReady.
-//@@
+// @@
+// @@.. cpp:var:: message ModelReadyRequest
+// @@
+// @@   Request message for ModelReady.
+// @@
 type ModelReadyRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -256,11 +256,11 @@ func (m *ModelReadyRequest) GetVersion() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message ModelReadyResponse
-//@@
-//@@   Response message for ModelReady.
-//@@
+// @@
+// @@.. cpp:var:: message ModelReadyResponse
+// @@
+// @@   Response message for ModelReady.
+// @@
 type ModelReadyResponse struct {
 	//@@
 	//@@  .. cpp:var:: bool ready
@@ -305,11 +305,11 @@ func (m *ModelReadyResponse) GetReady() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ServerMetadataRequest
-//@@
-//@@   Request message for ServerMetadata.
-//@@
+// @@
+// @@.. cpp:var:: message ServerMetadataRequest
+// @@
+// @@   Request message for ServerMetadata.
+// @@
 type ServerMetadataRequest struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -341,11 +341,11 @@ func (m *ServerMetadataRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ServerMetadataRequest proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message ServerMetadataResponse
-//@@
-//@@   Response message for ServerMetadata.
-//@@
+// @@
+// @@.. cpp:var:: message ServerMetadataResponse
+// @@
+// @@   Response message for ServerMetadata.
+// @@
 type ServerMetadataResponse struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -416,11 +416,11 @@ func (m *ServerMetadataResponse) GetExtensions() []string {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelMetadataRequest
-//@@
-//@@   Request message for ModelMetadata.
-//@@
+// @@
+// @@.. cpp:var:: message ModelMetadataRequest
+// @@
+// @@   Request message for ModelMetadata.
+// @@
 type ModelMetadataRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -479,11 +479,11 @@ func (m *ModelMetadataRequest) GetVersion() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message ModelMetadataResponse
-//@@
-//@@   Response message for ModelMetadata.
-//@@
+// @@
+// @@.. cpp:var:: message ModelMetadataResponse
+// @@
+// @@   Response message for ModelMetadata.
+// @@
 type ModelMetadataResponse struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -580,11 +580,11 @@ func (m *ModelMetadataResponse) GetOutputs() []*ModelMetadataResponse_TensorMeta
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message TensorMetadata
-//@@
-//@@     Metadata for a tensor.
-//@@
+// @@
+// @@  .. cpp:var:: message TensorMetadata
+// @@
+// @@     Metadata for a tensor.
+// @@
 type ModelMetadataResponse_TensorMetadata struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -656,11 +656,11 @@ func (m *ModelMetadataResponse_TensorMetadata) GetShape() []int64 {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message InferParameter
-//@@
-//@@   An inference parameter value.
-//@@
+// @@
+// @@.. cpp:var:: message InferParameter
+// @@
+// @@   An inference parameter value.
+// @@
 type InferParameter struct {
 	//@@  .. cpp:var:: oneof parameter_choice
 	//@@
@@ -762,13 +762,13 @@ func (*InferParameter) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-//@@
-//@@.. cpp:var:: message InferTensorContents
-//@@
-//@@   The data contained in a tensor represented by the repeated type
-//@@   that matches the tensor's data type. Protobuf oneof is not used
-//@@   because oneofs cannot contain repeated fields.
-//@@
+// @@
+// @@.. cpp:var:: message InferTensorContents
+// @@
+// @@   The data contained in a tensor represented by the repeated type
+// @@   that matches the tensor's data type. Protobuf oneof is not used
+// @@   because oneofs cannot contain repeated fields.
+// @@
 type InferTensorContents struct {
 	//@@
 	//@@  .. cpp:var:: bool bool_contents (repeated)
@@ -922,11 +922,11 @@ func (m *InferTensorContents) GetByteContents() [][]byte {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelInferRequest
-//@@
-//@@   Request message for ModelInfer.
-//@@
+// @@
+// @@.. cpp:var:: message ModelInferRequest
+// @@
+// @@   Request message for ModelInfer.
+// @@
 type ModelInferRequest struct {
 	//@@  .. cpp:var:: string model_name
 	//@@
@@ -1067,11 +1067,11 @@ func (m *ModelInferRequest) GetRawInputContents() [][]byte {
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message InferInputTensor
-//@@
-//@@     An input tensor for an inference request.
-//@@
+// @@
+// @@  .. cpp:var:: message InferInputTensor
+// @@
+// @@     An input tensor for an inference request.
+// @@
 type ModelInferRequest_InferInputTensor struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -1168,11 +1168,11 @@ func (m *ModelInferRequest_InferInputTensor) GetContents() *InferTensorContents 
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message InferRequestedOutputTensor
-//@@
-//@@     An output tensor requested for an inference request.
-//@@
+// @@
+// @@  .. cpp:var:: message InferRequestedOutputTensor
+// @@
+// @@     An output tensor requested for an inference request.
+// @@
 type ModelInferRequest_InferRequestedOutputTensor struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -1233,11 +1233,11 @@ func (m *ModelInferRequest_InferRequestedOutputTensor) GetParameters() map[strin
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelInferResponse
-//@@
-//@@   Response message for ModelInfer.
-//@@
+// @@
+// @@.. cpp:var:: message ModelInferResponse
+// @@
+// @@   Response message for ModelInfer.
+// @@
 type ModelInferResponse struct {
 	//@@  .. cpp:var:: string model_name
 	//@@
@@ -1361,11 +1361,11 @@ func (m *ModelInferResponse) GetRawOutputContents() [][]byte {
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message InferOutputTensor
-//@@
-//@@     An output tensor returned for an inference request.
-//@@
+// @@
+// @@  .. cpp:var:: message InferOutputTensor
+// @@
+// @@     An output tensor returned for an inference request.
+// @@
 type ModelInferResponse_InferOutputTensor struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -1462,11 +1462,11 @@ func (m *ModelInferResponse_InferOutputTensor) GetContents() *InferTensorContent
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelStreamInferResponse
-//@@
-//@@   Response message for ModelStreamInfer.
-//@@
+// @@
+// @@.. cpp:var:: message ModelStreamInferResponse
+// @@
+// @@   Response message for ModelStreamInfer.
+// @@
 type ModelStreamInferResponse struct {
 	//@@
 	//@@  .. cpp:var:: string error_message
@@ -1525,11 +1525,11 @@ func (m *ModelStreamInferResponse) GetInferResponse() *ModelInferResponse {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelConfigRequest
-//@@
-//@@   Request message for ModelConfig.
-//@@
+// @@
+// @@.. cpp:var:: message ModelConfigRequest
+// @@
+// @@   Request message for ModelConfig.
+// @@
 type ModelConfigRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -1587,11 +1587,11 @@ func (m *ModelConfigRequest) GetVersion() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message ModelConfigResponse
-//@@
-//@@   Response message for ModelConfig.
-//@@
+// @@
+// @@.. cpp:var:: message ModelConfigResponse
+// @@
+// @@   Response message for ModelConfig.
+// @@
 type ModelConfigResponse struct {
 	//@@
 	//@@  .. cpp:var:: ModelConfig config
@@ -1636,11 +1636,11 @@ func (m *ModelConfigResponse) GetConfig() *ModelConfig {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelStatisticsRequest
-//@@
-//@@   Request message for ModelStatistics.
-//@@
+// @@
+// @@.. cpp:var:: message ModelStatisticsRequest
+// @@
+// @@   Request message for ModelStatistics.
+// @@
 type ModelStatisticsRequest struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -1698,11 +1698,11 @@ func (m *ModelStatisticsRequest) GetVersion() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message StatisticDuration
-//@@
-//@@   Statistic recording a cumulative duration metric.
-//@@
+// @@
+// @@.. cpp:var:: message StatisticDuration
+// @@
+// @@   Statistic recording a cumulative duration metric.
+// @@
 type StatisticDuration struct {
 	//@@  .. cpp:var:: uint64 count
 	//@@
@@ -1758,11 +1758,11 @@ func (m *StatisticDuration) GetNs() uint64 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message InferStatistics
-//@@
-//@@   Inference statistics.
-//@@
+// @@
+// @@.. cpp:var:: message InferStatistics
+// @@
+// @@   Inference statistics.
+// @@
 type InferStatistics struct {
 	//@@  .. cpp:var:: StatisticDuration success
 	//@@
@@ -1873,11 +1873,11 @@ func (m *InferStatistics) GetComputeOutput() *StatisticDuration {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message InferBatchStatistics
-//@@
-//@@   Inference batch statistics.
-//@@
+// @@
+// @@.. cpp:var:: message InferBatchStatistics
+// @@
+// @@   Inference batch statistics.
+// @@
 type InferBatchStatistics struct {
 	//@@  .. cpp:var:: uint64 batch_size
 	//@@
@@ -1964,11 +1964,11 @@ func (m *InferBatchStatistics) GetComputeOutput() *StatisticDuration {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelStatistics
-//@@
-//@@   Statistics for a specific model and version.
-//@@
+// @@
+// @@.. cpp:var:: message ModelStatistics
+// @@
+// @@   Statistics for a specific model and version.
+// @@
 type ModelStatistics struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -2103,11 +2103,11 @@ func (m *ModelStatistics) GetBatchStats() []*InferBatchStatistics {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelStatisticsResponse
-//@@
-//@@   Response message for ModelStatistics.
-//@@
+// @@
+// @@.. cpp:var:: message ModelStatisticsResponse
+// @@
+// @@   Response message for ModelStatistics.
+// @@
 type ModelStatisticsResponse struct {
 	//@@  .. cpp:var:: ModelStatistics model_stats (repeated)
 	//@@
@@ -2151,11 +2151,11 @@ func (m *ModelStatisticsResponse) GetModelStats() []*ModelStatistics {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message RepositoryIndexRequest
-//@@
-//@@   Request message for RepositoryIndex.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryIndexRequest
+// @@
+// @@   Request message for RepositoryIndex.
+// @@
 type RepositoryIndexRequest struct {
 	//@@  .. cpp:var:: string repository_name
 	//@@
@@ -2212,11 +2212,11 @@ func (m *RepositoryIndexRequest) GetReady() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message RepositoryIndexResponse
-//@@
-//@@   Response message for RepositoryIndex.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryIndexResponse
+// @@
+// @@   Response message for RepositoryIndex.
+// @@
 type RepositoryIndexResponse struct {
 	//@@
 	//@@  .. cpp:var:: ModelIndex models (repeated)
@@ -2261,11 +2261,11 @@ func (m *RepositoryIndexResponse) GetModels() []*RepositoryIndexResponse_ModelIn
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message ModelIndex
-//@@
-//@@     Index entry for a model.
-//@@
+// @@
+// @@  .. cpp:var:: message ModelIndex
+// @@
+// @@     Index entry for a model.
+// @@
 type RepositoryIndexResponse_ModelIndex struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -2348,11 +2348,11 @@ func (m *RepositoryIndexResponse_ModelIndex) GetReason() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message RepositoryModelLoadRequest
-//@@
-//@@   Request message for RepositoryModelLoad.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryModelLoadRequest
+// @@
+// @@   Request message for RepositoryModelLoad.
+// @@
 type RepositoryModelLoadRequest struct {
 	//@@  .. cpp:var:: string repository_name
 	//@@
@@ -2409,11 +2409,11 @@ func (m *RepositoryModelLoadRequest) GetModelName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message RepositoryModelLoadResponse
-//@@
-//@@   Response message for RepositoryModelLoad.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryModelLoadResponse
+// @@
+// @@   Response message for RepositoryModelLoad.
+// @@
 type RepositoryModelLoadResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2445,11 +2445,11 @@ func (m *RepositoryModelLoadResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RepositoryModelLoadResponse proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message RepositoryModelUnloadRequest
-//@@
-//@@   Request message for RepositoryModelUnload.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryModelUnloadRequest
+// @@
+// @@   Request message for RepositoryModelUnload.
+// @@
 type RepositoryModelUnloadRequest struct {
 	//@@  .. cpp:var:: string repository_name
 	//@@
@@ -2506,11 +2506,11 @@ func (m *RepositoryModelUnloadRequest) GetModelName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message RepositoryModelUnloadResponse
-//@@
-//@@   Response message for RepositoryModelUnload.
-//@@
+// @@
+// @@.. cpp:var:: message RepositoryModelUnloadResponse
+// @@
+// @@   Response message for RepositoryModelUnload.
+// @@
 type RepositoryModelUnloadResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2542,11 +2542,11 @@ func (m *RepositoryModelUnloadResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_RepositoryModelUnloadResponse proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryStatusRequest
-//@@
-//@@   Request message for SystemSharedMemoryStatus.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryStatusRequest
+// @@
+// @@   Request message for SystemSharedMemoryStatus.
+// @@
 type SystemSharedMemoryStatusRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -2592,11 +2592,11 @@ func (m *SystemSharedMemoryStatusRequest) GetName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryStatusResponse
-//@@
-//@@   Response message for SystemSharedMemoryStatus.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryStatusResponse
+// @@
+// @@   Response message for SystemSharedMemoryStatus.
+// @@
 type SystemSharedMemoryStatusResponse struct {
 	//@@
 	//@@  .. cpp:var:: map<string,RegionStatus> regions
@@ -2642,11 +2642,11 @@ func (m *SystemSharedMemoryStatusResponse) GetRegions() map[string]*SystemShared
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message RegionStatus
-//@@
-//@@     Status for a shared memory region.
-//@@
+// @@
+// @@  .. cpp:var:: message RegionStatus
+// @@
+// @@     Status for a shared memory region.
+// @@
 type SystemSharedMemoryStatusResponse_RegionStatus struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -2733,11 +2733,11 @@ func (m *SystemSharedMemoryStatusResponse_RegionStatus) GetByteSize() uint64 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryRegisterRequest
-//@@
-//@@   Request message for SystemSharedMemoryRegister.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryRegisterRequest
+// @@
+// @@   Request message for SystemSharedMemoryRegister.
+// @@
 type SystemSharedMemoryRegisterRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -2820,11 +2820,11 @@ func (m *SystemSharedMemoryRegisterRequest) GetByteSize() uint64 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryRegisterResponse
-//@@
-//@@   Response message for SystemSharedMemoryRegister.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryRegisterResponse
+// @@
+// @@   Response message for SystemSharedMemoryRegister.
+// @@
 type SystemSharedMemoryRegisterResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2856,11 +2856,11 @@ func (m *SystemSharedMemoryRegisterResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SystemSharedMemoryRegisterResponse proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryUnregisterRequest
-//@@
-//@@   Request message for SystemSharedMemoryUnregister.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryUnregisterRequest
+// @@
+// @@   Request message for SystemSharedMemoryUnregister.
+// @@
 type SystemSharedMemoryUnregisterRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -2906,11 +2906,11 @@ func (m *SystemSharedMemoryUnregisterRequest) GetName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message SystemSharedMemoryUnregisterResponse
-//@@
-//@@   Response message for SystemSharedMemoryUnregister.
-//@@
+// @@
+// @@.. cpp:var:: message SystemSharedMemoryUnregisterResponse
+// @@
+// @@   Response message for SystemSharedMemoryUnregister.
+// @@
 type SystemSharedMemoryUnregisterResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2942,11 +2942,11 @@ func (m *SystemSharedMemoryUnregisterResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SystemSharedMemoryUnregisterResponse proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryStatusRequest
-//@@
-//@@   Request message for CudaSharedMemoryStatus.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryStatusRequest
+// @@
+// @@   Request message for CudaSharedMemoryStatus.
+// @@
 type CudaSharedMemoryStatusRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -2992,11 +2992,11 @@ func (m *CudaSharedMemoryStatusRequest) GetName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryStatusResponse
-//@@
-//@@   Response message for CudaSharedMemoryStatus.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryStatusResponse
+// @@
+// @@   Response message for CudaSharedMemoryStatus.
+// @@
 type CudaSharedMemoryStatusResponse struct {
 	//@@
 	//@@  .. cpp:var:: map<string,RegionStatus> regions
@@ -3042,11 +3042,11 @@ func (m *CudaSharedMemoryStatusResponse) GetRegions() map[string]*CudaSharedMemo
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message RegionStatus
-//@@
-//@@     Status for a shared memory region.
-//@@
+// @@
+// @@  .. cpp:var:: message RegionStatus
+// @@
+// @@     Status for a shared memory region.
+// @@
 type CudaSharedMemoryStatusResponse_RegionStatus struct {
 	//@@
 	//@@    .. cpp:var:: string name
@@ -3119,11 +3119,11 @@ func (m *CudaSharedMemoryStatusResponse_RegionStatus) GetByteSize() uint64 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryRegisterRequest
-//@@
-//@@   Request message for CudaSharedMemoryRegister.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryRegisterRequest
+// @@
+// @@   Request message for CudaSharedMemoryRegister.
+// @@
 type CudaSharedMemoryRegisterRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -3204,11 +3204,11 @@ func (m *CudaSharedMemoryRegisterRequest) GetByteSize() uint64 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryRegisterResponse
-//@@
-//@@   Response message for CudaSharedMemoryRegister.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryRegisterResponse
+// @@
+// @@   Response message for CudaSharedMemoryRegister.
+// @@
 type CudaSharedMemoryRegisterResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -3240,11 +3240,11 @@ func (m *CudaSharedMemoryRegisterResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CudaSharedMemoryRegisterResponse proto.InternalMessageInfo
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryUnregisterRequest
-//@@
-//@@   Request message for CudaSharedMemoryUnregister.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryUnregisterRequest
+// @@
+// @@   Request message for CudaSharedMemoryUnregister.
+// @@
 type CudaSharedMemoryUnregisterRequest struct {
 	//@@
 	//@@  .. cpp:var:: string name
@@ -3290,11 +3290,11 @@ func (m *CudaSharedMemoryUnregisterRequest) GetName() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message CudaSharedMemoryUnregisterResponse
-//@@
-//@@   Response message for CudaSharedMemoryUnregister.
-//@@
+// @@
+// @@.. cpp:var:: message CudaSharedMemoryUnregisterResponse
+// @@
+// @@   Response message for CudaSharedMemoryUnregister.
+// @@
 type CudaSharedMemoryUnregisterResponse struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

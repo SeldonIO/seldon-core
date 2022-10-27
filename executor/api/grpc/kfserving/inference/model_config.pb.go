@@ -20,11 +20,11 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-//@@
-//@@.. cpp:enum:: DataType
-//@@
-//@@   Data types supported for input and output tensors.
-//@@
+// @@
+// @@.. cpp:enum:: DataType
+// @@
+// @@   Data types supported for input and output tensors.
+// @@
 type DataType int32
 
 const (
@@ -100,11 +100,11 @@ func (DataType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{0}
 }
 
-//@@
-//@@  .. cpp:enum:: Kind
-//@@
-//@@     Kind of this instance group.
-//@@
+// @@
+// @@  .. cpp:enum:: Kind
+// @@
+// @@     Kind of this instance group.
+// @@
 type ModelInstanceGroup_Kind int32
 
 const (
@@ -161,11 +161,11 @@ func (ModelInstanceGroup_Kind) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{0, 0}
 }
 
-//@@
-//@@  .. cpp:enum:: Format
-//@@
-//@@     The format for the input.
-//@@
+// @@
+// @@  .. cpp:enum:: Format
+// @@
+// @@     The format for the input.
+// @@
 type ModelInput_Format int32
 
 const (
@@ -214,11 +214,11 @@ func (ModelInput_Format) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{2, 0}
 }
 
-//@@
-//@@    .. cpp:enum:: Kind
-//@@
-//@@       The kind of the batch input.
-//@@
+// @@
+// @@    .. cpp:enum:: Kind
+// @@
+// @@       The kind of the batch input.
+// @@
 type BatchInput_Kind int32
 
 const (
@@ -279,11 +279,11 @@ func (BatchInput_Kind) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{4, 0}
 }
 
-//@@
-//@@  .. cpp:enum:: Kind
-//@@
-//@@     The kind of the batch output.
-//@@
+// @@
+// @@  .. cpp:enum:: Kind
+// @@
+// @@     The kind of the batch output.
+// @@
 type BatchOutput_Kind int32
 
 const (
@@ -312,13 +312,13 @@ func (BatchOutput_Kind) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{5, 0}
 }
 
-//@@
-//@@  .. cpp:enum:: ModelPriority
-//@@
-//@@     Model priorities. A model will be given scheduling and execution
-//@@     preference over models at lower priorities. Current model
-//@@     priorities only work for TensorRT models.
-//@@
+// @@
+// @@  .. cpp:enum:: ModelPriority
+// @@
+// @@     Model priorities. A model will be given scheduling and execution
+// @@     preference over models at lower priorities. Current model
+// @@     priorities only work for TensorRT models.
+// @@
 type ModelOptimizationPolicy_ModelPriority int32
 
 const (
@@ -359,11 +359,11 @@ func (ModelOptimizationPolicy_ModelPriority) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{7, 0}
 }
 
-//@@
-//@@  .. cpp:enum:: TimeoutAction
-//@@
-//@@     The action applied to timed-out requests.
-//@@
+// @@
+// @@  .. cpp:enum:: TimeoutAction
+// @@
+// @@     The action applied to timed-out requests.
+// @@
 type ModelQueuePolicy_TimeoutAction int32
 
 const (
@@ -400,11 +400,11 @@ func (ModelQueuePolicy_TimeoutAction) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{8, 0}
 }
 
-//@@
-//@@    .. cpp:enum:: Kind
-//@@
-//@@       The kind of the control.
-//@@
+// @@
+// @@    .. cpp:enum:: Kind
+// @@
+// @@       The kind of the control.
+// @@
 type ModelSequenceBatching_Control_Kind int32
 
 const (
@@ -468,12 +468,12 @@ func (ModelSequenceBatching_Control_Kind) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_5214c5af697e4203, []int{10, 0, 0}
 }
 
-//@@
-//@@.. cpp:var:: message ModelInstanceGroup
-//@@
-//@@   A group of one or more instances of a model and resources made
-//@@   available for those instances.
-//@@
+// @@
+// @@.. cpp:var:: message ModelInstanceGroup
+// @@
+// @@   A group of one or more instances of a model and resources made
+// @@   available for those instances.
+// @@
 type ModelInstanceGroup struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -581,11 +581,11 @@ func (m *ModelInstanceGroup) GetProfile() []string {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelTensorReshape
-//@@
-//@@   Reshape specification for input and output tensors.
-//@@
+// @@
+// @@.. cpp:var:: message ModelTensorReshape
+// @@
+// @@   Reshape specification for input and output tensors.
+// @@
 type ModelTensorReshape struct {
 	//@@  .. cpp:var:: int64 shape (repeated)
 	//@@
@@ -629,11 +629,11 @@ func (m *ModelTensorReshape) GetShape() []int64 {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelInput
-//@@
-//@@   An input required by the model.
-//@@
+// @@
+// @@.. cpp:var:: message ModelInput
+// @@
+// @@   An input required by the model.
+// @@
 type ModelInput struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -761,11 +761,11 @@ func (m *ModelInput) GetAllowRaggedBatch() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ModelOutput
-//@@
-//@@   An output produced by the model.
-//@@
+// @@
+// @@.. cpp:var:: message ModelOutput
+// @@
+// @@   An output produced by the model.
+// @@
 type ModelOutput struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -876,11 +876,11 @@ func (m *ModelOutput) GetIsShapeTensor() bool {
 	return false
 }
 
-//@@  .. cpp:var:: message BatchInput
-//@@
-//@@     A batch input is an additional input that must be added by
-//@@     the backend based on all the requests in a batch.
-//@@
+// @@  .. cpp:var:: message BatchInput
+// @@
+// @@     A batch input is an additional input that must be added by
+// @@     the backend based on all the requests in a batch.
+// @@
 type BatchInput struct {
 	//@@    .. cpp:var:: Kind kind
 	//@@
@@ -964,11 +964,11 @@ func (m *BatchInput) GetSourceInput() []string {
 	return nil
 }
 
-//@@.. cpp:var:: message BatchOutput
-//@@
-//@@   A batch output is an output produced by the model that must be handled
-//@@   differently by the backend based on all the requests in a batch.
-//@@
+// @@.. cpp:var:: message BatchOutput
+// @@
+// @@   A batch output is an output produced by the model that must be handled
+// @@   differently by the backend based on all the requests in a batch.
+// @@
 type BatchOutput struct {
 	//@@  .. cpp:var:: string target_name (repeated)
 	//@@
@@ -1038,12 +1038,12 @@ func (m *BatchOutput) GetSourceInput() []string {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelVersionPolicy
-//@@
-//@@   Policy indicating which versions of a model should be made
-//@@   available by the inference server.
-//@@
+// @@
+// @@.. cpp:var:: message ModelVersionPolicy
+// @@
+// @@   Policy indicating which versions of a model should be made
+// @@   available by the inference server.
+// @@
 type ModelVersionPolicy struct {
 	//@@  .. cpp:var:: oneof policy_choice
 	//@@
@@ -1145,11 +1145,11 @@ func (*ModelVersionPolicy) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-//@@  .. cpp:var:: message Latest
-//@@
-//@@     Serve only the latest version(s) of a model. This is
-//@@     the default policy.
-//@@
+// @@  .. cpp:var:: message Latest
+// @@
+// @@     Serve only the latest version(s) of a model. This is
+// @@     the default policy.
+// @@
 type ModelVersionPolicy_Latest struct {
 	//@@    .. cpp:var:: uint32 num_versions
 	//@@
@@ -1196,10 +1196,10 @@ func (m *ModelVersionPolicy_Latest) GetNumVersions() uint32 {
 	return 0
 }
 
-//@@  .. cpp:var:: message All
-//@@
-//@@     Serve all versions of the model.
-//@@
+// @@  .. cpp:var:: message All
+// @@
+// @@     Serve all versions of the model.
+// @@
 type ModelVersionPolicy_All struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -1231,10 +1231,10 @@ func (m *ModelVersionPolicy_All) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ModelVersionPolicy_All proto.InternalMessageInfo
 
-//@@  .. cpp:var:: message Specific
-//@@
-//@@     Serve only specific versions of the model.
-//@@
+// @@  .. cpp:var:: message Specific
+// @@
+// @@     Serve only specific versions of the model.
+// @@
 type ModelVersionPolicy_Specific struct {
 	//@@    .. cpp:var:: int64 versions (repeated)
 	//@@
@@ -1278,13 +1278,13 @@ func (m *ModelVersionPolicy_Specific) GetVersions() []int64 {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelOptimizationPolicy
-//@@
-//@@   Optimization settings for a model. These settings control if/how a
-//@@   model is optimized and prioritized by the backend framework when
-//@@   it is loaded.
-//@@
+// @@
+// @@.. cpp:var:: message ModelOptimizationPolicy
+// @@
+// @@   Optimization settings for a model. These settings control if/how a
+// @@   model is optimized and prioritized by the backend framework when
+// @@   it is loaded.
+// @@
 type ModelOptimizationPolicy struct {
 	//@@  .. cpp:var:: Graph graph
 	//@@
@@ -1392,16 +1392,16 @@ func (m *ModelOptimizationPolicy) GetOutputPinnedMemory() *ModelOptimizationPoli
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message Graph
-//@@
-//@@     Enable generic graph optimization of the model. If not specified
-//@@     the framework's default level of optimization is used. Supports
-//@@     TensorFlow graphdef and savedmodel and Onnx models. For TensorFlow
-//@@     causes XLA to be enabled/disabled for the model. For Onnx defaults
-//@@     to enabling all optimizations, -1 enables only basic optimizations,
-//@@     +1 enables only basic and extended optimizations.
-//@@
+// @@
+// @@  .. cpp:var:: message Graph
+// @@
+// @@     Enable generic graph optimization of the model. If not specified
+// @@     the framework's default level of optimization is used. Supports
+// @@     TensorFlow graphdef and savedmodel and Onnx models. For TensorFlow
+// @@     causes XLA to be enabled/disabled for the model. For Onnx defaults
+// @@     to enabling all optimizations, -1 enables only basic optimizations,
+// @@     +1 enables only basic and extended optimizations.
+// @@
 type ModelOptimizationPolicy_Graph struct {
 	//@@    .. cpp:var:: int32 level
 	//@@
@@ -1450,11 +1450,11 @@ func (m *ModelOptimizationPolicy_Graph) GetLevel() int32 {
 	return 0
 }
 
-//@@
-//@@  .. cpp:var:: message Cuda
-//@@
-//@@     CUDA-specific optimization settings.
-//@@
+// @@
+// @@  .. cpp:var:: message Cuda
+// @@
+// @@     CUDA-specific optimization settings.
+// @@
 type ModelOptimizationPolicy_Cuda struct {
 	//@@    .. cpp:var:: bool graphs
 	//@@
@@ -1547,10 +1547,10 @@ func (m *ModelOptimizationPolicy_Cuda) GetAllowInexactMatch() bool {
 	return false
 }
 
-//@@    .. cpp:var:: message GraphSpec
-//@@
-//@@       Specification of the CUDA graph to be captured.
-//@@
+// @@    .. cpp:var:: message GraphSpec
+// @@
+// @@       Specification of the CUDA graph to be captured.
+// @@
 type ModelOptimizationPolicy_Cuda_GraphSpec struct {
 	//@@      .. cpp:var:: int32 batch_size
 	//@@
@@ -1611,10 +1611,10 @@ func (m *ModelOptimizationPolicy_Cuda_GraphSpec) GetInput() map[string]*ModelOpt
 	return nil
 }
 
-//@@      .. cpp:var:: message Dims
-//@@
-//@@         Specification of tensor dimension.
-//@@
+// @@      .. cpp:var:: message Dims
+// @@
+// @@         Specification of tensor dimension.
+// @@
 type ModelOptimizationPolicy_Cuda_GraphSpec_Shape struct {
 	//@@        .. cpp:var:: int64 dim (repeated)
 	//@@
@@ -1662,22 +1662,22 @@ func (m *ModelOptimizationPolicy_Cuda_GraphSpec_Shape) GetDim() []int64 {
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message ExecutionAccelerators
-//@@
-//@@     Specify the preferred execution accelerators to be used to execute
-//@@     the model. Currently only recognized by ONNX Runtime backend and
-//@@     TensorFlow backend.
-//@@
-//@@     For ONNX Runtime backend, it will deploy the model with the execution
-//@@     accelerators by priority, the priority is determined based on the
-//@@     order that they are set, i.e. the provider at the front has highest
-//@@     priority. Overall, the priority will be in the following order:
-//@@         <gpu_execution_accelerator> (if instance is on GPU)
-//@@         CUDA Execution Provider     (if instance is on GPU)
-//@@         <cpu_execution_accelerator>
-//@@         Default CPU Execution Provider
-//@@
+// @@
+// @@  .. cpp:var:: message ExecutionAccelerators
+// @@
+// @@     Specify the preferred execution accelerators to be used to execute
+// @@     the model. Currently only recognized by ONNX Runtime backend and
+// @@     TensorFlow backend.
+// @@
+// @@     For ONNX Runtime backend, it will deploy the model with the execution
+// @@     accelerators by priority, the priority is determined based on the
+// @@     order that they are set, i.e. the provider at the front has highest
+// @@     priority. Overall, the priority will be in the following order:
+// @@         <gpu_execution_accelerator> (if instance is on GPU)
+// @@         CUDA Execution Provider     (if instance is on GPU)
+// @@         <cpu_execution_accelerator>
+// @@         Default CPU Execution Provider
+// @@
 type ModelOptimizationPolicy_ExecutionAccelerators struct {
 	//@@    .. cpp:var:: Accelerator gpu_execution_accelerator (repeated)
 	//@@
@@ -1775,13 +1775,13 @@ func (m *ModelOptimizationPolicy_ExecutionAccelerators) GetCpuExecutionAccelerat
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message Accelerator
-//@@
-//@@     Specify the accelerator to be used to execute the model.
-//@@     Accelerator with the same name may accept different parameters
-//@@     depending on the backends.
-//@@
+// @@
+// @@  .. cpp:var:: message Accelerator
+// @@
+// @@     Specify the accelerator to be used to execute the model.
+// @@     Accelerator with the same name may accept different parameters
+// @@     depending on the backends.
+// @@
 type ModelOptimizationPolicy_ExecutionAccelerators_Accelerator struct {
 	//@@    .. cpp:var:: string name
 	//@@
@@ -1841,19 +1841,19 @@ func (m *ModelOptimizationPolicy_ExecutionAccelerators_Accelerator) GetParameter
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message PinnedMemoryBuffer
-//@@
-//@@     Specify whether to use a pinned memory buffer when transferring data
-//@@     between non-pinned system memory and GPU memory. Using a pinned
-//@@     memory buffer for system from/to GPU transfers will typically provide
-//@@     increased performance. For example, in the common use case where the
-//@@     request provides inputs and delivers outputs via non-pinned system
-//@@     memory, if the model instance accepts GPU IOs, the inputs will be
-//@@     processed by two copies: from non-pinned system memory to pinned
-//@@     memory, and from pinned memory to GPU memory. Similarly, pinned
-//@@     memory will be used for delivering the outputs.
-//@@
+// @@
+// @@  .. cpp:var:: message PinnedMemoryBuffer
+// @@
+// @@     Specify whether to use a pinned memory buffer when transferring data
+// @@     between non-pinned system memory and GPU memory. Using a pinned
+// @@     memory buffer for system from/to GPU transfers will typically provide
+// @@     increased performance. For example, in the common use case where the
+// @@     request provides inputs and delivers outputs via non-pinned system
+// @@     memory, if the model instance accepts GPU IOs, the inputs will be
+// @@     processed by two copies: from non-pinned system memory to pinned
+// @@     memory, and from pinned memory to GPU memory. Similarly, pinned
+// @@     memory will be used for delivering the outputs.
+// @@
 type ModelOptimizationPolicy_PinnedMemoryBuffer struct {
 	//@@    .. cpp:var:: bool enable
 	//@@
@@ -1901,11 +1901,11 @@ func (m *ModelOptimizationPolicy_PinnedMemoryBuffer) GetEnable() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ModelQueuePolicy
-//@@
-//@@   Queue policy for inference requests.
-//@@
+// @@
+// @@.. cpp:var:: message ModelQueuePolicy
+// @@
+// @@   Queue policy for inference requests.
+// @@
 type ModelQueuePolicy struct {
 	//@@
 	//@@  .. cpp:var:: TimeoutAction timeout_action
@@ -1997,12 +1997,12 @@ func (m *ModelQueuePolicy) GetMaxQueueSize() uint32 {
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message ModelDynamicBatching
-//@@
-//@@   Dynamic batching configuration. These settings control how dynamic
-//@@   batching operates for the model.
-//@@
+// @@
+// @@.. cpp:var:: message ModelDynamicBatching
+// @@
+// @@   Dynamic batching configuration. These settings control how dynamic
+// @@   batching operates for the model.
+// @@
 type ModelDynamicBatching struct {
 	//@@  .. cpp:var:: int32 preferred_batch_size (repeated)
 	//@@
@@ -2142,12 +2142,12 @@ func (m *ModelDynamicBatching) GetPriorityQueuePolicy() map[uint32]*ModelQueuePo
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelSequenceBatching
-//@@
-//@@   Sequence batching configuration. These settings control how sequence
-//@@   batching operates for the model.
-//@@
+// @@
+// @@.. cpp:var:: message ModelSequenceBatching
+// @@
+// @@   Sequence batching configuration. These settings control how sequence
+// @@   batching operates for the model.
+// @@
 type ModelSequenceBatching struct {
 	//@@  .. cpp:var:: oneof strategy_choice
 	//@@
@@ -2266,11 +2266,11 @@ func (*ModelSequenceBatching) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-//@@  .. cpp:var:: message Control
-//@@
-//@@     A control is a signal that the sequence batcher uses to
-//@@     communicate with a backend.
-//@@
+// @@  .. cpp:var:: message Control
+// @@
+// @@     A control is a signal that the sequence batcher uses to
+// @@     communicate with a backend.
+// @@
 type ModelSequenceBatching_Control struct {
 	//@@    .. cpp:var:: Kind kind
 	//@@
@@ -2358,10 +2358,10 @@ func (m *ModelSequenceBatching_Control) GetDataType() DataType {
 	return DataType_TYPE_INVALID
 }
 
-//@@  .. cpp:var:: message ControlInput
-//@@
-//@@     The sequence control values to communicate by a model input.
-//@@
+// @@  .. cpp:var:: message ControlInput
+// @@
+// @@     The sequence control values to communicate by a model input.
+// @@
 type ModelSequenceBatching_ControlInput struct {
 	//@@    .. cpp:var:: string name
 	//@@
@@ -2418,14 +2418,14 @@ func (m *ModelSequenceBatching_ControlInput) GetControl() []*ModelSequenceBatchi
 	return nil
 }
 
-//@@  .. cpp:var:: message StrategyDirect
-//@@
-//@@     The sequence batcher uses a specific, unique batch
-//@@     slot for each sequence. All inference requests in a
-//@@     sequence are directed to the same batch slot in the same
-//@@     model instance over the lifetime of the sequence. This
-//@@     is the default strategy.
-//@@
+// @@  .. cpp:var:: message StrategyDirect
+// @@
+// @@     The sequence batcher uses a specific, unique batch
+// @@     slot for each sequence. All inference requests in a
+// @@     sequence are directed to the same batch slot in the same
+// @@     model instance over the lifetime of the sequence. This
+// @@     is the default strategy.
+// @@
 type ModelSequenceBatching_StrategyDirect struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -2457,17 +2457,17 @@ func (m *ModelSequenceBatching_StrategyDirect) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ModelSequenceBatching_StrategyDirect proto.InternalMessageInfo
 
-//@@  .. cpp:var:: message StrategyOldest
-//@@
-//@@     The sequence batcher maintains up to 'max_candidate_sequences'
-//@@     candidate sequences. 'max_candidate_sequences' can be greater
-//@@     than the model's 'max_batch_size'. For inferencing the batcher
-//@@     chooses from the candidate sequences up to 'max_batch_size'
-//@@     inference requests. Requests are chosen in an oldest-first
-//@@     manner across all candidate sequences. A given sequence is
-//@@     not guaranteed to be assigned to the same batch slot for
-//@@     all inference requests of that sequence.
-//@@
+// @@  .. cpp:var:: message StrategyOldest
+// @@
+// @@     The sequence batcher maintains up to 'max_candidate_sequences'
+// @@     candidate sequences. 'max_candidate_sequences' can be greater
+// @@     than the model's 'max_batch_size'. For inferencing the batcher
+// @@     chooses from the candidate sequences up to 'max_batch_size'
+// @@     inference requests. Requests are chosen in an oldest-first
+// @@     manner across all candidate sequences. A given sequence is
+// @@     not guaranteed to be assigned to the same batch slot for
+// @@     all inference requests of that sequence.
+// @@
 type ModelSequenceBatching_StrategyOldest struct {
 	//@@    .. cpp:var:: int32 max_candidate_sequences
 	//@@
@@ -2544,12 +2544,12 @@ func (m *ModelSequenceBatching_StrategyOldest) GetMaxQueueDelayMicroseconds() ui
 	return 0
 }
 
-//@@
-//@@.. cpp:var:: message ModelEnsembling
-//@@
-//@@   Model ensembling configuration. These settings specify the models that
-//@@   compose the ensemble and how data flows between the models.
-//@@
+// @@
+// @@.. cpp:var:: message ModelEnsembling
+// @@
+// @@   Model ensembling configuration. These settings specify the models that
+// @@   compose the ensemble and how data flows between the models.
+// @@
 type ModelEnsembling struct {
 	//@@  .. cpp:var:: Step step (repeated)
 	//@@
@@ -2593,12 +2593,12 @@ func (m *ModelEnsembling) GetStep() []*ModelEnsembling_Step {
 	return nil
 }
 
-//@@  .. cpp:var:: message Step
-//@@
-//@@     Each step specifies a model included in the ensemble,
-//@@     maps ensemble tensor names to the model input tensors,
-//@@     and maps model output tensors to ensemble tensor names
-//@@
+// @@  .. cpp:var:: message Step
+// @@
+// @@     Each step specifies a model included in the ensemble,
+// @@     maps ensemble tensor names to the model input tensors,
+// @@     and maps model output tensors to ensemble tensor names
+// @@
 type ModelEnsembling_Step struct {
 	//@@  .. cpp:var:: string model_name
 	//@@
@@ -2687,11 +2687,11 @@ func (m *ModelEnsembling_Step) GetOutputMap() map[string]string {
 	return nil
 }
 
-//@@
-//@@.. cpp:var:: message ModelParameter
-//@@
-//@@   A model parameter.
-//@@
+// @@
+// @@.. cpp:var:: message ModelParameter
+// @@
+// @@   A model parameter.
+// @@
 type ModelParameter struct {
 	//@@  .. cpp:var:: string string_value
 	//@@
@@ -2735,11 +2735,11 @@ func (m *ModelParameter) GetStringValue() string {
 	return ""
 }
 
-//@@
-//@@.. cpp:var:: message ModelWarmup
-//@@
-//@@   Settings used to construct the request sample for model warmup.
-//@@
+// @@
+// @@.. cpp:var:: message ModelWarmup
+// @@
+// @@   Settings used to construct the request sample for model warmup.
+// @@
 type ModelWarmup struct {
 	//@@  .. cpp:var:: string name
 	//@@
@@ -2811,11 +2811,11 @@ func (m *ModelWarmup) GetInputs() map[string]*ModelWarmup_Input {
 	return nil
 }
 
-//@@
-//@@  .. cpp:var:: message Input
-//@@
-//@@     Meta data associated with an input.
-//@@
+// @@
+// @@  .. cpp:var:: message Input
+// @@
+// @@     Meta data associated with an input.
+// @@
 type ModelWarmup_Input struct {
 	//@@    .. cpp:var:: DataType data_type
 	//@@
@@ -2942,11 +2942,11 @@ func (*ModelWarmup_Input) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-//@@
-//@@ .. cpp:var:: message ModelOperations
-//@@
-//@@    The metadata of libraries providing custom operations for this model.
-//@@
+// @@
+// @@ .. cpp:var:: message ModelOperations
+// @@
+// @@    The metadata of libraries providing custom operations for this model.
+// @@
 type ModelOperations struct {
 	//@@  .. cpp:var:: string op_library_filename
 	//@@
@@ -2991,12 +2991,12 @@ func (m *ModelOperations) GetOpLibraryFilename() []string {
 	return nil
 }
 
-//@@
-//@@ .. cpp:var:: message ModelTransactionPolicy
-//@@
-//@@    The specification that describes the nature of transactions
-//@@    to be expected from the model.
-//@@
+// @@
+// @@ .. cpp:var:: message ModelTransactionPolicy
+// @@
+// @@    The specification that describes the nature of transactions
+// @@    to be expected from the model.
+// @@
 type ModelTransactionPolicy struct {
 	//@@  .. cpp:var:: bool decoupled
 	//@@
@@ -3045,11 +3045,11 @@ func (m *ModelTransactionPolicy) GetDecoupled() bool {
 	return false
 }
 
-//@@
-//@@.. cpp:var:: message ModelConfig
-//@@
-//@@   A model configuration.
-//@@
+// @@
+// @@.. cpp:var:: message ModelConfig
+// @@
+// @@   A model configuration.
+// @@
 type ModelConfig struct {
 	//@@  .. cpp:var:: string name
 	//@@

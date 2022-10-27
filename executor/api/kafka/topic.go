@@ -45,7 +45,14 @@ func NewKafkaRPC(client *KafkaClient, modelName string) (*KafkaRPC, error) {
 	groupId := topicReceive
 
 	// Create producer
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": client.Broker})
+	ccloudAPIKey := os.Getenv("CCLOUDAPIKEY")
+	ccloudAPISecret := os.Getenv("CCLOUDAPISECRET")
+	p, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers": client.Broker,
+		"sasl.mechanisms":   "PLAIN",
+		"security.protocol": "SASL_SSL",
+		"sasl.username":     ccloudAPIKey,
+		"sasl.password":     ccloudAPISecret})
 	if err != nil {
 		return nil, err
 	}

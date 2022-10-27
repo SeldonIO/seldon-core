@@ -194,6 +194,15 @@ func (ks *SeldonKafkaServer) Serve() error {
 			consumerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
 		}
 		consumerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
+	} else if util.GetKafkaSecurityProtocol() == "SASL" {
+		broker := os.Getenv("BOOTSTRAP_SERVERS")
+		ccloudAPIKey := os.Getenv("CCLOUDAPIKEY")
+		ccloudAPISecret := os.Getenv("CCLOUDAPISECRET")
+		consumerConfigMap["bootstrap.servers"] = broker
+		consumerConfigMap["sasl.mechanisms"] = "PLAIN"
+		consumerConfigMap["security.protocol"] = "SASL_SSL"
+		consumerConfigMap["sasl.username"] = ccloudAPIKey
+		consumerConfigMap["sasl.password"] = ccloudAPISecret
 	}
 
 	c, err := kafka.NewConsumer(&consumerConfigMap)
