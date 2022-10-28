@@ -2,7 +2,13 @@
 
 In this example we create a Pipeline to chain two huggingface models to allow speech to sentiment functionalityand add an explainer to understand the result.
 
-This example requires ffmpeg package to be installed locally. run `make install-requirements` for Python dependencies.
+This example also illustrates how explainers can target pipelines to allow complex explanations flows.
+
+![architetcure](speech-to-sentiment.jpg)
+
+This example requires **ffmpeg** package to be installed locally. run `make install-requirements` for the Python dependencies.
+
+
 
 
 ```python
@@ -94,72 +100,121 @@ seldon model status sentiment -w ModelAvailable | jq -M .
 ```
 ### Create Explain Pipeline
 
-To allow Alibi-Explain to more easily explain the sentiment we will explain a Pipeline that transforms the raw JSON output of the Huggingface sentiment model into a binary classifier to allow the AnchorText model to more easily work on the sentiment value.
+To allow Alibi-Explain to more easily explain the sentiment we will need:
 
-The python sentiment-transform model will convert JSON to a simple 1,0 result.
+ * input and output transfrorms that take the Dict values input and output by the Huggingface sentiment model and turn them into values that Alibi-Explain can easily understand with the core values we want to explain and the outputs from the sentiment model.
+ * A separate Pipeline to allow us to join the sentiment model with the output transform
+
+These transform models are MLServer custom runtimes as shown below:
 
 
 ```bash
-cat ./sentiment-transform/model.py
+cat ./sentiment-input-transform/model.py | pygmentize
 ```
 ```yaml
-    from mlserver import MLModel
-    from mlserver.types import InferenceRequest, InferenceResponse, ResponseOutput
-    from mlserver.codecs import StringCodec, Base64Codec, NumpyRequestCodec
-    from mlserver.codecs.string import StringRequestCodec
-    from mlserver.codecs.numpy import NumpyRequestCodec
-    import base64
-    from mlserver.logging import logger
-    import numpy as np
-    import json
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m[04m[36m.[39;49;00m[04m[36mstring[39;49;00m [34mimport[39;49;00m StringRequestCodec
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mlogging[39;49;00m [34mimport[39;49;00m logger
+    [34mimport[39;49;00m [04m[36mjson[39;49;00m
     
-    class SentimentTransformRuntime(MLModel):
     
-      async def load(self) -> bool:
-        return self.ready
+    [34mclass[39;49;00m [04m[32mSentimentInputTransformRuntime[39;49;00m(MLModel):
     
-      async def predict(self, payload: InferenceRequest) -> InferenceResponse:
-        res_list = self.decode_request(payload, default_codec=StringRequestCodec)
-        scores = []
-        for res in res_list:
-          logger.debug("decoded data: %s",res)
-          sentiment = json.loads(res)
-          if sentiment["label"] == "POSITIVE":
-            scores.append(1)
-          else:
-            scores.append(0)
-        return NumpyRequestCodec.encode_response(
-          model_name="sentiments",
-          payload=np.array(scores)
+      [34masync[39;49;00m [34mdef[39;49;00m [32mload[39;49;00m([36mself[39;49;00m) -> [36mbool[39;49;00m:
+        [34mreturn[39;49;00m [36mself[39;49;00m.ready
+    
+      [34masync[39;49;00m [34mdef[39;49;00m [32mpredict[39;49;00m([36mself[39;49;00m, payload: InferenceRequest) -> InferenceResponse:
+        res_list = [36mself[39;49;00m.decode_request(payload, default_codec=StringRequestCodec)
+        texts = []
+        [34mfor[39;49;00m res [35min[39;49;00m res_list:
+          logger.debug([33m"[39;49;00m[33mdecoded data: [39;49;00m[33m%s[39;49;00m[33m"[39;49;00m, res)
+          text = json.loads(res)
+          texts.append(text[[33m"[39;49;00m[33mtext[39;49;00m[33m"[39;49;00m])
+    
+        [34mreturn[39;49;00m StringRequestCodec.encode_response(
+          model_name=[33m"[39;49;00m[33msentiment[39;49;00m[33m"[39;49;00m,
+          payload=texts
         )
 ```
 
 ```bash
-cat ../../models/hf-sentiment-explainer-transform.yaml
+cat ./sentiment-output-transform/model.py | pygmentize
+```
+```yaml
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m [34mimport[39;49;00m StringCodec, Base64Codec, NumpyRequestCodec
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m[04m[36m.[39;49;00m[04m[36mstring[39;49;00m [34mimport[39;49;00m StringRequestCodec
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m[04m[36m.[39;49;00m[04m[36mnumpy[39;49;00m [34mimport[39;49;00m NumpyRequestCodec
+    [34mimport[39;49;00m [04m[36mbase64[39;49;00m
+    [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mlogging[39;49;00m [34mimport[39;49;00m logger
+    [34mimport[39;49;00m [04m[36mnumpy[39;49;00m [34mas[39;49;00m [04m[36mnp[39;49;00m
+    [34mimport[39;49;00m [04m[36mjson[39;49;00m
+    
+    [34mclass[39;49;00m [04m[32mSentimentOutputTransformRuntime[39;49;00m(MLModel):
+    
+      [34masync[39;49;00m [34mdef[39;49;00m [32mload[39;49;00m([36mself[39;49;00m) -> [36mbool[39;49;00m:
+        [34mreturn[39;49;00m [36mself[39;49;00m.ready
+    
+      [34masync[39;49;00m [34mdef[39;49;00m [32mpredict[39;49;00m([36mself[39;49;00m, payload: InferenceRequest) -> InferenceResponse:
+        res_list = [36mself[39;49;00m.decode_request(payload, default_codec=StringRequestCodec)
+        scores = []
+        [34mfor[39;49;00m res [35min[39;49;00m res_list:
+          logger.debug([33m"[39;49;00m[33mdecoded data: [39;49;00m[33m%s[39;49;00m[33m"[39;49;00m,res)
+          sentiment = json.[34mloads[39;49;00m(res)
+          [34mif[39;49;00m sentiment[[33m"[39;49;00m[33mlabel[39;49;00m[33m"[39;49;00m] == [33m"[39;49;00m[33mPOSITIVE[39;49;00m[33m"[39;49;00m:
+            scores.[34mappend[39;49;00m([34m1[39;49;00m)
+          [34melse[39;49;00m:
+            scores.[34mappend[39;49;00m([34m0[39;49;00m)
+        [34mreturn[39;49;00m NumpyRequestCodec.encode_response(
+          model_name=[33m"[39;49;00m[33msentiments[39;49;00m[33m"[39;49;00m,
+          payload=np.[34marray[39;49;00m(scores)
+        )
+```
+
+```bash
+cat ../../models/hf-sentiment-input-transform.yaml
+echo "---"
+cat ../../models/hf-sentiment-output-transform.yaml
 ```
 ```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
-      name: sentiment-transform
+      name: sentiment-input-transform
     spec:
-      storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-transform"
+      storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-input-transform"
+      requirements:
+      - mlserver
+      - python
+    ---
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Model
+    metadata:
+      name: sentiment-output-transform
+    spec:
+      storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-output-transform"
       requirements:
       - mlserver
       - python
 ```
 
 ```bash
-seldon model load -f ../../models/hf-sentiment-explainer-transform.yaml
+seldon model load -f ../../models/hf-sentiment-input-transform.yaml
+seldon model load -f ../../models/hf-sentiment-output-transform.yaml
 ```
 ```json
+    {}
     {}
 ```
 
 ```bash
-seldon model status sentiment-transform -w ModelAvailable | jq -M .
+seldon model status sentiment-input-transform -w ModelAvailable | jq -M .
+seldon model status sentiment-output-transform -w ModelAvailable | jq -M .
 ```
 ```json
+    {}
     {}
 ```
 
@@ -176,12 +231,12 @@ cat ../../pipelines/sentiment-explain.yaml
         - name: sentiment
           tensorMap:
             sentiment-explain.inputs.predict: args
-        - name: sentiment-transform
+        - name: sentiment-output-transform
           inputs:
           - sentiment
       output:
         steps:
-        - sentiment-transform
+        - sentiment-output-transform
 ```
 
 ```bash
@@ -201,8 +256,8 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "sentiment-explain",
-            "uid": "cdcni240uk9s73avbnhg",
-            "version": 2,
+            "uid": "cddsn9atsj0s738f5ut0",
+            "version": 1,
             "steps": [
               {
                 "name": "sentiment",
@@ -211,7 +266,7 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
                 }
               },
               {
-                "name": "sentiment-transform",
+                "name": "sentiment-output-transform",
                 "inputs": [
                   "sentiment.outputs"
                 ]
@@ -219,16 +274,16 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
             ],
             "output": {
               "steps": [
-                "sentiment-transform.outputs"
+                "sentiment-output-transform.outputs"
               ]
             },
             "kubernetesMeta": {}
           },
           "state": {
-            "pipelineVersion": 2,
+            "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-26T18:14:32.540457111Z"
+            "lastChangeTimestamp": "2022-10-28T12:31:34.304608492Z"
           }
         }
       ]
@@ -284,9 +339,12 @@ cat ../../pipelines/speech-to-sentiment.yaml
           - whisper
           tensorMap:
             whisper.outputs.output: args
-        - name: sentiment-explainer
+        - name: sentiment-input-transform
           inputs:
           - whisper
+        - name: sentiment-explainer
+          inputs:
+          - sentiment-input-transform
       output:
         steps:
         - sentiment
@@ -310,8 +368,8 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
         {
           "pipeline": {
             "name": "speech-to-sentiment",
-            "uid": "cdcnibk0uk9s73avbni0",
-            "version": 2,
+            "uid": "cddsnjqtsj0s738f5utg",
+            "version": 1,
             "steps": [
               {
                 "name": "sentiment",
@@ -324,6 +382,12 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
               },
               {
                 "name": "sentiment-explainer",
+                "inputs": [
+                  "sentiment-input-transform.outputs"
+                ]
+              },
+              {
+                "name": "sentiment-input-transform",
                 "inputs": [
                   "whisper.outputs"
                 ]
@@ -341,10 +405,10 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
             "kubernetesMeta": {}
           },
           "state": {
-            "pipelineVersion": 2,
+            "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-26T18:15:10.325370389Z"
+            "lastChangeTimestamp": "2022-10-28T12:32:16.212929516Z"
           }
         }
       ]
@@ -368,9 +432,9 @@ recorder
 infer("speech-to-sentiment.pipeline")
 ```
 ```json
-    cdcnm5mjnkrs73f2p0jg
-    b'{"text": " The film was interesting and exciting."}'
-    b'{"label": "POSITIVE", "score": 0.9997865557670593}'
+    cddsonmq0ics73e6eqo0
+    b'{"text": " Cambridge is wonderful and beautiful."}'
+    b'{"label": "POSITIVE", "score": 0.9998691082000732}'
 ```
 We will wait for the explanation which is run asynchronously to the functional output from the Pipeline above.
 
@@ -393,8 +457,8 @@ while True:
     
 ```
 ```json
-    ...........
-    Explanation anchors: ['exciting']
+    ........
+    Explanation anchors: ['beautiful']
 ```
 ### Cleanup
 

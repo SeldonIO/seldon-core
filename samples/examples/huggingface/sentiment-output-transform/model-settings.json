@@ -1,0 +1,7 @@
+{
+    "name": "sentiment-output-transform",
+    "implementation": "model.SentimentOutputTransformRuntime",
+    "parameters": {
+        "version": "v0.1.0"
+    }
+}

@@ -10,9 +10,12 @@ spec:
       - whisper
       tensorMap:
         whisper.outputs.output: args
-    - name: sentiment-explainer
+    - name: sentiment-input-transform
       inputs:
       - whisper
+    - name: sentiment-explainer
+      inputs:
+      - sentiment-input-transform
   output:
     steps:
     - sentiment

@@ -8,7 +8,7 @@ from mlserver.logging import logger
 import numpy as np
 import json
 
-class SentimentTransformRuntime(MLModel):
+class SentimentOutputTransformRuntime(MLModel):
 
   async def load(self) -> bool:
     return self.ready

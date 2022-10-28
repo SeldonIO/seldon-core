@@ -7,9 +7,9 @@ spec:
     - name: sentiment
       tensorMap:
         sentiment-explain.inputs.predict: args
-    - name: sentiment-transform
+    - name: sentiment-output-transform
       inputs:
       - sentiment
   output:
     steps:
-    - sentiment-transform
+    - sentiment-output-transform

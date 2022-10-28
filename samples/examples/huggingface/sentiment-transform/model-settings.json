@@ -1,7 +1,0 @@
-{
-    "name": "sentiment-transform",
-    "implementation": "model.SentimentTransformRuntime",
-    "parameters": {
-        "version": "v0.1.0"
-    }
-}

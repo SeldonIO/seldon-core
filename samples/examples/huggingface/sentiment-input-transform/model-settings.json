@@ -1,0 +1,7 @@
+{
+    "name": "sentiment-input-transform",
+    "implementation": "model.SentimentInputTransformRuntime",
+    "parameters": {
+        "version": "v0.1.0"
+    }
+}
