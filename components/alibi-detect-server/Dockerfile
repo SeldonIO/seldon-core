@@ -14,11 +14,9 @@ FROM base as builder
 ARG PYTHON_VERSION
 ARG CONDA_VERSION
 
-# mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
 RUN microdnf update -y && \
     microdnf install -y \
       unzip \
-      mesa-libGL \
       make \
       automake \
       gcc \
@@ -73,6 +71,8 @@ COPY version.txt version.txt
 FROM base as final
 WORKDIR /microservice
 
+# mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
+RUN microdnf install -y mesa-libGL
 RUN microdnf update -y
 
 COPY --from=builder /microservice /microservice
