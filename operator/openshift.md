@@ -186,7 +186,12 @@ make update_openshift_certified
 
 
 
-Then push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+Then push all images to redhat. Requires:
+* download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+* creation of [pyxis api](https://connect.redhat.com/account/api-keys) key under `~/.config/seldon/seldon-core/pyxie-api-key.sh` in format:
+```
+api_key=<key here
+```
 
 ```
 cd {project_base_folder}/marketplaces/redhat
@@ -197,17 +202,17 @@ After these are finished (approx 1.5 hours) you will need to manually publish im
 
 publish
 
- * https://connect.redhat.com/project/1366481/view (Seldon Core Operator)
- * https://connect.redhat.com/project/3977851/view (Seldon Executor)
- * https://connect.redhat.com/project/5912261/view (Seldon SKLearn Server)
- * https://connect.redhat.com/project/5912271/view (MLFlow Seldon Server)
- * https://connect.redhat.com/project/5912301/view (Seldon XGBoost Server)
- * https://connect.redhat.com/project/4098071/view (Seldon Tensorflow Serving)
- * https://connect.redhat.com/project/5912311/view (Seldon Tensorflow Serving Proxy)
- * https://connect.redhat.com/project/3987291/view (Seldon Alibi Explainer Wrapper)
- * https://connect.redhat.com/project/3993461/view (Alibi Detect Server)
- * https://connect.redhat.com/project/4035711/view (Seldon Dummy Model)
- * https://connect.redhat.com/project/3986991/view (Seldon Storage Initializer)
+ * https://connect.redhat.com/projects/5e6352370307ea9e345f6084/images (Seldon Core Operator)
+ * https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/images (Seldon Executor)
+ * https://connect.redhat.com/projects/5fb94ae7888dca360c9231e1/images (Seldon SKLearn Server)
+ * https://connect.redhat.com/projects/5fb94ef5cfcfc6ed71445fa0/images (MLFlow Seldon Server)
+ * https://connect.redhat.com/projects/5fb9531ecfcfc6ed71445fa1/images (Seldon XGBoost Server)
+ * https://connect.redhat.com/projects/5ea822fdd0743cfaca95fc76/images (Seldon Tensorflow Serving)
+ * https://connect.redhat.com/projects/5fb955facfcfc6ed71445fa2/images (Seldon Tensorflow Serving Proxy)
+ * https://connect.redhat.com/projects/5e9c884a014eb1d2cfa8f217/images (Seldon Alibi Explainer Wrapper)
+ * https://connect.redhat.com/projects/5e9d53076c2dde3913c2bb66/images (Alibi Detect Server)
+ * https://connect.redhat.com/projects/5ea15983ebed1415210b4b26/images (Seldon Dummy Model)
+ * https://connect.redhat.com/projects/5e9c7eea929b3d289e60977a/images (Seldon Storage Initializer)
  * https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/images (Rclone Storage Initializer)
 
 previously used images:
