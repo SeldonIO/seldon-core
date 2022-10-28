@@ -127,12 +127,16 @@ func init() {
 	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
 }
 
+func createFqdn(svcName string, namespace string) string {
+	return svcName + "." + namespace + ".svc.cluster.local"
+}
+
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string, externalPorts []httpGrpcPorts) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
 	firstPredictor := &mlDep.Spec.Predictors[0]
 	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
-	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(externalPorts[0].httpPort)
+	addressableHost := createFqdn(sdepSvcName, namespace) + ":" + strconv.Itoa(externalPorts[0].httpPort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
@@ -289,6 +293,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 		p := mlDep.Spec.Predictors[i]
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
+		pSvcFqdn := createFqdn(pSvcName, namespace)
 
 		drule := &istio.DestinationRule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -296,7 +301,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				Namespace: namespace,
 			},
 			Spec: istio_networking.DestinationRule{
-				Host: pSvcName,
+				Host: pSvcFqdn,
 				Subsets: []*istio_networking.Subset{
 					{
 						Name: p.Name,
@@ -322,7 +327,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			//if there's a shadow then add a mirror section to the VirtualService
 
 			vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
@@ -330,7 +335,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			}
 
 			vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
@@ -355,7 +360,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
 		routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
 			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
@@ -365,7 +370,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
 			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
