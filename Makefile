@@ -82,3 +82,10 @@ prep-artifacts:
 	cp k8s/yaml/certs.yaml .release/
 	# Build CLI
 	make -C operator build-seldon && mv operator/bin/seldon .release/seldon-linux-amd64
+
+#
+# License
+#
+
+update-copyright:
+	./hack/boilerplate.sh
