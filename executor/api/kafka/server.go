@@ -104,13 +104,9 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
 			if util.GetKafkaSecurityProtocol() == "SASL_SSL" {                   //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
 				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
-				if saslKafkaServer.UserNameFile != "" && saslKafkaServer.UserPasswordFile != "" {
-					producerConfigMap["sasl.username"] = saslKafkaServer.UserNameFile
-					producerConfigMap["sasl.password"] = saslKafkaServer.UserPasswordFile
-				}
-				if saslKafkaServer.UserName != "" && saslKafkaServer.UserPassword != "" {
+				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
 					producerConfigMap["sasl.username"] = saslKafkaServer.UserName
-					producerConfigMap["sasl.password"] = saslKafkaServer.UserPassword
+					producerConfigMap["sasl.password"] = saslKafkaServer.Password
 				}
 			}
 		}
@@ -208,9 +204,9 @@ func (ks *SeldonKafkaServer) Serve() error {
 		if util.GetKafkaSecurityProtocol() == "SASL_SSL" {                   //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
 			saslKafkaServer := util.GetSaslElements()
 			consumerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
-			if saslKafkaServer.UserName != "" && saslKafkaServer.UserPassword != "" {
+			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
 				consumerConfigMap["sasl.username"] = saslKafkaServer.UserName
-				consumerConfigMap["sasl.password"] = saslKafkaServer.UserPassword
+				consumerConfigMap["sasl.password"] = saslKafkaServer.Password
 			}
 		}
 	}

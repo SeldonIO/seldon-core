@@ -158,11 +158,9 @@ func (o SslKakfa) String() string {
 }
 
 type SaslKafka struct {
-	UserName         string
-	UserPassword     string
-	UserNameFile     string
-	UserPasswordFile string
-	Mechanism        string
+	UserName  string
+	Password  string
+	Mechanism string
 }
 
 func (o SaslKafka) String() string {
@@ -191,9 +189,9 @@ func GetSslElements() *SslKakfa {
 
 func GetSaslElements() *SaslKafka {
 	saslElements := SaslKafka{
-		UserName:     GetEnv("KAFKA_SASL_USERNAME", ""),
-		Password: GetEnv("KAFKA_SASL_PASSWORD", ""),
-		Mechanism:    GetEnv("KAFKA_SASL_MECHANISM", ""),
+		UserName:  GetEnv("KAFKA_SASL_USERNAME", ""),
+		Password:  GetEnv("KAFKA_SASL_PASSWORD", ""),
+		Mechanism: GetEnv("KAFKA_SASL_MECHANISM", ""),
 	}
 	return &saslElements
 }
