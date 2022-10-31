@@ -188,15 +188,12 @@ func GetSslElements() *SslKakfa {
 	return &sslElements
 
 }
+
 func GetSaslElements() *SaslKafka {
 	saslElements := SaslKafka{
 		UserName:     GetEnv("KAFKA_SASL_USERNAME", ""),
-		UserPassword: GetEnv("KAFKA_SASL_PASSWORD", ""),
+		Password: GetEnv("KAFKA_SASL_PASSWORD", ""),
 		Mechanism:    GetEnv("KAFKA_SASL_MECHANISM", ""),
-		// If we use path to files instead of string
-		UserNameFile:     GetEnv("KAFKA_SASL_USERNAME_FILE", ""),
-		UserPasswordFile: GetEnv("KAFKA_SASL_PASSWORD", ""),
 	}
 	return &saslElements
-
 }
