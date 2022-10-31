@@ -93,6 +93,20 @@ An example below shows an example where we connect via TLS to the Seldon schedul
 
 ```
 
+## TLS Certificates for Local Use
+
+For running with Kubernetes TLS connections on the control and/or data plane, certificates will need to be downloaded locally. We provide an example script which will download certificates from a Kubernetes secret and store them in a folder. It can be found in `hack/download-k8s-certs.sh` and takes 2 or 3 arguments:
+
+```
+./download-k8s-certs.sh <namespace> <secret> [<folder>]
+```
+
+e.g.:
+
+```
+./download-k8s-certs.sh seldon-mesh seldon-scheduler-client
+```
+
 ```{toctree}
 :maxdepth: 1
 :hidden:
