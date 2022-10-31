@@ -157,6 +157,18 @@ func (o SslKakfa) String() string {
 	return "SslKakfa"
 }
 
+type SaslKafka struct {
+	UserName         string
+	UserPassword     string
+	UserNameFile     string
+	UserPasswordFile string
+	Mechanism        string
+}
+
+func (o SaslKafka) String() string {
+	return "SaslKafka"
+}
+
 func GetKafkaSecurityProtocol() string {
 	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
 }
@@ -174,5 +186,17 @@ func GetSslElements() *SslKakfa {
 		ClientKeyPass: GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
 	}
 	return &sslElements
+
+}
+func GetSaslElements() *SaslKafka {
+	saslElements := SaslKafka{
+		UserName:     GetEnv("KAFKA_SASL_USERNAME", ""),
+		UserPassword: GetEnv("KAFKA_SASL_PASSWORD", ""),
+		Mechanism:    GetEnv("KAFKA_SASL_MECHANISM", ""),
+		// If we use path to files instead of string
+		UserNameFile:     GetEnv("KAFKA_SASL_USERNAME_FILE", ""),
+		UserPasswordFile: GetEnv("KAFKA_SASL_PASSWORD", ""),
+	}
+	return &saslElements
 
 }
