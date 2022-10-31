@@ -101,6 +101,10 @@ func NewIncrementalProcessor(
 		ip.handlePipelinesEvents,
 	)
 
+	err = ip.updateEnvoy()
+	if err != nil {
+		return nil, err
+	}
 	return ip, nil
 }
 
@@ -421,6 +425,10 @@ func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) erro
 	return p.removeRouteForServerInEnvoy(routeName)
 }
 
+func getPipelineRouteName(pipelineName string) string {
+	return fmt.Sprintf("%s.%s", pipelineName, resources.SeldonPipelineHeaderSuffix)
+}
+
 func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	logger := p.logger.WithField("func", "addPipeline")
 	p.mu.Lock()
@@ -434,7 +442,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 			return p.removePipeline(pip)
 		}
 	}
-	routeName := fmt.Sprintf("%s.%s", pip.Name, resources.SeldonPipelineHeaderSuffix)
+	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
 	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
 	logger.Infof("getting experiment for baseline %s returned %v", pip.Name, exp)
@@ -466,7 +474,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 }
 
 func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
-	p.xdsCache.RemovePipelineRoute(pip.Name)
+	p.xdsCache.RemovePipelineRoute(getPipelineRouteName(pip.Name))
 	return p.updateEnvoy()
 }
 
