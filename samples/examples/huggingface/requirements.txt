@@ -1,3 +1,4 @@
+ipywidgets
 torchaudio
 ipywebrtc
 ffmpeg-python
