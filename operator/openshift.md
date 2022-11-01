@@ -214,6 +214,9 @@ publish
  * https://connect.redhat.com/projects/5ea15983ebed1415210b4b26/images (Seldon Dummy Model)
  * https://connect.redhat.com/projects/5e9c7eea929b3d289e60977a/images (Seldon Storage Initializer)
  * https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/images (Rclone Storage Initializer)
+ * https://connect.redhat.com/projects/63566bb9822ce8cef9ba27fc/images (MLServer)
+ * https://connect.redhat.com/projects/635670d3624969b495b6936f/images (MLServer SC)
+ * https://connect.redhat.com/projects/63567143624969b495b69370/images (MLServer SC Slim)
 
 previously used images:
 * https://connect.redhat.com/project/1366491/view (Seldon Engine)
