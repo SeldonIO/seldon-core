@@ -106,6 +106,7 @@ rules:
   - get
   - patch
   - update
+{{- if .Values.keda.enabled }}
 - apiGroups:
   - keda.sh
   resources:
@@ -138,6 +139,7 @@ rules:
   - get
   - patch
   - update
+{{ end -}}
 - apiGroups:
   - machinelearning.seldon.io
   resources:
