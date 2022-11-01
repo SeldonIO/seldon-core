@@ -171,7 +171,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: seldonio/mlserver-sc:1.15.0-dev
+        image: seldonio/mlserver-sc:1.15.0
         args: --fail-on=upgradable --severity-threshold=high
 
   security-image-mlserver-sc-slim:
@@ -183,5 +183,5 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: seldonio/mlserver-sc-slim:1.15.0-dev
+        image: seldonio/mlserver-sc-slim:1.15.0
         args: --fail-on=upgradable --severity-threshold=high
