@@ -227,19 +227,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - v1
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - v1
+  - ""
   resources:
   - services/status
   verbs:
