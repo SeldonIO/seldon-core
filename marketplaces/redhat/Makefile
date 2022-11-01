@@ -9,6 +9,7 @@ IMG_MLSERVER_SC_SLIM ?= docker.io/seldonio/mlserver-sc-slim:${VERSION}
 
 redhat-image-scan: scan-mlserver scan-mlserver-sc scan-mlserver-sc-slim
 
+# password can be found at: https://connect.redhat.com/projects/63566bb9822ce8cef9ba27fc/overview
 project-mlserver=63566bb9822ce8cef9ba27fc
 scan-mlserver:
 	docker pull ${IMG_MLSERVER}
@@ -20,6 +21,7 @@ scan-mlserver:
 		preflight check container quay.io/redhat-isv-containers/${project-mlserver}:${MLSERVER_VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project-mlserver} --pyxis-api-token=$${pyxis_api_token} --submit
 
 
+# password can be found at: https://connect.redhat.com/projects/635670d3624969b495b6936f/overview
 project-mlserver-sc=635670d3624969b495b6936f
 scan-mlserver-sc:
 	docker pull ${IMG_MLSERVER_SC}
@@ -31,6 +33,7 @@ scan-mlserver-sc:
 		preflight check container quay.io/redhat-isv-containers/${project-mlserver-sc}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project-mlserver-sc} --pyxis-api-token=$${pyxis_api_token} --submit
 
 
+# password can be found at: https://connect.redhat.com/projects/63567143624969b495b69370/overview
 project-mlserver-sc-slim=63567143624969b495b69370
 scan-mlserver-sc-slim:
 	docker pull ${IMG_MLSERVER_SC_SLIM}
