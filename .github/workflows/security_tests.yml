@@ -162,3 +162,26 @@ jobs:
         image: seldonio/rclone-storage-initializer:1.15.0-dev
         args: --fail-on=upgradable --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
 
+  security-image-mlserver-sc:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-mlserver-sc
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/mlserver-sc:1.15.0-dev
+        args: --fail-on=upgradable --severity-threshold=high
+
+  security-image-mlserver-sc-slim:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-mlserver-sc-slim
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/mlserver-sc-slim:1.15.0-dev
+        args: --fail-on=upgradable --severity-threshold=high
