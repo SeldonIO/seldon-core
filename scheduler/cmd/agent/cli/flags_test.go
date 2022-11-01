@@ -43,6 +43,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 		expectedOverCommitPercentage          int
 		expectedEnvoyHost                     string
 		expectedEnvoyPort                     int
+		expectedDrainerPort                   int
 		expectedModelInferenceLagThreshold    int
 		expectedModelInactiveSecondsThreshold int
 		expectedScalingStatsPeriodSeconds     int
@@ -78,6 +79,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedOverCommitPercentage:          0,
 			expectedEnvoyHost:                     defaultEnvoyHost,
 			expectedEnvoyPort:                     defaultEnvoyPort,
+			expectedDrainerPort:                   defaultDrainerServicePort,
 			expectedModelInferenceLagThreshold:    lagThresholdDefault,
 			expectedModelInactiveSecondsThreshold: lastUsedThresholdSecondsDefault,
 			expectedScalingStatsPeriodSeconds:     statsPeriodSecondsDefault,
@@ -111,6 +113,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"--over-commit-percentage=10",
 				"--envoy-host=2.2.2.2",
 				"--envoy-port=2000",
+				"--drainer-port=2001",
 				"--model-inference-lag-threshold=20",
 				"--model-inactive-seconds-threshold=30",
 				"--scaling-stats-period-seconds=40",
@@ -142,6 +145,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedOverCommitPercentage:          10,
 			expectedEnvoyHost:                     "2.2.2.2",
 			expectedEnvoyPort:                     2000,
+			expectedDrainerPort:                   2001,
 			expectedModelInferenceLagThreshold:    20,
 			expectedModelInactiveSecondsThreshold: 30,
 			expectedScalingStatsPeriodSeconds:     40,
@@ -167,6 +171,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"SELDON_OVERCOMMIT_PERCENTAGE=30",
 				"SELDON_ENVOY_HOST=3.3.3.3",
 				"SELDON_ENVOY_PORT=3000",
+				"SELDON_DRAINER_PORT=3001",
 				"SELDON_MODEL_INFERENCE_LAG_THRESHOLD=50",
 				"SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD=60",
 				"SELDON_SCALING_STATS_PERIOD_SECONDS=70",
@@ -197,6 +202,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedOverCommitPercentage:          30,
 			expectedEnvoyHost:                     "3.3.3.3",
 			expectedEnvoyPort:                     3000,
+			expectedDrainerPort:                   3001,
 			expectedModelInferenceLagThreshold:    50,
 			expectedModelInactiveSecondsThreshold: 60,
 			expectedScalingStatsPeriodSeconds:     70,
@@ -244,6 +250,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			g.Expect(OverCommitPercentage).To(Equal(test.expectedOverCommitPercentage))
 			g.Expect(EnvoyHost).To(Equal(test.expectedEnvoyHost))
 			g.Expect(EnvoyPort).To(Equal(test.expectedEnvoyPort))
+			g.Expect(DrainerServicePort).To(Equal(test.expectedDrainerPort))
 			g.Expect(ModelInferenceLagThreshold).To(Equal(test.expectedModelInferenceLagThreshold))
 			g.Expect(ModelInactiveSecondsThreshold).To(Equal(test.expectedModelInactiveSecondsThreshold))
 			g.Expect(ScalingStatsPeriodSeconds).To(Equal(test.expectedScalingStatsPeriodSeconds))

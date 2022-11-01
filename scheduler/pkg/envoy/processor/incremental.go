@@ -14,6 +14,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 
@@ -27,7 +28,6 @@ import (
 
 const (
 	pendingSyncsQueueSize      int = 100
-	defaultBatchWaitMillis         = 250 * time.Millisecond
 	modelEventHandlerName          = "incremental.processor.models"
 	experimentEventHandlerName     = "incremental.processor.experiments"
 	pipelineEventHandlerName       = "incremental.processor.pipelines"
@@ -74,7 +74,7 @@ func NewIncrementalProcessor(
 		experimentServer: experimentServer,
 		pipelineHandler:  pipelineHandler,
 		batchTrigger:     nil,
-		batchWaitMillis:  defaultBatchWaitMillis,
+		batchWaitMillis:  util.EnvoyUpdateDefaultBatchWaitMillis,
 	}
 
 	err := ip.setListeners()
@@ -566,10 +566,10 @@ func (p *IncrementalProcessor) modelSync() {
 	defer p.mu.Unlock()
 
 	err := p.updateEnvoy()
-	state := store.Available
+	serverReplicaState := store.Available
 	reason := ""
 	if err != nil {
-		state = store.LoadedUnavailable
+		serverReplicaState = store.LoadedUnavailable
 		reason = err.Error()
 	}
 
@@ -599,20 +599,25 @@ func (p *IncrementalProcessor) modelSync() {
 
 		vs := v.ReplicaState()
 		for _, replicaIdx := range v.GetAssignment() {
-			expectedState := vs[replicaIdx].State
-			err2 := p.modelStore.UpdateModelState(
-				mv.name,
-				v.GetVersion(),
-				s.Name,
-				replicaIdx,
-				nil,
-				expectedState,
-				state,
-				reason,
-			)
-			if err2 != nil {
-				logger.WithError(err2).Warnf("Failed to update state for model %s", mv.name)
-				break
+			serverReplicaExpectedState := vs[replicaIdx].State
+			if serverReplicaExpectedState != store.Draining {
+				err2 := p.modelStore.UpdateModelState(
+					mv.name,
+					v.GetVersion(),
+					s.Name,
+					replicaIdx,
+					nil,
+					serverReplicaExpectedState,
+					serverReplicaState,
+					reason,
+				)
+				if err2 != nil {
+					logger.WithError(err2).Warnf("Failed to update state for model %s", mv.name)
+					break
+				}
+			} else {
+				logger.Debugf(
+					"Skipping draining server for model %s server replica %s%d", mv.name, v.Server(), replicaIdx)
 			}
 		}
 		p.modelStore.UnlockModel(mv.name)

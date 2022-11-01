@@ -378,6 +378,10 @@ func (f fakeModelStore) RemoveServerReplica(serverName string, replicaIdx int) (
 	panic("implement me")
 }
 
+func (f fakeModelStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
+	panic("implement me")
+}
+
 func (f fakeModelStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
 	panic("implement me")
 }

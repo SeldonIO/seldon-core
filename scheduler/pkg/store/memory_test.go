@@ -543,6 +543,77 @@ func TestUpdateLoadedModels(t *testing.T) {
 			},
 			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}, 1: {State: LoadRequested}},
 		},
+		{
+			name: "WithDrainingServerReplicaSameServer",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+							server:    "server",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Draining},
+							},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {isDraining: true},
+							1: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server",
+			replicas: []*ServerReplica{
+				{replicaIdx: 1},
+			},
+			expectedStates: map[int]ReplicaStatus{0: {State: Draining}, 1: {State: LoadRequested}},
+		},
+		{
+			name: "WithDrainingServerReplicaNewServer",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+							server:    "server1",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Draining},
+							},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {isDraining: true},
+						},
+					},
+					"server2": {
+						name: "server2",
+						replicas: map[int]*ServerReplica{
+							0: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server2",
+			replicas: []*ServerReplica{
+				{replicaIdx: 0},
+			},
+			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}},
+		},
 	}
 
 	for _, test := range tests {
@@ -1381,6 +1452,94 @@ func TestRemoveServerReplica(t *testing.T) {
 				g.Expect(server).ToNot(BeNil())
 			} else {
 				g.Expect(server).To(BeNil())
+			}
+		})
+	}
+}
+
+func TestDrainServerReplica(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name           string
+		store          *LocalSchedulerStore
+		serverName     string
+		replicaIdx     int
+		modelsReturned []string
+	}
+
+	// if we have models returned check status is Draining
+	tests := []test{
+		{
+			name: "ReplicaSetDrainingNoModels",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+						expectedReplicas: 2,
+						shared:           true,
+					},
+				},
+			},
+			serverName:     "server1",
+			replicaIdx:     0,
+			modelsReturned: nil,
+		},
+		{
+			name: "ReplicaSetDrainingWithModels",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model1": {
+						versions: []*ModelVersion{
+							{
+								version:  1,
+								replicas: map[int]ReplicaStatus{0: {State: Loaded}},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{{Name: "model1", Version: 1}: true}},
+							1: {},
+						},
+						expectedReplicas: -1,
+						shared:           true,
+					},
+				},
+			},
+			serverName:     "server1",
+			replicaIdx:     0,
+			modelsReturned: []string{"model1"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			ms := NewMemoryStore(logger, test.store, eventHub)
+			models, err := ms.DrainServerReplica(test.serverName, test.replicaIdx)
+			g.Expect(err).To(BeNil())
+			g.Expect(test.modelsReturned).To(Equal(models))
+			server, err := ms.GetServer(test.serverName, false, true)
+			g.Expect(err).To(BeNil())
+			g.Expect(server).ToNot(BeNil())
+			g.Expect(server.Replicas[test.replicaIdx].GetIsDraining()).To(BeTrue())
+
+			if test.modelsReturned != nil {
+				for _, model := range test.modelsReturned {
+					modelVersion, _ := ms.GetModel(model)
+					state := modelVersion.GetLatest().GetModelReplicaState(test.replicaIdx)
+					g.Expect(state).To(Equal(Draining))
+				}
 			}
 		})
 	}

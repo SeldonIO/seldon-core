@@ -51,6 +51,7 @@ func makeArgs() {
 	flag.StringVar(&TracingConfigPath, flagTracingConfigPath, "", "Tracing config path")
 	flag.StringVar(&EnvoyHost, flagEnvoyHost, defaultEnvoyHost, "Envoy host")
 	flag.IntVar(&EnvoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
+	flag.IntVar(&DrainerServicePort, flagDrainerServicePort, defaultDrainerServicePort, "Drainer port")
 	flag.IntVar(&ModelInferenceLagThreshold, flagModelInferenceLagThreshold, lagThresholdDefault, "Model inference lag threshold")
 	flag.IntVar(&ModelInactiveSecondsThreshold, flagModelInactiveSecondsThreshold, lastUsedThresholdSecondsDefault, "Model inactive seconds threshold")
 	flag.IntVar(&ScalingStatsPeriodSeconds, flagScalingStatsPeriodSeconds, statsPeriodSecondsDefault, "Scaling stats period seconds")

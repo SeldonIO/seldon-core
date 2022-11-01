@@ -29,6 +29,7 @@ const (
 	envOverCommitPercentage          = "SELDON_OVERCOMMIT_PERCENTAGE"
 	envEnvoyHost                     = "SELDON_ENVOY_HOST"
 	envEnvoyPort                     = "SELDON_ENVOY_PORT"
+	envDrainerServicePort            = "SELDON_DRAINER_PORT"
 	envModelInferenceLagThreshold    = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
 	envModelInactiveSecondsThreshold = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
 	envScalingStatsPeriodSeconds     = "SELDON_SCALING_STATS_PERIOD_SECONDS"
@@ -53,6 +54,7 @@ const (
 	flagTracingConfigPath             = "tracing-config-path"
 	flagEnvoyHost                     = "envoy-host"
 	flagEnvoyPort                     = "envoy-port"
+	flagDrainerServicePort            = "drainer-port"
 	flagModelInferenceLagThreshold    = "model-inference-lag-threshold"
 	flagModelInactiveSecondsThreshold = "model-inactive-seconds-threshold"
 	flagScalingStatsPeriodSeconds     = "scaling-stats-period-seconds"
@@ -67,6 +69,7 @@ const (
 	defaultMetricsPort              = 9006
 	defaultEnvoyHost                = "0.0.0.0"
 	defaultEnvoyPort                = 9000
+	defaultDrainerServicePort       = 9007
 	statsPeriodSecondsDefault       = 5
 	lagThresholdDefault             = 30
 	lastUsedThresholdSecondsDefault = 30
@@ -104,6 +107,7 @@ var (
 	TracingConfigPath             string
 	EnvoyHost                     string
 	EnvoyPort                     int
+	DrainerServicePort            int
 	ModelInferenceLagThreshold    int
 	ModelInactiveSecondsThreshold int
 	ScalingStatsPeriodSeconds     int
@@ -139,6 +143,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateServerType()
 	maybeUpdateEnvoyHost()
 	maybeUpdateEnvoyPort()
+	maybeUpdateDrainerPort()
 	maybeUpdateModelInferenceLagThreshold()
 	maybeUpdateModelInactiveSecondsThreshold()
 	maybeUpdateScalingStatsPeriodSeconds()
@@ -286,6 +291,10 @@ func maybeUpdateEnvoyHost() {
 
 func maybeUpdateEnvoyPort() {
 	maybeUpdatePort(flagEnvoyPort, envEnvoyPort, &EnvoyPort)
+}
+
+func maybeUpdateDrainerPort() {
+	maybeUpdatePort(flagDrainerServicePort, envDrainerServicePort, &DrainerServicePort)
 }
 
 func maybeUpdateInferenceHttpPort() {

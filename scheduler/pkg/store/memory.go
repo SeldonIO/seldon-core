@@ -340,12 +340,19 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 		if _, ok := updatedReplicas[replicaIdx]; !ok {
 			if !existingState.State.UnloadingOrUnloaded() {
-				logger.Debugf(
-					"Setting model %s version %d on server %s replica %d to UnloadRequested",
-					modelKey, modelVersion.version, serverKey, replicaIdx,
-				)
-				modelVersion.SetReplicaState(replicaIdx, UnloadRequested, "")
-				updated = true
+				if existingState.State == Draining {
+					logger.Debugf(
+						"model %s version %d on server %s replica %d is Draining",
+						modelKey, modelVersion.version, serverKey, replicaIdx,
+					)
+				} else {
+					logger.Debugf(
+						"Setting model %s version %d on server %s replica %d to UnloadRequested",
+						modelKey, modelVersion.version, serverKey, replicaIdx,
+					)
+					modelVersion.SetReplicaState(replicaIdx, UnloadRequested, "")
+					updated = true
+				}
 			} else {
 				logger.Debugf(
 					"model %s on server %s replica %d already unloading or can't be unloaded",
@@ -354,7 +361,9 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 			}
 		}
 	}
-	if updated {
+
+	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
+	if updated || modelVersion.state.State == ScheduleFailed {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
@@ -589,6 +598,13 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.removeServerReplicaImpl(serverName, replicaIdx)
+}
+
+func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "RemoveServerReplica")
 	server, ok := m.store.servers[serverName]
 	if !ok {
@@ -611,6 +627,44 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
 				modelVersion.DeleteReplica(replicaIdx)
+				modelNames = append(modelNames, modelVersionID.Name)
+			} else {
+				logger.Warnf("Can't find model version %s", modelVersionID.String())
+			}
+		}
+	}
+	return modelNames, nil
+}
+
+func (m *MemoryStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.drainServerReplicaImpl(serverName, replicaIdx)
+}
+
+func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
+	logger := m.logger.WithField("func", "DrainServerReplica")
+	server, ok := m.store.servers[serverName]
+	if !ok {
+		return nil, fmt.Errorf("Failed to find server %s", serverName)
+	}
+	serverReplica, ok := server.replicas[replicaIdx]
+	if !ok {
+		return nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
+	}
+
+	// we mark this server replica as draining so should not be used in future scheduling decisions
+	serverReplica.SetIsDraining()
+
+	var modelNames []string
+	// Find models to reschedule due to this server replica being removed
+	for modelVersionID := range serverReplica.loadedModels {
+		model, ok := m.store.models[modelVersionID.Name]
+		if ok {
+			modelVersion := model.GetVersion(modelVersionID.Version)
+			if modelVersion != nil {
+				modelVersion.SetReplicaState(replicaIdx, Draining, "trigger to drain")
 				modelNames = append(modelNames, modelVersionID.Name)
 			} else {
 				logger.Warnf("Can't find model version %s", modelVersionID.String())

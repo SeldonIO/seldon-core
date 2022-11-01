@@ -15,6 +15,7 @@ import (
 
 	agent2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton"
@@ -94,7 +95,7 @@ func runningInsideK8s() bool {
 	return cli.Namespace != ""
 }
 
-func makeSignalHandler(logger *log.Logger, done chan<- bool) {
+func makeTermSignalHandler(logger *log.Logger, done chan<- bool) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
@@ -128,7 +129,7 @@ func main() {
 
 	done := make(chan bool, 1)
 
-	go makeSignalHandler(logger, done)
+	go makeTermSignalHandler(logger, done)
 
 	var clientset kubernetes.Interface
 	if runningInsideK8s() {
@@ -231,6 +232,10 @@ func main() {
 		[]modelscaling.ModelScalingStatsWrapper{modelLagStatsWrapper, modelLastUsedStatsWrapper}, logger, uint(cli.ScalingStatsPeriodSeconds))
 	defer func() { _ = modelScalingService.Stop() }()
 
+	drainerService := drainservice.NewDrainerService(
+		logger, uint(cli.DrainerServicePort))
+	defer func() { _ = drainerService.Stop() }()
+
 	// Create Agent
 	client := agent.NewClient(
 		cli.ServerName,
@@ -247,6 +252,7 @@ func main() {
 		rpGRPC,
 		agentDebugService,
 		modelScalingService,
+		drainerService,
 		promMetrics,
 	)
 

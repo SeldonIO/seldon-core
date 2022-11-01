@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"sync"
 	"time"
 
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
@@ -16,6 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
@@ -33,15 +35,19 @@ import (
 )
 
 type Client struct {
-	logger                   log.FieldLogger
-	configChan               chan config.AgentConfiguration
-	replicaConfig            *agent.ReplicaConfig
-	stateManager             *LocalStateManager
-	rpHTTP                   interfaces.DependencyServiceInterface
-	rpGRPC                   interfaces.DependencyServiceInterface
-	agentDebugService        interfaces.DependencyServiceInterface
-	modelScalingService      interfaces.DependencyServiceInterface
-	metrics                  metrics.AgentMetricsHandler
+	logger              log.FieldLogger
+	configChan          chan config.AgentConfiguration
+	replicaConfig       *agent.ReplicaConfig
+	stateManager        *LocalStateManager
+	rpHTTP              interfaces.DependencyServiceInterface
+	rpGRPC              interfaces.DependencyServiceInterface
+	agentDebugService   interfaces.DependencyServiceInterface
+	modelScalingService interfaces.DependencyServiceInterface
+	drainerService      interfaces.DependencyServiceInterface
+	metrics             metrics.AgentMetricsHandler
+	isDraining          bool
+	// mutex to guard changes to `isDraining`
+	muIsDraining             sync.RWMutex
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	ClientServices
 	SchedulerGrpcClientOptions
@@ -91,6 +97,7 @@ func NewClient(serverName string,
 	reverseProxyGRPC interfaces.DependencyServiceInterface,
 	agentDebugService interfaces.DependencyServiceInterface,
 	modelScalingService interfaces.DependencyServiceInterface,
+	drainerService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 ) *Client {
 
@@ -116,6 +123,7 @@ func NewClient(serverName string,
 		rpGRPC:              reverseProxyGRPC,
 		agentDebugService:   agentDebugService,
 		modelScalingService: modelScalingService,
+		drainerService:      drainerService,
 		metrics:             metrics,
 		ClientServices: ClientServices{
 			ModelRepository: modelRepository,
@@ -132,6 +140,7 @@ func NewClient(serverName string,
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
+		isDraining: false,
 	}
 }
 
@@ -155,6 +164,17 @@ func (c *Client) Start() error {
 	if err != nil {
 		c.logger.WithError(err).Fatal("Failed to start client")
 		return err
+	}
+
+	return nil
+}
+
+func (c *Client) StopSchedulerStream() error {
+	logger := c.logger.WithField("func", "StopSchedulerStream")
+	logger.Info("Shutting down stream to scheduler")
+
+	if c.conn != nil {
+		return c.conn.Close()
 	}
 
 	return nil
@@ -216,6 +236,11 @@ func (c *Client) WaitReady() error {
 
 	// model scaling service
 	if err := startSubService(c.modelScalingService, logger); err != nil {
+		return err
+	}
+
+	// drainer service
+	if err := startSubService(c.drainerService, logger); err != nil {
 		return err
 	}
 
@@ -331,7 +356,7 @@ func (c *Client) StartService() error {
 		c.stateManager.totalMainMemoryBytes,
 		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
 
-	// start stream to server
+	// start model scaling events consumer
 	clientStream, err := grpcClient.ModelScalingTrigger(context.Background())
 	if err != nil {
 		return err
@@ -342,6 +367,12 @@ func (c *Client) StartService() error {
 	}()
 	go c.consumeModelScalingEvents()
 
+	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
+	go func() {
+		_ = c.drainOnRequest(c.drainerService.(*drainservice.DrainerService))
+	}()
+
+	// start stream to server
 	for {
 		operation, err := stream.Recv()
 		if err == io.EOF {
@@ -513,6 +544,16 @@ func (c *Client) sendModelEventError(modelName string, modelVersion uint32, even
 }
 
 func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event) error {
+	// if the server is draining and the model load has succeeded, we need to "cancel"
+	c.muIsDraining.RLock()
+	defer c.muIsDraining.RUnlock()
+	if c.isDraining {
+		if event == agent.ModelEventMessage_LOADED {
+			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, fmt.Errorf("server replica is draining"))
+			return nil
+		}
+	}
+
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err := grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
@@ -522,6 +563,31 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 		Event:                event,
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
+	return err
+}
+
+func (c *Client) drainOnRequest(drainer *drainservice.DrainerService) error {
+	drainer.WaitOnTrigger()
+	c.muIsDraining.Lock()
+	c.isDraining = true
+	c.muIsDraining.Unlock()
+	err := c.sendAgentDrainEvent()
+	if err != nil {
+		c.logger.WithError(err).Warn("Could not drain agent / server")
+	}
+	drainer.SetSchedulerDone()
+	return err
+}
+
+func (c *Client) sendAgentDrainEvent() error {
+	grpcClient := agent.NewAgentServiceClient(c.conn)
+	response, err := grpcClient.AgentDrain(context.Background(), &agent.AgentDrainRequest{
+		ServerName: c.serverName,
+		ReplicaIdx: c.replicaIdx,
+	})
+	if response != nil {
+		c.logger.Infof("Agent drain process result %t", response.GetSuccess())
+	}
 	return err
 }
 

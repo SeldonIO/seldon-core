@@ -18,6 +18,7 @@ type modelVersionStateStatistics struct {
 	replicasUnloading    uint32
 	replicasUnloaded     uint32
 	replicasUnloadFailed uint32
+	replicasDraining     uint32
 	lastFailedStateTime  time.Time
 	latestTime           time.Time
 	lastFailedReason     string
@@ -47,6 +48,8 @@ func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *model
 				s.lastFailedStateTime = replicaState.Timestamp
 				s.lastFailedReason = replicaState.Reason
 			}
+		case Draining:
+			s.replicasDraining++
 		}
 		if replicaState.Timestamp.After(s.latestTime) {
 			s.latestTime = replicaState.Timestamp
@@ -87,6 +90,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   stats.replicasAvailable,
 		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
+		DrainingReplicas:    stats.replicasDraining,
 	}
 }
 

@@ -54,6 +54,7 @@ type ModelStatus struct {
 	Reason              string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
+	DrainingReplicas    uint32
 	Timestamp           time.Time
 }
 
@@ -136,6 +137,7 @@ func NewServer(name string, shared bool) *Server {
 type ServerReplica struct {
 	muReservedMemory     sync.RWMutex
 	muLoadedModels       sync.RWMutex
+	muDrainingState      sync.RWMutex
 	inferenceSvc         string
 	inferenceHttpPort    int32
 	inferenceGrpcPort    int32
@@ -148,6 +150,7 @@ type ServerReplica struct {
 	overCommitPercentage uint32
 	reservedMemory       uint64          // while loading models, internal to scheduler
 	uniqueLoadedModels   map[string]bool // precomputed values to speed up ops on scheduler
+	isDraining           bool
 }
 
 func NewServerReplica(inferenceSvc string,
@@ -172,6 +175,7 @@ func NewServerReplica(inferenceSvc string,
 		loadedModels:         loadedModels,
 		overCommitPercentage: overCommitPercentage,
 		uniqueLoadedModels:   toUniqueModels(loadedModels),
+		isDraining:           false,
 	}
 }
 
@@ -188,6 +192,7 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		loadedModels:         loadedModels,
 		overCommitPercentage: config.GetOverCommitPercentage(),
 		uniqueLoadedModels:   toUniqueModels(loadedModels),
+		isDraining:           false,
 	}
 }
 
@@ -230,6 +235,7 @@ const (
 	UnloadFailed
 	Available
 	LoadedUnavailable
+	Draining
 )
 
 var replicaStates = []ModelReplicaState{
@@ -244,6 +250,7 @@ var replicaStates = []ModelReplicaState{
 	UnloadFailed,
 	Available,
 	LoadedUnavailable,
+	Draining,
 }
 
 func (m ModelReplicaState) NoProgressingEndpoint() bool {
@@ -271,7 +278,7 @@ func (m ModelReplicaState) IsLoading() bool {
 }
 
 func (me ModelReplicaState) String() string {
-	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable"}[me]
+	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable", "Draining"}[me]
 }
 
 func (m *Model) HasLatest() bool {
@@ -466,12 +473,22 @@ func (m *ModelVersion) GetAssignment() []int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var assignment []int
+	var draining []int
 	for k, v := range m.replicas {
 		if v.State == Loaded || v.State == Available || v.State == LoadedUnavailable {
 			assignment = append(assignment, k)
 		}
+		if v.State == Draining {
+			draining = append(draining, k)
+		}
 	}
-	return assignment
+	// prefer assignments that are not draining as envoy is eventual consistent
+	if len(assignment) > 0 {
+		return assignment
+	} else if len(draining) > 0 {
+		return draining
+	}
+	return nil
 }
 
 func (m *ModelVersion) Key() string {
@@ -554,6 +571,7 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 		overCommitPercentage: s.overCommitPercentage,
 		reservedMemory:       s.reservedMemory,
 		uniqueLoadedModels:   uniqueLoadedModels,
+		isDraining:           s.GetIsDraining(),
 	}
 }
 
@@ -616,6 +634,20 @@ func (s *ServerReplica) GetReservedMemory() uint64 {
 	defer s.muReservedMemory.RUnlock()
 
 	return s.reservedMemory
+}
+
+func (s *ServerReplica) GetIsDraining() bool {
+	s.muDrainingState.RLock()
+	defer s.muDrainingState.RUnlock()
+
+	return s.isDraining
+}
+
+func (s *ServerReplica) SetIsDraining() {
+	s.muDrainingState.Lock()
+	defer s.muDrainingState.Unlock()
+
+	s.isDraining = true
 }
 
 func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {

@@ -21,6 +21,7 @@ type AgentServiceClient interface {
 	AgentEvent(ctx context.Context, in *ModelEventMessage, opts ...grpc.CallOption) (*ModelEventResponse, error)
 	Subscribe(ctx context.Context, in *AgentSubscribeRequest, opts ...grpc.CallOption) (AgentService_SubscribeClient, error)
 	ModelScalingTrigger(ctx context.Context, opts ...grpc.CallOption) (AgentService_ModelScalingTriggerClient, error)
+	AgentDrain(ctx context.Context, in *AgentDrainRequest, opts ...grpc.CallOption) (*AgentDrainResponse, error)
 }
 
 type agentServiceClient struct {
@@ -106,6 +107,15 @@ func (x *agentServiceModelScalingTriggerClient) CloseAndRecv() (*ModelScalingTri
 	return m, nil
 }
 
+func (c *agentServiceClient) AgentDrain(ctx context.Context, in *AgentDrainRequest, opts ...grpc.CallOption) (*AgentDrainResponse, error) {
+	out := new(AgentDrainResponse)
+	err := c.cc.Invoke(ctx, "/seldon.mlops.agent.AgentService/AgentDrain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility
@@ -113,6 +123,7 @@ type AgentServiceServer interface {
 	AgentEvent(context.Context, *ModelEventMessage) (*ModelEventResponse, error)
 	Subscribe(*AgentSubscribeRequest, AgentService_SubscribeServer) error
 	ModelScalingTrigger(AgentService_ModelScalingTriggerServer) error
+	AgentDrain(context.Context, *AgentDrainRequest) (*AgentDrainResponse, error)
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -128,6 +139,9 @@ func (UnimplementedAgentServiceServer) Subscribe(*AgentSubscribeRequest, AgentSe
 }
 func (UnimplementedAgentServiceServer) ModelScalingTrigger(AgentService_ModelScalingTriggerServer) error {
 	return status.Errorf(codes.Unimplemented, "method ModelScalingTrigger not implemented")
+}
+func (UnimplementedAgentServiceServer) AgentDrain(context.Context, *AgentDrainRequest) (*AgentDrainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AgentDrain not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 
@@ -207,6 +221,24 @@ func (x *agentServiceModelScalingTriggerServer) Recv() (*ModelScalingTriggerMess
 	return m, nil
 }
 
+func _AgentService_AgentDrain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentDrainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).AgentDrain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seldon.mlops.agent.AgentService/AgentDrain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).AgentDrain(ctx, req.(*AgentDrainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,6 +249,10 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AgentEvent",
 			Handler:    _AgentService_AgentEvent_Handler,
+		},
+		{
+			MethodName: "AgentDrain",
+			Handler:    _AgentService_AgentDrain_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

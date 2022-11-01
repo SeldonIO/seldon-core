@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -24,11 +26,62 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams          = 1_000_000
-	pendingSyncsQueueSize         int = 10
-	modelEventHandlerName             = "agent.server.models"
-	modelScalingCoolingOffSeconds     = 300
+	grpcMaxConcurrentStreams           = 1_000_000
+	pendingSyncsQueueSize          int = 10
+	modelEventHandlerName              = "agent.server.models"
+	modelScalingCoolingDownSeconds     = 300
+	serverDrainingExtraWaitMillis      = 500
 )
+
+type modelRelocatedWaiter struct {
+	serverReplicaModels map[string]map[string]struct{}
+	mu                  sync.Mutex
+	waiters             map[string]*sync.WaitGroup
+}
+
+func newModelRelocatedWaiter() *modelRelocatedWaiter {
+	return &modelRelocatedWaiter{
+		serverReplicaModels: map[string]map[string]struct{}{},
+		mu:                  sync.Mutex{},
+		waiters:             make(map[string]*sync.WaitGroup),
+	}
+}
+
+func (w *modelRelocatedWaiter) registerServerReplica(serverName string, serverReplicaIdx int, models []string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	key := w.getServerReplicaName(serverName, serverReplicaIdx)
+	w.serverReplicaModels[key] = make(map[string]struct{})
+	for _, model := range models {
+		w.serverReplicaModels[key][model] = struct{}{}
+	}
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	w.waiters[key] = &wg
+}
+
+func (w *modelRelocatedWaiter) signalModel(model string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for serverReplica, models := range w.serverReplicaModels {
+		delete(models, model)
+		if len(models) == 0 {
+			delete(w.serverReplicaModels, serverReplica)
+			w.waiters[serverReplica].Done()
+		}
+	}
+}
+
+func (w *modelRelocatedWaiter) wait(serverName string, serverReplicaIdx int) {
+	key := w.getServerReplicaName(serverName, serverReplicaIdx)
+	if wg, ok := w.waiters[key]; ok {
+		wg.Wait()
+	}
+}
+
+func (w *modelRelocatedWaiter) getServerReplicaName(serverName string, serverReplicaIdx int) string {
+	return serverName + "_" + strconv.Itoa(serverReplicaIdx)
+}
 
 type ServerKey struct {
 	serverName string
@@ -36,13 +89,14 @@ type ServerKey struct {
 }
 
 type Server struct {
-	mutext sync.RWMutex
+	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
 	logger           log.FieldLogger
 	agents           map[ServerKey]*AgentSubscriber
 	store            store.ModelStore
 	scheduler        scheduler.Scheduler
 	certificateStore *seldontls.CertificateStore
+	waiter           *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
 }
 
 type SchedulerAgent interface {
@@ -66,6 +120,7 @@ func NewAgentServer(
 		agents:    make(map[ServerKey]*AgentSubscriber),
 		store:     store,
 		scheduler: scheduler,
+		waiter:    newModelRelocatedWaiter(),
 	}
 
 	hub.RegisterModelEventHandler(
@@ -148,8 +203,8 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 
 func (s *Server) Sync(modelName string) {
 	logger := s.logger.WithField("func", "Sync")
-	s.mutext.RLock()
-	defer s.mutext.RUnlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	s.store.LockModel(modelName)
 	defer s.store.UnlockModel(modelName)
 
@@ -163,8 +218,18 @@ func (s *Server) Sync(modelName string) {
 		return
 	}
 
-	// Handle any load requests for latest version - we don't want to load models from older versions
 	latestModel := model.GetLatest()
+
+	// we signal a model when other replica is available in case we have servers draining
+	// TODO: extract as helper func
+	if latestModel != nil {
+		available := latestModel.GetReplicaForState(store.Available)
+		if len(available) > 0 {
+			s.waiter.signalModel(modelName)
+		}
+	}
+
+	// Handle any load requests for latest version - we don't want to load models from older versions
 	if latestModel != nil {
 		for _, replicaIdx := range latestModel.GetReplicaForState(store.LoadRequested) {
 			logger.Infof("Sending load model request for %s", modelName)
@@ -220,6 +285,13 @@ func (s *Server) Sync(modelName string) {
 			}
 		}
 	}
+}
+
+func (s *Server) AgentDrain(ctx context.Context, message *pb.AgentDrainRequest) (*pb.AgentDrainResponse, error) {
+	logger := s.logger.WithField("func", "AgentDrain")
+	logger.Infof("Draining server replica %s:%d", message.GetServerName(), message.GetReplicaIdx())
+	s.drainServerReplicaImpl(message.GetServerName(), int(message.GetReplicaIdx()))
+	return &pb.AgentDrainResponse{Success: true}, nil
 }
 
 func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) (*pb.ModelEventResponse, error) {
@@ -282,12 +354,12 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 
 	fin := make(chan bool)
 
-	s.mutext.Lock()
+	s.mutex.Lock()
 	s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}] = &AgentSubscriber{
 		finished: fin,
 		stream:   stream,
 	}
-	s.mutext.Unlock()
+	s.mutex.Unlock()
 
 	err := s.syncMessage(request, stream)
 	if err != nil {
@@ -303,28 +375,18 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 			return nil
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
-			s.mutext.Lock()
+			s.mutex.Lock()
 			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
-			s.mutext.Unlock()
-			modelsChanged, err := s.store.RemoveServerReplica(request.ServerName, int(request.ReplicaIdx))
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", request.ServerName, request.ReplicaIdx)
-			}
-			s.logger.Debugf("Models changed by disconnect %v", modelsChanged)
-			for _, modelName := range modelsChanged {
-				err = s.scheduler.Schedule(modelName)
-				if err != nil {
-					logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, request.ServerName, request.ReplicaIdx)
-				}
-			}
+			s.mutex.Unlock()
+			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling
 			return nil
 		}
 	}
 }
 
 func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
-	s.mutext.Lock()
-	defer s.mutext.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
@@ -336,6 +398,40 @@ func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentS
 		return err
 	}
 	return nil
+}
+
+func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int) {
+	modelsChanged, err := s.store.RemoveServerReplica(serverName, serverReplicaIdx)
+	if err != nil {
+		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
+	}
+	s.logger.Debugf("Removing models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
+	for _, modelName := range modelsChanged {
+		err = s.scheduler.Schedule(modelName)
+		if err != nil {
+			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, serverName, serverReplicaIdx)
+		}
+	}
+}
+
+func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int) {
+	modelsChanged, err := s.store.DrainServerReplica(serverName, serverReplicaIdx)
+	s.waiter.registerServerReplica(serverName, serverReplicaIdx, modelsChanged)
+
+	if err != nil {
+		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
+	}
+	s.logger.Debugf("Draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
+	for _, modelName := range modelsChanged {
+		err = s.scheduler.Schedule(modelName)
+		if err != nil {
+			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d draining", modelName, serverName, serverReplicaIdx)
+		}
+	}
+	s.waiter.wait(serverName, serverReplicaIdx)
+
+	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
+	time.Sleep(util.EnvoyUpdateDefaultBatchWaitMillis + (time.Millisecond * serverDrainingExtraWaitMillis))
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {
@@ -401,7 +497,7 @@ func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, lastAvai
 }
 
 func isModelStable(modelVersion *store.ModelVersion) bool {
-	return modelVersion.ModelState().Timestamp.Before(time.Now().Add(-modelScalingCoolingOffSeconds * time.Second))
+	return modelVersion.ModelState().Timestamp.Before(time.Now().Add(-modelScalingCoolingDownSeconds * time.Second))
 }
 
 func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTriggerMessage_Trigger, numReplicas int) (int, error) {

@@ -23,6 +23,6 @@ func (r AvailableMemoryReplicaFilter) Filter(model *store.ModelVersion, replica 
 	return model.GetRequiredMemory() <= replica.GetAvailableMemory() || isModelReplicaLoadedOnServerReplica(model, replica)
 }
 
-func (s AvailableMemoryReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
+func (r AvailableMemoryReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
 	return fmt.Sprintf("model memory %d replica memory %d", model.GetRequiredMemory(), replica.GetAvailableMemory())
 }

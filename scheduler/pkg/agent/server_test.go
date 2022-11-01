@@ -91,6 +91,10 @@ func (m *mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]st
 	panic("implement me")
 }
 
+func (m *mockStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
+	panic("implement me")
+}
+
 func (m *mockStore) GetAllModels() []string {
 	var modelNames []string
 	for modelName := range m.models {
@@ -534,4 +538,84 @@ func TestModelScalingProtos(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestModelRelocatedWaiterSmoke(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type serverReplica struct {
+		serverName string
+		serverIdx  int
+	}
+	type in struct {
+		serverReplica serverReplica
+		models        []string
+	}
+	type test struct {
+		name            string
+		input           []in
+		serverUnderTest int
+	}
+	tests := []test{
+		{
+			name: "simple",
+			input: []in{
+				{
+					serverReplica: serverReplica{
+						serverName: "server",
+						serverIdx:  1,
+					},
+					models: []string{"model1", "model2"},
+				},
+			},
+			serverUnderTest: 0,
+		},
+		{
+			name: "twoservers",
+			input: []in{
+				{
+					serverReplica: serverReplica{
+						serverName: "server",
+						serverIdx:  1,
+					},
+					models: []string{"model1", "model2"},
+				},
+				{
+					serverReplica: serverReplica{
+						serverName: "server",
+						serverIdx:  2,
+					},
+					models: []string{"model1", "model2", "model3"},
+				},
+			},
+			serverUnderTest: 0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			waiter := newModelRelocatedWaiter()
+			for _, i := range test.input {
+				waiter.registerServerReplica(i.serverReplica.serverName, i.serverReplica.serverIdx, i.models)
+			}
+			modelsToDrain := test.input[test.serverUnderTest].models
+			for _, model := range modelsToDrain {
+				waiter.signalModel(model)
+			}
+			serverToDrain := test.input[test.serverUnderTest].serverReplica
+			waiter.wait(serverToDrain.serverName, serverToDrain.serverIdx)
+			// make sure we did clean up
+			_, ok := waiter.serverReplicaModels[waiter.getServerReplicaName(serverToDrain.serverName, serverToDrain.serverIdx)]
+			g.Expect(ok).To(BeFalse())
+			if len(test.input) > 1 { // we have more than one server replica to drain
+				size := len(waiter.serverReplicaModels)
+				g.Expect(size).To(BeNumerically(">", 0))
+			}
+			// test signal random model
+			waiter.signalModel("dummy")
+		})
+	}
+
 }

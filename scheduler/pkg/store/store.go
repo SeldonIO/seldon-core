@@ -94,6 +94,7 @@ type ModelStore interface {
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotifyRequest) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
+	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
 	FailedScheduling(modelVersion *ModelVersion, reason string)
 	GetAllModels() []string
 }

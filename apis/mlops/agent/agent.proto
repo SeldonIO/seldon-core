@@ -51,6 +51,15 @@ message ModelScalingTriggerResponse {
 
 }
 
+message AgentDrainRequest {
+  string serverName = 1;
+  uint32 replicaIdx = 2;
+}
+
+message AgentDrainResponse {
+  bool success = 1;
+}
+
 message AgentSubscribeRequest {
   string serverName = 1;
   bool shared = 2;
@@ -92,6 +101,7 @@ service AgentService {
   rpc AgentEvent(ModelEventMessage) returns (ModelEventResponse) {};
   rpc Subscribe(AgentSubscribeRequest) returns (stream ModelOperationMessage) {};
   rpc ModelScalingTrigger(stream ModelScalingTriggerMessage) returns (ModelScalingTriggerResponse) {};
+  rpc AgentDrain(AgentDrainRequest) returns (AgentDrainResponse) {};
 }
 
 // [END Services]

@@ -164,13 +164,14 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	_ = rpGRPC.Start()
 
 	t.Log("Testing model found")
+	time.Sleep(50 * time.Millisecond)
 
 	// load model
 	err = rpGRPC.stateManager.LoadModelVersion(
 		getDummyModelDetails(dummyModelNamePrefix+"_0", uint64(1), uint32(1)))
 	g.Expect(err).To(BeNil())
 
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	// client to proxy
 	conn, err := grpc.Dial(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
