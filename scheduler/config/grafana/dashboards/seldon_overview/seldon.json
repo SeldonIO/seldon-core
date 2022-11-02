@@ -26,7 +26,7 @@
   "liveNow": false,
   "panels": [
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -72,16 +72,16 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
-          "expr": "count (seldon_loaded_model_memory_bytes_gauge >0 )",
+          "expr": "count (seldon_loaded_model_memory_bytes_gauge > 0 )",
           "hide": false,
           "interval": "",
           "legendFormat": "In-memory",
           "refId": "B"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum (seldon_loaded_model_gauge)",
           "hide": false,
@@ -95,7 +95,7 @@
       "type": "stat"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -139,9 +139,9 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
-          "expr": "sum by(server) (seldon_loaded_model_gauge)",
+          "expr": "sum by (server) (seldon_loaded_model_gauge)",
           "format": "table",
           "instant": false,
           "interval": "",
@@ -177,7 +177,7 @@
       "type": "stat"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -222,7 +222,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "count by(server) (seldon_loaded_model_memory_bytes_gauge > 0)",
           "format": "table",
@@ -260,7 +260,7 @@
       "type": "stat"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -315,7 +315,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum by(server) (seldon_loaded_model_memory_bytes_gauge) / sum by(server) (seldon_server_replica_memory_capacity_overcommit_bytes_gauge)",
           "format": "table",
@@ -407,7 +407,7 @@
       "type": "gauge"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -478,7 +478,7 @@
       },
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(rate(seldon_cache_evict_count[1m]))",
           "format": "time_series",
@@ -489,7 +489,7 @@
           "refId": "A"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(rate(seldon_cache_miss_count[1m]))",
           "hide": false,
@@ -502,7 +502,7 @@
       "type": "timeseries"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -573,7 +573,7 @@
       },
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum by (server) (rate(seldon_load_model_counter[1m]))",
           "format": "time_series",
@@ -584,7 +584,7 @@
           "refId": "A"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum by (server) (rate(seldon_unload_model_counter[1m]))",
           "format": "time_series",
@@ -600,7 +600,7 @@
       "type": "timeseries"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -675,7 +675,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge)",
           "hide": false,
@@ -684,7 +684,7 @@
           "refId": "B"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge)",
           "hide": false,
@@ -693,7 +693,7 @@
           "refId": "C"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge)",
           "hide": false,
@@ -702,7 +702,7 @@
           "refId": "A"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge) + sum(seldon_evicted_model_memory_bytes_gauge)",
           "hide": false,
@@ -716,7 +716,7 @@
       "type": "timeseries"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -793,7 +793,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total[1m]) / rate(seldon_model_aggregate_infer_total[1m])) > 0 ) by (server, method_type)",
           "hide": false,
@@ -807,7 +807,7 @@
       "type": "timeseries"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -879,7 +879,7 @@
       },
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "container_memory_working_set_bytes{container=\"mlserver\"}",
           "interval": "10s",
@@ -887,7 +887,7 @@
           "refId": "A"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "container_memory_working_set_bytes{container=\"triton\"}",
           "hide": false,
@@ -900,7 +900,7 @@
       "type": "timeseries"
     },
     {
-	"datasource": "prometheus",
+      "datasource": "prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -971,7 +971,7 @@
       },
       "targets": [
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "rate (container_cpu_usage_seconds_total{container=\"mlserver\"}[1m])",
           "interval": "10s",
@@ -979,7 +979,7 @@
           "refId": "A"
         },
         {
-            "datasource": "prometheus",
+          "datasource": "prometheus",
           "exemplar": true,
           "expr": "rate (container_cpu_usage_seconds_total{container=\"triton\"}[1m])",
           "hide": false,

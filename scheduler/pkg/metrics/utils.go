@@ -10,12 +10,11 @@ func HttpCodeToString(code int) string {
 	return fmt.Sprintf("%d", code)
 }
 
-func createCounterVec(counterName, helperName, namespace string, labelNames []string) (*prometheus.CounterVec, error) {
+func createCounterVec(counterName string, helperName string, labelNames []string) (*prometheus.CounterVec, error) {
 	counter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name:      counterName,
-			Namespace: namespace,
-			Help:      helperName,
+			Name: counterName,
+			Help: helperName,
 		},
 		labelNames,
 	)
@@ -30,12 +29,11 @@ func createCounterVec(counterName, helperName, namespace string, labelNames []st
 	return counter, nil
 }
 
-func createGaugeVec(gaugeName, helperName, namespace string, labelNames []string) (*prometheus.GaugeVec, error) {
+func createGaugeVec(gaugeName string, helperName string, labelNames []string) (*prometheus.GaugeVec, error) {
 	gauge := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name:      gaugeName,
-			Namespace: namespace,
-			Help:      helperName,
+			Name: gaugeName,
+			Help: helperName,
 		},
 		labelNames,
 	)

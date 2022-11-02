@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -63,7 +62,6 @@ var (
 type PrometheusMetrics struct {
 	serverName       string
 	serverReplicaIdx string
-	namespace        string
 	logger           log.FieldLogger
 	// Model metrics
 	modelHistogram                                 *prometheus.HistogramVec
@@ -83,75 +81,74 @@ type PrometheusMetrics struct {
 	server                                         *http.Server
 }
 
-func NewPrometheusModelMetrics(serverName string, serverReplicaIdx uint, namespace string, logger log.FieldLogger) (*PrometheusMetrics, error) {
-	namespace = safeNamespaceName(namespace)
-	histogram, err := createModelHistogram(namespace)
+func NewPrometheusModelMetrics(serverName string, serverReplicaIdx uint, logger log.FieldLogger) (*PrometheusMetrics, error) {
+	histogram, err := createModelHistogram()
 	if err != nil {
 		return nil, err
 	}
 
-	inferCounter, err := createModelInferCounter(namespace)
+	inferCounter, err := createModelInferCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	inferLatencyCounter, err := createModelInferLatencyCounter(namespace)
+	inferLatencyCounter, err := createModelInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	aggregateInferCounter, err := createModelAggregateInferCounter(namespace)
+	aggregateInferCounter, err := createModelAggregateInferCounter()
 	if err != nil {
 
 		return nil, err
 	}
 
-	aggregateInferLatencyCounter, err := createModelAggregateInferLatencyCounter(namespace)
+	aggregateInferLatencyCounter, err := createModelAggregateInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	cacheEvictCounter, err := createCacheEvictCounter(namespace)
+	cacheEvictCounter, err := createCacheEvictCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	cacheMissCounter, err := createCacheMissCounter(namespace)
+	cacheMissCounter, err := createCacheMissCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	loadModelCounter, err := createLoadModelCounter(namespace)
+	loadModelCounter, err := createLoadModelCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	unloadModelCounter, err := createUnloadModelCounter(namespace)
+	unloadModelCounter, err := createUnloadModelCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	loadedModelGauge, err := createLoadedModelGauge(namespace)
+	loadedModelGauge, err := createLoadedModelGauge()
 	if err != nil {
 		return nil, err
 	}
 
-	loadedModelMemoryGauge, err := createLoadedModelMemoryGauge(namespace)
+	loadedModelMemoryGauge, err := createLoadedModelMemoryGauge()
 	if err != nil {
 		return nil, err
 	}
 
-	evictedModelMemoryGauge, err := createEvictedModelMemoryGauge(namespace)
+	evictedModelMemoryGauge, err := createEvictedModelMemoryGauge()
 	if err != nil {
 		return nil, err
 	}
 
-	serverReplicaMemoryCapacityGauge, err := createServerReplicaMemoryCapacityGauge(namespace)
+	serverReplicaMemoryCapacityGauge, err := createServerReplicaMemoryCapacityGauge()
 	if err != nil {
 		return nil, err
 	}
 
-	serverReplicaMemoryCapacityWithOvercommitGauge, err := createServerReplicaMemoryCapacityWithOvercommitGauge(namespace)
+	serverReplicaMemoryCapacityWithOvercommitGauge, err := createServerReplicaMemoryCapacityWithOvercommitGauge()
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +156,6 @@ func NewPrometheusModelMetrics(serverName string, serverReplicaIdx uint, namespa
 	return &PrometheusMetrics{
 		serverName:                        serverName,
 		serverReplicaIdx:                  fmt.Sprintf("%d", serverReplicaIdx),
-		namespace:                         namespace,
 		logger:                            logger.WithField("source", "PrometheusMetrics"),
 		modelHistogram:                    histogram,
 		modelInferCounter:                 inferCounter,
@@ -178,20 +174,15 @@ func NewPrometheusModelMetrics(serverName string, serverReplicaIdx uint, namespa
 	}, nil
 }
 
-func safeNamespaceName(namespace string) string {
-	return strings.ReplaceAll(namespace, "-", "_")
-}
-
-func createModelHistogram(namespace string) (*prometheus.HistogramVec, error) {
+func createModelHistogram() (*prometheus.HistogramVec, error) {
 	//TODO add method for rest/grpc
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodMetric, CodeMetric}
 
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:      ModelHistogramName,
-			Namespace: namespace,
-			Help:      "A histogram of latencies for inference server",
-			Buckets:   DefaultHistogramBuckets,
+			Name:    ModelHistogramName,
+			Help:    "A histogram of latencies for inference server",
+			Buckets: DefaultHistogramBuckets,
 		},
 		labelNames,
 	)
@@ -206,95 +197,121 @@ func createModelHistogram(namespace string) (*prometheus.HistogramVec, error) {
 	return histogram, nil
 }
 
-func createModelInferCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelInferCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		ModelInferCounterName, "A count of server inference calls",
-		namespace, labelNames)
+		ModelInferCounterName,
+		"A count of server inference calls",
+		labelNames,
+	)
 }
 
-func createModelInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelInferLatencyCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonModelMetric, SeldonInternalModelMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		ModelInferLatencyCounterName, "A sum of server inference call latencies",
-		namespace, labelNames)
+		ModelInferLatencyCounterName,
+		"A sum of server inference call latencies",
+		labelNames,
+	)
 }
 
-func createModelAggregateInferCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelAggregateInferCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
 	return createCounterVec(
-		ModelAggregateInferCounterName, "A count of server inference calls (aggregate)",
-		namespace, labelNames)
+		ModelAggregateInferCounterName,
+		"A count of server inference calls (aggregate)",
+		labelNames,
+	)
 }
 
-func createModelAggregateInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+func createModelAggregateInferLatencyCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, MethodTypeMetric}
 	return createCounterVec(
-		ModelAggregateInferLatencyCounterName, "A sum of server inference call latencies (aggregate)",
-		namespace, labelNames)
+		ModelAggregateInferLatencyCounterName,
+		"A sum of server inference call latencies (aggregate)",
+		labelNames,
+	)
 }
 
-func createCacheEvictCounter(namespace string) (*prometheus.CounterVec, error) {
+func createCacheEvictCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
-		CacheEvictCounterName, "A count of model cache evict",
-		namespace, labelNames)
+		CacheEvictCounterName,
+		"A count of model cache evict",
+		labelNames,
+	)
 }
 
-func createCacheMissCounter(namespace string) (*prometheus.CounterVec, error) {
+func createCacheMissCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
-		CacheMissCounterName, "A count of model cache miss",
-		namespace, labelNames)
+		CacheMissCounterName,
+		"A count of model cache miss",
+		labelNames,
+	)
 }
 
-func createLoadModelCounter(namespace string) (*prometheus.CounterVec, error) {
+func createLoadModelCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
-		LoadModelCounterName, "A count of model load",
-		namespace, labelNames)
+		LoadModelCounterName,
+		"A count of model load",
+		labelNames,
+	)
 }
 
-func createUnloadModelCounter(namespace string) (*prometheus.CounterVec, error) {
+func createUnloadModelCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createCounterVec(
-		UnloadModelCounterName, "A count of model unload",
-		namespace, labelNames)
+		UnloadModelCounterName,
+		"A count of model unload",
+		labelNames,
+	)
 }
 
-func createLoadedModelGauge(namespace string) (*prometheus.GaugeVec, error) {
+func createLoadedModelGauge() (*prometheus.GaugeVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonInternalModelMetric}
 	return createGaugeVec(
-		LoadedModelGaugeName, "A gauge of models loaded in the system",
-		namespace, labelNames)
+		LoadedModelGaugeName,
+		"A gauge of models loaded in the system",
+		labelNames,
+	)
 }
 
-func createLoadedModelMemoryGauge(namespace string) (*prometheus.GaugeVec, error) {
+func createLoadedModelMemoryGauge() (*prometheus.GaugeVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonInternalModelMetric}
 	return createGaugeVec(
-		LoadedModelMemoryGaugeName, "A gauge of models loaded memory in the system",
-		namespace, labelNames)
+		LoadedModelMemoryGaugeName,
+		"A gauge of models loaded memory in the system",
+		labelNames,
+	)
 }
 
-func createEvictedModelMemoryGauge(namespace string) (*prometheus.GaugeVec, error) {
+func createEvictedModelMemoryGauge() (*prometheus.GaugeVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric, SeldonInternalModelMetric}
 	return createGaugeVec(
-		EvictedModelMemoryGaugeName, "A gauge of models evicted from memory in the system",
-		namespace, labelNames)
+		EvictedModelMemoryGaugeName,
+		"A gauge of models evicted from memory in the system",
+		labelNames,
+	)
 }
 
-func createServerReplicaMemoryCapacityGauge(namespace string) (*prometheus.GaugeVec, error) {
+func createServerReplicaMemoryCapacityGauge() (*prometheus.GaugeVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createGaugeVec(
-		ServerReplicaMemoryCapacityGaugeName, "A gauge of server replica memory capacity",
-		namespace, labelNames)
+		ServerReplicaMemoryCapacityGaugeName,
+		"A gauge of server replica memory capacity",
+		labelNames,
+	)
 }
 
-func createServerReplicaMemoryCapacityWithOvercommitGauge(namespace string) (*prometheus.GaugeVec, error) {
+func createServerReplicaMemoryCapacityWithOvercommitGauge() (*prometheus.GaugeVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonServerReplicaMetric}
 	return createGaugeVec(
-		ServerReplicaMemoryCapacityWithOverCommitGaugeName, "A gauge of server replica memory capacity with overcommit",
-		namespace, labelNames)
+		ServerReplicaMemoryCapacityWithOverCommitGaugeName,
+		"A gauge of server replica memory capacity with overcommit",
+		labelNames,
+	)
 }
 
 func (pm *PrometheusMetrics) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {

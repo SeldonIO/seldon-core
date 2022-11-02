@@ -115,7 +115,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "count (seldon_mesh_seldon_loaded_model_memory_bytes_gauge >0 )",
+          "expr": "count (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'} > 0 )",
           "hide": false,
           "interval": "",
           "legendFormat": "In-memory",
@@ -124,7 +124,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum (seldon_mesh_seldon_loaded_model_gauge)",
+          "expr": "sum (seldon_loaded_model_gauge{namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Registered",
@@ -183,7 +183,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum by(server) (seldon_mesh_seldon_loaded_model_gauge)",
+          "expr": "sum by(server) (seldon_loaded_model_gauge{namespace='seldon-mesh'})",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -266,7 +266,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "count by(server) (seldon_mesh_seldon_loaded_model_memory_bytes_gauge > 0)",
+          "expr": "count by(server) (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'} > 0)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -359,7 +359,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum by(server) (seldon_mesh_seldon_loaded_model_memory_bytes_gauge) / sum by(server) (seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge)",
+          "expr": "sum by(server) (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'}) / sum by(server) (seldon_server_replica_memory_capacity_overcommit_bytes_gauge{namespace='seldon-mesh'})",
           "format": "table",
           "hide": false,
           "instant": false,
@@ -522,7 +522,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(rate(seldon_mesh_seldon_cache_evict_count[1m]))",
+          "expr": "sum(rate(seldon_cache_evict_count{namespace='seldon-mesh'}[1m]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -533,7 +533,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(rate(seldon_mesh_seldon_cache_miss_count[1m]))",
+          "expr": "sum(rate(seldon_cache_miss_count{namespace='seldon-mesh'}[1m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "Miss Rate",
@@ -617,7 +617,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum by (server) (rate(seldon_mesh_seldon_load_model_counter[1m]))",
+          "expr": "sum by (server) (rate(seldon_load_model_counter{namespace='seldon-mesh'}[1m]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -628,7 +628,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum by (server) (rate(seldon_mesh_seldon_unload_model_counter[1m]))",
+          "expr": "sum by (server) (rate(seldon_unload_model_counter{namespace='seldon-mesh'}[1m]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -719,7 +719,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton\"})",
+          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity",
@@ -728,7 +728,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"triton\"})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used",
@@ -737,7 +737,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton\"})",
+          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity with Over-commit",
@@ -746,7 +746,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"triton\"}) + sum(seldon_mesh_seldon_evicted_model_memory_bytes_gauge{server=\"triton\"})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used with Over-commit",
@@ -835,7 +835,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\"})",
+          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity",
@@ -844,7 +844,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\"})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used",
@@ -853,7 +853,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\"})",
+          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity with Over-commit",
@@ -862,7 +862,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "sum(seldon_mesh_seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\"}) + sum(seldon_mesh_seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\"})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used with Over-commit",
@@ -1046,7 +1046,7 @@
         {
           "datasource": "${DS_DS_PROMETHEUS}",
           "exemplar": true,
-          "expr": "avg((rate(seldon_mesh_seldon_model_aggregate_infer_seconds_total{container=\"agent\"}[1m]) / rate(seldon_mesh_seldon_model_aggregate_infer_total{container=\"agent\"}[1m])) > 0 ) by (server, method_type)",
+          "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total{container=\"agent\", namespace='seldon-mesh'}[1m]) / rate(seldon_model_aggregate_infer_total{container=\"agent\", namespace='seldon-mesh'}[1m])) > 0 ) by (server, method_type)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{server}}_{{method_type}}_avg",

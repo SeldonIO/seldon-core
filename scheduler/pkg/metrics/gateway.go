@@ -32,7 +32,6 @@ type PipelineMetricsHandler interface {
 
 type PrometheusPipelineMetrics struct {
 	serverName string
-	namespace  string
 	logger     log.FieldLogger
 	// Model metrics
 	pipelineHistogram                    *prometheus.HistogramVec
@@ -44,37 +43,35 @@ type PrometheusPipelineMetrics struct {
 	server *http.Server
 }
 
-func NewPrometheusPipelineMetrics(namespace string, logger log.FieldLogger) (*PrometheusPipelineMetrics, error) {
-	namespace = safeNamespaceName(namespace)
-	histogram, err := createPipelineHistogram(namespace)
+func NewPrometheusPipelineMetrics(logger log.FieldLogger) (*PrometheusPipelineMetrics, error) {
+	histogram, err := createPipelineHistogram()
 	if err != nil {
 		return nil, err
 	}
 
-	inferCounter, err := createPipelineInferCounter(namespace)
+	inferCounter, err := createPipelineInferCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	inferLatencyCounter, err := createPipelineInferLatencyCounter(namespace)
+	inferLatencyCounter, err := createPipelineInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
 
-	aggregateInferCounter, err := createPipelineAggregateInferCounter(namespace)
+	aggregateInferCounter, err := createPipelineAggregateInferCounter()
 	if err != nil {
 
 		return nil, err
 	}
 
-	aggregateInferLatencyCounter, err := createPipelineAggregateInferLatencyCounter(namespace)
+	aggregateInferLatencyCounter, err := createPipelineAggregateInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
 
 	return &PrometheusPipelineMetrics{
 		serverName:                           "pipeline-gateway",
-		namespace:                            namespace,
 		logger:                               logger.WithField("source", "PrometheusMetrics"),
 		pipelineHistogram:                    histogram,
 		pipelineInferCounter:                 inferCounter,
@@ -84,16 +81,15 @@ func NewPrometheusPipelineMetrics(namespace string, logger log.FieldLogger) (*Pr
 	}, nil
 }
 
-func createPipelineHistogram(namespace string) (*prometheus.HistogramVec, error) {
+func createPipelineHistogram() (*prometheus.HistogramVec, error) {
 	//TODO add method for rest/grpc
 	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodMetric, CodeMetric}
 
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:      PipelineHistogramName,
-			Namespace: namespace,
-			Help:      "A histogram of latencies for pipeline gateway",
-			Buckets:   DefaultHistogramBuckets,
+			Name:    PipelineHistogramName,
+			Help:    "A histogram of latencies for pipeline gateway",
+			Buckets: DefaultHistogramBuckets,
 		},
 		labelNames,
 	)
@@ -108,32 +104,40 @@ func createPipelineHistogram(namespace string) (*prometheus.HistogramVec, error)
 	return histogram, nil
 }
 
-func createPipelineInferCounter(namespace string) (*prometheus.CounterVec, error) {
+func createPipelineInferCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		PipelineInferCounterName, "A count of pipeline gateway calls",
-		namespace, labelNames)
+		PipelineInferCounterName,
+		"A count of pipeline gateway calls",
+		labelNames,
+	)
 }
 
-func createPipelineInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+func createPipelineInferLatencyCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
 	return createCounterVec(
-		PipelineInferLatencyCounterName, "A sum of pipeline gateway call latencies",
-		namespace, labelNames)
+		PipelineInferLatencyCounterName,
+		"A sum of pipeline gateway call latencies",
+		labelNames,
+	)
 }
 
-func createPipelineAggregateInferCounter(namespace string) (*prometheus.CounterVec, error) {
+func createPipelineAggregateInferCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, MethodTypeMetric}
 	return createCounterVec(
-		PipelineAggregateInferCounterName, "A count of pipeline gateway calls (aggregate)",
-		namespace, labelNames)
+		PipelineAggregateInferCounterName,
+		"A count of pipeline gateway calls (aggregate)",
+		labelNames,
+	)
 }
 
-func createPipelineAggregateInferLatencyCounter(namespace string) (*prometheus.CounterVec, error) {
+func createPipelineAggregateInferLatencyCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, MethodTypeMetric}
 	return createCounterVec(
-		PipelineAggregateInferLatencyCounterName, "A sum of pipeline gateway call latencies (aggregate)",
-		namespace, labelNames)
+		PipelineAggregateInferLatencyCounterName,
+		"A sum of pipeline gateway call latencies (aggregate)",
+		labelNames,
+	)
 }
 
 func (pm *PrometheusPipelineMetrics) HttpCodeToString(code int) string {

@@ -15,12 +15,11 @@ import (
 const (
 	serverName      = "dummy_server"
 	serverIdx       = 0
-	namesapce       = "namespace"
 	modelNamePrefix = "dummy_model_"
 )
 
 func createTestPrometheusMetrics() (*PrometheusMetrics, error) {
-	return NewPrometheusModelMetrics(serverName, serverIdx, namesapce, log.New())
+	return NewPrometheusModelMetrics(serverName, serverIdx, log.New())
 }
 
 func TestLoadedModelMetrics(t *testing.T) {
