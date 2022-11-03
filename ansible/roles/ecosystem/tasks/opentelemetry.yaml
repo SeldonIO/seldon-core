@@ -2,7 +2,7 @@
     name: seldonio.k8s.opentelemetry
   when: install_opentelemetry | bool
 
-- name: Configure OpenTelemtry
+- name: Configure OpenTelemetry
   kubernetes.core.k8s:
     state: present
     namespace: "{{ seldon_mesh_namespace }}"
