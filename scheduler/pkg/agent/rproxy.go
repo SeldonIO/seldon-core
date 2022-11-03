@@ -84,13 +84,15 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName)
-		t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		if err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}
 	}()
 	defer func() {
 		go func() {
-			err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName)
-			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			if err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+				t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			}
 		}()
 	}()
 

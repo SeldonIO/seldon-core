@@ -194,13 +194,15 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName)
-		rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}
 	}()
 	defer func() {
 		go func() {
-			err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName)
-			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+				rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			}
 		}()
 	}()
 
