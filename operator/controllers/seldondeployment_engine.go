@@ -337,7 +337,8 @@ func createEngineContainer(mlDep *machinelearningv1.SeldonDeployment, p *machine
 	}
 
 	if engineUser != nil {
-		c.SecurityContext = &corev1.SecurityContext{RunAsUser: engineUser}
+		escalationDefault := false
+		c.SecurityContext = &corev1.SecurityContext{RunAsUser: engineUser, AllowPrivilegeEscalation: &escalationDefault}
 	}
 
 	// Environment vars if specified
