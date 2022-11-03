@@ -174,14 +174,14 @@ func main() {
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
-		logger.WithError(err).Fatalf("Can't create prometheus metrics")
+		logger.WithError(err).Fatal("Can't create prometheus metrics")
 	}
 	go func() {
 		err := promMetrics.Start(cli.MetricsPort)
 		if errors.Is(err, http.ErrServerClosed) {
 			return
 		}
-		logger.WithError(err).Error("Can't start metrics server")
+		logger.WithError(err).Fatal("Can't start metrics server")
 		close(done)
 	}()
 	defer func() { _ = promMetrics.Stop() }()
@@ -259,14 +259,14 @@ func main() {
 	// Wait for required services to be ready
 	err = client.WaitReady()
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to wait for all agent dependent services to be ready")
+		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
 		close(done)
 	}
 
 	// Now we are ready start config listener
 	err = rcloneClient.StartConfigListener(agentConfigHandler)
 	if err != nil {
-		logger.WithError(err).Error("Failed to initialise rclone config listener")
+		logger.WithError(err).Fatal("Failed to initialise rclone config listener")
 		close(done)
 	}
 
@@ -281,4 +281,5 @@ func main() {
 
 	// Wait for completion
 	<-done
+	logger.Warning("Agent shutting down")
 }

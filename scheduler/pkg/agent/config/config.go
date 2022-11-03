@@ -52,7 +52,7 @@ type AgentConfigHandler struct {
 
 func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger, clientset kubernetes.Interface) (*AgentConfigHandler, error) {
 	configHandler := &AgentConfigHandler{
-		logger:    logger,
+		logger:    logger.WithField("source", "AgentConfigHandler"),
 		namespace: namespace,
 	}
 	if configPath != "" {
@@ -110,6 +110,7 @@ func (a *AgentConfigHandler) Close() error {
 	if a == nil {
 		return nil
 	}
+	a.logger.Info("Starting graceful shutdown")
 	if a.fileWatcherDone != nil {
 		close(a.fileWatcherDone)
 	}
@@ -122,6 +123,7 @@ func (a *AgentConfigHandler) Close() error {
 	for _, c := range a.listeners {
 		close(c)
 	}
+	a.logger.Infof("Finished graceful shutdown")
 	return nil
 }
 

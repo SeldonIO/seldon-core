@@ -83,6 +83,7 @@ type V2ServerError struct {
 }
 
 var ErrV2BadRequest = errors.New("V2 Bad Request")
+var ErrServerNotReady = errors.New("Server not ready")
 
 func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
@@ -305,24 +306,46 @@ func (v *V2Client) unloadModelGrpc(name string) *V2Err {
 }
 
 func (v *V2Client) Ready() error {
+	var ready bool
+	var err error
 	if v.isGrpc {
-		return v.readyGrpc()
+		ready, err = v.readyGrpc()
 	} else {
-		return v.readyHttp()
+		ready, err = v.readyHttp()
+	}
+	if err != nil {
+		v.logger.WithError(err).Debugf("Server ready check failed on error")
+		return err
+	}
+	v.logger.Debugf("Server ready check returned with value %v", ready)
+	if ready {
+		return nil
+	} else {
+		return ErrServerNotReady
 	}
 }
 
-func (v *V2Client) readyHttp() error {
-	_, err := http.Get(v.getUrl("v2/health/ready").String())
-	return err
+func (v *V2Client) readyHttp() (bool, error) {
+	res, err := http.Get(v.getUrl("v2/health/ready").String())
+	if err != nil {
+		return false, err
+	}
+	if res.StatusCode == http.StatusOK {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
-func (v *V2Client) readyGrpc() error {
+func (v *V2Client) readyGrpc() (bool, error) {
 	ctx := context.Background()
 	req := &v2.ServerReadyRequest{}
 
-	_, err := v.grpcClient.ServerReady(ctx, req)
-	return err
+	res, err := v.grpcClient.ServerReady(ctx, req)
+	if err != nil {
+		return false, err
+	}
+	return res.Ready, nil
 }
 
 func (v *V2Client) GetModels() ([]MLServerModelInfo, error) {

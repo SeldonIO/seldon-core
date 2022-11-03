@@ -133,11 +133,13 @@ func (rp *reverseGRPCProxy) Start() error {
 }
 
 func (rp *reverseGRPCProxy) Stop() error {
+	rp.logger.Info("Start graceful shutdown")
 	// Shutdown is graceful
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 	rp.grpcServer.GracefulStop()
 	rp.serverReady = false
+	rp.logger.Info("Finished graceful shutdown")
 	return nil
 }
 

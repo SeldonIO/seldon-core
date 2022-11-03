@@ -222,11 +222,13 @@ func (rp *reverseHTTPProxy) getBackEndPath() *url.URL {
 }
 
 func (rp *reverseHTTPProxy) Stop() error {
+	rp.logger.Info("Start graceful shutdown")
 	// Shutdown is graceful
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 	err := rp.server.Shutdown(context.Background())
 	rp.serverReady = false
+	rp.logger.Info("Finished graceful shutdown")
 	return err
 }
 

@@ -41,7 +41,7 @@ func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
 	schedulerWg.Add(1)
 	return &DrainerService{
 		port:               port,
-		logger:             logger,
+		logger:             logger.WithField("source", "DrainerService"),
 		serverReady:        false,
 		triggered:          false,
 		drainingFinishedWg: &schedulerWg,
@@ -80,11 +80,13 @@ func (drainer *DrainerService) Ready() bool {
 }
 
 func (drainer *DrainerService) Stop() error {
+	drainer.logger.Info("Start graceful shutdown")
 	// Shutdown is graceful
 	drainer.muServerReady.Lock()
 	defer drainer.muServerReady.Unlock()
 	err := drainer.server.Shutdown(context.Background())
 	drainer.serverReady = false
+	drainer.logger.Info("Finished graceful shutdown")
 	return err
 }
 

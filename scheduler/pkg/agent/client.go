@@ -200,6 +200,7 @@ func (c *Client) WaitReady() error {
 	//TODO make retry configurable
 	err := backoff.RetryNotify(c.ModelRepository.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
+		logger.WithError(err).Error("Failed to wait for model repository to be ready")
 		return err
 	}
 
@@ -210,10 +211,12 @@ func (c *Client) WaitReady() error {
 	logger.Infof("Waiting for inference server to be ready")
 	err = backoff.RetryNotify(c.stateManager.v2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
+		logger.WithError(err).Error("Failed to wait for inference server to be ready")
 		return err
 	}
 
 	// Unload any existing models on server to ensure we start in a clean state
+	logger.Infof("Unloading any existing models")
 	err = c.UnloadAllModels()
 	if err != nil {
 		return err
@@ -221,26 +224,31 @@ func (c *Client) WaitReady() error {
 
 	// http reverse proxy
 	if err := startSubService(c.rpHTTP, logger); err != nil {
+		logger.WithError(err).Error("Failed to start http proxy")
 		return err
 	}
 
 	// grpc reverse proxy
 	if err := startSubService(c.rpGRPC, logger); err != nil {
+		logger.WithError(err).Error("Failed to start grpc proxy")
 		return err
 	}
 
 	// agent debug service
 	if err := startSubService(c.agentDebugService, logger); err != nil {
+		logger.WithError(err).Error("Failed to start agent debug service")
 		return err
 	}
 
 	// model scaling service
 	if err := startSubService(c.modelScalingService, logger); err != nil {
+		logger.WithError(err).Error("Failed to start scaling service")
 		return err
 	}
 
 	// drainer service
 	if err := startSubService(c.drainerService, logger); err != nil {
+		logger.WithError(err).Error("Failed to start drainer service")
 		return err
 	}
 

@@ -32,7 +32,7 @@ type agentDebug struct {
 
 func NewAgentDebug(logger log.FieldLogger, port uint) *agentDebug {
 	return &agentDebug{
-		logger: logger,
+		logger: logger.WithField("source", "AgentDebug"),
 		port:   port,
 	}
 }
@@ -71,10 +71,12 @@ func (cd *agentDebug) Start() error {
 }
 
 func (cd *agentDebug) Stop() error {
+	cd.logger.Info("Start graceful shutdown")
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
 	cd.grpcServer.GracefulStop()
 	cd.serverReady = false
+	cd.logger.Info("Finished graceful shutdown")
 	return nil
 }
 

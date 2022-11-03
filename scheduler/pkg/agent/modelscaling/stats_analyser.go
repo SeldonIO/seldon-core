@@ -56,7 +56,7 @@ func NewStatsAnalyserService(
 		mu:            sync.RWMutex{},
 		isReady:       false,
 		events:        make(chan *ModelScalingEvent, channelBufferSize),
-		logger:        logger,
+		logger:        logger.WithField("source", "StatsAnalyzerService"),
 	}
 }
 
@@ -81,7 +81,9 @@ func (ss *StatsAnalyserService) Ready() bool {
 }
 
 func (ss *StatsAnalyserService) Stop() error {
+	ss.logger.Info("Start graceful shutdown")
 	ss.done <- true
+	ss.logger.Info("Finished graceful shutdown")
 	return nil
 }
 
