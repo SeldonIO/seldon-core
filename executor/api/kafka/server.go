@@ -110,7 +110,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 				}
 			}
 		}
-		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" || util.GetKafkaSecurityProtocol() == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 			saslKafkaServer := util.GetSaslElements()
 			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
 			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
