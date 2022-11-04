@@ -1,46 +1,85 @@
 <style>
+   
+   body {
+     height: 100%;
+     background: url(../../_static/images/header-gradient-core-v2.png);
+     background-size: cover;
+   }
   .mdx-container {
-    height: 85%;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(0, 0%, 100%, 1)' /></svg>")
-        no-repeat bottom,
-      linear-gradient(
-        to bottom,
-        #3f51b5,
-        hsla(150, 67%, 55%, 1) 99%,
-        #ffffff 99%
-      );
+  height: 100%;
+  }
+  
+  .md-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 2.4rem;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    box-shadow: none;
+    z-index: 2;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .md-hero {
+    transition: background .25s;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    font-size: 1rem;
+    overflow: hidden;
   }
   .mdx-hero {
-    padding-top: 20px;
-    display: flex;
+  padding-top: 50px;
+  display: flex;
+  }
+  
+  .md-tabs {
+    width: 100%;
+    transition: background .25s;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    overflow: auto;
+  }
+  
+  .md-hero__inner {
+    margin-top: 1rem!important;
+    margin-bottom: 1.2rem!important;
+  }
+  .mdx-hero__image {
+    padding-top: 50px;
+    color: #ffffff;
+    width: 50%;
   }
   .mdx-hero-content {
-    padding-top: 20px;
-    color: #ffffff;
+  padding-top: 50px;
+  color: #ffffff;
+  width: 50%;
   }
 
   .mdx-hero-content > h1 {
-    color: currentColor;
-    font-weight: 700;
-    margin-bottom: 1rem;
+  color: currentColor;
+  font-weight: 700;
+  margin-bottom: 1rem;
   }
   .mdx-hero-content > div {
-    margin-top: 30px;
+  margin-top: 30px;
   }
 
   .md-button {
-    background-color: #fff;
-    border-color: #fff;
-    color: #894da8;
-    margin-right: 0.5rem;
-    margin-top: 0.5rem;
-    font-weight: 700;
-    padding: 0.625em 2em;
+  background-color: #fff;
+  border-color: #fff;
+  color: #894da8;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  font-weight: 700;
+  padding: 0.625em 2em;
   }
   @media only screen and (min-width:76.25em){
-    .md-icon-home {
-      display: none;
-    }
+  .md-icon-home {
+    display: none;
+  }
   }
 </style>
 
@@ -49,7 +88,7 @@
     <div class="mdx-hero">
       <div class="mdx-hero__image">
         <img
-          src="https://squidfunk.github.io/mkdocs-material/assets/images/illustration.png"
+          src="../../_static/images/illustration-core-v2.png"
           draggable="false"
         />
       </div>
