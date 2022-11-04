@@ -122,3 +122,9 @@ func TestLoadConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestRecreateTracerEarlyStop(t *testing.T) {
+	logger := logrus.New()
+	traceProvider, _ := NewTraceProvider("test", nil, logger)
+	traceProvider.Stop()
+}

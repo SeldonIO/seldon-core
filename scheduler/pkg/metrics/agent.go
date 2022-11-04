@@ -501,5 +501,8 @@ func (pm *PrometheusMetrics) Start(port int) error {
 
 func (pm *PrometheusMetrics) Stop() error {
 	pm.logger.Info("Graceful shutdown")
-	return pm.server.Shutdown(context.Background())
+	if pm.server != nil {
+		return pm.server.Shutdown(context.Background())
+	}
+	return nil
 }

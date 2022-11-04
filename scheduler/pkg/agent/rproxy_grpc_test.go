@@ -241,7 +241,19 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(rpGRPC.Ready()).To(Equal(false))
 
 	t.Logf("Done")
+}
 
+func TestReverseGRPCServiceEarlyStop(t *testing.T) {
+	//TODO break this down in proper tests
+	g := NewGomegaWithT(t)
+
+	dummyModelNamePrefix := "dummy_model"
+
+	rpGRPC := setupReverseGRPCService(0, dummyModelNamePrefix, 1, 1, 1)
+	err := rpGRPC.Stop()
+	g.Expect(err).To(BeNil())
+	ready := rpGRPC.Ready()
+	g.Expect(ready).To(BeFalse())
 }
 
 func TestAddRequestIdToTrailer(t *testing.T) {

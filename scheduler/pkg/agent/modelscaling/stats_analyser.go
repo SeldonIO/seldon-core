@@ -82,7 +82,7 @@ func (ss *StatsAnalyserService) Ready() bool {
 
 func (ss *StatsAnalyserService) Stop() error {
 	ss.logger.Info("Start graceful shutdown")
-	ss.done <- true
+	close(ss.done)
 	ss.logger.Info("Finished graceful shutdown")
 	return nil
 }

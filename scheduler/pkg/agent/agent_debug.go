@@ -74,7 +74,9 @@ func (cd *agentDebug) Stop() error {
 	cd.logger.Info("Start graceful shutdown")
 	cd.mu.Lock()
 	defer cd.mu.Unlock()
-	cd.grpcServer.GracefulStop()
+	if cd.grpcServer != nil {
+		cd.grpcServer.GracefulStop()
+	}
 	cd.serverReady = false
 	cd.logger.Info("Finished graceful shutdown")
 	return nil

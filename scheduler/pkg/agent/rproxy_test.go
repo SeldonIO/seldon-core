@@ -271,7 +271,18 @@ func TestReverseProxySmoke(t *testing.T) {
 			_ = mlserver.Shutdown(context.Background())
 		})
 	}
+}
 
+func TestReverseEarlyStop(t *testing.T) {
+	g := NewGomegaWithT(t)
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+
+	rpHTTP := setupReverseProxy(logger, 0, "dummy", 1, 1)
+	err := rpHTTP.Stop()
+	g.Expect(err).To(BeNil())
+	ready := rpHTTP.Ready()
+	g.Expect(ready).To(BeFalse())
 }
 
 func TestRewritePath(t *testing.T) {

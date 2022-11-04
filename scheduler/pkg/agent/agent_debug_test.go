@@ -73,3 +73,14 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 
 	t.Logf("Done!")
 }
+
+func TestAgentDebugEarlyStop(t *testing.T) {
+	//TODO break this down in proper tests
+	g := NewGomegaWithT(t)
+
+	service := setupService(10, "dummy", 10)
+	err := service.Stop()
+	g.Expect(err).To(BeNil())
+	ready := service.Ready()
+	g.Expect(ready).To(BeFalse())
+}

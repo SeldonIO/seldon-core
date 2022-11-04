@@ -210,3 +210,11 @@ func TestInferModelMetrics(t *testing.T) {
 	promMetrics.modelAggregateInferLatencyCounter.Reset()
 	promMetrics.modelAggregateInferCounter.Reset()
 }
+
+func TestServerEarlyStop(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	service, _ := createTestPrometheusMetrics()
+	err := service.Stop()
+	g.Expect(err).To(BeNil())
+}

@@ -84,7 +84,10 @@ func (drainer *DrainerService) Stop() error {
 	// Shutdown is graceful
 	drainer.muServerReady.Lock()
 	defer drainer.muServerReady.Unlock()
-	err := drainer.server.Shutdown(context.Background())
+	var err error
+	if drainer.server != nil {
+		err = drainer.server.Shutdown(context.Background())
+	}
 	drainer.serverReady = false
 	drainer.logger.Info("Finished graceful shutdown")
 	return err

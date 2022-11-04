@@ -137,7 +137,9 @@ func (rp *reverseGRPCProxy) Stop() error {
 	// Shutdown is graceful
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
-	rp.grpcServer.GracefulStop()
+	if rp.grpcServer != nil {
+		rp.grpcServer.GracefulStop()
+	}
 	rp.serverReady = false
 	rp.logger.Info("Finished graceful shutdown")
 	return nil

@@ -93,6 +93,37 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	t.Logf("Done!")
 }
 
+func TestStatsAnalyserEarlyStop(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	lags := NewModelReplicaLagsKeeper()
+	lastUsed := NewModelReplicaLastUsedKeeper()
+	service := NewStatsAnalyserService(
+		[]ModelScalingStatsWrapper{
+			{
+				Stats:     lags,
+				Operator:  interfaces.Gte,
+				Threshold: lagThresholdDefault,
+				Reset:     true,
+				EventType: ScaleUpEvent,
+			},
+			{
+				Stats:     lastUsed,
+				Operator:  interfaces.Gte,
+				Threshold: lastUsedThresholdSecondsDefault,
+				Reset:     false,
+				EventType: ScaleDownEvent,
+			},
+		},
+		log.New(),
+		statsPeriodSecondsDefault,
+	)
+
+	err := service.Stop()
+	g.Expect(err).To(BeNil())
+	g.Expect(service.isReady).To(BeFalse())
+}
+
 func TestStatsAnalyserSoak(t *testing.T) {
 	numberIterations := 1000
 	numberModels := 100

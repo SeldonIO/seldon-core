@@ -226,7 +226,10 @@ func (rp *reverseHTTPProxy) Stop() error {
 	// Shutdown is graceful
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
-	err := rp.server.Shutdown(context.Background())
+	var err error
+	if rp.server != nil {
+		err = rp.server.Shutdown(context.Background())
+	}
 	rp.serverReady = false
 	rp.logger.Info("Finished graceful shutdown")
 	return err

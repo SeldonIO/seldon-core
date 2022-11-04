@@ -70,3 +70,21 @@ func TestDrainerServiceSmoke(t *testing.T) {
 	g.Expect(drainer.Ready()).To(BeFalse())
 
 }
+
+func TestDrainerServiceEarlyStop(t *testing.T) {
+	g := NewGomegaWithT(t)
+	logger := log.New()
+	logger.SetLevel(log.DebugLevel)
+
+	serverPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	drainer := NewDrainerService(logger, uint(serverPort))
+
+	err = drainer.Stop()
+	g.Expect(err).To(BeNil())
+
+	time.Sleep(time.Millisecond * 100)
+	g.Expect(drainer.Ready()).To(BeFalse())
+}
