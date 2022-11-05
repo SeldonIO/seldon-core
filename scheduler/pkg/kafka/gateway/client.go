@@ -3,7 +3,6 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"time"
 
@@ -14,6 +13,8 @@ import (
 
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"sync/atomic"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
@@ -31,6 +32,7 @@ type KafkaSchedulerClient struct {
 	callOptions      []grpc.CallOption
 	consumerManager  *ConsumerManager
 	certificateStore *seldontls.CertificateStore
+	stop             atomic.Bool
 }
 
 func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
@@ -43,6 +45,7 @@ func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *Consume
 		logger:          logger.WithField("source", "KafkaSchedulerClient"),
 		callOptions:     opts,
 		consumerManager: consumerManager,
+		stop:            atomic.Bool{},
 	}
 }
 
@@ -86,21 +89,37 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 	return nil
 }
 
+func (kc *KafkaSchedulerClient) Stop() {
+	kc.stop.Store(true)
+}
+
 func (kc *KafkaSchedulerClient) Start() error {
-	logFailure := func(err error, delay time.Duration) {
-		kc.logger.WithError(err).Errorf("Scheduler not ready")
+	logger := kc.logger.WithField("func", "Start")
+	// We keep trying to connect to scheduler.
+	// If SubscribeModelEvents returns we try to start connecing again.
+	// Only stop if asked to via the keepRunning flag.
+	// We allow the subscribeModelEvents to return nil on EOF to allow a new Exponential backoff to be started
+	// rather than return an error and continue the current Exponential backoff with might have reached large intervals
+	for {
+		if kc.stop.Load() {
+			logger.Info("Stopping")
+			return nil
+		}
+		logFailure := func(err error, delay time.Duration) {
+			kc.logger.WithError(err).Errorf("Scheduler not ready")
+		}
+		backOffExp := backoff.NewExponentialBackOff()
+		// Set some reasonable settings for trying to reconnect to scheduler
+		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		backOffExp.MaxInterval = time.Second * 15
+		backOffExp.InitialInterval = time.Second
+		err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
+		if err != nil {
+			kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
+			return err
+		}
+		logger.Info("Subscribe ended")
 	}
-	backOffExp := backoff.NewExponentialBackOff()
-	// Set some reasonable settings for trying to reconnect to scheduler
-	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-	backOffExp.MaxInterval = time.Second * 15
-	backOffExp.InitialInterval = time.Second
-	err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
-	if err != nil {
-		kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
-		return err
-	}
-	return nil
 }
 
 func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
@@ -112,13 +131,14 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		return errSub
 	}
 	for {
+		if kc.stop.Load() {
+			logger.Info("Stopping")
+			break
+		}
 		event, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			logger.Error(err, "event recv failed")
-			return err
+			logger.WithError(err).Error("event recv failed")
+			break
 		}
 		// The expected contract is just the latest version will be sent to us
 		if len(event.Versions) != 1 {
@@ -145,5 +165,6 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		}
 
 	}
+	logger.Info("Exiting")
 	return nil
 }

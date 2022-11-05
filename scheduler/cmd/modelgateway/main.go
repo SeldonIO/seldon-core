@@ -144,15 +144,17 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to connect to scheduler")
 	}
+	defer kafkaSchedulerClient.Stop()
 
 	go func() {
 		err := kafkaSchedulerClient.Start()
 		if err != nil {
 			logger.WithError(err).Error("Start client failed")
-			close(done)
 		}
+		close(done)
 	}()
 
 	// Wait for completion
 	<-done
+
 }
