@@ -77,6 +77,7 @@ func NewKafkaServer(
 ) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
+
 	if fullGraph {
 		log.Info("Starting full graph kafka server")
 		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
@@ -99,9 +100,11 @@ func NewKafkaServer(
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
+
 	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
+
 	if broker != "" {
 		if util.GetKafkaSecurityProtocol() == "SSL" || util.GetKafkaSecurityProtocol() == "SASL_SSL" {
 			sslKakfaServer := util.GetSslElements()
@@ -117,7 +120,8 @@ func NewKafkaServer(
 				producerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
 			}
 			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
-			if util.GetKafkaSecurityProtocol() == "SASL_SSL" {                   //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+
+			if util.GetKafkaSecurityProtocol() == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
 				saslKafkaServer := util.GetSaslElements()
 				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
 				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
@@ -126,6 +130,7 @@ func NewKafkaServer(
 				}
 			}
 		}
+
 		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" || util.GetKafkaSecurityProtocol() == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 			saslKafkaServer := util.GetSaslElements()
 			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
