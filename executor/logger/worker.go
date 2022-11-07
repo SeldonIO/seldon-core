@@ -42,8 +42,10 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
+
 		kafkaSecurityProtocol := util.GetKafkaSecurityProtocol()
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
+
 		if kafkaSecurityProtocol == "SSL" {
 			sslKafka := util.GetSslElements()
 			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
@@ -58,7 +60,8 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
 			}
 			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
-			if kafkaSecurityProtocol == "SASL_SSL" {                       //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+
+			if kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
 				saslKafkaServer := util.GetSaslElements()
 				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
 				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
@@ -67,6 +70,7 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 				}
 			}
 		}
+
 		if kafkaSecurityProtocol == "SASL_PLAIN" || kafkaSecurityProtocol == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 			saslKafkaServer := util.GetSaslElements()
 			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
