@@ -87,7 +87,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 	if broker != "" {
-		if util.GetKafkaSecurityProtocol() == "SSL" {
+		if util.GetKafkaSecurityProtocol() == "SSL" || util.GetKafkaSecurityProtocol() == "SASL_SSL" {
 			sslKakfaServer := util.GetSslElements()
 			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 			if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
@@ -101,7 +101,22 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 				producerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
 			}
 			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
-
+			if util.GetKafkaSecurityProtocol() == "SASL_SSL" {                   //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+				saslKafkaServer := util.GetSaslElements()
+				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+					producerConfigMap["sasl.username"] = saslKafkaServer.UserName
+					producerConfigMap["sasl.password"] = saslKafkaServer.Password
+				}
+			}
+		}
+		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" || util.GetKafkaSecurityProtocol() == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+			saslKafkaServer := util.GetSaslElements()
+			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+				producerConfigMap["sasl.username"] = saslKafkaServer.UserName
+				producerConfigMap["sasl.password"] = saslKafkaServer.Password
+			}
 		}
 	}
 
@@ -180,7 +195,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 		"auto.offset.reset":     "earliest",
 	}
 
-	if util.GetKafkaSecurityProtocol() == "SSL" {
+	if util.GetKafkaSecurityProtocol() == "SSL" || util.GetKafkaSecurityProtocol() == "SASL_SSL" {
 		sslKakfaServer := util.GetSslElements()
 		consumerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
 		if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
@@ -194,6 +209,14 @@ func (ks *SeldonKafkaServer) Serve() error {
 			consumerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
 		}
 		consumerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
+		if util.GetKafkaSecurityProtocol() == "SASL_SSL" {                   //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+			saslKafkaServer := util.GetSaslElements()
+			consumerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+				consumerConfigMap["sasl.username"] = saslKafkaServer.UserName
+				consumerConfigMap["sasl.password"] = saslKafkaServer.Password
+			}
+		}
 	}
 
 	c, err := kafka.NewConsumer(&consumerConfigMap)

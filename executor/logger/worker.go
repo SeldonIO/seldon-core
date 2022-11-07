@@ -57,7 +57,22 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
 			}
 			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
-
+			if util.GetKafkaSecurityProtocol() == "SASL_SSL" {             //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+				saslKafkaServer := util.GetSaslElements()
+				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+					producerConfigMap["sasl.username"] = saslKafkaServer.UserName
+					producerConfigMap["sasl.password"] = saslKafkaServer.Password
+				}
+			}
+		}
+		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" || util.GetKafkaSecurityProtocol() == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+			saslKafkaServer := util.GetSaslElements()
+			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+				producerConfigMap["sasl.username"] = saslKafkaServer.UserName
+				producerConfigMap["sasl.password"] = saslKafkaServer.Password
+			}
 		}
 
 		producer, err = kafka.NewProducer(&producerConfigMap)
