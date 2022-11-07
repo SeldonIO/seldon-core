@@ -33,7 +33,17 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, protocol string) (*Worker, error) {
+func NewWorker(
+	id int,
+	workQueue chan LogRequest,
+	log logr.Logger,
+	sdepName string,
+	namespace string,
+	predictorName string,
+	kafkaBroker string,
+	kafkaTopic string,
+	protocol string,
+) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
