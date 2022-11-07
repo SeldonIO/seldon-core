@@ -58,7 +58,23 @@ type SeldonKafkaServer struct {
 	AutoCommit      bool
 }
 
-func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger, fullHealthCheck bool, autoCommit bool) (*SeldonKafkaServer, error) {
+func NewKafkaServer(
+	fullGraph bool,
+	workers int,
+	deploymentName,
+	namespace,
+	protocol,
+	transport string,
+	annotations map[string]string,
+	serverUrl *url.URL,
+	predictor *v1.PredictorSpec,
+	broker,
+	topicIn,
+	topicOut string,
+	log logr.Logger,
+	fullHealthCheck bool,
+	autoCommit bool,
+) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
 	if fullGraph {
