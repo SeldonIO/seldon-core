@@ -42,10 +42,11 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
-		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.GetKafkaSecurityProtocol())
-		if util.GetKafkaSecurityProtocol() == "SSL" {
+		kafkaSecurityProtocol := util.GetKafkaSecurityProtocol()
+		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
+		if kafkaSecurityProtocol == "SSL" {
 			sslKafka := util.GetSslElements()
-			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
+			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
 			if sslKafka.CACertFile != "" && sslKafka.ClientCertFile != "" {
 				producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
 				producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
@@ -57,7 +58,7 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
 			}
 			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
-			if util.GetKafkaSecurityProtocol() == "SASL_SSL" {             //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
+			if kafkaSecurityProtocol == "SASL_SSL" {                       //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
 				saslKafkaServer := util.GetSaslElements()
 				producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
 				if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
@@ -66,7 +67,7 @@ func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName stri
 				}
 			}
 		}
-		if util.GetKafkaSecurityProtocol() == "SASL_PLAIN" || util.GetKafkaSecurityProtocol() == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+		if kafkaSecurityProtocol == "SASL_PLAIN" || kafkaSecurityProtocol == "PLAIN" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 			saslKafkaServer := util.GetSaslElements()
 			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
 			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
