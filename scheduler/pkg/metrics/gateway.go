@@ -11,17 +11,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Pipeline metrics
+//
+// The aggregate metrics exist for efficiency, as the summation can be
+// very slow in Prometheus when many pipelines exist.
 const (
+	pipelineHistogramName                    = "seldon_pipeline_infer_api_seconds"
+	pipelineAggregateInferCounterName        = "seldon_pipeline_aggregate_infer_total"
+	pipelineAggregateInferLatencyCounterName = "seldon_pipeline_aggregate_infer_seconds_total"
+)
 
-	// start list of metrics
-	// Pipeline metrics
-	PipelineHistogramName                    = "seldon_pipeline_infer_api_seconds"
-	PipelineInferCounterName                 = "seldon_pipeline_infer_total"
-	PipelineInferLatencyCounterName          = "seldon_pipeline_infer_seconds_total"
-	PipelineAggregateInferCounterName        = "seldon_pipeline_aggregate_infer_total"
-	PipelineAggregateInferLatencyCounterName = "seldon_pipeline_aggregate_infer_seconds_total"
-	// end list of metrics
-
+// Metric labels
+const (
 	SeldonPipelineMetric = "pipeline"
 )
 
@@ -35,8 +36,6 @@ type PrometheusPipelineMetrics struct {
 	logger     log.FieldLogger
 	// Model metrics
 	pipelineHistogram                    *prometheus.HistogramVec
-	pipelineInferCounter                 *prometheus.CounterVec
-	pipelineInferLatencyCounter          *prometheus.CounterVec
 	pipelineAggregateInferCounter        *prometheus.CounterVec
 	pipelineAggregateInferLatencyCounter *prometheus.CounterVec
 
@@ -45,16 +44,6 @@ type PrometheusPipelineMetrics struct {
 
 func NewPrometheusPipelineMetrics(logger log.FieldLogger) (*PrometheusPipelineMetrics, error) {
 	histogram, err := createPipelineHistogram()
-	if err != nil {
-		return nil, err
-	}
-
-	inferCounter, err := createPipelineInferCounter()
-	if err != nil {
-		return nil, err
-	}
-
-	inferLatencyCounter, err := createPipelineInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +63,6 @@ func NewPrometheusPipelineMetrics(logger log.FieldLogger) (*PrometheusPipelineMe
 		serverName:                           "pipeline-gateway",
 		logger:                               logger.WithField("source", "PrometheusMetrics"),
 		pipelineHistogram:                    histogram,
-		pipelineInferCounter:                 inferCounter,
-		pipelineInferLatencyCounter:          inferLatencyCounter,
 		pipelineAggregateInferCounter:        aggregateInferCounter,
 		pipelineAggregateInferLatencyCounter: aggregateInferLatencyCounter,
 	}, nil
@@ -87,7 +74,7 @@ func createPipelineHistogram() (*prometheus.HistogramVec, error) {
 
 	histogram := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    PipelineHistogramName,
+			Name:    pipelineHistogramName,
 			Help:    "A histogram of latencies for pipeline gateway",
 			Buckets: DefaultHistogramBuckets,
 		},
@@ -104,28 +91,10 @@ func createPipelineHistogram() (*prometheus.HistogramVec, error) {
 	return histogram, nil
 }
 
-func createPipelineInferCounter() (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
-	return createCounterVec(
-		PipelineInferCounterName,
-		"A count of pipeline gateway calls",
-		labelNames,
-	)
-}
-
-func createPipelineInferLatencyCounter() (*prometheus.CounterVec, error) {
-	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
-	return createCounterVec(
-		PipelineInferLatencyCounterName,
-		"A sum of pipeline gateway call latencies",
-		labelNames,
-	)
-}
-
 func createPipelineAggregateInferCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, MethodTypeMetric}
 	return createCounterVec(
-		PipelineAggregateInferCounterName,
+		pipelineAggregateInferCounterName,
 		"A count of pipeline gateway calls (aggregate)",
 		labelNames,
 	)
@@ -134,7 +103,7 @@ func createPipelineAggregateInferCounter() (*prometheus.CounterVec, error) {
 func createPipelineAggregateInferLatencyCounter() (*prometheus.CounterVec, error) {
 	labelNames := []string{SeldonServerMetric, MethodTypeMetric}
 	return createCounterVec(
-		PipelineAggregateInferLatencyCounterName,
+		pipelineAggregateInferLatencyCounterName,
 		"A sum of pipeline gateway call latencies (aggregate)",
 		labelNames,
 	)
@@ -150,12 +119,6 @@ func (pm *PrometheusPipelineMetrics) AddPipelineInferMetrics(pipelineName string
 }
 
 func (pm *PrometheusPipelineMetrics) addInferCount(pipelineName, method string, code string) {
-	pm.pipelineInferCounter.With(prometheus.Labels{
-		SeldonPipelineMetric: pipelineName,
-		SeldonServerMetric:   pm.serverName,
-		MethodTypeMetric:     method,
-		CodeMetric:           code,
-	}).Inc()
 	pm.pipelineAggregateInferCounter.With(prometheus.Labels{
 		SeldonServerMetric: pm.serverName,
 		MethodTypeMetric:   method,
@@ -163,12 +126,6 @@ func (pm *PrometheusPipelineMetrics) addInferCount(pipelineName, method string, 
 }
 
 func (pm *PrometheusPipelineMetrics) addInferLatency(pipelineName, method string, latency float64, code string) {
-	pm.pipelineInferLatencyCounter.With(prometheus.Labels{
-		SeldonPipelineMetric: pipelineName,
-		SeldonServerMetric:   pm.serverName,
-		MethodTypeMetric:     method,
-		CodeMetric:           code,
-	}).Add(latency)
 	pm.pipelineAggregateInferLatencyCounter.With(prometheus.Labels{
 		SeldonServerMetric: pm.serverName,
 		MethodTypeMetric:   method,

@@ -42,7 +42,6 @@ seldon model load -f ./models/tfsimple1.yaml
 seldon model load -f ./models/tfsimple2.yaml 
 ```
 ```json
-
     {}
     {}
 ```
@@ -52,7 +51,6 @@ seldon model status tfsimple1 -w ModelAvailable | jq -M .
 seldon model status tfsimple2 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
 ```
@@ -87,7 +85,6 @@ cat ./pipelines/tfsimples.yaml
 seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -95,7 +92,6 @@ seldon pipeline load -f ./pipelines/tfsimples.yaml
 seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
 ```json
-
     {
       "pipelineName": "tfsimples",
       "versions": [
@@ -142,7 +138,6 @@ seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ```json
-
     {
       "model_name": "",
       "outputs": [
@@ -207,7 +202,6 @@ seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -276,7 +270,6 @@ We use the Seldon CLI `pipeline inspect` feature to look at the data for all ste
 seldon pipeline inspect tfsimples
 ```
 ```json
-
     seldon.default.model.tfsimple1.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
     seldon.default.model.tfsimple1.outputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
     seldon.default.model.tfsimple2.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
@@ -291,7 +284,6 @@ Next, we look get the output as json and use the `jq` tool to get just one value
 seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 ```
 ```json
-
     {
       "inputs": [
         {
@@ -358,7 +350,6 @@ seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 seldon pipeline unload tfsimples
 ```
 ```json
-
     {}
 ```
 
@@ -367,7 +358,6 @@ seldon model unload tfsimple1
 seldon model unload tfsimple2
 ```
 ```json
-
     {}
     {}
 ```
@@ -421,7 +411,6 @@ seldon model load -f ./models/tfsimple2.yaml
 seldon model load -f ./models/tfsimple3.yaml 
 ```
 ```json
-
     {}
     {}
     {}
@@ -433,7 +422,6 @@ seldon model status tfsimple2 -w ModelAvailable | jq -M .
 seldon model status tfsimple3 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
     {}
@@ -469,7 +457,6 @@ cat ./pipelines/tfsimples-join.yaml
 seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -477,7 +464,6 @@ seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 seldon pipeline status join -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "join",
       "versions": [
@@ -530,7 +516,6 @@ seldon pipeline infer join --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -597,7 +582,6 @@ seldon pipeline infer join --inference-mode grpc \
 seldon pipeline unload join
 ```
 ```json
-
     {}
 ```
 
@@ -607,7 +591,6 @@ seldon model unload tfsimple2
 seldon model unload tfsimple3
 ```
 ```json
-
     {}
     {}
     {}
@@ -662,7 +645,6 @@ seldon model load -f ./models/add10.yaml
 seldon model load -f ./models/mul10.yaml 
 ```
 ```json
-
     {}
     {}
     {}
@@ -674,7 +656,6 @@ seldon model status add10 -w ModelAvailable | jq -M .
 seldon model status mul10 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
     {}
@@ -714,7 +695,6 @@ cat ./pipelines/conditional.yaml
 seldon pipeline load -f ./pipelines/conditional.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -722,7 +702,6 @@ seldon pipeline load -f ./pipelines/conditional.yaml
 seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "tfsimple-conditional",
       "versions": [
@@ -781,7 +760,6 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"conditional","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -810,7 +788,6 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"conditional","inputs":[{"name":"CHOICE","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -836,7 +813,6 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
 seldon pipeline unload tfsimple-conditional
 ```
 ```json
-
     {}
 ```
 
@@ -846,7 +822,6 @@ seldon model unload add10
 seldon model unload mul10
 ```
 ```json
-
     {}
     {}
     {}
@@ -887,7 +862,6 @@ seldon model load -f ./models/mul10.yaml
 seldon model load -f ./models/add10.yaml 
 ```
 ```json
-
     {}
     {}
 ```
@@ -897,7 +871,6 @@ seldon model status mul10 -w ModelAvailable | jq -M .
 seldon model status add10 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
 ```
@@ -935,7 +908,6 @@ cat ./pipelines/pipeline-inputs.yaml
 seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -943,7 +915,6 @@ seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "pipeline-inputs",
       "versions": [
@@ -996,7 +967,6 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -1037,7 +1007,6 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc \
 seldon pipeline unload pipeline-inputs
 ```
 ```json
-
     {}
 ```
 
@@ -1046,7 +1015,6 @@ seldon model unload mul10
 seldon model unload add10
 ```
 ```json
-
     {}
     {}
 ```
@@ -1085,7 +1053,6 @@ seldon model load -f ./models/mul10.yaml
 seldon model load -f ./models/add10.yaml 
 ```
 ```json
-
     {}
     {}
 ```
@@ -1095,7 +1062,6 @@ seldon model status mul10 -w ModelAvailable | jq -M .
 seldon model status add10 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
 ```
@@ -1135,7 +1101,6 @@ cat ./pipelines/trigger-joins.yaml
 seldon pipeline load -f ./pipelines/trigger-joins.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -1143,7 +1108,6 @@ seldon pipeline load -f ./pipelines/trigger-joins.yaml
 seldon pipeline status trigger-joins -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "trigger-joins",
       "versions": [
@@ -1199,7 +1163,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -1226,7 +1189,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok3","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -1252,7 +1214,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
 seldon pipeline unload trigger-joins
 ```
 ```json
-
     {}
 ```
 
@@ -1261,7 +1222,6 @@ seldon model unload mul10
 seldon model unload add10
 ```
 ```json
-
     {}
     {}
 ```

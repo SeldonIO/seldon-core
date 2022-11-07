@@ -5,7 +5,7 @@
 ```bash
 which seldon
 ```
-
+```json
     /home/clive/work/scv2/seldon-core-v2/operator/bin/seldon
 ```
 ### Model Join
@@ -18,7 +18,6 @@ seldon model load -f ./models/add10.yaml
 seldon model load -f ./models/mul10.yaml 
 ```
 ```json
-
     {}
     {}
 ```
@@ -28,7 +27,6 @@ seldon model status add10 -w ModelAvailable | jq -M .
 seldon model status mul10 -w ModelAvailable | jq -M .
 ```
 ```json
-
     {}
     {}
 ```
@@ -53,7 +51,6 @@ cat ./pipelines/version-test-a.yaml
 seldon pipeline load -f ./pipelines/version-test-a.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -61,7 +58,6 @@ seldon pipeline load -f ./pipelines/version-test-a.yaml
 seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "version-test",
       "versions": [
@@ -98,7 +94,6 @@ seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -143,7 +138,6 @@ cat ./pipelines/version-test-b.yaml
 seldon pipeline load -f ./pipelines/version-test-b.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -151,7 +145,6 @@ seldon pipeline load -f ./pipelines/version-test-b.yaml
 seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "version-test",
       "versions": [
@@ -188,7 +181,6 @@ seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -217,7 +209,6 @@ seldon pipeline infer version-test --inference-mode grpc \
 seldon pipeline load -f ./pipelines/version-test-a.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -225,7 +216,6 @@ seldon pipeline load -f ./pipelines/version-test-a.yaml
 seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 ```json
-
     {
       "pipelineName": "version-test",
       "versions": [
@@ -262,7 +252,6 @@ seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -291,7 +280,6 @@ seldon pipeline infer version-test --inference-mode grpc \
 seldon pipeline unload version-test
 ```
 ```json
-
     {}
 ```
 
@@ -300,7 +288,6 @@ seldon model unload add10
 seldon model unload mul10
 ```
 ```json
-
     {}
     {}
 ```

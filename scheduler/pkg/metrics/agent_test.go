@@ -168,28 +168,6 @@ func TestInferModelMetrics(t *testing.T) {
 	promMetrics.AddModelInferMetrics(modelName, modelName, method, latency, "200")
 
 	actualVal := testutil.ToFloat64(
-		promMetrics.modelInferLatencyCounter.With(prometheus.Labels{
-			SeldonModelMetric:         modelName,
-			SeldonInternalModelMetric: modelName,
-			MethodTypeMetric:          method,
-			SeldonServerMetric:        serverName,
-			SeldonServerReplicaMetric: strconv.Itoa(serverIdx),
-			CodeMetric:                "200",
-		}))
-	g.Expect(latency).To(Equal(actualVal))
-
-	actualVal = testutil.ToFloat64(
-		promMetrics.modelInferCounter.With(prometheus.Labels{
-			SeldonModelMetric:         modelName,
-			SeldonInternalModelMetric: modelName,
-			MethodTypeMetric:          method,
-			SeldonServerMetric:        serverName,
-			SeldonServerReplicaMetric: strconv.Itoa(serverIdx),
-			CodeMetric:                "200",
-		}))
-	g.Expect(float64(1)).To(Equal(actualVal))
-
-	actualVal = testutil.ToFloat64(
 		promMetrics.modelAggregateInferLatencyCounter.With(prometheus.Labels{
 			MethodTypeMetric:          method,
 			SeldonServerMetric:        serverName,
@@ -205,8 +183,6 @@ func TestInferModelMetrics(t *testing.T) {
 		}))
 	g.Expect(float64(1)).To(Equal(actualVal))
 
-	promMetrics.modelInferLatencyCounter.Reset()
-	promMetrics.modelInferCounter.Reset()
 	promMetrics.modelAggregateInferLatencyCounter.Reset()
 	promMetrics.modelAggregateInferCounter.Reset()
 }

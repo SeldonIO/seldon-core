@@ -41,7 +41,6 @@ seldon model load -f ./models/sklearn1.yaml
 seldon model load -f ./models/sklearn2.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -53,7 +52,6 @@ seldon model status iris -w ModelAvailable
 seldon model status iris2 -w ModelAvailable
 ```
 ```json
-
     {}
     {}
 ```
@@ -63,7 +61,6 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     map[:iris_1::50]
 ```
 
@@ -72,7 +69,6 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     map[:iris2_1::50]
 ```
 Create an experiment that modifies the iris model to add a second model splitting traffic 50/50 between the two.
@@ -101,7 +97,6 @@ Start the experiment.
 seldon experiment start -f ./experiments/ab-default-model.yaml 
 ```
 ```json
-
     {}
 ```
 Wait for the experiment to be ready.
@@ -111,7 +106,6 @@ Wait for the experiment to be ready.
 seldon experiment status experiment-sample -w | jq -M .
 ```
 ```json
-
     {
       "experimentName": "experiment-sample",
       "active": true,
@@ -129,7 +123,6 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     map[:iris2_1::19 :iris_1::31]
 ```
 Show sticky session header `x-seldon-route` that is returned
@@ -140,7 +133,6 @@ seldon model infer iris --show-headers \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     Request header Content-Type:[application/json]
     Request header Seldon-Model:[iris]
     Response header Ce-Requestid:[0757e893-64c9-411f-8937-f0f4774852ef]
@@ -190,7 +182,6 @@ seldon model infer iris -s -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     map[:iris_1::50]
 ```
 
@@ -199,7 +190,6 @@ seldon model infer iris --inference-mode grpc -s -i 50\
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' 
 ```
 ```json
-
     map[:iris_1::50]
 ```
 Stop the experiment
@@ -209,7 +199,6 @@ Stop the experiment
 seldon experiment stop experiment-sample
 ```
 ```json
-
     {}
 ```
 Unload both models.
@@ -220,7 +209,6 @@ seldon model unload iris
 seldon model unload iris2
 ```
 ```json
-
     {}
     {}
 ```
@@ -262,7 +250,6 @@ seldon model load -f ./models/add10.yaml
 seldon model load -f ./models/mul10.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -272,7 +259,6 @@ seldon model status add10 -w ModelAvailable
 seldon model status mul10 -w ModelAvailable
 ```
 ```json
-
     {}
     {}
 ```
@@ -314,7 +300,6 @@ seldon pipeline load -f ./pipelines/add10.yaml
 seldon pipeline load -f ./pipelines/mul10.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -324,7 +309,6 @@ seldon pipeline status pipeline-add10 -w PipelineReady
 seldon pipeline status pipeline-mul10 -w PipelineReady 
 ```
 ```json
-
     {"pipelineName":"pipeline-add10","versions":[{"pipeline":{"name":"pipeline-add10","uid":"cc6bmcs5em8of75v7pi0","version":1,"steps":[{"name":"add10"}],"output":{"steps":["add10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-08-29T13:12:19.395809013Z"}}]}
     {"pipelineName":"pipeline-mul10","versions":[{"pipeline":{"name":"pipeline-mul10","uid":"cc6bmcs5em8of75v7pig","version":1,"steps":[{"name":"mul10"}],"output":{"steps":["mul10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-08-29T13:12:19.632179449Z"}}]}
 ```
@@ -334,7 +318,6 @@ seldon pipeline infer pipeline-add10 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -364,7 +347,6 @@ seldon pipeline infer pipeline-mul10 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
 ```json
-
     {
       "outputs": [
         {
@@ -411,7 +393,6 @@ cat ./experiments/addmul10.yaml
 seldon experiment start -f ./experiments/addmul10.yaml 
 ```
 ```json
-
     {}
 ```
 
@@ -419,7 +400,6 @@ seldon experiment start -f ./experiments/addmul10.yaml
 seldon experiment status addmul10 -w | jq -M .
 ```
 ```json
-
     {
       "experimentName": "addmul10",
       "active": true,
@@ -435,7 +415,6 @@ seldon pipeline infer pipeline-add10 -i 50 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     map[:add10_1::25 :mul10_1::25 :pipeline-add10.pipeline::25 :pipeline-mul10.pipeline::25]
 ```
 Use sticky session key passed by last infer request to ensure same route is taken each time.
@@ -446,7 +425,6 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     Request metadata seldon-model:[pipeline-add10.pipeline]
     {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}],"rawOutputContents":["AAAwQQAAQEEAAFBBAABgQQ=="]}
     Response header x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
@@ -464,7 +442,6 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     Request metadata x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
     Request metadata seldon-model:[pipeline-add10.pipeline]
     {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}],"rawOutputContents":["AAAwQQAAQEEAAFBBAABgQQ=="]}
@@ -483,7 +460,6 @@ seldon pipeline infer pipeline-add10 -s -i 50 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     map[:add10_1::50 :pipeline-add10.pipeline::150]
 ```
 
@@ -506,7 +482,6 @@ cat ./models/add20.yaml
 seldon model load -f ./models/add20.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -514,7 +489,6 @@ seldon model load -f ./models/add20.yaml
 seldon model status add20 -w ModelAvailable
 ```
 ```json
-
     {}
 ```
 
@@ -539,7 +513,6 @@ cat ./experiments/add1020.yaml
 seldon experiment start -f ./experiments/add1020.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -547,7 +520,6 @@ seldon experiment start -f ./experiments/add1020.yaml
 seldon experiment status add1020 -w | jq -M .
 ```
 ```json
-
     {
       "experimentName": "add1020",
       "active": true,
@@ -563,7 +535,6 @@ seldon model infer add10 -i 50  --inference-mode grpc \
   '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     map[:add10_1::20 :add20_1::30]
 ```
 
@@ -572,7 +543,6 @@ seldon pipeline infer pipeline-add10 -i 100 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     map[:add10_1::27 :add20_1::31 :mul10_1::42 :pipeline-add10.pipeline::58 :pipeline-mul10.pipeline::42]
 ```
 
@@ -581,7 +551,6 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     Request metadata seldon-model:[pipeline-add10.pipeline]
     {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}],"rawOutputContents":["AAAgQQAAoEEAAPBBAAAgQg=="]}
     Response header x-forwarded-proto:[http]
@@ -599,7 +568,6 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     Request metadata x-seldon-route:[:mul10_1: :pipeline-mul10.pipeline:]
     Request metadata seldon-model:[pipeline-add10.pipeline]
     {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}],"rawOutputContents":["AAAgQQAAoEEAAPBBAAAgQg=="]}
@@ -623,7 +591,6 @@ seldon model unload add20
 seldon model unload mul10
 ```
 ```json
-
     {}
     {}
     {}
@@ -672,7 +639,6 @@ seldon model load -f ./models/sklearn1.yaml
 seldon model load -f ./models/sklearn2.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -684,7 +650,6 @@ seldon model status iris -w ModelAvailable
 seldon model status iris2 -w ModelAvailable
 ```
 ```json
-
     {}
     {}
 ```
@@ -716,7 +681,6 @@ Start the experiment.
 seldon experiment start -f ./experiments/sklearn-mirror.yaml
 ```
 ```json
-
     {}
 ```
 Wait for the experiment to be ready.
@@ -726,7 +690,6 @@ Wait for the experiment to be ready.
 seldon experiment status sklearn-mirror -w | jq -M .
 ```
 ```json
-
     {
       "experimentName": "sklearn-mirror",
       "active": true,
@@ -744,17 +707,16 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 ```json
-
     map[:iris_1::50]
 ```
 We can check the local prometheus port from the agent to validate requests went to iris2
 
 
 ```bash
-curl -s 0.0.0:9006/metrics | grep seldon_model_infer_total | grep iris2_1
+curl -s 0.0.0:9006/metrics | grep seldon_model_infer_api_seconds_count | grep iris2_1
 ```
-
-    seldon_model_infer_total{code="200",method_type="rest",model="iris",model_internal="iris2_1",server="mlserver",server_replica="0"} 50
+```json
+    seldon_model_infer_api_seconds_count{code="200",method_type="rest",model="iris",model_internal="iris2_1",server="mlserver",server_replica="0"} 50
 ```
 Stop the experiment
 
@@ -763,7 +725,6 @@ Stop the experiment
 seldon experiment stop sklearn-mirror
 ```
 ```json
-
     {}
 ```
 Unload both models.
@@ -774,7 +735,6 @@ seldon model unload iris
 seldon model unload iris2
 ```
 ```json
-
     {}
     {}
 ```
@@ -816,7 +776,6 @@ seldon model load -f ./models/add10.yaml
 seldon model load -f ./models/mul10.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -826,7 +785,6 @@ seldon model status add10 -w ModelAvailable
 seldon model status mul10 -w ModelAvailable
 ```
 ```json
-
     {}
     {}
 ```
@@ -868,7 +826,6 @@ seldon pipeline load -f ./pipelines/add10.yaml
 seldon pipeline load -f ./pipelines/mul10.yaml
 ```
 ```json
-
     {}
     {}
 ```
@@ -878,7 +835,6 @@ seldon pipeline status pipeline-add10 -w PipelineReady
 seldon pipeline status pipeline-mul10 -w PipelineReady 
 ```
 ```json
-
     {"pipelineName":"pipeline-add10", "versions":[{"pipeline":{"name":"pipeline-add10", "uid":"cc0a78ui50579svh4i5g", "version":1, "steps":[{"name":"add10"}], "output":{"steps":["add10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"Created pipeline", "lastChangeTimestamp":"2022-08-20T09:10:25.432802482Z"}}]}
     {"pipelineName":"pipeline-mul10", "versions":[{"pipeline":{"name":"pipeline-mul10", "uid":"cc0a78ui50579svh4i60", "version":1, "steps":[{"name":"mul10"}], "output":{"steps":["mul10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"Created pipeline", "lastChangeTimestamp":"2022-08-20T09:10:26.057188908Z"}}]}
 ```
@@ -888,7 +844,6 @@ seldon pipeline infer pipeline-add10 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}], "rawOutputContents":["AAAwQQAAQEEAAFBBAABgQQ=="]}
 ```
 
@@ -897,7 +852,6 @@ seldon pipeline infer pipeline-mul10 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}], "rawOutputContents":["AAAgQQAAoEEAAPBBAAAgQg=="]}
 ```
 
@@ -925,7 +879,6 @@ cat ./experiments/addmul10-mirror.yaml
 seldon experiment start -f ./experiments/addmul10-mirror.yaml 
 ```
 ```json
-
     {}
 ```
 
@@ -933,7 +886,6 @@ seldon experiment start -f ./experiments/addmul10-mirror.yaml
 seldon experiment status addmul10-mirror -w | jq -M .
 ```
 ```json
-
     {
       "experimentName": "addmul10-mirror",
       "active": true,
@@ -949,17 +901,16 @@ seldon pipeline infer pipeline-add10 -i 50 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 ```json
-
     map[:add10_1::50 :pipeline-add10.pipeline::50]
 ```
 Let's check that the mul10 model was called.
 
 
 ```bash
-curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep mul10_1
+curl -s 0.0.0:9007/metrics | grep seldon_model_infer_api_seconds_count | grep mul10_1
 ```
-
-    seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 52
+```json
+    seldon_model_infer_api_seconds_count{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 52
 ```
 
 ```bash
@@ -970,7 +921,6 @@ seldon model unload add10
 seldon model unload mul10
 ```
 ```json
-
     {}
     {}
     {}

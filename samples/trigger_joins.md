@@ -31,7 +31,6 @@ seldon model load -f ./models/id2_node.yaml
 seldon model load -f ./models/join_node.yaml
 ```
 ```json
-
     {}
     {}
     {}
@@ -43,7 +42,6 @@ seldon model status id1_node -w ModelAvailable
 seldon model status id2_node -w ModelAvailable
 ```
 ```json
-
     {}
     {}
     {}
@@ -53,7 +51,6 @@ seldon model status id2_node -w ModelAvailable
 seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -61,7 +58,6 @@ seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
 seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
 ```
 ```json
-
     [1;39m{
       [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
       [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
@@ -130,7 +126,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 
 seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -139,7 +135,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 
 seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -148,7 +144,7 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 
 seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -156,7 +152,6 @@ seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_strin
 seldon pipeline unload triggers_join_inputs
 ```
 ```json
-
     {}
 ```
 
@@ -164,7 +159,6 @@ seldon pipeline unload triggers_join_inputs
 seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
 ```
 ```json
-
     {}
 ```
 
@@ -172,7 +166,6 @@ seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
 seldon pipeline status triggers_join_internal -w PipelineReady | jq .
 ```
 ```json
-
     [1;39m{
       [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
       [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
@@ -269,7 +262,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 
 seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -278,7 +271,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 
 seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -287,7 +280,7 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 
 seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-
+```json
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
 ```
 
@@ -295,7 +288,6 @@ seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_str
 seldon pipeline unload triggers_join_internal
 ```
 ```json
-
     {}
 ```
 
@@ -305,7 +297,6 @@ seldon model unload id2_node
 seldon model unload join_node
 ```
 ```json
-
     {}
     {}
     {}
