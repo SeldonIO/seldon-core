@@ -252,9 +252,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	// create a cancel channel
 	cancelChan := make(chan struct{})
-	// make a channel with a capacity of the number of workers
 	jobChan := make(chan *KafkaJob, ks.Workers)
 	for i := 0; i < ks.Workers; i++ {
 		go ks.worker(jobChan, cancelChan)
