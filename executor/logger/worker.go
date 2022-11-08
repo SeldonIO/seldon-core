@@ -57,7 +57,7 @@ func NewWorker(
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
 
 		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
-			sslconfig := util.GetSSLElements()
+			sslconfig := util.GetKafkaSSLConfig()
 			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
 			if sslconfig.CACertFile != "" && sslconfig.ClientCertFile != "" {
 				producerConfigMap["ssl.ca.location"] = sslconfig.CACertFile
@@ -73,7 +73,7 @@ func NewWorker(
 		}
 
 		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
-			saslConfig := util.GetSASLElements()
+			saslConfig := util.GetKafkaSASLConfig()
 			producerConfigMap["sasl.mechanisms"] = saslConfig.Mechanism
 			if saslConfig.UserName != "" && saslConfig.Password != "" {
 				producerConfigMap["sasl.username"] = saslConfig.UserName
