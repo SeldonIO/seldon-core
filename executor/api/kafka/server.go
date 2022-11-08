@@ -172,11 +172,11 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 
 func (ks *SeldonKafkaServer) Serve() error {
 	consumerConfig := util.GetKafkaConsumerConfig(ks.Broker, ks.AutoCommit, ks.getGroupName())
-
 	c, err := kafka.NewConsumer(consumerConfig)
 	if err != nil {
 		return err
 	}
+
 	ks.Consumer = c
 	ks.Log.Info("Created", "consumer", c.String(), "consumer group", ks.getGroupName(), "topic", ks.TopicIn)
 
