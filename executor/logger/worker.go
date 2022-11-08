@@ -49,7 +49,8 @@ func NewWorker(
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		var producerConfig = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
+		var producerConfig = kafka.ConfigMap{
+			"bootstrap.servers":   kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
 

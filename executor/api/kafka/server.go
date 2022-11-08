@@ -101,7 +101,8 @@ func NewKafkaServer(
 		}
 	}
 
-	var producerConfig = kafka.ConfigMap{"bootstrap.servers": broker,
+	var producerConfig = kafka.ConfigMap{
+		"bootstrap.servers":   broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 
