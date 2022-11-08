@@ -199,7 +199,6 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-
 	consumerConfigMap := kafka.ConfigMap{
 		"bootstrap.servers":     ks.Broker,
 		"broker.address.family": "v4",
@@ -225,13 +224,14 @@ func (ks *SeldonKafkaServer) Serve() error {
 			consumerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
 		}
 		consumerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
-		if kafkaSecurityProtocol == "SASL_SSL" {                             //if we also have SASL enabled, then we need to provide the necessary settings in addition to SSL
-			saslKafkaServer := util.GetSaslElements()
-			consumerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
-			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
-				consumerConfigMap["sasl.username"] = saslKafkaServer.UserName
-				consumerConfigMap["sasl.password"] = saslKafkaServer.Password
-			}
+	}
+
+	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+		saslKafkaServer := util.GetSaslElements()
+		consumerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
+		if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
+			consumerConfigMap["sasl.username"] = saslKafkaServer.UserName
+			consumerConfigMap["sasl.password"] = saslKafkaServer.Password
 		}
 	}
 
