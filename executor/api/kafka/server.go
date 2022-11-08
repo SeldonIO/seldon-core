@@ -125,7 +125,7 @@ func NewKafkaServer(
 			producerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
 		}
 
-		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
 			saslConfig := util.GetKafkaSASLConfig()
 			producerConfig["sasl.mechanisms"] = saslConfig.Mechanism
 			if saslConfig.UserName != "" && saslConfig.Password != "" {
@@ -227,7 +227,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 		consumerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
 	}
 
-	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
+	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
 		saslConfig := util.GetKafkaSASLConfig()
 		consumerConfig["sasl.mechanisms"] = saslConfig.Mechanism
 		if saslConfig.UserName != "" && saslConfig.Password != "" {
