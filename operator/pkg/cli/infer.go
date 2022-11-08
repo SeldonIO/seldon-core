@@ -282,7 +282,7 @@ func decodeV2Error(response *http.Response, b []byte) error {
 		v2Error := V2Error{}
 		err := json.Unmarshal(b, &v2Error)
 		if err != nil {
-			return err
+			return fmt.Errorf("V2 server error: %d %s", response.StatusCode, b)
 		}
 		return fmt.Errorf("%s", v2Error.Error)
 	} else {
@@ -628,7 +628,6 @@ func (ic *InferenceClient) InferGrpc(
 	}
 
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
-
 	for i := 0; i < callOptions.Iterations; i++ {
 		var header metadata.MD
 		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header))
