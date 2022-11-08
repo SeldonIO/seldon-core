@@ -57,27 +57,27 @@ func NewWorker(
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
 
 		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
-			sslKafka := util.GetSslElements()
+			sslconfig := util.GetSslElements()
 			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
-			if sslKafka.CACertFile != "" && sslKafka.ClientCertFile != "" {
-				producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
-				producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
+			if sslconfig.CACertFile != "" && sslconfig.ClientCertFile != "" {
+				producerConfigMap["ssl.ca.location"] = sslconfig.CACertFile
+				producerConfigMap["ssl.key.location"] = sslconfig.ClientKeyFile
+				producerConfigMap["ssl.certificate.location"] = sslconfig.ClientCertFile
 			}
-			if sslKafka.CACert != "" && sslKafka.ClientCert != "" {
-				producerConfigMap["ssl.ca.pem"] = sslKafka.CACert
-				producerConfigMap["ssl.key.pem"] = sslKafka.ClientKey
-				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
+			if sslconfig.CACert != "" && sslconfig.ClientCert != "" {
+				producerConfigMap["ssl.ca.pem"] = sslconfig.CACert
+				producerConfigMap["ssl.key.pem"] = sslconfig.ClientKey
+				producerConfigMap["ssl.certificate.pem"] = sslconfig.ClientCert
 			}
-			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
+			producerConfigMap["ssl.key.password"] = sslconfig.ClientKeyPass // Key password, if any
 		}
 
 		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
-			saslKafkaServer := util.GetSaslElements()
-			producerConfigMap["sasl.mechanisms"] = saslKafkaServer.Mechanism
-			if saslKafkaServer.UserName != "" && saslKafkaServer.Password != "" {
-				producerConfigMap["sasl.username"] = saslKafkaServer.UserName
-				producerConfigMap["sasl.password"] = saslKafkaServer.Password
+			saslConfig := util.GetSaslElements()
+			producerConfigMap["sasl.mechanisms"] = saslConfig.Mechanism
+			if saslConfig.UserName != "" && saslConfig.Password != "" {
+				producerConfigMap["sasl.username"] = saslConfig.UserName
+				producerConfigMap["sasl.password"] = saslConfig.Password
 			}
 		}
 
