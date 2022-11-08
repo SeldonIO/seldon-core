@@ -58,19 +58,19 @@ func NewWorker(
 		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
 
 		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
-			sslconfig := util.GetKafkaSSLConfig()
+			sslConfig := util.GetKafkaSSLConfig()
 			producerConfig["security.protocol"] = kafkaSecurityProtocol
-			if sslconfig.CACertFile != "" && sslconfig.ClientCertFile != "" {
-				producerConfig["ssl.ca.location"] = sslconfig.CACertFile
-				producerConfig["ssl.key.location"] = sslconfig.ClientKeyFile
-				producerConfig["ssl.certificate.location"] = sslconfig.ClientCertFile
+			if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
+				producerConfig["ssl.ca.location"] = sslConfig.CACertFile
+				producerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
+				producerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
 			}
-			if sslconfig.CACert != "" && sslconfig.ClientCert != "" {
-				producerConfig["ssl.ca.pem"] = sslconfig.CACert
-				producerConfig["ssl.key.pem"] = sslconfig.ClientKey
-				producerConfig["ssl.certificate.pem"] = sslconfig.ClientCert
+			if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
+				producerConfig["ssl.ca.pem"] = sslConfig.CACert
+				producerConfig["ssl.key.pem"] = sslConfig.ClientKey
+				producerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
 			}
-			producerConfig["ssl.key.password"] = sslconfig.ClientKeyPass // Key password, if any
+			producerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
 		}
 
 		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
