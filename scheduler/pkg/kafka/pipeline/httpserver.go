@@ -127,15 +127,24 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 
 	kafkaRequest, err := g.gateway.Infer(req.Context(), resourceName, isModel, dataProto, convertHttpHeadersToKafkaHeaders(req.Header), g.getRequestId(req))
 	elapsedTime := time.Since(startTime).Seconds()
-	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
-		for _, val := range vals {
-			w.Header().Add(k, val)
+	if kafkaRequest != nil {
+		for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
+			for _, val := range vals {
+				w.Header().Add(k, val)
+			}
 		}
 	}
 	w.Header().Set(util.RequestIdHeader, kafkaRequest.key)
 	if err != nil {
 		logger.WithError(err).Error("Failed to call infer")
 		w.WriteHeader(http.StatusInternalServerError)
+	} else if kafkaRequest.isError {
+		logger.Error(string(kafkaRequest.response))
+		w.WriteHeader(http.StatusBadRequest)
+		_, err = w.Write(kafkaRequest.response)
+		if err != nil {
+			logger.WithError(err).Error("Failed to write error payload")
+		}
 	} else {
 		resJson, err := ConvertV2ResponseBytesToJson(kafkaRequest.response)
 		if err != nil {

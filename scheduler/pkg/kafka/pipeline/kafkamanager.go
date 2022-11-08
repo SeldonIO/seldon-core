@@ -208,9 +208,6 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	logger.Debugf("Waiting for response for key %s", key)
 	request.wg.Wait()
 	logger.Debugf("Got response for key %s", key)
-	if request.isError {
-		return nil, fmt.Errorf("%s", string(request.response))
-	}
 	return request, nil
 }
 

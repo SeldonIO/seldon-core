@@ -23,16 +23,17 @@ import (
 )
 
 type fakePipelineInferer struct {
-	err  error
-	data []byte
-	key  string
+	err          error
+	data         []byte
+	key          string
+	isPayloadErr bool
 }
 
 func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error) {
 	if f.err != nil {
 		return nil, f.err
 	} else {
-		return &Request{key: f.key, response: f.data}, nil
+		return &Request{key: f.key, response: f.data, isError: f.isPayloadErr}, nil
 	}
 }
 
@@ -72,12 +73,13 @@ func TestHttpServer(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name       string
-		path       string
-		header     string
-		req        string
-		res        *v2.ModelInferResponse
-		statusCode int
+		name         string
+		path         string
+		header       string
+		req          string
+		res          *v2.ModelInferResponse
+		isPayloadErr bool
+		statusCode   int
 	}
 	tests := []test{
 		{
@@ -101,6 +103,15 @@ func TestHttpServer(t *testing.T) {
 				},
 			},
 			statusCode: http.StatusOK,
+		},
+		{
+			name:         "payload error",
+			path:         "/v2/models/foo/infer",
+			header:       "foo",
+			req:          `{"inputs":[{"name":"input1","datatype":"BOOL","shape":[500],"data":[true,false,true,false,true]}]}`,
+			res:          &v2.ModelInferResponse{},
+			isPayloadErr: true,
+			statusCode:   http.StatusBadRequest,
 		},
 		{
 			name:       "wrong path",
@@ -144,9 +155,10 @@ func TestHttpServer(t *testing.T) {
 			b, err := proto.Marshal(test.res)
 			g.Expect(err).To(BeNil())
 			mockInferer := &fakePipelineInferer{
-				err:  nil,
-				data: b,
-				key:  testRequestId,
+				err:          nil,
+				data:         b,
+				key:          testRequestId,
+				isPayloadErr: test.isPayloadErr,
 			}
 			httpServer.gateway = mockInferer
 			inferV2Path := test.path
