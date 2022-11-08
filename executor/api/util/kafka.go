@@ -1,6 +1,10 @@
 package util
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+)
 
 type KafkaSSL struct {
 	ClientCert     string
@@ -45,4 +49,40 @@ func GetKafkaSASLConfig() *KafkaSASL {
 		Mechanism: GetEnv("KAFKA_SASL_MECHANISM", ""),
 	}
 	return &saslElements
+}
+
+func GetKafkaProducerConfig(broker string) *kafka.ConfigMap {
+	producerConfig := kafka.ConfigMap{
+		"bootstrap.servers":   broker,
+		"go.delivery.reports": false, // Need this otherwise will get memory leak
+	}
+
+	kafkaSecurityProtocol := GetKafkaSecurityProtocol()
+
+	if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
+		sslConfig := GetKafkaSSLConfig()
+		producerConfig["security.protocol"] = kafkaSecurityProtocol
+		if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
+			producerConfig["ssl.ca.location"] = sslConfig.CACertFile
+			producerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
+			producerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
+		}
+		if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
+			producerConfig["ssl.ca.pem"] = sslConfig.CACert
+			producerConfig["ssl.key.pem"] = sslConfig.ClientKey
+			producerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
+		}
+		producerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
+	}
+
+	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
+		saslConfig := GetKafkaSASLConfig()
+		producerConfig["sasl.mechanisms"] = saslConfig.Mechanism
+		if saslConfig.UserName != "" && saslConfig.Password != "" {
+			producerConfig["sasl.username"] = saslConfig.UserName
+			producerConfig["sasl.password"] = saslConfig.Password
+		}
+	}
+
+	return &producerConfig
 }
