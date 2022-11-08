@@ -49,40 +49,8 @@ func NewWorker(
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		var producerConfig = kafka.ConfigMap{
-			"bootstrap.servers":   kafkaBroker,
-			"go.delivery.reports": false, // Need this otherwise will get memory leak
-		}
-
-		kafkaSecurityProtocol := util.GetKafkaSecurityProtocol()
-		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", kafkaSecurityProtocol)
-
-		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
-			sslConfig := util.GetKafkaSSLConfig()
-			producerConfig["security.protocol"] = kafkaSecurityProtocol
-			if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
-				producerConfig["ssl.ca.location"] = sslConfig.CACertFile
-				producerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
-				producerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
-			}
-			if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
-				producerConfig["ssl.ca.pem"] = sslConfig.CACert
-				producerConfig["ssl.key.pem"] = sslConfig.ClientKey
-				producerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
-			}
-			producerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
-		}
-
-		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
-			saslConfig := util.GetKafkaSASLConfig()
-			producerConfig["sasl.mechanisms"] = saslConfig.Mechanism
-			if saslConfig.UserName != "" && saslConfig.Password != "" {
-				producerConfig["sasl.username"] = saslConfig.UserName
-				producerConfig["sasl.password"] = saslConfig.Password
-			}
-		}
-
-		producer, err = kafka.NewProducer(&producerConfig)
+		producerConfig := util.GetKafkaProducerConfig(kafkaBroker)
+		producer, err = kafka.NewProducer(producerConfig)
 		if err != nil {
 			return nil, err
 		}
