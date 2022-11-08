@@ -171,43 +171,9 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-	consumerConfig := kafka.ConfigMap{
-		"bootstrap.servers":     ks.Broker,
-		"broker.address.family": "v4",
-		"group.id":              ks.getGroupName(),
-		"session.timeout.ms":    6000,
-		"enable.auto.commit":    ks.AutoCommit,
-		"auto.offset.reset":     "earliest",
-	}
+	consumerConfig := util.GetKafkaConsumerConfig(ks.Broker, ks.AutoCommit, ks.getGroupName())
 
-	kafkaSecurityProtocol := util.GetKafkaSecurityProtocol()
-
-	if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
-		sslConfig := util.GetKafkaSSLConfig()
-		consumerConfig["security.protocol"] = kafkaSecurityProtocol
-		if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
-			consumerConfig["ssl.ca.location"] = sslConfig.CACertFile
-			consumerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
-			consumerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
-		}
-		if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
-			consumerConfig["ssl.ca.pem"] = sslConfig.CACert
-			consumerConfig["ssl.key.pem"] = sslConfig.ClientKey
-			consumerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
-		}
-		consumerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
-	}
-
-	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
-		saslConfig := util.GetKafkaSASLConfig()
-		consumerConfig["sasl.mechanisms"] = saslConfig.Mechanism
-		if saslConfig.UserName != "" && saslConfig.Password != "" {
-			consumerConfig["sasl.username"] = saslConfig.UserName
-			consumerConfig["sasl.password"] = saslConfig.Password
-		}
-	}
-
-	c, err := kafka.NewConsumer(&consumerConfig)
+	c, err := kafka.NewConsumer(consumerConfig)
 	if err != nil {
 		return err
 	}
