@@ -171,7 +171,7 @@ func GetKafkaSecurityProtocol() string {
 	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
 }
 
-func GetSslElements() *SslKakfa {
+func GetSSLElements() *SslKakfa {
 	sslElements := SslKakfa{
 		ClientCert: GetEnv("KAFKA_SSL_CLIENT_CERT", ""),
 		ClientKey:  GetEnv("KAFKA_SSL_CLIENT_KEY", ""),
@@ -187,7 +187,7 @@ func GetSslElements() *SslKakfa {
 
 }
 
-func GetSaslElements() *SaslKafka {
+func GetSASLElements() *SaslKafka {
 	saslElements := SaslKafka{
 		UserName:  GetEnv("KAFKA_SASL_USERNAME", ""),
 		Password:  GetEnv("KAFKA_SASL_PASSWORD", ""),
