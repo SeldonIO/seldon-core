@@ -86,3 +86,43 @@ func GetKafkaProducerConfig(broker string) *kafka.ConfigMap {
 
 	return &producerConfig
 }
+
+func GetKafkaConsumerConfig(broker string, autoCommit bool, groupName string) *kafka.ConfigMap {
+	consumerConfig := kafka.ConfigMap{
+		"bootstrap.servers":     broker,
+		"broker.address.family": "v4",
+		"group.id":              groupName,
+		"session.timeout.ms":    6000,
+		"enable.auto.commit":    autoCommit,
+		"auto.offset.reset":     "earliest",
+	}
+
+	kafkaSecurityProtocol := GetKafkaSecurityProtocol()
+
+	if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
+		sslConfig := GetKafkaSSLConfig()
+		consumerConfig["security.protocol"] = kafkaSecurityProtocol
+		if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
+			consumerConfig["ssl.ca.location"] = sslConfig.CACertFile
+			consumerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
+			consumerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
+		}
+		if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
+			consumerConfig["ssl.ca.pem"] = sslConfig.CACert
+			consumerConfig["ssl.key.pem"] = sslConfig.ClientKey
+			consumerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
+		}
+		consumerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
+	}
+
+	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
+		saslConfig := GetKafkaSASLConfig()
+		consumerConfig["sasl.mechanisms"] = saslConfig.Mechanism
+		if saslConfig.UserName != "" && saslConfig.Password != "" {
+			consumerConfig["sasl.username"] = saslConfig.UserName
+			consumerConfig["sasl.password"] = saslConfig.Password
+		}
+	}
+
+	return &consumerConfig
+}
