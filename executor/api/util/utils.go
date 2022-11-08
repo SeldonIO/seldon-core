@@ -153,18 +153,10 @@ type SslKakfa struct {
 	ClientKeyPass  string
 }
 
-func (o SslKakfa) String() string {
-	return "SslKakfa"
-}
-
 type SaslKafka struct {
 	UserName  string
 	Password  string
 	Mechanism string
-}
-
-func (o SaslKafka) String() string {
-	return "SaslKafka"
 }
 
 func GetKafkaSecurityProtocol() string {
