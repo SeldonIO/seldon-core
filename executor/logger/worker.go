@@ -49,7 +49,7 @@ func NewWorker(
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
+		var producerConfig = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
 			"go.delivery.reports": false, // Need this othewise will get memory leak
 		}
 
@@ -58,30 +58,30 @@ func NewWorker(
 
 		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
 			sslconfig := util.GetKafkaSSLConfig()
-			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
+			producerConfig["security.protocol"] = kafkaSecurityProtocol
 			if sslconfig.CACertFile != "" && sslconfig.ClientCertFile != "" {
-				producerConfigMap["ssl.ca.location"] = sslconfig.CACertFile
-				producerConfigMap["ssl.key.location"] = sslconfig.ClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslconfig.ClientCertFile
+				producerConfig["ssl.ca.location"] = sslconfig.CACertFile
+				producerConfig["ssl.key.location"] = sslconfig.ClientKeyFile
+				producerConfig["ssl.certificate.location"] = sslconfig.ClientCertFile
 			}
 			if sslconfig.CACert != "" && sslconfig.ClientCert != "" {
-				producerConfigMap["ssl.ca.pem"] = sslconfig.CACert
-				producerConfigMap["ssl.key.pem"] = sslconfig.ClientKey
-				producerConfigMap["ssl.certificate.pem"] = sslconfig.ClientCert
+				producerConfig["ssl.ca.pem"] = sslconfig.CACert
+				producerConfig["ssl.key.pem"] = sslconfig.ClientKey
+				producerConfig["ssl.certificate.pem"] = sslconfig.ClientCert
 			}
-			producerConfigMap["ssl.key.password"] = sslconfig.ClientKeyPass // Key password, if any
+			producerConfig["ssl.key.password"] = sslconfig.ClientKeyPass // Key password, if any
 		}
 
 		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" {
 			saslConfig := util.GetKafkaSASLConfig()
-			producerConfigMap["sasl.mechanisms"] = saslConfig.Mechanism
+			producerConfig["sasl.mechanisms"] = saslConfig.Mechanism
 			if saslConfig.UserName != "" && saslConfig.Password != "" {
-				producerConfigMap["sasl.username"] = saslConfig.UserName
-				producerConfigMap["sasl.password"] = saslConfig.Password
+				producerConfig["sasl.username"] = saslConfig.UserName
+				producerConfig["sasl.password"] = saslConfig.Password
 			}
 		}
 
-		producer, err = kafka.NewProducer(&producerConfigMap)
+		producer, err = kafka.NewProducer(&producerConfig)
 		if err != nil {
 			return nil, err
 		}

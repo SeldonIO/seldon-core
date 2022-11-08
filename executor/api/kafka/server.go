@@ -101,7 +101,7 @@ func NewKafkaServer(
 		}
 	}
 
-	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
+	var producerConfig = kafka.ConfigMap{"bootstrap.servers": broker,
 		"go.delivery.reports": false, // Need this othewise will get memory leak
 	}
 
@@ -110,26 +110,26 @@ func NewKafkaServer(
 
 		if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
 			sslConfig := util.GetKafkaSSLConfig()
-			producerConfigMap["security.protocol"] = kafkaSecurityProtocol
+			producerConfig["security.protocol"] = kafkaSecurityProtocol
 			if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
-				producerConfigMap["ssl.ca.location"] = sslConfig.CACertFile
-				producerConfigMap["ssl.key.location"] = sslConfig.ClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslConfig.ClientCertFile
+				producerConfig["ssl.ca.location"] = sslConfig.CACertFile
+				producerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
+				producerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
 			}
 			if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
-				producerConfigMap["ssl.ca.pem"] = sslConfig.CACert
-				producerConfigMap["ssl.key.pem"] = sslConfig.ClientKey
-				producerConfigMap["ssl.certificate.pem"] = sslConfig.ClientCert
+				producerConfig["ssl.ca.pem"] = sslConfig.CACert
+				producerConfig["ssl.key.pem"] = sslConfig.ClientKey
+				producerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
 			}
-			producerConfigMap["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
+			producerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
 		}
 
 		if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 			saslConfig := util.GetKafkaSASLConfig()
-			producerConfigMap["sasl.mechanisms"] = saslConfig.Mechanism
+			producerConfig["sasl.mechanisms"] = saslConfig.Mechanism
 			if saslConfig.UserName != "" && saslConfig.Password != "" {
-				producerConfigMap["sasl.username"] = saslConfig.UserName
-				producerConfigMap["sasl.password"] = saslConfig.Password
+				producerConfig["sasl.username"] = saslConfig.UserName
+				producerConfig["sasl.password"] = saslConfig.Password
 			}
 		}
 	}
@@ -140,7 +140,7 @@ func NewKafkaServer(
 
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&producerConfigMap)
+	p, err := kafka.NewProducer(&producerConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-	consumerConfigMap := kafka.ConfigMap{
+	consumerConfig := kafka.ConfigMap{
 		"bootstrap.servers":     ks.Broker,
 		"broker.address.family": "v4",
 		"group.id":              ks.getGroupName(),
@@ -212,30 +212,30 @@ func (ks *SeldonKafkaServer) Serve() error {
 
 	if kafkaSecurityProtocol == "SSL" || kafkaSecurityProtocol == "SASL_SSL" {
 		sslConfig := util.GetKafkaSSLConfig()
-		consumerConfigMap["security.protocol"] = kafkaSecurityProtocol
+		consumerConfig["security.protocol"] = kafkaSecurityProtocol
 		if sslConfig.CACertFile != "" && sslConfig.ClientCertFile != "" {
-			consumerConfigMap["ssl.ca.location"] = sslConfig.CACertFile
-			consumerConfigMap["ssl.key.location"] = sslConfig.ClientKeyFile
-			consumerConfigMap["ssl.certificate.location"] = sslConfig.ClientCertFile
+			consumerConfig["ssl.ca.location"] = sslConfig.CACertFile
+			consumerConfig["ssl.key.location"] = sslConfig.ClientKeyFile
+			consumerConfig["ssl.certificate.location"] = sslConfig.ClientCertFile
 		}
 		if sslConfig.CACert != "" && sslConfig.ClientCert != "" {
-			consumerConfigMap["ssl.ca.pem"] = sslConfig.CACert
-			consumerConfigMap["ssl.key.pem"] = sslConfig.ClientKey
-			consumerConfigMap["ssl.certificate.pem"] = sslConfig.ClientCert
+			consumerConfig["ssl.ca.pem"] = sslConfig.CACert
+			consumerConfig["ssl.key.pem"] = sslConfig.ClientKey
+			consumerConfig["ssl.certificate.pem"] = sslConfig.ClientCert
 		}
-		consumerConfigMap["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
+		consumerConfig["ssl.key.password"] = sslConfig.ClientKeyPass // Key password, if any
 	}
 
 	if kafkaSecurityProtocol == "SASL_PLAINTEXT" || kafkaSecurityProtocol == "SASL_SSL" { //if we also have SASL enabled, then we need to provide the necessary (no SSL)
 		saslConfig := util.GetKafkaSASLConfig()
-		consumerConfigMap["sasl.mechanisms"] = saslConfig.Mechanism
+		consumerConfig["sasl.mechanisms"] = saslConfig.Mechanism
 		if saslConfig.UserName != "" && saslConfig.Password != "" {
-			consumerConfigMap["sasl.username"] = saslConfig.UserName
-			consumerConfigMap["sasl.password"] = saslConfig.Password
+			consumerConfig["sasl.username"] = saslConfig.UserName
+			consumerConfig["sasl.password"] = saslConfig.Password
 		}
 	}
 
-	c, err := kafka.NewConsumer(&consumerConfigMap)
+	c, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
 	}
