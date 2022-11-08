@@ -278,6 +278,7 @@ func main() {
 		}
 		close(done)
 	}()
+	defer func() { client.Stop() }()
 
 	// Wait for completion
 	<-done

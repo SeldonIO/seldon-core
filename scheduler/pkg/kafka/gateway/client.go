@@ -165,6 +165,11 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		}
 
 	}
+
+	defer func() {
+		_ = stream.CloseSend()
+	}()
+
 	logger.Info("Exiting")
 	return nil
 }

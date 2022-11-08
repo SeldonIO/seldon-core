@@ -384,6 +384,14 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	}
 }
 
+func (s *Server) StopAgentStreams() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	for _, subscription := range s.agents {
+		close(subscription.finished)
+	}
+}
+
 func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()

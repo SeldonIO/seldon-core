@@ -3,9 +3,8 @@ package agent
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
@@ -35,19 +34,18 @@ import (
 )
 
 type Client struct {
-	logger              log.FieldLogger
-	configChan          chan config.AgentConfiguration
-	replicaConfig       *agent.ReplicaConfig
-	stateManager        *LocalStateManager
-	rpHTTP              interfaces.DependencyServiceInterface
-	rpGRPC              interfaces.DependencyServiceInterface
-	agentDebugService   interfaces.DependencyServiceInterface
-	modelScalingService interfaces.DependencyServiceInterface
-	drainerService      interfaces.DependencyServiceInterface
-	metrics             metrics.AgentMetricsHandler
-	isDraining          bool
-	// mutex to guard changes to `isDraining`
-	muIsDraining             sync.RWMutex
+	logger                   log.FieldLogger
+	configChan               chan config.AgentConfiguration
+	replicaConfig            *agent.ReplicaConfig
+	stateManager             *LocalStateManager
+	rpHTTP                   interfaces.DependencyServiceInterface
+	rpGRPC                   interfaces.DependencyServiceInterface
+	agentDebugService        interfaces.DependencyServiceInterface
+	modelScalingService      interfaces.DependencyServiceInterface
+	drainerService           interfaces.DependencyServiceInterface
+	metrics                  metrics.AgentMetricsHandler
+	isDraining               atomic.Bool
+	stop                     atomic.Bool
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	ClientServices
 	SchedulerGrpcClientOptions
@@ -140,7 +138,8 @@ func NewClient(serverName string,
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
-		isDraining: false,
+		isDraining: atomic.Bool{},
+		stop:       atomic.Bool{},
 	}
 }
 
@@ -155,21 +154,48 @@ func (c *Client) Start() error {
 		}
 	}
 
-	logFailure := func(err error, delay time.Duration) {
-		c.logger.WithError(err).Errorf("Scheduler not ready")
-	}
-	backOffExp := backoff.NewExponentialBackOff()
-	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-	err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
-	if err != nil {
-		c.logger.WithError(err).Fatal("Failed to start client")
-		return err
-	}
+	// prom metrics
+	go c.metrics.AddServerReplicaMetrics(
+		c.stateManager.totalMainMemoryBytes,
+		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
 
-	return nil
+	// model scaling consumption
+	go c.consumeModelScalingEvents()
+
+	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
+	go func() {
+		_ = c.drainOnRequest(c.drainerService.(*drainservice.DrainerService))
+	}()
+
+	for {
+		if c.stop.Load() {
+			logger.Info("Stopping")
+			return nil
+		}
+
+		logFailure := func(err error, delay time.Duration) {
+			c.logger.WithError(err).Errorf("Scheduler not ready")
+		}
+		backOffExp := backoff.NewExponentialBackOff()
+		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
+		if err != nil {
+			c.logger.WithError(err).Fatal("Failed to start client")
+			return err
+		}
+		logger.Info("Subscribe ended")
+	}
 }
 
-func (c *Client) StopSchedulerStream() error {
+func (c *Client) Stop() {
+	c.stop.Store(true)
+	err := c.closeSchedulerConnection()
+	if err != nil {
+		c.logger.WithError(err).Warn("Cannot close stream connection to scheduler")
+	}
+}
+
+func (c *Client) closeSchedulerConnection() error {
 	logger := c.logger.WithField("func", "StopSchedulerStream")
 	logger.Info("Shutting down stream to scheduler")
 
@@ -333,12 +359,11 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
 	}
-	logger.Infof("Connecting to scheduler at %s:%d", host, port)
+	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}
-	logger.Infof("Connected to scheduler at %s:%d", host, port)
 	return conn, nil
 }
 
@@ -360,10 +385,6 @@ func (c *Client) StartService() error {
 	}
 	logger.Info("Subscribed to scheduler")
 
-	go c.metrics.AddServerReplicaMetrics(
-		c.stateManager.totalMainMemoryBytes,
-		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
-
 	// start model scaling events consumer
 	clientStream, err := grpcClient.ModelScalingTrigger(context.Background())
 	if err != nil {
@@ -373,21 +394,17 @@ func (c *Client) StartService() error {
 	defer func() {
 		_, _ = clientStream.CloseAndRecv()
 	}()
-	go c.consumeModelScalingEvents()
-
-	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
-	go func() {
-		_ = c.drainOnRequest(c.drainerService.(*drainservice.DrainerService))
-	}()
 
 	// start stream to server
 	for {
-		operation, err := stream.Recv()
-		if err == io.EOF {
+		if c.stop.Load() {
+			logger.Info("Stopping")
 			break
 		}
+		operation, err := stream.Recv()
 		if err != nil {
-			return err
+			logger.WithError(err).Error("event recv failed")
+			break
 		}
 		c.logger.Infof("Received operation")
 		switch operation.Operation {
@@ -410,6 +427,12 @@ func (c *Client) StartService() error {
 			}()
 		}
 	}
+
+	defer func() {
+		_ = stream.CloseSend()
+	}()
+
+	logger.Info("Exiting")
 	return nil
 }
 
@@ -553,9 +576,7 @@ func (c *Client) sendModelEventError(modelName string, modelVersion uint32, even
 
 func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
-	c.muIsDraining.RLock()
-	defer c.muIsDraining.RUnlock()
-	if c.isDraining {
+	if c.isDraining.Load() {
 		if event == agent.ModelEventMessage_LOADED {
 			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, fmt.Errorf("server replica is draining"))
 			return nil
@@ -576,9 +597,7 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 
 func (c *Client) drainOnRequest(drainer *drainservice.DrainerService) error {
 	drainer.WaitOnTrigger()
-	c.muIsDraining.Lock()
-	c.isDraining = true
-	c.muIsDraining.Unlock()
+	c.isDraining.Store(true)
 	err := c.sendAgentDrainEvent()
 	if err != nil {
 		c.logger.WithError(err).Warn("Could not drain agent / server")
@@ -633,7 +652,7 @@ func (c *Client) consumeModelScalingEvents() {
 			modelName, modelVersion, e.EventType, e.StatsData.Value, nil,
 		)
 		if err != nil {
-			c.logger.WithError(err).Warnf("Trigger model scaling event model %s failed", e.StatsData.ModelName)
+			c.logger.WithError(err).Warnf("Sending model scaling event model %s failed", e.StatsData.ModelName)
 			continue
 		}
 	}

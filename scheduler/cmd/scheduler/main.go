@@ -234,4 +234,5 @@ func main() {
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
 	cs.StopSendPipelineEvents()
+	as.StopAgentStreams()
 }

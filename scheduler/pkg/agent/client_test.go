@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
 	"testing"
+	"time"
 
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
@@ -171,7 +173,6 @@ func TestClientCreate(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
@@ -207,17 +208,19 @@ func TestClientCreate(t *testing.T) {
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn
-			err = client.Start()
-			g.Expect(err).To(BeNil())
+			go func() {
+				_ = client.Start()
+			}()
+			time.Sleep(10 * time.Millisecond)
 			if test.v2Status == 200 && test.modelRepoErr == nil {
-				g.Eventually(mockAgentV2Server.loaded).Should(Equal(1))
+				g.Eventually(mockAgentV2Server.loaded).Should(BeNumerically(">", 1))
 				g.Eventually(mockAgentV2Server.loadFailed).Should(Equal(0))
 			} else {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(0))
-				g.Eventually(mockAgentV2Server.loadFailed).Should(Equal(1))
+				g.Eventually(mockAgentV2Server.loadFailed).Should(BeNumerically(">", 1))
 			}
-			err = conn.Close()
-			g.Expect(err).To(BeNil())
+			client.Stop()
+			httpmock.DeactivateAndReset()
 		})
 	}
 }
@@ -300,7 +303,6 @@ func TestLoadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
@@ -333,9 +335,11 @@ func TestLoadModel(t *testing.T) {
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
-			g.Expect(err).To(BeNil())
-			err = client.LoadModel(test.op)
+			go func() {
+				_ = client.Start()
+			}()
+			time.Sleep(50 * time.Millisecond)
+			err := client.LoadModel(test.op)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -356,8 +360,8 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 			}
-			err = conn.Close()
-			g.Expect(err).To(BeNil())
+			client.Stop()
+			httpmock.DeactivateAndReset()
 		})
 	}
 }
@@ -444,7 +448,6 @@ parameters:
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
@@ -485,9 +488,11 @@ parameters:
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
-			g.Expect(err).To(BeNil())
-			err = client.LoadModel(test.op)
+			go func() {
+				_ = client.Start()
+			}()
+			time.Sleep(50 * time.Millisecond)
+			err := client.LoadModel(test.op)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -497,8 +502,8 @@ parameters:
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 			}
-			err = conn.Close()
-			g.Expect(err).To(BeNil())
+			client.Stop()
+			httpmock.DeactivateAndReset()
 		})
 	}
 }
@@ -584,7 +589,6 @@ func TestUnloadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
-			defer httpmock.DeactivateAndReset()
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.httpClient)
 			modelRepository := FakeModelRepository{}
@@ -617,9 +621,11 @@ func TestUnloadModel(t *testing.T) {
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
-			err := client.Start()
-			g.Expect(err).To(BeNil())
-			err = client.LoadModel(test.loadOp)
+			go func() {
+				_ = client.Start()
+			}()
+			time.Sleep(50 * time.Millisecond)
+			err := client.LoadModel(test.loadOp)
 			g.Expect(err).To(BeNil())
 			err = client.UnloadModel(test.unloadOp)
 			if test.success {
@@ -642,8 +648,8 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(1))
 			}
-			err = conn.Close()
-			g.Expect(err).To(BeNil())
+			client.Stop()
+			httpmock.DeactivateAndReset()
 		})
 	}
 }
@@ -690,9 +696,17 @@ func TestClientClose(t *testing.T) {
 		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 	g.Expect(err).To(BeNil())
 	client.conn = conn
-	err = client.Start()
-	g.Expect(err).To(BeNil())
-	err = client.StopSchedulerStream()
-	g.Expect(err).To(BeNil())
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	go func() {
+		err = client.Start()
+		g.Expect(err).To(BeNil())
+		wg.Done()
+	}()
+	client.Stop()
+	wg.Wait()
 	g.Expect(client.conn.GetState()).To(Equal(connectivity.Shutdown))
+	g.Expect(client.stop.Load()).To(BeTrue())
 }
