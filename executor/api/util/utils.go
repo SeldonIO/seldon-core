@@ -143,7 +143,7 @@ func GetEnvAsBool(key string, fallback bool) bool {
 	return fallback
 }
 
-type SslKakfa struct {
+type KafkaSSL struct {
 	ClientCert     string
 	ClientKey      string
 	CACert         string
@@ -153,7 +153,7 @@ type SslKakfa struct {
 	ClientKeyPass  string
 }
 
-type SaslKafka struct {
+type KafkaSASL struct {
 	UserName  string
 	Password  string
 	Mechanism string
@@ -163,8 +163,8 @@ func GetKafkaSecurityProtocol() string {
 	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
 }
 
-func GetSSLElements() *SslKakfa {
-	sslElements := SslKakfa{
+func GetSSLElements() *KafkaSSL {
+	sslElements := KafkaSSL{
 		ClientCert: GetEnv("KAFKA_SSL_CLIENT_CERT", ""),
 		ClientKey:  GetEnv("KAFKA_SSL_CLIENT_KEY", ""),
 		CACert:     GetEnv("KAFKA_SSL_CA_CERT", ""),
@@ -179,8 +179,8 @@ func GetSSLElements() *SslKakfa {
 
 }
 
-func GetSASLElements() *SaslKafka {
-	saslElements := SaslKafka{
+func GetSASLElements() *KafkaSASL {
+	saslElements := KafkaSASL{
 		UserName:  GetEnv("KAFKA_SASL_USERNAME", ""),
 		Password:  GetEnv("KAFKA_SASL_PASSWORD", ""),
 		Mechanism: GetEnv("KAFKA_SASL_MECHANISM", ""),
