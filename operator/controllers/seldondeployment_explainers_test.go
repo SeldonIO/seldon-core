@@ -35,6 +35,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
+func cleanEnvImagesExplainer() {
+	envExplainerImage = ""
+	envExplainerImageV2 = ""
+}
+
 func createTestSDepWithExplainer() *machinelearningv1.SeldonDeployment {
 	var modelType = machinelearningv1.MODEL
 	key := types.NamespacedName{
@@ -139,6 +144,7 @@ func TestExplainerImageRelated(t *testing.T) {
 	ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(c.deployments[0].Spec.Template.Spec.Containers[0].Image).To(Equal(envExplainerImage))
+	cleanEnvImagesExplainer()
 }
 
 func TestExplainerImageRelatedV2(t *testing.T) {
@@ -157,10 +163,11 @@ func TestExplainerImageRelatedV2(t *testing.T) {
 			},
 		},
 	}
-	envExplainerImageV2 = "explainer:123"
+	envExplainerImageV2 = "explainer:1234"
 	ei.createExplainer(sdep, &sdep.Spec.Predictors[0], &c, svcName, nil, ctrl.Log)
 	g.Expect(len(c.deployments)).To(Equal(1))
 	g.Expect(c.deployments[0].Spec.Template.Spec.Containers[0].Image).To(Equal(envExplainerImageV2))
+	cleanEnvImagesExplainer()
 }
 
 var _ = Describe("createExplainer", func() {
@@ -217,7 +224,7 @@ var _ = Describe("createExplainer", func() {
 	)
 })
 
-var _ = Describe("Create a KFserving(V2) Seldon Deployment with explainer", func() {
+var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
