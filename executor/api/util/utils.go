@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
@@ -141,57 +140,4 @@ func GetEnvAsBool(key string, fallback bool) bool {
 	}
 
 	return fallback
-}
-
-type SslKakfa struct {
-	ClientCert     string
-	ClientKey      string
-	CACert         string
-	ClientCertFile string
-	ClientKeyFile  string
-	CACertFile     string
-	ClientKeyPass  string
-}
-
-func (o SslKakfa) String() string {
-	return "SslKakfa"
-}
-
-type SaslKafka struct {
-	UserName  string
-	Password  string
-	Mechanism string
-}
-
-func (o SaslKafka) String() string {
-	return "SaslKafka"
-}
-
-func GetKafkaSecurityProtocol() string {
-	return strings.ToUpper(GetEnv("KAFKA_SECURITY_PROTOCOL", ""))
-}
-
-func GetSslElements() *SslKakfa {
-	sslElements := SslKakfa{
-		ClientCert: GetEnv("KAFKA_SSL_CLIENT_CERT", ""),
-		ClientKey:  GetEnv("KAFKA_SSL_CLIENT_KEY", ""),
-		CACert:     GetEnv("KAFKA_SSL_CA_CERT", ""),
-		// If we use path to files instead of string
-		ClientCertFile: GetEnv("KAFKA_SSL_CLIENT_CERT_FILE", ""),
-		ClientKeyFile:  GetEnv("KAFKA_SSL_CLIENT_KEY_FILE", ""),
-		CACertFile:     GetEnv("KAFKA_SSL_CA_CERT_FILE", ""),
-		// Optional password
-		ClientKeyPass: GetEnv("KAFKA_SSL_CLIENT_KEY_PASS", ""),
-	}
-	return &sslElements
-
-}
-
-func GetSaslElements() *SaslKafka {
-	saslElements := SaslKafka{
-		UserName:  GetEnv("KAFKA_SASL_USERNAME", ""),
-		Password:  GetEnv("KAFKA_SASL_PASSWORD", ""),
-		Mechanism: GetEnv("KAFKA_SASL_MECHANISM", ""),
-	}
-	return &saslElements
 }
