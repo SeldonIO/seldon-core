@@ -81,21 +81,65 @@ func TestGetPredictorConfig(t *testing.T) {
 			relatedImageMap: map[string]PredictorServerConfig{},
 			desiredConfig:   serverConfigs[PrepackSklearnName],
 		},
+		"default image xgboost": {
+			protocol:        "",
+			serverName:      PrepackXGBoostName,
+			relatedImageMap: map[string]PredictorServerConfig{},
+			desiredConfig:   serverConfigs[PrepackXGBoostName],
+		},
+		"default image mlflow": {
+			protocol:        "",
+			serverName:      PrepackMLFlowName,
+			relatedImageMap: map[string]PredictorServerConfig{},
+			desiredConfig:   serverConfigs[PrepackMLFlowName],
+		},
 		"related image sklearn v1": {
 			protocol:   ProtocolSeldon,
 			serverName: PrepackSklearnName,
 			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
-				ProtocolSeldon: {ContainerImage: "a:1"}}},
+				ProtocolSeldon: {ContainerImage: "related-sklearn:v1"}}},
 			},
-			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "a:1"}}},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "related-sklearn:v1"}}},
 		},
 		"related image sklearn v2": {
 			protocol:   ProtocolV2,
 			serverName: PrepackSklearnName,
 			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
-				ProtocolV2: {ContainerImage: "b:2"}}},
+				ProtocolV2: {ContainerImage: "related-sklearn:v2"}}},
 			},
-			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolV2: {ContainerImage: "b:2"}}},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolV2: {ContainerImage: "related-sklearn:v2"}}},
+		},
+		"related image xgboost v1": {
+			protocol:   ProtocolSeldon,
+			serverName: PrepackXGBoostName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackXGBoostName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {ContainerImage: "related-xgboost:v1"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "related-xgboost:v1"}}},
+		},
+		"related image xgboost v2": {
+			protocol:   ProtocolV2,
+			serverName: PrepackXGBoostName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackXGBoostName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolV2: {ContainerImage: "related-xgboost:v2"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolV2: {ContainerImage: "related-xgboost:v2"}}},
+		},
+		"related image mlflow v1": {
+			protocol:   ProtocolSeldon,
+			serverName: PrepackMLFlowName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackMLFlowName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {ContainerImage: "related-mlflow:v1"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "related-mlflow:v1"}}},
+		},
+		"related image mlflow v2": {
+			protocol:   ProtocolV2,
+			serverName: PrepackMLFlowName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackMLFlowName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolV2: {ContainerImage: "related-mlflow:v2"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolV2: {ContainerImage: "related-mlflow:v2"}}},
 		},
 	}
 	for name, scenario := range scenarios {
