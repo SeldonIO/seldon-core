@@ -33,7 +33,7 @@ import (
 
 var (
 	// log is for logging in this package.
-	seldondeploymentlog                 = logf.Log.WithName("seldondeployment")
+	seldondeploymentLog                 = logf.Log.WithName("seldondeployment")
 	ControllerNamespace                 = GetEnv("POD_NAMESPACE", "seldon-system")
 	C                                   client.Client
 	envPredictiveUnitHttpServicePort    = os.Getenv(ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT)
@@ -93,7 +93,7 @@ func (r *SeldonDeploymentSpec) checkPredictiveUnits(pu *PredictiveUnit, p *Predi
 		c := GetContainerForPredictiveUnit(p, pu.Name)
 
 		//Current non tensorflow serving prepack servers can not handle tensorflow protocol
-		if r.Protocol == ProtocolTensorflow && (*pu.Implementation == PrepackSklearnName || *pu.Implementation == PrepackXgboostName || *pu.Implementation == PrepackMlflowName || *pu.Implementation == PrepackHuggingFaceName) {
+		if r.Protocol == ProtocolTensorflow && (*pu.Implementation == PrepackSklearnName || *pu.Implementation == PrepackXGBoostName || *pu.Implementation == PrepackMLFlowName || *pu.Implementation == PrepackHuggingFaceName) {
 			allErrs = append(allErrs, field.Invalid(fldPath, pu.Name, "Prepackaged server does not handle tensorflow protocol "+string(*pu.Implementation)))
 		}
 
@@ -102,7 +102,7 @@ func (r *SeldonDeploymentSpec) checkPredictiveUnits(pu *PredictiveUnit, p *Predi
 			ServersConfigs, err := getPredictorServerConfigs()
 
 			if err != nil {
-				seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+				seldondeploymentLog.Error(err, "Failed to read prepacked model servers from configmap")
 			}
 
 			_, ok := ServersConfigs[string(*pu.Implementation)]
@@ -212,7 +212,7 @@ func (r *SeldonDeploymentSpec) validateShadow(allErrs field.ErrorList) field.Err
 func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 	var allErrs field.ErrorList
 
-	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKfserving || r.Protocol == ProtocolV2) {
+	if r.Protocol != "" && !(r.Protocol == ProtocolSeldon || r.Protocol == ProtocolTensorflow || r.Protocol == ProtocolKFServing || r.Protocol == ProtocolV2) {
 		fldPath := field.NewPath("spec")
 		allErrs = append(allErrs, field.Invalid(fldPath, r.Protocol, "Invalid protocol"))
 	}
@@ -292,19 +292,19 @@ var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateCreate() error {
-	seldondeploymentlog.Info("Validating v1 Webhook called for CREATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1 Webhook called for CREATE", "name", r.Name)
 	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
-	seldondeploymentlog.Info("Validating v1 webhook called for UPDATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1 webhook called for UPDATE", "name", r.Name)
 	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateDelete() error {
-	seldondeploymentlog.Info("Validating v1 webhook called for DELETE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1 webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil

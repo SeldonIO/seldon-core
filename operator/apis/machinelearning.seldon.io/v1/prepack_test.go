@@ -1,9 +1,10 @@
 package v1
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
-	"testing"
 )
 
 func TestImageSetNormal(t *testing.T) {
@@ -20,7 +21,7 @@ func TestImageSetNormal(t *testing.T) {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: GRPC}},
 			config: &PredictorServerConfig{
 				Protocols: map[Protocol]PredictorImageConfig{
-					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+					ProtocolSeldon: {ContainerImage: "a", DefaultImageVersion: "1"},
 				},
 			},
 			desiredImageName: "a:1",
@@ -29,7 +30,7 @@ func TestImageSetNormal(t *testing.T) {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: GRPC}},
 			config: &PredictorServerConfig{
 				Protocols: map[Protocol]PredictorImageConfig{
-					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+					ProtocolSeldon: {ContainerImage: "a", DefaultImageVersion: "1"},
 				},
 			},
 			desiredImageName: "a:1",
@@ -38,7 +39,7 @@ func TestImageSetNormal(t *testing.T) {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: REST}},
 			config: &PredictorServerConfig{
 				Protocols: map[Protocol]PredictorImageConfig{
-					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+					ProtocolSeldon: {ContainerImage: "a", DefaultImageVersion: "1"},
 				},
 			},
 			desiredImageName: "a:1",
@@ -47,7 +48,7 @@ func TestImageSetNormal(t *testing.T) {
 			pu: &PredictiveUnit{Endpoint: &Endpoint{Type: REST}},
 			config: &PredictorServerConfig{
 				Protocols: map[Protocol]PredictorImageConfig{
-					ProtocolSeldon: PredictorImageConfig{ContainerImage: "a", DefaultImageVersion: "1"},
+					ProtocolSeldon: {ContainerImage: "a", DefaultImageVersion: "1"},
 				},
 			},
 			desiredImageName: "a:1",
@@ -69,28 +70,42 @@ func TestGetPredictorConfig(t *testing.T) {
 	serverConfigs, err := getPredictorServerConfigs()
 	g.Expect(err).To(BeNil())
 	scenarios := map[string]struct {
+		protocol        Protocol
 		serverName      string
 		relatedImageMap map[string]PredictorServerConfig
 		desiredConfig   PredictorServerConfig
 	}{
-
-		"related image sklearn": {
-			serverName: PrepackSklearnName,
-			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
-				ProtocolSeldon: {ContainerImage: "a"}}},
-			},
-			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "a"}}},
-		},
 		"default image sklearn": {
+			protocol:        "",
 			serverName:      PrepackSklearnName,
 			relatedImageMap: map[string]PredictorServerConfig{},
 			desiredConfig:   serverConfigs[PrepackSklearnName],
+		},
+		"related image sklearn v1": {
+			protocol:   ProtocolSeldon,
+			serverName: PrepackSklearnName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolSeldon: {ContainerImage: "a:1"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolSeldon: {ContainerImage: "a:1"}}},
+		},
+		"related image sklearn v2": {
+			protocol:   ProtocolV2,
+			serverName: PrepackSklearnName,
+			relatedImageMap: map[string]PredictorServerConfig{PrepackSklearnName: {Protocols: map[Protocol]PredictorImageConfig{
+				ProtocolV2: {ContainerImage: "b:2"}}},
+			},
+			desiredConfig: PredictorServerConfig{Protocols: map[Protocol]PredictorImageConfig{ProtocolV2: {ContainerImage: "b:2"}}},
 		},
 	}
 	for name, scenario := range scenarios {
 		t.Logf("Scenario: %s", name)
 		config := getPrepackServerConfigWithRelated(scenario.serverName, scenario.relatedImageMap)
-		g.Expect(*config).To(Equal(scenario.desiredConfig))
+		if scenario.protocol != "" {
+			g.Expect(config.Protocols[scenario.protocol]).To(Equal(scenario.desiredConfig.Protocols[scenario.protocol]))
+		} else {
+			g.Expect(*config).To(Equal(scenario.desiredConfig))
+		}
 	}
 }
 

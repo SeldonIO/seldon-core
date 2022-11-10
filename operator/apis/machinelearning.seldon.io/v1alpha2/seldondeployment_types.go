@@ -55,7 +55,7 @@ func init() {
 // defaulting codes
 
 func (r *SeldonDeployment) Default() {
-	seldondeploymentlog.Info("Defaulting Seldon Deployment called", "name", r.Name)
+	seldondeploymentLog.Info("Defaulting Seldon Deployment called", "name", r.Name)
 
 	if r.ObjectMeta.Namespace == "" {
 		r.ObjectMeta.Namespace = "default"

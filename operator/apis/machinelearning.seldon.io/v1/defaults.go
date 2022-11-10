@@ -146,7 +146,7 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 }
 
 func (r *SeldonDeployment) Default() {
-	seldondeploymentlog.Info("Defaulting Seldon Deployment called", "name", r.Name)
+	seldondeploymentLog.Info("Defaulting Seldon Deployment called", "name", r.Name)
 
 	if r.ObjectMeta.Namespace == "" {
 		r.ObjectMeta.Namespace = "default"
@@ -161,7 +161,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 	if envPredictiveUnitHttpServicePort != "" {
 		portNum, err := strconv.Atoi(envPredictiveUnitHttpServicePort)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, "value", envPredictiveUnitHttpServicePort)
+			seldondeploymentLog.Error(err, "Failed to decode predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_HTTP_SERVICE_PORT, "value", envPredictiveUnitHttpServicePort)
 		} else {
 			firstHttpPuPortNum = int32(portNum)
 		}
@@ -172,7 +172,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 	if envPredictiveUnitGrpcServicePort != "" {
 		portNum, err := strconv.Atoi(envPredictiveUnitGrpcServicePort)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode grpc predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, "value", envPredictiveUnitGrpcServicePort)
+			seldondeploymentLog.Error(err, "Failed to decode grpc predictive unit service port will use default", "envar", ENV_PREDICTIVE_UNIT_GRPC_SERVICE_PORT, "value", envPredictiveUnitGrpcServicePort)
 		} else {
 			firstGrpcPuPortNum = int32(portNum)
 		}
@@ -183,7 +183,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 	if envPredictiveUnitServicePortMetrics != "" {
 		portNum, err := strconv.Atoi(envPredictiveUnitServicePortMetrics)
 		if err != nil {
-			seldondeploymentlog.Error(err, "Failed to decode PREDICTIVE_UNIT_SERVICE_PORT_METRICS will use default", "value", envPredictiveUnitServicePortMetrics)
+			seldondeploymentLog.Error(err, "Failed to decode PREDICTIVE_UNIT_SERVICE_PORT_METRICS will use default", "value", envPredictiveUnitServicePortMetrics)
 		} else {
 			firstMetricsPuPortNum = int32(portNum)
 		}

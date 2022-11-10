@@ -122,7 +122,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
-		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKFServing || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
 			explainerProtocol = string(machinelearningv1.ProtocolV2)
 		}
 
