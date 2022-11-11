@@ -170,13 +170,14 @@ func main() {
 	ps := pipeline.NewPipelineStore(logger, eventHub)
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
+	cleaner := cleaner.NewVersionCleaner(ss, logger)
 
 	pipelineGatewayDetails := xdscache.PipelineGatewayDetails{
 		Host:     pipelineGatewayHost,
 		HttpPort: pipelineGatewayHttpPort,
 		GrpcPort: pipelineGatewayGrpcPort,
 	}
-	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails)
+	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
@@ -217,8 +218,6 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatalf("Scheduler start servers error")
 	}
-
-	_ = cleaner.NewVersionCleaner(ss, logger, eventHub)
 
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {

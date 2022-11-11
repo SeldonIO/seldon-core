@@ -57,6 +57,17 @@ func (m *ModelSnapshot) getLastAvailableModelIdx() int {
 	return lastAvailableIdx
 }
 
+func (m *ModelSnapshot) CanReceiveTraffic() bool {
+	if m.GetLastAvailableModel() != nil {
+		return true
+	}
+	latestVersion := m.GetLatest()
+	if latestVersion != nil && latestVersion.HasLiveReplicas() {
+		return true
+	}
+	return false
+}
+
 func (m *ModelSnapshot) GetLastAvailableModel() *ModelVersion {
 	if m == nil { //TODO Make safe by not working on actual object
 		return nil

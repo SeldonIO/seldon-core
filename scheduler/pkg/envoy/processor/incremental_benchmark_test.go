@@ -127,6 +127,7 @@ func benchmarkModelUpdate(
 				HttpPort: 1,
 				GrpcPort: 2,
 			},
+			nil,
 		)
 		require.NoError(b, err)
 

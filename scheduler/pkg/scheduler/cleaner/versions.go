@@ -3,16 +3,13 @@ package cleaner
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/store"
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	pendingEventsQueueSize int = 100
-	modelEventHandlerName      = "version.cleaner.models"
-)
+type ModelVersionCleaner interface {
+	RunCleanup(modelName string)
+}
 
 type VersionCleaner struct {
 	store  store.ModelStore
@@ -22,38 +19,26 @@ type VersionCleaner struct {
 func NewVersionCleaner(
 	schedStore store.ModelStore,
 	logger log.FieldLogger,
-	eventHub *coordinator.EventHub,
 ) *VersionCleaner {
-	v := &VersionCleaner{
+	return &VersionCleaner{
 		store:  schedStore,
 		logger: logger.WithField("source", "VersionCleaner"),
 	}
-
-	eventHub.RegisterModelEventHandler(
-		modelEventHandlerName,
-		pendingEventsQueueSize,
-		v.logger,
-		v.handleEvents,
-	)
-
-	return v
 }
 
-func (v *VersionCleaner) handleEvents(event coordinator.ModelEventMsg) {
-	logger := v.logger.WithField("func", "ListenForEvents")
-	logger.Infof("Got model state change for %s", event.String())
-
+func (v *VersionCleaner) RunCleanup(modelName string) {
+	logger := v.logger.WithField("func", "RunCleanup")
 	go func() {
-		err := v.cleanupOldVersions(event.ModelName)
+		err := v.cleanupOldVersions(modelName)
 		if err != nil {
-			logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", event.String())
+			logger.WithError(err).Warnf("Failed to run cleanup old versions for model %s", modelName)
 		}
 	}()
 }
 
 func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 	logger := v.logger.WithField("func", "cleanupOldVersions")
-	logger.Debugf("Schedule model %s", modelName)
+	logger.Debugf("Cleanup model %s", modelName)
 
 	v.store.LockModel(modelName)
 	defer v.store.UnlockModel(modelName)

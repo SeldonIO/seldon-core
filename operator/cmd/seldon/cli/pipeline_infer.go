@@ -56,6 +56,10 @@ func createPipelineInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			secs, err := cmd.Flags().GetInt64(flagInferenceSecs)
+			if err != nil {
+				return err
+			}
 			pipelineName := args[0]
 
 			// Get inference data
@@ -78,6 +82,7 @@ func createPipelineInfer() *cobra.Command {
 				InferType:     cli.InferPipeline,
 				StickySession: stickySession,
 				Iterations:    iterations,
+				Seconds:       secs,
 			}
 			logOpts := &cli.LogOptions{
 				ShowHeaders:  showHeaders,
@@ -95,6 +100,7 @@ func createPipelineInfer() *cobra.Command {
 	cmdPipelineInfer.Flags().String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
 	cmdPipelineInfer.Flags().String(flagInferenceMode, "rest", helpInferenceMode)
 	cmdPipelineInfer.Flags().IntP(flagInferenceIterations, "i", 1, helpInferenceIterations)
+	cmdPipelineInfer.Flags().Int64P(flagInferenceSecs, "t", 0, helpInferenceSecs)
 	cmdPipelineInfer.Flags().Bool(flagShowHeaders, false, helpShowHeaders)
 	cmdPipelineInfer.Flags().StringArray(flagAddHeader, []string{}, helpAddHeader)
 	cmdPipelineInfer.Flags().String(flagAuthority, "", helpAuthority)

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
@@ -266,31 +268,50 @@ func createTestServer(serverName string, numReplicas uint32) func(inc *Increment
 	return f
 }
 
-func createTestModel(modelName string, serverName string, replicas []int) func(inc *IncrementalProcessor, g *WithT) {
+func createTestModel(modelName string,
+	serverName string,
+	desiredReplicas uint32,
+	replicas []int,
+	version uint32,
+	replicaStates []store.ModelReplicaState) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		model := &scheduler.Model{
 			Meta: &scheduler.MetaData{
 				Name: modelName,
 			},
-			ModelSpec:      &scheduler.ModelSpec{},
-			DeploymentSpec: &scheduler.DeploymentSpec{},
+			ModelSpec: &scheduler.ModelSpec{
+				Uri: "gs://" + util.CreateRequestId(), // Create a random uri
+			},
+			DeploymentSpec: &scheduler.DeploymentSpec{
+				Replicas: desiredReplicas,
+			},
 		}
 		err := inc.modelStore.UpdateModel(&scheduler.LoadModelRequest{Model: model})
 		g.Expect(err).To(BeNil())
-		replicaMap := make(map[int]store.ReplicaStatus)
+		var serverReplicas []*store.ServerReplica
 		for _, replicaIdx := range replicas {
-			err := inc.modelStore.UpdateLoadedModels(modelName, 1, serverName, []*store.ServerReplica{store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, nil, 0)})
+			var serverReplica *store.ServerReplica
+			server, err := inc.modelStore.GetServer(serverName, false, true)
 			g.Expect(err).To(BeNil())
-			replicaMap[replicaIdx] = store.ReplicaStatus{State: store.Available}
-			err = inc.modelStore.UpdateModelState(modelName, 1, serverName, replicaIdx, nil, store.LoadRequested, store.Loaded, "")
+			if server != nil {
+				if sr, ok := server.Replicas[replicaIdx]; ok {
+					serverReplica = sr
+				}
+			}
+			if serverReplica == nil {
+				serverReplica = store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, nil, 0)
+			}
+			serverReplicas = append(serverReplicas, serverReplica)
+		}
+		err = inc.modelStore.UpdateLoadedModels(modelName, version, serverName, serverReplicas)
+		g.Expect(err).To(BeNil())
+
+		for idx, replicaIdx := range replicas {
+			err = inc.modelStore.UpdateModelState(modelName, version, serverName, replicaIdx, nil, store.LoadRequested, replicaStates[idx], "")
 			g.Expect(err).To(BeNil())
 		}
-		err = inc.addModel(&store.ModelSnapshot{
-			Name: modelName,
-			Versions: []*store.ModelVersion{
-				store.NewModelVersion(model, 1, serverName, replicaMap, false, store.ModelAvailable),
-			},
-		})
+
+		err = inc.modelUpdate(modelName)
 		g.Expect(err).To(BeNil())
 	}
 	return f
@@ -350,7 +371,7 @@ func TestExperiments(t *testing.T) {
 			name: "One model",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 1),
-				createTestModel("model", "server", []int{0}),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 			},
 			numExpectedClusters: 2,
 			numExpectedRoutes:   1,
@@ -359,8 +380,19 @@ func TestExperiments(t *testing.T) {
 			name: "two models",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 2),
-				createTestModel("model1", "server", []int{0}),
-				createTestModel("model2", "server", []int{1}),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   2,
+		},
+		{
+			name: "three models - 1 unloading",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Unloading}),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
@@ -369,8 +401,8 @@ func TestExperiments(t *testing.T) {
 			name: "experiment",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 2),
-				createTestModel("model1", "server", []int{0}),
-				createTestModel("model2", "server", []int{1}),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 			},
 			numExpectedClusters: 4,
@@ -380,8 +412,8 @@ func TestExperiments(t *testing.T) {
 			name: "delete experiment",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 2),
-				createTestModel("model1", "server", []int{0}),
-				createTestModel("model2", "server", []int{1}),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 				deleteTestExperiment("exp"),
 			},
@@ -392,8 +424,8 @@ func TestExperiments(t *testing.T) {
 			name: "mirror",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 2),
-				createTestModel("model1", "server", []int{0}),
-				createTestModel("model2", "server", []int{1}),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
 			},
 			numExpectedClusters: 4,
@@ -419,4 +451,266 @@ func TestExperiments(t *testing.T) {
 		})
 	}
 
+}
+
+func TestRollingUpdate(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name                string
+		ops                 []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters int
+		numExpectedRoutes   int
+		numTrafficSplits    map[string]int
+	}
+
+	tests := []test{
+		{
+			name: "Rolling update in progress",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model", "server", 2, []int{0, 1}, 2, []store.ModelReplicaState{store.Available, store.Loading}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			numTrafficSplits:    map[string]int{"model": 2},
+		},
+		{
+			name: "Rolling update complete",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 1),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			numTrafficSplits:    map[string]int{"model": 1},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inc := &IncrementalProcessor{
+				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
+				logger:           log.New(),
+				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
+			}
+			inc.xdsCache.AddListeners()
+			for _, op := range test.ops {
+				op(inc, g)
+			}
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			for modelName, trafficSplits := range test.numTrafficSplits {
+				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+			}
+
+		})
+	}
+}
+
+func TestDraining(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name                string
+		ops                 []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters int
+		numExpectedRoutes   int
+		numTrafficSplits    map[string]int
+		expectedModelState  map[string]store.ModelState
+	}
+
+	tests := []test{
+		{
+			name: "Model with draining and available replicas",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.Available, store.Draining}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			numTrafficSplits:    map[string]int{"model": 1},
+			expectedModelState:  map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+		{
+			name: "Model with draining and loading replicas",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.Loading, store.Draining}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			numTrafficSplits:    map[string]int{"model": 1},
+			expectedModelState:  map[string]store.ModelState{"model": store.ModelProgressing},
+		},
+		{
+			name: "Model load failed during draining so failed",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.LoadFailed, store.Draining}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			numTrafficSplits:    map[string]int{"model": 1},
+			expectedModelState:  map[string]store.ModelState{"model": store.ModelFailed},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inc := &IncrementalProcessor{
+				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
+				logger:           log.New(),
+				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
+			}
+			inc.xdsCache.AddListeners()
+			for _, op := range test.ops {
+				op(inc, g)
+			}
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			for modelName, trafficSplits := range test.numTrafficSplits {
+				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+			}
+			for modelName, modelState := range test.expectedModelState {
+				model, err := inc.modelStore.GetModel(modelName)
+				g.Expect(err).To(BeNil())
+				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
+			}
+
+		})
+	}
+}
+
+func TestModelSync(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name                 string
+		ops                  []func(proc *IncrementalProcessor, g *WithT)
+		pendingModelVersions []*pendingModelVersion
+		expectedReplicaStats map[string]map[int]store.ModelReplicaState
+		expectedModelState   map[string]store.ModelState
+	}
+
+	tests := []test{
+		{
+			name: "test loaded",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Loaded}),
+			},
+			pendingModelVersions: []*pendingModelVersion{
+				{name: "model", version: 1},
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+		{
+			name: "test draining",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Draining}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Draining}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelProgressing},
+		},
+		{
+			name: "test draining multiple replicas with other loaded",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.Draining, store.Loaded}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Draining, 1: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+		{
+			name: "test draining multiple replicas with other loading",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.Draining, store.Loading}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Draining, 1: store.Loading}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelProgressing},
+		},
+		{
+			name: "loaded unavailable turns to available",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.LoadedUnavailable}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+		{
+			name: "load failed",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.LoadFailed}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.LoadFailed}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelFailed},
+		},
+		{
+			name: "loading - 1 of 2 replicas loaded",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 2, []int{0, 1}, 1, []store.ModelReplicaState{store.Loaded, store.Loading}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.Available, 1: store.Loading}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelProgressing},
+		},
+		{
+			name: "load failed on 1 replica",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 2, []int{0, 1}, 1, []store.ModelReplicaState{store.LoadFailed, store.Available}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.LoadFailed, 1: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelFailed},
+		},
+		{
+			name: "unload failed on 1 replica",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.UnloadFailed, store.Available}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.UnloadFailed, 1: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inc := &IncrementalProcessor{
+				cache:                cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
+				logger:               log.New(),
+				xdsCache:             xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				modelStore:           store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				experimentServer:     experiment.NewExperimentServer(log.New(), nil, nil, nil),
+				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil),
+				pendingModelVersions: test.pendingModelVersions,
+			}
+			inc.xdsCache.AddListeners()
+			for _, op := range test.ops {
+				op(inc, g)
+			}
+			inc.modelSync()
+			for modelName, modelReplicas := range test.expectedReplicaStats {
+				model, err := inc.modelStore.GetModel(modelName)
+				g.Expect(err).To(BeNil())
+				for replicaIdx, replicaState := range modelReplicas {
+					g.Expect(model.GetLatest().ReplicaState()[replicaIdx].State).To(Equal(replicaState))
+				}
+			}
+			for modelName, modelState := range test.expectedModelState {
+				model, err := inc.modelStore.GetModel(modelName)
+				g.Expect(err).To(BeNil())
+				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
+			}
+
+		})
+	}
 }

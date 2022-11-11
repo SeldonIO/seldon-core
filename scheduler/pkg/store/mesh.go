@@ -253,8 +253,9 @@ var replicaStates = []ModelReplicaState{
 	Draining,
 }
 
-func (m ModelReplicaState) NoProgressingEndpoint() bool {
-	return (m == Unloaded || m == ModelReplicaStateUnknown || m == UnloadFailed || m == Unloading || m == UnloadRequested)
+// LoadedUnavailable is included as we can try to move state to Available via an Envoy update
+func (m ModelReplicaState) CanReceiveTraffic() bool {
+	return (m == Loaded || m == Available || m == LoadedUnavailable || m == Draining)
 }
 
 func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
@@ -271,10 +272,6 @@ func (m ModelReplicaState) Inactive() bool {
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
-}
-
-func (m ModelReplicaState) IsLoading() bool {
-	return (m == LoadRequested || m == Loading)
 }
 
 func (me ModelReplicaState) String() string {
@@ -458,15 +455,15 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 	return false
 }
 
-func (m *ModelVersion) NoLiveReplica() bool {
+func (m *ModelVersion) HasLiveReplicas() bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	for _, v := range m.replicas {
-		if !v.State.NoProgressingEndpoint() {
-			return false
+		if v.State.CanReceiveTraffic() {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (m *ModelVersion) GetAssignment() []int {

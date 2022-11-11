@@ -52,6 +52,10 @@ func createModelInfer() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			secs, err := cmd.Flags().GetInt64(flagInferenceSecs)
+			if err != nil {
+				return err
+			}
 			headers, err := cmd.Flags().GetStringArray(flagAddHeader)
 			if err != nil {
 				return err
@@ -78,6 +82,7 @@ func createModelInfer() *cobra.Command {
 				InferType:     cli.InferModel,
 				StickySession: stickySession,
 				Iterations:    iterations,
+				Seconds:       secs,
 			}
 			logOpts := &cli.LogOptions{
 				ShowHeaders:  showHeaders,
@@ -102,6 +107,7 @@ func createModelInfer() *cobra.Command {
 	cmdModelInfer.Flags().String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
 	cmdModelInfer.Flags().String(flagInferenceMode, "rest", helpInferenceMode)
 	cmdModelInfer.Flags().IntP(flagInferenceIterations, "i", 1, helpInferenceIterations)
+	cmdModelInfer.Flags().Int64P(flagInferenceSecs, "t", 0, helpInferenceSecs)
 	cmdModelInfer.Flags().Bool(flagShowHeaders, false, helpShowHeaders)
 	cmdModelInfer.Flags().StringArray(flagAddHeader, []string{}, helpAddHeader)
 	cmdModelInfer.Flags().String(flagAuthority, "", helpAuthority)

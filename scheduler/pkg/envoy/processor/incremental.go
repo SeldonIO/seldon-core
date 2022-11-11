@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/cleaner"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
@@ -44,9 +46,11 @@ type IncrementalProcessor struct {
 	modelStore           store.ModelStore
 	experimentServer     experiment.ExperimentServer
 	pipelineHandler      pipeline.PipelineHandler
+	runEnvoyBatchUpdates bool
 	batchTrigger         *time.Timer
 	batchWaitMillis      time.Duration
 	pendingModelVersions []*pendingModelVersion
+	versionCleaner       cleaner.ModelVersionCleaner
 }
 
 type pendingModelVersion struct {
@@ -63,18 +67,21 @@ func NewIncrementalProcessor(
 	pipelineHandler pipeline.PipelineHandler,
 	hub *coordinator.EventHub,
 	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
+	versionCleaner cleaner.ModelVersionCleaner,
 ) (*IncrementalProcessor, error) {
 	ip := &IncrementalProcessor{
-		cache:            cache,
-		nodeID:           nodeID,
-		snapshotVersion:  rand.Int63n(1000),
-		logger:           log.WithField("source", "EnvoyServer"),
-		xdsCache:         xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
-		modelStore:       modelStore,
-		experimentServer: experimentServer,
-		pipelineHandler:  pipelineHandler,
-		batchTrigger:     nil,
-		batchWaitMillis:  util.EnvoyUpdateDefaultBatchWaitMillis,
+		cache:                cache,
+		nodeID:               nodeID,
+		snapshotVersion:      rand.Int63n(1000),
+		logger:               log.WithField("source", "EnvoyServer"),
+		xdsCache:             xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
+		modelStore:           modelStore,
+		experimentServer:     experimentServer,
+		pipelineHandler:      pipelineHandler,
+		runEnvoyBatchUpdates: true,
+		batchTrigger:         nil,
+		batchWaitMillis:      util.EnvoyUpdateDefaultBatchWaitMillis,
+		versionCleaner:       versionCleaner,
 	}
 
 	err := ip.setListeners()
@@ -211,6 +218,7 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 	if err := p.cache.SetSnapshot(context.Background(), p.nodeID, snapshot); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -279,7 +287,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 
 	modelName := model.Name
 	latestModel := model.GetLatest()
-	if latestModel == nil || latestModel.NoLiveReplica() {
+	if latestModel == nil || !model.CanReceiveTraffic() {
 		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
 	}
 
@@ -520,8 +528,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		logger.Debugf("sync: No latest model - removing for %s", modelName)
 		return p.removeRouteForServerInEnvoy(modelName)
 	}
-	if latestModel.NoLiveReplica() {
-		logger.Debugf("sync: No live model - removing for %s", modelName)
+	if !model.CanReceiveTraffic() {
+		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
 		return p.removeRouteForServerInEnvoy(modelName)
 	}
 
@@ -553,11 +561,22 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		},
 	)
 
-	if p.batchTrigger == nil {
+	if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
 		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSync)
 	}
 
 	return nil
+}
+
+func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
+	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
+	if routes, ok := p.xdsCache.Routes[modelName]; ok {
+		activeRoutes := len(routes.Clusters)
+		if activeRoutes == 1 && p.versionCleaner != nil {
+			logger.Debugf("Calling cleanup for model %s", modelName)
+			p.versionCleaner.RunCleanup(modelName)
+		}
+	}
 }
 
 func (p *IncrementalProcessor) modelSync() {
@@ -565,12 +584,12 @@ func (p *IncrementalProcessor) modelSync() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	err := p.updateEnvoy()
+	envoyErr := p.updateEnvoy()
 	serverReplicaState := store.Available
 	reason := ""
-	if err != nil {
+	if envoyErr != nil {
 		serverReplicaState = store.LoadedUnavailable
-		reason = err.Error()
+		reason = envoyErr.Error()
 	}
 
 	for _, mv := range p.pendingModelVersions {
@@ -598,8 +617,10 @@ func (p *IncrementalProcessor) modelSync() {
 		}
 
 		vs := v.ReplicaState()
+		// Go through all replicas that can receive traffic
 		for _, replicaIdx := range v.GetAssignment() {
 			serverReplicaExpectedState := vs[replicaIdx].State
+			// Ignore draining nodes to be changed to Available/Failed state
 			if serverReplicaExpectedState != store.Draining {
 				err2 := p.modelStore.UpdateModelState(
 					mv.name,
@@ -612,15 +633,17 @@ func (p *IncrementalProcessor) modelSync() {
 					reason,
 				)
 				if err2 != nil {
-					logger.WithError(err2).Warnf("Failed to update state for model %s", mv.name)
-					break
+					logger.WithError(err2).Warnf("Failed to update replica state for model %s to %s from %s",
+						mv.name, serverReplicaState.String(), serverReplicaExpectedState.String())
 				}
 			} else {
 				logger.Debugf(
-					"Skipping draining server for model %s server replica %s%d", mv.name, v.Server(), replicaIdx)
+					"Skipping replica for model %s in state %s server replica %s%d as no longer in Loaded state",
+					mv.name, serverReplicaExpectedState.String(), v.Server(), replicaIdx)
 			}
 		}
 		p.modelStore.UnlockModel(mv.name)
+		p.callVersionCleanupIfNeeded(m.Name)
 	}
 
 	// Reset

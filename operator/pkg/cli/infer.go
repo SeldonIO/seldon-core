@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc/status"
+
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
 	"google.golang.org/grpc"
@@ -60,6 +62,7 @@ type InferenceClient struct {
 	host        string
 	callOptions []grpc.CallOption
 	counts      map[string]int
+	errors      map[string]map[int]int
 	config      *SeldonCLIConfig
 }
 
@@ -100,6 +103,7 @@ type CallOptions struct {
 	InferType     InferType
 	StickySession bool
 	Iterations    int
+	Seconds       int64
 }
 
 func NewInferenceClient(host string) (*InferenceClient, error) {
@@ -122,6 +126,7 @@ func NewInferenceClient(host string) (*InferenceClient, error) {
 		host:        host,
 		callOptions: opts,
 		counts:      make(map[string]int),
+		errors:      make(map[string]map[int]int),
 		config:      config,
 	}, nil
 }
@@ -373,6 +378,7 @@ func (ic *InferenceClient) httpCall(
 	}
 
 	if response.StatusCode != http.StatusOK {
+		ic.updateErrors(response.StatusCode, response.Header.Values(SeldonRouteHeader))
 		return nil, decodeV2Error(response, b)
 	}
 
@@ -423,6 +429,27 @@ func (ic *InferenceClient) updateSummary(modelNames []string) {
 	}
 }
 
+func (ic *InferenceClient) updateErrors(code int, modelNames []string) {
+	if len(modelNames) == 0 {
+		modelNames = append(modelNames, "")
+	}
+	for _, modelName := range modelNames {
+		if codes, ok := ic.errors[modelName]; ok {
+			if count, ok2 := codes[code]; ok2 {
+				codes[code] = count + 1
+			} else {
+				codes = make(map[int]int)
+				codes[code] = 1
+				ic.errors[modelName] = codes
+			}
+
+		} else {
+			ic.errors[modelName] = make(map[int]int)
+			ic.errors[modelName][code] = 1
+		}
+	}
+}
+
 func (ic *InferenceClient) ModelMetadata(modelName string, authority string) error {
 	path := fmt.Sprintf("/v2/models/%s", modelName)
 	v2Url := ic.getUrl(path)
@@ -458,6 +485,11 @@ func (ic *InferenceClient) ModelMetadata(modelName string, authority string) err
 	return nil
 }
 
+func canContinueInfer(callOptions *CallOptions, i int, timeStart int64) bool {
+	return (callOptions.Seconds == 0 && i < callOptions.Iterations) ||
+		(callOptions.Seconds > 0 && time.Now().Unix()-timeStart < callOptions.Seconds)
+}
+
 func (ic *InferenceClient) InferRest(
 	resourceName string,
 	data []byte,
@@ -473,10 +505,14 @@ func (ic *InferenceClient) InferRest(
 
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 
-	for i := 0; i < callOptions.Iterations; i++ {
+	timeStart := time.Now().Unix()
+	for i := 0; canContinueInfer(callOptions, i, timeStart); i++ {
 		res, err := ic.httpCall(resourceName, path, data, callOptions.InferType, logOptions.ShowHeaders, headers, authority, stickySessionKeys)
 		if err != nil {
-			return err
+			if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
+				return err
+			}
+			continue
 		}
 
 		v2InferResponse := V2InferenceResponse{}
@@ -485,15 +521,19 @@ func (ic *InferenceClient) InferRest(
 			return err
 		}
 
-		if callOptions.Iterations == 1 {
+		if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
 			if logOptions.ShowResponse {
 				printPrettyJson(res)
 			}
 		}
 	}
 
-	if callOptions.Iterations > 1 {
-		fmt.Printf("%v\n", ic.counts)
+	if callOptions.Iterations > 1 || callOptions.Seconds > 0 {
+		fmt.Printf("Success: %v\n", ic.counts)
+
+	}
+	if len(ic.errors) > 0 {
+		fmt.Printf("Errors: %v\n", ic.errors)
 	}
 	return nil
 }
@@ -628,14 +668,19 @@ func (ic *InferenceClient) InferGrpc(
 	}
 
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
-	for i := 0; i < callOptions.Iterations; i++ {
+
+	timeStart := time.Now().Unix()
+	for i := 0; canContinueInfer(callOptions, i, timeStart); i++ {
 		var header metadata.MD
 		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header))
 		if err != nil {
-			return err
+			if e, ok := status.FromError(err); ok {
+				ic.updateErrors(int(e.Code()), header.Get(SeldonRouteHeader))
+			}
+			continue
 		}
 
-		if callOptions.Iterations == 1 {
+		if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
 			if logOptions.ShowResponse {
 				err := updateResponseFromRawContents(res)
 				if err != nil {
@@ -653,8 +698,11 @@ func (ic *InferenceClient) InferGrpc(
 		}
 	}
 
-	if callOptions.Iterations > 1 {
-		fmt.Printf("%v\n", ic.counts)
+	if callOptions.Iterations > 1 || callOptions.Seconds > 0 {
+		fmt.Printf("Success: %v\n", ic.counts)
+		if len(ic.errors) > 0 {
+			fmt.Printf("Errors: %v\n", ic.errors)
+		}
 	}
 	return nil
 }
