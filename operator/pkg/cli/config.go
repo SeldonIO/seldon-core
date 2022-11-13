@@ -48,7 +48,7 @@ const (
 )
 
 func LoadSeldonCLIConfig() (*SeldonCLIConfig, error) {
-	path := getCfgFilePath()
+	path := getConfigFile()
 	_, err := os.Stat(path)
 	if err != nil {
 		return &SeldonCLIConfig{}, nil
@@ -66,11 +66,11 @@ func LoadSeldonCLIConfig() (*SeldonCLIConfig, error) {
 	return &cfg, nil
 }
 
-func getCfgFilePath() string {
-	return filepath.Join(getCfgPath(), configFilename)
+func getConfigFile() string {
+	return filepath.Join(getConfigDir(), configFilename)
 }
 
-func getCfgPath() string {
+func getConfigDir() string {
 	usr, _ := user.Current()
 	return filepath.Join(usr.HomeDir, seldonCfgFilepath)
 }

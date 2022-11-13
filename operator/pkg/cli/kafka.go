@@ -51,7 +51,7 @@ type KafkaInspectTopicMessage struct {
 	Value   json.RawMessage   `json:"value"`
 }
 
-func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, error) {
+func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
 	config, err := LoadSeldonCLIConfig()
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 	r1 := rand.New(s1)
 
 	// Overwrite broker if set in config
-	if config.Kafka != nil && config.Kafka.Bootstrap != "" {
+	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
 		kafkaBroker = config.Kafka.Bootstrap
 	}
 	consumerConfig := kafka.ConfigMap{
@@ -82,7 +82,7 @@ func NewKafkaClient(kafkaBroker string, schedulerHost string) (*KafkaClient, err
 		return nil, err
 	}
 
-	scheduler, err := NewSchedulerClient(schedulerHost, "")
+	scheduler, err := NewSchedulerClient(schedulerHost, schedulerHostIsSet, "")
 	if err != nil {
 		return nil, err
 	}

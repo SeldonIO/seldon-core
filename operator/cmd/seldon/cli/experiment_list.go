@@ -7,22 +7,25 @@ import (
 )
 
 func createExperimentList() *cobra.Command {
-	cmdExperimentList := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "get list of experiments",
 		Long:  `get list of experiments and whether they are active`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
+			flags := cmd.Flags()
+
+			schedulerHostIsSet := flags.Changed(flagSchedulerHost)
+			schedulerHost, err := flags.GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			authority, err := cmd.Flags().GetString(flagAuthority)
+			authority, err := flags.GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
 			if err != nil {
 				return err
 			}
@@ -32,8 +35,9 @@ func createExperimentList() *cobra.Command {
 		},
 	}
 
-	cmdExperimentList.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
-	cmdExperimentList.Flags().String(flagAuthority, "", helpAuthority)
+	flags := cmd.Flags()
+	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	flags.String(flagAuthority, "", helpAuthority)
 
-	return cmdExperimentList
+	return cmd
 }

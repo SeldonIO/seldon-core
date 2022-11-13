@@ -8,30 +8,33 @@ import (
 )
 
 func createExperimentStop() *cobra.Command {
-	cmdStopExperiment := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "stop <experimentName>",
 		Short: "stop an experiment",
 		Long:  `stop an experiment`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			schedulerHost, err := cmd.Flags().GetString(flagSchedulerHost)
+			flags := cmd.Flags()
+
+			schedulerHostIsSet := flags.Changed(flagSchedulerHost)
+			schedulerHost, err := flags.GetString(flagSchedulerHost)
 			if err != nil {
 				return err
 			}
-			authority, err := cmd.Flags().GetString(flagAuthority)
+			authority, err := flags.GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
-			showRequest, err := cmd.Flags().GetBool(flagShowRequest)
+			showRequest, err := flags.GetBool(flagShowRequest)
 			if err != nil {
 				return err
 			}
-			showResponse, err := cmd.Flags().GetBool(flagShowResponse)
+			showResponse, err := flags.GetBool(flagShowResponse)
 			if err != nil {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
 			if err != nil {
 				return err
 			}
@@ -42,8 +45,9 @@ func createExperimentStop() *cobra.Command {
 		},
 	}
 
-	cmdStopExperiment.Flags().String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
-	cmdStopExperiment.Flags().String(flagAuthority, "", helpAuthority)
+	flags := cmd.Flags()
+	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
+	flags.String(flagAuthority, "", helpAuthority)
 
-	return cmdStopExperiment
+	return cmd
 }

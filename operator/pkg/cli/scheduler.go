@@ -37,7 +37,7 @@ type SchedulerClient struct {
 	config        *SeldonCLIConfig
 }
 
-func NewSchedulerClient(schedulerHost string, authority string) (*SchedulerClient, error) {
+func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority string) (*SchedulerClient, error) {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -49,7 +49,7 @@ func NewSchedulerClient(schedulerHost string, authority string) (*SchedulerClien
 	}
 
 	// Overwrite host if set in config
-	if config.Controlplane != nil && config.Controlplane.SchedulerHost != "" {
+	if !schedulerHostIsSet && config.Controlplane != nil && config.Controlplane.SchedulerHost != "" {
 		schedulerHost = config.Controlplane.SchedulerHost
 	}
 	return &SchedulerClient{

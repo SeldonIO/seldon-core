@@ -46,21 +46,21 @@ func getStickySessionKeys() ([]string, error) {
 	return loadSessionKeyFromFile()
 }
 
-func getCfgSessionPath() string {
-	return filepath.Join(getCfgPath(), sessionFilename)
+func getSessionFile() string {
+	return filepath.Join(getConfigDir(), sessionFilename)
 }
 
 func saveSessionKeysToFile(keys []string) error {
-	path := getCfgPath()
+	path := getConfigDir()
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(getCfgSessionPath(), []byte(strings.Join(keys, separator)), os.ModePerm)
+	return os.WriteFile(getSessionFile(), []byte(strings.Join(keys, separator)), os.ModePerm)
 }
 
 func loadSessionKeyFromFile() ([]string, error) {
-	data, err := os.ReadFile(getCfgSessionPath())
+	data, err := os.ReadFile(getSessionFile())
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func GetCmd() *cobra.Command {
-	var cmdModel = &cobra.Command{
+	cmdModel := &cobra.Command{
 		Use:   "model <subcomand>",
 		Short: "manage models",
 		Long:  `load and unload and get status for models`,
@@ -17,7 +17,7 @@ func GetCmd() *cobra.Command {
 		},
 	}
 
-	var cmdServer = &cobra.Command{
+	cmdServer := &cobra.Command{
 		Use:   "server <subcomand>",
 		Short: "manage servers",
 		Long:  `get status for servers`,
@@ -27,7 +27,7 @@ func GetCmd() *cobra.Command {
 		},
 	}
 
-	var cmdExperiment = &cobra.Command{
+	cmdExperiment := &cobra.Command{
 		Use:   "experiment <subcomand>",
 		Short: "manage experiments",
 		Long:  `experiments allow you to test models by splitting traffic between candidates.`,
@@ -37,7 +37,7 @@ func GetCmd() *cobra.Command {
 		},
 	}
 
-	var cmdPipeline = &cobra.Command{
+	cmdPipeline := &cobra.Command{
 		Use:   "pipeline <subcomand>",
 		Short: "manage pipelines",
 		Long:  `pipelines allow you to join models together into inference graphs.`,

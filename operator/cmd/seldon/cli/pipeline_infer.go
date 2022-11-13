@@ -10,53 +10,56 @@ import (
 )
 
 func createPipelineInfer() *cobra.Command {
-	cmdPipelineInfer := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "infer <pipelineName> (data)",
 		Short: "run inference on a pipeline",
 		Long:  `call a pipeline with a given input and get a prediction`,
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inferenceHost, err := cmd.Flags().GetString(flagInferenceHost)
+			flags := cmd.Flags()
+
+			inferenceHostIsSet := flags.Changed(flagInferenceHost)
+			inferenceHost, err := flags.GetString(flagInferenceHost)
 			if err != nil {
 				return err
 			}
-			authority, err := cmd.Flags().GetString(flagAuthority)
+			authority, err := flags.GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
-			filename, err := cmd.Flags().GetString(flagFile)
+			filename, err := flags.GetString(flagFile)
 			if err != nil {
 				return err
 			}
-			showRequest, err := cmd.Flags().GetBool(flagShowRequest)
+			showRequest, err := flags.GetBool(flagShowRequest)
 			if err != nil {
 				return err
 			}
-			stickySession, err := cmd.Flags().GetBool(flagStickySession)
+			stickySession, err := flags.GetBool(flagStickySession)
 			if err != nil {
 				return err
 			}
-			showResponse, err := cmd.Flags().GetBool(flagShowResponse)
+			showResponse, err := flags.GetBool(flagShowResponse)
 			if err != nil {
 				return err
 			}
-			showHeaders, err := cmd.Flags().GetBool(flagShowHeaders)
+			showHeaders, err := flags.GetBool(flagShowHeaders)
 			if err != nil {
 				return err
 			}
-			inferMode, err := cmd.Flags().GetString(flagInferenceMode)
+			inferMode, err := flags.GetString(flagInferenceMode)
 			if err != nil {
 				return err
 			}
-			headers, err := cmd.Flags().GetStringArray(flagAddHeader)
+			headers, err := flags.GetStringArray(flagAddHeader)
 			if err != nil {
 				return err
 			}
-			iterations, err := cmd.Flags().GetInt(flagInferenceIterations)
+			iterations, err := flags.GetInt(flagInferenceIterations)
 			if err != nil {
 				return err
 			}
-			secs, err := cmd.Flags().GetInt64(flagInferenceSecs)
+			secs, err := flags.GetInt64(flagInferenceSecs)
 			if err != nil {
 				return err
 			}
@@ -72,7 +75,7 @@ func createPipelineInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
-			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			inferenceClient, err := cli.NewInferenceClient(inferenceHost, inferenceHostIsSet)
 			if err != nil {
 				return err
 			}
@@ -95,15 +98,16 @@ func createPipelineInfer() *cobra.Command {
 		},
 	}
 
-	cmdPipelineInfer.Flags().StringP(flagFile, "f", "", helpFileInference)
-	cmdPipelineInfer.Flags().BoolP(flagStickySession, "s", false, helpStickySession)
-	cmdPipelineInfer.Flags().String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
-	cmdPipelineInfer.Flags().String(flagInferenceMode, "rest", helpInferenceMode)
-	cmdPipelineInfer.Flags().IntP(flagInferenceIterations, "i", 1, helpInferenceIterations)
-	cmdPipelineInfer.Flags().Int64P(flagInferenceSecs, "t", 0, helpInferenceSecs)
-	cmdPipelineInfer.Flags().Bool(flagShowHeaders, false, helpShowHeaders)
-	cmdPipelineInfer.Flags().StringArray(flagAddHeader, []string{}, helpAddHeader)
-	cmdPipelineInfer.Flags().String(flagAuthority, "", helpAuthority)
+	flags := cmd.Flags()
+	flags.StringP(flagFile, "f", "", helpFileInference)
+	flags.BoolP(flagStickySession, "s", false, helpStickySession)
+	flags.String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
+	flags.String(flagInferenceMode, "rest", helpInferenceMode)
+	flags.IntP(flagInferenceIterations, "i", 1, helpInferenceIterations)
+	flags.Int64P(flagInferenceSecs, "t", 0, helpInferenceSecs)
+	flags.Bool(flagShowHeaders, false, helpShowHeaders)
+	flags.StringArray(flagAddHeader, []string{}, helpAddHeader)
+	flags.String(flagAuthority, "", helpAuthority)
 
-	return cmdPipelineInfer
+	return cmd
 }

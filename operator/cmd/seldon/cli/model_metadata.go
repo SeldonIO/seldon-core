@@ -8,23 +8,26 @@ import (
 )
 
 func createModelMetadata() *cobra.Command {
-	cmdModelMeta := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "metadata <modelName>",
 		Short: "get model metadata",
 		Long:  `get model metadata`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inferenceHost, err := cmd.Flags().GetString(flagInferenceHost)
+			flags := cmd.Flags()
+
+			inferenceHostIsSet := flags.Changed(flagInferenceHost)
+			inferenceHost, err := flags.GetString(flagInferenceHost)
 			if err != nil {
 				return err
 			}
-			authority, err := cmd.Flags().GetString(flagAuthority)
+			authority, err := flags.GetString(flagAuthority)
 			if err != nil {
 				return err
 			}
 			modelName := args[0]
 
-			inferenceClient, err := cli.NewInferenceClient(inferenceHost)
+			inferenceClient, err := cli.NewInferenceClient(inferenceHost, inferenceHostIsSet)
 			if err != nil {
 				return err
 			}
@@ -34,8 +37,9 @@ func createModelMetadata() *cobra.Command {
 		},
 	}
 
-	cmdModelMeta.Flags().String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
-	cmdModelMeta.Flags().String(flagAuthority, "", helpAuthority)
+	flags := cmd.Flags()
+	flags.String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)
+	flags.String(flagAuthority, "", helpAuthority)
 
-	return cmdModelMeta
+	return cmd
 }

@@ -106,7 +106,7 @@ type CallOptions struct {
 	Seconds       int64
 }
 
-func NewInferenceClient(host string) (*InferenceClient, error) {
+func NewInferenceClient(host string, hostIsSet bool) (*InferenceClient, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -118,7 +118,7 @@ func NewInferenceClient(host string) (*InferenceClient, error) {
 	}
 
 	// Overwrite host if set in config
-	if config.Dataplane != nil && config.Dataplane.InferHost != "" {
+	if !hostIsSet && config.Dataplane != nil && config.Dataplane.InferHost != "" {
 		host = config.Dataplane.InferHost
 	}
 
