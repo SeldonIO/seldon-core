@@ -1,3 +1,5 @@
+#!/usr/bin/sed -nf
+
 /^```python/ {
   h
   b END
