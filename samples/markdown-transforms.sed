@@ -11,7 +11,7 @@
     s/\n!/\n/g
   }
   p
-  x
+  g
   p
   b END
 }
