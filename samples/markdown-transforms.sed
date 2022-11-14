@@ -5,7 +5,11 @@
 
 /^```$/ {
   x
-  s/```python/```bash/
+  # If any start-of-line plings, treat as bash block
+  /\n!/ {
+    s/^```python/```bash/
+    s/\n!/\n/g
+  }
   p
   x
   p
