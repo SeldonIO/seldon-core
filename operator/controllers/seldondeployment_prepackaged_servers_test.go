@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-var _ = Describe("Create a prepacked sklearn server", func() {
+var _ = Describe("Create a prepacked sklearn server.", func() {
 	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	const name = "pp1"
@@ -896,7 +896,7 @@ var _ = Describe("Create a prepacked triton server with deprecated kfserving pro
 			},
 			Spec: machinelearningv1.SeldonDeploymentSpec{
 				Name:     name,
-				Protocol: machinelearningv1.ProtocolKfserving,
+				Protocol: machinelearningv1.ProtocolKFServing,
 				Predictors: []machinelearningv1.PredictorSpec{
 					{
 						Name: "p1",

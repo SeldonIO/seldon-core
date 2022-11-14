@@ -20,12 +20,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
-	"github.com/seldonio/seldon-core/operator/controllers/ambassador"
-	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
 	"net/url"
 	"strconv"
 	"strings"
+
+	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
+	"github.com/seldonio/seldon-core/operator/controllers/ambassador"
+	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
 
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -254,8 +255,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 						{
 							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Regex{Regex: constants.GRPCRegExMatchIstio}},
 							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
-								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
+								"seldon":    {MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.Name}},
+								"namespace": {MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
 					},
@@ -571,7 +572,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 					return nil, fmt.Errorf("engine not separate and no pu with localhost service - not clear where to inject engine")
 				}
 				// find the deployment with a container for the pu marked for engine
-				for i, _ := range c.deployments {
+				for i := range c.deployments {
 					dep := c.deployments[i]
 					for _, con := range dep.Spec.Template.Spec.Containers {
 						if strings.Compare(con.Name, pu.Name) == 0 {
@@ -648,7 +649,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 	return &c, nil
 }
 
-//Creates Service for Predictor - exposed externally (ambassador or istio)
+// Creates Service for Predictor - exposed externally (ambassador or istio)
 func createPredictorService(pSvcName string, seldonId string, p *machinelearningv1.PredictorSpec,
 	mlDep *machinelearningv1.SeldonDeployment,
 	engine_http_port int,
@@ -829,13 +830,13 @@ func createContainerService(deploy *appsv1.Deployment,
 	}
 
 	con.Env = append(con.Env, []corev1.EnvVar{
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
-		corev1.EnvVar{Name: MLServerModelNameEnv, Value: con.Name},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
-		corev1.EnvVar{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
-		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
-		corev1.EnvVar{Name: machinelearningv1.ENV_SELDON_EXECUTOR_ENABLED, Value: strconv.FormatBool(true)},
+		{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_ID, Value: con.Name},
+		{Name: MLServerModelNameEnv, Value: con.Name},
+		{Name: machinelearningv1.ENV_PREDICTIVE_UNIT_IMAGE, Value: con.Image},
+		{Name: machinelearningv1.ENV_PREDICTOR_ID, Value: p.Name},
+		{Name: machinelearningv1.ENV_PREDICTOR_LABELS, Value: string(labels)},
+		{Name: machinelearningv1.ENV_SELDON_DEPLOYMENT_ID, Value: mlDep.ObjectMeta.Name},
+		{Name: machinelearningv1.ENV_SELDON_EXECUTOR_ENABLED, Value: strconv.FormatBool(true)},
 	}...)
 
 	//Add Metric Env Var

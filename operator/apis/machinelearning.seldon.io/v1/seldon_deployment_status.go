@@ -33,7 +33,8 @@ const (
 )
 
 // Addressable placeholder until duckv1 issue is fixed:
-//    https://github.com/kubernetes-sigs/controller-tools/issues/391
+//
+//	https://github.com/kubernetes-sigs/controller-tools/issues/391
 type SeldonAddressable struct {
 	URL string `json:"url,omitempty"`
 }

@@ -26,7 +26,7 @@ import (
 
 var (
 	// log is for logging in this package.
-	seldondeploymentlog = logf.Log.WithName("seldondeployment")
+	seldondeploymentLog = logf.Log.WithName("seldondeployment")
 	C                   client.Client
 )
 
@@ -44,19 +44,19 @@ var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateCreate() error {
-	seldondeploymentlog.Info("Validating v1alpha3 Webhook called for CREATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1alpha3 Webhook called for CREATE", "name", r.Name)
 	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
-	seldondeploymentlog.Info("Validating v1alpha3 webhook called for UPDATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1alpha3 webhook called for UPDATE", "name", r.Name)
 	return r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateDelete() error {
-	seldondeploymentlog.Info("Validating v1alpha3 webhook called for DELETE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v1alpha3 webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
