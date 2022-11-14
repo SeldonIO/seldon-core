@@ -12,11 +12,11 @@ This notebook illustrates a series of Pipelines showing of different ways of com
 Chain the output of one model into the next. Also shows chaning the tensor names via `tensorMap` to conform to the expected input tensor names of the second model.
 
 
-```bash
-cat ./models/tfsimple1.yaml
-cat ./models/tfsimple2.yaml
+```python
+!cat ./models/tfsimple1.yaml
+!cat ./models/tfsimple2.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -35,34 +35,37 @@ cat ./models/tfsimple2.yaml
       requirements:
       - tensorflow
       memory: 100Ki
+
+
+
+```python
+!seldon model load -f ./models/tfsimple1.yaml 
+!seldon model load -f ./models/tfsimple2.yaml 
 ```
 
-```bash
-seldon model load -f ./models/tfsimple1.yaml 
-seldon model load -f ./models/tfsimple2.yaml 
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status tfsimple1 -w ModelAvailable | jq -M .
+!seldon model status tfsimple2 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
-```
+
+
 The pipeline below chains the output of `tfsimple1` into `tfsimple2`. As these models have compatible shape and data type this can be done. However, the output tensor names from `tfsimple1` need to be renamed to match the input tensor names for `tfsimple2`. We do this with the `tensorMap` feature.
 
 The output of the Pipeline is the output from `tfsimple2`.
 
 
-```bash
-cat ./pipelines/tfsimples.yaml
+```python
+!cat ./pipelines/tfsimples.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -79,19 +82,21 @@ cat ./pipelines/tfsimples.yaml
       output:
         steps:
         - tfsimple2
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/tfsimples.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
 
-```bash
-seldon pipeline status tfsimples -w PipelineReady| jq -M .
-```
-```json
     {
       "pipelineName": "tfsimples",
       "versions": [
@@ -131,13 +136,14 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer tfsimples \
+
+
+```python
+!seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
+
     {
       "model_name": "",
       "outputs": [
@@ -195,13 +201,14 @@ seldon pipeline infer tfsimples \
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer tfsimples --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -262,28 +269,30 @@ seldon pipeline infer tfsimples --inference-mode grpc \
         }
       ]
     }
-```
+
+
 We use the Seldon CLI `pipeline inspect` feature to look at the data for all steps of the pipeline for the last data item passed through the pipeline (the default). This can be useful for debugging.
 
 
-```bash
-seldon pipeline inspect tfsimples
+```python
+!seldon pipeline inspect tfsimples
 ```
-```json
+
     seldon.default.model.tfsimple1.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
     seldon.default.model.tfsimple1.outputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
     seldon.default.model.tfsimple2.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
     seldon.default.model.tfsimple2.outputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
     seldon.default.pipeline.tfsimples.inputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
     seldon.default.pipeline.tfsimples.outputs	cd3fu5jf39s357kil0gg	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
-```
+
+
 Next, we look get the output as json and use the `jq` tool to get just one value.
 
 
-```bash
-seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
+```python
+!seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 ```
-```json
+
     {
       "inputs": [
         {
@@ -344,36 +353,39 @@ seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
         }
       ]
     }
+
+
+
+```python
+!seldon pipeline unload tfsimples
 ```
 
-```bash
-seldon pipeline unload tfsimples
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload tfsimple1
+!seldon model unload tfsimple2
 ```
 
-```bash
-seldon model unload tfsimple1
-seldon model unload tfsimple2
-```
-```json
     {}
     {}
-```
+
+
 ### Model Join
 
 Join two flows of data from two models as input to a third model. This shows how individual flows of data can be combined.
 
 
-```bash
-cat ./models/tfsimple1.yaml
-echo "---"
-cat ./models/tfsimple2.yaml
-echo "---"
-cat ./models/tfsimple3.yaml
+```python
+!cat ./models/tfsimple1.yaml
+!echo "---"
+!cat ./models/tfsimple2.yaml
+!echo "---"
+!cat ./models/tfsimple3.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -403,36 +415,39 @@ cat ./models/tfsimple3.yaml
       requirements:
       - tensorflow
       memory: 100Ki
+
+
+
+```python
+!seldon model load -f ./models/tfsimple1.yaml 
+!seldon model load -f ./models/tfsimple2.yaml 
+!seldon model load -f ./models/tfsimple3.yaml 
 ```
 
-```bash
-seldon model load -f ./models/tfsimple1.yaml 
-seldon model load -f ./models/tfsimple2.yaml 
-seldon model load -f ./models/tfsimple3.yaml 
-```
-```json
     {}
     {}
     {}
+
+
+
+```python
+!seldon model status tfsimple1 -w ModelAvailable | jq -M .
+!seldon model status tfsimple2 -w ModelAvailable | jq -M .
+!seldon model status tfsimple3 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
-seldon model status tfsimple3 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
     {}
-```
+
+
 In the pipeline below for the input to `tfsimple3` we join 1 output tensor each from the two previous models `tfsimple1` and `tfsimple2`. We need to use the `tensorMap` feature to rename each output tensor to one of the expected input tensors for the `tfsimple3` model. 
 
 
-```bash
-cat ./pipelines/tfsimples-join.yaml
+```python
+!cat ./pipelines/tfsimples-join.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -451,19 +466,21 @@ cat ./pipelines/tfsimples-join.yaml
       output:
         steps:
         - tfsimple3
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/tfsimples-join.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status join -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status join -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "join",
       "versions": [
@@ -507,15 +524,16 @@ seldon pipeline status join -w PipelineReady | jq -M .
         }
       ]
     }
-```
+
+
 The outputs are the sequence "2,4,6..." which conforms to the logic of this model (addition and subtraction) when fed the output of the first two models.
 
 
-```bash
-seldon pipeline infer join --inference-mode grpc \
+```python
+!seldon pipeline infer join --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -576,38 +594,41 @@ seldon pipeline infer join --inference-mode grpc \
         }
       ]
     }
+
+
+
+```python
+!seldon pipeline unload join
 ```
 
-```bash
-seldon pipeline unload join
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload tfsimple1
+!seldon model unload tfsimple2
+!seldon model unload tfsimple3
 ```
 
-```bash
-seldon model unload tfsimple1
-seldon model unload tfsimple2
-seldon model unload tfsimple3
-```
-```json
     {}
     {}
     {}
-```
+
+
 ### Conditional
 
 Shows conditional data flows - one of two models is run based on output tensors from first. 
 
 
-```bash
-cat ./models/conditional.yaml
-echo "---"
-cat ./models/add10.yaml
-echo "---"
-cat ./models/mul10.yaml
+```python
+!cat ./models/conditional.yaml
+!echo "---"
+!cat ./models/add10.yaml
+!echo "---"
+!cat ./models/mul10.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -637,36 +658,39 @@ cat ./models/mul10.yaml
       requirements:
       - triton
       - python
+
+
+
+```python
+!seldon model load -f ./models/conditional.yaml 
+!seldon model load -f ./models/add10.yaml 
+!seldon model load -f ./models/mul10.yaml 
 ```
 
-```bash
-seldon model load -f ./models/conditional.yaml 
-seldon model load -f ./models/add10.yaml 
-seldon model load -f ./models/mul10.yaml 
-```
-```json
     {}
     {}
     {}
+
+
+
+```python
+!seldon model status conditional -w ModelAvailable | jq -M .
+!seldon model status add10 -w ModelAvailable | jq -M .
+!seldon model status mul10 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status conditional -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
-seldon model status mul10 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
     {}
-```
+
+
 Here we assume the `conditional` model can output two tensors OUTPUT0 and OUTPUT1 but only outputs the former if the CHOICE input tensor is set to 0 otherwise it outputs tensor OUTPUT1. By this means only one of the two downstream models will receive data and run. The `output` steps does an `any` join from both models and whichever data appears first will be sent as output to pipeline. As in this case only 1 of the two models `add10` and `mul10` runs we will receive their output.
 
 
-```bash
-cat ./pipelines/conditional.yaml
+```python
+!cat ./pipelines/conditional.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -689,19 +713,21 @@ cat ./pipelines/conditional.yaml
         - mul10
         - add10
         stepsJoin: any
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/conditional.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/conditional.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "tfsimple-conditional",
       "versions": [
@@ -751,15 +777,16 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         }
       ]
     }
-```
+
+
 The `mul10` model will run as the CHOICE tensor is set to 0.
 
 
-```bash
-seldon pipeline infer tfsimple-conditional --inference-mode grpc \
+```python
+!seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"conditional","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -779,15 +806,16 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
         }
       ]
     }
-```
+
+
 The `add10` model will run as the CHOICE tensor is not set to zero.
 
 
-```bash
-seldon pipeline infer tfsimple-conditional --inference-mode grpc \
+```python
+!seldon pipeline infer tfsimple-conditional --inference-mode grpc \
  '{"model_name":"conditional","inputs":[{"name":"CHOICE","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -807,35 +835,38 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
         }
       ]
     }
+
+
+
+```python
+!seldon pipeline unload tfsimple-conditional
 ```
 
-```bash
-seldon pipeline unload tfsimple-conditional
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload conditional
+!seldon model unload add10
+!seldon model unload mul10
 ```
 
-```bash
-seldon model unload conditional
-seldon model unload add10
-seldon model unload mul10
-```
-```json
     {}
     {}
     {}
-```
+
+
 ### Pipeline Input Tensors
 Access to indivudal tensors in pipeline inputs
 
 
-```bash
-cat ./models/mul10.yaml
-echo "---"
-cat ./models/add10.yaml
+```python
+!cat ./models/mul10.yaml
+!echo "---"
+!cat ./models/add10.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -855,32 +886,35 @@ cat ./models/add10.yaml
       requirements:
       - triton
       - python
+
+
+
+```python
+!seldon model load -f ./models/mul10.yaml 
+!seldon model load -f ./models/add10.yaml 
 ```
 
-```bash
-seldon model load -f ./models/mul10.yaml 
-seldon model load -f ./models/add10.yaml 
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status mul10 -w ModelAvailable | jq -M .
+!seldon model status add10 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status mul10 -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
-```
+
+
 This pipeline shows how we can access pipeline inputs INPUT0 and INPUT1 from different steps.
 
 
-```bash
-cat ./pipelines/pipeline-inputs.yaml
+```python
+!cat ./pipelines/pipeline-inputs.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -902,19 +936,21 @@ cat ./pipelines/pipeline-inputs.yaml
         - mul10
         - add10
     
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "pipeline-inputs",
       "versions": [
@@ -960,13 +996,14 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer pipeline-inputs --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer pipeline-inputs --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -1001,33 +1038,36 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc \
         }
       ]
     }
+
+
+
+```python
+!seldon pipeline unload pipeline-inputs
 ```
 
-```bash
-seldon pipeline unload pipeline-inputs
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload mul10
+!seldon model unload add10
 ```
 
-```bash
-seldon model unload mul10
-seldon model unload add10
-```
-```json
     {}
     {}
-```
+
+
 ### Trigger Joins
 
 Shows how joins can be used for triggers as well.
 
 
-```bash
-cat ./models/mul10.yaml
-cat ./models/add10.yaml
+```python
+!cat ./models/mul10.yaml
+!cat ./models/add10.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -1046,32 +1086,35 @@ cat ./models/add10.yaml
       requirements:
       - triton
       - python
+
+
+
+```python
+!seldon model load -f ./models/mul10.yaml 
+!seldon model load -f ./models/add10.yaml 
 ```
 
-```bash
-seldon model load -f ./models/mul10.yaml 
-seldon model load -f ./models/add10.yaml 
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status mul10 -w ModelAvailable | jq -M .
+!seldon model status add10 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status mul10 -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
-```
+
+
 Here we required tensors names `ok1` or `ok2` to exist on pipeline inputs to run the `mul10` model but require tensor `ok3` to exist on pipeline inputs to run the `add10` model. The logic on `mul10` is handled by a trigger join of `any` meaning either of these input data can exist to satisfy the trigger join.
 
 
-```bash
-cat ./pipelines/trigger-joins.yaml
+```python
+!cat ./pipelines/trigger-joins.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -1095,19 +1138,21 @@ cat ./pipelines/trigger-joins.yaml
         - mul10
         - add10
         stepsJoin: any
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/trigger-joins.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/trigger-joins.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status trigger-joins -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status trigger-joins -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "trigger-joins",
       "versions": [
@@ -1156,13 +1201,14 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer trigger-joins --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
-```json
+
     {
       "outputs": [
         {
@@ -1182,13 +1228,14 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer trigger-joins --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer trigger-joins --inference-mode grpc \
     '{"model_name":"pipeline","inputs":[{"name":"ok3","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M . 
 ```
-```json
+
     {
       "outputs": [
         {
@@ -1208,23 +1255,26 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
         }
       ]
     }
+
+
+
+```python
+!seldon pipeline unload trigger-joins
 ```
 
-```bash
-seldon pipeline unload trigger-joins
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload mul10
+!seldon model unload add10
 ```
 
-```bash
-seldon model unload mul10
-seldon model unload add10
-```
-```json
     {}
     {}
-```
+
+
 
 ```python
 

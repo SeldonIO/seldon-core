@@ -1,10 +1,10 @@
 ## Anchor Tabular Explainer for SKLearn Income Model
 
 
-```bash
-cat ./models/income.yaml
+```python
+!cat ./models/income.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -13,29 +13,29 @@ cat ./models/income.yaml
       storageUri: "gs://seldon-models/scv2/examples/income/classifier"
       requirements:
       - sklearn
-```
 
-```bash
-seldon model load -f ./models/income.yaml
+
+
+```python
+!seldon model load -f ./models/income.yaml
 ```
-```json
 
     {}
-```
 
-```bash
-seldon model status income -w ModelAvailable
+
+
+```python
+!seldon model status income -w ModelAvailable
 ```
-```json
 
     {}
-```
 
-```bash
-seldon model infer income \
+
+
+```python
+!seldon model infer income \
   '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}' 
 ```
-```json
 
     {
     	"model_name": "income_1",
@@ -59,12 +59,13 @@ seldon model infer income \
     		}
     	]
     }
+
+
+
+```python
+!cat ./models/income-explainer.yaml
 ```
 
-```bash
-cat ./models/income-explainer.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -74,29 +75,29 @@ cat ./models/income-explainer.yaml
       explainer:
         type: anchor_tabular
         modelRef: income
-```
 
-```bash
-seldon model load -f ./models/income-explainer.yaml
+
+
+```python
+!seldon model load -f ./models/income-explainer.yaml
 ```
-```json
 
     {}
-```
 
-```bash
-seldon model status income-explainer -w ModelAvailable
+
+
+```python
+!seldon model status income-explainer -w ModelAvailable
 ```
-```json
 
     {}
-```
 
-```bash
-seldon model infer income-explainer \
+
+
+```python
+!seldon model infer income-explainer \
   '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
-```json
 
     {
     	"model_name": "income-explainer_1",
@@ -123,23 +124,24 @@ seldon model infer income-explainer \
     		}
     	]
     }
-```
 
-```bash
-seldon model unload income-explainer
-```
-```json
 
-    {}
-```
 
-```bash
-seldon model unload income
+```python
+!seldon model unload income-explainer
 ```
-```json
 
     {}
+
+
+
+```python
+!seldon model unload income
 ```
+
+    {}
+
+
 
 ```python
 

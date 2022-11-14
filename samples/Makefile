@@ -11,5 +11,5 @@ all: $(EXAMPLES_MD)
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output $(notdir $@)
-	./markdown-transforms.sh $(notdir $@)
+
 

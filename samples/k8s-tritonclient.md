@@ -10,18 +10,19 @@ os.environ["NAMESPACE"] = "seldon-mesh"
 
 
 ```python
-MESH_IP=kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+MESH_IP=!kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 MESH_IP=MESH_IP[0]
 import os
 os.environ['MESH_IP'] = MESH_IP
 MESH_IP
 ```
-```bash
+
 
 
 
     '172.19.255.14'
-```
+
+
 
 ## With MLServer
 
@@ -31,10 +32,10 @@ MESH_IP
 ### Deploy Model and Pipeline
 
 
-```bash
-cat models/sklearn-iris-gs.yaml
+```python
+!cat models/sklearn-iris-gs.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -44,12 +45,13 @@ cat models/sklearn-iris-gs.yaml
       requirements:
       - sklearn
       memory: 100Ki
+
+
+
+```python
+!cat pipelines/iris.yaml
 ```
 
-```bash
-cat pipelines/iris.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -60,27 +62,28 @@ cat pipelines/iris.yaml
       output:
         steps:
         - iris
-```
 
-```bash
-kubectl apply -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
-kubectl apply -f pipelines/iris.yaml -n ${NAMESPACE}
+
+
+```python
+!kubectl apply -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+!kubectl apply -f pipelines/iris.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/iris created
     pipeline.mlops.seldon.io/iris-pipeline created
-```
 
-```bash
-kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
-kubectl wait --for condition=ready --timeout=300s pipelines iris-pipeline -n ${NAMESPACE}
+
+
+```python
+!kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
+!kubectl wait --for condition=ready --timeout=300s pipelines iris-pipeline -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/iris condition met
     pipeline.mlops.seldon.io/iris-pipeline condition met
-```
+
+
 ### HTTP Transport Protocol
 
 
@@ -99,7 +102,8 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
 
     model ready: True
     model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
-```
+
+
 
 ```python
 # Against model
@@ -119,7 +123,8 @@ result.as_numpy("predict")
 
 
     array([2])
-```
+
+
 
 
 ```python
@@ -140,7 +145,8 @@ result.as_numpy("predict")
 
 
     array([2])
-```
+
+
 
 ### GRPC Transport Protocol
 
@@ -153,10 +159,10 @@ result.as_numpy("predict")
 ### Deploy Model and Pipeline
 
 
-```bash
-cat models/tfsimple1.yaml
+```python
+!cat models/tfsimple1.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -166,12 +172,13 @@ cat models/tfsimple1.yaml
       requirements:
       - tensorflow
       memory: 100Ki
+
+
+
+```python
+!cat pipelines/tfsimple.yaml
 ```
 
-```bash
-cat pipelines/tfsimple.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -182,27 +189,28 @@ cat pipelines/tfsimple.yaml
       output:
         steps:
         - tfsimple1
-```
 
-```bash
-kubectl apply -f models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl apply -f pipelines/tfsimple.yaml -n ${NAMESPACE}
+
+
+```python
+!kubectl apply -f models/tfsimple1.yaml -n ${NAMESPACE}
+!kubectl apply -f pipelines/tfsimple.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/tfsimple1 created
     pipeline.mlops.seldon.io/tfsimple created
-```
 
-```bash
-kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
-kubectl wait --for condition=ready --timeout=300s pipelines tfsimple -n ${NAMESPACE}
+
+
+```python
+!kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
+!kubectl wait --for condition=ready --timeout=300s pipelines tfsimple -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/tfsimple1 condition met
     pipeline.mlops.seldon.io/tfsimple condition met
-```
+
+
 ### HTTP Transport Protocol
 
 
@@ -221,7 +229,8 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
 
     model ready: True
     model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
-```
+
+
 
 ```python
 # Against model (no binary data)
@@ -247,7 +256,8 @@ result.as_numpy("OUTPUT0")
 
     array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
           dtype=int32)
-```
+
+
 
 
 ```python
@@ -274,7 +284,8 @@ result.as_numpy("OUTPUT0")
 
     array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
           dtype=int32)
-```
+
+
 
 
 ```python
@@ -301,7 +312,8 @@ result.as_numpy("OUTPUT0")
 
     array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
           dtype=int32)
-```
+
+
 
 
 ```python
@@ -377,7 +389,8 @@ print(grpc_triton_client.get_model_metadata(model_name, headers=headers))
       shape: 16
     }
     
-```
+
+
 
 ```python
 # Against Model
@@ -404,7 +417,8 @@ result.as_numpy("OUTPUT0")
 
     array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
           dtype=int32)
-```
+
+
 
 
 ```python
@@ -432,27 +446,27 @@ result.as_numpy("OUTPUT0")
 
     array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
           dtype=int32)
-```
+
+
 
 ## Cleanup
 
 
-```bash
-kubectl delete -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
-kubectl delete -f pipelines/iris.yaml -n ${NAMESPACE}
+```python
+!kubectl delete -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+!kubectl delete -f pipelines/iris.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io "iris" deleted
     pipeline.mlops.seldon.io "iris-pipeline" deleted
-```
 
-```bash
-kubectl delete -f models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl delete -f pipelines/tfsimple.yaml -n ${NAMESPACE}
+
+
+```python
+!kubectl delete -f models/tfsimple1.yaml -n ${NAMESPACE}
+!kubectl delete -f pipelines/tfsimple.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io "tfsimple1" deleted
     pipeline.mlops.seldon.io "tfsimple" deleted
-```
+

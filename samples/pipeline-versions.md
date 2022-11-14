@@ -2,39 +2,42 @@
 
 
 
-```bash
-which seldon
+```python
+!which seldon
 ```
-```json
+
     /home/clive/work/scv2/seldon-core-v2/operator/bin/seldon
-```
+
+
 ### Model Join
 
 Join two flows of data from two models as input to a third model.
 
 
-```bash
-seldon model load -f ./models/add10.yaml 
-seldon model load -f ./models/mul10.yaml 
-```
-```json
-    {}
-    {}
+```python
+!seldon model load -f ./models/add10.yaml 
+!seldon model load -f ./models/mul10.yaml 
 ```
 
-```bash
-seldon model status add10 -w ModelAvailable | jq -M .
-seldon model status mul10 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status add10 -w ModelAvailable | jq -M .
+!seldon model status mul10 -w ModelAvailable | jq -M .
 ```
 
-```bash
-cat ./pipelines/version-test-a.yaml
+    {}
+    {}
+
+
+
+```python
+!cat ./pipelines/version-test-a.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -45,19 +48,21 @@ cat ./pipelines/version-test-a.yaml
       output:
         steps:
         - add10
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/version-test-a.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/version-test-a.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status version-test -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "version-test",
       "versions": [
@@ -87,13 +92,14 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer version-test --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -116,12 +122,13 @@ seldon pipeline infer version-test --inference-mode grpc \
         "AAAwQQAAQEEAAFBBAABgQQ=="
       ]
     }
+
+
+
+```python
+!cat ./pipelines/version-test-b.yaml
 ```
 
-```bash
-cat ./pipelines/version-test-b.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -132,19 +139,21 @@ cat ./pipelines/version-test-b.yaml
       output:
         steps:
         - mul10
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/version-test-b.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/version-test-b.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status version-test -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "version-test",
       "versions": [
@@ -174,13 +183,14 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer version-test --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -203,19 +213,21 @@ seldon pipeline infer version-test --inference-mode grpc \
         "AAAgQQAAoEEAAPBBAAAgQg=="
       ]
     }
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/version-test-a.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/version-test-a.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status version-test -w PipelineReady | jq -M .
 ```
 
-```bash
-seldon pipeline status version-test -w PipelineReady | jq -M .
-```
-```json
     {
       "pipelineName": "version-test",
       "versions": [
@@ -245,13 +257,14 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer version-test --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer version-test --inference-mode grpc \
  '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -274,23 +287,26 @@ seldon pipeline infer version-test --inference-mode grpc \
         "AAAwQQAAQEEAAFBBAABgQQ=="
       ]
     }
+
+
+
+```python
+!seldon pipeline unload version-test
 ```
 
-```bash
-seldon pipeline unload version-test
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload add10
+!seldon model unload mul10
 ```
 
-```bash
-seldon model unload add10
-seldon model unload mul10
-```
-```json
     {}
     {}
-```
+
+
 
 ```python
 

@@ -5,7 +5,6 @@ infer_local.md: infer_local.ipynb
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output infer_local.md
-	../../markdown-transforms.sh infer_local.md
 
 infer.md: infer.ipynb
 	jupyter nbconvert \
@@ -13,7 +12,6 @@ infer.md: infer.ipynb
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output infer.md
-	../../markdown-transforms.sh infer.md
 
 
 .PHONY: upload_artifacts

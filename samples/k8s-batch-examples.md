@@ -8,26 +8,27 @@ os.environ["NAMESPACE"] = "seldon"
 
 
 ```python
-MESH_IP=kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+MESH_IP=!kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 MESH_IP=MESH_IP[0]
 import os
 os.environ['MESH_IP'] = MESH_IP
 MESH_IP
 ```
-```bash
+
 
 
 
     '172.19.255.12'
-```
+
+
 
 ## Deploy Models and Pipelines
 
 
-```bash
-cat models/sklearn-iris-gs.yaml
+```python
+!cat models/sklearn-iris-gs.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -37,12 +38,13 @@ cat models/sklearn-iris-gs.yaml
       requirements:
       - sklearn
       memory: 100Ki
+
+
+
+```python
+!cat pipelines/iris.yaml
 ```
 
-```bash
-cat pipelines/iris.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -53,12 +55,13 @@ cat pipelines/iris.yaml
       output:
         steps:
         - iris
+
+
+
+```python
+!cat models/tfsimple1.yaml
 ```
 
-```bash
-cat models/tfsimple1.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -68,12 +71,13 @@ cat models/tfsimple1.yaml
       requirements:
       - tensorflow
       memory: 100Ki
+
+
+
+```python
+!cat pipelines/tfsimple.yaml
 ```
 
-```bash
-cat pipelines/tfsimple.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -84,31 +88,31 @@ cat pipelines/tfsimple.yaml
       output:
         steps:
         - tfsimple1
-```
 
-```bash
-kubectl apply -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
-kubectl apply -f pipelines/iris.yaml -n ${NAMESPACE}
 
-kubectl apply -f models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl apply -f pipelines/tfsimple.yaml -n ${NAMESPACE}
+
+```python
+!kubectl apply -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+!kubectl apply -f pipelines/iris.yaml -n ${NAMESPACE}
+
+!kubectl apply -f models/tfsimple1.yaml -n ${NAMESPACE}
+!kubectl apply -f pipelines/tfsimple.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/iris created
     pipeline.mlops.seldon.io/iris-pipeline created
     model.mlops.seldon.io/tfsimple1 created
     pipeline.mlops.seldon.io/tfsimple created
-```
 
-```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
-kubectl wait --for condition=ready --timeout=300s pipelines --all -n ${NAMESPACE}
 
-kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
-kubectl wait --for condition=ready --timeout=300s pipelines tfsimple -n ${NAMESPACE}
+
+```python
+!kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+!kubectl wait --for condition=ready --timeout=300s pipelines --all -n ${NAMESPACE}
+
+!kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
+!kubectl wait --for condition=ready --timeout=300s pipelines tfsimple -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io/iris condition met
     model.mlops.seldon.io/tfsimple condition met
@@ -118,15 +122,15 @@ kubectl wait --for condition=ready --timeout=300s pipelines tfsimple -n ${NAMESP
     pipeline.mlops.seldon.io/tfsimple-pipeline condition met
     model.mlops.seldon.io/tfsimple1 condition met
     pipeline.mlops.seldon.io/tfsimple condition met
-```
+
+
 ## Test Predictions
 
 
-```bash
-seldon model infer iris --inference-host ${MESH_IP}:80 \
+```python
+!seldon model infer iris --inference-host ${MESH_IP}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' | jq -M .
 ```
-```json
 
     {
       "model_name": "iris_1",
@@ -150,13 +154,13 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer iris-pipeline --inference-host ${MESH_IP}:80 \
+
+
+```python
+!seldon pipeline infer iris-pipeline --inference-host ${MESH_IP}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' |  jq -M .
 ```
-```json
 
     {
       "model_name": "",
@@ -173,13 +177,13 @@ seldon pipeline infer iris-pipeline --inference-host ${MESH_IP}:80 \
         }
       ]
     }
-```
 
-```bash
-seldon model infer tfsimple --inference-host ${MESH_IP}:80 \
+
+
+```python
+!seldon model infer tfsimple --inference-host ${MESH_IP}:80 \
   '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
 
     {
       "model_name": "tfsimple_1",
@@ -213,13 +217,13 @@ seldon model infer tfsimple --inference-host ${MESH_IP}:80 \
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer tfsimple-pipeline --inference-host ${MESH_IP}:80 \
+
+
+```python
+!seldon pipeline infer tfsimple-pipeline --inference-host ${MESH_IP}:80 \
   '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
 
     {
       "model_name": "",
@@ -278,14 +282,15 @@ seldon pipeline infer tfsimple-pipeline --inference-host ${MESH_IP}:80 \
         }
       ]
     }
-```
+
+
 ## MLServer Iris Batch Job
 
 
-```bash
-cat batch-inputs/iris-input.txt | head -n 1 | jq -M .
+```python
+!cat batch-inputs/iris-input.txt | head -n 1 | jq -M .
 ```
-```yaml
+
     {
       "inputs": [
         {
@@ -304,36 +309,39 @@ cat batch-inputs/iris-input.txt | head -n 1 | jq -M .
         }
       ]
     }
-```
+
+
 
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris-output.txt --workers 5 
 ```
-```bash
+
     2022-10-10 10:12:51,214 [mlserver] INFO - Using asyncio event-loop policy: uvloop
     2022-10-10 10:12:51,217 [mlserver] INFO - Server url: 172.19.255.12
     2022-10-10 10:12:51,217 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
     2022-10-10 10:12:51,217 [mlserver] INFO - output file path: /tmp/iris-output.txt
     2022-10-10 10:12:51,408 [mlserver] INFO - Time taken: 0.19 seconds
-```
+
+
 
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-input.txt -o /tmp/iris-pipeline-output.txt --workers 5
 ```
-```bash
+
     2022-10-10 10:12:53,067 [mlserver] INFO - Using asyncio event-loop policy: uvloop
     2022-10-10 10:12:53,071 [mlserver] INFO - Server url: 172.19.255.12
     2022-10-10 10:12:53,071 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
     2022-10-10 10:12:53,071 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
     2022-10-10 10:12:53,374 [mlserver] INFO - Time taken: 0.30 seconds
+
+
+
+```python
+!cat /tmp/iris-output.txt | head -n 1 | jq -M .
 ```
 
-```bash
-cat /tmp/iris-output.txt | head -n 1 | jq -M .
-```
-```yaml
     {
       "model_name": "iris_1",
       "model_version": "1",
@@ -357,12 +365,13 @@ cat /tmp/iris-output.txt | head -n 1 | jq -M .
         }
       ]
     }
+
+
+
+```python
+!cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
 ```
 
-```bash
-cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
-```
-```yaml
     [1;39m{
       [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
       [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
@@ -381,14 +390,15 @@ cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
         [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
       [1;39m}[0m[1;39m
     [1;39m}[0m
-```
+
+
 ## Triton TFSimple Batch Job
 
 
-```bash
-cat batch-inputs/tfsimple-input.txt | head -n 1 | jq -M .
+```python
+!cat batch-inputs/tfsimple-input.txt | head -n 1 | jq -M .
 ```
-```yaml
+
     {
       "inputs": [
         {
@@ -445,36 +455,39 @@ cat batch-inputs/tfsimple-input.txt | head -n 1 | jq -M .
         }
       ]
     }
-```
+
+
 
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m tfsimple -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5 -b
 ```
-```bash
+
     2022-10-10 10:12:55,454 [mlserver] INFO - Using asyncio event-loop policy: uvloop
     2022-10-10 10:12:55,457 [mlserver] INFO - Server url: 172.19.255.12
     2022-10-10 10:12:55,457 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
     2022-10-10 10:12:55,457 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
     2022-10-10 10:12:55,628 [mlserver] INFO - Time taken: 0.17 seconds
-```
+
+
 
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-pipeline-output.txt --workers 5
 ```
-```bash
+
     2022-10-10 10:12:57,269 [mlserver] INFO - Using asyncio event-loop policy: uvloop
     2022-10-10 10:12:57,273 [mlserver] INFO - Server url: 172.19.255.12
     2022-10-10 10:12:57,273 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
     2022-10-10 10:12:57,273 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
     2022-10-10 10:12:57,592 [mlserver] INFO - Time taken: 0.32 seconds
+
+
+
+```python
+!cat /tmp/tfsimple-output.txt | head -n 1 | jq -M .
 ```
 
-```bash
-cat /tmp/tfsimple-output.txt | head -n 1 | jq -M .
-```
-```yaml
     {
       "id": "ac7e8eb2-3e13-4b8d-9e9d-9633b12964c3",
       "model_name": "tfsimple_1",
@@ -539,12 +552,13 @@ cat /tmp/tfsimple-output.txt | head -n 1 | jq -M .
         "batch_index": 0
       }
     }
+
+
+
+```python
+!cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
 ```
 
-```bash
-cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
-```
-```yaml
     {
       "model_name": "",
       "outputs": [
@@ -605,26 +619,26 @@ cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
         "batch_index": 4
       }
     }
-```
+
+
 ## Cleanup
 
 
-```bash
-kubectl delete -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
-kubectl delete -f pipelines/iris.yaml -n ${NAMESPACE}
+```python
+!kubectl delete -f models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+!kubectl delete -f pipelines/iris.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io "iris" deleted
     pipeline.mlops.seldon.io "iris-pipeline" deleted
-```
 
-```bash
-kubectl delete -f models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl delete -f pipelines/tfsimple.yaml -n ${NAMESPACE}
+
+
+```python
+!kubectl delete -f models/tfsimple1.yaml -n ${NAMESPACE}
+!kubectl delete -f pipelines/tfsimple.yaml -n ${NAMESPACE}
 ```
-```json
 
     model.mlops.seldon.io "tfsimple1" deleted
     pipeline.mlops.seldon.io "tfsimple" deleted
-```
+

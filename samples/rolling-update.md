@@ -6,13 +6,13 @@
 We use a simple sklearn iris classification model and do a rolling update
 
 
-```bash
-seldon model load -f ./models/iris-v1.yaml
-seldon model status iris -w ModelAvailable 
-seldon model infer iris -i 1 \
+```python
+!seldon model load -f ./models/iris-v1.yaml
+!seldon model status iris -w ModelAvailable 
+!seldon model infer iris -i 1 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
+
     {}
     {}
     {
@@ -37,24 +37,27 @@ seldon model infer iris -i 1 \
     		}
     	]
     }
-```
 
-```bash
-seldon model load -f ./models/iris-v2.yaml
-seldon model infer iris --seconds 5 \
+
+
+```python
+!seldon model load -f ./models/iris-v2.yaml
+!seldon model infer iris --seconds 5 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
+
     {}
     Success: map[:iris_1::362 :iris_2::1782]
+
+
+
+```python
+!seldon model unload iris
 ```
 
-```bash
-seldon model unload iris
-```
-```json
     {}
-```
+
+
 
 ```python
 

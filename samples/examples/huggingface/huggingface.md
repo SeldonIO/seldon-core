@@ -56,12 +56,12 @@ def infer(resource: str):
 We will load two Huggingface models for speech to text and text to sentiment.
 
 
-```bash
-cat ../../models/hf-whisper.yaml
-echo "---"
-cat ../../models/hf-sentiment.yaml
+```python
+!cat ../../models/hf-whisper.yaml
+!echo "---"
+!cat ../../models/hf-sentiment.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -79,25 +79,28 @@ cat ../../models/hf-sentiment.yaml
       storageUri: "gs://seldon-models/mlserver/huggingface/sentiment"
       requirements:
       - huggingface
+
+
+
+```python
+!seldon model load -f ../../models/hf-whisper.yaml
+!seldon model load -f ../../models/hf-sentiment.yaml
 ```
 
-```bash
-seldon model load -f ../../models/hf-whisper.yaml
-seldon model load -f ../../models/hf-sentiment.yaml
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status whisper -w ModelAvailable | jq -M .
+!seldon model status sentiment -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status whisper -w ModelAvailable | jq -M .
-seldon model status sentiment -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
-```
+
+
 ### Create Explain Pipeline
 
 To allow Alibi-Explain to more easily explain the sentiment we will need:
@@ -108,10 +111,10 @@ To allow Alibi-Explain to more easily explain the sentiment we will need:
 These transform models are MLServer custom runtimes as shown below:
 
 
-```bash
-cat ./sentiment-input-transform/model.py | pygmentize
+```python
+!cat ./sentiment-input-transform/model.py | pygmentize
 ```
-```yaml
+
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m[04m[36m.[39;49;00m[04m[36mstring[39;49;00m [34mimport[39;49;00m StringRequestCodec
@@ -136,12 +139,13 @@ cat ./sentiment-input-transform/model.py | pygmentize
           model_name=[33m"[39;49;00m[33msentiment[39;49;00m[33m"[39;49;00m,
           payload=texts
         )
+
+
+
+```python
+!cat ./sentiment-output-transform/model.py | pygmentize
 ```
 
-```bash
-cat ./sentiment-output-transform/model.py | pygmentize
-```
-```yaml
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m [34mimport[39;49;00m StringCodec, Base64Codec, NumpyRequestCodec
@@ -171,14 +175,15 @@ cat ./sentiment-output-transform/model.py | pygmentize
           model_name=[33m"[39;49;00m[33msentiments[39;49;00m[33m"[39;49;00m,
           payload=np.[34marray[39;49;00m(scores)
         )
+
+
+
+```python
+!cat ../../models/hf-sentiment-input-transform.yaml
+!echo "---"
+!cat ../../models/hf-sentiment-output-transform.yaml
 ```
 
-```bash
-cat ../../models/hf-sentiment-input-transform.yaml
-echo "---"
-cat ../../models/hf-sentiment-output-transform.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -198,30 +203,33 @@ cat ../../models/hf-sentiment-output-transform.yaml
       requirements:
       - mlserver
       - python
+
+
+
+```python
+!seldon model load -f ../../models/hf-sentiment-input-transform.yaml
+!seldon model load -f ../../models/hf-sentiment-output-transform.yaml
 ```
 
-```bash
-seldon model load -f ../../models/hf-sentiment-input-transform.yaml
-seldon model load -f ../../models/hf-sentiment-output-transform.yaml
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status sentiment-input-transform -w ModelAvailable | jq -M .
+!seldon model status sentiment-output-transform -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status sentiment-input-transform -w ModelAvailable | jq -M .
-seldon model status sentiment-output-transform -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
+
+
+
+```python
+!cat ../../pipelines/sentiment-explain.yaml
 ```
 
-```bash
-cat ../../pipelines/sentiment-explain.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -237,19 +245,21 @@ cat ../../pipelines/sentiment-explain.yaml
       output:
         steps:
         - sentiment-output-transform
+
+
+
+```python
+!seldon pipeline load -f ../../pipelines/sentiment-explain.yaml
 ```
 
-```bash
-seldon pipeline load -f ../../pipelines/sentiment-explain.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
 ```
 
-```bash
-seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
-```
-```json
     {
       "pipelineName": "sentiment-explain",
       "versions": [
@@ -288,12 +298,13 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
         }
       ]
     }
+
+
+
+```python
+!cat ../../models/hf-sentiment-explainer.yaml
 ```
 
-```bash
-cat ../../models/hf-sentiment-explainer.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -303,30 +314,33 @@ cat ../../models/hf-sentiment-explainer.yaml
       explainer:
         type: anchor_text
         pipelineRef: sentiment-explain
+
+
+
+```python
+!seldon model load -f ../../models/hf-sentiment-explainer.yaml
 ```
 
-```bash
-seldon model load -f ../../models/hf-sentiment-explainer.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon model status sentiment-explainer -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status sentiment-explainer -w ModelAvailable | jq -M .
-```
-```json
     {}
-```
+
+
 ### Speech to Sentiment Pipeline with Explanation
 
 We can now create the final pipeline that will take speech and generate sentiment alongwith an explanation of why that sentiment was predicted.
 
 
-```bash
-cat ../../pipelines/speech-to-sentiment.yaml
+```python
+!cat ../../pipelines/speech-to-sentiment.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -349,19 +363,21 @@ cat ../../pipelines/speech-to-sentiment.yaml
         steps:
         - sentiment
         - whisper
+
+
+
+```python
+!seldon pipeline load -f ../../pipelines/speech-to-sentiment.yaml
 ```
 
-```bash
-seldon pipeline load -f ../../pipelines/speech-to-sentiment.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
 ```
 
-```bash
-seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
-```
-```json
     {
       "pipelineName": "speech-to-sentiment",
       "versions": [
@@ -413,7 +429,8 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
         }
       ]
     }
-```
+
+
 ### Test
 
 
@@ -424,24 +441,25 @@ recorder
 ```
 
 
-```
     AudioRecorder(audio=Audio(value=b'', format='webm'), stream=CameraStream(constraints={'audio': True, 'video': …
-```
+
+
 
 ```python
 infer("speech-to-sentiment.pipeline")
 ```
-```json
+
     cddsonmq0ics73e6eqo0
     b'{"text": " Cambridge is wonderful and beautiful."}'
     b'{"label": "POSITIVE", "score": 0.9998691082000732}'
-```
+
+
 We will wait for the explanation which is run asynchronously to the functional output from the Pipeline above.
 
 
 ```python
 while True:
-    base64Res = seldon pipeline inspect speech-to-sentiment.sentiment-explainer.outputs --format json \
+    base64Res = !seldon pipeline inspect speech-to-sentiment.sentiment-explainer.outputs --format json \
           --request-id ${REQUEST_ID}
     j = json.loads(base64Res[0])
     if j["topics"][0]["msgs"] is not None:
@@ -456,34 +474,37 @@ while True:
         time.sleep(1)
     
 ```
-```json
+
     ........
     Explanation anchors: ['beautiful']
-```
+
+
 ### Cleanup
 
 
-```bash
-seldon pipeline unload speech-to-sentiment
-seldon pipeline unload sentiment-explain
-```
-```json
-    {}
-    {}
+```python
+!seldon pipeline unload speech-to-sentiment
+!seldon pipeline unload sentiment-explain
 ```
 
-```bash
-seldon model unload whisper
-seldon model unload sentiment
-seldon model unload sentiment-explainer
-seldon model unload sentiment-transform
+    {}
+    {}
+
+
+
+```python
+!seldon model unload whisper
+!seldon model unload sentiment
+!seldon model unload sentiment-explainer
+!seldon model unload sentiment-transform
 ```
-```json
+
     {}
     {}
     {}
     {}
-```
+
+
 
 ```python
 

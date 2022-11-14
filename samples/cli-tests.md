@@ -4,28 +4,27 @@
 ## List resources
 
 
-```bash
-seldon model load -f ./models/sklearn-iris-gs.yaml
-seldon model load -f ./models/tfsimple1.yaml
-seldon model load -f ./experiments/sklearn2.yaml
-seldon model load -f ./models/cifar10.yaml
-seldon experiment start -f ./experiments/ab-default-model.yaml 
-seldon pipeline load -f ./pipelines/cifar10.yaml
-```
-```json
-
-    {}
-    {}
-    {}
-    {}
-    {}
-    {}
+```python
+!seldon model load -f ./models/sklearn-iris-gs.yaml
+!seldon model load -f ./models/tfsimple1.yaml
+!seldon model load -f ./experiments/sklearn2.yaml
+!seldon model load -f ./models/cifar10.yaml
+!seldon experiment start -f ./experiments/ab-default-model.yaml 
+!seldon pipeline load -f ./pipelines/cifar10.yaml
 ```
 
-```bash
-seldon model list
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
+
+
+
+```python
+!seldon model list
 ```
-```json
 
     model		state			reason
     -----		-----			------
@@ -33,12 +32,12 @@ seldon model list
     cifar10		ModelProgressing	
     iris		ModelAvailable		
     tfsimple1	ModelAvailable		
-```
 
-```bash
-seldon model metadata cifar10 
+
+
+```python
+!seldon model metadata cifar10 
 ```
-```json
 
     {
     	"name": "cifar10_1",
@@ -69,64 +68,65 @@ seldon model metadata cifar10
     		}
     	]
     }
-```
 
-```bash
-seldon server list
+
+
+```python
+!seldon server list
 ```
-```json
 
     server		replicas	models
     ------		--------	------
     triton		1		2
     mlserver	1		2
-```
 
-```bash
-seldon experiment list
+
+
+```python
+!seldon experiment list
 ```
-```json
 
     experiment		active	
     ----------		------	
     experiment-sample	true
-```
 
-```bash
-seldon pipeline list
+
+
+```python
+!seldon pipeline list
 ```
-```json
 
     pipeline
     --------
     cifar10-production
+
+
+
+```python
+!seldon model unload iris
+!seldon model unload tfsimple1
+!seldon model unload iris2
+!seldon model unload cifar10
+!seldon experiment stop experiment-sample
+!seldon pipeline unload cifar10-production
 ```
 
-```bash
-seldon model unload iris
-seldon model unload tfsimple1
-seldon model unload iris2
-seldon model unload cifar10
-seldon experiment stop experiment-sample
-seldon pipeline unload cifar10-production
-```
-```json
+    {}
+    {}
+    {}
+    {}
+    {}
+    {}
 
-    {}
-    {}
-    {}
-    {}
-    {}
-    {}
-```
+
 ### Badly formed model
 
 
 
-```bash
-cat ./models/error-bad-spec.yaml
+```python
+!cat ./models/error-bad-spec.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -136,12 +136,12 @@ cat ./models/error-bad-spec.yaml
       storagUri: "gs://seldon-models/mlserver/iris"
       requirements:
       - sklearn
-```
 
-```bash
-seldon model load -f ./models/error-bad-spec.yaml
+
+
+```python
+!seldon model load -f ./models/error-bad-spec.yaml
 ```
-```json
 
     Error: json: unknown field "storagUri"
     Usage:
@@ -157,12 +157,13 @@ seldon model load -f ./models/error-bad-spec.yaml
       -o, --show-response   show response (default true)
     
     json: unknown field "storagUri"
+
+
+
+```python
+!cat ./pipelines/error-bad-spec.yaml
 ```
 
-```bash
-cat ./pipelines/error-bad-spec.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -186,12 +187,12 @@ cat ./pipelines/error-bad-spec.yaml
         - mul10
         - add10
         stepsJoin: any
-```
 
-```bash
-seldon pipeline load -f ./pipelines/error-bad-spec.yaml
+
+
+```python
+!seldon pipeline load -f ./pipelines/error-bad-spec.yaml
 ```
-```json
 
     Error: json: unknown field "input"
     Usage:
@@ -207,12 +208,13 @@ seldon pipeline load -f ./pipelines/error-bad-spec.yaml
       -o, --show-response   show response (default true)
     
     json: unknown field "input"
+
+
+
+```python
+!cat ./experiments/error-bad-spec.yaml
 ```
 
-```bash
-cat ./experiments/error-bad-spec.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Experiment
     metadata:
@@ -225,12 +227,12 @@ cat ./experiments/error-bad-spec.yaml
         weight: 50
       - modelName: iris2
         weight: 50
-```
 
-```bash
-seldon experiment start -f ./experiments/error-bad-spec.yaml
+
+
+```python
+!seldon experiment start -f ./experiments/error-bad-spec.yaml
 ```
-```json
 
     Error: json: unknown field "candidate"
     Usage:
@@ -246,12 +248,12 @@ seldon experiment start -f ./experiments/error-bad-spec.yaml
       -o, --show-response   show response (default true)
     
     json: unknown field "candidate"
-```
 
-```bash
-seldon pipeline load -f ./pipelines/error-step-name.yaml
+
+
+```python
+!seldon pipeline load -f ./pipelines/error-step-name.yaml
 ```
-```json
 
     Error: rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
     Usage:
@@ -267,14 +269,14 @@ seldon pipeline load -f ./pipelines/error-step-name.yaml
       -o, --show-response   show response (default true)
     
     rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
-```
+
+
 ## Failed scheduling
 
 
-```bash
-seldon model load -f ./models/error-bad-capabilities.yaml
+```python
+!seldon model load -f ./models/error-bad-capabilities.yaml
 ```
-```json
 
     Error: rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
     Usage:
@@ -290,12 +292,12 @@ seldon model load -f ./models/error-bad-capabilities.yaml
       -o, --show-response   show response (default true)
     
     rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
-```
 
-```bash
-seldon model unload badcapabilities
+
+
+```python
+!seldon model unload badcapabilities
 ```
-```json
 
     {}
-```
+

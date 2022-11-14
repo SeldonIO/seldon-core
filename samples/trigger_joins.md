@@ -12,7 +12,8 @@ def get_request_string(use_trigger_1=True, use_trigger_2=True):
             {"name": "INPUT2", "contents": {"int64Contents": [1]}, "datatype": "INT64", "shape": [1]},
         ]
     }
-```    if use_trigger_1:
+
+    if use_trigger_1:
         request["inputs"].append({"name": "TRIGGER1", "contents": {"boolContents": [True]}, "datatype": "BOOL", "shape": [1]})
     
     if use_trigger_2:
@@ -25,39 +26,42 @@ def get_request_string(use_trigger_1=True, use_trigger_2=True):
 Load models and pipelines
 
 
-```bash
-seldon model load -f ./models/id1_node.yaml
-seldon model load -f ./models/id2_node.yaml
-seldon model load -f ./models/join_node.yaml
-```
-```json
-    {}
-    {}
-    {}
+```python
+!seldon model load -f ./models/id1_node.yaml
+!seldon model load -f ./models/id2_node.yaml
+!seldon model load -f ./models/join_node.yaml
 ```
 
-```bash
-seldon model status join_node -w ModelAvailable
-seldon model status id1_node -w ModelAvailable
-seldon model status id2_node -w ModelAvailable
-```
-```json
     {}
     {}
     {}
+
+
+
+```python
+!seldon model status join_node -w ModelAvailable
+!seldon model status id1_node -w ModelAvailable
+!seldon model status id2_node -w ModelAvailable
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
-```
-```json
     {}
+    {}
+    {}
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
 ```
 
-```bash
-seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
+    {}
+
+
+
+```python
+!seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
 ```
-```json
+
     [1;39m{
       [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
       [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
@@ -96,12 +100,13 @@ seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
         [1;39m}[0m[1;39m
       [1;39m][0m[1;39m
     [1;39m}[0m
+
+
+
+```python
+!cat ./pipelines/triggers_join_inputs.yaml
 ```
 
-```bash
-cat ./pipelines/triggers_join_inputs.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -119,53 +124,59 @@ cat ./pipelines/triggers_join_inputs.yaml
       output:
         steps:
           - join_node
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 
-seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 
-seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 
-seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+
+
+
+```python
+!seldon pipeline unload triggers_join_inputs
 ```
 
-```bash
-seldon pipeline unload triggers_join_inputs
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status triggers_join_internal -w PipelineReady | jq .
 ```
 
-```bash
-seldon pipeline status triggers_join_internal -w PipelineReady | jq .
-```
-```json
     [1;39m{
       [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
       [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
@@ -222,12 +233,13 @@ seldon pipeline status triggers_join_internal -w PipelineReady | jq .
         [1;39m}[0m[1;39m
       [1;39m][0m[1;39m
     [1;39m}[0m
+
+
+
+```python
+!cat ./pipelines/triggers_join_internal.yaml
 ```
 
-```bash
-cat ./pipelines/triggers_join_internal.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -255,52 +267,58 @@ cat ./pipelines/triggers_join_internal.yaml
       output:
         steps:
           - join_node
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 
-seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 
-seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
-```
+
+
 
 ```python
 request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 
-seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
+!seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
-```json
+
     {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+
+
+
+```python
+!seldon pipeline unload triggers_join_internal
 ```
 
-```bash
-seldon pipeline unload triggers_join_internal
-```
-```json
     {}
+
+
+
+```python
+!seldon model unload id1_node
+!seldon model unload id2_node
+!seldon model unload join_node
 ```
 
-```bash
-seldon model unload id1_node
-seldon model unload id2_node
-seldon model unload join_node
-```
-```json
     {}
     {}
     {}
-```
+
+
 
 ```python
 

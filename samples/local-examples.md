@@ -6,10 +6,10 @@
 We use a simple sklearn iris classification model
 
 
-```bash
-cat ./models/sklearn-iris-gs.yaml
+```python
+!cat ./models/sklearn-iris-gs.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -19,35 +19,35 @@ cat ./models/sklearn-iris-gs.yaml
       requirements:
       - sklearn
       memory: 100Ki
-```
+
+
 Load the model
 
 
-```bash
-seldon model load -f ./models/sklearn-iris-gs.yaml
+```python
+!seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
-```json
 
     {}
-```
+
+
 Wait for the model to be ready
 
 
-```bash
-seldon model status iris -w ModelAvailable | jq -M .
+```python
+!seldon model status iris -w ModelAvailable | jq -M .
 ```
-```json
 
     {}
-```
+
+
 Do a REST inference call
 
 
-```bash
-seldon model infer iris \
+```python
+!seldon model infer iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
 
     {
     	"model_name": "iris_1",
@@ -71,15 +71,15 @@ seldon model infer iris \
     		}
     	]
     }
-```
+
+
 Do a gRPC inference call
 
 
-```bash
-seldon model infer iris --inference-mode grpc \
+```python
+!seldon model infer iris --inference-mode grpc \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
-```json
 
     {
       "modelName": "iris_1",
@@ -99,26 +99,27 @@ seldon model infer iris --inference-mode grpc \
         }
       ]
     }
-```
+
+
 Unload the model
 
 
-```bash
-seldon model unload iris
+```python
+!seldon model unload iris
 ```
-```json
 
     {}
-```
+
+
 ### Tensorflow Model
 
 We run a simple tensorflow model. Note the requirements section specifying `tensorflow`.
 
 
-```bash
-cat ./models/tfsimple1.yaml
+```python
+!cat ./models/tfsimple1.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -128,34 +129,34 @@ cat ./models/tfsimple1.yaml
       requirements:
       - tensorflow
       memory: 100Ki
-```
+
+
 Load the model.
 
 
-```bash
-seldon model load -f ./models/tfsimple1.yaml
+```python
+!seldon model load -f ./models/tfsimple1.yaml
 ```
-```json
 
     {}
-```
+
+
 Wait for the model to be ready.
 
 
-```bash
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
+```python
+!seldon model status tfsimple1 -w ModelAvailable | jq -M .
 ```
-```json
 
     {}
-```
+
+
 Get model metadata
 
 
-```bash
-seldon model metadata tfsimple1
+```python
+!seldon model metadata tfsimple1
 ```
-```json
 
     {
     	"name": "tfsimple1_1",
@@ -200,15 +201,15 @@ seldon model metadata tfsimple1
     		}
     	]
     }
-```
+
+
 Do a REST inference call.
 
 
-```bash
-seldon model infer tfsimple1 \
+```python
+!seldon model infer tfsimple1 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
 
     {
       "model_name": "tfsimple1_1",
@@ -268,15 +269,15 @@ seldon model infer tfsimple1 \
         }
       ]
     }
-```
+
+
 Do a gRPC inference call
 
 
-```bash
-seldon model infer tfsimple1 --inference-mode grpc \
+```python
+!seldon model infer tfsimple1 --inference-mode grpc \
     '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
 
     {
       "modelName": "tfsimple1_1",
@@ -340,26 +341,27 @@ seldon model infer tfsimple1 --inference-mode grpc \
         }
       ]
     }
-```
+
+
 Unload the model
 
 
-```bash
-seldon model unload tfsimple1
+```python
+!seldon model unload tfsimple1
 ```
-```json
 
     {}
-```
+
+
 ### Experiment
 
 We will use two SKlearn Iris classification models to illustrate an experiment.
 
 
-```bash
-cat ./models/sklearn1.yaml
+```python
+!cat ./models/sklearn1.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -368,12 +370,13 @@ cat ./models/sklearn1.yaml
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
       - sklearn
+
+
+
+```python
+!cat ./models/sklearn2.yaml
 ```
 
-```bash
-cat ./models/sklearn2.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -382,27 +385,27 @@ cat ./models/sklearn2.yaml
       storageUri: "gs://seldon-models/mlserver/iris"
       requirements:
       - sklearn
-```
+
+
 Load both models.
 
 
-```bash
-seldon model load -f ./models/sklearn1.yaml
-seldon model load -f ./models/sklearn2.yaml
+```python
+!seldon model load -f ./models/sklearn1.yaml
+!seldon model load -f ./models/sklearn2.yaml
 ```
-```json
 
     {}
     {}
-```
+
+
 Wait for both models to be ready.
 
 
-```bash
-seldon model status iris | jq -M .
-seldon model status iris2 | jq -M .
+```python
+!seldon model status iris | jq -M .
+!seldon model status iris2 | jq -M .
 ```
-```json
 
     {
       "modelName": "iris",
@@ -478,14 +481,15 @@ seldon model status iris2 | jq -M .
         }
       ]
     }
-```
+
+
 Create an experiment that modifies the iris model to add a second model splitting traffic 50/50 between the two.
 
 
-```bash
-cat ./experiments/ab-default-model.yaml 
+```python
+!cat ./experiments/ab-default-model.yaml 
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Experiment
     metadata:
@@ -497,24 +501,24 @@ cat ./experiments/ab-default-model.yaml
         weight: 50
       - name: iris2
         weight: 50
-```
+
+
 Start the experiment.
 
 
-```bash
-seldon experiment start -f ./experiments/ab-default-model.yaml 
+```python
+!seldon experiment start -f ./experiments/ab-default-model.yaml 
 ```
-```json
 
     {}
-```
+
+
 Wait for the experiment to be ready.
 
 
-```bash
-seldon experiment status experiment-sample -w | jq -M .
+```python
+!seldon experiment status experiment-sample -w | jq -M .
 ```
-```json
 
     {
       "experimentName": "experiment-sample",
@@ -524,26 +528,26 @@ seldon experiment status experiment-sample -w | jq -M .
       "statusDescription": "experiment active",
       "kubernetesMeta": {}
     }
-```
+
+
 Run a set of calls and record which route the traffic took. There should be roughly a 50/50 split.
 
 
-```bash
-seldon model infer iris -i 100 \
+```python
+!seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
 
     map[:iris2_1::42 :iris_1::58]
-```
+
+
 Run one more request
 
 
-```bash
-seldon model infer iris \
+```python
+!seldon model infer iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
 
     {
     	"model_name": "iris2_1",
@@ -567,61 +571,62 @@ seldon model infer iris \
     		}
     	]
     }
-```
+
+
 Use sticky session key passed by last infer request to ensure same route is taken each time. 
 We will test REST and gRPC.
 
 
-```bash
-seldon model infer iris -s -i 50 \
+```python
+!seldon model infer iris -s -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
 
     map[:iris2_1::50]
-```
 
-```bash
-seldon model infer iris --inference-mode grpc -s -i 50\
+
+
+```python
+!seldon model infer iris --inference-mode grpc -s -i 50\
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' 
 ```
-```json
 
     map[:iris2_1::50]
-```
+
+
 Stop the experiment
 
 
-```bash
-seldon experiment stop experiment-sample
+```python
+!seldon experiment stop experiment-sample
 ```
-```json
 
     {}
-```
+
+
 Show the requests all go to original model now.
 
 
-```bash
-seldon model infer iris -i 100 \
+```python
+!seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
-```json
 
     map[:iris_1::100]
-```
+
+
 Unload both models.
 
 
-```bash
-seldon model unload iris
-seldon model unload iris2
+```python
+!seldon model unload iris
+!seldon model unload iris2
 ```
-```json
 
     {}
     {}
-```
+
+
 
 ```python
 

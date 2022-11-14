@@ -4,7 +4,6 @@ huggingface.md: huggingface.ipynb
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output huggingface.md
-	../../markdown-transforms.sh huggingface.md
 
 .PHONY: install-requirements
 install-requirements:

@@ -2,16 +2,16 @@
 
 
 
-```bash
-cat ../../models/choice1.yaml
-echo "---"
-cat ../../models/choice2.yaml
-echo "---"
-cat ../../models/add10.yaml
-echo "---"
-cat ../../models/mul10.yaml
+```python
+!cat ../../models/choice1.yaml
+!echo "---"
+!cat ../../models/choice2.yaml
+!echo "---"
+!cat ../../models/add10.yaml
+!echo "---"
+!cat ../../models/mul10.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -57,40 +57,41 @@ cat ../../models/mul10.yaml
       requirements:
       - triton
       - python
-```
 
-```bash
-seldon model load -f ../../models/choice1.yaml
-seldon model load -f ../../models/choice2.yaml
-seldon model load -f ../../models/add10.yaml
-seldon model load -f ../../models/mul10.yaml
-```
-```json
 
-    {}
-    {}
-    {}
-    {}
-```
 
-```bash
-seldon model status choice-is-one -w ModelAvailable 
-seldon model status choice-is-two -w ModelAvailable 
-seldon model status add10 -w ModelAvailable 
-seldon model status mul10 -w ModelAvailable 
+```python
+!seldon model load -f ../../models/choice1.yaml
+!seldon model load -f ../../models/choice2.yaml
+!seldon model load -f ../../models/add10.yaml
+!seldon model load -f ../../models/mul10.yaml
 ```
-```json
 
     {}
     {}
     {}
     {}
+
+
+
+```python
+!seldon model status choice-is-one -w ModelAvailable 
+!seldon model status choice-is-two -w ModelAvailable 
+!seldon model status add10 -w ModelAvailable 
+!seldon model status mul10 -w ModelAvailable 
 ```
 
-```bash
-cat ../../pipelines/choice.yaml
+    {}
+    {}
+    {}
+    {}
+
+
+
+```python
+!cat ../../pipelines/choice.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -114,20 +115,20 @@ cat ../../pipelines/choice.yaml
         - mul10
         - add10
         stepsJoin: any
-```
 
-```bash
-seldon pipeline load -f ../../pipelines/choice.yaml
+
+
+```python
+!seldon pipeline load -f ../../pipelines/choice.yaml
 ```
-```json
 
     {}
-```
 
-```bash
-seldon pipeline status choice -w PipelineReady | jq -M .
+
+
+```python
+!seldon pipeline status choice -w PipelineReady | jq -M .
 ```
-```json
 
     {
       "pipelineName": "choice",
@@ -181,13 +182,13 @@ seldon pipeline status choice -w PipelineReady | jq -M .
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer choice --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer choice --inference-mode grpc \
  '{"model_name":"choice","inputs":[{"name":"choice","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[5,6,7,8]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
 
     {
       "outputs": [
@@ -211,13 +212,13 @@ seldon pipeline infer choice --inference-mode grpc \
         "AABIQgAAcEIAAIxCAACgQg=="
       ]
     }
-```
 
-```bash
-seldon pipeline infer choice --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer choice --inference-mode grpc \
  '{"model_name":"choice","inputs":[{"name":"choice","contents":{"int_contents":[2]},"datatype":"INT32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[5,6,7,8]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 ```
-```json
 
     {
       "outputs": [
@@ -241,23 +242,24 @@ seldon pipeline infer choice --inference-mode grpc \
         "AABwQQAAgEEAAIhBAACQQQ=="
       ]
     }
+
+
+
+```python
+!seldon model unload choice-is-one
+!seldon model unload choice-is-two
+!seldon model unload add10
+!seldon model unload mul10
+!seldon pipeline unload choice
 ```
 
-```bash
-seldon model unload choice-is-one
-seldon model unload choice-is-two
-seldon model unload add10
-seldon model unload mul10
-seldon pipeline unload choice
-```
-```json
+    {}
+    {}
+    {}
+    {}
+    {}
 
-    {}
-    {}
-    {}
-    {}
-    {}
-```
+
 
 ```python
 
