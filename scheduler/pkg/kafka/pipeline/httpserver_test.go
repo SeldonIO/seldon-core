@@ -19,6 +19,7 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -43,13 +44,14 @@ type fakePipelineInferer struct {
 	data         []byte
 	key          string
 	isPayloadErr bool
+	errorModel   string
 }
 
 func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error) {
 	if f.err != nil {
 		return nil, f.err
 	} else {
-		return &Request{key: f.key, response: f.data, isError: f.isPayloadErr}, nil
+		return &Request{key: f.key, response: f.data, isError: f.isPayloadErr, errorModel: f.errorModel}, nil
 	}
 }
 
@@ -94,6 +96,8 @@ func TestHttpServer(t *testing.T) {
 		header       string
 		req          string
 		res          *v2.ModelInferResponse
+		errRes       []byte
+		errorModel   string
 		isPayloadErr bool
 		statusCode   int
 	}
@@ -127,6 +131,8 @@ func TestHttpServer(t *testing.T) {
 			req:          `{"inputs":[{"name":"input1","datatype":"BOOL","shape":[500],"data":[true,false,true,false,true]}]}`,
 			res:          &v2.ModelInferResponse{},
 			isPayloadErr: true,
+			errorModel:   "foo",
+			errRes:       []byte("bad call"),
 			statusCode:   http.StatusBadRequest,
 		},
 		{
@@ -168,13 +174,19 @@ func TestHttpServer(t *testing.T) {
 	waitForServer(port)
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			b, err := proto.Marshal(test.res)
-			g.Expect(err).To(BeNil())
+			var b []byte
+			if test.errRes != nil {
+				b = test.errRes
+			} else {
+				b, err = proto.Marshal(test.res)
+				g.Expect(err).To(BeNil())
+			}
 			mockInferer := &fakePipelineInferer{
 				err:          nil,
 				data:         b,
 				key:          testRequestId,
 				isPayloadErr: test.isPayloadErr,
+				errorModel:   test.errorModel,
 			}
 			httpServer.gateway = mockInferer
 			inferV2Path := test.path
@@ -190,6 +202,17 @@ func TestHttpServer(t *testing.T) {
 			if resp.StatusCode == http.StatusOK {
 				g.Expect(resp.Header.Get(util.RequestIdHeader)).ToNot(BeNil())
 				g.Expect(resp.Header.Get(util.RequestIdHeader)).To(Equal(testRequestId))
+			}
+			if test.res != nil {
+				bResp, err := io.ReadAll(resp.Body)
+				g.Expect(err).To(BeNil())
+				if resp.StatusCode == http.StatusOK {
+					b, err := ConvertV2ResponseBytesToJson(b)
+					g.Expect(err).To(BeNil())
+					g.Expect(bResp).To(Equal(b))
+				} else {
+					g.Expect(bResp).To(Equal(createResponseErrorPayload(test.errorModel, test.errRes)))
+				}
 			}
 			defer resp.Body.Close()
 		})

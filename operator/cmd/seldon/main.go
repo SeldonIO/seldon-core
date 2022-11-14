@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/seldonio/seldon-core/operatorv2/cmd/seldon/cli"
@@ -32,7 +31,6 @@ func Execute() error {
 
 func main() {
 	if err := Execute(); err != nil {
-		fmt.Println(err.Error())
 		os.Exit(-1)
 	}
 }

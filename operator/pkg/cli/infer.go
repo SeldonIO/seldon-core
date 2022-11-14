@@ -690,6 +690,9 @@ func (ic *InferenceClient) InferGrpc(
 		var header metadata.MD
 		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header))
 		if err != nil {
+			if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
+				return err
+			}
 			if e, ok := status.FromError(err); ok {
 				ic.updateErrors(int(e.Code()), header.Get(SeldonRouteHeader))
 			}

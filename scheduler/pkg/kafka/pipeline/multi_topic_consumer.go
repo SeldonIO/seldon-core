@@ -171,7 +171,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				request.mu.Lock()
 				if request.active {
 					c.logger.Debugf("Process response for key %s", string(e.Key))
-					request.isError = hasErrorHeader(e.Headers)
+					request.errorModel, request.isError = extractErrorHeader(e.Headers)
 					request.response = e.Value
 					request.headers = e.Headers
 					request.wg.Done()

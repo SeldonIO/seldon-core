@@ -67,13 +67,14 @@ type Pipeline struct {
 }
 
 type Request struct {
-	mu       sync.Mutex
-	active   bool
-	wg       *sync.WaitGroup
-	key      string
-	response []byte
-	headers  []kafka.Header
-	isError  bool
+	mu         sync.Mutex
+	active     bool
+	wg         *sync.WaitGroup
+	key        string
+	response   []byte
+	headers    []kafka.Header
+	isError    bool
+	errorModel string
 }
 
 func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
@@ -227,13 +228,17 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	return request, nil
 }
 
-func hasErrorHeader(headers []kafka.Header) bool {
+func extractErrorHeader(headers []kafka.Header) (string, bool) {
 	for _, header := range headers {
 		if header.Key == kafka2.TopicErrorHeader {
-			return true
+			return string(header.Value), true
 		}
 	}
-	return false
+	return "", false
+}
+
+func createResponseErrorPayload(modelName string, response []byte) []byte {
+	return append([]byte(modelName+" : "), response...)
 }
 
 func (km *KafkaManager) consume(pipeline *Pipeline) error {

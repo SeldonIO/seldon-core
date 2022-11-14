@@ -228,7 +228,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 
 	kafkaHeaders := job.msg.Headers
 	if errorTopic {
-		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte("")})
+		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte(job.modelName)})
 	}
 	for k, vs := range headers {
 		for _, v := range vs {

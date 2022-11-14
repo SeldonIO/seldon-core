@@ -89,7 +89,7 @@ func GetCmd() *cobra.Command {
 	cmdPipelineList := createPipelineList()
 	cmdPipelineInspect := createPipelineInspect()
 
-	var rootCmd = &cobra.Command{Use: "seldon"}
+	var rootCmd = &cobra.Command{Use: "seldon", SilenceErrors: false, SilenceUsage: true}
 
 	rootCmd.PersistentFlags().BoolP(flagShowRequest, "r", false, "show request")
 	rootCmd.PersistentFlags().BoolP(flagShowResponse, "o", true, "show response")

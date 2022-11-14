@@ -157,7 +157,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	} else if kafkaRequest.isError {
 		logger.Error(string(kafkaRequest.response))
 		w.WriteHeader(http.StatusBadRequest)
-		_, err = w.Write(kafkaRequest.response)
+		_, err = w.Write(createResponseErrorPayload(kafkaRequest.errorModel, kafkaRequest.response))
 		if err != nil {
 			logger.WithError(err).Error("Failed to write error payload")
 		}
