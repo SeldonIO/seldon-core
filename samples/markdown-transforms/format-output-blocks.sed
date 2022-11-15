@@ -1,14 +1,16 @@
 #!/usr/bin/sed -Enf
 
+# We're within an output block
 /^\s{4}.*/ {
   s/^\s{4}//
   H
   b END
 }
 
+# We're outside an output block
 x
 
-# If we've accumulated an output block...
+# If we've encountered an output block...
 /^.+$/ {
   # Remove any lingering whitespace
   s/^\s+//
@@ -35,6 +37,7 @@ x
   z
 }
 
+# Print whatever line we were on
 x
 p
 
