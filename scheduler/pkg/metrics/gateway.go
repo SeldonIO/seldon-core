@@ -27,16 +27,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Pipeline metrics
+// Keep next line as used in docs
+// Docs Start Metrics
 //
 // The aggregate metrics exist for efficiency, as the summation can be
 // very slow in Prometheus when many pipelines exist.
 const (
-	pipelineHistogramName                    = "seldon_pipeline_infer_api_seconds"
+	// Histograms do no include model label for efficiency
+	pipelineHistogramName = "seldon_pipeline_infer_api_seconds"
+	// We use base infer counters to store core metrics per pipeline
+	pipelineInferCounterName                 = "seldon_pipeline_infer_total"
+	pipelineInferLatencyCounterName          = "seldon_pipeline_infer_seconds_total"
 	pipelineAggregateInferCounterName        = "seldon_pipeline_aggregate_infer_total"
 	pipelineAggregateInferLatencyCounterName = "seldon_pipeline_aggregate_infer_seconds_total"
 )
 
+// Docs End Metrics
+// Keep above line as used in docs
 // Metric labels
 const (
 	SeldonPipelineMetric = "pipeline"
@@ -52,6 +59,8 @@ type PrometheusPipelineMetrics struct {
 	logger     log.FieldLogger
 	// Model metrics
 	pipelineHistogram                    *prometheus.HistogramVec
+	pipelineInferCounter                 *prometheus.CounterVec
+	pipelineInferLatencyCounter          *prometheus.CounterVec
 	pipelineAggregateInferCounter        *prometheus.CounterVec
 	pipelineAggregateInferLatencyCounter *prometheus.CounterVec
 
@@ -60,6 +69,16 @@ type PrometheusPipelineMetrics struct {
 
 func NewPrometheusPipelineMetrics(logger log.FieldLogger) (*PrometheusPipelineMetrics, error) {
 	histogram, err := createPipelineHistogram()
+	if err != nil {
+		return nil, err
+	}
+
+	inferCounter, err := createPipelineInferCounter()
+	if err != nil {
+		return nil, err
+	}
+
+	inferLatencyCounter, err := createPipelineInferLatencyCounter()
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +98,8 @@ func NewPrometheusPipelineMetrics(logger log.FieldLogger) (*PrometheusPipelineMe
 		serverName:                           "pipeline-gateway",
 		logger:                               logger.WithField("source", "PrometheusMetrics"),
 		pipelineHistogram:                    histogram,
+		pipelineInferCounter:                 inferCounter,
+		pipelineInferLatencyCounter:          inferLatencyCounter,
 		pipelineAggregateInferCounter:        aggregateInferCounter,
 		pipelineAggregateInferLatencyCounter: aggregateInferLatencyCounter,
 	}, nil
@@ -105,6 +126,24 @@ func createPipelineHistogram() (*prometheus.HistogramVec, error) {
 		}
 	}
 	return histogram, nil
+}
+
+func createPipelineInferCounter() (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
+	return createCounterVec(
+		pipelineInferCounterName,
+		"A count of pipeline gateway calls",
+		labelNames,
+	)
+}
+
+func createPipelineInferLatencyCounter() (*prometheus.CounterVec, error) {
+	labelNames := []string{SeldonServerMetric, SeldonPipelineMetric, MethodTypeMetric, CodeMetric}
+	return createCounterVec(
+		pipelineInferLatencyCounterName,
+		"A sum of pipeline gateway call latencies",
+		labelNames,
+	)
 }
 
 func createPipelineAggregateInferCounter() (*prometheus.CounterVec, error) {
@@ -135,6 +174,12 @@ func (pm *PrometheusPipelineMetrics) AddPipelineInferMetrics(pipelineName string
 }
 
 func (pm *PrometheusPipelineMetrics) addInferCount(pipelineName, method string, code string) {
+	pm.pipelineInferCounter.With(prometheus.Labels{
+		SeldonPipelineMetric: pipelineName,
+		SeldonServerMetric:   pm.serverName,
+		MethodTypeMetric:     method,
+		CodeMetric:           code,
+	}).Inc()
 	pm.pipelineAggregateInferCounter.With(prometheus.Labels{
 		SeldonServerMetric: pm.serverName,
 		MethodTypeMetric:   method,
@@ -142,6 +187,12 @@ func (pm *PrometheusPipelineMetrics) addInferCount(pipelineName, method string, 
 }
 
 func (pm *PrometheusPipelineMetrics) addInferLatency(pipelineName, method string, latency float64, code string) {
+	pm.pipelineInferLatencyCounter.With(prometheus.Labels{
+		SeldonPipelineMetric: pipelineName,
+		SeldonServerMetric:   pm.serverName,
+		MethodTypeMetric:     method,
+		CodeMetric:           code,
+	}).Add(latency)
 	pm.pipelineAggregateInferLatencyCounter.With(prometheus.Labels{
 		SeldonServerMetric: pm.serverName,
 		MethodTypeMetric:   method,

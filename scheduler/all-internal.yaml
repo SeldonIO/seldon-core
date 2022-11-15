@@ -154,6 +154,7 @@ services:
         source: ./config
         target: /mnt/config
     ports:
+      - "${PIPELINEGATEWAY_METRICS_PORT}:${PIPELINEGATEWAY_METRICS_PORT}"
       - "${PIPELINEGATEWAY_HTTP_PORT}:${PIPELINEGATEWAY_HTTP_PORT}"
       - "${PIPELINEGATEWAY_GRPC_PORT}:${PIPELINEGATEWAY_GRPC_PORT}"
 

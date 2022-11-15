@@ -179,16 +179,22 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	}
 }
 
+func getResourceFromHeaders(req *http.Request, logger log.FieldLogger) (string, bool, error) {
+	modelHeader := req.Header.Get(resources.SeldonModelHeader)
+	modelInternalHeader := req.Header.Get(resources.SeldonInternalModelHeader)
+	logger.Debugf("Seldon model header %s and seldon internal model header %s", modelHeader, modelInternalHeader)
+	if modelInternalHeader != "" {
+		return createResourceNameFromHeader(modelInternalHeader)
+	} else {
+		return createResourceNameFromHeader(modelHeader)
+	}
+}
+
 func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request) {
 	logger := g.logger.WithField("func", "inferModel")
-	g.logger.Debugf("Seldon model header %s and seldon internal model header %s", req.Header.Get(resources.SeldonModelHeader), req.Header.Get(resources.SeldonInternalModelHeader))
-	header := req.Header.Get(resources.SeldonInternalModelHeader) // Seldon internal header takes precedence
-	if header == "" {                                             // If we can't find an internal header then look for public one
-		header = req.Header.Get(resources.SeldonModelHeader)
-	}
-	resourceName, isModel, err := createResourceNameFromHeader(header)
+	resourceName, isModel, err := getResourceFromHeaders(req, logger)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to create resource name from %s", header)
+		logger.WithError(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -196,7 +202,12 @@ func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request)
 }
 
 func (g *GatewayHttpServer) inferPipeline(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	resourceName := vars[ResourceNameVariable]
-	g.infer(w, req, resourceName, false)
+	logger := g.logger.WithField("func", "inferPipeline")
+	resourceName, isModel, err := getResourceFromHeaders(req, logger)
+	if err != nil {
+		logger.Error("No header found for pipeline identification")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	g.infer(w, req, resourceName, isModel)
 }
