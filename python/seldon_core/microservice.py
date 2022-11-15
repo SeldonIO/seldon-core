@@ -9,7 +9,7 @@ import sys
 import time
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
@@ -155,7 +155,7 @@ def parse_parameters(parameters: Dict) -> Dict:
     return parsed_parameters
 
 
-def load_annotations() -> Dict:
+def load_annotations() -> Dict[str, str]:
     """
     Attempt to load annotations
 
@@ -216,7 +216,7 @@ def setup_logger(log_level: str, debug_mode: bool) -> logging.Logger:
     return logger
 
 
-def parse_args():
+def parse_args() -> Tuple[argparse.Namespace, List[str]]:
     parser = argparse.ArgumentParser()
     parser.add_argument("interface_name", type=str, help="Name of the user interface.")
 
@@ -447,6 +447,103 @@ def _make_rest_server_prod(
     return server
 
 
+def _wait_forever(server):
+    try:
+        while True:
+            time.sleep(60 * 60)
+    except KeyboardInterrupt:
+        server.stop(None)
+
+
+def _run_grpc_server(
+    user_object: Any,
+    seldon_metrics: SeldonMetrics,
+    args: argparse.Namespace,
+    annotations: Dict[str, str],
+    bind_address: str,
+):
+    """Start a server in a subprocess."""
+    logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
+
+    if args.tracing:
+        from grpc_opentracing import open_tracing_server_interceptor
+
+        logger.info("Adding tracer")
+        tracer = setup_tracing(args.interface_name)
+        interceptor = open_tracing_server_interceptor(tracer)
+    else:
+        interceptor = None
+
+    server = seldon_microservice.get_grpc_server(
+        user_object,
+        seldon_metrics,
+        annotations=annotations,
+        trace_interceptor=interceptor,
+        num_threads=args.grpc_threads,
+    )
+
+    try:
+        user_object.load()
+    except (NotImplementedError, AttributeError):
+        pass
+
+    server.add_insecure_port(bind_address)
+    server.start()
+    _wait_forever(server)
+
+
+def _make_grpc_server(
+    user_object: Any,
+    seldon_metrics: SeldonMetrics,
+    args: argparse.Namespace,
+    annotations: Dict[str, str],
+) -> Callable[[], None]:
+    def server():
+        with _reserve_grpc_port(args.grpc_port) as bind_port:
+            bind_address = "0.0.0.0:{}".format(bind_port)
+            logger.info(
+                "GRPC Server Binding to %s with %d processes.",
+                bind_address,
+                args.grpc_workers,
+            )
+            sys.stdout.flush()
+            workers = []
+            for _ in range(args.grpc_workers):
+                # NOTE: It is imperative that the worker subprocesses be forked before
+                # any gRPC servers start up. See
+                # https://github.com/grpc/grpc/issues/16001 for more details.
+                worker = mp.Process(
+                    target=_run_grpc_server,
+                    args=(
+                        user_object,
+                        seldon_metrics,
+                        args,
+                        annotations,
+                        bind_address,
+                    ),
+                )
+                worker.start()
+                workers.append(worker)
+            for worker in workers:
+                worker.join()
+
+    return server
+
+
+@contextlib.contextmanager
+def _reserve_grpc_port(grpc_port: int):
+    """Find and reserve a port for all subprocesses to use."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
+        raise RuntimeError("Failed to set SO_REUSEPORT.")
+    sock.bind(("", grpc_port))
+    try:
+        yield sock.getsockname()[1]
+    finally:
+        sock.close()
+
+
 def main():
     LOG_FORMAT = (
         "%(asctime)s - %(name)s:%(funcName)s:%(lineno)s - %(levelname)s:  %(message)s"
@@ -496,7 +593,6 @@ def main():
     user_object = user_class(**parameters)
 
     http_port = args.http_port
-    grpc_port = args.grpc_port
     metrics_port = args.metrics_port
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
@@ -525,77 +621,11 @@ def main():
             annotations=annotations,
         )
 
-    def _wait_forever(server):
-        try:
-            while True:
-                time.sleep(60 * 60)
-        except KeyboardInterrupt:
-            server.stop(None)
-
-    def _run_grpc_server(bind_address):
-        """Start a server in a subprocess."""
-        logger.info(f"Starting new GRPC server with {args.grpc_threads} threads.")
-
-        if args.tracing:
-            from grpc_opentracing import open_tracing_server_interceptor
-
-            logger.info("Adding tracer")
-            tracer = setup_tracing(args.interface_name)
-            interceptor = open_tracing_server_interceptor(tracer)
-        else:
-            interceptor = None
-
-        server = seldon_microservice.get_grpc_server(
-            user_object,
-            seldon_metrics,
-            annotations=annotations,
-            trace_interceptor=interceptor,
-            num_threads=args.grpc_threads,
+    server_grpc_func = None
+    if args.grpc_workers > 0:
+        server_grpc_func = _make_grpc_server(
+            user_object, seldon_metrics, args, annotations=annotations
         )
-
-        try:
-            user_object.load()
-        except (NotImplementedError, AttributeError):
-            pass
-
-        server.add_insecure_port(bind_address)
-        server.start()
-        _wait_forever(server)
-
-    @contextlib.contextmanager
-    def _reserve_grpc_port():
-        """Find and reserve a port for all subprocesses to use."""
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) != 1:
-            raise RuntimeError("Failed to set SO_REUSEPORT.")
-        sock.bind(("", grpc_port))
-        try:
-            yield sock.getsockname()[1]
-        finally:
-            sock.close()
-
-    def grpc_prediction_server():
-        with _reserve_grpc_port() as bind_port:
-            bind_address = "0.0.0.0:{}".format(bind_port)
-            logger.info(
-                "GRPC Server Binding to %s with %d processes.",
-                bind_address,
-                args.grpc_workers,
-            )
-            sys.stdout.flush()
-            workers = []
-            for _ in range(args.grpc_workers):
-                # NOTE: It is imperative that the worker subprocesses be forked before
-                # any gRPC servers start up. See
-                # https://github.com/grpc/grpc/issues/16001 for more details.
-                worker = mp.Process(target=_run_grpc_server, args=(bind_address,))
-                worker.start()
-                workers.append(worker)
-            for worker in workers:
-                worker.join()
-
-    server_grpc_func = grpc_prediction_server if args.grpc_workers > 0 else None
 
     def rest_metrics_server():
         app = seldon_microservice.get_metrics_microservice(seldon_metrics)
