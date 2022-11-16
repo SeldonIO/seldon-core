@@ -219,7 +219,12 @@ func (ps *PipelineStatus) SetCondition(conditionType apis.ConditionType, conditi
 	}
 }
 
-func (ps *PipelineStatus) CreateAndSetCondition(conditionType apis.ConditionType, isTrue bool, reason string) {
+func (ps *PipelineStatus) CreateAndSetCondition(
+	conditionType apis.ConditionType,
+	isTrue bool,
+	reason scheduler.PipelineVersionState_PipelineStatus,
+	description string,
+) {
 	condition := apis.Condition{}
 	if isTrue {
 		condition.Status = v1.ConditionTrue
@@ -227,7 +232,8 @@ func (ps *PipelineStatus) CreateAndSetCondition(conditionType apis.ConditionType
 		condition.Status = v1.ConditionFalse
 	}
 	condition.Type = conditionType
-	condition.Reason = reason
+	condition.Reason = reason.String()
+	condition.Message = description
 	condition.LastTransitionTime = apis.VolatileTime{
 		Inner: metav1.Now(),
 	}

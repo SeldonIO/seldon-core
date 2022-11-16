@@ -20,22 +20,20 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
 	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler"
+	schedulerAPI "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 )
 
 // PipelineReconciler reconciles a Pipeline object
@@ -127,7 +125,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 func (r *PipelineReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline, err error) {
-	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, err.Error())
+	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, schedulerAPI.PipelineVersionState_PipelineFailed, err.Error())
 	if errSet := r.Status().Update(ctx, pipeline); errSet != nil {
 		logger.Error(errSet, "Failed to set status on pipeline on error", "pipeline", pipeline.Name, "error", err.Error())
 	}
