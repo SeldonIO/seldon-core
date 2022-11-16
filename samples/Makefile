@@ -1,5 +1,5 @@
 EXAMPLES := $(wildcard *.ipynb)
-EXAMPLES_MD=$(patsubst %.ipynb, %.md, $(EXAMPLES))
+EXAMPLES_MD := $(EXAMPLES:.ipynb=.md)
 
 .PHONY: all
 all: $(EXAMPLES_MD)
