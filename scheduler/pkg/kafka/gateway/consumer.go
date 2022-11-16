@@ -277,7 +277,7 @@ func (kc *InferKafkaConsumer) Serve() {
 	for run {
 		select {
 		case <-kc.done:
-			kc.logger.Infof("Stopping")
+			logger.Infof("Stopping")
 			run = false
 		default:
 			ev := kc.consumer.Poll(pollTimeoutMillisecs)
@@ -328,17 +328,14 @@ func (kc *InferKafkaConsumer) Serve() {
 				span.End()
 
 			case kafka.Error:
-				kc.logger.Error(e, "Received stream error")
-				if e.Code() == kafka.ErrAllBrokersDown {
-					run = false
-				}
+				logger.Errorf("Kafka error, code: [%s] msg: [%s]", e.Code().String(), e.Error())
 			default:
-				kc.logger.Info("Ignored %s", e.String())
+				logger.Debugf("Ignored %s", e.String())
 			}
 		}
 	}
 
-	kc.logger.Info("Closing consumer")
+	logger.Info("Closing consumer")
 	close(cancelChan)
 	kc.producer.Close()
 	_ = kc.consumer.Close()

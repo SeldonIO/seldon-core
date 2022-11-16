@@ -80,7 +80,7 @@ func (c *MultiTopicsKafkaConsumer) createConsumer() error {
 	c.consumer = consumer
 	go func() {
 		err := c.pollAndMatch()
-		c.logger.WithError(err).Infof("Consumer %s failed", c.id)
+		c.logger.WithError(err).Infof("Consumer %s failed and is ending", c.id)
 	}()
 	return nil
 }
@@ -148,6 +148,7 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 }
 
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
+	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive {
 
 		ev := c.consumer.Poll(pollTimeoutMillisecs)
@@ -157,7 +158,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 
 		switch e := ev.(type) {
 		case *kafka.Message:
-			c.logger.Debugf("Received message from %s with key %s", *e.TopicPartition.Topic, string(e.Key))
+			logger.Debugf("Received message from %s with key %s", *e.TopicPartition.Topic, string(e.Key))
 			if val, ok := c.requests.Get(string(e.Key)); ok {
 
 				// Add tracing span
@@ -170,28 +171,26 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				request := val.(*Request)
 				request.mu.Lock()
 				if request.active {
-					c.logger.Debugf("Process response for key %s", string(e.Key))
+					logger.Debugf("Process response for key %s", string(e.Key))
 					request.errorModel, request.isError = extractErrorHeader(e.Headers)
 					request.response = e.Value
 					request.headers = e.Headers
 					request.wg.Done()
 					request.active = false
 				} else {
-					c.logger.Warnf("Got duplicate request with key %s", string(e.Key))
+					logger.Warnf("Got duplicate request with key %s", string(e.Key))
 				}
 				request.mu.Unlock()
 				span.End()
 			}
 
 		case kafka.Error:
-			c.logger.Error(e, "Received stream error")
-			if e.Code() == kafka.ErrAllBrokersDown {
-				break
-			}
+			logger.Errorf("Kafka error, code: [%s] msg: [%s]", e.Code().String(), e.Error())
 		default:
-			c.logger.Debug("Ignored %s", e.String())
+			logger.Debugf("Ignored %s", e.String())
 		}
 	}
+	logger.Warning("Ending kafka consumer poll")
 	c.isActive = false
 	return c.consumer.Close()
 }
