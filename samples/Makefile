@@ -1,10 +1,10 @@
-.SUFFIXES: .ipynb .md
 EXAMPLES := $(wildcard *.ipynb)
 EXAMPLES_MD=$(patsubst %.ipynb, %.md, $(EXAMPLES))
 
 .PHONY: all
 all: $(EXAMPLES_MD)
 
+.SUFFIXES: .ipynb .md
 .ipynb.md:
 	jupyter nbconvert \
 		$< \
