@@ -4,8 +4,7 @@ EXAMPLES_MD := $(EXAMPLES:.ipynb=.md)
 .PHONY: all
 all: $(EXAMPLES_MD)
 
-.SUFFIXES: .ipynb .md
-.ipynb.md:
+%.md: %.ipynb
 	jupyter nbconvert \
 		$< \
 		--ClearOutputPreprocessor.enabled=False \
