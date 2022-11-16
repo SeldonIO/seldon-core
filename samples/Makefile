@@ -11,5 +11,5 @@ all: $(EXAMPLES_MD)
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output $(@F)
-
+	./markdown-transforms.sh $(@F)
 
