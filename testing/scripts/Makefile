@@ -74,6 +74,7 @@ install_ambassador:
 install_jaeger:
 	kubectl create namespace observability
 	kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
+	kubectl wait --for condition=Available -n observability deployment/jaeger-operator
 	kubectl apply -f ../resources/jaeger.yaml
 
 
