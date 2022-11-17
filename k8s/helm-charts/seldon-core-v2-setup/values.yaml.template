@@ -78,6 +78,9 @@ hodometer:
   logLevel: info
   metricsLevel: feature
   extraPublishUrls: ""
+  resources:
+    cpu: 1m
+    memory: 32Mi
 
 kafka:
   debug:
@@ -102,9 +105,8 @@ modelgateway:
     tag: #TAG_VERSION_PLACEHOLDER#
   workers: 8
   resources:
-    requests:
-      cpu: 100m
-      memory: 1G
+    cpu: 100m
+    memory: 1G
 
 pipelinegateway:
   image:
@@ -113,9 +115,8 @@ pipelinegateway:
     repository: seldonio/seldon-pipelinegateway
     tag: #TAG_VERSION_PLACEHOLDER#
   resources:
-    requests:
-      cpu: 0.1
-      memory: 1G
+    cpu: 100m
+    memory: 1G
 
 dataflow:
   image:
@@ -125,9 +126,8 @@ dataflow:
     tag: #TAG_VERSION_PLACEHOLDER#
   cores: 4
   resources:
-    requests:
-      cpu: 1
-      memory: 1G
+    cpu: 100m
+    memory: 1G
 
 controller:
   image:
@@ -136,9 +136,8 @@ controller:
     repository: seldonio/seldonv2-controller
     tag: #TAG_VERSION_PLACEHOLDER#
   resources:
-    requests:
-      cpu: 10m
-      memory: 64Mi
+    cpu: 10m
+    memory: 64Mi
 
 envoy:
   image:
@@ -146,6 +145,9 @@ envoy:
     registry: docker.io
     repository: seldonio/seldon-envoy
     tag: #TAG_VERSION_PLACEHOLDER#
+  resources:
+    cpu: 100m
+    memory: 128Mi
   service:
     type: LoadBalancer
 
@@ -155,6 +157,10 @@ scheduler:
     registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: #TAG_VERSION_PLACEHOLDER#
+  resources:
+    cpu: 100m
+    memory: 1Gi
+    storage: 1Gi
   service:
     type: LoadBalancer
 
@@ -165,6 +171,9 @@ serverConfig:
       registry: docker.io
       repository: seldonio/seldon-rclone
       tag: #TAG_VERSION_PLACEHOLDER#
+    resources:
+      cpu: 50m
+      memory: 128Mi
 
   agent:
     image:
@@ -176,6 +185,9 @@ serverConfig:
     scalingStatsPeriodSeconds: "20"
     modelInferenceLagThreshold: "30"
     modelInactiveSecondsThreshold: "600"
+    resources:
+      cpu: 200m
+      memory: 1Gi
 
   mlserver:
     image:
@@ -186,7 +198,8 @@ serverConfig:
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     resources:
-      memory: 1G
+      cpu: 100m
+      memory: 1Gi
 
   triton:
     image:
@@ -197,7 +210,8 @@ serverConfig:
     serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
     modelVolumeStorage: 1Gi
     resources:
-      memory: 1G
+      cpu: 100m
+      memory: 1Gi
 
 # For use with service meshes like Istio, which require specific prefixes for
 # the names of ports handling gRPC/HTTP2 traffic.

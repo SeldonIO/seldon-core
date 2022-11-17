@@ -61,8 +61,10 @@ spec:
             value: '{{ .Values.security.envoy.ssl.downstream.client.serverCaPath }}'
         resources:
           requests:
-            cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'
-            memory: '{{ .Values.modelgateway.resources.requests.memory }}'
+            cpu: '{{ .Values.modelgateway.resources.cpu }}'
+            memory: '{{ .Values.modelgateway.resources.memory }}'
+          limits:
+            memory: '{{ .Values.modelgateway.resources.memory }}'
         image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository }}:{{ .Values.modelgateway.image.tag }}'
         imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
         name: modelgateway

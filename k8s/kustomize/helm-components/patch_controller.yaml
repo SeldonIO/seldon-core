@@ -11,8 +11,10 @@ spec:
         name: manager
         resources:
           requests:
-            cpu: '{{ .Values.controller.resources.requests.cpu }}'
-            memory: '{{ .Values.controller.resources.requests.memory }}'
+            cpu: '{{ .Values.controller.resources.cpu }}'
+            memory: '{{ .Values.controller.resources.memory }}'
+          limits:
+            memory: '{{ .Values.controller.resources.memory }}'
         env:
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'            

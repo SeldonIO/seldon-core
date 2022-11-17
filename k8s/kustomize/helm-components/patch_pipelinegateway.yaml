@@ -11,8 +11,10 @@ spec:
         name: pipelinegateway
         resources:
           requests:
-            cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
-            memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
+            cpu: '{{ .Values.pipelinegateway.resources.cpu }}'
+            memory: '{{ .Values.pipelinegateway.resources.memory }}'
+          limits:
+            memory: '{{ .Values.pipelinegateway.resources.memory }}'
         env:
           - name: KAFKA_SECURITY_PROTOCOL
             value: '{{ .Values.security.kafka.protocol }}'            

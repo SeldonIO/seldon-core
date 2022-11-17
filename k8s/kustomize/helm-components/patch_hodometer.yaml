@@ -9,6 +9,12 @@ spec:
       - name: hodometer
         image: '{{ .Values.hodometer.image.registry }}/{{ .Values.hodometer.image.repository }}:{{.Values.hodometer.image.tag }}'
         imagePullPolicy: '{{ .Values.hodometer.image.pullPolicy }}'
+        resources:
+          requests:
+            cpu: '{{ .Values.hodometer.resources.cpu }}'
+            memory: '{{ .Values.hodometer.resources.memory }}'
+          limits:
+            memory: '{{ .Values.hodometer.resources.memory }}'
         env:
           - name: METRICS_LEVEL
             value: '{{ .Values.hodometer.metricsLevel }}'

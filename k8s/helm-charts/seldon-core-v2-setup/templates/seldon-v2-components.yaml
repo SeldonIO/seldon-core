@@ -598,11 +598,10 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            memory: '{{ .Values.controller.resources.memory }}'
           requests:
-            cpu: '{{ .Values.controller.resources.requests.cpu }}'
-            memory: '{{ .Values.controller.resources.requests.memory }}'
+            cpu: '{{ .Values.controller.resources.cpu }}'
+            memory: '{{ .Values.controller.resources.memory }}'
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:
@@ -677,9 +676,11 @@ spec:
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
         name: dataflow-engine
         resources:
+          limits:
+            memory: '{{ .Values.dataflow.resources.memory }}'
           requests:
-            cpu: '{{ .Values.dataflow.resources.requests.cpu }}'
-            memory: '{{ .Values.dataflow.resources.requests.memory }}'
+            cpu: '{{ .Values.dataflow.resources.cpu }}'
+            memory: '{{ .Values.dataflow.resources.memory }}'
       securityContext:
         runAsUser: 8888
       serviceAccountName: seldon-scheduler
@@ -737,6 +738,12 @@ spec:
           name: http
         - containerPort: 9003
           name: envoy-admin
+        resources:
+          limits:
+            memory: '{{ .Values.envoy.resources.memory }}'
+          requests:
+            cpu: '{{ .Values.envoy.resources.cpu }}'
+            memory: '{{ .Values.envoy.resources.memory }}'
       terminationGracePeriodSeconds: 5
 {{ if .Values.hodometer.enabled }}
 ---
@@ -796,6 +803,12 @@ spec:
           }}:{{.Values.hodometer.image.tag }}'
         imagePullPolicy: '{{ .Values.hodometer.image.pullPolicy }}'
         name: hodometer
+        resources:
+          limits:
+            memory: '{{ .Values.hodometer.resources.memory }}'
+          requests:
+            cpu: '{{ .Values.hodometer.resources.cpu }}'
+            memory: '{{ .Values.hodometer.resources.memory }}'
       securityContext:
         runAsUser: 8888
       serviceAccountName: hodometer
@@ -900,9 +913,11 @@ spec:
         imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
         name: modelgateway
         resources:
+          limits:
+            memory: '{{ .Values.modelgateway.resources.memory }}'
           requests:
-            cpu: '{{ .Values.modelgateway.resources.requests.cpu }}'
-            memory: '{{ .Values.modelgateway.resources.requests.memory }}'
+            cpu: '{{ .Values.modelgateway.resources.cpu }}'
+            memory: '{{ .Values.modelgateway.resources.memory }}'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
@@ -995,9 +1010,11 @@ spec:
           name: metrics
           protocol: TCP
         resources:
+          limits:
+            memory: '{{ .Values.pipelinegateway.resources.memory }}'
           requests:
-            cpu: '{{ .Values.pipelinegateway.resources.requests.cpu }}'
-            memory: '{{ .Values.pipelinegateway.resources.requests.memory }}'
+            cpu: '{{ .Values.pipelinegateway.resources.cpu }}'
+            memory: '{{ .Values.pipelinegateway.resources.memory }}'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
@@ -1109,9 +1126,11 @@ spec:
         - containerPort: 9008
           name: dataflow
         resources:
+          limits:
+            memory: '{{ .Values.scheduler.resources.memory }}'
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: '{{ .Values.scheduler.resources.cpu }}'
+            memory: '{{ .Values.scheduler.resources.memory }}'
         volumeMounts:
         - mountPath: /mnt/tracing
           name: tracing-config-volume
@@ -1135,7 +1154,7 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: '{{ .Values.scheduler.resources.storage }}'
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
@@ -1161,6 +1180,12 @@ spec:
         tcpSocket:
           port: 5572
         timeoutSeconds: 1
+      resources:
+        limits:
+          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+        requests:
+          cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1262,6 +1287,12 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
+      resources:
+        limits:
+          memory: '{{ .Values.serverConfig.agent.resources.memory }}'
+        requests:
+          cpu: '{{ .Values.serverConfig.agent.resources.cpu }}'
+          memory: '{{ .Values.serverConfig.agent.resources.memory }}'
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1309,8 +1340,10 @@ spec:
         initialDelaySeconds: 5
         periodSeconds: 5
       resources:
+        limits:
+          memory: '{{ .Values.serverConfig.mlserver.resources.memory }}'
         requests:
-          cpu: "0.1"
+          cpu: '{{ .Values.serverConfig.mlserver.resources.cpu }}'
           memory: '{{ .Values.serverConfig.mlserver.resources.memory }}'
       startupProbe:
         failureThreshold: 10
@@ -1376,6 +1409,12 @@ spec:
         tcpSocket:
           port: 5572
         timeoutSeconds: 1
+      resources:
+        limits:
+          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+        requests:
+          cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
@@ -1471,6 +1510,12 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
+      resources:
+        limits:
+          memory: '{{ .Values.serverConfig.agent.resources.memory }}'
+        requests:
+          cpu: '{{ .Values.serverConfig.agent.resources.cpu }}'
+          memory: '{{ .Values.serverConfig.agent.resources.memory }}'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
@@ -1518,8 +1563,10 @@ spec:
         initialDelaySeconds: 5
         periodSeconds: 5
       resources:
+        limits:
+          memory: '{{ .Values.serverConfig.triton.resources.memory }}'
         requests:
-          cpu: "0.1"
+          cpu: '{{ .Values.serverConfig.triton.resources.cpu }}'
           memory: '{{ .Values.serverConfig.triton.resources.memory }}'
       startupProbe:
         failureThreshold: 10

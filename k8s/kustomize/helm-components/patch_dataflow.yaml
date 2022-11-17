@@ -36,5 +36,7 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm }}'
         resources:
           requests:
-            cpu: '{{ .Values.dataflow.resources.requests.cpu }}'
-            memory: '{{ .Values.dataflow.resources.requests.memory }}'
+            cpu: '{{ .Values.dataflow.resources.cpu }}'
+            memory: '{{ .Values.dataflow.resources.memory }}'
+          limits:
+            memory: '{{ .Values.dataflow.resources.memory }}'

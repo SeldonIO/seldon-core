@@ -9,6 +9,12 @@ spec:
       - image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'
         name: scheduler
+        resources:
+          requests:
+            cpu: '{{ .Values.scheduler.resources.cpu }}'
+            memory: '{{ .Values.scheduler.resources.memory }}'
+          limits:
+            memory: '{{ .Values.scheduler.resources.memory }}'
         env:
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'            
@@ -50,3 +56,12 @@ spec:
             value: '{{ .Values.security.envoy.ssl.downstream.server.caPath }}'
           - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
             value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
+  volumeClaimTemplates:
+  - metadata:
+      name: scheduler-state
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '{{ .Values.scheduler.resources.storage }}'

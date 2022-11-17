@@ -9,6 +9,12 @@ spec:
       - image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}'
         imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
         name: envoy
+        resources:
+          requests:
+            cpu: '{{ .Values.envoy.resources.cpu }}'
+            memory: '{{ .Values.envoy.resources.memory }}'
+          limits:
+            memory: '{{ .Values.envoy.resources.memory }}'
         env:
           - name: ENVOY_SECURITY_PROTOCOL
             value: '{{ .Values.security.envoy.protocol }}' 
