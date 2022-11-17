@@ -57,8 +57,8 @@ kind_build_images: build_protos kind_build_operator kind_build_executor kind_bui
 .PHONY: helm_setup
 helm_setup:
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
-	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm repo add datawire https://app.getambassador.io
+	helm repo add jetstack https://charts.jetstack.io
 	helm repo update
 
 .PHONY: install_ambassador
@@ -72,18 +72,21 @@ install_ambassador:
 
 .PHONY: install_jaeger
 install_jaeger:
-	helm upgrade jaeger-operator \
-		jaegertracing/jaeger-operator \
-		--set rbac.clusterRole=true \
-		--namespace seldon \
-		--version 2.25.0 \
-		--wait --install
-	kubectl apply -f ../resources/jaeger.yaml --namespace seldon
+	kubectl create namespace observability
+	kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
+	kubectl wait --for condition=Available -n observability deployment/jaeger-operator
+	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
+	kubectl apply -f ../resources/jaeger.yaml
 
 
-#install_cert_manager:
-#	cd ../../operator && make install-cert-manager
-#	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
+install_cert_manager:
+	helm install \
+	    cert-manager jetstack/cert-manager \
+	    --namespace cert-manager \
+	    --create-namespace \
+	    --version v1.10.0 \
+	    --set installCRDs=true
+	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
 .PHONY: install_seldon
 install_seldon:
@@ -126,7 +129,7 @@ install_metrics:
 	kubectl apply -f metrics.yaml
 
 .PHONY: kind_setup
-kind_setup: create_namespaces helm_setup install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
+kind_setup: create_namespaces helm_setup install_cert_manager install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
 
 port-forward-ambassador:
 	kubectl port-forward $$(kubectl get pods -n ambassador -l app.kubernetes.io/instance=edge-stack  -o jsonpath='{.items[0].metadata.name}') -n ambassador 8005:8080
