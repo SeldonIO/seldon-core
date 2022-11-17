@@ -3,6 +3,7 @@ apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
   name: jaeger
+  namespace: seldon-system
 spec:
   strategy: allInOne
   allInOne:
@@ -14,8 +15,9 @@ apiVersion: getambassador.io/v2
 kind: Mapping
 metadata:
   name: jaeger
+  namespace: seldon-system
 spec:
   prefix: /jaeger
-  service: jaeger-query.seldon:16686
+  service: jaeger-query.seldon-system:16686
   # Jaeger will expect the `/jaeger` prefix, so we can't rewrite it
   rewrite: ""
