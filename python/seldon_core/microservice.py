@@ -408,7 +408,7 @@ def _make_rest_server_prod(
         annotations:
     """
 
-    def server():
+    def server() -> None:
         rest_timeout = DEFAULT_ANNOTATION_REST_TIMEOUT
         if ANNOTATION_REST_TIMEOUT in annotations:
             # Gunicorn timeout is in seconds so convert as annotation is in miliseconds
@@ -498,7 +498,7 @@ def _make_grpc_server(
     args: argparse.Namespace,
     annotations: Dict[str, str],
 ) -> Callable[[], None]:
-    def server():
+    def server() -> None:
         with _reserve_grpc_port(args.grpc_port) as bind_port:
             bind_address = "0.0.0.0:{}".format(bind_port)
             logger.info(
@@ -526,6 +526,32 @@ def _make_grpc_server(
                 workers.append(worker)
             for worker in workers:
                 worker.join()
+
+    return server
+
+
+def _make_rest_metrics_server(
+    seldon_metrics: SeldonMetrics,
+    args: argparse.Namespace,
+) -> Callable[[], None]:
+    def server() -> None:
+        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
+        if args.debug:
+            app.run(host="0.0.0.0", port=args.metrics_port)
+        else:
+            options = {
+                "bind": "%s:%s" % ("0.0.0.0", args.metrics_port),
+                "accesslog": accesslog(args.access_log),
+                "loglevel": args.log_level.lower(),
+                "timeout": 5000,
+                "max_requests": args.max_requests,
+                "max_requests_jitter": args.max_requests_jitter,
+                "post_worker_init": post_worker_init,
+                "keepalive": args.keepalive,
+            }
+            if args.pidfile is not None:
+                options["pidfile"] = args.pidfile
+            StandaloneApplication(app, options=options).run()
 
     return server
 
@@ -593,7 +619,6 @@ def main():
     user_object = user_class(**parameters)
 
     http_port = args.http_port
-    metrics_port = args.metrics_port
 
     seldon_metrics = SeldonMetrics(worker_id_func=os.getpid)
     # TODO why 2 ways to create metrics server
@@ -627,27 +652,8 @@ def main():
             user_object, seldon_metrics, args, annotations=annotations
         )
 
-    def rest_metrics_server():
-        app = seldon_microservice.get_metrics_microservice(seldon_metrics)
-        if args.debug:
-            app.run(host="0.0.0.0", port=metrics_port)
-        else:
-            options = {
-                "bind": "%s:%s" % ("0.0.0.0", metrics_port),
-                "accesslog": accesslog(args.access_log),
-                "loglevel": args.log_level.lower(),
-                "timeout": 5000,
-                "max_requests": args.max_requests,
-                "max_requests_jitter": args.max_requests_jitter,
-                "post_worker_init": post_worker_init,
-                "keepalive": args.keepalive,
-            }
-            if args.pidfile is not None:
-                options["pidfile"] = args.pidfile
-            StandaloneApplication(app, options=options).run()
-
-    logger.info("REST metrics microservice running on port %i", metrics_port)
-    server_metrics_func = rest_metrics_server
+    logger.info("REST metrics microservice running on port %i", args.metrics_port)
+    server_metrics_func = _make_rest_metrics_server(seldon_metrics, args)
 
     if hasattr(user_object, "custom_service") and callable(
         getattr(user_object, "custom_service")
