@@ -13,7 +13,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Once that's done, you should then be able to deploy the chart as:
+Onca that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system
@@ -30,8 +30,9 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| ambassador.enabled | bool | `true` |  |
+| ambassador.enabled | bool | `false` |  |
 | ambassador.singleNamespace | bool | `false` |  |
+| ambassador.version | string | `"v2"` |  |
 | certManager.enabled | bool | `false` |  |
 | controllerId | string | `""` |  |
 | crd.annotations | object | `{}` |  |
@@ -60,7 +61,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
 | explainer.image | string | `"seldonio/alibiexplainer:1.15.0-dev"` |  |
-| explainer.image_v2 | string | `"seldonio/mlserver:1.1.0-alibi-explain"` |  |
+| explainer.image_v2 | string | `"seldonio/mlserver:1.2.0.rc1-alibi-explain"` |  |
 | hostNetwork | bool | `false` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
@@ -77,6 +78,10 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | manager.cpuRequest | string | `"100m"` |  |
 | manager.deploymentNameAsPrefix | bool | `false` |  |
 | manager.leaderElectionID | string | `"a33bd623.machinelearning.seldon.io"` |  |
+| manager.leaderElectionLeaseDurationSecs | int | `15` |  |
+| manager.leaderElectionRenewDeadlineSecs | int | `10` |  |
+| manager.leaderElectionResourceLock | string | `nil` |  |
+| manager.leaderElectionRetryPeriodSecs | int | `2` |  |
 | manager.logLevel | string | `"INFO"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
 | manager.memoryRequest | string | `"200Mi"` |  |
@@ -89,17 +94,17 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictiveUnit.grpcPort | int | `9500` |  |
 | predictiveUnit.httpPort | int | `9000` |  |
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
-| predictor_servers.HUGGINGFACE_SERVER.protocols.v2.defaultImageVersion | string | `"1.1.0-huggingface"` |  |
+| predictor_servers.HUGGINGFACE_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0.rc1-huggingface"` |  |
 | predictor_servers.HUGGINGFACE_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0-dev"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.image | string | `"seldonio/mlflowserver"` |  |
-| predictor_servers.MLFLOW_SERVER.protocols.v2.defaultImageVersion | string | `"1.1.0-mlflow"` |  |
+| predictor_servers.MLFLOW_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0.rc1-mlflow"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0-dev"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.image | string | `"seldonio/sklearnserver"` |  |
-| predictor_servers.SKLEARN_SERVER.protocols.v2.defaultImageVersion | string | `"1.1.0-sklearn"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0.rc1-sklearn"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.TEMPO_SERVER.protocols.v2.defaultImageVersion | string | `"1.1.0-slim"` |  |
+| predictor_servers.TEMPO_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0.rc1-slim"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0-dev"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
@@ -109,7 +114,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictor_servers.TRITON_SERVER.protocols.v2.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0-dev"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.image | string | `"seldonio/xgboostserver"` |  |
-| predictor_servers.XGBOOST_SERVER.protocols.v2.defaultImageVersion | string | `"1.1.0-xgboost"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0.rc1-xgboost"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | rbac.configmap.create | bool | `true` |  |
 | rbac.create | bool | `true` |  |
