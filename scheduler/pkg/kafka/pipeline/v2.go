@@ -35,19 +35,20 @@ import (
 //}
 
 const (
-	tyBool   = "BOOL"
-	tyUint8  = "UINT8"
-	tyUint16 = "UINT16"
-	tyUint32 = "UINT32"
-	tyUint64 = "UINT64"
-	tyInt8   = "INT8"
-	tyInt16  = "INT16"
-	tyInt32  = "INT32"
-	tyInt64  = "INT64"
-	tyFp16   = "FP16"
-	tyFp32   = "FP32"
-	tyFp64   = "FP64"
-	tyBytes  = "BYTES"
+	tyBool         = "BOOL"
+	tyUint8        = "UINT8"
+	tyUint16       = "UINT16"
+	tyUint32       = "UINT32"
+	tyUint64       = "UINT64"
+	tyInt8         = "INT8"
+	tyInt16        = "INT16"
+	tyInt32        = "INT32"
+	tyInt64        = "INT64"
+	tyFp16         = "FP16"
+	tyFp32         = "FP32"
+	tyFp64         = "FP64"
+	tyBytes        = "BYTES"
+	contentTypeKey = "content_type"
 )
 
 type InferenceRequest struct {
@@ -144,13 +145,23 @@ func (nt *NamedTensor) MarshalJSON() ([]byte, error) {
 			Alias: (*Alias)(nt),
 		})
 	case tyBytes:
-		return json.Marshal(&struct {
-			Data [][]byte `json:"data"`
-			*Alias
-		}{
-			Data:  nt.tensorData.byteContents,
-			Alias: (*Alias)(nt),
-		})
+		if nt.tensorData.strContents != nil {
+			return json.Marshal(&struct {
+				Data []string `json:"data"`
+				*Alias
+			}{
+				Data:  nt.tensorData.strContents,
+				Alias: (*Alias)(nt),
+			})
+		} else {
+			return json.Marshal(&struct {
+				Data [][]byte `json:"data"`
+				*Alias
+			}{
+				Data:  nt.tensorData.byteContents,
+				Alias: (*Alias)(nt),
+			})
+		}
 	default:
 		return nil, fmt.Errorf("Unknown type %s", nt.Datatype)
 	}
@@ -170,6 +181,7 @@ type TensorData struct {
 	fp32Contents   []float32
 	fp64Contents   []float64
 	byteContents   [][]byte
+	strContents    []string
 }
 
 func ConvertRequestToV2Bytes(data []byte, modelName string, modelVersion string) ([]byte, error) {
@@ -222,6 +234,24 @@ func createParametersFromv2(v2Params map[string]*v2_dataplane.InferParameter) ma
 	return params
 }
 
+func convertByteSlicesToString(bytes [][]byte) []string {
+	var result []string
+	for _, b := range bytes {
+		result = append(result, string(b))
+	}
+	return result
+}
+
+func handleMLServerOutputContentTypes(v2Output *v2_dataplane.ModelInferResponse_InferOutputTensor) []string {
+	if contentType, ok := v2Output.Parameters[contentTypeKey]; ok {
+		switch contentType.GetStringParam() {
+		case "str", "datetime":
+			return convertByteSlicesToString(v2Output.Contents.BytesContents)
+		}
+	}
+	return nil
+}
+
 func convertV2InferOutputToNamedTensor(v2Output *v2_dataplane.ModelInferResponse_InferOutputTensor) *NamedTensor {
 	td := &TensorData{
 		boolContents:   v2Output.Contents.GetBoolContents(),
@@ -232,6 +262,7 @@ func convertV2InferOutputToNamedTensor(v2Output *v2_dataplane.ModelInferResponse
 		fp32Contents:   v2Output.Contents.GetFp32Contents(),
 		fp64Contents:   v2Output.Contents.GetFp64Contents(),
 		byteContents:   v2Output.Contents.GetBytesContents(),
+		strContents:    handleMLServerOutputContentTypes(v2Output),
 	}
 	return &NamedTensor{
 		Name:       v2Output.Name,

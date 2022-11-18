@@ -517,6 +517,17 @@ func TestMarshallNamedTensor(t *testing.T) {
 			},
 			out: `{"data":["dGVzdA=="],"name":"out1","shape":[5],"datatype":"BYTES"}`,
 		},
+		{
+			name: "bytes with str content type",
+			nt: &NamedTensor{
+				Name:       "out1",
+				Datatype:   tyBytes,
+				Shape:      []int64{5},
+				tensorData: &TensorData{strContents: []string{"test"}},
+				Parameters: map[string]interface{}{contentTypeKey: "str"},
+			},
+			out: `{"data":["test"],"name":"out1","shape":[5],"datatype":"BYTES","parameters":{"content_type":"str"}}`,
+		},
 	}
 
 	for _, test := range tests {

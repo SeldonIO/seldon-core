@@ -40,15 +40,13 @@ def infer(resource: str):
     headers = {"Content-Type": "application/json", "seldon-model": resource}
     response_raw = requests.post(url, json=reqJson, headers=headers)
     j = response_raw.json()
-    predictionEncoded = j["outputs"][0]["data"][0]
-    decodedSentiment = base64.b64decode(predictionEncoded)
-    textEncoded = j["outputs"][1]["data"][0]
-    decodedText = base64.b64decode(textEncoded)
+    sentiment = j["outputs"][0]["data"][0]
+    text = j["outputs"][1]["data"][0]
     reqId = response_raw.headers["x-request-id"]
     print(reqId)
     os.environ["REQUEST_ID"]=reqId
-    print(decodedText)
-    print(decodedSentiment)
+    print(text)
+    print(sentiment)
 ```
 
 ### Load Huggingface Models
@@ -115,6 +113,20 @@ These transform models are MLServer custom runtimes as shown below:
 !cat ./sentiment-input-transform/model.py | pygmentize
 ```
 
+    [37m# Copyright 2022 Seldon Technologies Ltd.[39;49;00m
+    [37m#[39;49;00m
+    [37m# Licensed under the Apache License, Version 2.0 (the "License");[39;49;00m
+    [37m# you may not use this file except in compliance with the License.[39;49;00m
+    [37m# You may obtain a copy of the License at[39;49;00m
+    [37m#[39;49;00m
+    [37m#    http://www.apache.org/licenses/LICENSE-2.0[39;49;00m
+    [37m#[39;49;00m
+    [37m# Unless required by applicable law or agreed to in writing, software[39;49;00m
+    [37m# distributed under the License is distributed on an "AS IS" BASIS,[39;49;00m
+    [37m# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[39;49;00m
+    [37m# See the License for the specific language governing permissions and[39;49;00m
+    [37m# limitations under the License.[39;49;00m
+    
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m[04m[36m.[39;49;00m[04m[36mstring[39;49;00m [34mimport[39;49;00m StringRequestCodec
@@ -146,6 +158,20 @@ These transform models are MLServer custom runtimes as shown below:
 !cat ./sentiment-output-transform/model.py | pygmentize
 ```
 
+    [37m# Copyright 2022 Seldon Technologies Ltd.[39;49;00m
+    [37m#[39;49;00m
+    [37m# Licensed under the Apache License, Version 2.0 (the "License");[39;49;00m
+    [37m# you may not use this file except in compliance with the License.[39;49;00m
+    [37m# You may obtain a copy of the License at[39;49;00m
+    [37m#[39;49;00m
+    [37m#    http://www.apache.org/licenses/LICENSE-2.0[39;49;00m
+    [37m#[39;49;00m
+    [37m# Unless required by applicable law or agreed to in writing, software[39;49;00m
+    [37m# distributed under the License is distributed on an "AS IS" BASIS,[39;49;00m
+    [37m# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[39;49;00m
+    [37m# See the License for the specific language governing permissions and[39;49;00m
+    [37m# limitations under the License.[39;49;00m
+    
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m [34mimport[39;49;00m MLModel
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mtypes[39;49;00m [34mimport[39;49;00m InferenceRequest, InferenceResponse, ResponseOutput
     [34mfrom[39;49;00m [04m[36mmlserver[39;49;00m[04m[36m.[39;49;00m[04m[36mcodecs[39;49;00m [34mimport[39;49;00m StringCodec, Base64Codec, NumpyRequestCodec
@@ -266,7 +292,7 @@ These transform models are MLServer custom runtimes as shown below:
         {
           "pipeline": {
             "name": "sentiment-explain",
-            "uid": "cddsn9atsj0s738f5ut0",
+            "uid": "cdrn2c5jr36s73eg9om0",
             "version": 1,
             "steps": [
               {
@@ -293,7 +319,7 @@ These transform models are MLServer custom runtimes as shown below:
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-28T12:31:34.304608492Z"
+            "lastChangeTimestamp": "2022-11-18T11:49:04.697311598Z"
           }
         }
       ]
@@ -384,7 +410,7 @@ We can now create the final pipeline that will take speech and generate sentimen
         {
           "pipeline": {
             "name": "speech-to-sentiment",
-            "uid": "cddsnjqtsj0s738f5utg",
+            "uid": "cdrn2htjr36s73eg9omg",
             "version": 1,
             "steps": [
               {
@@ -424,7 +450,7 @@ We can now create the final pipeline that will take speech and generate sentimen
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-28T12:32:16.212929516Z"
+            "lastChangeTimestamp": "2022-11-18T11:49:27.793654254Z"
           }
         }
       ]
@@ -449,9 +475,9 @@ recorder
 infer("speech-to-sentiment.pipeline")
 ```
 
-    cddsonmq0ics73e6eqo0
-    b'{"text": " Cambridge is wonderful and beautiful."}'
-    b'{"label": "POSITIVE", "score": 0.9998691082000732}'
+    cdrn3iits0ps73bgtaeg
+    {"text": " Cambridge is wonderful and beautiful."}
+    {"label": "POSITIVE", "score": 0.9998691082000732}
 
 
 We will wait for the explanation which is run asynchronously to the functional output from the Pipeline above.
@@ -475,7 +501,7 @@ while True:
     
 ```
 
-    ........
+    .....
     Explanation anchors: ['beautiful']
 
 
