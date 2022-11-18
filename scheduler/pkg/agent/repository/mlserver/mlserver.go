@@ -64,7 +64,7 @@ type ModelSettings struct {
 	Outputs         []ModelMetadataTensors `json:"outputs,omitempty"`
 	Platform        string                 `json:"platform,omitempty"`
 	Versions        []string               `json:"versions,omitempty"`
-	ParallelWorkers int                    `json:"parallel_workers"`
+	ParallelWorkers int                    `json:"parallel_workers,omitempty"`
 	Implementation  string                 `json:"implementation,omitempty"`
 	Parameters      *ModelParameters       `json:"parameters,omitempty"`
 }

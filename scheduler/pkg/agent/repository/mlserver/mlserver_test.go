@@ -730,3 +730,30 @@ func TestFindHighestVersionInPath(t *testing.T) {
 		})
 	}
 }
+
+func TestDefaultModelSettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		name          string
+		modelSettings *ModelSettings
+		expected      []byte
+	}{
+		{name: "omits all empty fields",
+			modelSettings: &ModelSettings{Name: "foo"},
+			expected:      []byte("{\"name\":\"foo\"}"),
+		},
+		{
+			name:          "adds empty parameters dict",
+			modelSettings: &ModelSettings{Name: "foo", Parameters: &ModelParameters{}},
+			expected:      []byte("{\"name\":\"foo\",\"parameters\":{}}"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data, _ := json.Marshal(test.modelSettings)
+			g.Expect(data).To(Equal(test.expected))
+		})
+	}
+}
