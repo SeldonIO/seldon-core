@@ -58,9 +58,10 @@ func NewConsumerManager(logger log.FieldLogger, consumerConfig *ConsumerConfig, 
 }
 
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaConsumer, error) {
+	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
 	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
-
+	logger.Debugf("Getting consumer for model %s with bucket id %s", modelName, consumerBucketId)
 	if !ok && !create {
 		return nil, nil
 	}
@@ -72,6 +73,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 			return nil, err
 		}
 		go ic.Serve()
+		logger.Debugf("Created consumer for model %s with bucket id %s", modelName, consumerBucketId)
 		cm.consumers[consumerBucketId] = ic
 	}
 	return ic, nil
@@ -94,8 +96,10 @@ func (cm *ConsumerManager) AddModel(modelName string) error {
 }
 
 func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaConsumer) {
+	logger := cm.logger.WithField("func", "stopEmptyConsumer")
 	numModelsInConsumer := ic.GetNumModels()
 	if numModelsInConsumer == 0 {
+		logger.Debugf("Deleting consumer with no models wit bucket id %s", ic.consumerName)
 		ic.Stop()
 		delete(cm.consumers, ic.consumerName)
 	}

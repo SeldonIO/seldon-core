@@ -49,7 +49,7 @@ const (
 
 type InferKafkaConsumer struct {
 	logger            log.FieldLogger
-	mu                sync.Mutex
+	mu                sync.RWMutex
 	loadedModels      map[string]bool
 	subscribedTopics  map[string]bool
 	workers           []*InferWorker
@@ -196,6 +196,8 @@ func (kc *InferKafkaConsumer) subscribeTopics() error {
 }
 
 func (kc *InferKafkaConsumer) GetNumModels() int {
+	kc.mu.RLock()
+	defer kc.mu.RUnlock()
 	return len(kc.loadedModels)
 }
 
@@ -264,7 +266,7 @@ func (kc *InferKafkaConsumer) RemoveModel(modelName string) error {
 }
 
 func (kc *InferKafkaConsumer) Serve() {
-	logger := kc.logger.WithField("func", "Serve")
+	logger := kc.logger.WithField("func", "Serve").WithField("consumerName", kc.consumerName)
 	run := true
 	// create a cancel and job channel
 	cancelChan := make(chan struct{})
