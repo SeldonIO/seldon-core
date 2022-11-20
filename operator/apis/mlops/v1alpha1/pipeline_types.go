@@ -173,7 +173,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	}
 	return &scheduler.Pipeline{
 		Name:           p.GetName(),
-		Uid:            string(p.UID),
+		Uid:            "", // ID Will be set on scheduler side. IDs don't change on k8s when updates are made so can't use it for each version
 		Steps:          steps,
 		Output:         output,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},

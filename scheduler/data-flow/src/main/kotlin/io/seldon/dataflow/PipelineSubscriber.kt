@@ -120,6 +120,7 @@ class PipelineSubscriber(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
     ) {
+        logger.info("Create pipeline ${metadata.name} version: ${metadata.version} id: ${metadata.id}")
         val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams)
         if (pipeline.size != steps.size) {
             client.pipelineUpdateEvent(
@@ -153,7 +154,7 @@ class PipelineSubscriber(
     }
 
     private suspend fun handleDelete(metadata: PipelineMetadata) {
-        logger.info("Delete pipeline ${metadata.name}")
+        logger.info("Delete pipeline ${metadata.name} version: ${metadata.version} id: ${metadata.id}")
         pipelines
             .remove(metadata.id)
             ?.also { pipeline ->

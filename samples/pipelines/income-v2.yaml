@@ -1,0 +1,14 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: income-prod
+spec:
+  steps:
+    - name: income
+    - name: income-drift
+      batch:
+        size: 20
+  output:
+    steps:
+    - income
+
