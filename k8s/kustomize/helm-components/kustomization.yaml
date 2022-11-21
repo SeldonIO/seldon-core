@@ -30,3 +30,48 @@ patches:
     version: v1
     kind: Service
     name: mesh
+- path: patch_controller_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: seldon-controller-manager
+- path: patch_envoy_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: seldon-envoy
+- path: patch_scheduler_json6902.yaml
+  target:
+    version: v1
+    kind: StatefulSet
+    name: seldon-scheduler
+- path: patch_dataflow_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: dataflow-engine
+- path: patch_hodometer_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: seldon-hodometer
+- path: patch_modelgateway_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: seldon-modelgateway
+- path: patch_pipelinegateway_json6902.yaml
+  target:
+    version: v1
+    kind: Deployment
+    name: seldon-pipelinegateway
+- path: patch_triton_serverconfig_json6902.yaml
+  target:
+    version: v1alpha1
+    kind: ServerConfig
+    name: triton
+- path: patch_mlserver_serverconfig_json6902.yaml
+  target:
+    version: v1alpha1
+    kind: ServerConfig
+    name: mlserver

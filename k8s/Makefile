@@ -50,7 +50,9 @@ create-helm-charts:
 	kustomize build kustomize/helm-servers/ > ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 	sed -n --file=add-helm-toggle-hodometer.sed ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml \
 		> ${HELM_COMPONENTS_BASE}/.components.yaml
-	mv ${HELM_COMPONENTS_BASE}/.components.yaml ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	sed 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/.components.yaml \
+		> ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	rm ${HELM_COMPONENTS_BASE}/.components.yaml
 
 .PHONY: set-chart-version
 set-chart-version:

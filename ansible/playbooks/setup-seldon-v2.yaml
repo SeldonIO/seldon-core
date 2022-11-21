@@ -3,10 +3,9 @@
   hosts: localhost
   vars:
     seldon_system_namespace: seldon-mesh
-
     k8s_manifests_dir: "{{ inventory_dir }}/../k8s/yaml"
-  tasks:
 
+  tasks:
   - name: Create SCV2 CRDs
     kubernetes.core.k8s:
       state: present

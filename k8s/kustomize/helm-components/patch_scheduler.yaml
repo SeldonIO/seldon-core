@@ -17,7 +17,7 @@ spec:
             memory: '{{ .Values.scheduler.resources.memory }}'
         env:
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
-            value: '{{ .Values.security.controlplane.protocol }}'            
+            value: '{{ .Values.security.controlplane.protocol }}'
           - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
             value: '{{ .Values.security.controlplane.ssl.server.secret }}'
           - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -31,7 +31,7 @@ spec:
           - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
             value: '{{ .Values.security.controlplane.ssl.server.clientCaPath }}'
           - name: ENVOY_SECURITY_PROTOCOL
-            value: '{{ .Values.security.envoy.protocol }}'            
+            value: '{{ .Values.security.envoy.protocol }}'
           - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
             value: '{{ .Values.security.envoy.ssl.upstream.client.secret }}'
           - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME

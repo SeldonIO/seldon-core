@@ -81,6 +81,11 @@ hodometer:
   resources:
     cpu: 1m
     memory: 32Mi
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 kafka:
   debug:
@@ -107,6 +112,11 @@ modelgateway:
   resources:
     cpu: 100m
     memory: 1G
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 pipelinegateway:
   image:
@@ -117,6 +127,11 @@ pipelinegateway:
   resources:
     cpu: 100m
     memory: 1G
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 dataflow:
   image:
@@ -128,6 +143,11 @@ dataflow:
   resources:
     cpu: 100m
     memory: 1G
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 controller:
   image:
@@ -138,6 +158,11 @@ controller:
   resources:
     cpu: 10m
     memory: 64Mi
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 envoy:
   image:
@@ -150,6 +175,11 @@ envoy:
     memory: 128Mi
   service:
     type: LoadBalancer
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 scheduler:
   image:
@@ -163,8 +193,19 @@ scheduler:
     storage: 1Gi
   service:
     type: LoadBalancer
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
 
 serverConfig:
+  securityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+
   rclone:
     image:
       pullPolicy: IfNotPresent
