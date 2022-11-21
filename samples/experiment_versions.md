@@ -40,7 +40,7 @@ Let's call all three models individually first.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -49,7 +49,7 @@ Let's call all three models individually first.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris2_1::50]
 
 
 
@@ -58,7 +58,7 @@ Let's call all three models individually first.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris3_1::50]
+    Success: map[:iris3_1::50]
 
 
 We will start an experiment to change the iris endpoint to split traffic with the `iris2` model.
@@ -112,7 +112,7 @@ Now when we call the iris model we should see a roughly 50/50 split between the 
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50 :iris_1::50]
+    Success: map[:iris2_1::58 :iris_1::42]
 
 
 Now we update the experiment to change to a split with the `iris3` model.
@@ -166,7 +166,7 @@ Now we should see a split with the `iris3` model.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris3_1::49 :iris_1::51]
+    Success: map[:iris3_1::44 :iris_1::56]
 
 
 
@@ -185,7 +185,7 @@ Now the experiment has been stopped we check everything as before.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -194,7 +194,7 @@ Now the experiment has been stopped we check everything as before.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris2_1::50]
 
 
 
@@ -203,7 +203,7 @@ Now the experiment has been stopped we check everything as before.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris3_1::50]
+    Success: map[:iris3_1::50]
 
 
 
@@ -254,7 +254,7 @@ Let's call all three models to verify initial conditions.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -263,7 +263,7 @@ Let's call all three models to verify initial conditions.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris2_1::50]
 
 
 
@@ -272,7 +272,7 @@ Let's call all three models to verify initial conditions.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris3_1::50]
+    Success: map[:iris3_1::50]
 
 
 Now we start an experiment to change calls to the `iris` model to split with the `iris2` model.
@@ -326,7 +326,7 @@ Run a set of calls and record which route the traffic took. There should be roug
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50 :iris_1::50]
+    Success: map[:iris2_1::51 :iris_1::49]
 
 
 Now let's change the model we want to experiment to modify to the `iris3` model. Splitting between that and `iris2`.
@@ -380,7 +380,7 @@ Let's check the iris model is now as before but the iris3 model has traffic spli
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -389,7 +389,7 @@ Let's check the iris model is now as before but the iris3 model has traffic spli
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::30 :iris3_1::20]
+    Success: map[:iris2_1::24 :iris3_1::26]
 
 
 
@@ -398,7 +398,7 @@ Let's check the iris model is now as before but the iris3 model has traffic spli
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris2_1::50]
 
 
 
@@ -417,7 +417,7 @@ Finally, let's check now the experiment has stopped as is as at the start.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -426,7 +426,7 @@ Finally, let's check now the experiment has stopped as is as at the start.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris2_1::50]
 
 
 
@@ -435,7 +435,7 @@ Finally, let's check now the experiment has stopped as is as at the start.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris3_1::50]
+    Success: map[:iris3_1::50]
 
 
 

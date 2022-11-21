@@ -19,7 +19,7 @@ MESH_IP
 
 
 
-    '172.21.255.9'
+    '172.19.255.1'
 
 
 
@@ -65,12 +65,12 @@ MESH_IP
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-09-07T14:44:59Z",
+          "lastTransitionTime": "2022-11-16T18:11:41Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-09-07T14:44:59Z",
+          "lastTransitionTime": "2022-11-16T18:11:41Z",
           "status": "True",
           "type": "Ready"
         }
@@ -88,7 +88,7 @@ MESH_IP
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "06c8b42d-820d-42b2-b054-7d7669ca9421",
+    	"id": "de1b3d19-3fcb-4865-b59b-615a5b5f1e69",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -143,12 +143,12 @@ MESH_IP
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-09-07T14:44:26Z",
+          "lastTransitionTime": "2022-11-16T18:06:01Z",
           "status": "True",
           "type": "Ready"
         },
         {
-          "lastTransitionTime": "2022-09-07T14:44:26Z",
+          "lastTransitionTime": "2022-11-16T18:06:01Z",
           "reason": "StatefulSet replicas matches desired replicas",
           "status": "True",
           "type": "StatefulSetReady"
@@ -229,9 +229,9 @@ MESH_IP
     spec:
       default: iris
       candidates:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 
 
@@ -257,7 +257,7 @@ MESH_IP
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::25 :iris_1::25]
+    Success: map[:iris2_1::27 :iris_1::23]
 
 
 
@@ -422,10 +422,6 @@ MESH_IP
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
-        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
       ]
     }
 
@@ -613,10 +609,6 @@ MESH_IP
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
-        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
       ]
     }
 
@@ -682,12 +674,12 @@ MESH_IP
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-08-04T11:59:29Z",
+          "lastTransitionTime": "2022-11-16T18:16:34Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-08-04T11:59:29Z",
+          "lastTransitionTime": "2022-11-16T18:16:34Z",
           "status": "True",
           "type": "Ready"
         }
@@ -705,7 +697,7 @@ MESH_IP
     {
     	"model_name": "income_1",
     	"model_version": "1",
-    	"id": "389eebf2-069b-4a4b-8ae1-005402493469",
+    	"id": "11e439cf-c967-44fd-aa13-baefd9c4d407",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -767,12 +759,12 @@ MESH_IP
     {
       "conditions": [
         {
-          "lastTransitionTime": "2022-08-04T11:59:53Z",
+          "lastTransitionTime": "2022-11-16T18:16:51Z",
           "status": "True",
           "type": "ModelReady"
         },
         {
-          "lastTransitionTime": "2022-08-04T11:59:53Z",
+          "lastTransitionTime": "2022-11-16T18:16:51Z",
           "status": "True",
           "type": "Ready"
         }
@@ -790,7 +782,7 @@ MESH_IP
     {
     	"model_name": "income-explainer_1",
     	"model_version": "1",
-    	"id": "02b6d055-e587-4485-a36c-d09b5830748e",
+    	"id": "7aa0f8ec-a68a-4141-a757-56ebd39f2845",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -807,7 +799,7 @@ MESH_IP
     				"headers": null
     			},
     			"data": [
-    				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.7.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"precision\": 0.9938650306748467, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 5, 8], \"mean\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"precision\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], \"examples\": [{\"covered_true\": [[66, 0, 1, 1, 0, 0, 4, 1, 0, 0, 6, 9], [36, 2, 1, 1, 5, 1, 4, 0, 0, 0, 60, 9], [40, 4, 1, 1, 8, 0, 4, 1, 0, 0, 75, 9], [42, 4, 1, 1, 6, 4, 4, 1, 0, 0, 45, 0], [49, 2, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [37, 4, 1, 1, 5, 0, 4, 1, 0, 0, 55, 9], [61, 4, 5, 1, 6, 0, 4, 1, 3103, 0, 50, 9], [54, 4, 1, 1, 7, 0, 4, 1, 0, 0, 40, 9], [35, 2, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [24, 4, 1, 1, 6, 1, 4, 1, 0, 0, 47, 9]], \"covered_false\": [[38, 6, 5, 1, 5, 0, 2, 1, 99999, 0, 60, 9], [40, 4, 1, 1, 7, 5, 1, 0, 7688, 0, 52, 6], [43, 4, 5, 1, 5, 1, 4, 1, 0, 0, 50, 9], [51, 4, 1, 1, 8, 1, 0, 1, 0, 0, 50, 9], [42, 4, 1, 1, 8, 0, 4, 1, 0, 2415, 60, 9], [22, 4, 1, 1, 5, 1, 0, 0, 14344, 0, 40, 9], [46, 4, 5, 1, 8, 1, 4, 0, 27828, 0, 50, 9], [50, 4, 1, 1, 8, 0, 4, 1, 7298, 0, 50, 9], [43, 1, 1, 1, 8, 1, 4, 1, 0, 0, 40, 9], [56, 6, 5, 1, 2, 0, 4, 1, 0, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[36, 4, 1, 1, 6, 3, 4, 1, 0, 1902, 45, 9], [55, 4, 2, 1, 8, 3, 4, 1, 0, 0, 60, 9], [46, 4, 2, 1, 5, 3, 4, 1, 0, 0, 70, 9], [45, 2, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [55, 5, 5, 1, 8, 3, 4, 1, 0, 0, 60, 9], [24, 4, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [58, 6, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [34, 4, 5, 1, 4, 3, 2, 0, 0, 0, 40, 0], [30, 4, 1, 1, 4, 3, 4, 1, 0, 0, 60, 4], [39, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 1]], \"covered_false\": [[45, 2, 1, 1, 2, 3, 1, 1, 7298, 0, 40, 9], [42, 1, 5, 1, 8, 3, 4, 0, 14084, 0, 60, 9], [46, 4, 1, 1, 2, 3, 4, 1, 15024, 0, 40, 9], [36, 4, 5, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [47, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [42, 2, 1, 1, 1, 3, 4, 0, 99999, 0, 40, 9], [55, 4, 5, 1, 5, 3, 4, 1, 15024, 0, 50, 0], [48, 1, 5, 1, 8, 3, 4, 0, 10520, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[27, 4, 5, 1, 8, 3, 4, 0, 0, 0, 25, 9], [45, 1, 1, 1, 8, 3, 4, 0, 0, 0, 40, 9], [32, 4, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [81, 6, 1, 1, 5, 3, 4, 0, 0, 1668, 3, 4], [44, 2, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [44, 7, 5, 1, 8, 3, 4, 1, 0, 0, 40, 9], [41, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [48, 7, 2, 1, 5, 3, 4, 1, 0, 0, 50, 9], [32, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 9], [68, 4, 5, 1, 5, 3, 4, 1, 0, 0, 18, 0]], \"covered_false\": [[67, 5, 1, 1, 8, 3, 4, 1, 0, 2392, 75, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
+    				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.8.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Occupation = Admin\", \"Capital Gain <= 0.00\", \"Capital Loss <= 0.00\"], \"precision\": 0.9888392857142857, \"coverage\": 0.03760569648420116, \"raw\": {\"feature\": [3, 4, 8, 9], \"mean\": [0.7713498622589532, 0.9002217294900222, 0.9636363636363636, 0.9888392857142857], \"precision\": [0.7713498622589532, 0.9002217294900222, 0.9636363636363636, 0.9888392857142857], \"coverage\": [0.3037383177570093, 0.040943480195816645, 0.03871829105473965, 0.03760569648420116], \"examples\": [{\"covered_true\": [[39, 4, 2, 1, 5, 1, 4, 1, 0, 0, 45, 9], [56, 4, 5, 1, 8, 0, 4, 1, 0, 0, 40, 9], [62, 6, 1, 1, 5, 0, 4, 1, 0, 0, 60, 9], [48, 4, 1, 1, 6, 0, 4, 1, 0, 0, 45, 9], [29, 4, 1, 1, 1, 1, 4, 0, 0, 0, 40, 9], [46, 1, 1, 1, 5, 1, 4, 1, 0, 0, 40, 9], [55, 4, 2, 1, 5, 0, 4, 1, 0, 0, 40, 9], [37, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [30, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [39, 4, 5, 1, 1, 1, 4, 1, 0, 0, 40, 0]], \"covered_false\": [[25, 5, 1, 1, 6, 1, 4, 1, 0, 0, 45, 9], [54, 4, 5, 1, 8, 0, 4, 1, 0, 0, 45, 9], [38, 4, 5, 1, 8, 0, 4, 1, 0, 0, 60, 9], [50, 4, 1, 1, 6, 1, 4, 1, 0, 0, 45, 9], [43, 4, 1, 1, 5, 5, 4, 0, 15024, 0, 50, 9], [46, 2, 1, 1, 5, 1, 4, 0, 0, 1408, 40, 9], [42, 4, 1, 1, 4, 0, 4, 1, 7298, 0, 45, 9], [46, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 45, 9], [49, 7, 5, 1, 6, 0, 4, 1, 99999, 0, 80, 9], [47, 4, 1, 1, 8, 0, 4, 1, 0, 0, 60, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[46, 4, 1, 1, 1, 0, 4, 1, 0, 0, 35, 9], [49, 7, 2, 1, 1, 4, 4, 1, 0, 0, 50, 9], [45, 4, 1, 1, 1, 5, 1, 0, 5178, 0, 40, 7], [63, 0, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9], [47, 4, 1, 1, 1, 0, 4, 1, 0, 0, 60, 9], [24, 4, 1, 1, 1, 1, 4, 1, 0, 0, 30, 9], [40, 4, 5, 1, 1, 3, 4, 0, 0, 0, 40, 9], [50, 4, 5, 1, 1, 0, 4, 1, 0, 0, 50, 9], [55, 1, 5, 1, 1, 0, 4, 1, 0, 0, 60, 9], [46, 1, 5, 1, 1, 0, 4, 1, 0, 0, 40, 1]], \"covered_false\": [[63, 4, 1, 1, 1, 5, 4, 0, 7688, 0, 36, 9], [46, 2, 2, 1, 1, 5, 4, 0, 0, 1902, 52, 9], [32, 4, 5, 1, 1, 1, 4, 1, 0, 2824, 55, 9], [56, 4, 1, 1, 1, 0, 4, 1, 5178, 0, 44, 9], [40, 4, 2, 1, 1, 0, 4, 1, 0, 0, 40, 9], [45, 4, 5, 1, 1, 0, 4, 1, 15024, 0, 60, 9], [44, 2, 5, 1, 1, 0, 4, 1, 15024, 0, 35, 9], [58, 4, 1, 1, 1, 0, 4, 1, 7688, 0, 50, 9], [40, 5, 5, 1, 1, 5, 4, 0, 15024, 0, 30, 6]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[52, 7, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9], [55, 4, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9], [32, 6, 1, 1, 1, 4, 2, 0, 0, 0, 30, 9], [24, 4, 1, 1, 1, 1, 4, 1, 0, 0, 55, 9], [44, 4, 1, 1, 1, 5, 4, 0, 0, 0, 20, 9], [34, 4, 1, 1, 1, 3, 4, 1, 0, 0, 40, 9], [39, 4, 1, 1, 1, 4, 4, 0, 0, 0, 50, 9], [40, 6, 1, 1, 1, 0, 4, 1, 0, 0, 45, 9], [31, 2, 1, 1, 1, 1, 4, 1, 0, 0, 45, 9], [43, 4, 5, 1, 1, 4, 4, 0, 0, 2547, 40, 9]], \"covered_false\": [[51, 0, 2, 1, 1, 1, 4, 1, 0, 2824, 40, 9], [46, 4, 2, 1, 1, 0, 4, 1, 0, 2415, 55, 9], [44, 5, 5, 1, 1, 0, 4, 1, 0, 2415, 55, 9], [68, 7, 2, 1, 1, 0, 4, 1, 0, 2377, 60, 9], [61, 7, 2, 1, 1, 0, 4, 1, 0, 0, 40, 0]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[47, 4, 1, 1, 1, 0, 4, 1, 0, 0, 40, 8], [32, 4, 1, 1, 1, 3, 4, 0, 0, 0, 40, 9], [38, 1, 5, 1, 1, 0, 4, 1, 0, 0, 40, 6], [31, 4, 1, 1, 1, 1, 4, 0, 0, 0, 42, 9], [37, 4, 1, 1, 1, 0, 4, 1, 0, 0, 45, 9], [47, 4, 1, 1, 1, 0, 4, 1, 0, 0, 50, 9], [22, 7, 1, 1, 1, 0, 4, 1, 0, 0, 20, 9], [66, 4, 1, 1, 1, 0, 4, 1, 0, 0, 99, 9], [23, 4, 1, 1, 1, 3, 2, 1, 0, 0, 10, 9], [40, 4, 1, 1, 1, 0, 4, 1, 0, 0, 45, 9]], \"covered_false\": [[33, 4, 2, 1, 1, 0, 4, 1, 0, 0, 60, 9], [47, 1, 2, 1, 1, 0, 4, 1, 0, 0, 40, 9], [46, 4, 1, 1, 1, 1, 2, 0, 0, 0, 40, 9], [52, 5, 2, 1, 1, 0, 4, 1, 0, 0, 65, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Occupation = Admin\", \"Capital Gain <= 0.00\", \"Capital Loss <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
     			]
     		}
     	]

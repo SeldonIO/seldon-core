@@ -3,9 +3,9 @@
 We will show:
 
  * Model inference to a Tensorflow model
-   * REST and gRPC using seldon CLI and with curl and grpcurl
+   * REST and gRPC using seldon CLI, curl and grpcurl
  * Pipeline inference
-   * REST and gRPC using seldon CLI and with curl and grpcurl
+   * REST and gRPC using seldon CLI, curl and grpcurl
  
 
 
@@ -206,7 +206,7 @@ Wait for the model to be ready.
 !seldon pipeline status tfsimple -w PipelineReady
 ```
 
-    {"pipelineName":"tfsimple", "versions":[{"pipeline":{"name":"tfsimple", "uid":"ccvfbn54nntrbfkuk5i0", "version":1, "steps":[{"name":"tfsimple1"}], "output":{"steps":["tfsimple1.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-10-06T15:35:56.699334091Z"}}]}
+    {"pipelineName":"tfsimple", "versions":[{"pipeline":{"name":"tfsimple", "uid":"cdqhbfkg9lks73eauglg", "version":1, "steps":[{"name":"tfsimple1"}], "output":{"steps":["tfsimple1.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-16T16:54:22.856020153Z"}}]}
 
 
 

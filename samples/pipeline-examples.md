@@ -103,7 +103,7 @@ The output of the Pipeline is the output from `tfsimple2`.
         {
           "pipeline": {
             "name": "tfsimples",
-            "uid": "cd3fu3t69ijcc6s8q630",
+            "uid": "cdqjijpqa12c739ab3p0",
             "version": 1,
             "steps": [
               {
@@ -131,7 +131,7 @@ The output of the Pipeline is the output from `tfsimple2`.
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-12T17:53:19.943978110Z"
+            "lastChangeTimestamp": "2022-11-16T19:26:08.037067065Z"
           }
         }
       ]
@@ -278,12 +278,12 @@ We use the Seldon CLI `pipeline inspect` feature to look at the data for all ste
 !seldon pipeline inspect tfsimples
 ```
 
-    seldon.default.model.tfsimple1.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-    seldon.default.model.tfsimple1.outputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
-    seldon.default.model.tfsimple2.inputs	cd3fu5jf39s357kil0gg	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-    seldon.default.model.tfsimple2.outputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
-    seldon.default.pipeline.tfsimples.inputs	cd3fu5jf39s357kil0gg	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-    seldon.default.pipeline.tfsimples.outputs	cd3fu5jf39s357kil0gg	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
+    seldon.default.model.tfsimple1.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+    seldon.default.model.tfsimple1.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
+    seldon.default.model.tfsimple2.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+    seldon.default.model.tfsimple2.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple2_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
+    seldon.default.pipeline.tfsimples.inputs	cdqjilab951s73aqg830	{"modelName":"tfsimples", "inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+    seldon.default.pipeline.tfsimples.outputs	cdqjilab951s73aqg830	{"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
 
 
 Next, we look get the output as json and use the `jq` tool to get just one value.
@@ -487,7 +487,7 @@ In the pipeline below for the input to `tfsimple3` we join 1 output tensor each 
         {
           "pipeline": {
             "name": "join",
-            "uid": "cd3crroe1k2338n6a7mg",
+            "uid": "cdqjit1qa12c739ab3pg",
             "version": 1,
             "steps": [
               {
@@ -519,7 +519,7 @@ In the pipeline below for the input to `tfsimple3` we join 1 output tensor each 
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-12T14:23:43.855021293Z"
+            "lastChangeTimestamp": "2022-11-16T19:26:44.706282241Z"
           }
         }
       ]
@@ -734,7 +734,7 @@ Here we assume the `conditional` model can output two tensors OUTPUT0 and OUTPUT
         {
           "pipeline": {
             "name": "tfsimple-conditional",
-            "uid": "cd3fo8t69ijcc6s8q62g",
+            "uid": "cdqjj21qa12c739ab3q0",
             "version": 1,
             "steps": [
               {
@@ -772,7 +772,7 @@ Here we assume the `conditional` model can output two tensors OUTPUT0 and OUTPUT
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-12T17:40:52.098565458Z"
+            "lastChangeTimestamp": "2022-11-16T19:27:04.928498607Z"
           }
         }
       ]
@@ -957,7 +957,7 @@ This pipeline shows how we can access pipeline inputs INPUT0 and INPUT1 from dif
         {
           "pipeline": {
             "name": "pipeline-inputs",
-            "uid": "cd3fgmge1k2338n6a7p0",
+            "uid": "cdqjj89qa12c739ab3qg",
             "version": 1,
             "steps": [
               {
@@ -991,7 +991,7 @@ This pipeline shows how we can access pipeline inputs INPUT0 and INPUT1 from dif
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-12T17:24:42.901433282Z"
+            "lastChangeTimestamp": "2022-11-16T19:27:30.024128982Z"
           }
         }
       ]
@@ -1159,7 +1159,7 @@ Here we required tensors names `ok1` or `ok2` to exist on pipeline inputs to run
         {
           "pipeline": {
             "name": "trigger-joins",
-            "uid": "cd3fhc8e1k2338n6a7pg",
+            "uid": "cdqjjdpqa12c739ab3r0",
             "version": 1,
             "steps": [
               {
@@ -1196,7 +1196,7 @@ Here we required tensors names `ok1` or `ok2` to exist on pipeline inputs to run
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-10-12T17:26:10.325213017Z"
+            "lastChangeTimestamp": "2022-11-16T19:27:51.550445363Z"
           }
         }
       ]

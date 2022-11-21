@@ -1,0 +1,16 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: iris-pipeline
+spec:
+  steps:
+    - name: first
+    - name: second
+    - name: third
+      inputs:
+        - first
+      triggers:
+        -
+  output:
+    steps:
+    - iris

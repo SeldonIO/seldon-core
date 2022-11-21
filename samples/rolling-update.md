@@ -18,7 +18,7 @@ We use a simple sklearn iris classification model and do a rolling update
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "d17c062e-6c19-43a6-812a-43aa46c2b109",
+    	"id": "20aee4f5-fbc0-4406-9b2f-04e729f6bc78",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -47,7 +47,7 @@ We use a simple sklearn iris classification model and do a rolling update
 ```
 
     {}
-    Success: map[:iris_1::362 :iris_2::1782]
+    Success: map[:iris_1::428 :iris_2::1958]
 
 
 

@@ -46,7 +46,7 @@ Load the model
     {
     	"model_name": "text-gen_1",
     	"model_version": "1",
-    	"id": "951a5db1-2511-4304-b6a1-1145c5d7ba1a",
+    	"id": "5412f8b0-f440-4e33-851c-ac3ff754b9c0",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -63,7 +63,7 @@ Load the model
     				"headers": null
     			},
     			"data": [
-    				"{\"generated_text\": \"Once upon a time in a galaxy far away from the Milky Way, it looks very different. Scientists have discovered that star clusters are at least 1.5 times smaller than the sun and contain the biggest known mass of all the solar masses in the universe\"}"
+    				"[{\"generated_text\": \"Once upon a time in a galaxy far away, the Human Race was destroyed at the hands of an evil machine. But in a galaxy far away, the Human Race was destroyed at the hands of an evil machine. But in a galaxy far away,\"}]"
     			]
     		}
     	]
@@ -76,7 +76,7 @@ Load the model
    '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZQo="]},"datatype":"BYTES","shape":[1]}]}' 
 ```
 
-    {"modelName":"text-gen_1", "modelVersion":"1", "outputs":[{"name":"output", "datatype":"BYTES", "shape":["1"], "parameters":{"content_type":{"stringParam":"str"}}, "contents":{"bytesContents":["eyJnZW5lcmF0ZWRfdGV4dCI6ICJPbmNlIHVwb24gYSB0aW1lXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG5cblxuXG4ifQ=="]}}]}
+    {"modelName":"text-gen_1", "modelVersion":"1", "outputs":[{"name":"output", "datatype":"BYTES", "shape":["1"], "parameters":{"content_type":{"stringParam":"str"}}, "contents":{"bytesContents":["W3siZ2VuZXJhdGVkX3RleHQiOiAiT25jZSB1cG9uIGEgdGltZVxuXG5Zb3UgaGF2ZSB0YWtlbiBhIGJpZyB0dW1ibGUgaW50byB5b3VyIGxpdmluZyByb29tIGFuZCBJIGNhbiBzZWUgdGhhdCB5b3UgYXJlIGxvb2tpbmcgYXQgaGltXG5Zb3Ugd2FudCB0byBzdG9wP1xuWW91IHNlZSBhbiBleWU/XG5Zb3Uga25vdyB3aGF0P1xuU29tZXRoaW5nJ3MgYmVlbiBoYXBwZW5pbmcgaW4geW91ciJ9XQ=="]}}]}
 
 
 Unload the model

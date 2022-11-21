@@ -7,7 +7,7 @@
 ```python
 !seldon model load -f ./models/sklearn-iris-gs.yaml
 !seldon model load -f ./models/tfsimple1.yaml
-!seldon model load -f ./experiments/sklearn2.yaml
+!seldon model load -f ./models/sklearn2.yaml
 !seldon model load -f ./models/cifar10.yaml
 !seldon experiment start -f ./experiments/ab-default-model.yaml 
 !seldon pipeline load -f ./pipelines/cifar10.yaml
@@ -26,12 +26,12 @@
 !seldon model list
 ```
 
-    model		state			reason
-    -----		-----			------
-    iris2		ModelAvailable		
-    cifar10		ModelProgressing	
-    iris		ModelAvailable		
-    tfsimple1	ModelAvailable		
+    model		state		reason
+    -----		-----		------
+    iris		ModelAvailable	
+    tfsimple1	ModelAvailable	
+    iris2		ModelAvailable	
+    cifar10		ModelAvailable	
 
 
 
@@ -77,8 +77,8 @@
 
     server		replicas	models
     ------		--------	------
-    triton		1		2
     mlserver	1		2
+    triton		1		2
 
 
 
@@ -96,9 +96,9 @@
 !seldon pipeline list
 ```
 
-    pipeline
-    --------
-    cifar10-production
+    pipeline		state		reason
+    --------		-----		------
+    cifar10-production	PipelineReady	created pipeline
 
 
 
@@ -119,8 +119,7 @@
     {}
 
 
-### Badly formed model
-
+### Resource Errors from CLI
 
 
 ```python
@@ -131,7 +130,6 @@
     kind: Model
     metadata:
       name: iris
-      namespace: seldon-mesh
     spec:
       storagUri: "gs://seldon-models/mlserver/iris"
       requirements:
@@ -144,19 +142,6 @@
 ```
 
     Error: json: unknown field "storagUri"
-    Usage:
-      seldon model load [flags]
-    
-    Flags:
-      -f, --file-path string        model file to load
-      -h, --help                    help for load
-          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-    
-    Global Flags:
-      -r, --show-request    show request
-      -o, --show-response   show response (default true)
-    
-    json: unknown field "storagUri"
 
 
 
@@ -168,7 +153,6 @@
     kind: Pipeline
     metadata:
       name: tfsimple-conditional
-      namespace: seldon-mesh
     spec:
       steps:
       - name: conditional
@@ -195,19 +179,6 @@
 ```
 
     Error: json: unknown field "input"
-    Usage:
-      seldon pipeline load [flags]
-    
-    Flags:
-      -f, --file-path string        pipeline file to load
-      -h, --help                    help for load
-          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-    
-    Global Flags:
-      -r, --show-request    show request
-      -o, --show-response   show response (default true)
-    
-    json: unknown field "input"
 
 
 
@@ -219,13 +190,12 @@
     kind: Experiment
     metadata:
       name: experiment-sample
-      namespace: seldon-mesh
     spec:
-      defaultModel: iris
+      default: iris
       candidate:
-      - modelName: iris
+      - name: iris
         weight: 50
-      - modelName: iris2
+      - name: iris2
         weight: 50
 
 
@@ -235,19 +205,23 @@
 ```
 
     Error: json: unknown field "candidate"
-    Usage:
-      seldon experiment start [flags]
-    
-    Flags:
-      -f, --file-path string        model file to load
-      -h, --help                    help for start
-          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-    
-    Global Flags:
-      -r, --show-request    show request
-      -o, --show-response   show response (default true)
-    
-    json: unknown field "candidate"
+
+
+
+```python
+!cat ./pipelines/error-step-name.yaml
+```
+
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Pipeline
+    metadata:
+      name: iris
+    spec:
+      steps:
+        - name: iris
+      output:
+        steps:
+        - iris
 
 
 
@@ -255,43 +229,76 @@
 !seldon pipeline load -f ./pipelines/error-step-name.yaml
 ```
 
-    Error: rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
-    Usage:
-      seldon pipeline load [flags]
-    
-    Flags:
-      -f, --file-path string        pipeline file to load
-      -h, --help                    help for load
-          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-    
-    Global Flags:
-      -r, --show-request    show request
-      -o, --show-response   show response (default true)
-    
-    rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name
+    Error: rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name as pipeline name
 
 
-## Failed scheduling
+
+```python
+!cat ./pipelines/error-empty-input.yaml
+```
+
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Pipeline
+    metadata:
+      name: iris-pipeline
+    spec:
+      steps:
+        - name: first
+        - name: second
+          inputs:
+            -
+      output:
+        steps:
+        - iris
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/error-empty-input.yaml
+```
+
+    Error: rpc error: code = FailedPrecondition desc = pipeline iris-pipeline step second has an empty input
+
+
+
+```python
+!cat ./pipelines/error-empty-trigger.yaml
+```
+
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Pipeline
+    metadata:
+      name: iris-pipeline
+    spec:
+      steps:
+        - name: first
+        - name: second
+        - name: third
+          inputs:
+            - first
+          triggers:
+            -
+      output:
+        steps:
+        - iris
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/error-empty-trigger.yaml
+```
+
+    Error: rpc error: code = FailedPrecondition desc = pipeline iris-pipeline step third has an empty trigger
+
+
+## Failed scheduling errors from CLI
 
 
 ```python
 !seldon model load -f ./models/error-bad-capabilities.yaml
 ```
 
-    Error: rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
-    Usage:
-      seldon model load [flags]
-    
-    Flags:
-      -f, --file-path string        model file to load
-      -h, --help                    help for load
-          --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-    
-    Global Flags:
-      -r, --show-request    show request
-      -o, --show-response   show response (default true)
-    
-    rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt] failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect lightgbm mlflow python sklearn spark-mlib xgboost]]
+    Error: rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect alibi-explain huggingface lightgbm mlflow python sklearn spark-mlib xgboost] failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt]]
 
 
 
@@ -301,3 +308,8 @@
 
     {}
 
+
+
+```python
+
+```

@@ -52,7 +52,7 @@ Do a REST inference call
     {
     	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "0cae46c3-9c74-4e0b-b291-0d724c52c94c",
+    	"id": "e08dda16-776e-40e9-b556-273d8bf851ae",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -417,13 +417,13 @@ Wait for both models to be ready.
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-10-12T14:10:36.434248012Z"
+              "lastChangeTimestamp": "2022-11-15T10:45:30.088668539Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-10-12T14:10:36.434248012Z"
+            "lastChangeTimestamp": "2022-11-15T10:45:30.088668539Z"
           },
           "modelDefn": {
             "meta": {
@@ -437,8 +437,7 @@ Wait for both models to be ready.
               ]
             },
             "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
+              "replicas": 1
             }
           }
         }
@@ -454,13 +453,13 @@ Wait for both models to be ready.
           "modelReplicaState": {
             "0": {
               "state": "Available",
-              "lastChangeTimestamp": "2022-10-12T14:10:37.091062717Z"
+              "lastChangeTimestamp": "2022-11-15T10:45:30.088816590Z"
             }
           },
           "state": {
             "state": "ModelAvailable",
             "availableReplicas": 1,
-            "lastChangeTimestamp": "2022-10-12T14:10:37.091062717Z"
+            "lastChangeTimestamp": "2022-11-15T10:45:30.088816590Z"
           },
           "modelDefn": {
             "meta": {
@@ -474,8 +473,7 @@ Wait for both models to be ready.
               ]
             },
             "deploymentSpec": {
-              "replicas": 1,
-              "minReplicas": 1
+              "replicas": 1
             }
           }
         }
@@ -538,7 +536,7 @@ Run a set of calls and record which route the traffic took. There should be roug
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::42 :iris_1::58]
+    Success: map[:iris2_1::41 :iris_1::59]
 
 
 Run one more request
@@ -550,9 +548,9 @@ Run one more request
 ```
 
     {
-    	"model_name": "iris2_1",
+    	"model_name": "iris_1",
     	"model_version": "1",
-    	"id": "b73cf845-cf52-453e-a456-946ba696c4a1",
+    	"id": "35a7fce6-db28-4229-ba35-dd2c1db02505",
     	"parameters": {
     		"content_type": null,
     		"headers": null
@@ -582,7 +580,7 @@ We will test REST and gRPC.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris_1::50]
 
 
 
@@ -591,7 +589,7 @@ We will test REST and gRPC.
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' 
 ```
 
-    map[:iris2_1::50]
+    Success: map[:iris_1::50]
 
 
 Stop the experiment
@@ -612,7 +610,7 @@ Show the requests all go to original model now.
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 ```
 
-    map[:iris_1::100]
+    Success: map[:iris_1::100]
 
 
 Unload both models.

@@ -3,7 +3,7 @@
 
 ```python
 import os
-os.environ["NAMESPACE"] = "seldon"
+os.environ["NAMESPACE"] = "seldon-mesh"
 ```
 
 
@@ -18,7 +18,7 @@ MESH_IP
 
 
 
-    '172.19.255.12'
+    '172.19.255.1'
 
 
 
@@ -115,11 +115,9 @@ MESH_IP
 ```
 
     model.mlops.seldon.io/iris condition met
-    model.mlops.seldon.io/tfsimple condition met
     model.mlops.seldon.io/tfsimple1 condition met
     pipeline.mlops.seldon.io/iris-pipeline condition met
     pipeline.mlops.seldon.io/tfsimple condition met
-    pipeline.mlops.seldon.io/tfsimple-pipeline condition met
     model.mlops.seldon.io/tfsimple1 condition met
     pipeline.mlops.seldon.io/tfsimple condition met
 
@@ -135,7 +133,7 @@ MESH_IP
     {
       "model_name": "iris_1",
       "model_version": "1",
-      "id": "3e60ef91-4422-4989-85c6-05d54a0c7473",
+      "id": "a67233c2-2f8c-4fbc-a87e-4e4d3d034c9f",
       "parameters": {
         "content_type": null,
         "headers": null
@@ -181,12 +179,12 @@ MESH_IP
 
 
 ```python
-!seldon model infer tfsimple --inference-host ${MESH_IP}:80 \
+!seldon model infer tfsimple1 --inference-host ${MESH_IP}:80 \
   '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 
     {
-      "model_name": "tfsimple_1",
+      "model_name": "tfsimple1_1",
       "model_version": "1",
       "outputs": [
         {
@@ -221,7 +219,7 @@ MESH_IP
 
 
 ```python
-!seldon pipeline infer tfsimple-pipeline --inference-host ${MESH_IP}:80 \
+!seldon pipeline infer tfsimple --inference-host ${MESH_IP}:80 \
   '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 
@@ -317,11 +315,21 @@ MESH_IP
 mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris-output.txt --workers 5 
 ```
 
-    2022-10-10 10:12:51,214 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 10:12:51,217 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 10:12:51,217 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-    2022-10-10 10:12:51,217 [mlserver] INFO - output file path: /tmp/iris-output.txt
-    2022-10-10 10:12:51,408 [mlserver] INFO - Time taken: 0.19 seconds
+    2022-11-16 18:24:17,272 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-11-16 18:24:17,273 [mlserver] INFO - server url: 172.19.255.1
+    2022-11-16 18:24:17,273 [mlserver] INFO - model name: iris
+    2022-11-16 18:24:17,273 [mlserver] INFO - request headers: {}
+    2022-11-16 18:24:17,273 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+    2022-11-16 18:24:17,273 [mlserver] INFO - output file path: /tmp/iris-output.txt
+    2022-11-16 18:24:17,273 [mlserver] INFO - workers: 5
+    2022-11-16 18:24:17,273 [mlserver] INFO - retries: 3
+    2022-11-16 18:24:17,273 [mlserver] INFO - batch interval: 0.0
+    2022-11-16 18:24:17,274 [mlserver] INFO - batch jitter: 0.0
+    2022-11-16 18:24:17,274 [mlserver] INFO - connection timeout: 60
+    2022-11-16 18:24:17,274 [mlserver] INFO - micro-batch size: 1
+    2022-11-16 18:24:17,420 [mlserver] INFO - Finalizer: processed instances: 100
+    2022-11-16 18:24:17,421 [mlserver] INFO - Total processed instances: 100
+    2022-11-16 18:24:17,421 [mlserver] INFO - Time taken: 0.15 seconds
 
 
 
@@ -330,11 +338,21 @@ mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris
 mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-input.txt -o /tmp/iris-pipeline-output.txt --workers 5
 ```
 
-    2022-10-10 10:12:53,067 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 10:12:53,071 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 10:12:53,071 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-    2022-10-10 10:12:53,071 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
-    2022-10-10 10:12:53,374 [mlserver] INFO - Time taken: 0.30 seconds
+    2022-11-16 18:25:18,651 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-11-16 18:25:18,653 [mlserver] INFO - server url: 172.19.255.1
+    2022-11-16 18:25:18,653 [mlserver] INFO - model name: iris-pipeline.pipeline
+    2022-11-16 18:25:18,653 [mlserver] INFO - request headers: {}
+    2022-11-16 18:25:18,653 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+    2022-11-16 18:25:18,653 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
+    2022-11-16 18:25:18,653 [mlserver] INFO - workers: 5
+    2022-11-16 18:25:18,653 [mlserver] INFO - retries: 3
+    2022-11-16 18:25:18,653 [mlserver] INFO - batch interval: 0.0
+    2022-11-16 18:25:18,653 [mlserver] INFO - batch jitter: 0.0
+    2022-11-16 18:25:18,653 [mlserver] INFO - connection timeout: 60
+    2022-11-16 18:25:18,653 [mlserver] INFO - micro-batch size: 1
+    2022-11-16 18:25:18,963 [mlserver] INFO - Finalizer: processed instances: 100
+    2022-11-16 18:25:18,963 [mlserver] INFO - Total processed instances: 100
+    2022-11-16 18:25:18,963 [mlserver] INFO - Time taken: 0.31 seconds
 
 
 
@@ -345,20 +363,19 @@ mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-inpu
     {
       "model_name": "iris_1",
       "model_version": "1",
-      "id": "75470ffc-e56f-4e41-9b3f-c0b5c236833f",
+      "id": "b6946102-680d-4b99-b3ec-2488113e8b18",
       "parameters": {
-        "content_type": null,
-        "headers": null,
-        "batch_index": 0
+        "batch_index": 1,
+        "inference_id": "b6946102-680d-4b99-b3ec-2488113e8b18"
       },
       "outputs": [
         {
           "name": "predict",
           "shape": [
+            1,
             1
           ],
           "datatype": "INT64",
-          "parameters": null,
           "data": [
             0
           ]
@@ -374,21 +391,23 @@ mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-inpu
 
     [1;39m{
       [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
-      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-        [1;39m{
-          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-            [0;39m0[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"predict"[0m[1;39m,
-          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-            [0;39m1[0m[1;39m
-          [1;39m][0m[1;39m,
-          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT64"[0m[1;39m
-        [1;39m}[0m[1;39m
-      [1;39m][0m[1;39m,
+      [0m[34;1m"id"[0m[1;39m: [0m[0;32m"0016feb9-781d-44c9-85ff-da65afd6842f"[0m[1;39m,
       [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{
         [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
-      [1;39m}[0m[1;39m
+      [1;39m}[0m[1;39m,
+      [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
+        [1;39m{
+          [0m[34;1m"name"[0m[1;39m: [0m[0;32m"predict"[0m[1;39m,
+          [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
+            [0;39m1[0m[1;39m,
+            [0;39m1[0m[1;39m
+          [1;39m][0m[1;39m,
+          [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT64"[0m[1;39m,
+          [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
+            [0;39m0[0m[1;39m
+          [1;39m][0m[1;39m
+        [1;39m}[0m[1;39m
+      [1;39m][0m[1;39m
     [1;39m}[0m
 
 
@@ -460,27 +479,47 @@ mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-inpu
 
 ```bash
 %%bash
-mlserver infer -u ${MESH_IP} -m tfsimple -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5 -b
+mlserver infer -u ${MESH_IP} -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5 -b
 ```
 
-    2022-10-10 10:12:55,454 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 10:12:55,457 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 10:12:55,457 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-    2022-10-10 10:12:55,457 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
-    2022-10-10 10:12:55,628 [mlserver] INFO - Time taken: 0.17 seconds
+    2022-11-16 18:26:08,522 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-11-16 18:26:08,523 [mlserver] INFO - server url: 172.19.255.1
+    2022-11-16 18:26:08,523 [mlserver] INFO - model name: tfsimple1
+    2022-11-16 18:26:08,523 [mlserver] INFO - request headers: {}
+    2022-11-16 18:26:08,523 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+    2022-11-16 18:26:08,523 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
+    2022-11-16 18:26:08,523 [mlserver] INFO - workers: 5
+    2022-11-16 18:26:08,523 [mlserver] INFO - retries: 3
+    2022-11-16 18:26:08,523 [mlserver] INFO - batch interval: 0.0
+    2022-11-16 18:26:08,523 [mlserver] INFO - batch jitter: 0.0
+    2022-11-16 18:26:08,523 [mlserver] INFO - connection timeout: 60
+    2022-11-16 18:26:08,523 [mlserver] INFO - micro-batch size: 1
+    2022-11-16 18:26:08,620 [mlserver] INFO - Finalizer: processed instances: 100
+    2022-11-16 18:26:08,620 [mlserver] INFO - Total processed instances: 100
+    2022-11-16 18:26:08,620 [mlserver] INFO - Time taken: 0.10 seconds
 
 
 
 ```bash
 %%bash
-mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-pipeline-output.txt --workers 5
+mlserver infer -u ${MESH_IP} -m tfsimple.pipeline -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-pipeline-output.txt --workers 5
 ```
 
-    2022-10-10 10:12:57,269 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-    2022-10-10 10:12:57,273 [mlserver] INFO - Server url: 172.19.255.12
-    2022-10-10 10:12:57,273 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-    2022-10-10 10:12:57,273 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
-    2022-10-10 10:12:57,592 [mlserver] INFO - Time taken: 0.32 seconds
+    2022-11-16 18:26:48,819 [mlserver] INFO - Using asyncio event-loop policy: uvloop
+    2022-11-16 18:26:48,820 [mlserver] INFO - server url: 172.19.255.1
+    2022-11-16 18:26:48,820 [mlserver] INFO - model name: tfsimple.pipeline
+    2022-11-16 18:26:48,820 [mlserver] INFO - request headers: {}
+    2022-11-16 18:26:48,820 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+    2022-11-16 18:26:48,820 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
+    2022-11-16 18:26:48,820 [mlserver] INFO - workers: 5
+    2022-11-16 18:26:48,820 [mlserver] INFO - retries: 3
+    2022-11-16 18:26:48,820 [mlserver] INFO - batch interval: 0.0
+    2022-11-16 18:26:48,820 [mlserver] INFO - batch jitter: 0.0
+    2022-11-16 18:26:48,820 [mlserver] INFO - connection timeout: 60
+    2022-11-16 18:26:48,820 [mlserver] INFO - micro-batch size: 1
+    2022-11-16 18:26:49,110 [mlserver] INFO - Finalizer: processed instances: 100
+    2022-11-16 18:26:49,110 [mlserver] INFO - Total processed instances: 100
+    2022-11-16 18:26:49,111 [mlserver] INFO - Time taken: 0.29 seconds
 
 
 
@@ -489,17 +528,21 @@ mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsim
 ```
 
     {
-      "id": "ac7e8eb2-3e13-4b8d-9e9d-9633b12964c3",
-      "model_name": "tfsimple_1",
+      "model_name": "tfsimple1_1",
       "model_version": "1",
+      "id": "c472917d-de5a-4d45-909b-1ed5f939ea23",
+      "parameters": {
+        "batch_index": 0,
+        "inference_id": "c472917d-de5a-4d45-909b-1ed5f939ea23"
+      },
       "outputs": [
         {
           "name": "OUTPUT0",
-          "datatype": "INT32",
           "shape": [
             1,
             16
           ],
+          "datatype": "INT32",
           "parameters": {},
           "data": [
             114,
@@ -522,11 +565,11 @@ mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsim
         },
         {
           "name": "OUTPUT1",
-          "datatype": "INT32",
           "shape": [
             1,
             16
           ],
+          "datatype": "INT32",
           "parameters": {},
           "data": [
             36,
@@ -547,10 +590,7 @@ mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsim
             48
           ]
         }
-      ],
-      "parameters": {
-        "batch_index": 0
-      }
+      ]
     }
 
 
@@ -561,63 +601,64 @@ mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsim
 
     {
       "model_name": "",
+      "id": "1cee209f-be47-401b-b7e7-5ce5e5c78b40",
+      "parameters": {
+        "batch_index": 1
+      },
       "outputs": [
         {
-          "data": [
-            63,
-            75,
-            152,
-            77,
-            159,
-            124,
-            92,
-            42,
-            93,
-            155,
-            101,
-            151,
-            103,
-            109,
-            139,
-            105
-          ],
           "name": "OUTPUT0",
           "shape": [
             1,
             16
           ],
-          "datatype": "INT32"
+          "datatype": "INT32",
+          "data": [
+            115,
+            69,
+            97,
+            112,
+            73,
+            106,
+            58,
+            182,
+            114,
+            66,
+            64,
+            110,
+            100,
+            24,
+            22,
+            77
+          ]
         },
         {
-          "data": [
-            13,
-            -21,
-            14,
-            39,
-            33,
-            38,
-            -42,
-            -26,
-            -33,
-            -37,
-            -31,
-            -47,
-            -41,
-            75,
-            57,
-            37
-          ],
           "name": "OUTPUT1",
           "shape": [
             1,
             16
           ],
-          "datatype": "INT32"
+          "datatype": "INT32",
+          "data": [
+            -77,
+            33,
+            25,
+            -52,
+            -49,
+            -88,
+            -48,
+            0,
+            -50,
+            26,
+            -44,
+            46,
+            -2,
+            18,
+            -6,
+            -47
+          ]
         }
-      ],
-      "parameters": {
-        "batch_index": 4
-      }
+      ]
     }
 
 
@@ -642,3 +683,8 @@ mlserver infer -u ${MESH_IP} -m tfsimple-pipeline.pipeline -i batch-inputs/tfsim
     model.mlops.seldon.io "tfsimple1" deleted
     pipeline.mlops.seldon.io "tfsimple" deleted
 
+
+
+```python
+
+```

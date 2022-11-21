@@ -13,8 +13,15 @@ import tensorflow as tf
 tf.keras.backend.clear_session()
 ```
 
-    2022-05-26 09:57:27.920987: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-    2022-05-26 09:57:27.921017: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+    2022-11-16 19:28:57.916579: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
+    To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+    2022-11-16 19:28:58.079213: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+    2022-11-16 19:28:58.123952: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+    2022-11-16 19:28:58.123978: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+    2022-11-16 19:28:58.159891: E tensorflow/stream_executor/cuda/cuda_blas.cc:2981] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+    2022-11-16 19:28:58.870452: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+    2022-11-16 19:28:58.870490: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+    2022-11-16 19:28:58.870493: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
 
 
 
@@ -28,6 +35,8 @@ X_test = X_test.astype('float32') / 255
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
 ```
 
+    Downloading data from https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+    170498071/170498071 [==============================] - 9s 0us/step
     (50000, 32, 32, 3) (50000, 1) (10000, 32, 32, 3) (10000, 1)
 
 
@@ -40,7 +49,6 @@ print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
     kind: Model
     metadata:
       name: cifar10
-      namespace: seldon-mesh
     spec:
       storageUri: "gs://seldon-models/triton/tf_cifar10"
       requirements:
@@ -86,7 +94,7 @@ print(response_raw.json())
 ```
 
     <Response [200]>
-    {'model_name': 'cifar10_1', 'model_version': '1', 'outputs': [{'name': 'fc10', 'datatype': 'FP32', 'shape': [2, 10], 'data': [1.4500079359436313e-08, 1.2525738224411498e-09, 1.6298378113788203e-07, 0.11529320478439331, 1.743132713727391e-07, 6.185641723277513e-06, 0.8847001194953918, 6.073898273228906e-09, 7.437883908778531e-08, 4.7317194606932844e-09, 1.2644793514482444e-06, 4.8814308151179375e-09, 1.5153264198985994e-09, 8.490526504090212e-09, 5.51305612273012e-10, 1.1617105055705679e-09, 5.772862743391727e-10, 2.8839471610808687e-07, 0.0006148922257125378, 0.9993835687637329]}]}
+    {'model_name': 'cifar10_1', 'model_version': '1', 'outputs': [{'name': 'fc10', 'datatype': 'FP32', 'shape': [2, 10], 'data': [1.4500082023971572e-08, 1.252571490972798e-09, 1.6298334060138586e-07, 0.11529310792684555, 1.7431312926419196e-07, 6.185642178024864e-06, 0.8847002387046814, 6.0738876150878696e-09, 7.437885329864002e-08, 4.731711022998297e-09, 1.2644841262954287e-06, 4.881440140991344e-09, 1.51533230408063e-09, 8.490559366691741e-09, 5.51305612273012e-10, 1.1617149464626664e-09, 5.772873845621973e-10, 2.8839554033766035e-07, 0.0006148957181721926, 0.9993835687637329]}]}
 
 
 

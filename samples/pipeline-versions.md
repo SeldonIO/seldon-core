@@ -6,7 +6,7 @@
 !which seldon
 ```
 
-    /home/clive/work/scv2/seldon-core-v2/operator/bin/seldon
+    /home/clive/seldon/scv2/seldon-core-v2/operator/bin/seldon
 
 
 ### Model Join
@@ -69,7 +69,7 @@ Join two flows of data from two models as input to a third model.
         {
           "pipeline": {
             "name": "version-test",
-            "uid": "cc5mrl9qre8m6toksbcg",
+            "uid": "cdqjjkpqa12c739ab3rg",
             "version": 1,
             "steps": [
               {
@@ -87,7 +87,7 @@ Join two flows of data from two models as input to a third model.
             "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-08-28T13:29:58.003183799Z"
+            "lastChangeTimestamp": "2022-11-16T19:28:19.459332175Z"
           }
         }
       ]
@@ -117,9 +117,6 @@ Join two flows of data from two models as input to a third model.
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AAAwQQAAQEEAAFBBAABgQQ=="
       ]
     }
 
@@ -160,7 +157,7 @@ Join two flows of data from two models as input to a third model.
         {
           "pipeline": {
             "name": "version-test",
-            "uid": "cc5msjhqre8m6toksbd0",
+            "uid": "cdqjjmpqa12c739ab3s0",
             "version": 2,
             "steps": [
               {
@@ -178,7 +175,7 @@ Join two flows of data from two models as input to a third model.
             "pipelineVersion": 2,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-08-28T13:31:58.421910021Z"
+            "lastChangeTimestamp": "2022-11-16T19:28:27.768169880Z"
           }
         }
       ]
@@ -208,9 +205,6 @@ Join two flows of data from two models as input to a third model.
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AAAgQQAAoEEAAPBBAAAgQg=="
       ]
     }
 
@@ -234,7 +228,7 @@ Join two flows of data from two models as input to a third model.
         {
           "pipeline": {
             "name": "version-test",
-            "uid": "cc5mt1hqre8m6toksbdg",
+            "uid": "cdqjjo9qa12c739ab3sg",
             "version": 3,
             "steps": [
               {
@@ -252,7 +246,7 @@ Join two flows of data from two models as input to a third model.
             "pipelineVersion": 3,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-08-28T13:32:54.897566298Z"
+            "lastChangeTimestamp": "2022-11-16T19:28:33.139405433Z"
           }
         }
       ]
@@ -282,9 +276,6 @@ Join two flows of data from two models as input to a third model.
             ]
           }
         }
-      ],
-      "rawOutputContents": [
-        "AAAwQQAAQEEAAFBBAABgQQ=="
       ]
     }
 

@@ -18,28 +18,33 @@ package pipeline
 
 import "fmt"
 
-type PipelineStepInputInvalidErr struct {
-	pipeline       string
-	stepOutputName string
+type PipelineStepInputEmptyErr struct {
+	pipeline  string
+	stepName  string
+	isTrigger bool
 }
 
-func (e *PipelineStepInputInvalidErr) Is(tgt error) bool {
-	_, ok := tgt.(*PipelineStepInputInvalidErr)
-	return ok
-}
-
-func (psi *PipelineStepInputInvalidErr) Error() string {
-	return fmt.Sprintf("pipeline step invalid pipeline %s step input [%s]", psi.pipeline, psi.stepOutputName)
+func (psi *PipelineStepInputEmptyErr) Error() string {
+	if psi.isTrigger {
+		return fmt.Sprintf("pipeline %s step %s has an empty trigger", psi.pipeline, psi.stepName)
+	} else {
+		return fmt.Sprintf("pipeline %s step %s has an empty input", psi.pipeline, psi.stepName)
+	}
 }
 
 type PipelineStepInputSpecifierErr struct {
 	pipeline   string
 	step       string
 	outputStep string
+	isTrigger  bool
 }
 
 func (pse *PipelineStepInputSpecifierErr) Error() string {
-	return fmt.Sprintf("pipeline step input invalid pipeline %s step %s input step %s.", pse.pipeline, pse.step, pse.outputStep)
+	if pse.isTrigger {
+		return fmt.Sprintf("pipeline step trigger invalid pipeline %s step %s input step %s.", pse.pipeline, pse.step, pse.outputStep)
+	} else {
+		return fmt.Sprintf("pipeline step input invalid pipeline %s step %s input step %s.", pse.pipeline, pse.step, pse.outputStep)
+	}
 }
 
 type PipelineOutputSpecifierErr struct {
@@ -177,5 +182,5 @@ type PipelineStepNameEqualsPipelineNameErr struct {
 }
 
 func (psr *PipelineStepNameEqualsPipelineNameErr) Error() string {
-	return fmt.Sprintf("pipeline %s must not have a step name with the same name", psr.pipeline)
+	return fmt.Sprintf("pipeline %s must not have a step name with the same name as pipeline name", psr.pipeline)
 }

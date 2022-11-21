@@ -36,10 +36,13 @@ func validate(pv *PipelineVersion) error {
 	if err := checkStepNameNotPipelineName(pv); err != nil {
 		return err
 	}
-	if err := checkStepReferencesExist(pv); err != nil {
+	if err := checkStepInputs(pv); err != nil {
 		return err
 	}
-	if err := checkStepInputs(pv); err != nil {
+	if err := checkStepTriggers(pv); err != nil {
+		return err
+	}
+	if err := checkStepReferencesExist(pv); err != nil {
 		return err
 	}
 	if err := checkStepOutputs(pv); err != nil {
@@ -151,6 +154,9 @@ func checkStepReferencesExist(pv *PipelineVersion) error {
 func checkStepInputs(pv *PipelineVersion) error {
 	for _, v := range pv.Steps {
 		for _, inp := range v.Inputs {
+			if strings.TrimSpace(inp) == "" || strings.Index(inp, StepNameSeperator) == 0 {
+				return &PipelineStepInputEmptyErr{pv.Name, v.Name, false}
+			}
 			parts := strings.Split(inp, StepNameSeperator)
 			switch len(parts) {
 			case 2, 3:
@@ -159,6 +165,7 @@ func checkStepInputs(pv *PipelineVersion) error {
 						pipeline:   pv.Name,
 						step:       v.Name,
 						outputStep: inp,
+						isTrigger:  false,
 					}
 				}
 			default:
@@ -166,6 +173,37 @@ func checkStepInputs(pv *PipelineVersion) error {
 					pipeline:   pv.Name,
 					step:       v.Name,
 					outputStep: inp,
+					isTrigger:  false,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkStepTriggers(pv *PipelineVersion) error {
+	for _, v := range pv.Steps {
+		for _, inp := range v.Triggers {
+			if strings.TrimSpace(inp) == "" || strings.Index(inp, StepNameSeperator) == 0 {
+				return &PipelineStepInputEmptyErr{pv.Name, v.Name, true}
+			}
+			parts := strings.Split(inp, StepNameSeperator)
+			switch len(parts) {
+			case 2, 3:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier) {
+					return &PipelineStepInputSpecifierErr{
+						pipeline:   pv.Name,
+						step:       v.Name,
+						outputStep: inp,
+						isTrigger:  true,
+					}
+				}
+			default:
+				return &PipelineStepInputSpecifierErr{
+					pipeline:   pv.Name,
+					step:       v.Name,
+					outputStep: inp,
+					isTrigger:  true,
 				}
 			}
 		}

@@ -20,7 +20,7 @@ MESH_IP
 
 
 
-    '172.19.255.14'
+    '172.19.255.1'
 
 
 
@@ -128,7 +128,7 @@ result.as_numpy("predict")
 
 
 ```python
-# Agaist pipeline
+# Against pipeline
 
 binary_data = False
 
@@ -150,7 +150,83 @@ result.as_numpy("predict")
 
 ### GRPC Transport Protocol
 
-// Not supported with MLServer currently. 
+
+```python
+import tritonclient.grpc as grpcclient
+import numpy as np
+
+
+grpc_triton_client = grpcclient.InferenceServerClient(
+    url=f"{MESH_IP}:80",
+    verbose=False,
+)
+```
+
+
+```python
+model_name = "iris"
+headers = {"seldon-model": model_name}
+
+print("model ready:", grpc_triton_client.is_model_ready(model_name, headers=headers))
+print(grpc_triton_client.get_model_metadata(model_name, headers=headers))
+```
+
+    model ready: True
+    name: "iris_1"
+    
+
+
+#### Against Model
+
+
+```python
+model_name = "iris"
+headers = {"seldon-model": model_name}
+
+inputs = [
+    grpcclient.InferInput("predict", (1, 4), "FP64"),
+]
+inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"))
+
+outputs = [grpcclient.InferRequestedOutput("predict")]
+
+
+result = grpc_triton_client.infer(model_name, inputs, outputs=outputs, headers=headers)
+result.as_numpy("predict")
+```
+
+
+
+
+    array([2])
+
+
+
+#### Against Pipeline
+
+
+```python
+model_name = "iris-pipeline.pipeline"
+headers = {"seldon-model": model_name}
+
+inputs = [
+    grpcclient.InferInput("predict", (1, 4), "FP64"),
+]
+inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"))
+
+outputs = [grpcclient.InferRequestedOutput("predict")]
+
+
+result = grpc_triton_client.infer(model_name, inputs, outputs=outputs, headers=headers)
+result.as_numpy("predict")
+```
+
+
+
+
+    array([2])
+
+
 
 ## With Tritonserver
 
@@ -470,3 +546,8 @@ result.as_numpy("OUTPUT0")
     model.mlops.seldon.io "tfsimple1" deleted
     pipeline.mlops.seldon.io "tfsimple" deleted
 
+
+
+```python
+
+```

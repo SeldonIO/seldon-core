@@ -2,11 +2,11 @@
 
 
 
-```bash
-cat ./models/tfsimple1.yaml
-cat ./models/tfsimple2.yaml
+```python
+!cat ./models/tfsimple1.yaml
+!cat ./models/tfsimple2.yaml
 ```
-```yaml
+
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
     metadata:
@@ -25,30 +25,33 @@ cat ./models/tfsimple2.yaml
       requirements:
       - tensorflow
       memory: 100Ki
+
+
+
+```python
+!seldon model load -f ./models/tfsimple1.yaml 
+!seldon model load -f ./models/tfsimple2.yaml 
 ```
 
-```bash
-seldon model load -f ./models/tfsimple1.yaml 
-seldon model load -f ./models/tfsimple2.yaml 
-```
-```json
     {}
     {}
+
+
+
+```python
+!seldon model status tfsimple1 -w ModelAvailable | jq -M .
+!seldon model status tfsimple2 -w ModelAvailable | jq -M .
 ```
 
-```bash
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
-```
-```json
     {}
     {}
+
+
+
+```python
+!cat ./pipelines/tfsimples.yaml
 ```
 
-```bash
-cat ./pipelines/tfsimples.yaml
-```
-```yaml
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
     metadata:
@@ -65,27 +68,29 @@ cat ./pipelines/tfsimples.yaml
       output:
         steps:
         - tfsimple2
+
+
+
+```python
+!seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
 
-```bash
-seldon pipeline load -f ./pipelines/tfsimples.yaml
-```
-```json
     {}
+
+
+
+```python
+!seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
 
-```bash
-seldon pipeline status tfsimples -w PipelineReady| jq -M .
-```
-```json
     {
       "pipelineName": "tfsimples",
       "versions": [
         {
           "pipeline": {
             "name": "tfsimples",
-            "uid": "cdnuod36qvvc73dlvs5g",
-            "version": 3,
+            "uid": "cdqjic9qa12c739ab3og",
+            "version": 1,
             "steps": [
               {
                 "name": "tfsimple1"
@@ -109,21 +114,22 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
             "kubernetesMeta": {}
           },
           "state": {
-            "pipelineVersion": 3,
+            "pipelineVersion": 1,
             "status": "PipelineReady",
             "reason": "created pipeline",
-            "lastChangeTimestamp": "2022-11-12T18:55:48.413295092Z"
+            "lastChangeTimestamp": "2022-11-16T19:25:37.908093300Z"
           }
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer tfsimples \
+
+
+```python
+!seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
-```json
+
     {
     	"model_name": "",
     	"outputs": [
@@ -181,21 +187,23 @@ seldon pipeline infer tfsimples \
     		}
     	]
     }
-```
 
-```bash
-seldon pipeline infer tfsimples \
+
+
+```python
+!seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,20]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
-```json
-    Error: V2 server error: 400 tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
-```
 
-```bash
-seldon pipeline infer tfsimples --inference-mode grpc \
+    Error: V2 server error: 400 tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
+
+
+
+```python
+!seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
-```json
+
     {
       "outputs": [
         {
@@ -256,15 +264,29 @@ seldon pipeline infer tfsimples --inference-mode grpc \
         }
       ]
     }
-```
 
-```bash
-seldon pipeline infer tfsimples --inference-mode grpc \
+
+
+```python
+!seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,20]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' 
 ```
-```json
+
     Error: rpc error: code = Unknown desc = tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
+
+
+
+```python
+!seldon pipeline unload tfsimples
+!seldon model unload tfsimple1
+!seldon model unload tfsimple2
 ```
+
+    {}
+    {}
+    {}
+
+
 
 ```python
 

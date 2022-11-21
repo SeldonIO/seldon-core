@@ -1,5 +1,7 @@
 ## Trigger Joins
 
+In this notebook we show use of trigger joins of type "any" where we wait for any of the inputs tobe present. We illustrate where we send various combinations of 2 inputs and show we always get an output.
+
 
 ```python
 import json
@@ -68,7 +70,7 @@ Load models and pipelines
         [1;39m{
           [0m[34;1m"pipeline"[0m[1;39m: [0m[1;39m{
             [0m[34;1m"name"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
-            [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cbmbfial0p8os8jr7ds0"[0m[1;39m,
+            [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cdqjkdhqa12c739ab3t0"[0m[1;39m,
             [0m[34;1m"version"[0m[1;39m: [0m[0;39m1[0m[1;39m,
             [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
               [1;39m{
@@ -94,8 +96,8 @@ Load models and pipelines
           [0m[34;1m"state"[0m[1;39m: [0m[1;39m{
             [0m[34;1m"pipelineVersion"[0m[1;39m: [0m[0;39m1[0m[1;39m,
             [0m[34;1m"status"[0m[1;39m: [0m[0;32m"PipelineReady"[0m[1;39m,
-            [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"Created pipeline"[0m[1;39m,
-            [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-08-05T06:25:14.011256855Z"[0m[1;39m
+            [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"created pipeline"[0m[1;39m,
+            [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-11-16T19:29:58.778539435Z"[0m[1;39m
           [1;39m}[0m[1;39m
         [1;39m}[0m[1;39m
       [1;39m][0m[1;39m
@@ -133,7 +135,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 !seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
@@ -143,7 +145,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 !seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
@@ -153,7 +155,7 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 !seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
@@ -183,7 +185,7 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
         [1;39m{
           [0m[34;1m"pipeline"[0m[1;39m: [0m[1;39m{
             [0m[34;1m"name"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
-            [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cbmbfm2l0p8os8jr7dsg"[0m[1;39m,
+            [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cdqjkqpqa12c739ab3tg"[0m[1;39m,
             [0m[34;1m"version"[0m[1;39m: [0m[0;39m1[0m[1;39m,
             [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
               [1;39m{
@@ -227,8 +229,8 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
           [0m[34;1m"state"[0m[1;39m: [0m[1;39m{
             [0m[34;1m"pipelineVersion"[0m[1;39m: [0m[0;39m1[0m[1;39m,
             [0m[34;1m"status"[0m[1;39m: [0m[0;32m"PipelineReady"[0m[1;39m,
-            [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"Created pipeline"[0m[1;39m,
-            [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-08-05T06:25:29.114592623Z"[0m[1;39m
+            [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"created pipeline"[0m[1;39m,
+            [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-11-16T19:30:51.996346140Z"[0m[1;39m
           [1;39m}[0m[1;39m
         [1;39m}[0m[1;39m
       [1;39m][0m[1;39m
@@ -276,7 +278,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=True)
 !seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
@@ -286,7 +288,7 @@ request_string = get_request_string(use_trigger_1=True, use_trigger_2=False)
 !seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
@@ -296,7 +298,7 @@ request_string = get_request_string(use_trigger_1=False, use_trigger_2=True)
 !seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_string}'
 ```
 
-    {"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}],"rawOutputContents":["AgAAAAAAAAA="]}
+    {"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
 
 
 
