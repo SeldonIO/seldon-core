@@ -56,6 +56,8 @@ create-helm-charts:
 
 .PHONY: set-chart-version
 set-chart-version:
+	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-certs/Chart.yaml
+	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-certs/Chart.yaml
 	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-crds/Chart.yaml
 	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-crds/Chart.yaml
 	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-setup/Chart.yaml
