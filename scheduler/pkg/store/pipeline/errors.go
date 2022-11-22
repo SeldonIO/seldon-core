@@ -100,6 +100,14 @@ func (pvm *PipelineVersionUidMismatchErr) Error() string {
 	return fmt.Sprintf("pipeline version uid mismatch %s:%d expected %s found %s", pvm.pipeline, pvm.version, pvm.uidExpected, pvm.uidActual)
 }
 
+type PipelineStepsEmptyErr struct {
+	pipeline string
+}
+
+func (psee *PipelineStepsEmptyErr) Error() string {
+	return fmt.Sprintf("pipeline %s has no steps defined", psee.pipeline)
+}
+
 type PipelineStepNotFoundErr struct {
 	pipeline string
 	step     string

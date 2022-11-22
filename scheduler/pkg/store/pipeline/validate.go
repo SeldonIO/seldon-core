@@ -33,6 +33,9 @@ const (
 )
 
 func validate(pv *PipelineVersion) error {
+	if err := checkStepsExist(pv); err != nil {
+		return err
+	}
 	if err := checkStepNameNotPipelineName(pv); err != nil {
 		return err
 	}
@@ -53,6 +56,13 @@ func validate(pv *PipelineVersion) error {
 	}
 	if err := checkInputsAndTriggersDiffer(pv); err != nil {
 		return err
+	}
+	return nil
+}
+
+func checkStepsExist(pv *PipelineVersion) error {
+	if len(pv.Steps) == 0 {
+		return &PipelineStepsEmptyErr{pipeline: pv.Name}
 	}
 	return nil
 }
