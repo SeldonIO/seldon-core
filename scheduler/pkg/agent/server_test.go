@@ -172,6 +172,34 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
+			name:      "simple - unload",
+			modelName: "iris",
+			agents: map[ServerKey]*AgentSubscriber{
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+			},
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.UnloadRequested},
+								}, false, store.ModelTerminating),
+						},
+					},
+				},
+			},
+			expectedVersionStates: []ExpectedVersionState{
+				{
+					version: 1,
+					expectedStates: map[int]store.ReplicaStatus{
+						1: {State: store.Unloading},
+					},
+				},
+			},
+		},
+		{
 			name:      "OlderVersions",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{

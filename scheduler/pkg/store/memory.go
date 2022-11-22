@@ -66,7 +66,7 @@ func (m *MemoryStore) GetModels() ([]*ModelSnapshot, error) {
 	for name, model := range m.store.models {
 		snapshot := &ModelSnapshot{
 			Name:     name,
-			Deleted:  model.deleted,
+			Deleted:  model.IsDeleted(),
 			Versions: model.versions,
 		}
 		foundModels = append(foundModels, snapshot)
@@ -157,7 +157,7 @@ func (m *MemoryStore) getModelImpl(key string) *ModelSnapshot {
 		return &ModelSnapshot{
 			Name:     key,
 			Versions: model.versions, //TODO make a copy for safety?
-			Deleted:  model.deleted,
+			Deleted:  model.IsDeleted(),
 		}
 	} else {
 		return &ModelSnapshot{
@@ -213,7 +213,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.
 		if req.GetKubernetesMeta() != nil { // k8s meta can be nil if unload is called directly using scheduler grpc api
 			model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
 		}
-		model.deleted = true
+		model.SetDeleted()
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return &coordinator.ModelEventMsg{
 			ModelName:    model.Latest().GetMeta().GetName(),
@@ -363,10 +363,10 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 					)
 				} else {
 					logger.Debugf(
-						"Setting model %s version %d on server %s replica %d to UnloadRequested",
+						"Setting model %s version %d on server %s replica %d to UnloadEnvoyRequested",
 						modelKey, modelVersion.version, serverKey, replicaIdx,
 					)
-					modelVersion.SetReplicaState(replicaIdx, UnloadRequested, "")
+					modelVersion.SetReplicaState(replicaIdx, UnloadEnvoyRequested, "")
 					updated = true
 				}
 			} else {

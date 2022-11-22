@@ -238,14 +238,16 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 	return nil
 }
 
-func (p *IncrementalProcessor) removeRouteForServerInEnvoy(routeName string) error {
+// This function does not call `updateEnvoy` directly and therefore callers should make sure
+// that this is done (either in a batched update or directly)
+func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string) error {
 	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
 	err := p.xdsCache.RemoveRoute(routeName)
 	if err != nil {
 		logger.Debugf("Failed to remove route for %s", routeName)
 		return err
 	}
-	return p.updateEnvoy()
+	return nil
 }
 
 func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
@@ -378,7 +380,7 @@ func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
 		err := p.addExperimentModelBaselineTraffic(model, exp)
 		if err != nil {
 			logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
-			err = p.removeRouteForServerInEnvoy(model.Name)
+			err = p.removeRouteForServerInEnvoyCache(model.Name)
 			if err != nil {
 				return err
 			}
@@ -427,15 +429,15 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 	return nil
 }
 
+// TODO make envoy updates for experiments batched
 func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "addExperiment")
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	routeName := fmt.Sprintf("%s.experiment", exp.Name)
-	err := p.addTrafficForExperiment(routeName, exp)
-	if err != nil {
+	if err := p.addTrafficForExperiment(routeName, exp); err != nil {
 		logger.WithError(err).Errorf("Failed to add traffic for experiment %s", routeName)
-		return p.removeRouteForServerInEnvoy(routeName)
+		return err
 	}
 	return p.updateEnvoy()
 }
@@ -446,13 +448,18 @@ func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) erro
 	defer p.mu.Unlock()
 	routeName := fmt.Sprintf("%s.experiment", exp.Name)
 	logger.Debugf("Remove experiment route %s", routeName)
-	return p.removeRouteForServerInEnvoy(routeName)
+	if err := p.removeRouteForServerInEnvoyCache(routeName); err != nil {
+		logger.WithError(err).Errorf("Failed to remove traffic for experiment %s", routeName)
+		return err
+	}
+	return p.updateEnvoy()
 }
 
 func getPipelineRouteName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, resources.SeldonPipelineHeaderSuffix)
 }
 
+// TODO make envoy updates for pipelines batched
 func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	logger := p.logger.WithField("func", "addPipeline")
 	p.mu.Lock()
@@ -530,42 +537,61 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 
 	model, err := p.modelStore.GetModel(modelName)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to sync model %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		logger.WithError(err).Warnf("Failed to sync model %s", modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 	}
 	if model == nil {
 		logger.Debugf("sync: No model - removing for %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 
 	}
 
 	latestModel := model.GetLatest()
 	if latestModel == nil {
 		logger.Debugf("sync: No latest model - removing for %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 	}
 	if !model.CanReceiveTraffic() {
 		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 	}
 
 	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
 	if err != nil || server == nil {
 		logger.Debugf("sync: No server - removing for %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 	}
 
 	// Remove routes before we recreate
-	err = p.xdsCache.RemoveRoute(modelName)
-	if err != nil {
+	if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 		logger.Debugf("Failed to remove route before starting update for %s", modelName)
 		return err
 	}
 
 	err = p.addModel(model)
 	if err != nil {
+		// note that on error for `addModel` we specifically do not return so that we can do batched
+		// delete of envoy routes
 		logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
-		return p.removeRouteForServerInEnvoy(modelName)
+		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			return err
+		}
 	}
 
 	// Add to batch pending Envoy sync
@@ -656,6 +682,24 @@ func (p *IncrementalProcessor) modelSync() {
 				logger.Debugf(
 					"Skipping replica for model %s in state %s server replica %s%d as no longer in Loaded state",
 					mv.name, serverReplicaExpectedState.String(), v.Server(), replicaIdx)
+			}
+		}
+		// Go through all replicas that we have set to UnloadEnvoyRequested and mark them as UnloadRequested
+		// to resume the unload process from servers
+		for _, replicaIdx := range v.GetReplicaForState(store.UnloadEnvoyRequested) {
+			serverReplicaExpectedState := vs[replicaIdx].State
+			if err := p.modelStore.UpdateModelState(
+				mv.name,
+				v.GetVersion(),
+				s.Name,
+				replicaIdx,
+				nil,
+				serverReplicaExpectedState,
+				store.UnloadRequested,
+				"",
+			); err != nil {
+				logger.WithError(err).Warnf("Failed to update replica state for model %s to %s from %s",
+					mv.name, store.UnloadRequested.String(), serverReplicaExpectedState.String())
 			}
 		}
 		p.modelStore.UnlockModel(mv.name)

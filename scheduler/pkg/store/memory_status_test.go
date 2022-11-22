@@ -180,7 +180,7 @@ func TestUpdateStatus(t *testing.T) {
 			}
 			g.Expect(err).To(BeNil())
 			isLatest := model.Latest().GetVersion() == modelVersion.GetVersion()
-			ms.updateModelStatus(isLatest, model.deleted, modelVersion, prevModelVersion)
+			ms.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, prevModelVersion)
 			g.Expect(modelVersion.state.State).To(Equal(test.expectedModelStatus))
 		})
 	}

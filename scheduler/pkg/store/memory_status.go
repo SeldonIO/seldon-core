@@ -54,7 +54,7 @@ func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *model
 				s.lastFailedStateTime = replicaState.Timestamp
 				s.lastFailedReason = replicaState.Reason
 			}
-		case UnloadRequested, Unloading:
+		case UnloadEnvoyRequested, UnloadRequested, Unloading:
 			s.replicasUnloading++
 		case Unloaded:
 			s.replicasUnloaded++

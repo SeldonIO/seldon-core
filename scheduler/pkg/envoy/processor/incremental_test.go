@@ -169,6 +169,34 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			expectedClusters: 2,
 		},
 		{
+			name: "With one replica unloading",
+			modelVersions: []*store.ModelVersion{
+				store.NewModelVersion(
+					&scheduler.Model{
+						Meta:           &scheduler.MetaData{Name: "foo"},
+						DeploymentSpec: &scheduler.DeploymentSpec{LogPayloads: false},
+					},
+					2,
+					"server",
+					map[int]store.ReplicaStatus{
+						1: {State: store.Loaded},
+						2: {State: store.UnloadEnvoyRequested},
+					},
+					false,
+					store.ModelAvailable,
+				),
+			},
+			server: &store.ServerSnapshot{
+				Name: "server",
+				Replicas: map[int]*store.ServerReplica{
+					1: store.NewServerReplica("host1", 8080, 5000, 1, nil, nil, 100, 100, nil, 100),
+				},
+			},
+			traffic:          100,
+			expectedRoutes:   1,
+			expectedClusters: 2,
+		},
+		{
 			name: "TwoRoutesSameCluster",
 			modelVersions: []*store.ModelVersion{
 				store.NewModelVersion(
@@ -319,6 +347,8 @@ func createTestModel(modelName string,
 			}
 			serverReplicas = append(serverReplicas, serverReplica)
 		}
+
+		// this adds all model replicas as `LoadRequested`
 		err = inc.modelStore.UpdateLoadedModels(modelName, version, serverName, serverReplicas)
 		g.Expect(err).To(BeNil())
 
@@ -695,6 +725,25 @@ func TestModelSync(t *testing.T) {
 				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.UnloadFailed, store.Available}),
 			},
 			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.UnloadFailed, 1: store.Available}},
+			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
+		},
+		{
+			name: "UnloadEnvoyRequest - model being deleted",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 0, []int{0}, 1, []store.ModelReplicaState{store.UnloadEnvoyRequested}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.UnloadRequested}},
+			// note: model state removed here as this case can only happen when model is deleted, which we cannot simulate in this test.
+			expectedModelState: map[string]store.ModelState{},
+		},
+		{
+			name: "UnloadEnvoyRequest - model available",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model", "server", 1, []int{0, 1}, 1, []store.ModelReplicaState{store.UnloadEnvoyRequested, store.Available}),
+			},
+			expectedReplicaStats: map[string]map[int]store.ModelReplicaState{"model": {0: store.UnloadRequested, 1: store.Available}},
 			expectedModelState:   map[string]store.ModelState{"model": store.ModelAvailable},
 		},
 	}

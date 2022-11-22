@@ -326,6 +326,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 		replicas       []*ServerReplica
 		expectedStates map[int]ReplicaStatus
 		err            bool
+		isModelDeleted bool
 	}
 
 	tests := []test{
@@ -455,7 +456,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadRequested}, 1: {State: LoadRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: LoadRequested}},
 		},
 		{
 			name: "DeletedModel",
@@ -471,7 +472,6 @@ func TestUpdateLoadedModels(t *testing.T) {
 							},
 						},
 					},
-					deleted: true,
 				}},
 				servers: map[string]*Server{
 					"server": {
@@ -487,7 +487,8 @@ func TestUpdateLoadedModels(t *testing.T) {
 			version:        1,
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadRequested}},
+			isModelDeleted: true,
+			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}},
 		},
 		{
 			name: "DeletedModelNoReplicas",
@@ -503,7 +504,6 @@ func TestUpdateLoadedModels(t *testing.T) {
 							},
 						},
 					},
-					deleted: true,
 				}},
 				servers: map[string]*Server{
 					"server": {
@@ -519,6 +519,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			version:        1,
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
+			isModelDeleted: true,
 			expectedStates: map[int]ReplicaStatus{0: {State: Unloaded}},
 		},
 		{
@@ -637,6 +638,9 @@ func TestUpdateLoadedModels(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
+			if test.isModelDeleted {
+				test.store.models[test.modelKey].SetDeleted()
+			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			err = ms.UpdateLoadedModels(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
@@ -661,7 +665,6 @@ func TestUpdateLoadedModels(t *testing.T) {
 
 func TestUpdateModelState(t *testing.T) {
 	g := NewGomegaWithT(t)
-
 	memBytes := uint64(1)
 
 	type test struct {
@@ -791,7 +794,6 @@ func TestUpdateModelState(t *testing.T) {
 							replicas:  map[int]ReplicaStatus{},
 						},
 					},
-					deleted: true,
 				}},
 				servers: map[string]*Server{
 					"server": {
@@ -905,6 +907,9 @@ func TestUpdateModelState(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
+			if test.deleted {
+				test.store.models[test.modelKey].SetDeleted()
+			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			err = ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "")
 			if !test.err {

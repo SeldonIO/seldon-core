@@ -191,7 +191,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested},
+			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested},
 		},
 		{
 			name: "Multiple",
@@ -200,7 +200,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn", "xgboost"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested},
+			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested},
 		},
 		{
 			name: "TwoReplicas",
@@ -211,7 +211,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadRequested, 1: store.UnloadRequested},
+			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested, 1: store.UnloadEnvoyRequested},
 		},
 		{
 			name: "NotExist",

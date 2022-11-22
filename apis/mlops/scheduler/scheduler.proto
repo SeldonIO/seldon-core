@@ -142,6 +142,8 @@ message ModelReplicaStatus {
       UnloadFailed = 8;
       Available = 9;
       LoadedUnavailable = 10;
+      UnloadEnvoyRequested = 11;
+      Draining = 12;
   }
   ModelReplicaState state = 1;
   string reason = 2;

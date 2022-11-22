@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
@@ -43,7 +44,7 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 
 type Model struct {
 	versions []*ModelVersion
-	deleted  bool
+	deleted  atomic.Bool
 }
 
 type ModelVersionID struct {
@@ -60,7 +61,6 @@ type ModelVersion struct {
 	version   uint32
 	server    string
 	replicas  map[int]ReplicaStatus
-	deleted   bool
 	state     ModelStatus
 	mu        sync.RWMutex
 }
@@ -85,19 +85,18 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		version:   version,
 		modelDefn: model,
 		replicas:  make(map[int]ReplicaStatus),
-		deleted:   false,
 		state:     ModelStatus{State: ModelStateUnknown},
 		mu:        sync.RWMutex{},
 	}
 }
 
+// TODO: remove deleted from here and reflect in callers
 func NewModelVersion(model *pb.Model, version uint32, server string, replicas map[int]ReplicaStatus, deleted bool, state ModelState) *ModelVersion {
 	return &ModelVersion{
 		version:   version,
 		modelDefn: model,
 		server:    server,
 		replicas:  replicas,
-		deleted:   deleted,
 		state:     ModelStatus{State: state},
 		mu:        sync.RWMutex{},
 	}
@@ -245,6 +244,7 @@ const (
 	Loading
 	Loaded
 	LoadFailed
+	UnloadEnvoyRequested
 	UnloadRequested
 	Unloading
 	Unloaded
@@ -260,6 +260,7 @@ var replicaStates = []ModelReplicaState{
 	Loading,
 	Loaded,
 	LoadFailed,
+	UnloadEnvoyRequested,
 	UnloadRequested,
 	Unloading,
 	Unloaded,
@@ -279,7 +280,7 @@ func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
 }
 
 func (m ModelReplicaState) UnloadingOrUnloaded() bool {
-	return (m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
+	return (m == UnloadEnvoyRequested || m == UnloadRequested || m == Unloading || m == Unloaded || m == ModelReplicaStateUnknown)
 }
 
 func (m ModelReplicaState) Inactive() bool {
@@ -291,7 +292,7 @@ func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 }
 
 func (me ModelReplicaState) String() string {
-	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable", "Draining"}[me]
+	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadEnvoyRequested", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable", "Draining"}[me]
 }
 
 func (m *Model) HasLatest() bool {
@@ -355,7 +356,11 @@ func (m *Model) Inactive() bool {
 }
 
 func (m *Model) IsDeleted() bool {
-	return m.deleted
+	return m.deleted.Load()
+}
+
+func (m *Model) SetDeleted() {
+	m.deleted.Store(true)
 }
 
 func (m *ModelVersion) GetVersion() uint32 {
@@ -506,10 +511,6 @@ func (m *ModelVersion) GetAssignment() []int {
 
 func (m *ModelVersion) Key() string {
 	return m.modelDefn.GetMeta().GetName()
-}
-
-func (m *ModelVersion) IsDeleted() bool {
-	return m.deleted
 }
 
 func (m *ModelVersion) SetReplicaState(replicaIdx int, state ModelReplicaState, reason string) {
