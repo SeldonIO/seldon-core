@@ -1,6 +1,6 @@
 # Pipelines
 
-Pipelines allow models to be connected into flows of data transformations. This allows more complex machine learning pipelines to be created with multiple modles, feature transformations and monitoring components such as drift and outlier detectors.
+Pipelines allow models to be connected into flows of data transformations. This allows more complex machine learning pipelines to be created with multiple models, feature transformations and monitoring components such as drift and outlier detectors.
 
 ## Creating Pipelines
 
@@ -28,9 +28,9 @@ spec:
 
 ```
 
-  * `steps` allow you to specifier the models you want to combine into a pipeline. Each step name will correspond to a model of the same name. These models will need to have been deployed and available for the Pipeline to funciton, however Pipelines can be deployed before or at the same time you deploy the underlying models.
+  * `steps` allow you to specify the models you want to combine into a pipeline. Each step name will correspond to a model of the same name. These models will need to have been deployed and available for the Pipeline to funciton, however Pipelines can be deployed before or at the same time you deploy the underlying models.
   * `steps.inputs` allow you to specify the inputs to this step.
-  * `outputs.steps` allow you to specify the output of the Pipeline. A pipeline can have multiple paths include flows of data that do not reach the output, e.g. Drift detection steps. However, if you wisht to call your Pipeline in a synchronous manner via REST/gRPC then and output must be present so the Pipeline can be treated as a function.
+  * `outputs.steps` allow you to specify the output of the Pipeline. A pipeline can have multiple paths include flows of data that do not reach the output, e.g. Drift detection steps. However, if you wish to call your Pipeline in a synchronous manner via REST/gRPC then an output must be present so the Pipeline can be treated as a function.
 
 ## Expressing input data sources
 
@@ -41,7 +41,7 @@ Model step inputs are defined with a dot notation of the form:
 <stepName>|<pipelineName>.<inputs|outputs>.<tensorName>
 ```
 
-Inputs with just step name will be assumed to be `step.outputs`.
+Inputs with just a step name will be assumed to be `step.outputs`.
 
 The default payloads for Pipelines is the V2 protocol which requires named tensors as inputs and outputs from a model. If you require just certain tensors from a model you can reference those in the inputs, e.g. `mymodel.outputs.t1` will reference the tensor `t1` from the model `mymodel`.
 
@@ -102,7 +102,7 @@ Its also possible to abort pipelines when an error is produced to in effect crea
 :language: yaml
 ```
 
-This Pipeline runs normally or throws an error based on whether the inut tensors have certain values.
+This Pipeline runs normally or throws an error based on whether the input tensors have certain values.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#error).
 
