@@ -45,7 +45,7 @@ const (
 	grpcMaxConcurrentStreams           = 1_000_000
 	pendingSyncsQueueSize          int = 10
 	modelEventHandlerName              = "agent.server.models"
-	modelScalingCoolingDownSeconds     = 300
+	modelScalingCoolingDownSeconds     = 60 // this is currently used in scale down events
 	serverDrainingExtraWaitMillis      = 500
 )
 
@@ -66,6 +66,11 @@ func newModelRelocatedWaiter() *modelRelocatedWaiter {
 func (w *modelRelocatedWaiter) registerServerReplica(serverName string, serverReplicaIdx int, models []string) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+
+	if len(models) == 0 {
+		return
+	}
+
 	key := w.getServerReplicaName(serverName, serverReplicaIdx)
 	w.serverReplicaModels[key] = make(map[string]struct{})
 	for _, model := range models {
@@ -352,13 +357,14 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 			return err
 		}
 		logger := s.logger.WithField("func", "ModelScalingTrigger")
-		logger.Infof("Received Event from server %s:%d for model %s:%d",
-			message.GetServerName(), message.GetReplicaIdx(), message.GetModelName(), message.GetModelVersion())
+		logger.Debugf("Received scaling event %d from server %s:%d for model %s:%d",
+			message.GetTrigger(), message.GetServerName(), message.GetReplicaIdx(), message.GetModelName(), message.GetModelVersion())
 
-		// so far we do not care about oder of scaling events. the first one should win
+		// so far we do not care about oder of scaling events. the first one should win.
 		go func() {
 			if err := s.applyModelScaling(message); err != nil {
-				logger.WithError(err).Debugf("Could not scale model %s", message.GetModelName())
+				logger.WithError(err).Debugf(
+					"Could not scale model %s:%d, type: %d", message.GetModelName(), message.GetModelVersion(), message.GetTrigger())
 			}
 		}()
 	}
@@ -456,6 +462,7 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 
 	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
 	time.Sleep(util.EnvoyUpdateDefaultBatchWaitMillis + (time.Millisecond * serverDrainingExtraWaitMillis))
+	s.logger.Debugf("Finished draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {
@@ -469,13 +476,7 @@ func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error
 		return fmt.Errorf("Model %s not found", modelName)
 	}
 
-	// TODO: consider the case when scaling down a model that failed to scale up, hence not available
-	lastAvailableModelVersion := model.GetLastAvailableModel()
-	if lastAvailableModelVersion == nil {
-		return fmt.Errorf("Stable model version %s not found", modelName)
-	}
-
-	modelProto, err := createScalingPseudoRequest(message, lastAvailableModelVersion)
+	modelProto, err := createScalingPseudoRequest(message, model)
 	if err != nil {
 		return err
 	}
@@ -494,22 +495,37 @@ func (s *Server) updateAndSchedule(modelProtos *pbs.Model) error {
 	return s.scheduler.Schedule(modelName)
 }
 
-func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, lastAvailableModelVersion *store.ModelVersion) (*pbs.Model, error) {
-	//TODO: update model state
-
+func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *store.ModelSnapshot) (*pbs.Model, error) {
 	modelName := message.ModelName
 
-	if lastAvailableModelVersion.GetVersion() != message.GetModelVersion() {
-		return nil, fmt.Errorf(
-			"Model version %s not matching (expected: %d - actual: %d)",
-			modelName, lastAvailableModelVersion.GetVersion(), message.GetModelVersion())
+	lastModelVersion := model.GetLatest()
+	lastAvailableModelVersion := model.GetLastAvailableModel()
+	tryScaleDown := (message.Trigger == pb.ModelScalingTriggerMessage_SCALE_DOWN && !model.Deleted)
+	tryScaleUp := (message.Trigger == pb.ModelScalingTriggerMessage_SCALE_UP && lastAvailableModelVersion != nil && lastAvailableModelVersion.GetVersion() == lastModelVersion.GetVersion())
+
+	if !tryScaleUp && !tryScaleDown {
+		return nil, fmt.Errorf("Cannot scale model version %s", modelName)
 	}
 
-	modelProtos := lastAvailableModelVersion.GetModel() // this is a clone of the protos
-	numReplicas := len(lastAvailableModelVersion.GetAssignment())
+	if lastModelVersion.GetVersion() != message.GetModelVersion() {
+		return nil, fmt.Errorf(
+			"Model version %s not matching (expected: %d - actual: %d)",
+			modelName, lastModelVersion.GetVersion(), message.GetModelVersion())
+	}
 
-	if !isModelStable(lastAvailableModelVersion) {
-		return nil, fmt.Errorf("Model %s has changed status recently, skip scaling", modelName)
+	modelProtos := lastModelVersion.GetModel() // this is a clone of the protos
+
+	// if we are scaling up:
+	// the model should be available
+	// if we are scaling down:
+	// we reduce the replicas by one and try our best
+	// if we have a draining replica while scaling down, this should be still fine I think?
+	numReplicas := int(lastModelVersion.GetDeploymentSpec().Replicas)
+
+	if tryScaleDown {
+		if !isModelStable(lastModelVersion) {
+			return nil, fmt.Errorf("Model %s has changed status recently, skip scaling", modelName)
+		}
 	}
 
 	if desiredNumReplicas, err := calculateDesiredNumReplicas(modelProtos, message.Trigger, numReplicas); err != nil {

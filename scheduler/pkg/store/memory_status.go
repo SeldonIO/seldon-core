@@ -117,8 +117,8 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 		State:               ScheduleFailed,
 		Reason:              reason,
 		Timestamp:           time.Now(),
-		AvailableReplicas:   0,
-		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas(),
+		AvailableReplicas:   modelVersion.state.AvailableReplicas,
+		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - modelVersion.state.AvailableReplicas,
 	}
 
 	m.eventHub.PublishModelEvent(

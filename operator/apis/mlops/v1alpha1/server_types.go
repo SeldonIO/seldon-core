@@ -45,8 +45,6 @@ type ServerSpec struct {
 }
 
 type ContainerOverrideSpec struct {
-	// The Init container overrides to download preset models
-	Init *v1.Container `json:"init,omitempty"`
 	// The Agent overrides
 	Agent *v1.Container `json:"agent,omitempty"`
 	// The RClone server overrides
@@ -64,12 +62,15 @@ type ServerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	duckv1.Status `json:",inline"`
-	// Number of loade models
-	LoadedModelReplicas int32 `json:"loadedModels"`
+	// Number of loaded models
+	LoadedModelReplicas int32  `json:"loadedModels"`
+	Replicas            int32  `json:"replicas"`
+	Selector            string `json:"selector"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 //+kubebuilder:resource:shortName=mls
 
 // Server is the Schema for the servers API

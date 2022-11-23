@@ -533,7 +533,7 @@ func TestModelScalingProtos(t *testing.T) {
 			isError:             true,
 		},
 		{
-			name: "model not stable",
+			name: "model not stable, scale down - should not proceed",
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
 					"iris": {
@@ -542,7 +542,7 @@ func TestModelScalingProtos(t *testing.T) {
 							store.NewModelVersion(
 								&pbs.Model{
 									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
 								},
 								1, "server1",
 								map[int]store.ReplicaStatus{
@@ -559,21 +559,172 @@ func TestModelScalingProtos(t *testing.T) {
 			lastUpdate:          time.Now(),
 			isError:             true,
 		},
+		{
+			name: "model not stable, scale up - should proceed",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    3,
+			lastUpdate:          time.Now(),
+			isError:             false,
+		},
+		{
+			name: "model not available, scale up - should not proceed",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.LoadFailed},
+								}, false, store.ScheduleFailed),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             true,
+		},
+		{
+			name: "model not available, scale down - should proceed",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.LoadFailed},
+								}, false, store.ScheduleFailed),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_DOWN,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    1,
+			isError:             false,
+		},
+		{
+			name: "model available is not latest, scale up - should not proceed",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								2, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Loading},
+								}, false, store.ModelProgressing),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 2,
+			expectedReplicas:    2,
+			lastUpdate:          time.Now(),
+			isError:             true,
+		},
+		{
+			name: "model versions mismatch - should not proceed",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelAvailable),
+							store.NewModelVersion(
+								&pbs.Model{
+									Meta:           &pbs.MetaData{Name: "iris"},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+								},
+								2, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.Available}, 2: {State: store.Available},
+								}, false, store.ModelState(store.Available)),
+						},
+					},
+				},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             true,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
 			model, _ := test.store.GetModel(test.triggerModelName)
-			// TODO: consider the case where we are scaling down which the latest model failed to scale up, hence not available
-			lastAvailableModelVersion := model.GetLastAvailableModel()
-			state := lastAvailableModelVersion.ModelState()
+			lastestModel := model.GetLatest()
+			state := lastestModel.ModelState()
 			state.Timestamp = test.lastUpdate
+			lastestModel.SetModelState(state)
+
 			protos, err := createScalingPseudoRequest(&pb.ModelScalingTriggerMessage{
 				ModelName:    test.triggerModelName,
 				ModelVersion: uint32(test.triggerModelVersion),
 				Trigger:      test.trigger,
-			}, lastAvailableModelVersion)
+			}, model)
 			if !test.isError {
 				g.Expect(err).To(BeNil())
 				g.Expect(protos.GetDeploymentSpec().GetReplicas()).To(Equal(test.expectedReplicas))
@@ -611,6 +762,19 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 						serverIdx:  1,
 					},
 					models: []string{"model1", "model2"},
+				},
+			},
+			serverUnderTest: 0,
+		},
+		{
+			name: "simple - no models",
+			input: []in{
+				{
+					serverReplica: serverReplica{
+						serverName: "server",
+						serverIdx:  1,
+					},
+					models: []string{},
 				},
 			},
 			serverUnderTest: 0,
@@ -657,7 +821,7 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 				size := len(waiter.serverReplicaModels)
 				g.Expect(size).To(BeNumerically(">", 0))
 			}
-			// test signal random model
+			// test signal random model, working fine
 			waiter.signalModel("dummy")
 		})
 	}

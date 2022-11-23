@@ -8,11 +8,34 @@ Autoscaling in Seldon applies to various concerns:
 
 ## Inference servers autoscaling
 
-```{note}
-Autoscaling of inference servers is in the roadmap.
+
+Autoscaling of servers can be done via `HorizontalPodAutoscaler` (HPA).
+
+HPA can be applied to any deployed `Server` resource.
+In this case HPA will manage the number of server replicas in the corresponding statefulset according to utilisation metrics  (e.g. CPU or memory).
+
+For example assuming that a `triton` server is deployed, then the user can attach an HPA based on cpu utilisation as follows:
+
+```
+kubectl autoscale server triton --cpu-percent=50 --min=1 --max=5
 ```
 
-Autoscaling of servers will be via HPA or KEDA.
+In this case, according to load, the system will add / remove server replicas to / from the `triton` statefulset. 
+
+It is worth considering the following points:
+
+- If HPA adds a new server replica, this new replica will be included in any **future** scheduling decisions.
+  In other words, when deploying a new model or rescheduling failed models this new replica will be considered.
+
+- If HPA deletes an existing server replica, the scheduler will first attempt to drain any loaded model on this server replica before the server replica gets actually deleted. This is achieved by leveraging a `PreStop` hook on the server replica pod that triggers a process before receiving the termination signal. This draining process is capped by `terminationGracePeriodSeconds`, which the user can set (default is 2 minutes).
+
+Therefore there should generally be minimal disruption to the inference workload during scaling.
+
+For more details on HPA check this [Kubernetes walk-through](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/).
+
+```{note}
+Autoscaling of inference servers via `seldon-scheduler` is under consideration for the roadmap. This allow for more fine grained interactions with model autoscaling.
+```
 
 ## Model autoscaling
 

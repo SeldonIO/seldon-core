@@ -54,8 +54,17 @@ func NewServerReconciler(server *mlopsv1alpha1.Server,
 	if err != nil {
 		return nil, err
 	}
+
 	sr.ServiceReconciler = service.NewServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
 	return sr, nil
+}
+
+func (s *ServerReconciler) GetLabelSelector() string {
+	return s.StatefulSetReconciler.(common.LabelHandler).GetLabelSelector()
+}
+
+func (s *ServerReconciler) GetReplicas() (int32, error) {
+	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas()
 }
 
 func (s *ServerReconciler) GetResources() []metav1.Object {

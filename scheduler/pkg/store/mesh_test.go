@@ -64,8 +64,8 @@ func TestCreateSnapshot(t *testing.T) {
 			0: {
 				inferenceSvc: "svc",
 				loadedModels: map[ModelVersionID]bool{
-					ModelVersionID{Name: "model1", Version: 1}: true,
-					ModelVersionID{Name: "model2", Version: 2}: true,
+					{Name: "model1", Version: 1}: true,
+					{Name: "model2", Version: 2}: true,
 				},
 			},
 		},
@@ -77,8 +77,8 @@ func TestCreateSnapshot(t *testing.T) {
 	server.replicas[1] = &ServerReplica{
 		inferenceSvc: "svc",
 		loadedModels: map[ModelVersionID]bool{
-			ModelVersionID{Name: "model3", Version: 1}: true,
-			ModelVersionID{Name: "model4", Version: 2}: true,
+			{Name: "model3", Version: 1}: true,
+			{Name: "model4", Version: 2}: true,
 		},
 	}
 	server.name = "foo"

@@ -4,6 +4,7 @@ metadata:
   name: mlserver
 spec:
   podSpec:
+    terminationGracePeriodSeconds: '{{ .Values.serverConfig.terminationGracePeriodSeconds}}'
     containers:
     - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'

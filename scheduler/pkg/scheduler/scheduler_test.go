@@ -430,7 +430,7 @@ func TestScheduler(t *testing.T) {
 			scheduledReplicas: []int{1},
 		},
 		{
-			name:  "Scale up - no capacity on loaded replica servers",
+			name:  "Scale up - no capacity on loaded replica servers, should still go there",
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 3, []int{1, 2}, false, "server1", nil),
 			servers: []*store.ServerSnapshot{
 				{
@@ -450,7 +450,7 @@ func TestScheduler(t *testing.T) {
 			scheduledReplicas: []int{1, 2, 3},
 		},
 		{
-			name:  "Scale down - no capacity on loaded replica servers",
+			name:  "Scale down - no capacity on loaded replica servers, should still go there",
 			model: newTestModel("model1", 100, []string{"sklearn"}, nil, 1, []int{1, 2}, false, "server1", nil),
 			servers: []*store.ServerSnapshot{
 				{

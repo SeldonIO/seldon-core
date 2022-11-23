@@ -31,6 +31,14 @@ type Reconciler interface {
 	GetConditions() []*apis.Condition
 }
 
+type ReplicaHandler interface {
+	GetReplicas() (int32, error)
+}
+
+type LabelHandler interface {
+	GetLabelSelector() string
+}
+
 type ReconcilerConfig struct {
 	Ctx    context.Context
 	Logger logr.Logger

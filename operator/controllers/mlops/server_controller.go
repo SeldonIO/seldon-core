@@ -151,6 +151,12 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		server.Status.SetCondition(condition)
 	}
 
+	// Update status fields
+	selector := sr.(common.LabelHandler).GetLabelSelector()
+	replicas := *server.Spec.Replicas
+	server.Status.Selector = selector
+	server.Status.Replicas = replicas
+
 	err = r.updateStatus(server)
 	if err != nil {
 		return reconcile.Result{}, err

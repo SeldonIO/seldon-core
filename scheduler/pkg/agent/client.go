@@ -658,7 +658,9 @@ func (c *Client) consumeModelScalingEvents() {
 		e := <-ch
 		modelName, modelVersion, err := util.GetOrignalModelNameAndVersion(e.StatsData.ModelName)
 		if err != nil {
-			c.logger.WithError(err).Warnf("Trigger model scaling event model %s failed", e.StatsData.ModelName)
+			c.logger.WithError(err).Warnf(
+				"Trigger model scaling event %d for model %s failed",
+				e.EventType, e.StatsData.ModelName)
 			continue
 		} else {
 			c.logger.Debugf("Trigger model scaling event %d for model %s:%d with value %d",
@@ -668,7 +670,9 @@ func (c *Client) consumeModelScalingEvents() {
 			modelName, modelVersion, e.EventType, e.StatsData.Value, nil,
 		)
 		if err != nil {
-			c.logger.WithError(err).Warnf("Sending model scaling event model %s failed", e.StatsData.ModelName)
+			c.logger.WithError(err).Warnf(
+				"Sending model scaling event %d for model %s failed",
+				e.EventType, e.StatsData.ModelName)
 			continue
 		}
 	}

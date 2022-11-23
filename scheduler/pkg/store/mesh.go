@@ -417,6 +417,11 @@ func (m *ModelVersion) ModelState() ModelStatus {
 	return m.state
 }
 
+// note: this is used for testing purposes and should not be called directly in production
+func (m *ModelVersion) SetModelState(s ModelStatus) {
+	m.state = s
+}
+
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

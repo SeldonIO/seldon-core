@@ -5,7 +5,7 @@ metadata:
   name: mlserver
 spec:
   podSpec:
-    terminationGracePeriodSeconds: 30
+    terminationGracePeriodSeconds: 120
     serviceAccountName: seldon-server
     containers:
     - image: rclone:latest
@@ -15,6 +15,15 @@ spec:
       - containerPort: 5572
         name: rclone
         protocol: TCP
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
+      resources:
+        requests:
+          cpu: "200m"
+          memory: '100M'
       readinessProbe:
         failureThreshold: 3
         initialDelaySeconds: 5
@@ -60,6 +69,8 @@ spec:
         value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
+      - name: SELDON_DRAINER_PORT
+        value: "9007"
       - name: AGENT_TLS_SECRET_NAME
         value: ""
       - name: AGENT_TLS_FOLDER_PATH
@@ -93,6 +104,15 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
+      resources:
+        requests:
+          cpu: "500m"
+          memory: '500M'
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -115,15 +135,13 @@ spec:
         value: "false"
       resources:
         requests:
-          cpu: '0.1'
+          cpu: 1
           memory: '1G'
       lifecycle:
         preStop:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - /bin/sleep 10
+          httpGet:
+            port: 9007
+            path: terminate
       livenessProbe:
         httpGet:
           path: /v2/health/live

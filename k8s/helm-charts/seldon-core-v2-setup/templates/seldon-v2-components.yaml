@@ -1167,6 +1167,11 @@ spec:
     - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          httpGet:
+            path: terminate
+            port: 9007
       name: rclone
       ports:
       - containerPort: 5572
@@ -1250,6 +1255,8 @@ spec:
         value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
+      - name: SELDON_DRAINER_PORT
+        value: "9007"
       - name: AGENT_TLS_SECRET_NAME
         value: ""
       - name: AGENT_TLS_FOLDER_PATH
@@ -1276,6 +1283,11 @@ spec:
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          httpGet:
+            path: terminate
+            port: 9007
       name: agent
       ports:
       - containerPort: 9501
@@ -1316,11 +1328,9 @@ spec:
       imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
       lifecycle:
         preStop:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - /bin/sleep 10
+          httpGet:
+            path: terminate
+            port: 9007
       livenessProbe:
         httpGet:
           path: /v2/health/live
@@ -1361,7 +1371,7 @@ spec:
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server
-    terminationGracePeriodSeconds: 30
+    terminationGracePeriodSeconds: '{{ .Values.serverConfig.terminationGracePeriodSeconds}}'
     volumes:
     - name: downstream-ca-certs
       secret:
@@ -1394,6 +1404,11 @@ spec:
     - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          httpGet:
+            path: terminate
+            port: 9007
       name: rclone
       ports:
       - containerPort: 5572
@@ -1479,6 +1494,8 @@ spec:
         value: "9005"
       - name: SELDON_METRICS_PORT
         value: "9006"
+      - name: SELDON_DRAINER_PORT
+        value: "9007"
       - name: SELDON_SERVER_TYPE
         value: triton
       - name: POD_NAME
@@ -1497,6 +1514,11 @@ spec:
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          httpGet:
+            path: terminate
+            port: 9007
       name: agent
       ports:
       - containerPort: 9501
@@ -1540,6 +1562,11 @@ spec:
       image: '{{ .Values.serverConfig.triton.image.registry }}/{{ .Values.serverConfig.triton.image.repository
         }}:{{ .Values.serverConfig.triton.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.triton.image.pullPolicy }}'
+      lifecycle:
+        preStop:
+          httpGet:
+            path: terminate
+            port: 9007
       livenessProbe:
         httpGet:
           path: /v2/health/live
@@ -1582,7 +1609,7 @@ spec:
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server
-    terminationGracePeriodSeconds: 30
+    terminationGracePeriodSeconds: '{{ .Values.serverConfig.terminationGracePeriodSeconds}}'
     volumes:
     - configMap:
         name: seldon-agent

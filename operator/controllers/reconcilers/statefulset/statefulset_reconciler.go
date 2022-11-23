@@ -18,6 +18,7 @@ package statefulset
 
 import (
 	"context"
+	"fmt"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
@@ -88,6 +89,25 @@ func toStatefulSet(meta metav1.ObjectMeta, podSpec *v1.PodSpec, volumeClaimTempl
 		})
 	}
 	return ss
+}
+
+func (s *StatefulSetReconciler) GetLabelSelector() string {
+	return fmt.Sprintf("%s=%s", constants.ServerLabelNameKey, s.StatefulSet.GetName())
+}
+
+func (s *StatefulSetReconciler) GetReplicas() (int32, error) {
+	found := &appsv1.StatefulSet{}
+	err := s.Client.Get(context.TODO(), types.NamespacedName{
+		Name:      s.StatefulSet.GetName(),
+		Namespace: s.StatefulSet.GetNamespace(),
+	}, found)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return found.Status.Replicas, nil
 }
 
 func (s *StatefulSetReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
