@@ -28,7 +28,7 @@ spec:
 
 ```
 
-  * `steps` allow you to specify the models you want to combine into a pipeline. Each step name will correspond to a model of the same name. These models will need to have been deployed and available for the Pipeline to funciton, however Pipelines can be deployed before or at the same time you deploy the underlying models.
+  * `steps` allow you to specify the models you want to combine into a pipeline. Each step name will correspond to a model of the same name. These models will need to have been deployed and available for the Pipeline to function, however Pipelines can be deployed before or at the same time you deploy the underlying models.
   * `steps.inputs` allow you to specify the inputs to this step.
   * `outputs.steps` allow you to specify the output of the Pipeline. A pipeline can have multiple paths include flows of data that do not reach the output, e.g. Drift detection steps. However, if you wish to call your Pipeline in a synchronous manner via REST/gRPC then an output must be present so the Pipeline can be treated as a function.
 

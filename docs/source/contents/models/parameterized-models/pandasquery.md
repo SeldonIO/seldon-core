@@ -30,7 +30,7 @@ By including these in a Pipeline as follows we can define conditional routes:
 :language: yaml
 ```
 
-Here the mul10 model will be called if the choice-is-one model suceeds and the add10 model will be called if the choice-is-two model succeeds.
+Here the mul10 model will be called if the choice-is-one model succeeds and the add10 model will be called if the choice-is-two model succeeds.
 
 The full notebook can be found [here](../../examples/pandasquery.md)
 

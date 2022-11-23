@@ -11,7 +11,7 @@ You can make synchronous inference requests via REST or gRPC or asynchronous req
 
 ### Find Seldon service endpoint
 
- 1. If you are runing Seldon locally via Docker compose by deafult the endpoint will be `0.0.0.0:9000`
+ 1. If you are running Seldon locally via Docker compose by default the endpoint will be `0.0.0.0:9000`
  2. If you are running in Kubernetes Seldon creates a single Service `seldon-mesh` in the namespace Seldon is installed to, usually `seldon-mesh`. If this has be exposed via a load balancer this can be found via:
 
  ```bash

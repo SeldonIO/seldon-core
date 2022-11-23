@@ -8,11 +8,11 @@ Initial release of Seldon Core introduced a concept of an _inference graph_, whi
 
 ![inference_graph](inference_graph.png)
 
-In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transofrmations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between responces and requests as necessary. Here is how the picture looks under the hood:
+In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transofrmations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between response and requests as necessary. Here is how the picture looks under the hood:
 
 ![orchestrator](orchestrator-inference-graph.png)
 
-While this is a convenient way of implementing evaluation graph with microservices, it has a few problems. Orchestrator becomes a bottleneck and a single point of failure. It also hides all the data transformations that need to happen to translate one service's responce to another service's request. Data tracing and lineage becomes difficult. All in all, while Seldon platform is all about processing data, under-the-hood implementation was still focused on order of operations and not on data itself.
+While this is a convenient way of implementing evaluation graph with microservices, it has a few problems. Orchestrator becomes a bottleneck and a single point of failure. It also hides all the data transformations that need to happen to translate one service's response to another service's request. Data tracing and lineage becomes difficult. All in all, while Seldon platform is all about processing data, under-the-hood implementation was still focused on order of operations and not on data itself.
 
 ## Data flow
 

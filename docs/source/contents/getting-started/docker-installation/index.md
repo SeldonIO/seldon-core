@@ -31,7 +31,7 @@ make deploy-local
 
 ### Local Models
 
-To deploy with a local folder available for loading models set the enviroment variable `LOCAL_MODEL_FOLDER` to the folder, e.g.:
+To deploy with a local folder available for loading models set the environment variable `LOCAL_MODEL_FOLDER` to the folder, e.g.:
 
 ```bash
 export LOCAL_MODEL_FOLDER=/home/seldon/models
@@ -52,7 +52,7 @@ The default local install will provide Jaeger tracing at `http://0.0.0.0:16686/s
 
 ## Metrics
 
-The default local install wille expose Grafana at `http://localhost:3000`.
+The default local install will expose Grafana at `http://localhost:3000`.
 
 ## Undeploy
 

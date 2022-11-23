@@ -4,7 +4,7 @@ This section describes how a user can run performance tests to understand the li
 The base directly is `tests/k6`
 
 ## Driver
-[k6](https://k6.io/) is used to drive requests for load, unload and infer workloads. It is recommended that the load test is run withing the same cluster that has SCv2 installed as it requires internal access to some of the services that are not automatically exposed to the outside world. Furthermore having the driver withthin the same cluster minimises link latency to SCv2 entrypoint; therefore infer latencies are more representives of actual overheads of the system.
+[k6](https://k6.io/) is used to drive requests for load, unload and infer workloads. It is recommended that the load test is run within the same cluster that has SCv2 installed as it requires internal access to some of the services that are not automatically exposed to the outside world. Furthermore having the driver withthin the same cluster minimises link latency to SCv2 entrypoint; therefore infer latencies are more representatives of actual overheads of the system.
 
 ## Tests
 
