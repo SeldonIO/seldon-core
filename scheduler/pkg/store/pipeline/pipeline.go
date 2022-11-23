@@ -84,9 +84,10 @@ const (
 )
 
 type PipelineState struct {
-	Status    PipelineStatus
-	Reason    string
-	Timestamp time.Time
+	Status      PipelineStatus
+	ModelsReady bool
+	Reason      string
+	Timestamp   time.Time
 }
 
 func (ps PipelineStatus) String() string {
@@ -116,6 +117,7 @@ type PipelineStep struct {
 	InputsJoinType   JoinType
 	TriggersJoinType JoinType
 	Batch            *Batch
+	Available        bool
 }
 
 type Batch struct {

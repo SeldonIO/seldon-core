@@ -20,6 +20,8 @@ import (
 	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
@@ -36,6 +38,11 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	}
 	s.pipelineEventStream.mu.Unlock()
 
+	err := s.sendCurrentPipelineStatuses(stream, false)
+	if err != nil {
+		return err
+	}
+
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
 	for {
@@ -51,6 +58,21 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 			return nil
 		}
 	}
+}
+
+func (s *SchedulerServer) sendCurrentPipelineStatuses(stream pb.Scheduler_SubscribePipelineStatusServer, allVersions bool) error {
+	pipelines, err := s.pipelineHandler.GetPipelines()
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	for _, p := range pipelines {
+		resp := createPipelineStatus(p, allVersions)
+		err = stream.Send(resp)
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
+		}
+	}
+	return nil
 }
 
 func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMsg) {

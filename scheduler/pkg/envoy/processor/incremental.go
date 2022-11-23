@@ -133,12 +133,16 @@ func NewIncrementalProcessor(
 
 func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
-	go func() {
-		err := p.addPipeline(event.PipelineName)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
-		}
-	}()
+	// Ignore pipeline events due to model status change to stop pointless processing
+	// If models are ready or not has no bearing on whether we need to update pipeline
+	if !event.ModelStatusChange {
+		go func() {
+			err := p.addPipeline(event.PipelineName)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
+			}
+		}()
+	}
 }
 
 func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.ExperimentEventMsg) {
@@ -465,6 +469,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	pip, err := p.pipelineHandler.GetPipeline(pipelineName)
+	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline %s", pipelineName)
 		return err
@@ -476,7 +481,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
 	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
-	logger.Infof("getting experiment for baseline %s returned %v", pip.Name, exp)
+	logger.Debugf("getting experiment for baseline %s returned %v", pip.Name, exp)
 	// This experiment must have a default for this pipeline
 	if exp != nil {
 		if exp.Default == nil {

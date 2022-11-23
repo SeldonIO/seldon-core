@@ -116,7 +116,7 @@ func TestGrpcServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{})
+	grpcServer := NewGatewayGrpcServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil)
 	go func() {
 		err := grpcServer.Start()
 		g.Expect(err).To(BeNil())

@@ -843,11 +843,20 @@ spec:
         - --http-port=9010
         - --grpc-port=9011
         - --metrics-port=9006
+        - --scheduler-host=seldon-scheduler
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
+        - --envoy-host=seldon-mesh
+        - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         command:
         - /bin/pipelinegateway
         env:
+        - name: SELDON_SCHEDULER_PLAINTXT_PORT
+          value: "9004"
+        - name: SELDON_SCHEDULER_TLS_PORT
+          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -580,19 +580,7 @@ func (s *SchedulerServer) PipelineStatus(
 	logger.Infof("received status request from %s", req.SubscriberName)
 
 	if req.Name == nil {
-
-		pipelines, err := s.pipelineHandler.GetPipelines()
-		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
-		}
-		for _, p := range pipelines {
-			resp := createPipelineStatus(p, req.GetAllVersions())
-			err = stream.Send(resp)
-			if err != nil {
-				return status.Errorf(codes.Internal, err.Error())
-			}
-		}
-		return nil
+		return s.sendCurrentPipelineStatuses(stream, req.AllVersions)
 	} else {
 		// Single pipeline requested
 		p, err := s.pipelineHandler.GetPipeline(req.GetName())

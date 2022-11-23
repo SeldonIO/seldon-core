@@ -480,13 +480,14 @@ func TestExperiments(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
 				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
-				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore:       memoryStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
-				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, memoryStore),
 			}
 			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
@@ -535,13 +536,14 @@ func TestRollingUpdate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
 				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
-				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
-				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
 			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
@@ -605,13 +607,14 @@ func TestDraining(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
 				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
-				modelStore:       store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
-				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
 			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
@@ -749,13 +752,14 @@ func TestModelSync(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:                cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:               log.New(),
 				xdsCache:             xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
-				modelStore:           store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore:           modelStore,
 				experimentServer:     experiment.NewExperimentServer(log.New(), nil, nil, nil),
-				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),
 				pendingModelVersions: test.pendingModelVersions,
 			}
 			inc.xdsCache.AddListeners()

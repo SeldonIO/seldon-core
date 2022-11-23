@@ -59,7 +59,7 @@ func TestLoadModel(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
@@ -165,7 +165,7 @@ func TestUnloadModel(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-		pipelineServer := pipeline.NewPipelineStore(logger, eventHub)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
@@ -286,7 +286,7 @@ func TestLoadPipeline(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil)},
 		},
 		{
 			name: "pipeline with output",
@@ -307,7 +307,7 @@ func TestLoadPipeline(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			server: &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil)},
 		},
 	}
 
@@ -338,7 +338,7 @@ func TestUnloadPipeline(t *testing.T) {
 		{
 			name:      "pipeline does not exist",
 			unloadReq: &pb.UnloadPipelineRequest{Name: "foo"},
-			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil)},
 			err:       true,
 		},
 		{
@@ -358,7 +358,7 @@ func TestUnloadPipeline(t *testing.T) {
 				},
 			},
 			unloadReq: &pb.UnloadPipelineRequest{Name: "foo"},
-			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil)},
+			server:    &SchedulerServer{pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil)},
 		},
 	}
 
@@ -395,7 +395,7 @@ func TestPipelineStatus(t *testing.T) {
 			name:      "pipeline does not exist",
 			statusReq: &pb.PipelineStatusRequest{Name: stringPtr("foo")},
 			server: &SchedulerServer{
-				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil),
 				logger:          log.New(),
 			},
 			err: true,
@@ -440,12 +440,13 @@ func TestPipelineStatus(t *testing.T) {
 						State: &pb.PipelineVersionState{
 							PipelineVersion: 1,
 							Status:          pb.PipelineVersionState_PipelineCreate,
+							ModelsReady:     false,
 						},
 					},
 				},
 			},
 			server: &SchedulerServer{
-				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil),
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil),
 				logger:          log.New(),
 			},
 		},

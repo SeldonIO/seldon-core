@@ -55,7 +55,7 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	pipeline.Status.CreateAndSetCondition(
 		v1alpha1.PipelineReady,
 		false,
-		scheduler.PipelineVersionState_PipelineTerminating,
+		scheduler.PipelineVersionState_PipelineTerminating.String(),
 		"Pipeline unload requested",
 	)
 	_ = s.updatePipelineStatusImpl(pipeline)
@@ -154,10 +154,16 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
 			switch pv.State.Status {
 			case scheduler.PipelineVersionState_PipelineReady:
 				logger.Info("Setting pipeline to ready", "pipeline", event.PipelineName, "generation", pipeline.Generation)
-				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, true, pv.State.Status, pv.State.Reason)
+				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, true, pv.State.Status.String(), pv.State.Reason)
 			default:
 				logger.Info("Setting pipeline to not ready", "pipeline", event.PipelineName, "generation", pipeline.Generation)
-				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, pv.State.Status, pv.State.Reason)
+				pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineReady, false, pv.State.Status.String(), pv.State.Reason)
+			}
+			// Set models ready
+			if pv.State.ModelsReady {
+				pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, true, "Models all available", "")
+			} else {
+				pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, false, "Some models are not available", "")
 			}
 
 			return s.updatePipelineStatusImpl(pipeline)

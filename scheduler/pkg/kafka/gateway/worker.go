@@ -40,7 +40,6 @@ import (
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
@@ -82,7 +81,7 @@ func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceP
 	}
 	iw := &InferWorker{
 		logger:      logger.WithField("source", "KafkaInferWorker"),
-		httpClient:  &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
+		httpClient:  util.GetHttpClientFromTLSOptions(consumer.tlsClientOptions),
 		consumer:    consumer,
 		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
 		callOptions: opts,
@@ -94,27 +93,19 @@ func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceP
 		return nil, err
 	}
 	iw.grpcClient = grpcClient
-	iw.httpClient = iw.getHttpClient()
 
 	return iw, nil
 }
 
-func getRestUrl(host string, port int, modelName string) *url.URL {
+func getRestUrl(tls bool, host string, port int, modelName string) *url.URL {
+	scheme := "http"
+	if tls {
+		scheme = "https"
+	}
 	return &url.URL{
-		Scheme: "http",
+		Scheme: scheme,
 		Host:   net.JoinHostPort(host, strconv.Itoa(port)),
 		Path:   fmt.Sprintf("/v2/models/%s/infer", modelName),
-	}
-}
-
-func (iw *InferWorker) getHttpClient() *http.Client {
-	if iw.consumer.tlsClientOptions.tls {
-		t := &http.Transport{
-			TLSClientConfig: iw.consumer.tlsClientOptions.certificateStore.CreateClientTLSConfig(),
-		}
-		return &http.Client{Transport: otelhttp.NewTransport(t)}
-	} else {
-		return &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 	}
 }
 
@@ -124,9 +115,9 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 	}
 	var creds credentials.TransportCredentials
-	if iw.consumer.tlsClientOptions.tls {
+	if iw.consumer.tlsClientOptions.TLS {
 		logger.Info("Creating TLS credentials")
-		creds = iw.consumer.tlsClientOptions.certificateStore.CreateClientTransportCredentials()
+		creds = iw.consumer.tlsClientOptions.Cert.CreateClientTransportCredentials()
 	} else {
 		logger.Info("Creating insecure credentials")
 		creds = insecure.NewCredentials()
@@ -268,13 +259,13 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 
 func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
-	restUrl := getRestUrl(iw.consumer.consumerConfig.InferenceServerConfig.Host, iw.consumer.consumerConfig.InferenceServerConfig.HttpPort, job.modelName)
+	restUrl := getRestUrl(iw.consumer.tlsClientOptions.TLS, iw.consumer.consumerConfig.InferenceServerConfig.Host, iw.consumer.consumerConfig.InferenceServerConfig.HttpPort, job.modelName)
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 	data := job.msg.Value
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", restUrl.String(), bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, restUrl.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}

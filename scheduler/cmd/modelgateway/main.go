@@ -167,6 +167,7 @@ func main() {
 		if err != nil {
 			logger.WithError(err).Error("Start client failed")
 		}
+		logger.Infof("Scheduler client ended - closing done")
 		close(done)
 	}()
 

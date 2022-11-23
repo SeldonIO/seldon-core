@@ -166,7 +166,7 @@ func TestHttpServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{})
+	httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil)
 	go func() {
 		err := httpServer.Start()
 		g.Expect(err).To(Equal(http.ErrServerClosed))

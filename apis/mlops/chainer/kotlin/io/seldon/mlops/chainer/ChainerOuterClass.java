@@ -58,49 +58,6 @@ public final class ChainerOuterClass {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private PipelineSubscriptionRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.chainer.ChainerOuterClass.internal_static_seldon_mlops_chainer_PipelineSubscriptionRequest_descriptor;
@@ -169,7 +126,7 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -181,7 +138,7 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -198,7 +155,7 @@ public final class ChainerOuterClass {
 
       if (!getName()
           .equals(other.getName())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -211,7 +168,7 @@ public final class ChainerOuterClass {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + NAME_FIELD_NUMBER;
       hash = (53 * hash) + getName().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -328,18 +285,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -425,7 +377,7 @@ public final class ChainerOuterClass {
           name_ = other.name_;
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -440,17 +392,35 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                name_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -562,7 +532,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PipelineSubscriptionRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -681,79 +662,6 @@ public final class ChainerOuterClass {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private PipelineUpdateMessage(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-              int rawValue = input.readEnum();
-
-              op_ = rawValue;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              pipeline_ = s;
-              break;
-            }
-            case 24: {
-
-              version_ = input.readUInt32();
-              break;
-            }
-            case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              uid_ = s;
-              break;
-            }
-            case 42: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                updates_ = new java.util.ArrayList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              updates_.add(
-                  input.readMessage(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.parser(), extensionRegistry));
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          updates_ = java.util.Collections.unmodifiableList(updates_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -1060,7 +968,7 @@ public final class ChainerOuterClass {
       for (int i = 0; i < updates_.size(); i++) {
         output.writeMessage(5, updates_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -1087,7 +995,7 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, updates_.get(i));
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1111,7 +1019,7 @@ public final class ChainerOuterClass {
           .equals(other.getUid())) return false;
       if (!getUpdatesList()
           .equals(other.getUpdatesList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -1134,7 +1042,7 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + UPDATES_FIELD_NUMBER;
         hash = (53 * hash) + getUpdatesList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1251,19 +1159,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-          getUpdatesFieldBuilder();
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -1278,10 +1180,11 @@ public final class ChainerOuterClass {
 
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
+          updates_ = null;
           updatesBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -1410,7 +1313,7 @@ public final class ChainerOuterClass {
             }
           }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1425,17 +1328,63 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                op_ = input.readEnum();
+
+                break;
+              } // case 8
+              case 18: {
+                pipeline_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 18
+              case 24: {
+                version_ = input.readUInt32();
+
+                break;
+              } // case 24
+              case 34: {
+                uid_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 34
+              case 42: {
+                io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate m =
+                    input.readMessage(
+                        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.parser(),
+                        extensionRegistry);
+                if (updatesBuilder_ == null) {
+                  ensureUpdatesIsMutable();
+                  updates_.add(m);
+                } else {
+                  updatesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -1949,7 +1898,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PipelineUpdateMessage(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -2150,9 +2110,11 @@ public final class ChainerOuterClass {
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
 
-    java.lang.String getTensorMapOrDefault(
+    /* nullable */
+java.lang.String getTensorMapOrDefault(
         java.lang.String key,
-        java.lang.String defaultValue);
+        /* nullable */
+java.lang.String defaultValue);
     /**
      * <pre>
      * optional map of tensor name mappings
@@ -2222,122 +2184,6 @@ public final class ChainerOuterClass {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private PipelineStepUpdate(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                sources_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              sources_.add(s);
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                triggers_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              triggers_.add(s);
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              sink_ = s;
-              break;
-            }
-            case 32: {
-              int rawValue = input.readEnum();
-
-              inputJoinTy_ = rawValue;
-              break;
-            }
-            case 40: {
-              int rawValue = input.readEnum();
-
-              triggersJoinTy_ = rawValue;
-              break;
-            }
-            case 48: {
-
-              passEmptyResponses_ = input.readBool();
-              break;
-            }
-            case 56: {
-              bitField0_ |= 0x00000001;
-              joinWindowMs_ = input.readUInt32();
-              break;
-            }
-            case 66: {
-              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-                tensorMap_ = com.google.protobuf.MapField.newMapField(
-                    TensorMapDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000008;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-              tensorMap__ = input.readMessage(
-                  TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              tensorMap_.getMutableMap().put(
-                  tensorMap__.getKey(), tensorMap__.getValue());
-              break;
-            }
-            case 74: {
-              io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder subBuilder = null;
-              if (batch_ != null) {
-                subBuilder = batch_.toBuilder();
-              }
-              batch_ = input.readMessage(io.seldon.mlops.chainer.ChainerOuterClass.Batch.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(batch_);
-                batch_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          sources_ = sources_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          triggers_ = triggers_.getUnmodifiableView();
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -2740,7 +2586,7 @@ public final class ChainerOuterClass {
     @java.lang.Override
     public boolean containsTensorMap(
         java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
+      if (key == null) { throw new NullPointerException("map key"); }
       return internalGetTensorMap().getMap().containsKey(key);
     }
     /**
@@ -2775,7 +2621,7 @@ public final class ChainerOuterClass {
     public java.lang.String getTensorMapOrDefault(
         java.lang.String key,
         java.lang.String defaultValue) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
+      if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, java.lang.String> map =
           internalGetTensorMap().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -2791,7 +2637,7 @@ public final class ChainerOuterClass {
 
     public java.lang.String getTensorMapOrThrow(
         java.lang.String key) {
-      if (key == null) { throw new java.lang.NullPointerException(); }
+      if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, java.lang.String> map =
           internalGetTensorMap().getMap();
       if (!map.containsKey(key)) {
@@ -2882,7 +2728,7 @@ public final class ChainerOuterClass {
       if (batch_ != null) {
         output.writeMessage(9, getBatch());
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2940,7 +2786,7 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, getBatch());
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2977,7 +2823,7 @@ public final class ChainerOuterClass {
         if (!getBatch()
             .equals(other.getBatch())) return false;
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -3017,7 +2863,7 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + BATCH_FIELD_NUMBER;
         hash = (53 * hash) + getBatch().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -3156,18 +3002,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -3336,7 +3177,7 @@ public final class ChainerOuterClass {
         if (other.hasBatch()) {
           mergeBatch(other.getBatch());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -3351,17 +3192,82 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureSourcesIsMutable();
+                sources_.add(s);
+                break;
+              } // case 10
+              case 18: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureTriggersIsMutable();
+                triggers_.add(s);
+                break;
+              } // case 18
+              case 26: {
+                sink_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 26
+              case 32: {
+                inputJoinTy_ = input.readEnum();
+
+                break;
+              } // case 32
+              case 40: {
+                triggersJoinTy_ = input.readEnum();
+
+                break;
+              } // case 40
+              case 48: {
+                passEmptyResponses_ = input.readBool();
+
+                break;
+              } // case 48
+              case 56: {
+                joinWindowMs_ = input.readUInt32();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 56
+              case 66: {
+                com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+                tensorMap__ = input.readMessage(
+                    TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableTensorMap().getMutableMap().put(
+                    tensorMap__.getKey(), tensorMap__.getValue());
+                break;
+              } // case 66
+              case 74: {
+                input.readMessage(
+                    getBatchFieldBuilder().getBuilder(),
+                    extensionRegistry);
+
+                break;
+              } // case 74
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -3959,7 +3865,7 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public boolean containsTensorMap(
           java.lang.String key) {
-        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (key == null) { throw new NullPointerException("map key"); }
         return internalGetTensorMap().getMap().containsKey(key);
       }
       /**
@@ -3994,7 +3900,7 @@ public final class ChainerOuterClass {
       public java.lang.String getTensorMapOrDefault(
           java.lang.String key,
           java.lang.String defaultValue) {
-        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, java.lang.String> map =
             internalGetTensorMap().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -4010,7 +3916,7 @@ public final class ChainerOuterClass {
 
       public java.lang.String getTensorMapOrThrow(
           java.lang.String key) {
-        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, java.lang.String> map =
             internalGetTensorMap().getMap();
         if (!map.containsKey(key)) {
@@ -4034,7 +3940,7 @@ public final class ChainerOuterClass {
 
       public Builder removeTensorMap(
           java.lang.String key) {
-        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (key == null) { throw new NullPointerException("map key"); }
         internalGetMutableTensorMap().getMutableMap()
             .remove(key);
         return this;
@@ -4057,8 +3963,11 @@ public final class ChainerOuterClass {
       public Builder putTensorMap(
           java.lang.String key,
           java.lang.String value) {
-        if (key == null) { throw new java.lang.NullPointerException(); }
-        if (value == null) { throw new java.lang.NullPointerException(); }
+        if (key == null) { throw new NullPointerException("map key"); }
+        if (value == null) {
+  throw new NullPointerException("map value");
+}
+
         internalGetMutableTensorMap().getMutableMap()
             .put(key, value);
         return this;
@@ -4265,7 +4174,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PipelineStepUpdate(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -4343,59 +4263,6 @@ public final class ChainerOuterClass {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private Batch(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-              bitField0_ |= 0x00000001;
-              size_ = input.readUInt32();
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              windowMs_ = input.readUInt32();
-              break;
-            }
-            case 24: {
-
-              rolling_ = input.readBool();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -4483,7 +4350,7 @@ public final class ChainerOuterClass {
       if (rolling_ != false) {
         output.writeBool(3, rolling_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -4504,7 +4371,7 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(3, rolling_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -4531,7 +4398,7 @@ public final class ChainerOuterClass {
       }
       if (getRolling()
           != other.getRolling()) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -4553,7 +4420,7 @@ public final class ChainerOuterClass {
       hash = (37 * hash) + ROLLING_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getRolling());
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -4670,18 +4537,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.Batch.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -4787,7 +4649,7 @@ public final class ChainerOuterClass {
         if (other.getRolling() != false) {
           setRolling(other.getRolling());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -4802,17 +4664,45 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.Batch parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                size_ = input.readUInt32();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              case 16: {
+                windowMs_ = input.readUInt32();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              case 24: {
+                rolling_ = input.readBool();
+
+                break;
+              } // case 24
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.Batch) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -4958,7 +4848,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Batch(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -5054,67 +4955,6 @@ public final class ChainerOuterClass {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private PipelineUpdateStatusMessage(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.Builder subBuilder = null;
-              if (update_ != null) {
-                subBuilder = update_.toBuilder();
-              }
-              update_ = input.readMessage(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(update_);
-                update_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-            case 16: {
-
-              success_ = input.readBool();
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              reason_ = s;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -5239,7 +5079,7 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(reason_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, reason_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -5259,7 +5099,7 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(reason_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, reason_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -5283,7 +5123,7 @@ public final class ChainerOuterClass {
           != other.getSuccess()) return false;
       if (!getReason()
           .equals(other.getReason())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -5303,7 +5143,7 @@ public final class ChainerOuterClass {
           getSuccess());
       hash = (37 * hash) + REASON_FIELD_NUMBER;
       hash = (53 * hash) + getReason().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -5420,18 +5260,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -5537,7 +5372,7 @@ public final class ChainerOuterClass {
           reason_ = other.reason_;
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -5552,17 +5387,47 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                input.readMessage(
+                    getUpdateFieldBuilder().getBuilder(),
+                    extensionRegistry);
+
+                break;
+              } // case 10
+              case 16: {
+                success_ = input.readBool();
+
+                break;
+              } // case 16
+              case 26: {
+                reason_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -5860,7 +5725,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PipelineUpdateStatusMessage(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -5911,43 +5787,6 @@ public final class ChainerOuterClass {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private PipelineUpdateStatusResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.chainer.ChainerOuterClass.internal_static_seldon_mlops_chainer_PipelineUpdateStatusResponse_descriptor;
@@ -5975,7 +5814,7 @@ public final class ChainerOuterClass {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -5984,7 +5823,7 @@ public final class ChainerOuterClass {
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -5999,7 +5838,7 @@ public final class ChainerOuterClass {
       }
       io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse other = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -6010,7 +5849,7 @@ public final class ChainerOuterClass {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -6127,18 +5966,13 @@ public final class ChainerOuterClass {
 
       // Construct using io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -6217,7 +6051,7 @@ public final class ChainerOuterClass {
 
       public Builder mergeFrom(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse other) {
         if (other == io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -6232,17 +6066,30 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       @java.lang.Override
@@ -6278,7 +6125,18 @@ public final class ChainerOuterClass {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new PipelineUpdateStatusResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 

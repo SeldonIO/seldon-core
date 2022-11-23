@@ -21,6 +21,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	"github.com/mitchellh/copystructure"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
@@ -28,10 +30,13 @@ import (
 )
 
 const (
-	addPipelineEventSource       = "pipeline.store.addpipeline"
-	removePipelineEventSource    = "pipeline.store.removepipeline"
-	setStatusPipelineEventSource = "pipeline.store.setstatus"
-	pipelineDbFolder             = "pipelinedb"
+	pendingSyncsQueueSize             int = 100
+	addPipelineEventSource                = "pipeline.store.addpipeline"
+	removePipelineEventSource             = "pipeline.store.removepipeline"
+	setStatusPipelineEventSource          = "pipeline.store.setstatus"
+	SetModelStatusPipelineEventSource     = "pipeline.store.setmodelstatus"
+	pipelineDbFolder                      = "pipelinedb"
+	modelEventHandlerName                 = "pipeline.store.models"
 )
 
 type PipelineHandler interface {
@@ -45,19 +50,33 @@ type PipelineHandler interface {
 }
 
 type PipelineStore struct {
-	logger    logrus.FieldLogger
-	mu        sync.RWMutex
-	eventHub  *coordinator.EventHub
-	pipelines map[string]*Pipeline
-	db        *PipelineDBManager
+	logger             logrus.FieldLogger
+	mu                 sync.RWMutex
+	eventHub           *coordinator.EventHub
+	pipelines          map[string]*Pipeline
+	db                 *PipelineDBManager
+	modelStatusHandler ModelStatusHandler
 }
 
-func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub) *PipelineStore {
+func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore) *PipelineStore {
 	ps := &PipelineStore{
 		logger:    logger.WithField("source", "pipelineStore"),
 		eventHub:  eventHub,
 		pipelines: make(map[string]*Pipeline),
 		db:        nil,
+		modelStatusHandler: ModelStatusHandler{
+			logger:          logger.WithField("source", "PipelineModelStatusHandler"),
+			store:           store,
+			modelReferences: map[string]map[string]void{},
+		},
+	}
+	if eventHub != nil {
+		eventHub.RegisterModelEventHandler(
+			modelEventHandlerName,
+			pendingSyncsQueueSize,
+			ps.logger,
+			ps.handleModelEvents,
+		)
 	}
 	return ps
 }
@@ -91,6 +110,10 @@ func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
 	ps.mu.Lock()
+	err := ps.modelStatusHandler.addPipelineModelStatus(pipeline)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to set pipeline state for pipeline %s", pipeline.Name)
+	}
 	ps.pipelines[pipeline.Name] = pipeline
 	ps.mu.Unlock()
 	pv := pipeline.GetLatestPipelineVersion()
@@ -164,6 +187,10 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		}
 	}
 	err := validateAndAddPipelineVersion(req, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	err = ps.modelStatusHandler.addPipelineModelStatus(pipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -373,4 +400,33 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 	} else {
 		return evts, &PipelineNotFoundErr{pipeline: name}
 	}
+}
+
+func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
+	logger := ps.logger.WithField("func", "handleModelEvents")
+	logger.Infof("Received event %s", event.String())
+
+	go func() {
+		ps.modelStatusHandler.mu.RLock()
+		defer ps.modelStatusHandler.mu.RUnlock()
+		refs := ps.modelStatusHandler.modelReferences[event.ModelName]
+		if len(refs) > 0 {
+			model, err := ps.modelStatusHandler.store.GetModel(event.ModelName)
+			if err != nil {
+				logger.Warningf("Failed to get model %s from store", event.ModelName)
+				return
+			}
+			ps.mu.Lock()
+			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, model != nil && model.GetLastAvailableModel() != nil, ps.pipelines, ps.logger)
+			ps.mu.Unlock()
+			// Publish events for modified pipelines
+			if ps.eventHub != nil {
+				for _, evt := range evts {
+					ps.eventHub.PublishPipelineEvent(SetModelStatusPipelineEventSource, *evt)
+				}
+			}
+		} else {
+			logger.Debugf("No references in pipelines for model %s", event.ModelName)
+		}
+	}()
 }

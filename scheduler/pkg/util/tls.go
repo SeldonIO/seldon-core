@@ -39,3 +39,24 @@ func CreateUpstreamDataplaneServerTLSOptions() (TLSOptions, error) {
 	}
 	return tlsOptions, nil
 }
+
+func CreateTLSClientOptions() (*TLSOptions, error) {
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
+	if protocol == seldontls.SecurityProtocolSSL {
+		mTLS, err := GetBoolEnvar(seldontls.EnvSecurityDownstreamClientMTLS, false)
+		if err != nil {
+			return nil, err
+		}
+		certStore, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyDownstreamClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyDownstreamServer),
+			seldontls.ValidationOnly(!mTLS))
+		if err != nil {
+			return nil, err
+		}
+		return &TLSOptions{
+			TLS:  true,
+			Cert: certStore,
+		}, nil
+	}
+	return &TLSOptions{}, nil
+}

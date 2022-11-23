@@ -959,6 +959,11 @@ spec:
         - --http-port=9010
         - --grpc-port=9011
         - --metrics-port=9006
+        - --scheduler-host=seldon-scheduler
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
+        - --envoy-host=seldon-mesh
+        - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         command:
@@ -993,6 +998,40 @@ spec:
           value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
         - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
           value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
+        - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+          value: '{{ .Values.security.envoy.ssl.downstream.client.mtls }}'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+          value: '{{ .Values.security.envoy.ssl.downstream.client.secret }}'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+          value: '{{ .Values.security.envoy.ssl.downstream.client.serverValidationSecret
+            }}'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '{{ .Values.security.envoy.ssl.downstream.client.keyPath }}'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '{{ .Values.security.envoy.ssl.downstream.client.crtPath }}'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '{{ .Values.security.envoy.ssl.downstream.client.caPath }}'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+          value: '{{ .Values.security.envoy.ssl.downstream.client.serverCaPath }}'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: '{{ .Values.security.controlplane.protocol }}'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret
+            }}'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.client.keyPath }}'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.client.crtPath }}'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
+        - name: SELDON_SCHEDULER_PLAINTXT_PORT
+          value: "9004"
+        - name: SELDON_SCHEDULER_TLS_PORT
+          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -125,7 +125,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 func (r *PipelineReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline, err error) {
-	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, schedulerAPI.PipelineVersionState_PipelineFailed, err.Error())
+	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, schedulerAPI.PipelineVersionState_PipelineFailed.String(), err.Error())
 	if errSet := r.Status().Update(ctx, pipeline); errSet != nil {
 		logger.Error(errSet, "Failed to set status on pipeline on error", "pipeline", pipeline.Name, "error", err.Error())
 	}

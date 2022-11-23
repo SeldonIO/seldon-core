@@ -19,7 +19,7 @@ limitations under the License.
 
 package io.seldon.mlops.chainer;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializebatch")
 inline fun batch(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
   io.seldon.mlops.chainer.BatchKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.Batch.newBuilder()).apply { block() }._build()
 object BatchKt {
@@ -107,3 +107,4 @@ object BatchKt {
 @kotlin.jvm.JvmSynthetic
 inline fun io.seldon.mlops.chainer.ChainerOuterClass.Batch.copy(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
   io.seldon.mlops.chainer.BatchKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

@@ -19,7 +19,7 @@ limitations under the License.
 
 package io.seldon.mlops.chainer;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializepipelineUpdateMessage")
 inline fun pipelineUpdateMessage(block: io.seldon.mlops.chainer.PipelineUpdateMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage =
   io.seldon.mlops.chainer.PipelineUpdateMessageKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.newBuilder()).apply { block() }._build()
 object PipelineUpdateMessageKt {
@@ -41,7 +41,7 @@ object PipelineUpdateMessageKt {
     /**
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage.PipelineOperation op = 1;</code>
      */
-    var op: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
+     var op: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
       @JvmName("getOp")
       get() = _builder.getOp()
       @JvmName("setOp")
@@ -128,15 +128,18 @@ object PipelineUpdateMessageKt {
     @kotlin.jvm.JvmName("addUpdates")
     fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.add(value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate) {
       _builder.addUpdates(value)
-    }/**
+    }
+    /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
      * @param value The updates to add.
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignUpdates")
+    @Suppress("NOTHING_TO_INLINE")
     inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.plusAssign(value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate) {
       add(value)
-    }/**
+    }
+    /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
      * @param values The updates to add.
      */
@@ -144,15 +147,18 @@ object PipelineUpdateMessageKt {
     @kotlin.jvm.JvmName("addAllUpdates")
     fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.addAll(values: kotlin.collections.Iterable<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate>) {
       _builder.addAllUpdates(values)
-    }/**
+    }
+    /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
      * @param values The updates to add.
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignAllUpdates")
+    @Suppress("NOTHING_TO_INLINE")
     inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.plusAssign(values: kotlin.collections.Iterable<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate>) {
       addAll(values)
-    }/**
+    }
+    /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
      * @param index The index to set the value at.
      * @param value The updates to set.
@@ -161,15 +167,19 @@ object PipelineUpdateMessageKt {
     @kotlin.jvm.JvmName("setUpdates")
     operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.set(index: kotlin.Int, value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate) {
       _builder.setUpdates(index, value)
-    }/**
+    }
+    /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("clearUpdates")
     fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, UpdatesProxy>.clear() {
       _builder.clearUpdates()
-    }}
+    }
+
+  }
 }
 @kotlin.jvm.JvmSynthetic
 inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.copy(block: io.seldon.mlops.chainer.PipelineUpdateMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage =
   io.seldon.mlops.chainer.PipelineUpdateMessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

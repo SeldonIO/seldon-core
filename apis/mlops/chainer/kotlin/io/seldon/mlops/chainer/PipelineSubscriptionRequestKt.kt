@@ -19,7 +19,7 @@ limitations under the License.
 
 package io.seldon.mlops.chainer;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializepipelineSubscriptionRequest")
 inline fun pipelineSubscriptionRequest(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
   io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.newBuilder()).apply { block() }._build()
 object PipelineSubscriptionRequestKt {
@@ -59,3 +59,4 @@ object PipelineSubscriptionRequestKt {
 @kotlin.jvm.JvmSynthetic
 inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.copy(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
   io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

@@ -19,7 +19,7 @@ limitations under the License.
 
 package io.seldon.mlops.chainer;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializepipelineUpdateStatusMessage")
 inline fun pipelineUpdateStatusMessage(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
   io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.newBuilder()).apply { block() }._build()
 object PipelineUpdateStatusMessageKt {
@@ -112,3 +112,7 @@ object PipelineUpdateStatusMessageKt {
 @kotlin.jvm.JvmSynthetic
 inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
   io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+val io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessageOrBuilder.updateOrNull: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage?
+  get() = if (hasUpdate()) getUpdate() else null
+

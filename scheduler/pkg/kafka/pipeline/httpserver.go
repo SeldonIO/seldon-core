@@ -19,11 +19,14 @@ package pipeline
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline/status"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -36,16 +39,19 @@ import (
 
 const (
 	ResourceNameVariable = "model"
+	v2ModelPathPrefix    = "/v2/models/"
+	v2PipelinePathPrefix = "/v2/pipelines/"
 )
 
 type GatewayHttpServer struct {
-	port       int
-	router     *mux.Router
-	server     *http.Server
-	logger     log.FieldLogger
-	gateway    PipelineInferer
-	metrics    metrics.PipelineMetricsHandler
-	tlsOptions *util.TLSOptions
+	port                 int
+	router               *mux.Router
+	server               *http.Server
+	logger               log.FieldLogger
+	gateway              PipelineInferer
+	metrics              metrics.PipelineMetricsHandler
+	tlsOptions           *util.TLSOptions
+	pipelineReadyChecker status.PipelineReadyChecker
 }
 
 type TLSDetails struct {
@@ -54,14 +60,19 @@ type TLSDetails struct {
 	KeyFilename   string
 }
 
-func NewGatewayHttpServer(port int, logger log.FieldLogger, gateway PipelineInferer, metrics metrics.PipelineMetricsHandler, tlsOptions *util.TLSOptions) *GatewayHttpServer {
+func NewGatewayHttpServer(port int, logger log.FieldLogger,
+	gateway PipelineInferer,
+	metrics metrics.PipelineMetricsHandler,
+	tlsOptions *util.TLSOptions,
+	pipelineReadyChecker status.PipelineReadyChecker) *GatewayHttpServer {
 	return &GatewayHttpServer{
-		port:       port,
-		router:     mux.NewRouter(),
-		logger:     logger.WithField("source", "GatewayHttpServer"),
-		gateway:    gateway,
-		metrics:    metrics,
-		tlsOptions: tlsOptions,
+		port:                 port,
+		router:               mux.NewRouter(),
+		logger:               logger.WithField("source", "GatewayHttpServer"),
+		gateway:              gateway,
+		metrics:              metrics,
+		tlsOptions:           tlsOptions,
+		pipelineReadyChecker: pipelineReadyChecker,
 	}
 }
 
@@ -108,9 +119,13 @@ func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path(
-		"/v2/models/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
+		v2ModelPathPrefix + "{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
 	g.router.NewRoute().Path(
-		"/v2/pipelines/{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferPipeline)
+		v2PipelinePathPrefix + "{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferPipeline)
+	g.router.NewRoute().Path(
+		v2ModelPathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromModelPath)
+	g.router.NewRoute().Path(
+		v2PipelinePathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromPipelinePath)
 }
 
 // Get or create a request ID
@@ -210,4 +225,46 @@ func (g *GatewayHttpServer) inferPipeline(w http.ResponseWriter, req *http.Reque
 		return
 	}
 	g.infer(w, req, resourceName, isModel)
+}
+
+func (g *GatewayHttpServer) pipelineReady(w http.ResponseWriter, req *http.Request, resourceName string) {
+	logger := g.logger.WithField("func", "pipelineReady")
+	ready, err := g.pipelineReadyChecker.CheckPipelineReady(req.Context(), resourceName, g.getRequestId(req))
+	if err != nil {
+		if errors.Is(err, status.PipelineNotFoundErr) {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			logger.WithError(err).Errorf("Failed to get pipeline readines for pipeline %s", resourceName)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		if ready {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusFailedDependency)
+		}
+	}
+}
+
+func (g *GatewayHttpServer) pipelineReadyFromPipelinePath(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	resourceName := vars[ResourceNameVariable]
+	g.pipelineReady(w, req, resourceName)
+
+}
+
+func (g *GatewayHttpServer) pipelineReadyFromModelPath(w http.ResponseWriter, req *http.Request) {
+	logger := g.logger.WithField("func", "inferModel")
+	resourceName, isModel, err := getResourceFromHeaders(req, logger)
+	if err != nil {
+		logger.WithError(err).Error("Failed to create resource name from header")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if isModel {
+		logger.Errorf("Model ready call to pipeline gateway. Will ignore")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	g.pipelineReady(w, req, resourceName)
 }

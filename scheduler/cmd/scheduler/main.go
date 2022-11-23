@@ -167,8 +167,8 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	ps := pipeline.NewPipelineStore(logger, eventHub)
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)
 
@@ -177,10 +177,12 @@ func main() {
 		HttpPort: pipelineGatewayHttpPort,
 		GrpcPort: pipelineGatewayGrpcPort,
 	}
+
 	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
+
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,

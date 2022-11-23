@@ -39,6 +39,7 @@ const (
 	EnvSecurityPrefixEnvoyUpstreamClient   = "ENVOY_UPSTREAM_CLIENT"
 	EnvSecurityPrefixEnvoyDownstreamServer = "ENVOY_DOWNSTREAM_SERVER"
 	EnvSecurityPrefixEnvoyDownstreamClient = "ENVOY_DOWNSTREAM_CLIENT"
+	EnvSecurityDownstreamClientMTLS        = "ENVOY_DOWNSTREAM_CLIENT_MTLS"
 )
 
 func GetSecurityProtocolFromEnv(prefix string) string {

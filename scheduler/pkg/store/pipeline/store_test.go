@@ -19,6 +19,8 @@ package pipeline
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	"github.com/sirupsen/logrus"
 
 	. "github.com/onsi/gomega"
@@ -53,6 +55,10 @@ func TestAddPipeline(t *testing.T) {
 			store: &PipelineStore{
 				logger:    logrus.New(),
 				pipelines: map[string]*Pipeline{},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
+				},
 			},
 			expectedVersion: 1,
 		},
@@ -77,6 +83,10 @@ func TestAddPipeline(t *testing.T) {
 			store: &PipelineStore{
 				logger:    logrus.New(),
 				pipelines: map[string]*Pipeline{},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
+				},
 			},
 			expectedVersion: 1,
 		},
@@ -111,6 +121,10 @@ func TestAddPipeline(t *testing.T) {
 						},
 					},
 				},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
+				},
 			},
 			expectedVersion: 2,
 		},
@@ -143,6 +157,10 @@ func TestAddPipeline(t *testing.T) {
 						},
 					},
 				},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
+				},
 			},
 			expectedVersion: 1,
 		},
@@ -174,6 +192,10 @@ func TestAddPipeline(t *testing.T) {
 						},
 					},
 				},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
+				},
 			},
 			expectedVersion: 1,
 		},
@@ -204,6 +226,10 @@ func TestAddPipeline(t *testing.T) {
 							},
 						},
 					},
+				},
+				modelStatusHandler: ModelStatusHandler{
+					modelReferences: map[string]map[string]void{},
+					store:           fakeModelStore{status: map[string]store.ModelState{}},
 				},
 			},
 			expectedVersion: 1,

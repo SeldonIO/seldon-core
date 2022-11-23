@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline/status"
+
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
@@ -37,28 +39,41 @@ import (
 )
 
 const (
-	flagHttpPort            = "http-port"
-	flagGrpcPort            = "grpc-port"
-	flagLogLevel            = "log-level"
-	flagMetricsPort         = "metrics-port"
-	kubernetesNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	flagHttpPort              = "http-port"
+	flagGrpcPort              = "grpc-port"
+	flagLogLevel              = "log-level"
+	flagMetricsPort           = "metrics-port"
+	kubernetesNamespacePath   = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	flagSchedulerHost         = "scheduler-host"
+	flagSchedulerPlaintxtPort = "scheduler-plaintxt-port"
+	flagSchedulerTlsPort      = "scheduler-tls-port"
+	flagEnvoyHost             = "envoy-host"
+	flagEnvoyPort             = "envoy-port"
 )
 
 const (
-	defaultHttpPort    = 9010
-	defaultGrpcPort    = 9011
-	defaultMetricsPort = 9006
-	serviceTag         = "seldon-pipelinegateway"
+	defaultHttpPort              = 9010
+	defaultGrpcPort              = 9011
+	defaultMetricsPort           = 9006
+	defaultSchedulerPlaintxtPort = 9004
+	defaultSchedulerTLSPort      = 9044
+	defaultEnvoyPort             = 9000
+	serviceTag                   = "seldon-pipelinegateway"
 )
 
 var (
-	httpPort          int
-	grpcPort          int
-	metricsPort       int
-	logLevel          string
-	namespace         string
-	kafkaConfigPath   string
-	tracingConfigPath string
+	httpPort              int
+	grpcPort              int
+	metricsPort           int
+	logLevel              string
+	namespace             string
+	kafkaConfigPath       string
+	tracingConfigPath     string
+	schedulerHost         string
+	schedulerPlaintxtPort int
+	schedulerTlsPort      int
+	envoyHost             string
+	envoyPort             int
 )
 
 func init() {
@@ -75,6 +90,11 @@ func init() {
 		"path to kafka configuration file",
 	)
 	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
+	flag.StringVar(&schedulerHost, flagSchedulerHost, "0.0.0.0", "Scheduler host")
+	flag.IntVar(&schedulerPlaintxtPort, flagSchedulerPlaintxtPort, defaultSchedulerPlaintxtPort, "Scheduler plaintxt port")
+	flag.IntVar(&schedulerTlsPort, flagSchedulerTlsPort, defaultSchedulerTLSPort, "Scheduler TLS port")
+	flag.StringVar(&envoyHost, flagEnvoyHost, "0.0.0.0", "Envoy host")
+	flag.IntVar(&envoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
 }
 
 func makeSignalHandler(logger *log.Logger, done chan<- bool) {
@@ -170,7 +190,23 @@ func main() {
 		logger.WithError(err).Fatalf("Failed to create TLS Options")
 	}
 
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions)
+	// Handle pipeline status updates
+	statusManager := status.NewPipelineStatusManager()
+	pipelineSchedulerClient := status.NewPipelineSchedulerClient(logger, statusManager)
+	go func() {
+		if err := pipelineSchedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
+			logger.WithError(err).Error("Start client failed")
+		}
+		logger.Info("Scheduler client ended - closing done")
+		close(done)
+	}()
+
+	restModelChecker, err := status.NewModelRestStatusCaller(logger, envoyHost, envoyPort)
+	if err != nil {
+		logger.WithError(err).Fatalf("Failed to create REST modelchecker")
+	}
+	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
 	go func() {
 		if err := httpServer.Start(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
@@ -180,7 +216,7 @@ func main() {
 		}
 	}()
 
-	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions)
+	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")
@@ -194,7 +230,7 @@ func main() {
 	if err := httpServer.Stop(); err != nil {
 		logger.WithError(err).Error("Failed to stop http server")
 	}
-	logger.Infof("Shutting down grpc server")
+	logger.Infof("Shutting down scheduler client")
 	grpcServer.Stop()
-
+	pipelineSchedulerClient.Stop()
 }

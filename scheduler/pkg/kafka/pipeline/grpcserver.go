@@ -18,9 +18,12 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"time"
+
+	status2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline/status"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -39,21 +42,28 @@ import (
 
 type GatewayGrpcServer struct {
 	v2.UnimplementedGRPCInferenceServiceServer
-	port       int
-	grpcServer *grpc.Server
-	gateway    PipelineInferer
-	logger     log.FieldLogger
-	metrics    metrics.PipelineMetricsHandler
-	tlsOptions *util.TLSOptions
+	port                 int
+	grpcServer           *grpc.Server
+	gateway              PipelineInferer
+	logger               log.FieldLogger
+	metrics              metrics.PipelineMetricsHandler
+	tlsOptions           *util.TLSOptions
+	pipelineReadyChecker status2.PipelineReadyChecker
 }
 
-func NewGatewayGrpcServer(port int, logger log.FieldLogger, gateway PipelineInferer, metricsHandler metrics.PipelineMetricsHandler, tlsOptions *util.TLSOptions) *GatewayGrpcServer {
+func NewGatewayGrpcServer(port int,
+	logger log.FieldLogger,
+	gateway PipelineInferer,
+	metricsHandler metrics.PipelineMetricsHandler,
+	tlsOptions *util.TLSOptions,
+	piplineReadyChecker status2.PipelineReadyChecker) *GatewayGrpcServer {
 	return &GatewayGrpcServer{
-		port:       port,
-		gateway:    gateway,
-		logger:     logger.WithField("source", "GatewayGrpcServer"),
-		metrics:    metricsHandler,
-		tlsOptions: tlsOptions,
+		port:                 port,
+		gateway:              gateway,
+		logger:               logger.WithField("source", "GatewayGrpcServer"),
+		metrics:              metricsHandler,
+		tlsOptions:           tlsOptions,
+		pipelineReadyChecker: piplineReadyChecker,
 	}
 }
 
@@ -149,4 +159,21 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.OK.String())
 
 	return resProto, nil
+}
+
+// This is presently used for pipeline ready use cases but the v2 protocol only has the concept of model ready calls
+func (g *GatewayGrpcServer) ModelReady(ctx context.Context, req *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", resources.SeldonModelHeader, resources.SeldonInternalModelHeader))
+	}
+	ready, err := g.pipelineReadyChecker.CheckPipelineReady(ctx, req.GetName(), g.getRequestId(md))
+	if err != nil {
+		if errors.Is(err, status2.PipelineNotFoundErr) {
+			return nil, status.Errorf(codes.NotFound, "Pipeline not found")
+		} else {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+	}
+	return &v2.ModelReadyResponse{Ready: ready}, nil
 }

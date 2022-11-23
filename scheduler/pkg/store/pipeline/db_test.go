@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+
 	"github.com/google/go-cmp/cmp"
 	log "github.com/sirupsen/logrus"
 
@@ -135,7 +137,7 @@ func TestSaveAndRestore(t *testing.T) {
 			err = db.Stop()
 			g.Expect(err).To(BeNil())
 
-			ps := NewPipelineStore(log.New(), nil)
+			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
 			err = ps.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {

@@ -31,6 +31,10 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Tritonclient examples](tritonclient-examples.md)
  * [Batch Inference examples](batch-examples.md)
 
+## Misc
+
+ * [Checking Pipeline readiness](pipeline-ready-and-metadata.md)
+
 ## Advanced Examples
 
  * [Huggingface speech to sentiment with explanations pipeline](speech-to-sentiment.md)
@@ -51,6 +55,7 @@ local-experiments.md
 experiment-versions.md
 inference.md
 tritonclient-examples.md
+pipeline-ready-and-metadata.md
 speech-to-sentiment.md
 cifar10.md
 income.md

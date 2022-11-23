@@ -21,8 +21,6 @@ import (
 	"sync"
 	"time"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
@@ -37,14 +35,13 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs            = 10000
-	DefaultNumWorkers               = 8
-	EnvVarNumWorkers                = "MODELGATEWAY_NUM_WORKERS"
-	envDefaultReplicationFactor     = "KAFKA_DEFAULT_REPLICATION_FACTOR"
-	envDefaultNumPartitions         = "KAFKA_DEFAULT_NUM_PARTITIONS"
-	defaultReplicationFactor        = 1
-	defaultNumPartitions            = 1
-	EnvSecurityDownstreamClientMTLS = "ENVOY_DOWNSTREAM_CLIENT_MTLS"
+	pollTimeoutMillisecs        = 10000
+	DefaultNumWorkers           = 8
+	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
+	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
+	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
+	defaultReplicationFactor    = 1
+	defaultNumPartitions        = 1
 )
 
 type InferKafkaConsumer struct {
@@ -63,12 +60,7 @@ type InferKafkaConsumer struct {
 	consumerName      string
 	replicationFactor int
 	numPartitions     int
-	tlsClientOptions  *TLSClientOptions
-}
-
-type TLSClientOptions struct {
-	tls              bool
-	certificateStore *seldontls.CertificateStore
+	tlsClientOptions  *util.TLSOptions
 }
 
 func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaConsumer, error) {
@@ -80,7 +72,7 @@ func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfi
 	if err != nil {
 		return nil, err
 	}
-	tlsClientOptions, err := createTLSClientOptions()
+	tlsClientOptions, err := util.CreateTLSClientOptions()
 	if err != nil {
 		return nil, err
 	}
@@ -98,27 +90,6 @@ func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfi
 		tlsClientOptions:  tlsClientOptions,
 	}
 	return ic, ic.setup()
-}
-
-func createTLSClientOptions() (*TLSClientOptions, error) {
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
-	if protocol == seldontls.SecurityProtocolSSL {
-		mTLS, err := util.GetBoolEnvar(EnvSecurityDownstreamClientMTLS, false)
-		if err != nil {
-			return nil, err
-		}
-		certStore, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyDownstreamClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyDownstreamServer),
-			seldontls.ValidationOnly(!mTLS))
-		if err != nil {
-			return nil, err
-		}
-		return &TLSClientOptions{
-			tls:              true,
-			certificateStore: certStore,
-		}, nil
-	}
-	return &TLSClientOptions{}, nil
 }
 
 func (kc *InferKafkaConsumer) setup() error {

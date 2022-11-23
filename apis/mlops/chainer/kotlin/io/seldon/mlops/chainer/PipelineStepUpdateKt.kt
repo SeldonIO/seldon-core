@@ -19,7 +19,7 @@ limitations under the License.
 
 package io.seldon.mlops.chainer;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializepipelineStepUpdate")
 inline fun pipelineStepUpdate(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
   io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.newBuilder()).apply { block() }._build()
 object PipelineStepUpdateKt {
@@ -54,8 +54,8 @@ object PipelineStepUpdateKt {
      * <code>repeated string sources = 1;</code>
      * @return A list containing the sources.
      */
-    val sources: com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>
-      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+     val sources: com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>
+      @kotlin.jvm.JvmSynthetic
       get() = com.google.protobuf.kotlin.DslList(
         _builder.getSourcesList()
       )
@@ -86,8 +86,9 @@ object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignSources")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(value: kotlin.String) {
-      _builder.addSources(value)
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(value: kotlin.String) {
+      add(value)
     }
     /**
      * <pre>
@@ -116,8 +117,9 @@ object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignAllSources")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
-      _builder.addAllSources(values)
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, SourcesProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
+      addAll(values)
     }
     /**
      * <pre>
@@ -158,8 +160,8 @@ object PipelineStepUpdateKt {
      * <code>repeated string triggers = 2;</code>
      * @return A list containing the triggers.
      */
-    val triggers: com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>
-      @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+     val triggers: com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>
+      @kotlin.jvm.JvmSynthetic
       get() = com.google.protobuf.kotlin.DslList(
         _builder.getTriggersList()
       )
@@ -178,8 +180,9 @@ object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignTriggers")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(value: kotlin.String) {
-      _builder.addTriggers(value)
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(value: kotlin.String) {
+      add(value)
     }
     /**
      * <code>repeated string triggers = 2;</code>
@@ -196,8 +199,9 @@ object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @kotlin.jvm.JvmName("plusAssignAllTriggers")
-    operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
-      _builder.addAllTriggers(values)
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun com.google.protobuf.kotlin.DslList<kotlin.String, TriggersProxy>.plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {
+      addAll(values)
     }
     /**
      * <code>repeated string triggers = 2;</code>
@@ -236,7 +240,7 @@ object PipelineStepUpdateKt {
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
      */
-    var inputJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+     var inputJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
       @JvmName("getInputJoinTy")
       get() = _builder.getInputJoinTy()
       @JvmName("setInputJoinTy")
@@ -253,7 +257,7 @@ object PipelineStepUpdateKt {
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
      */
-    var triggersJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+     var triggersJoinTy: io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
       @JvmName("getTriggersJoinTy")
       get() = _builder.getTriggersJoinTy()
       @JvmName("setTriggersJoinTy")
@@ -368,6 +372,7 @@ object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("setTensorMap")
+    @Suppress("NOTHING_TO_INLINE")
     inline operator fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
       .set(key: kotlin.String, value: kotlin.String) {
          put(key, value)
@@ -452,3 +457,7 @@ object PipelineStepUpdateKt {
 @kotlin.jvm.JvmSynthetic
 inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.copy(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
   io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+val io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder.batchOrNull: io.seldon.mlops.chainer.ChainerOuterClass.Batch?
+  get() = if (hasBatch()) getBatch() else null
+

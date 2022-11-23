@@ -149,6 +149,15 @@ services:
       - ${PIPELINEGATEWAY_METRICS_PORT}
       - "--tracing-config-path"
       - "/mnt/config/tracing-internal.json"
+      - "--scheduler-host"
+      - "scheduler"
+      - "--scheduler-plaintxt-port"
+      - ${SCHEDULER_SERVER_PORT}
+      - "--envoy-host"
+      - "envoy"
+      - "--envoy-port"
+      - ${ENVOY_DATA_PORT}
+
     volumes:
       - type: bind
         source: ./config

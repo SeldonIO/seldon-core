@@ -14,13 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gateway
+package status
 
 import (
 	"context"
 	"fmt"
 	"math"
+	"sync/atomic"
 	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -30,8 +34,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"sync/atomic"
-
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
 	"github.com/sirupsen/logrus"
@@ -39,38 +41,43 @@ import (
 )
 
 const (
-	SubscriberName = "seldon-modelgateway"
+	SubscriberName = "seldon-pipelinegateway"
 )
 
-type KafkaSchedulerClient struct {
-	logger           logrus.FieldLogger
-	conn             *grpc.ClientConn
-	callOptions      []grpc.CallOption
-	consumerManager  *ConsumerManager
-	certificateStore *seldontls.CertificateStore
-	stop             atomic.Bool
+type PipelineSchedulerClient struct {
+	logger                logrus.FieldLogger
+	conn                  *grpc.ClientConn
+	callOptions           []grpc.CallOption
+	pipelineStatusUpdater PipelineStatusUpdater
+	certificateStore      *seldontls.CertificateStore
+	stop                  atomic.Bool
 }
 
-func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
+func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater PipelineStatusUpdater) *PipelineSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 
-	return &KafkaSchedulerClient{
-		logger:          logger.WithField("source", "KafkaSchedulerClient"),
-		callOptions:     opts,
-		consumerManager: consumerManager,
-		stop:            atomic.Bool{},
+	return &PipelineSchedulerClient{
+		logger:                logger.WithField("source", "PipelineSchedulerClient"),
+		callOptions:           opts,
+		pipelineStatusUpdater: pipelineStatusUpdater,
 	}
 }
 
-func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int) error {
-	logger := kc.logger.WithField("func", "ConnectToScheduler")
+func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsPort int) error {
+	logger := pc.logger.WithField("func", "ConnectToScheduler")
 	var err error
+	if pc.conn != nil {
+		err = pc.conn.Close()
+		if err != nil {
+			logger.WithError(err).Error("Failed to close previous grpc connection to scheduler")
+		}
+	}
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		kc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
+		pc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
 			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
 			return err
@@ -81,13 +88,13 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 	}
 	var transCreds credentials.TransportCredentials
 	var port int
-	if kc.certificateStore == nil {
+	if pc.certificateStore == nil {
 		logger.Info("Starting plaintxt client to scheduler")
 		transCreds = insecure.NewCredentials()
 		port = plainTxtPort
 	} else {
 		logger.Info("Starting TLS client to scheduler")
-		transCreds = kc.certificateStore.CreateClientTransportCredentials()
+		transCreds = pc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
 	opts := []grpc.DialOption{
@@ -100,57 +107,56 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 	if err != nil {
 		return err
 	}
-	kc.conn = conn
-	logger.Info("Connected to scheduler")
+	pc.conn = conn
 	return nil
 }
 
-func (kc *KafkaSchedulerClient) Stop() {
-	kc.stop.Store(true)
-	if kc.conn != nil {
-		_ = kc.conn.Close()
+func (pc *PipelineSchedulerClient) Stop() {
+	pc.stop.Store(true)
+	if pc.conn != nil {
+		_ = pc.conn.Close()
 	}
 }
 
-func (kc *KafkaSchedulerClient) Start() error {
-	logger := kc.logger.WithField("func", "Start")
-	// We keep trying to connect to scheduler.
-	// If SubscribeModelEvents returns we try to start connecing again.
-	// Only stop if asked to via the keepRunning flag.
-	// We allow the subscribeModelEvents to return nil on EOF to allow a new Exponential backoff to be started
-	// rather than return an error and continue the current Exponential backoff with might have reached large intervals
+func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort int) error {
+	logger := pc.logger.WithField("func", "Start")
 	for {
-		if kc.stop.Load() {
+		if pc.stop.Load() {
 			logger.Info("Stopping")
 			return nil
 		}
+		err := pc.connectToScheduler(host, plainTxtPort, tlsPort)
+		if err != nil {
+			logger.WithError(err).Fatalf("Failed to connect to scheduler")
+		}
+		logger := pc.logger.WithField("func", "Start")
 		logFailure := func(err error, delay time.Duration) {
-			kc.logger.WithError(err).Errorf("Scheduler not ready")
+			logger.WithError(err).Errorf("Scheduler not ready")
 		}
 		backOffExp := backoff.NewExponentialBackOff()
 		// Set some reasonable settings for trying to reconnect to scheduler
 		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
 		backOffExp.MaxInterval = time.Second * 15
 		backOffExp.InitialInterval = time.Second
-		err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
+		err = backoff.RetryNotify(pc.SubscribePipelineEvents, backOffExp, logFailure)
 		if err != nil {
-			kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
+			logger.WithError(err).Fatal("Failed to start pipeline gateway client")
 			return err
 		}
 		logger.Info("Subscribe ended")
 	}
 }
 
-func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
-	logger := kc.logger.WithField("func", "SubscribeModelEvents")
-	grpcClient := scheduler.NewSchedulerClient(kc.conn)
-	logger.Info("Subscribing to model status events")
-	stream, errSub := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
+	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
+	grpcClient := scheduler.NewSchedulerClient(pc.conn)
+	logger.Info("Subscribing to pipeline status events")
+	stream, errSub := grpcClient.SubscribePipelineStatus(context.Background(), &scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
 	if errSub != nil {
 		return errSub
 	}
 	for {
-		if kc.stop.Load() {
+		if pc.stop.Load() {
 			logger.Info("Stopping")
 			break
 		}
@@ -161,28 +167,19 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		}
 		// The expected contract is just the latest version will be sent to us
 		if len(event.Versions) != 1 {
-			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetModelName())
+			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
 			continue
 		}
-		latestVersionStatus := event.Versions[0]
 
-		logger.Infof("Received event name %s version %d state %s", event.ModelName, latestVersionStatus.Version, latestVersionStatus.State.State.String())
-
-		switch latestVersionStatus.State.State {
-		case scheduler.ModelStatus_ModelAvailable:
-			logger.Infof("Adding model %s", event.ModelName)
-			err := kc.consumerManager.AddModel(event.ModelName)
-			if err != nil {
-				kc.logger.WithError(err).Errorf("Failed to add model %s", event.ModelName)
-			}
-		default:
-			logger.Infof("Removing model %s", event.ModelName)
-			err := kc.consumerManager.RemoveModel(event.ModelName)
-			if err != nil {
-				kc.logger.WithError(err).Errorf("Failed to remove model %s", event.ModelName)
-			}
+		pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
+		if err != nil {
+			logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
+			continue
 		}
 
+		logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
+
+		pc.pipelineStatusUpdater.Update(pv)
 	}
 	logger.Infof("Closing connection to scheduler")
 	defer func() {

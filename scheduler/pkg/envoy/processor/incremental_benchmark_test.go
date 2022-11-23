@@ -129,7 +129,7 @@ func benchmarkModelUpdate(
 		require.NoError(b, err)
 
 		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		pipelineStore := pipeline.NewPipelineStore(logger, eventHub)
+		pipelineStore := pipeline.NewPipelineStore(logger, eventHub, memoryStore)
 		ip, err := NewIncrementalProcessor(
 			cache.NewSnapshotCache(false, cache.IDHash{}, logger),
 			"some node",

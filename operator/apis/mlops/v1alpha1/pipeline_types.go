@@ -182,10 +182,12 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 
 const (
 	PipelineReady apis.ConditionType = "PipelineReady"
+	ModelsReady   apis.ConditionType = "ModelsReady"
 )
 
 var pipelineConditionSet = apis.NewLivingConditionSet(
 	PipelineReady,
+	ModelsReady,
 )
 
 var _ apis.ConditionsAccessor = (*PipelineStatus)(nil)
@@ -222,7 +224,7 @@ func (ps *PipelineStatus) SetCondition(conditionType apis.ConditionType, conditi
 func (ps *PipelineStatus) CreateAndSetCondition(
 	conditionType apis.ConditionType,
 	isTrue bool,
-	reason scheduler.PipelineVersionState_PipelineStatus,
+	reason string,
 	description string,
 ) {
 	condition := apis.Condition{}
@@ -232,7 +234,7 @@ func (ps *PipelineStatus) CreateAndSetCondition(
 		condition.Status = v1.ConditionFalse
 	}
 	condition.Type = conditionType
-	condition.Reason = reason.String()
+	condition.Reason = reason
 	condition.Message = description
 	condition.LastTransitionTime = apis.VolatileTime{
 		Inner: metav1.Now(),
