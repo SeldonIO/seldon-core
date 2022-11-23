@@ -1,6 +1,6 @@
 # Inference
 
-This section will discuss how to make inference calls against your seldon models or pipelines.
+This section will discuss how to make inference calls against your Seldon models or pipelines.
 
 You can make synchronous inference requests via REST or gRPC or asynchronous requests via Kafka topics.
 
@@ -27,7 +27,7 @@ Seldon routes requests to to the correct enpoint via headers in HTTP calls. You 
 
 The content of your request should be a [V2 protocol payload](../apis/inference/v2.md).
 
-The `seldon` CLI can be used to easily send requests to your deployed resources. See the [examples](../examples/index) and the [seldon CLI docs](../cli/index.md).
+The `seldon` CLI can be used to easily send requests to your deployed resources. See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md).
 
 An example curl request might look like for a Model called `iris`:
 
@@ -101,7 +101,7 @@ It may be useful to send metadata alongside your inference. If using Kafka direc
  * For REST requests add HTTP headers prefixe with `X-`
  * For gRPC requests add meatdata with keys starting with `X-`
 
-You can also do this with the seldon CLI by setting headers with the `--header` argument (and also showing response headers with the `--show-headers` argument)
+You can also do this with the Seldon CLI by setting headers with the `--header` argument (and also showing response headers with the `--show-headers` argument)
 
 ```
 seldon pipeline infer --show-headers --header X-foo=bar tfsimples \
