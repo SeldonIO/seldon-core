@@ -4,26 +4,27 @@ This section will discuss how to make inference calls against your Seldon models
 
 You can make synchronous inference requests via REST or gRPC or asynchronous requests via Kafka topics.
 
-## Synchronous requests
+## Synchronous Requests
 
-  1. Find the Seldon service endpoint
-  2. Make requests via REST or gRPC
+1. Find the Seldon service endpoint
+2. Make requests via REST or gRPC
 
-### Find Seldon service endpoint
+### Find the Seldon Service Endpoint
 
  1. If you are running Seldon locally via Docker compose by default the endpoint will be `0.0.0.0:9000`
  2. If you are running in Kubernetes Seldon creates a single Service `seldon-mesh` in the namespace Seldon is installed to, usually `seldon-mesh`. If this has be exposed via a load balancer this can be found via:
 
- ```bash
- kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
- ```
+     ```bash
+     kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+     ```
 
-### Make inference requests
+### Make Inference Requests
 
-Seldon routes requests to to the correct enpoint via headers in HTTP calls. You should set the header `seldon-model` as follow:
+Seldon routes requests to to the correct endpoint via headers in HTTP calls.
+You should set the header `seldon-model` as follows:
 
- * For Models: use the model name, e.g. for a Model names `mymodel`, `seldon-model: mymodel`
- * For Pipelines: use the Pipeline name with the suffix `.pipeline`, e.g. for a Pipeline named `mypipeline`, `seldon-model: mypipeline.pipeline`
+ * Models: use the model name, e.g. for a model named `mymodel` use `seldon-model: mymodel`
+ * Pipelines: use the pipeline name with the suffix `.pipeline`, e.g. for a pipeline named `mypipeline` use `seldon-model: mypipeline.pipeline`
 
 The content of your request should be a [V2 protocol payload](../apis/inference/v2.md).
 
@@ -36,7 +37,7 @@ curl -v http://0.0.0.0:9000/v2/models/iris/infer -H "Content-Type: application/j
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-A similar gRPC request using grpcurl to the same model might look like:
+A request to the same model using `grpcurl` might look like:
 
 ```
 grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
@@ -47,21 +48,21 @@ grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_con
 	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
 ```
 
-The above request was run from the project root folder allowing reference to the protos defined in the apis folder.
+The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
 
 For Pipelines a synchronous request is possible if the Pipeline has an outputs section in the spec.
 
 ### Using Python Tritonclient
 
-You can also use Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
+You can also use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
 
-A short self-contained example corresponding to the above requests is
+A short self-contained example corresponding to the above requests is:
 ```python
 import tritonclient.http as httpclient
 import numpy as np
 
 client = httpclient.InferenceServerClient(
-    url=f"172.19.255.9:80",
+    url="172.19.255.9:80",
     verbose=False,
 )
 
@@ -72,7 +73,7 @@ result = client.infer("iris", inputs)
 print("result is:", result.as_numpy("predict"))
 ```
 
-## Asynchronous requests
+## Asynchronous Requests
 
 The Seldon architetcure uses Kafka and therefore asynchronous requests can be sent by pushing V2 proto payloads to the appropriate topic.
 
