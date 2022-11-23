@@ -1410,7 +1410,8 @@ spec:
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server
-    terminationGracePeriodSeconds: '{{ .Values.serverConfig.terminationGracePeriodSeconds}}'
+    terminationGracePeriodSeconds: {{ .Values.serverConfig.terminationGracePeriodSeconds
+      }}
     volumes:
     - name: downstream-ca-certs
       secret:
@@ -1648,7 +1649,8 @@ spec:
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server
-    terminationGracePeriodSeconds: '{{ .Values.serverConfig.terminationGracePeriodSeconds}}'
+    terminationGracePeriodSeconds: {{ .Values.serverConfig.terminationGracePeriodSeconds
+      }}
     volumes:
     - configMap:
         name: seldon-agent
