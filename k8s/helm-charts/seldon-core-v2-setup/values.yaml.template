@@ -200,7 +200,7 @@ scheduler:
     runAsNonRoot: true
 
 serverConfig:
-  terminationGracePeriodSeconds: "120"
+  terminationGracePeriodSeconds: 120
 
   securityContext:
     fsGroup: 1000
