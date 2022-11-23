@@ -201,7 +201,7 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             # TEST_PARALLEL_EXIT_VALUE=$?
             # make test_sequential
             # TEST_SEQUENTIAL_EXIT_VALUE=$?
-            pytest test_alibi_explain_v2.py::TestExplainV2Server::test_alibi_explain_anchor_image_triton
+            pytest test_alibi_explain_v2.py::TestExplainV2Server::test_alibi_explain_anchor_image_triton -s
             # TEST_EXIT_VALUE=$(($TEST_PARALLEL_EXIT_VALUE + $TEST_SEQUENTIAL_EXIT_VALUE))
             TEST_EXIT_VALUE=$?
         elif [ "$TESTS_TO_RUN" == "parallel" ]; then

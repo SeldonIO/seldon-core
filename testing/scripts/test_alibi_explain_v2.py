@@ -116,7 +116,9 @@ class TestExplainV2Server:
                     json=inference_request,
                 )
                 # note: explanation will come back in v2 as a nested json dictionary
+                print("FOO")
                 print(r.text)
+                print("BAR")
                 print(r.json())
                 explanation = json.loads(r.json()["outputs"][0]["data"][0])
 
