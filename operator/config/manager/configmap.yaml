@@ -37,7 +37,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.0.rc4-sklearn"
+              "defaultImageVersion": "1.2.0.rc5-sklearn"
               }
             }
         },
@@ -49,7 +49,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.0.rc4-xgboost"
+              "defaultImageVersion": "1.2.0.rc5-xgboost"
               }
             }
         },
@@ -61,7 +61,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.0.rc4-mlflow"
+              "defaultImageVersion": "1.2.0.rc5-mlflow"
               }
             }
         },
@@ -77,7 +77,7 @@ data:
           "protocols" : {
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.0.rc4-huggingface"
+              "defaultImageVersion": "1.2.0.rc5-huggingface"
               }
             }
         },
@@ -85,7 +85,7 @@ data:
           "protocols" : {
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.0.rc4-slim"
+              "defaultImageVersion": "1.2.0.rc5-slim"
               }
             }
         }
@@ -101,5 +101,5 @@ data:
   explainer: |-
     {
         "image" : "seldonio/alibiexplainer:1.15.0-dev",
-        "image_v2" : "seldonio/mlserver:1.2.0.rc4-alibi-explain"
+        "image_v2" : "seldonio/mlserver:1.2.0.rc5-alibi-explain"
     }
