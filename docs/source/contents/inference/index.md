@@ -12,14 +12,14 @@ The content of your request should be an [inference V2 protocol payload](../apis
 For making synchronous requests, the process will generally be:
 1. Find the appropriate service endpoint (IP address and port) for accessing the installation of Seldon Core v2.
 1. Determine the appropriate headers/metadata for the request.
-2. Make requests via REST or gRPC.
+1. Make requests via REST or gRPC.
 
 ### Find the Seldon Service Endpoint
 
- 1. If you are running Seldon locally with Docker Compose, by default the endpoint will be `0.0.0.0:9000`
+1.  If you are running Seldon locally with Docker Compose, by default the endpoint will be `0.0.0.0:9000`
     * This is set by the `ENVOY_DATA_PORT` environment variable
- 2. If you are running in Kubernetes, Seldon creates a single `Service` called `seldon-mesh` in the namespace it is installed into, usually `seldon-mesh`.
-    If this is exposed via a load balancer, the appropriate address and port can be found via:
+1.  If you are running in Kubernetes, Seldon creates a single `Service` called `seldon-mesh` in the namespace it is installed into, by default also called `seldon-mesh`.
+    If this `Service` is exposed via a load balancer, the appropriate address and port can be found via:
 
      ```bash
      kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
