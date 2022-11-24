@@ -3,6 +3,9 @@
 This section will discuss how to make inference calls against your Seldon models or pipelines.
 
 You can make synchronous inference requests via REST or gRPC or asynchronous requests via Kafka topics.
+The content of your request should be an [inference V2 protocol payload](../apis/inference/v2.md):
+* REST payloads will generally be in the JSON v2 protocol format.
+* gRPC and Kafka payloads **must** be in the Protobuf v2 protocol format.
 
 ## Synchronous Requests
 
@@ -27,8 +30,6 @@ You should set the header `seldon-model` as follows:
 
  * Models: use the model name, e.g. for a model named `mymodel` use `seldon-model: mymodel`
  * Pipelines: use the pipeline name with the suffix `.pipeline`, e.g. for a pipeline named `mypipeline` use `seldon-model: mypipeline.pipeline`
-
-The content of your request should be a [V2 protocol payload](../apis/inference/v2.md).
 
 The `seldon` CLI can be used to easily send requests to your deployed resources. See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md).
 
