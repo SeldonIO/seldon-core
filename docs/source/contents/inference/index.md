@@ -48,6 +48,8 @@ Inference requests can then be sent to `localhost:8080`.
 ```
 kubectl port-forward svc/seldon-mesh -n seldon-mesh 8080:80
 ```
+
+If you are using a service mesh like Istio or Ambassador, you will need to use the IP address of the service mesh ingress and determine the appropriate port.
 ````
 
 `````
