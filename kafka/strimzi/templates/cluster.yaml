@@ -29,6 +29,12 @@ spec:
     livenessProbe:
       initialDelaySeconds: {{ .Values.broker.liveness.initialDelaySeconds }}
       timeoutSeconds: {{ .Values.broker.liveness.timeoutSeconds }}
+    resources:
+      requests:
+        cpu: '{{ .Values.broker.resources.cpu }}'
+        memory: '{{ .Values.broker.resources.memory }}'
+      limits:
+        memory: '{{ .Values.broker.resources.memory }}'
     config:
       auto.create.topics.enable: {{ .Values.topic.autoCreate }}
       offsets.topic.replication.factor: {{ .Values.topic.offsetReplicationFactor }}
