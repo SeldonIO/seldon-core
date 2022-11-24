@@ -97,7 +97,7 @@ The response will appear on `seldon.seldon-mesh.model.iris.outputs`.
 
 For a local install if you have a pipeline `mypipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.default.pipeline.mypipeline.inputs`. The response will appear on `seldon.default.pipeline.mypipeline.outputs`.
 
-For a Kubernetes install in `seldon-mesh` if you have a pipeline `pipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.pipeline.mypipeline.inputs`. The response will appear on `seldon.seldon-mesh.pipeline.mypipeline.outputs`.
+For a Kubernetes install in `seldon-mesh` if you have a pipeline `mypipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.pipeline.mypipeline.inputs`. The response will appear on `seldon.seldon-mesh.pipeline.mypipeline.outputs`.
 
 
 ## Pipeline Metadata
