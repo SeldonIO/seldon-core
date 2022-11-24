@@ -75,6 +75,19 @@ The `seldon` CLI is aware of these rules and can be used to easily send requests
 See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md) for more information.
 ````
 
+````{tab} Paths
+
+The inference v2 protocol is only aware of models, thus has no concept of pipelines.
+Seldon works around this limitation by introducing _virtual_ endpoints for pipelines.
+Virtual means that Seldon understands them, but v2 protocol-compatible components like inference servers do not.
+
+Use the following rules for paths to route to models and pipelines:
+* For models, use the path prefix `/v2/models/` and the model name.
+  This is normal usage of the inference v2 protocol.
+* For pipelines, use the path prefix `/v2/pipelines/` and the pipeline name.
+  Otherwise calling pipelines looks just like the inference v2 protocol for models.
+  Do **not** use any suffix for the pipeline name as you would for routing headers.
+````
 
 `````
 
