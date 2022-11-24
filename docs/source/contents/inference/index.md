@@ -32,7 +32,7 @@ The content of your request should be a [V2 protocol payload](../apis/inference/
 
 The `seldon` CLI can be used to easily send requests to your deployed resources. See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md).
 
-An example curl request might look like for a Model called `iris`:
+An example curl request might look like for a model called `iris`:
 
 ```
 curl -v http://0.0.0.0:9000/v2/models/iris/infer -H "Content-Type: application/json" -H "seldon-model: iris"\
@@ -52,7 +52,7 @@ grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_con
 
 The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
 
-For Pipelines a synchronous request is possible if the Pipeline has an outputs section in the spec.
+For pipelines a synchronous request is possible if the pipeline has an outputs section in the spec.
 
 ### Using Python Tritonclient
 
@@ -86,18 +86,18 @@ seldon.<namespace>.<model|pipeline>.<name>.<inputs|outputs>
 
 ### Model Inference
 
-For a local install if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`.
+For a local install if you have a model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`.
 The response will appear on `seldon.default.model.iris.outputs`.
 
-For a Kubernetes install in `seldon-mesh` if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.model.iris.inputs`.
+For a Kubernetes install in `seldon-mesh` if you have a model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.model.iris.inputs`.
 The response will appear on `seldon.seldon-mesh.model.iris.outputs`.
 
 
 ### Pipeline Inference
 
-For a local install if you have a Pipeline `mypipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.default.pipeline.mypipeline.inputs`. The response will appear on `seldon.default.pipeline.mypipeline.outputs`.
+For a local install if you have a pipeline `mypipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.default.pipeline.mypipeline.inputs`. The response will appear on `seldon.default.pipeline.mypipeline.outputs`.
 
-For a Kubernetes install in `seldon-mesh` if you have a Pipeline `pipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.pipeline.mypipeline.inputs`. The response will appear on `seldon.seldon-mesh.pipeline.mypipeline.outputs`.
+For a Kubernetes install in `seldon-mesh` if you have a pipeline `pipeline`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.pipeline.mypipeline.inputs`. The response will appear on `seldon.seldon-mesh.pipeline.mypipeline.outputs`.
 
 
 ## Pipeline Metadata
