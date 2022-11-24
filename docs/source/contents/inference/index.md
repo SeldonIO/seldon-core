@@ -86,9 +86,11 @@ seldon.<namespace>.<model|pipeline>.<name>.<inputs|outputs>
 
 ### Model Inference
 
-For a local install if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`. The response will appear on `seldon.default.model.iris.outputs`.
+For a local install if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`.
+The response will appear on `seldon.default.model.iris.outputs`.
 
-For a Kubernetes install in `seldon-mesh` if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.model.iris.inputs`. The response will appear on `seldon.seldon-mesh.model.iris.outputs`.
+For a Kubernetes install in `seldon-mesh` if you have a Model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.seldon-mesh.model.iris.inputs`.
+The response will appear on `seldon.seldon-mesh.model.iris.outputs`.
 
 
 ### Pipeline Inference
@@ -100,10 +102,13 @@ For a Kubernetes install in `seldon-mesh` if you have a Pipeline `pipeline`, you
 
 ## Pipeline Metadata
 
-It may be useful to send metadata alongside your inference. If using Kafka directly as described above you can attach kafka metadata to your request which will be passed oround the graph. When making synchronous requests to your pipeline with REST or gRPC you can also do this.
+It may be useful to send metadata alongside your inference.
 
- * For REST requests add HTTP headers prefixe with `X-`
- * For gRPC requests add meatdata with keys starting with `X-`
+If using Kafka directly as described above, you can attach Kafka metadata to your request, which will be passed around the graph.
+When making synchronous requests to your pipeline with REST or gRPC you can also do this.
+
+ * For REST requests add HTTP headers prefixed with `X-`
+ * For gRPC requests add metadata with keys starting with `X-`
 
 You can also do this with the Seldon CLI by setting headers with the `--header` argument (and also showing response headers with the `--show-headers` argument)
 
