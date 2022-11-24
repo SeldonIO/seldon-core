@@ -16,14 +16,32 @@ For making synchronous requests, the process will generally be:
 
 ### Find the Seldon Service Endpoint
 
-1.  If you are running Seldon locally with Docker Compose, by default the endpoint will be `0.0.0.0:9000`
-    * This is set by the `ENVOY_DATA_PORT` environment variable
-1.  If you are running in Kubernetes, Seldon creates a single `Service` called `seldon-mesh` in the namespace it is installed into, by default also called `seldon-mesh`.
-    If this `Service` is exposed via a load balancer, the appropriate address and port can be found via:
+`````{tabs}
 
-     ```bash
-     kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-     ```
+````{tab} Docker Compose
+
+In the default Docker Compose setup, container ports are accessible from the host machine.
+This means you can use `localhost` or `0.0.0.0` as the hostname.
+
+The default port for sending inference requests to the Seldon system is `9000`.
+This is controlled by the `ENVOY_DATA_PORT` environment variable for Compose.
+
+Putting this together, you can send inference requests to `0.0.0.0:9000`.
+````
+
+````{tab} Kubernetes
+
+In Kubernetes, Seldon creates a single `Service` called `seldon-mesh` in the namespace it is installed into.
+By default, this namespace is also called `seldon-mesh`.
+
+If this `Service` is exposed via a load balancer, the appropriate address and port can be found via:
+
+```bash
+kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+````
+
+`````
 
 ### Make Inference Requests
 
