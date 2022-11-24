@@ -39,6 +39,15 @@ If this `Service` is exposed via a load balancer, the appropriate address and po
 ```bash
 kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
+
+If you are not using a `LoadBalancer` for the `seldon-mesh` `Service`, you can still send inference requests.
+
+For development and testing purposes, you can port-forward the `Service` locally using the below.
+Inference requests can then be sent to `localhost:8080`.
+
+```
+kubectl port-forward svc/seldon-mesh -n seldon-mesh 8080:80
+```
 ````
 
 `````
