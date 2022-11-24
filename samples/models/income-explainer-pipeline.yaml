@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-explainer
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/income/explainer"
+  explainer:
+    type: anchor_tabular
+    pipelineRef: income-prod

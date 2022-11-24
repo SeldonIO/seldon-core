@@ -112,6 +112,9 @@ func TestLoadFromBytes(t *testing.T) {
 		error    bool
 	}
 
+	getIntPtr := func(val int) *int {
+		return &val
+	}
 	tests := []test{
 		{
 			name: "Sklearn",
@@ -128,14 +131,14 @@ func TestLoadFromBytes(t *testing.T) {
 		{
 			name: "parallel_workers",
 			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
-"parameters": {"version": "1"},"parallel_workers":0}`),
+"parameters": {"version": "1"},"parallel_workers":1}`),
 			expected: &ModelSettings{
 				Name:           "iris",
 				Implementation: "mlserver_sklearn.SKLearnModel",
 				Parameters: &ModelParameters{
 					Version: "1",
 				},
-				ParallelWorkers: 0,
+				ParallelWorkers: getIntPtr(1),
 			},
 		},
 		{
@@ -734,14 +737,23 @@ func TestFindHighestVersionInPath(t *testing.T) {
 func TestDefaultModelSettings(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	getIntPtr := func(val int) *int {
+		return &val
+	}
 	tests := []struct {
 		name          string
 		modelSettings *ModelSettings
 		expected      []byte
 	}{
-		{name: "omits all empty fields",
+		{
+			name:          "omits all empty fields",
 			modelSettings: &ModelSettings{Name: "foo"},
 			expected:      []byte("{\"name\":\"foo\"}"),
+		},
+		{
+			name:          "add parallel workers",
+			modelSettings: &ModelSettings{Name: "foo", ParallelWorkers: getIntPtr(1)},
+			expected:      []byte("{\"name\":\"foo\",\"parallel_workers\":1}"),
 		},
 		{
 			name:          "adds empty parameters dict",

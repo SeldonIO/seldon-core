@@ -64,7 +64,7 @@ type ModelSettings struct {
 	Outputs         []ModelMetadataTensors `json:"outputs,omitempty"`
 	Platform        string                 `json:"platform,omitempty"`
 	Versions        []string               `json:"versions,omitempty"`
-	ParallelWorkers int                    `json:"parallel_workers,omitempty"`
+	ParallelWorkers *int                   `json:"parallel_workers,omitempty"`
 	Implementation  string                 `json:"implementation,omitempty"`
 	Parameters      *ModelParameters       `json:"parameters,omitempty"`
 }
@@ -153,11 +153,14 @@ func (m *MLServerRepositoryHandler) UpdateNameAndVersion(path string, modelName 
 
 func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
 	if explainerSpec != nil {
+		workers := 0
 		settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
 		ms, err := m.loadModelSettingsFromFile(settingsPath)
 		if err != nil {
 			return err
 		}
+		//TODO: temporary fix for issue in mlserver with explainers
+		ms.ParallelWorkers = &workers
 		if ms.Parameters == nil {
 			ms.Parameters = &ModelParameters{}
 		}
