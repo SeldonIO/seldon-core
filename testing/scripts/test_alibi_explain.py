@@ -6,7 +6,12 @@ import pytest
 import requests
 from tenacity import Retrying, stop_after_attempt, wait_fixed
 
-from seldon_e2e_utils import retry_run, wait_for_deployment
+from seldon_e2e_utils import (
+    retry_run,
+    wait_for_deployment,
+    wait_for_rollout,
+    wait_for_status,
+)
 
 # NOTE:
 # to recreate the artifacts for these test:
@@ -34,6 +39,7 @@ TENACITY_STOP_AFTER_ATTEMPT = 5
 class TestExplainServer:
     @pytest.mark.sequential
     def test_alibi_explain_anchor_tabular(self, namespace):
+        sdep_name = "iris"
         spec = "../resources/iris_anchor_tabular_explainer.yaml"
         name = "iris-default-explainer"
         vs_prefix = f"seldon/{namespace}/iris-explainer/default/api/v1.0/explain"
@@ -47,6 +53,8 @@ class TestExplainServer:
 
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
 
+        wait_for_status(sdep_name, namespace)
+        wait_for_rollout(sdep_name, namespace, expected_deployments=2)
         wait_for_deployment(name, namespace)
 
         time.sleep(AFTER_WAIT_SLEEP)
@@ -71,6 +79,7 @@ class TestExplainServer:
 
     @pytest.mark.sequential
     def test_alibi_explain_anchor_image_tensorflow_protocol(self, namespace):
+        sdep_name = "cifar10"
         spec = "../resources/tf_cifar_anchor_image_explainer.yaml"
         name = "cifar10-default-explainer"
         vs_prefix = (
@@ -79,6 +88,8 @@ class TestExplainServer:
         )
         retry_run(f"kubectl apply -f {spec} -n {namespace}")
 
+        wait_for_status(sdep_name, namespace)
+        wait_for_rollout(sdep_name, namespace, expected_deployments=2)
         wait_for_deployment(name, namespace)
 
         # note: we add a batch dimension but it should be really one image
