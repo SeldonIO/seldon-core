@@ -54,15 +54,32 @@ If you are using a service mesh like Istio or Ambassador, you will need to use t
 
 `````
 
+### Request Routing
+
+Seldon needs to determine where to route requests to, as models and pipelines might have the same name.
+There are two ways of doing this: header-based routing (preferred) and path-based routing.
+
+`````{tabs}
+
+````{tab} Headers
+
+Seldon can route requests to the correct endpoint via headers in HTTP calls, both for REST (HTTP/1.1) and gRPC (HTTP/2).
+
+Use the `Seldon-Model` header as follows:
+* For models, use the model name as the value.
+  For example, to send requests to a model named `foo` use the header `Seldon-Model: foo`.
+* For pipelines, use the pipeline name followed by `.pipeline` as the value.
+  For example, to send requests to a pipeline named `foo` use the header `Seldon-Model: foo.pipeline`.
+
+The `seldon` CLI is aware of these rules and can be used to easily send requests to your deployed resources.
+See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md) for more information.
+````
+
+
+`````
+
+
 ### Make Inference Requests
-
-Seldon routes requests to to the correct endpoint via headers in HTTP calls.
-You should set the header `seldon-model` as follows:
-
- * Models: use the model name, e.g. for a model named `mymodel` use `seldon-model: mymodel`
- * Pipelines: use the pipeline name with the suffix `.pipeline`, e.g. for a pipeline named `mypipeline` use `seldon-model: mypipeline.pipeline`
-
-The `seldon` CLI can be used to easily send requests to your deployed resources. See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md).
 
 An example curl request might look like for a model called `iris`:
 
