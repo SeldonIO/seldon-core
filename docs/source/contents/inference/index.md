@@ -3,7 +3,7 @@
 This section will discuss how to make inference calls against your Seldon models or pipelines.
 
 You can make synchronous inference requests via REST or gRPC or asynchronous requests via Kafka topics.
-The content of your request should be an [inference V2 protocol payload](../apis/inference/v2.md):
+The content of your request should be an [inference v2 protocol payload](../apis/inference/v2.md):
 * REST payloads will generally be in the JSON v2 protocol format.
 * gRPC and Kafka payloads **must** be in the Protobuf v2 protocol format.
 
@@ -240,7 +240,7 @@ print("result is:", result.as_numpy("predict"))
 
 ## Asynchronous Requests
 
-The Seldon architecture uses Kafka and therefore asynchronous requests can be sent by pushing V2 protocol payloads to the appropriate topic.
+The Seldon architecture uses Kafka and therefore asynchronous requests can be sent by pushing inference v2 protocol payloads to the appropriate topic.
 Topics have the following form:
 
 ```
