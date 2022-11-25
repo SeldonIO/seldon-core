@@ -247,6 +247,10 @@ Topics have the following form:
 seldon.<namespace>.<model|pipeline>.<name>.<inputs|outputs>
 ```
 
+```{note}
+If writing to a pipeline topic, you will need to include a Kafka header with the key `pipeline` and the value being the name of the pipeline.
+```
+
 ### Model Inference
 
 For a local install if you have a model `iris`, you would be able to send a prediction request by pushing to the topic: `seldon.default.model.iris.inputs`.
