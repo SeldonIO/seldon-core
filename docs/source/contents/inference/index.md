@@ -111,7 +111,7 @@ You might want to use a mixture of these methods; the choice is yours.
 
 ````{tab} Virtual Hosts
 
-Virtual hosts are defined by the `Host` header for [HTTP/1](https://www.ietf.org/rfc/rfc2616.html#section-14.23) and the `:authority` pseudo-header for [HTTP/2](https://www.rfc-editor.org/rfc/rfc9113.html#section-8.3.1).
+Virtual hosts are defined by the `Host` header for [HTTP/1](https://www.rfc-editor.org/rfc/rfc7230#section-5.4) and the `:authority` pseudo-header for [HTTP/2](https://www.rfc-editor.org/rfc/rfc9113.html#section-8.3.1).
 These represent the same thing, and the HTTP/2 specification defines how to translate these when converting between protocol versions.
 
 Many tools and libraries treat these headers as special and have particular ways of handling them.
