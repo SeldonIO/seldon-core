@@ -241,7 +241,9 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
 
-	rp.addRequestIdToTrailer(ctx, trailer)
+	if trailer != nil {
+		rp.addRequestIdToTrailer(ctx, trailer)
+	}
 
 	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
