@@ -93,6 +93,65 @@ Use the following rules for paths to route to models and pipelines:
 
 `````
 
+#### Ingress Routes
+
+If you are using an ingress controller to make inference requests with Seldon, you will need to configure the routing rules correctly.
+
+There are many ways to do this, but custom path prefixes will not work with gRPC.
+This is because gRPC determines the path based on the Protobuf definition.
+Some gRPC implementations permit manipulating paths when sending requests, but this is by no means universal.
+
+If you want to expose your inference endpoints via gRPC and REST in a consistent way, you should use virtual hosts or headers.
+
+The downside of using only paths is that you cannot differentiate between different installations of Seldon Core v2 or between traffic to Seldon and any other inference endpoints you may have exposed via the same ingress.
+
+You might want to use a mixture of these methods; the choice is yours.
+
+`````{tabs}
+
+````{tab} Virtual Hosts
+
+Virtual hosts are defined by the `Host` header for HTTP/1 and the `:authority` pseudo-header for HTTP/2.
+These represent the same thing, and the HTTP/2 specification defines how to translate these when converting between protocol versions.
+
+Many tools and libraries treat these headers as special and have particular ways of handling them.
+Some common ones are given below:
+
+* The `seldon` CLI has an `--authority` flag which applies to both REST and gRPC inference calls.
+* `curl` accepts `Host` as a normal header.
+* `grpcurl` has an `-authority` flag.
+* In Go, the standard library's `http.Request` struct has a `Host` field and ignores attempts to set this value via headers.
+* In Python, the `requests` library accepts the host as a normal header.
+
+Be sure to check the documentation for how to set this with your preferred tools and languages.
+````
+
+````{tab} Headers
+
+Many ingress controllers and service meshes support routing on headers.
+You can use whatever headers you prefer, so long as they do not conflict with any Seldon relies upon.
+
+Many tools and libraries support adding custom headers to requests.
+Some common ones are given below:
+* The `seldon` CLI accepts headers using the `--header` flag, which can be specified multiple times.
+* `curl` accepts headers using the `-H` or `--header` flags.
+* `grpcurl` accepts headers using the `-H` flag, which can be specified multiple times.
+````
+
+````{tab} Paths
+
+It is possible to route on paths by using well-known path prefixes defined by the inference v2 protocol.
+For gRPC, the full path (or "method") for an inference call is:
+```
+/inference.GRPCInferenceService/ModelInfer
+```
+
+This corresponds to the package (`inference`), service (`GRPCInferenceService`), and RPC name (`ModelInfer`) in the Protobuf definition of the inference v2 protocol.
+
+You could use an exact match or a regex like `.*inference.*` to match this path, for example.
+````
+
+`````
 
 ### Make Inference Requests
 
