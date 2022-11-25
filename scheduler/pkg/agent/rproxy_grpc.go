@@ -243,15 +243,15 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 
 	if trailer != nil {
 		rp.addRequestIdToTrailer(ctx, trailer)
+		errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
+		if errTrailer != nil {
+			logger.WithError(errTrailer).Error("Failed to set trailers")
+		}
 	}
 
 	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
-	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
-	if errTrailer != nil {
-		logger.WithError(errTrailer).Error("Failed to set trailers")
-	}
 	return resp, err
 }
 
