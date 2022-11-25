@@ -157,14 +157,30 @@ You could use an exact match or a regex like `.*inference.*` to match this path,
 
 ### Make Inference Requests
 
-An example curl request might look like for a model called `iris`:
+Let us imagine making inference requests to a model called `iris`.
+Examples are given below for some common tools for making requests.
+
+```{tip}
+For pipelines, a synchronous request is possible if the pipeline has an `outputs` section defined in its spec.
+```
+
+`````{tabs}
+
+````{tab} cURL
+
+An example `curl` request might look like this:
 
 ```
-curl -v http://0.0.0.0:9000/v2/models/iris/infer -H "Content-Type: application/json" -H "seldon-model: iris"\
+curl -v http://0.0.0.0:9000/v2/models/iris/infer \
+        -H "Content-Type: application/json" \
+        -H "Seldon-Model: iris" \
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+````
 
-A request to the same model using `grpcurl` might look like:
+````{tab} grpcurl
+
+An example `grpcurl` request might look like this:
 
 ```
 grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
@@ -176,14 +192,13 @@ grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_con
 ```
 
 The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
+````
 
-For pipelines a synchronous request is possible if the pipeline has an outputs section in the spec.
+````{tab} Python tritonclient
 
-### Using Python Tritonclient
+You can use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
 
-You can also use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
-
-A short self-contained example corresponding to the above requests is:
+A short, self-contained example is:
 ```python
 import tritonclient.http as httpclient
 import numpy as np
@@ -194,11 +209,16 @@ client = httpclient.InferenceServerClient(
 )
 
 inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
-inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"), binary_data=False)
+inputs[0].set_data_from_numpy(
+    np.array([[1, 2, 3, 4]]).astype("float64"),
+    binary_data=False,
+)
 
 result = client.infer("iris", inputs)
 print("result is:", result.as_numpy("predict"))
 ```
+````
+`````
 
 ## Asynchronous Requests
 
