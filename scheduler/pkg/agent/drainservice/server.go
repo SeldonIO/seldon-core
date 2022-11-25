@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +30,8 @@ import (
 
 const (
 	terminateEndpoint = "/terminate"
+	eventWindowMs     = 100
+	eventsTarget      = 3 // e.g. the number of containers in a pod
 )
 
 type DrainerService struct {
@@ -48,6 +51,9 @@ type DrainerService struct {
 	// this is effectively including agent and scheduler related logic.
 	// at this state we should be confident that this server replica (agent) can go down gracefully.
 	drainingFinishedWg *sync.WaitGroup
+	// we want to make sure that we get 3 terminate requests in a short period ot time otherwise we assume
+	// it is not a pod terminate
+	events uint32
 }
 
 func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
@@ -62,6 +68,7 @@ func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
 		triggered:          false,
 		drainingFinishedWg: &schedulerWg,
 		triggeredWg:        &triggeredWg,
+		events:             0,
 	}
 }
 
@@ -133,12 +140,21 @@ func (drainer *DrainerService) terminate(w http.ResponseWriter, _ *http.Request)
 	// 5. grpc message returns to agent
 	// 6. agent unblocks logic here
 	// 7. \terminate returns
+
 	drainer.muTriggered.Lock()
-	defer drainer.muTriggered.Unlock()
-	if !drainer.triggered {
-		drainer.triggered = true
-		drainer.triggeredWg.Done()
+	drainer.events++
+	drainer.muTriggered.Unlock()
+	time.Sleep(eventWindowMs * time.Millisecond)
+	drainer.muTriggered.Lock()
+	if drainer.events >= eventsTarget {
+		if !drainer.triggered {
+			drainer.triggered = true
+			drainer.triggeredWg.Done()
+		}
+		drainer.drainingFinishedWg.Wait()
+	} else {
+		drainer.events = 0
 	}
-	drainer.drainingFinishedWg.Wait()
 	fmt.Fprintf(w, "ok\n")
+	drainer.muTriggered.Unlock()
 }
