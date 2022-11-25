@@ -238,7 +238,7 @@ serverConfig:
       registry: docker.io
       repository: seldonio/mlserver
       tag: 1.2.0.rc5
-    serverCapabilities: "mlserver,alibi-detect,alibi-explain,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+    serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     resources:
       cpu: 100m
