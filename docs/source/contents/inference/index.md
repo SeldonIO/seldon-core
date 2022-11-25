@@ -56,6 +56,8 @@ If you are using a service mesh like Istio or Ambassador, you will need to use t
 
 ### Request Routing
 
+#### Seldon Routes
+
 Seldon needs to determine where to route requests to, as models and pipelines might have the same name.
 There are two ways of doing this: header-based routing (preferred) and path-based routing.
 
