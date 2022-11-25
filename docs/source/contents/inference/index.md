@@ -166,6 +166,24 @@ For pipelines, a synchronous request is possible if the pipeline has an `outputs
 
 `````{tabs}
 
+````{tab} Seldon CLI
+
+An example `seldon` request might look like this:
+
+```
+seldon model infer iris \
+        '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+
+The default inference mode is REST, but you can also send gRPC requests like this:
+
+```
+seldon model infer iris \
+        --inference-mode grpc \
+        '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+```
+````
+
 ````{tab} cURL
 
 An example `curl` request might look like this:
