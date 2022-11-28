@@ -63,7 +63,6 @@ type Pipeline struct {
 	consumer     *MultiTopicsKafkaConsumer
 	isModel      bool
 	wg           *sync.WaitGroup
-	hasStarted   bool
 }
 
 type Request struct {
@@ -131,7 +130,6 @@ func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline
 		consumer:     consumer,
 		isModel:      isModel,
 		wg:           new(sync.WaitGroup),
-		hasStarted:   false,
 	}, nil
 }
 
@@ -147,6 +145,7 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 	logger := km.logger.WithField("func", "loadOrStorePipeline")
 	key := getPipelineKey(resourceName, isModel)
 	if val, ok := km.pipelines.Load(key); ok {
+		val.(*Pipeline).wg.Wait()
 		return val.(*Pipeline), nil
 	} else {
 		pipeline, err := km.createPipeline(resourceName, isModel)
@@ -154,17 +153,15 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 			return nil, err
 		}
 		pipeline.wg.Add(1) // wait set to allow consumer to say when started
-		val, loaded := km.pipelines.LoadOrStore(key, pipeline)
-		if loaded {
-			pipeline = val.(*Pipeline)
-		} else {
-			go func() {
-				err := km.consume(pipeline)
-				if err != nil {
-					km.logger.WithError(err).Errorf("Failed running consumer for resource %s", resourceName)
-				}
-			}()
-		}
+		km.pipelines.Store(key, pipeline)
+
+		go func() {
+			err := km.consume(pipeline)
+			if err != nil {
+				km.logger.WithError(err).Errorf("Failed running consumer for resource %s", resourceName)
+			}
+		}()
+
 		logger.Debugf("Waiting for consumer to be ready for %s", resourceName)
 		pipeline.wg.Wait() // wait (maybe) for consumer start
 		return pipeline, nil

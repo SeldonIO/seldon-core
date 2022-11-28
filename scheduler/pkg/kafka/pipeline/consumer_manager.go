@@ -31,6 +31,7 @@ const (
 	EnvMaxNumTopicPerConsumer      = "PIPELINEGATEWAY_MAX_NUM_TOPICS_PER_CONSUMER"
 	DefaultMaxNumTopicsPerConsumer = 100
 	DefaultMaxNumConsumers         = 200
+	kafkaConsumerNamePrefix        = "seldon-pipelinegateway"
 )
 
 type ConsumerManager struct {
@@ -60,7 +61,7 @@ func (cm *ConsumerManager) createConsumer() error {
 		return fmt.Errorf("Max number of consumers reached")
 	}
 
-	c, err := NewMultiTopicsKafkaConsumer(cm.logger, cm.consumerConfig, uuid.New().String(), cm.tracer)
+	c, err := NewMultiTopicsKafkaConsumer(cm.logger, cm.consumerConfig, getKafkaConsumerName(kafkaConsumerNamePrefix, uuid.New().String()), cm.tracer)
 	if err != nil {
 		return err
 	}
@@ -112,4 +113,8 @@ func (cm *ConsumerManager) Stop() {
 			cm.logger.Warnf("Consumer %s failed to close", c.id)
 		}
 	}
+}
+
+func getKafkaConsumerName(prefix, id string) string {
+	return fmt.Sprintf("%s-%s", prefix, id)
 }

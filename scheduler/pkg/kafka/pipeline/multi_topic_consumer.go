@@ -19,6 +19,7 @@ package pipeline
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/util"
 
@@ -39,7 +40,7 @@ type MultiTopicsKafkaConsumer struct {
 	topics   map[string]struct{}
 	id       string
 	consumer *kafka.Consumer
-	isActive bool
+	isActive atomic.Bool
 	// map of kafka id to request
 	requests cmap.ConcurrentMap
 	tracer   trace.Tracer
@@ -52,14 +53,10 @@ func NewMultiTopicsKafkaConsumer(logger log.FieldLogger, consumerConfig *config.
 		mu:       sync.RWMutex{},
 		topics:   make(map[string]struct{}),
 		id:       id,
-		isActive: false,
 		requests: cmap.New(),
 		tracer:   tracer,
 	}
 	err := consumer.createConsumer()
-	if err == nil {
-		consumer.isActive = true
-	}
 	return consumer, err
 }
 
@@ -78,6 +75,7 @@ func (c *MultiTopicsKafkaConsumer) createConsumer() error {
 	}
 	c.logger.Infof("Created consumer %s", c.id)
 	c.consumer = consumer
+	c.isActive.Store(true)
 	go func() {
 		err := c.pollAndMatch()
 		c.logger.WithError(err).Infof("Consumer %s failed and is ending", c.id)
@@ -107,8 +105,7 @@ func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string) error {
 
 	delete(c.topics, topic)
 	if len(c.topics) == 0 {
-		c.isActive = false
-		return c.consumer.Close()
+		return c.Close()
 	} else {
 		// TODO: we want to make sure that this does not affect the already existing subscription
 		// specifically after we mark a given consumer to be ready initially (with a cb)
@@ -122,19 +119,12 @@ func (c *MultiTopicsKafkaConsumer) GetNumTopics() int {
 	return len(c.topics)
 }
 
-func (c *MultiTopicsKafkaConsumer) GetConsumer() *kafka.Consumer {
-	if c.isActive {
-		return c.consumer
-	} else {
-		return nil
-	}
-}
-
 func (c *MultiTopicsKafkaConsumer) Close() error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.isActive = false
-	return c.consumer.Close()
+	if c.isActive.Load() {
+		c.isActive.Store(false)
+		return c.consumer.Close()
+	}
+	return nil
 }
 
 func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
@@ -149,7 +139,7 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
-	for c.isActive {
+	for c.isActive.Load() {
 
 		ev := c.consumer.Poll(pollTimeoutMillisecs)
 		if ev == nil {
@@ -191,6 +181,5 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 		}
 	}
 	logger.Warning("Ending kafka consumer poll")
-	c.isActive = false
-	return c.consumer.Close()
+	return nil // assumption here is that the connection has already terminated
 }

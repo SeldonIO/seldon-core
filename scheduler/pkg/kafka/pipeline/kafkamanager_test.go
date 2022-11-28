@@ -17,6 +17,7 @@ limitations under the License.
 package pipeline
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
@@ -82,7 +83,7 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		},
 		{
 			name:              "model - existing in map",
-			pipeline:          &Pipeline{},
+			pipeline:          &Pipeline{wg: &sync.WaitGroup{}},
 			resourceName:      "foo",
 			isModel:           true,
 			expectedPipelines: 1,
@@ -95,7 +96,7 @@ func TestLoadOrStorePipeline(t *testing.T) {
 		},
 		{
 			name:              "pipeline - existing in map",
-			pipeline:          &Pipeline{},
+			pipeline:          &Pipeline{wg: &sync.WaitGroup{}},
 			resourceName:      "foo",
 			isModel:           false,
 			expectedPipelines: 1,

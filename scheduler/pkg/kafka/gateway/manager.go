@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	modelGatewayConsumerNamePrefix = "modelgateway"
+	modelGatewayConsumerNamePrefix = "seldon-modelgateway"
 	EnvMaxNumConsumers             = "MODELGATEWAY_MAX_NUM_CONSUMERS"
 	DefaultMaxNumConsumers         = 100
 )
