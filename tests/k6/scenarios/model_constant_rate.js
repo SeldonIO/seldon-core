@@ -9,7 +9,7 @@ export const options = {
             executor: 'constant-arrival-rate',
             rate: getConfig().requestRate,
             timeUnit: '1s',
-            duration: '30s',
+            duration: getConfig().constantRateDurationSeconds.toString()+'s',
             preAllocatedVUs: 1, // how large the initial pool of VUs would be
             maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
         },
@@ -21,7 +21,8 @@ export function setup() {
 }
 
 export default function (config) {
-    const modelIdx = randomIntBetween(config.modelStartIdx, config.modelEndIdx)
+    const endIdx = (config.modelEndIdx > 0) ? config.modelEndIdx : config.maxNumModels  
+    const modelIdx = randomIntBetween(config.modelStartIdx, endIdx)
     const modelName = config.modelNamePrefix + modelIdx.toString()
     const model = generateModel(config.modelType, modelName, 0, 1,
         config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)

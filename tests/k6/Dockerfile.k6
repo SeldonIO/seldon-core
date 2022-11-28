@@ -22,7 +22,8 @@ ENV PATH $PATH:/root/google-cloud-sdk/bin
 RUN mkdir k6
 RUN mkdir /home/apis
 
-ADD tests/k6 k6/
+# k6.tar.gz is created by make to get around .dockerignore
+ADD k6.tar.gz k6/
 # copy protos
 ADD apis /home/apis/
 

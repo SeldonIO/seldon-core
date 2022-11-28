@@ -181,6 +181,13 @@ function requestRate() {
     return 10
 }
 
+function constantRateDurationSeconds() {
+    if (__ENV.CONSTANT_RATE_DURATION_SECONDS) {
+        return __ENV.CONSTANT_RATE_DURATION_SECONDS
+    }
+    return 30
+}
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -209,5 +216,6 @@ export function getConfig() {
         "inferType" : inferType(),
         "doWarmup": doWarmup(),
         "requestRate": requestRate(),
+        "constantRateDurationSeconds": constantRateDurationSeconds(),
     }
 }

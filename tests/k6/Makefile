@@ -30,7 +30,9 @@ docker-push:
 	docker push ${IMG}
 
 docker-build:
+	tar -czvf ../../k6.tar.gz .
 	cd ../../ && docker build --build-arg GIT_COMMIT=${GIT_COMMIT} --build-arg GIT_BRANCH=${GIT_BRANCH}  -t ${IMG} -f tests/k6/Dockerfile.k6 .
+	rm ../../k6.tar.gz
 
 docker-run:
 	docker run ${IMG}

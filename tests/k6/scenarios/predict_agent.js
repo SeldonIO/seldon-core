@@ -27,8 +27,13 @@ export default function (config) {
     const modelName = config.modelNamePrefix + modelId.toString()
 
     const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
-    doInfer(modelName, modelNameWithVersion, config, true)
-    doInfer(modelName, modelNameWithVersion, config, false)
+
+    const rand = Math.random()
+    if (rand > 0.5) {
+        doInfer(modelName, modelNameWithVersion, config, true)
+    } else {
+        doInfer(modelName, modelNameWithVersion, config, false)
+    }
 }
 
 export function teardown(config) {
