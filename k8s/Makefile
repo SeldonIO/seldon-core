@@ -53,6 +53,9 @@ create-helm-charts:
 	sed 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/.components.yaml \
 		> ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	rm ${HELM_COMPONENTS_BASE}/.components.yaml
+	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
+		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
+	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 
 .PHONY: set-chart-version
 set-chart-version:

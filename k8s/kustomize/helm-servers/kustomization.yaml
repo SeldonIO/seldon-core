@@ -5,3 +5,7 @@ namespace: "{{ .Release.Namespace }}"
 
 bases:
 - ../servers
+
+patchesStrategicMerge:
+- patch_mlserver.yaml
+- patch_triton.yaml

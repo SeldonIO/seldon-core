@@ -4,7 +4,7 @@ metadata:
   name: mlserver
   namespace: '{{ .Release.Namespace }}'
 spec:
-  replicas: 1
+  replicas: {{ .Values.mlserver.replicas }}
   serverConfig: mlserver
 ---
 apiVersion: mlops.seldon.io/v1alpha1
@@ -13,5 +13,5 @@ metadata:
   name: triton
   namespace: '{{ .Release.Namespace }}'
 spec:
-  replicas: 1
+  replicas: {{ .Values.triton.replicas }}
   serverConfig: triton

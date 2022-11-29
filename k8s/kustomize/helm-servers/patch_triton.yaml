@@ -1,0 +1,6 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: triton
+spec:
+  replicas: HACK_REMOVE_ME{{ .Values.triton.replicas }}

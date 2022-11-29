@@ -3,5 +3,4 @@ kind: Server
 metadata:
   name: mlserver
 spec:
-  serverConfig: mlserver
-  replicas: 1
+  replicas: HACK_REMOVE_ME{{ .Values.mlserver.replicas }}
