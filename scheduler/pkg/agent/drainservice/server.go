@@ -133,6 +133,7 @@ func (drainer *DrainerService) terminate(w http.ResponseWriter, _ *http.Request)
 	// once someone (e.g. kubelet) calls `\terminate` we trigger downstream logic to drain this particular agent/server
 	// the drain logic is defined in pkg/agent/server.go `drainServerReplicaImpl`
 	// the flow is:
+	// 0. wait for at least 3 events to arrive in a short-period of time (to signal pod restart)
 	// 1. call \terminate (this is atomic)
 	// 2. agent (drainOnRequest) is unblocked
 	// 3. agent sends an AgentDrain grpc message to scheduler and waits for a reply

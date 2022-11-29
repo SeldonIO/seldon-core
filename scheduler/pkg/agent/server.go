@@ -446,16 +446,20 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 
 func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int) {
 	modelsChanged, err := s.store.DrainServerReplica(serverName, serverReplicaIdx)
-	s.waiter.registerServerReplica(serverName, serverReplicaIdx, modelsChanged)
-
 	if err != nil {
 		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
+		return
 	}
+
+	s.waiter.registerServerReplica(serverName, serverReplicaIdx, modelsChanged)
+
 	s.logger.Debugf("Draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 	for _, modelName := range modelsChanged {
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {
 			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d draining", modelName, serverName, serverReplicaIdx)
+			// we do not want to wait on this model to be ready, as it cant (for the time being)
+			s.waiter.signalModel(modelName)
 		}
 	}
 	s.waiter.wait(serverName, serverReplicaIdx)

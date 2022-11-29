@@ -47,7 +47,7 @@ import (
 
 const (
 	ReverseGRPCProxyPort          = 9998
-	grpcProxyMaxConcurrentStreams = 100
+	grpcProxyMaxConcurrentStreams = 1000
 	maxConnsPerHostGRPC           = 10
 )
 
