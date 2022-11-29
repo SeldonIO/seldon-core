@@ -34,9 +34,9 @@ jobs:
         run: |
           npm install -g auto-changelog
 
-      - name: Generate and commit changelog
-        run: |
-          git checkout master
-          auto-changelog -l 5
-          git add CHANGELOG.md && git commit -m "Updating CHANGELOG.md on master"
-          git push
+      # - name: Generate and commit changelog
+      #   run: |
+      #     git checkout master
+      #     auto-changelog -l 5
+      #     git add CHANGELOG.md && git commit -m "Updating CHANGELOG.md on master"
+      #     git push

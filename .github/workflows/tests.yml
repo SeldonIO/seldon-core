@@ -1,4 +1,4 @@
-name: test
+name: V2 Tests
 on:
   pull_request:
 jobs:

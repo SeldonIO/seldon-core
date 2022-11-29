@@ -1,4 +1,4 @@
-name: lint
+name: V2 Lint
 on:
   pull_request:
 jobs:

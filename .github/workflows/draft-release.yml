@@ -1,4 +1,4 @@
-name: Draft New Release
+name: V2 Draft New Release
 
 on:
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
           RELEASE_TAG="${{ github.event.inputs.version }}"
 
           # Ensure that we do not run on master
-          if [ "${RELEASE_BRANCH}" == "master" ]; then
+          if [ "${RELEASE_BRANCH}" == "master" ] || [ "${RELEASE_BRANCH}" == "v2" ]; then
             echo "::error::Cannot run this workflow on master branch"
             exit 1
           fi
@@ -119,16 +119,16 @@ jobs:
           if ${IS_RELEASE_CORE_VERSION}; then
             git tag "${RELEASE_TAG}" --force && auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --ending-version ${RELEASE_TAG} -l 5
           else
-            git tag "${RELEASE_TAG}" --force && auto-changelog -l 5
+            git tag "${RELEASE_TAG}" --force && auto-changelog -l 5 --ending-version ${RELEASE_TAG}
           fi
           git add CHANGELOG.md && git commit --amend --no-edit || echo "Nothing to commit"
 
       - name: Generate release-notes.txt
         run: |
           if ${IS_RELEASE_CORE_VERSION}; then
-            auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --ending-version ${RELEASE_TAG} -l 5 -o release-notes.txt
+            auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --starting-version ${RELEASE_TAG} --ending-version ${RELEASE_TAG} -l 5 -o release-notes.txt
           else
-            auto-changelog -l 5 -o release-notes.txt
+            auto-changelog -l 5 --starting-version ${RELEASE_TAG} --ending-version ${RELEASE_TAG} -o release-notes.txt
           fi
 
       - name: Upload release notes
