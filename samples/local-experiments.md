@@ -910,8 +910,8 @@ Unload both models.
 !seldon pipeline status pipeline-mul10 -w PipelineReady 
 ```
 
-    {"pipelineName":"pipeline-add10", "versions":[{"pipeline":{"name":"pipeline-add10", "uid":"cdnnbmdle28c73ckejmg", "version":1, "steps":[{"name":"add10"}], "output":{"steps":["add10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-12T10:30:49.807877487Z"}}]}
-    {"pipelineName":"pipeline-mul10", "versions":[{"pipeline":{"name":"pipeline-mul10", "uid":"cdnnbmdle28c73ckejn0", "version":1, "steps":[{"name":"mul10"}], "output":{"steps":["mul10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-12T10:30:50.009058654Z"}}]}
+    {"pipelineName":"pipeline-add10","versions":[{"pipeline":{"name":"pipeline-add10","uid":"ce35uho4mlvc73d8elh0","version":1,"steps":[{"name":"add10"}],"output":{"steps":["add10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-29T19:36:39.645836943Z","modelsReady":true}}]}
+    {"pipelineName":"pipeline-mul10","versions":[{"pipeline":{"name":"pipeline-mul10","uid":"ce35uho4mlvc73d8elhg","version":1,"steps":[{"name":"mul10"}],"output":{"steps":["mul10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-29T19:36:39.824124774Z","modelsReady":true}}]}
 
 
 
@@ -920,7 +920,7 @@ Unload both models.
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 
-    {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
+    {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}]}
 
 
 
@@ -929,7 +929,7 @@ Unload both models.
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 
-    {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}]}
+    {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
 
 
 
@@ -978,11 +978,11 @@ Unload both models.
 
 
 ```python
-!seldon pipeline infer pipeline-add10 -i 50 --inference-mode grpc \
+!seldon pipeline infer pipeline-add10 -i 1 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' 
 ```
 
-    Success: map[:add10_1::50 :pipeline-add10.pipeline::50]
+    {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}]}
 
 
 Let's check that the mul10 model was called.
@@ -992,7 +992,70 @@ Let's check that the mul10 model was called.
 !curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep mul10_1
 ```
 
-    seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 51
+    seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 2
+
+
+
+```python
+!curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep add10_1
+```
+
+    seldon_model_infer_total{code="OK",method_type="grpc",model="add10",model_internal="add10_1",server="triton",server_replica="0"} 2
+
+
+Let's do an http call and check agaib the two models
+
+
+```python
+!seldon pipeline infer pipeline-add10 -i 1 \
+ '{"model_name":"add10","inputs":[{"name":"INPUT","data":[1,2,3,4],"datatype":"FP32","shape":[4]}]}' 
+```
+
+    {
+    	"model_name": "",
+    	"outputs": [
+    		{
+    			"data": [
+    				11,
+    				12,
+    				13,
+    				14
+    			],
+    			"name": "OUTPUT",
+    			"shape": [
+    				4
+    			],
+    			"datatype": "FP32"
+    		}
+    	]
+    }
+
+
+
+```python
+!curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep mul10_1
+```
+
+    seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 3
+
+
+
+```python
+!curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep add10_1
+```
+
+    seldon_model_infer_total{code="OK",method_type="grpc",model="add10",model_internal="add10_1",server="triton",server_replica="0"} 3
+
+
+
+```python
+!seldon pipeline inspect pipeline-mul10
+```
+
+    seldon.default.model.mul10.inputs	ce35uksj0jvc73bqr0pg	{"inputs":[{"name":"INPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[1,2,3,4]}}]}
+    seldon.default.model.mul10.outputs	ce35uksj0jvc73bqr0pg	{"modelName":"mul10_1","modelVersion":"1","outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
+    seldon.default.pipeline.pipeline-mul10.inputs	ce35uksj0jvc73bqr0pg	{"inputs":[{"name":"INPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[1,2,3,4]}}]}
+    seldon.default.pipeline.pipeline-mul10.outputs	ce35uksj0jvc73bqr0pg	{"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
 
 
 

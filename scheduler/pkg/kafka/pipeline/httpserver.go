@@ -196,10 +196,11 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 
 func getResourceFromHeaders(req *http.Request, logger log.FieldLogger) (string, bool, error) {
 	modelHeader := req.Header.Get(resources.SeldonModelHeader)
-	modelInternalHeader := req.Header.Get(resources.SeldonInternalModelHeader)
+	// may have multiple header values due to shadow/mirror processing
+	modelInternalHeader := req.Header.Values(resources.SeldonInternalModelHeader)
 	logger.Debugf("Seldon model header %s and seldon internal model header %s", modelHeader, modelInternalHeader)
-	if modelInternalHeader != "" {
-		return createResourceNameFromHeader(modelInternalHeader)
+	if len(modelInternalHeader) > 0 {
+		return createResourceNameFromHeader(modelInternalHeader[len(modelInternalHeader)-1]) // get last header if multiple
 	} else {
 		return createResourceNameFromHeader(modelHeader)
 	}
