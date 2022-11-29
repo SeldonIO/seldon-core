@@ -519,7 +519,11 @@ func (p *IncrementalProcessor) experimentUpdate(exp *experiment.Experiment) erro
 	if exp.Default != nil {
 		switch exp.ResourceType {
 		case experiment.PipelineResourceType:
-			return p.addPipeline(*exp.Default)
+			logger.Infof("Experiment %s sync - calling for pipeline %s", exp.Name, *exp.Default)
+			err := p.addPipeline(*exp.Default)
+			if err != nil {
+				return err
+			}
 		case experiment.ModelResourceType:
 			logger.Infof("Experiment %s sync - calling for model %s", exp.Name, *exp.Default)
 			err := p.modelUpdate(*exp.Default)
@@ -552,9 +556,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		logger.Debugf("sync: No model - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-			return err
 		}
-
+		return p.updateEnvoy() // in practice we should not be here
 	}
 
 	latestModel := model.GetLatest()
@@ -562,9 +565,10 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		logger.Debugf("sync: No latest model - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-			return err
 		}
+		return p.updateEnvoy() // in practice we should not be here
 	}
+
 	if !model.CanReceiveTraffic() {
 		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {

@@ -366,13 +366,16 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 }
 
 func (es *ExperimentStore) StopExperiment(experimentName string) error {
-	expEvt, modelEvt, err := es.stopExperimentImpl(experimentName)
+	expEvt, modelEvt, pipelineEvt, err := es.stopExperimentImpl(experimentName)
 	if err != nil {
 		return err
 	}
 	if es.eventHub != nil {
 		if modelEvt != nil {
 			es.eventHub.PublishModelEvent(experimentStopEventSource, *modelEvt)
+		}
+		if pipelineEvt != nil {
+			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
 		}
 		if expEvt != nil {
 			es.eventHub.PublishExperimentEvent(experimentStopEventSource, *expEvt)
@@ -381,30 +384,41 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 	return nil
 }
 
-func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinator.ExperimentEventMsg, *coordinator.ModelEventMsg, error) {
+func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinator.ExperimentEventMsg, *coordinator.ModelEventMsg, *coordinator.PipelineEventMsg, error) {
 	logger := es.logger.WithField("func", "StopExperiment")
 	logger.Infof("Stop %s", experimentName)
 	es.mu.Lock()
 	defer es.mu.Unlock()
 	if experiment, ok := es.experiments[experimentName]; ok {
 		var modelEvt *coordinator.ModelEventMsg
+		var pipelineEvt *coordinator.PipelineEventMsg
 		experiment.Deleted = true
 		experiment.Active = false
 		es.cleanExperimentState(experiment)
 		if experiment.Default != nil {
-			modelEvt = &coordinator.ModelEventMsg{
-				ModelName: *experiment.Default,
+			switch experiment.ResourceType {
+			case PipelineResourceType:
+				pipelineEvt = &coordinator.PipelineEventMsg{
+					PipelineName:     *experiment.Default,
+					ExperimentUpdate: true,
+				}
+			case ModelResourceType:
+				modelEvt = &coordinator.ModelEventMsg{
+					ModelName: *experiment.Default,
+				}
+			default:
+				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
 			}
 		}
 		if es.db != nil {
 			err := es.db.delete(experiment)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, nil, err
 			}
 		}
-		return es.createExperimentEventMsg(experiment, true), modelEvt, nil
+		return es.createExperimentEventMsg(experiment, true), modelEvt, pipelineEvt, nil
 	} else {
-		return nil, nil, &ExperimentNotFound{
+		return nil, nil, nil, &ExperimentNotFound{
 			experimentName: experimentName,
 		}
 	}
