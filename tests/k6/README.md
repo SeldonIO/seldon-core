@@ -28,9 +28,9 @@ sudo service influxdb start
 sudo /bin/systemctl start grafana-server
 
 
-SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:8081 INFER_HTTP_ENDPOINT=http://0.0.0.0:8080 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/predict_agent.js
+SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:8081 INFER_HTTP_ENDPOINT=http://0.0.0.0:8080 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/infer_constant_rate.js
 
-SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:9998 INFER_HTTP_ENDPOINT=http://0.0.0.0:9999 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/predict_agent.js
+SCHEDULER_ENDPOINT=0.0.0.0:8100 INFER_GRPC_ENDPOINT=0.0.0.0:9998 INFER_HTTP_ENDPOINT=http://0.0.0.0:9999 INFER_HTTP_ITERATIONS=1 INFER_GRPC_ITERATIONS=1 MODEL_TYPE="iris" MAX_NUM_MODELS=10 k6 run -u 1 -i 10 --http-debug --out influxdb=http://localhost:8086/k6db scenarios/infer_constant_rate.js
 ```
 
 For k8s you will need to update the default endpoints to the services exposed, e.g.
@@ -47,7 +47,7 @@ Run against model name `iris` which is of type `iris` against a envoy http ip as
  MODEL_NAME="iris" MODEL_TYPE="iris" INFER_HTTP_ENDPOINT="http://172.31.255.9" k6 run scenarios/model_constant_rate.js
 ```
 
-Run localy but with grpc
+Run locally but with grpc
 
 ```
 INFER_TYPE="grpc" MODEL_TYPE="iris" k6 run scenarios/model_constant_rate.js

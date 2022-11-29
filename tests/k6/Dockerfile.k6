@@ -40,4 +40,4 @@ ENV GIT_COMMIT ${GIT_COMMIT}
 ENV GIT_BRANCH ${GIT_BRANCH}
 
 # should be overriden in practice 
-CMD ["-u", "5", "scenarios/predict_agent.js"]
+CMD ["-u", "5", "scenarios/infer_constant_vu.js"]

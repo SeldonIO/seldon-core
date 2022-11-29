@@ -1,4 +1,4 @@
-import {getConfig} from '../components/settings.js'
+import { getConfig } from '../components/settings.js'
 import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../components/utils.js'
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -38,4 +38,4 @@ export default function (config) {
 
 export function teardown(config) {
     teardownBase(config)
-  }
+}

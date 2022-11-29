@@ -11,6 +11,7 @@ spec:
       - name: k6
         image: k6:latest
         imagePullPolicy: Always
+        # infer_constant_vu
         args: [
           "--no-teardown",
           "--summary-export",
@@ -18,13 +19,22 @@ spec:
           "--out",
           "csv=results/base.gz",
           "-u",
-          "5",
+          "1",
           "-i",
-          "10000",
+          "1",
           "-d",
           "120m",
-          "scenarios/predict_agent.js",
+          "scenarios/infer_constant_vu.js",
           ]
+        # infer_constant_vu
+        # args: [
+        #   "--no-teardown",
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "scenarios/infer_constant_rate.js",
+        #   ]
         env:
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
@@ -39,7 +49,7 @@ spec:
         - name: MODEL_MEMORY_BYTES
           value: "400000"
         - name: MAX_NUM_MODELS
-          value: "18000"
+          value: "1"
         - name: INFER_BATCH_SIZE
           value: "1"
         - name: WARMUP

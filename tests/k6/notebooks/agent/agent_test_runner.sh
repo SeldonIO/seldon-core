@@ -4,7 +4,7 @@ NUM_MODELS=1
 NUM_ITERS=5
 NUM_VUS=5
 MODEL_NAME="mlflow_wine" # check model.js
-EXTRA="--out influxdb=http://localhost:8086/k6db ../../scenarios/predict_agent.js"
+EXTRA="--out influxdb=http://localhost:8086/k6db ../../scenarios/infer_constant_vu.js"
 DIR="results"
 
 mkdir -p $DIR
