@@ -1,0 +1,17 @@
+name: V2 Draft New Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for new draft (e.g. v2.0.0)'
+        required: true
+
+jobs:
+  placeholder:
+    name: placeholder
+    runs-on: ubuntu-latest
+    if: github.repository == 'seldonio/seldon-core' # Do not run this on forks.
+    steps:
+    - name: Echo Message
+      run: echo "This is to make workflow available for V2 releases"
