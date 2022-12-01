@@ -1,4 +1,4 @@
-name: Security Tests
+name: V1 Security Tests
 
 on:
   push:

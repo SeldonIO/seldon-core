@@ -1,4 +1,4 @@
-name: AlibExplainer Tests
+name: V1 Alibi Explainer Tests
 
 on:
   push:

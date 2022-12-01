@@ -1,4 +1,4 @@
-name: Python Tests
+name: V1 Python Tests
 
 on:
   push:
@@ -17,4 +17,3 @@ jobs:
     - name: test-python
       run: |
         make -C python update_package install_dev test
-
