@@ -19,6 +19,8 @@ export const options = {
             maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
         },
     },
+    setupTimeout: '6000s',
+    teardownTimeout: '6000s',
 };
 
 export function setup() {

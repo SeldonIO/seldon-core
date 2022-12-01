@@ -12,6 +12,7 @@ export let options = {
     },
     setupTimeout: '6000s',
     duration: '30m',
+    teardownTimeout: '6000s',
 }
 
 export function setup() {

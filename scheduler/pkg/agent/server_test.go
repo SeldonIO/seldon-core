@@ -709,16 +709,33 @@ func TestModelScalingProtos(t *testing.T) {
 			expectedReplicas:    2,
 			isError:             true,
 		},
+		{
+			name: "model does not exist in scheduler state",
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{},
+			},
+			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
+			triggerModelName:    "iris",
+			triggerModelVersion: 1,
+			expectedReplicas:    2,
+			isError:             true,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
 			model, _ := test.store.GetModel(test.triggerModelName)
-			lastestModel := model.GetLatest()
-			state := lastestModel.ModelState()
-			state.Timestamp = test.lastUpdate
-			lastestModel.SetModelState(state)
+			if model != nil { // in the cases where the model is not in the scheduler state yet
+				lastestModel := model.GetLatest()
+				state := lastestModel.ModelState()
+				state.Timestamp = test.lastUpdate
+				lastestModel.SetModelState(state)
+			} else {
+				model = &store.ModelSnapshot{
+					Name: test.triggerModelName,
+				}
+			}
 
 			protos, err := createScalingPseudoRequest(&pb.ModelScalingTriggerMessage{
 				ModelName:    test.triggerModelName,

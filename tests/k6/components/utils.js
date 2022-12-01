@@ -95,7 +95,7 @@ export function teardownBase(config ) {
                 unloadPipeline(generatePipelineName(modelName)) 
             }
 
-            unloadModelFn(modelName, true)
+            unloadModelFn(modelName, false)
         }
 
         var disconnectSchedulerFn = disconnectScheduler

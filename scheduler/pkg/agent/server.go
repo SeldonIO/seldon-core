@@ -503,6 +503,9 @@ func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *s
 	modelName := message.ModelName
 
 	lastModelVersion := model.GetLatest()
+	if lastModelVersion == nil {
+		return nil, fmt.Errorf("Model %s does not exist yet, possibly due to scheduler restarting", modelName)
+	}
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	tryScaleDown := (message.Trigger == pb.ModelScalingTriggerMessage_SCALE_DOWN && !model.Deleted)
 	tryScaleUp := (message.Trigger == pb.ModelScalingTriggerMessage_SCALE_UP && lastAvailableModelVersion != nil && lastAvailableModelVersion.GetVersion() == lastModelVersion.GetVersion())
