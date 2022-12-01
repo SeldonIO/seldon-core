@@ -190,20 +190,14 @@ func (m *MemoryStore) GetModel(key string) (*ModelSnapshot, error) {
 }
 
 func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
-	evt, err := m.removeModelImpl(req)
+	err := m.removeModelImpl(req)
 	if err != nil {
 		return err
-	}
-	if m.eventHub != nil && evt != nil {
-		m.eventHub.PublishModelEvent(
-			modelUpdateEventSource,
-			*evt,
-		)
 	}
 	return nil
 }
 
-func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.ModelEventMsg, error) {
+func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	model, ok := m.store.models[req.GetModel().GetName()]
@@ -215,12 +209,9 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) (*coordinator.
 		}
 		model.SetDeleted()
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
-		return &coordinator.ModelEventMsg{
-			ModelName:    model.Latest().GetMeta().GetName(),
-			ModelVersion: model.Latest().GetVersion(),
-		}, nil
+		return nil
 	} else {
-		return nil, fmt.Errorf("Model %s not found", req.GetModel().GetName())
+		return fmt.Errorf("Model %s not found", req.GetModel().GetName())
 	}
 }
 
