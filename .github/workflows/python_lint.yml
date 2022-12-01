@@ -1,4 +1,4 @@
-name: Python Lint
+name: V1 Python Lint
 
 on:
   push:
@@ -17,4 +17,3 @@ jobs:
     - name: lint-python
       run: |
         make -C python install_dev lint
-

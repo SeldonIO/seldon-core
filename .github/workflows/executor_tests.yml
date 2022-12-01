@@ -1,4 +1,4 @@
-name: Executor Tests
+name: V1 Executor Tests
 
 on:
   push:
