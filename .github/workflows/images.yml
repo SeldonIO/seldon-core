@@ -2,7 +2,7 @@ name: V2 Build docker images
 
 on:
   push:
-    branches: [ master ]
+    branches: [ v2 ]
 
   workflow_dispatch:
     inputs:
