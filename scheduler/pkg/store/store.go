@@ -29,6 +29,10 @@ type ServerSnapshot struct {
 	KubernetesMeta   *pb.KubernetesMeta
 }
 
+func (s *ServerSnapshot) String() string {
+	return s.Name
+}
+
 type ModelSnapshot struct {
 	Name     string
 	Versions []*ModelVersion

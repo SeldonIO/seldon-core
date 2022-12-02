@@ -326,30 +326,37 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 	if event.ExperimentUpdate {
 		return
 	}
+
 	go func() {
 		c.mu.Lock()
 		defer c.mu.Unlock()
+
 		// Handle case where we have no subscribers
 		if len(c.streams) == 0 {
 			logger.Warnf("Can't handle event as no streams available for pipeline %s", event.PipelineName)
 			return
 		}
+
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			return
 		}
+
 		logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
+
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
-			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, ""); err != nil {
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "")
+			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 			msg := c.createPipelineMessage(pv)
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
-			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, ""); err != nil {
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "")
+			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
 			msg := c.createPipelineMessage(pv)

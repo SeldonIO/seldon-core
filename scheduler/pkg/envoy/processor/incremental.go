@@ -133,6 +133,8 @@ func NewIncrementalProcessor(
 
 func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
 	logger := p.logger.WithField("func", "handleExperimentEvents")
+	logger.Debugf("Received event %s", event.String())
+
 	// Ignore pipeline events due to model status change to stop pointless processing
 	// If models are ready or not has no bearing on whether we need to update pipeline
 	if !event.ModelStatusChange {

@@ -82,7 +82,7 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 
 func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleModelEvent")
-	logger.Infof("Got model event msg for %s", event.String())
+	logger.Debugf("Got model event msg for %s", event.String())
 
 	// TODO - Should this spawn a goroutine?
 	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?
@@ -158,7 +158,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 // TODO - Create a ServerStatusMsg type to disambiguate?
 func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
-	logger.Infof("Got server state change for %s", event.String())
+	logger.Debugf("Got server state change for %s", event.String())
 
 	// TODO - Should this spawn a goroutine?
 	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?

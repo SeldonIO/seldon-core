@@ -156,7 +156,7 @@ func NewAgentServer(
 
 func (s *Server) handleSyncs(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleSyncs")
-	logger.Infof("Received sync for model %s", event.String())
+	logger.Debugf("Received sync for model %s", event.String())
 
 	// TODO - Should this spawn a goroutine?
 	// Surely we're risking reordering of events, e.g. load/unload -> unload/load?
@@ -360,7 +360,7 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 		logger.Debugf("Received scaling event %d from server %s:%d for model %s:%d",
 			message.GetTrigger(), message.GetServerName(), message.GetReplicaIdx(), message.GetModelName(), message.GetModelVersion())
 
-		// so far we do not care about oder of scaling events. the first one should win.
+		// so far we do not care about order of scaling events; the first one should win
 		go func() {
 			if err := s.applyModelScaling(message); err != nil {
 				logger.WithError(err).Debugf(

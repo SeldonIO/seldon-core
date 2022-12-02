@@ -166,7 +166,7 @@ func (es *ExperimentStore) createExperimentEventMsg(experiment *Experiment, upda
 // This function will publish experiment events for any model that has changed which is part of an existing experiment
 func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	logger := es.logger.WithField("func", "handleModelEvents")
-	logger.Infof("Received event %s", event.String())
+	logger.Debugf("Received event %s", event.String())
 
 	go func() {
 		var updatedExperiments []*Experiment
@@ -218,7 +218,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 // This function will publish experiment events for any pipeline that has changed which is part of an existing experiment
 func (es *ExperimentStore) handlePipelineEvents(event coordinator.PipelineEventMsg) {
 	logger := es.logger.WithField("func", "handlePipelineEvents")
-	logger.Infof("Received event %s", event.String())
+	logger.Debugf("Received event %s", event.String())
 
 	go func() {
 		var updatedExperiments []*Experiment

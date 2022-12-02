@@ -18,6 +18,7 @@ package gateway
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -96,14 +97,21 @@ func (kc *InferKafkaConsumer) setup() error {
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Producer)
-	producerConfigMap["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfigMap)
+	producerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Producer)
+	producerConfig["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
-	kc.logger.Infof("Creating producer with config %v", producerConfigMap)
-	kc.producer, err = kafka.NewProducer(&producerConfigMap)
+
+	producerConfigAsJSON, err := json.Marshal(&producerConfig)
+	if err != nil {
+		logger.WithField("config", &producerConfig).Info("Creating producer")
+	} else {
+		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer")
+	}
+
+	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
 		return err
 	}
@@ -118,7 +126,14 @@ func (kc *InferKafkaConsumer) setup() error {
 	if err != nil {
 		return err
 	}
-	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
+
+	consumerConfigAsJson, err := json.Marshal(&consumerConfig)
+	if err != nil {
+		logger.WithField("config", &consumerConfig).Info("Creating consumer")
+	} else {
+		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer")
+	}
+
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
@@ -126,7 +141,10 @@ func (kc *InferKafkaConsumer) setup() error {
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
 	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
-		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
+		adminConfig := kafka.ConfigMap{
+			config.KafkaBootstrapServers: kc.consumerConfig.KafkaConfig.BootstrapServers,
+		}
+		kc.adminClient, err = kafka.NewAdminClient(&adminConfig)
 		if err != nil {
 			return err
 		}
@@ -173,7 +191,7 @@ func (kc *InferKafkaConsumer) GetNumModels() int {
 }
 
 func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
-	logger := kc.logger.WithField("func", "createTopic")
+	logger := kc.logger.WithField("func", "createTopics")
 	if kc.adminClient == nil {
 		logger.Warnf("Can't create topics %v as no admin client", topicNames)
 		return nil
@@ -196,7 +214,7 @@ func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
 		logger.Debugf("Topic result for %s", result.String())
 	}
 	t2 := time.Now()
-	logger.Infof("Topic create in %d millis", t2.Sub(t1).Milliseconds())
+	logger.Infof("Topic created in %d millis", t2.Sub(t1).Milliseconds())
 	return nil
 }
 

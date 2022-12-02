@@ -96,7 +96,7 @@ func (t *TracerProvider) loadConfig(path *string) error {
 		if err != nil {
 			return err
 		}
-		logger.Infof("Loading tracing config %s", string(data))
+		logger.WithField("config", string(data)).Infof("Loading tracing config")
 		tc := TracingConfig{}
 		d := json.NewDecoder(bytes.NewReader(data))
 		d.DisallowUnknownFields() // So we fail if not exactly as required in schema
