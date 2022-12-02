@@ -69,7 +69,7 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 COPY --from=builder /openapi/ /openapi/
 
 # Run update to pickup any necessary security updates
-RUN microdnf update -y
+RUN dnf update -y
 
 USER 8888
 ENTRYPOINT ["/executor"]
