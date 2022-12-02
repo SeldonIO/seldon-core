@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core/operatorv2
+module github.com/seldonio/seldon-core/operator/v2
 
 go 1.19
 
@@ -10,8 +10,8 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
-	github.com/seldonio/seldon-core-v2/components/tls v0.0.0-00010101000000-000000000000
-	github.com/seldonio/seldon-core/scheduler/apis v0.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.4.0
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
@@ -97,6 +97,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/seldonio/seldon-core-v2/components/tls => ../components/tls
+replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
 
-replace github.com/seldonio/seldon-core/scheduler/apis => ../apis/go
+replace github.com/seldonio/seldon-core/apis/go/v2 => ../apis/go

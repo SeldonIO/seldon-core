@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 const (

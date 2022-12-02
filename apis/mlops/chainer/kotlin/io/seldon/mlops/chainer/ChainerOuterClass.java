@@ -6235,9 +6235,9 @@ java.lang.String defaultValue);
       "PipelineUpdateEvent\0221.seldon.mlops.chain" +
       "er.PipelineUpdateStatusMessage\0322.seldon." +
       "mlops.chainer.PipelineUpdateStatusRespon" +
-      "se\"\000BW\n\027io.seldon.mlops.chainerZ<github." +
-      "com/seldonio/seldon-core/scheduler/apis/" +
-      "mlops/chainerb\006proto3"
+      "se\"\000BS\n\027io.seldon.mlops.chainerZ8github." +
+      "com/seldonio/seldon-core/apis/go/v2/mlop" +
+      "s/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

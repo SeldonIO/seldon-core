@@ -19,12 +19,12 @@ package pipeline
 import (
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 
 	"github.com/sirupsen/logrus"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestAddPipeline(t *testing.T) {

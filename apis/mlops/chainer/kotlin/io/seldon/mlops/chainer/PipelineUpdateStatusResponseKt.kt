@@ -20,15 +20,15 @@ limitations under the License.
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmName("-initializepipelineUpdateStatusResponse")
-inline fun pipelineUpdateStatusResponse(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
+public inline fun pipelineUpdateStatusResponse(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
   io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.newBuilder()).apply { block() }._build()
-object PipelineUpdateStatusResponseKt {
+public object PipelineUpdateStatusResponseKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  class Dsl private constructor(
+  public class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.Builder
   ) {
-    companion object {
+    public companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.Builder): Dsl = Dsl(builder)
@@ -40,6 +40,6 @@ object PipelineUpdateStatusResponseKt {
   }
 }
 @kotlin.jvm.JvmSynthetic
-inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
+public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse =
   io.seldon.mlops.chainer.PipelineUpdateStatusResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

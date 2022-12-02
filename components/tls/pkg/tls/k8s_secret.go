@@ -21,7 +21,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/k8s"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 	"k8s.io/client-go/kubernetes"
 	"os"
 	"path/filepath"

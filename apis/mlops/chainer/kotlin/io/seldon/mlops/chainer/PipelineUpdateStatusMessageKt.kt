@@ -20,15 +20,15 @@ limitations under the License.
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmName("-initializepipelineUpdateStatusMessage")
-inline fun pipelineUpdateStatusMessage(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
+public inline fun pipelineUpdateStatusMessage(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
   io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.newBuilder()).apply { block() }._build()
-object PipelineUpdateStatusMessageKt {
+public object PipelineUpdateStatusMessageKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  class Dsl private constructor(
+  public class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.Builder
   ) {
-    companion object {
+    public companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.Builder): Dsl = Dsl(builder)
@@ -45,7 +45,7 @@ object PipelineUpdateStatusMessageKt {
      *
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
      */
-    var update: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage
+    public var update: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage
       @JvmName("getUpdate")
       get() = _builder.getUpdate()
       @JvmName("setUpdate")
@@ -59,7 +59,7 @@ object PipelineUpdateStatusMessageKt {
      *
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
      */
-    fun clearUpdate() {
+    public fun clearUpdate() {
       _builder.clearUpdate()
     }
     /**
@@ -70,14 +70,14 @@ object PipelineUpdateStatusMessageKt {
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
      * @return Whether the update field is set.
      */
-    fun hasUpdate(): kotlin.Boolean {
+    public fun hasUpdate(): kotlin.Boolean {
       return _builder.hasUpdate()
     }
 
     /**
      * <code>bool success = 2;</code>
      */
-    var success: kotlin.Boolean
+    public var success: kotlin.Boolean
       @JvmName("getSuccess")
       get() = _builder.getSuccess()
       @JvmName("setSuccess")
@@ -87,14 +87,14 @@ object PipelineUpdateStatusMessageKt {
     /**
      * <code>bool success = 2;</code>
      */
-    fun clearSuccess() {
+    public fun clearSuccess() {
       _builder.clearSuccess()
     }
 
     /**
      * <code>string reason = 3;</code>
      */
-    var reason: kotlin.String
+    public var reason: kotlin.String
       @JvmName("getReason")
       get() = _builder.getReason()
       @JvmName("setReason")
@@ -104,13 +104,13 @@ object PipelineUpdateStatusMessageKt {
     /**
      * <code>string reason = 3;</code>
      */
-    fun clearReason() {
+    public fun clearReason() {
       _builder.clearReason()
     }
   }
 }
 @kotlin.jvm.JvmSynthetic
-inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
+public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
   io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
 val io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessageOrBuilder.updateOrNull: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage?

@@ -24,8 +24,8 @@ import (
 	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 

@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	"google.golang.org/protobuf/proto"
 )
 

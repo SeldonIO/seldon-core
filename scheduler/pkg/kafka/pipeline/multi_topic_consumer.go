@@ -21,11 +21,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	cmap "github.com/orcaman/concurrent-map"
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"

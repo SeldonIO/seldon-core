@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core-v2/components/tls
+module github.com/seldonio/seldon-core/components/tls/v2
 
 go 1.16
 

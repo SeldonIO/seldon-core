@@ -19,7 +19,7 @@ package main
 import (
 	"os"
 
-	"github.com/seldonio/seldon-core/operatorv2/cmd/seldon/cli"
+	"github.com/seldonio/seldon-core/operator/v2/cmd/seldon/cli"
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -17,8 +17,8 @@ limitations under the License.
 package rclone
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
 )
 
 func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration) error {

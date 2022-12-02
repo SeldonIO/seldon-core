@@ -26,9 +26,9 @@ import (
 	"time"
 
 	"github.com/jarcoal/httpmock"
-	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	log "github.com/sirupsen/logrus"
 

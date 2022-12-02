@@ -29,10 +29,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"google.golang.org/grpc"
 
 	"github.com/gorilla/mux"

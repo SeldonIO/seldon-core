@@ -16,7 +16,7 @@ limitations under the License.
 
 package cli
 
-import "github.com/seldonio/seldon-core/operatorv2/pkg/cli"
+import "github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 
 // Flags
 const (

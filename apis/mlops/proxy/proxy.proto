@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package seldon.mlops.proxy;
 
-option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/proxy";
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/proxy";
 
 import "mlops/scheduler/scheduler.proto";
 

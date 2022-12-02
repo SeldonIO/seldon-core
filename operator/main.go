@@ -19,7 +19,7 @@ package main
 import (
 	"context"
 
-	"github.com/seldonio/seldon-core/operatorv2/scheduler"
+	"github.com/seldonio/seldon-core/operator/v2/scheduler"
 
 	"flag"
 	"os"
@@ -32,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	mlopscontrollers "github.com/seldonio/seldon-core/operatorv2/controllers/mlops"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
 	//+kubebuilder:scaffold:imports
 )
 

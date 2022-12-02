@@ -23,7 +23,7 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	"github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/sirupsen/logrus"
 )
 

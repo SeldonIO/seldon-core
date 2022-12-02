@@ -29,11 +29,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler"
-	schedulerAPI "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	schedulerAPI "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
+	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // PipelineReconciler reconciles a Pipeline object

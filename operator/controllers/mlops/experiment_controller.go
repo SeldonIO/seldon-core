@@ -22,8 +22,8 @@ import (
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	scheduler "github.com/seldonio/seldon-core/operatorv2/scheduler"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // ExperimentReconciler reconciles a Experiment object

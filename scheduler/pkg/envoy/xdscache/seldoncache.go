@@ -19,11 +19,11 @@ package xdscache
 import (
 	"fmt"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/sirupsen/logrus"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 )
 
 const (

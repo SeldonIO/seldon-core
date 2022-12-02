@@ -31,12 +31,12 @@ import (
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

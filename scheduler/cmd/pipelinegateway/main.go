@@ -25,16 +25,16 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
-	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	log "github.com/sirupsen/logrus"
 )
 

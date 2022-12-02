@@ -24,7 +24,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/rs/xid"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {

@@ -28,7 +28,7 @@ import (
 	fakeDiscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestUpdatePipelineMetrics(t *testing.T) {

@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package seldon.mlops.agent_debug;
 
-option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent_debug";
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug";
 
 import "google/protobuf/timestamp.proto";
 

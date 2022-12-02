@@ -31,13 +31,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 

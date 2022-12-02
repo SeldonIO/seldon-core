@@ -28,7 +28,7 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton";
+option go_package = "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton";
 
 package inference;
 

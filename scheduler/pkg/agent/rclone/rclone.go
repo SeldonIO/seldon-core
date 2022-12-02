@@ -27,9 +27,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"

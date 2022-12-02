@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	cache "github.com/seldonio/seldon-core/scheduler/pkg/agent/cache"
-	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	cache "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/cache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 

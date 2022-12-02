@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/cache"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/cache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 const (

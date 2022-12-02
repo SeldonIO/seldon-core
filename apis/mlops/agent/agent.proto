@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package seldon.mlops.agent;
 
-option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent";
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent";
 
 import "mlops/scheduler/scheduler.proto";
 

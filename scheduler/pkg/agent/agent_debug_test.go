@@ -23,9 +23,9 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
-	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	pbad "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent_debug"
-	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 )
 

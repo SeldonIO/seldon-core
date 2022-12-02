@@ -17,7 +17,7 @@ limitations under the License.
 package experiment
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {

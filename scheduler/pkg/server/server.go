@@ -25,17 +25,17 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	scheduler2 "github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

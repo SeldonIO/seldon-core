@@ -16,7 +16,7 @@ limitations under the License.
 
 package resources
 
-import "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+import "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 const (
 	PipelineGatewayHttpClusterName = "pipelinegateway_http"

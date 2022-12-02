@@ -19,7 +19,7 @@ package modelscaling
 import (
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 // TODO: this has tight-coupling with specific metrics, how can we do it more generally?

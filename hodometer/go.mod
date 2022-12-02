@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core/hodometer
+module github.com/seldonio/seldon-core/hodometer/v2
 
 go 1.18
 
@@ -7,8 +7,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
-	github.com/seldonio/seldon-core-v2/components/tls v0.0.0-00010101000000-000000000000
-	github.com/seldonio/seldon-core/scheduler/apis v0.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.49.0
@@ -77,6 +77,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/seldonio/seldon-core-v2/components/tls => ../components/tls
+replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
 
-replace github.com/seldonio/seldon-core/scheduler/apis => ../apis/go
+replace github.com/seldonio/seldon-core/apis/go/v2 => ../apis/go

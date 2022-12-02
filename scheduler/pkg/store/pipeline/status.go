@@ -19,8 +19,8 @@ package pipeline
 import (
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/sirupsen/logrus"
 )
 

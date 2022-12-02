@@ -18,7 +18,7 @@ package config
 
 import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (

@@ -20,12 +20,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 
 	. "github.com/onsi/gomega"
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 )
 

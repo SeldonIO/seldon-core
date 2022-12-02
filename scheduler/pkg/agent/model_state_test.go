@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func getUint64Ptr(val uint64) *uint64 {

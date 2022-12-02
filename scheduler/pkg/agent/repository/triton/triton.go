@@ -24,8 +24,8 @@ import (
 	"strconv"
 
 	copy2 "github.com/otiai10/copy"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	pb "github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton/config"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
 )

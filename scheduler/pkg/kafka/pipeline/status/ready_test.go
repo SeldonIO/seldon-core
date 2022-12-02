@@ -21,7 +21,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 
 	. "github.com/onsi/gomega"
 )

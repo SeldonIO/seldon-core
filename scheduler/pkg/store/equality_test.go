@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestModelEquality(t *testing.T) {

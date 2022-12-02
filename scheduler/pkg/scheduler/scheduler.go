@@ -23,10 +23,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/filters"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler/sorters"
-	store "github.com/seldonio/seldon-core/scheduler/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/sorters"
+	store "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 
 	"github.com/google/go-cmp/cmp"
 	log "github.com/sirupsen/logrus"

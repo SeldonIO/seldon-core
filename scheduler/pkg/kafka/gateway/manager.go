@@ -19,9 +19,9 @@ package gateway
 import (
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
-	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 

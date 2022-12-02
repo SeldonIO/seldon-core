@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	pb "github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/triton/config"
+	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"

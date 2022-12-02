@@ -22,17 +22,17 @@ import (
 	"net"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/chainer"
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	log "github.com/sirupsen/logrus"
 )
 

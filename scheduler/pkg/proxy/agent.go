@@ -23,7 +23,7 @@ import (
 	"net"
 	"sync"
 
-	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )

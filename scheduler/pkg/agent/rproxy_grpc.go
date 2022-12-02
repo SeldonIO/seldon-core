@@ -27,13 +27,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	log "github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 )
 
 const (

@@ -8,7 +8,7 @@ PROTOC_IMPORT_PATH := -I.
 ### START GO ###
 
 PROTOC_GO_PACKAGE_STYLE := import
-PROTOC_GO_MODULE_PREFIX := github.com/seldonio/seldon-core/scheduler/apis
+PROTOC_GO_MODULE_PREFIX := github.com/seldonio/seldon-core/apis/go/v2
 PROTOC_GO_OUTPUT_PREFIX := ./go
 
 PROTOC_GO_PATH := --go_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)

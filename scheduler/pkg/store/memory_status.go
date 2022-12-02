@@ -19,7 +19,7 @@ package store
 import (
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 const (

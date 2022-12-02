@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestUpdateInputsSteps(t *testing.T) {

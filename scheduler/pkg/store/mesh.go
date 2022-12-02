@@ -23,8 +23,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	pba "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
 )
 

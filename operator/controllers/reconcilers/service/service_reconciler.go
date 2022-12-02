@@ -21,10 +21,10 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/utils"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"

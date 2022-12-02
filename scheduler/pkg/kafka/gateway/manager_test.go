@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
-	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	log "github.com/sirupsen/logrus"
 )
 

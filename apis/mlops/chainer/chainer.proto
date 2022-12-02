@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package seldon.mlops.chainer;
 
-option go_package = "github.com/seldonio/seldon-core/scheduler/apis/mlops/chainer";
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer";
 option java_package = "io.seldon.mlops.chainer";
 
 message PipelineSubscriptionRequest {

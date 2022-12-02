@@ -20,15 +20,15 @@ limitations under the License.
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmName("-initializebatch")
-inline fun batch(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
+public inline fun batch(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
   io.seldon.mlops.chainer.BatchKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.Batch.newBuilder()).apply { block() }._build()
-object BatchKt {
+public object BatchKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  class Dsl private constructor(
+  public class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder
   ) {
-    companion object {
+    public companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder): Dsl = Dsl(builder)
@@ -41,7 +41,7 @@ object BatchKt {
     /**
      * <code>optional uint32 size = 1;</code>
      */
-    var size: kotlin.Int
+    public var size: kotlin.Int
       @JvmName("getSize")
       get() = _builder.getSize()
       @JvmName("setSize")
@@ -51,21 +51,21 @@ object BatchKt {
     /**
      * <code>optional uint32 size = 1;</code>
      */
-    fun clearSize() {
+    public fun clearSize() {
       _builder.clearSize()
     }
     /**
      * <code>optional uint32 size = 1;</code>
      * @return Whether the size field is set.
      */
-    fun hasSize(): kotlin.Boolean {
+    public fun hasSize(): kotlin.Boolean {
       return _builder.hasSize()
     }
 
     /**
      * <code>optional uint32 windowMs = 2;</code>
      */
-    var windowMs: kotlin.Int
+    public var windowMs: kotlin.Int
       @JvmName("getWindowMs")
       get() = _builder.getWindowMs()
       @JvmName("setWindowMs")
@@ -75,21 +75,21 @@ object BatchKt {
     /**
      * <code>optional uint32 windowMs = 2;</code>
      */
-    fun clearWindowMs() {
+    public fun clearWindowMs() {
       _builder.clearWindowMs()
     }
     /**
      * <code>optional uint32 windowMs = 2;</code>
      * @return Whether the windowMs field is set.
      */
-    fun hasWindowMs(): kotlin.Boolean {
+    public fun hasWindowMs(): kotlin.Boolean {
       return _builder.hasWindowMs()
     }
 
     /**
      * <code>bool rolling = 3;</code>
      */
-    var rolling: kotlin.Boolean
+    public var rolling: kotlin.Boolean
       @JvmName("getRolling")
       get() = _builder.getRolling()
       @JvmName("setRolling")
@@ -99,12 +99,12 @@ object BatchKt {
     /**
      * <code>bool rolling = 3;</code>
      */
-    fun clearRolling() {
+    public fun clearRolling() {
       _builder.clearRolling()
     }
   }
 }
 @kotlin.jvm.JvmSynthetic
-inline fun io.seldon.mlops.chainer.ChainerOuterClass.Batch.copy(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
+public inline fun io.seldon.mlops.chainer.ChainerOuterClass.Batch.copy(block: io.seldon.mlops.chainer.BatchKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.Batch =
   io.seldon.mlops.chainer.BatchKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

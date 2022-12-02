@@ -25,16 +25,16 @@ import (
 	"sync"
 	"time"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	pbs "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -21,7 +21,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	proxy "github.com/seldonio/seldon-core/scheduler/pkg/proxy"
+	proxy "github.com/seldonio/seldon-core/scheduler/v2/pkg/proxy"
 	"github.com/sirupsen/logrus"
 )
 

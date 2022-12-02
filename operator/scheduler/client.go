@@ -26,7 +26,7 @@ import (
 
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"

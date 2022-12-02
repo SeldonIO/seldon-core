@@ -20,15 +20,15 @@ limitations under the License.
 package io.seldon.mlops.chainer;
 
 @kotlin.jvm.JvmName("-initializepipelineSubscriptionRequest")
-inline fun pipelineSubscriptionRequest(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
+public inline fun pipelineSubscriptionRequest(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
   io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl._create(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.newBuilder()).apply { block() }._build()
-object PipelineSubscriptionRequestKt {
+public object PipelineSubscriptionRequestKt {
   @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
   @com.google.protobuf.kotlin.ProtoDslMarker
-  class Dsl private constructor(
+  public class Dsl private constructor(
     private val _builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.Builder
   ) {
-    companion object {
+    public companion object {
       @kotlin.jvm.JvmSynthetic
       @kotlin.PublishedApi
       internal fun _create(builder: io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.Builder): Dsl = Dsl(builder)
@@ -41,7 +41,7 @@ object PipelineSubscriptionRequestKt {
     /**
      * <code>string name = 1;</code>
      */
-    var name: kotlin.String
+    public var name: kotlin.String
       @JvmName("getName")
       get() = _builder.getName()
       @JvmName("setName")
@@ -51,12 +51,12 @@ object PipelineSubscriptionRequestKt {
     /**
      * <code>string name = 1;</code>
      */
-    fun clearName() {
+    public fun clearName() {
       _builder.clearName()
     }
   }
 }
 @kotlin.jvm.JvmSynthetic
-inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.copy(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
+public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.copy(block: io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest =
   io.seldon.mlops.chainer.PipelineSubscriptionRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

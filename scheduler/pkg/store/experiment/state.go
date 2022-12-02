@@ -17,8 +17,8 @@ limitations under the License.
 package experiment
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
-	pipeline2 "github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	pipeline2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 const (

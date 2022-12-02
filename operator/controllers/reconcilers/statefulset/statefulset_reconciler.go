@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operatorv2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operatorv2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"

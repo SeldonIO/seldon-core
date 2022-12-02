@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/agent"
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type ModelState struct {

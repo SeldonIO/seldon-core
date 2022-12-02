@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -31,11 +31,11 @@ import (
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	"go.opentelemetry.io/otel"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
-	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/sirupsen/logrus"
 )
 

@@ -35,7 +35,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"

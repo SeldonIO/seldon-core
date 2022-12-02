@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core/scheduler/apis
+module github.com/seldonio/seldon-core/apis/go/v2
 
 go 1.18
 

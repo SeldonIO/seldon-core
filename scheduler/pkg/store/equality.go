@@ -17,7 +17,7 @@ limitations under the License.
 package store
 
 import (
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
 )
 

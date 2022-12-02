@@ -21,7 +21,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 type operation int

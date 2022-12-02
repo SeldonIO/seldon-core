@@ -25,21 +25,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 )
 
 const (

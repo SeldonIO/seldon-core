@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/utils/env"
 
-	"github.com/seldonio/seldon-core/operatorv2/pkg/cli"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"github.com/spf13/cobra"
 )
 

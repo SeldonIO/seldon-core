@@ -22,10 +22,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
-	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"

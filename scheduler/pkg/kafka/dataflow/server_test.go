@@ -19,7 +19,7 @@ package dataflow
 import (
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"

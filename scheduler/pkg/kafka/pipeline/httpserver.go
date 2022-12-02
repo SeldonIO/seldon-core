@@ -26,13 +26,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/gorilla/mux"
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )

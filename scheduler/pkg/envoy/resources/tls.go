@@ -19,7 +19,7 @@ package resources
 import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
-	"github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 

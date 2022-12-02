@@ -9,7 +9,7 @@ Version: main.version{KubeBuilderVersion:"3.2.0", KubernetesVendor:"1.22.1", Git
 Steps to recreate scaffolding
 
 ```
-go mod init github.com/seldonio/seldon-core/operatorv2
+go mod init github.com/seldonio/seldon-core/operator/v2
 kubebuilder init --domain seldon.io
 kubebuilder edit --multigroup=true
 kubebuilder create api --group mlops --version v1alpha1 --kind Model --resource --controller

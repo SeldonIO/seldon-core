@@ -19,7 +19,7 @@ package status
 import (
 	"sync"
 
-	pipeline "github.com/seldonio/seldon-core/scheduler/pkg/store/pipeline"
+	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 type PipelineStatusUpdater interface {

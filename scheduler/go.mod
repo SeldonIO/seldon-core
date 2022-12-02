@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core/scheduler
+module github.com/seldonio/seldon-core/scheduler/v2
 
 go 1.19
 
@@ -23,8 +23,8 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/xid v1.3.0
-	github.com/seldonio/seldon-core-v2/components/tls v0.0.0-00010101000000-000000000000
-	github.com/seldonio/seldon-core/scheduler/apis v0.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/serialx/hashring v0.0.0-20200727003509-22c0c7ab6b1b
 	github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka v0.8.0
 	github.com/sirupsen/logrus v1.8.1
@@ -115,6 +115,6 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/seldonio/seldon-core-v2/components/tls => ../components/tls
+replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
 
-replace github.com/seldonio/seldon-core/scheduler/apis => ../apis/go
+replace github.com/seldonio/seldon-core/apis/go/v2 => ../apis/go

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 type RequirementsReplicaFilter struct{}

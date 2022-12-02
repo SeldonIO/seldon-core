@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/gomega"
-	scheduler "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestAsPipelineDetails(t *testing.T) {

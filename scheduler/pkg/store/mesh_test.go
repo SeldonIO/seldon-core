@@ -19,7 +19,7 @@ package store
 import (
 	"testing"
 
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	. "github.com/onsi/gomega"
 )

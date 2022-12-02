@@ -24,9 +24,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
-	"github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 )
 

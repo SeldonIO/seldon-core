@@ -20,7 +20,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/seldonio/seldon-core/operatorv2/cmd/seldon/cli"
+	"github.com/seldonio/seldon-core/operator/v2/cmd/seldon/cli"
 	"github.com/spf13/cobra/doc"
 )
 

@@ -25,11 +25,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/repository/mlserver"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent/rclone"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
 	log "github.com/sirupsen/logrus"
 )
 

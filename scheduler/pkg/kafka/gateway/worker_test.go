@@ -23,11 +23,11 @@ import (
 	"net/http"
 	"testing"
 
-	kafka2 "github.com/seldonio/seldon-core/scheduler/pkg/kafka"
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 
-	seldontracer "github.com/seldonio/seldon-core/scheduler/pkg/tracing"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -35,7 +35,7 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/scheduler/apis/mlops/v2_dataplane"
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"

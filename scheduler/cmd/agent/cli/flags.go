@@ -20,7 +20,7 @@ import (
 	"flag"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	log "github.com/sirupsen/logrus"
 )
 

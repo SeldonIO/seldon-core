@@ -24,7 +24,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 )
 
 func createResourceNameFromHeader(header string) (string, bool, error) {

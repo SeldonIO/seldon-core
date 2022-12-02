@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net"
 
-	seldontls "github.com/seldonio/seldon-core-v2/components/tls/pkg/tls"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 
 	"google.golang.org/grpc"

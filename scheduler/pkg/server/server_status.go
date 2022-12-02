@@ -19,9 +19,9 @@ package server
 import (
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {

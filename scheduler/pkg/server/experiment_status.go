@@ -17,8 +17,8 @@ limitations under the License.
 package server
 
 import (
-	pb "github.com/seldonio/seldon-core/scheduler/apis/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/pkg/coordinator"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscriptionRequest, stream pb.Scheduler_SubscribeExperimentStatusServer) error {

@@ -16,7 +16,7 @@ limitations under the License.
 
 package sorters
 
-import "github.com/seldonio/seldon-core/scheduler/pkg/store"
+import "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 
 type CandidateServer struct {
 	Model          *store.ModelVersion

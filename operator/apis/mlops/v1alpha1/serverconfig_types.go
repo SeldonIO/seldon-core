@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/seldonio/seldon-core/operatorv2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
