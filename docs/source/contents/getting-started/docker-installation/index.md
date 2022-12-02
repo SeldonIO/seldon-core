@@ -2,7 +2,7 @@
 
 ## Preparation
 
- 1. `git clone https://github.com/SeldonIO/seldon-core-v2`
+ 1. `git clone https://github.com/SeldonIO/seldon-core --branch=v2`
  2. Build [Seldon CLI](../cli.md)
  3. Install [Docker Compose](https://docs.docker.com/compose/install/).
  4. Install `make`. This will depend on your version of Linux, for example on Ubuntu run `sudo apt-get install build-essential`.

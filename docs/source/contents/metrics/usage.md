@@ -27,7 +27,7 @@ All information sent to Seldon is anonymised with a completely random cluster id
 Hodometer supports [different information levels](#metrics-levels), so you have full control over what metrics are provided to Seldon, if any.
 
 For transparency, the implementation is fully open-source and designed to be easy to read.
-The full source code is available [here](https://github.com/seldonio/seldon-core-v2/tree/master/hodometer), with metrics defined in code [here](https://github.com/seldonio/seldon-core-v2/tree/master/hodometer/pkg/hodometer/metrics.go).
+The full source code is available [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer), with metrics defined in code [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer/pkg/hodometer/metrics.go).
 See [below](#list-of-metrics) for an equivalent table of metrics.
 
 ## Performance
@@ -135,7 +135,7 @@ For example, you could capture these metrics and expose them to Prometheus or an
 
 Metrics are recorded in MixPanel-compatible format, which employs a highly flexible JSON schema.
 
-For an example of how to define your own metrics listener, see the [`receiver` Go package](https://github.com/SeldonIO/seldon-core-v2/tree/master/hodometer/pkg/receiver) in the `hodometer` sub-project.
+For an example of how to define your own metrics listener, see the [`receiver` Go package](https://github.com/SeldonIO/seldon-core/tree/v2/hodometer/pkg/receiver) in the `hodometer` sub-project.
 
 ## List of metrics
 

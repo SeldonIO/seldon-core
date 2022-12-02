@@ -45,7 +45,7 @@ Prometheus will be available at `http://localhost:9090`.
 
 ### Kubernetes Installation
 
-Download the dashboard from [SCv2 dashboard](https://github.com/SeldonIO/seldon-core-v2/blob/master/prometheus/dashboards/seldon.json) and import it in Grafana, making sure that the data source is pointing to the correct Prometheus store.
+Download the dashboard from [SCv2 dashboard](https://github.com/SeldonIO/seldon-core/blob/v2/prometheus/dashboards/seldon.json) and import it in Grafana, making sure that the data source is pointing to the correct Prometheus store.
 Find more information on how to import the dashboard [here](https://grafana.com/docs/grafana/latest/dashboards/export-import/).
 
 ### Local Metrics Examples

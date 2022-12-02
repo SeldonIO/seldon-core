@@ -5,7 +5,7 @@ To use these playbooks follow the installation of the Ansible collection at http
 ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-collection.git
 ```
 
-Once installed you can use the following Playbooks that you will find in [ansible](https://github.com/SeldonIO/seldon-core-v2/tree/master/ansible) folder of Seldon Core V2 repository.
+Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core V2 repository.
 
 Further requirements:
   * Kubectl
@@ -29,7 +29,7 @@ ansible-playbook playbooks/setup-ecosystem.yaml
 
 The ecosystem setup can be parametrized by providing extra Ansible variables, e.g. using `-e` flag to `ansible-playbook` command.
 
-For example run the following from the ansible folder:
+For example run the following from the `ansible/` folder:
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_kafka=yes
 ```
@@ -58,7 +58,7 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e seldon_mesh_namespace=<myname
 
 ### Install Seldon Core V2
 
-Run the following from the ansible folder:
+Run the following from the `ansible/` folder:
 
 ```bash
 ansible-playbook playbooks/setup-seldon-v2.yaml

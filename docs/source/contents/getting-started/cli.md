@@ -4,7 +4,7 @@ Seldon Core V2 can be managed via a CLI tool.
 
 ## Download Linux Binary
 
-Download from a recent release from https://github.com/SeldonIO/seldon-core-v2/releases.
+Download from a recent release from https://github.com/SeldonIO/seldon-core/releases.
 
 It is dynamically linked and will require and *nix architecture and glibc 2.25+.
 
@@ -18,8 +18,8 @@ Add to your PATH.
 ## Local build (requires Go)
 
 ```bash
-git clone https://github.com/SeldonIO/seldon-core-v2
-cd seldon-core-v2/operator
+git clone https://github.com/SeldonIO/seldon-core --branch=v2
+cd seldon-core/operator
 make build-seldon
 ```
 

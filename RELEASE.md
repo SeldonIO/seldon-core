@@ -38,7 +38,7 @@ If the release draft needs to be updated before the release is published, the ne
 ### Draft New Release Action
 
 The [Draft New Release](./.github/workflows/draft-release.yml) workflow is the first one to run.
-It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core-v2/actions/workflows/draft-release.yml) interface in GitHub UI.
+It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core/actions/workflows/draft-release.yml) interface in GitHub UI.
 
 When triggering the workflow, you must:
 - select the release branch (here `release-0.1`)
@@ -67,7 +67,7 @@ Once the workflow finishes, you will find a new release draft waiting to be publ
 
 The [Build docker images](./.github/workflows/images.yml) workflow is the second one to run.
 
-It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core-v2/actions/workflows/draft-release.yml) interface in GitHub UI.
+It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core/actions/workflows/draft-release.yml) interface in GitHub UI.
 
 When triggering the workflow, you must:
 - select the release branch (here `release-0.1`)
