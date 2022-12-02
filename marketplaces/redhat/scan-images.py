@@ -34,7 +34,6 @@ def scan_images(debug=False):
         "components/storage-initializer",
         "components/rclone-storage-initializer",
         "servers/tfserving",
-        "marketplaces/redhat",
     ]
 
     for path in paths:
