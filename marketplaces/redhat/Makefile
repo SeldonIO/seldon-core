@@ -3,23 +3,10 @@ SHELL := /bin/bash
 VERSION ?= $(shell cat ../../version.txt)
 MLSERVER_VERSION ?= 1.2.0.dev12
 
-IMG_MLSERVER ?= docker.io/seldonio/mlserver:${MLSERVER_VERSION}
 IMG_MLSERVER_SC ?= docker.io/seldonio/mlserver-sc:${VERSION}
 IMG_MLSERVER_SC_SLIM ?= docker.io/seldonio/mlserver-sc-slim:${VERSION}
 
 redhat-image-scan: scan-mlserver scan-mlserver-sc scan-mlserver-sc-slim
-
-# password can be found at: https://connect.redhat.com/projects/63566bb9822ce8cef9ba27fc/overview
-project-mlserver=63566bb9822ce8cef9ba27fc
-scan-mlserver:
-	docker pull ${IMG_MLSERVER}
-	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_mlserver} | docker login -u redhat-isv-containers+${project-mlserver}-robot quay.io --password-stdin
-	docker tag ${IMG_MLSERVER} quay.io/redhat-isv-containers/${project-mlserver}:${MLSERVER_VERSION}
-	docker push quay.io/redhat-isv-containers/${project-mlserver}:${MLSERVER_VERSION}
-	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		preflight check container quay.io/redhat-isv-containers/${project-mlserver}:${MLSERVER_VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project-mlserver} --pyxis-api-token=$${pyxis_api_token} --submit
-
 
 # password can be found at: https://connect.redhat.com/projects/635670d3624969b495b6936f/overview
 project-mlserver-sc=635670d3624969b495b6936f

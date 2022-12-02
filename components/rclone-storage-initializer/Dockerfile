@@ -19,5 +19,8 @@ ENV RCLONE_CONFIG_GS_ANONYMOUS true
 # Do not set to '2' by default, as this may leak sensitive values
 ENV RCLONE_VERBOSE 1
 
+# Run update to pickup any necessary security updates
+RUN microdnf update -y
+
 USER 8888
 ENTRYPOINT ["rclone", "copy"]

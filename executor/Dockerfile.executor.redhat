@@ -68,5 +68,8 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 # Copy openapi spec and swagger UI files
 COPY --from=builder /openapi/ /openapi/
 
+# Run update to pickup any necessary security updates
+RUN microdnf update -y
+
 USER 8888
 ENTRYPOINT ["/executor"]
