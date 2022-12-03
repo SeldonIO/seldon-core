@@ -113,6 +113,6 @@ public object PipelineUpdateStatusMessageKt {
 public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage.copy(block: io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage =
   io.seldon.mlops.chainer.PipelineUpdateStatusMessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-val io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessageOrBuilder.updateOrNull: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage?
+public val io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessageOrBuilder.updateOrNull: io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage?
   get() = if (hasUpdate()) getUpdate() else null
 

@@ -412,7 +412,7 @@ public object PipelineStepUpdateKt {
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("clearTensorMap")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
       .clear() {
          _builder.clearTensorMap()
        }
@@ -458,6 +458,6 @@ public object PipelineStepUpdateKt {
 public inline fun io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.copy(block: io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate =
   io.seldon.mlops.chainer.PipelineStepUpdateKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-val io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder.batchOrNull: io.seldon.mlops.chainer.ChainerOuterClass.Batch?
+public val io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder.batchOrNull: io.seldon.mlops.chainer.ChainerOuterClass.Batch?
   get() = if (hasBatch()) getBatch() else null
 

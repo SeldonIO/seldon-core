@@ -72,7 +72,8 @@ public final class ChainerOuterClass {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      * <code>string name = 1;</code>
      * @return The name.
@@ -296,8 +297,8 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
         return this;
       }
 
@@ -324,9 +325,16 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest(this);
-        result.name_ = name_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
       }
 
       @java.lang.Override
@@ -375,6 +383,7 @@ public final class ChainerOuterClass {
         if (other == io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -405,7 +414,7 @@ public final class ChainerOuterClass {
                 break;
               case 10: {
                 name_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
               default: {
@@ -423,6 +432,7 @@ public final class ChainerOuterClass {
         } // finally
         return this;
       }
+      private int bitField0_;
 
       private java.lang.Object name_ = "";
       /**
@@ -465,11 +475,9 @@ public final class ChainerOuterClass {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -478,8 +486,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -490,12 +498,10 @@ public final class ChainerOuterClass {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -794,7 +800,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int OP_FIELD_NUMBER = 1;
-    private int op_;
+    private int op_ = 0;
     /**
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage.PipelineOperation op = 1;</code>
      * @return The enum numeric value on the wire for op.
@@ -807,13 +813,13 @@ public final class ChainerOuterClass {
      * @return The op.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation getOp() {
-      @SuppressWarnings("deprecation")
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.valueOf(op_);
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.forNumber(op_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.UNRECOGNIZED : result;
     }
 
     public static final int PIPELINE_FIELD_NUMBER = 2;
-    private volatile java.lang.Object pipeline_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object pipeline_ = "";
     /**
      * <code>string pipeline = 2;</code>
      * @return The pipeline.
@@ -851,7 +857,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int VERSION_FIELD_NUMBER = 3;
-    private int version_;
+    private int version_ = 0;
     /**
      * <code>uint32 version = 3;</code>
      * @return The version.
@@ -862,7 +868,8 @@ public final class ChainerOuterClass {
     }
 
     public static final int UID_FIELD_NUMBER = 4;
-    private volatile java.lang.Object uid_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object uid_ = "";
     /**
      * <code>string uid = 4;</code>
      * @return The uid.
@@ -900,6 +907,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int UPDATES_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate> updates_;
     /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
@@ -1170,21 +1178,18 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         op_ = 0;
-
         pipeline_ = "";
-
         version_ = 0;
-
         uid_ = "";
-
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
         } else {
           updates_ = null;
           updatesBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -1211,22 +1216,38 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage(this);
-        int from_bitField0_ = bitField0_;
-        result.op_ = op_;
-        result.pipeline_ = pipeline_;
-        result.version_ = version_;
-        result.uid_ = uid_;
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result) {
         if (updatesBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0)) {
+          if (((bitField0_ & 0x00000010) != 0)) {
             updates_ = java.util.Collections.unmodifiableList(updates_);
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.updates_ = updates_;
         } else {
           result.updates_ = updatesBuilder_.build();
         }
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.op_ = op_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.pipeline_ = pipeline_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.version_ = version_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.uid_ = uid_;
+        }
       }
 
       @java.lang.Override
@@ -1278,6 +1299,7 @@ public final class ChainerOuterClass {
         }
         if (!other.getPipeline().isEmpty()) {
           pipeline_ = other.pipeline_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (other.getVersion() != 0) {
@@ -1285,13 +1307,14 @@ public final class ChainerOuterClass {
         }
         if (!other.getUid().isEmpty()) {
           uid_ = other.uid_;
+          bitField0_ |= 0x00000008;
           onChanged();
         }
         if (updatesBuilder_ == null) {
           if (!other.updates_.isEmpty()) {
             if (updates_.isEmpty()) {
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000010);
             } else {
               ensureUpdatesIsMutable();
               updates_.addAll(other.updates_);
@@ -1304,7 +1327,7 @@ public final class ChainerOuterClass {
               updatesBuilder_.dispose();
               updatesBuilder_ = null;
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000010);
               updatesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getUpdatesFieldBuilder() : null;
@@ -1341,22 +1364,22 @@ public final class ChainerOuterClass {
                 break;
               case 8: {
                 op_ = input.readEnum();
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 8
               case 18: {
                 pipeline_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 18
               case 24: {
                 version_ = input.readUInt32();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
               case 34: {
                 uid_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 34
               case 42: {
@@ -1403,8 +1426,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setOpValue(int value) {
-        
         op_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1414,8 +1437,7 @@ public final class ChainerOuterClass {
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation getOp() {
-        @SuppressWarnings("deprecation")
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.valueOf(op_);
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.forNumber(op_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.UNRECOGNIZED : result;
       }
       /**
@@ -1427,7 +1449,7 @@ public final class ChainerOuterClass {
         if (value == null) {
           throw new NullPointerException();
         }
-        
+        bitField0_ |= 0x00000001;
         op_ = value.getNumber();
         onChanged();
         return this;
@@ -1437,7 +1459,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearOp() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         op_ = 0;
         onChanged();
         return this;
@@ -1484,11 +1506,9 @@ public final class ChainerOuterClass {
        */
       public Builder setPipeline(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         pipeline_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1497,8 +1517,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearPipeline() {
-        
         pipeline_ = getDefaultInstance().getPipeline();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -1509,12 +1529,10 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         pipeline_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1536,6 +1554,7 @@ public final class ChainerOuterClass {
       public Builder setVersion(int value) {
         
         version_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -1544,7 +1563,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        
+        bitField0_ = (bitField0_ & ~0x00000004);
         version_ = 0;
         onChanged();
         return this;
@@ -1591,11 +1610,9 @@ public final class ChainerOuterClass {
        */
       public Builder setUid(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         uid_ = value;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -1604,8 +1621,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearUid() {
-        
         uid_ = getDefaultInstance().getUid();
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
@@ -1616,12 +1633,10 @@ public final class ChainerOuterClass {
        */
       public Builder setUidBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         uid_ = value;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -1629,9 +1644,9 @@ public final class ChainerOuterClass {
       private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate> updates_ =
         java.util.Collections.emptyList();
       private void ensureUpdatesIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           updates_ = new java.util.ArrayList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate>(updates_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000010;
          }
       }
 
@@ -1781,7 +1796,7 @@ public final class ChainerOuterClass {
       public Builder clearUpdates() {
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
           updatesBuilder_.clear();
@@ -1858,7 +1873,7 @@ public final class ChainerOuterClass {
           updatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.Builder, io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder>(
                   updates_,
-                  ((bitField0_ & 0x00000001) != 0),
+                  ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
           updates_ = null;
@@ -2109,7 +2124,6 @@ public final class ChainerOuterClass {
      *
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
-
     /* nullable */
 java.lang.String getTensorMapOrDefault(
         java.lang.String key,
@@ -2122,7 +2136,6 @@ java.lang.String defaultValue);
      *
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
-
     java.lang.String getTensorMapOrThrow(
         java.lang.String key);
 
@@ -2338,6 +2351,7 @@ java.lang.String defaultValue);
 
     private int bitField0_;
     public static final int SOURCES_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringList sources_;
     /**
      * <pre>
@@ -2397,6 +2411,7 @@ java.lang.String defaultValue);
     }
 
     public static final int TRIGGERS_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringList triggers_;
     /**
      * <code>repeated string triggers = 2;</code>
@@ -2432,7 +2447,8 @@ java.lang.String defaultValue);
     }
 
     public static final int SINK_FIELD_NUMBER = 3;
-    private volatile java.lang.Object sink_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object sink_ = "";
     /**
      * <code>string sink = 3;</code>
      * @return The sink.
@@ -2470,7 +2486,7 @@ java.lang.String defaultValue);
     }
 
     public static final int INPUTJOINTY_FIELD_NUMBER = 4;
-    private int inputJoinTy_;
+    private int inputJoinTy_ = 0;
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
      * @return The enum numeric value on the wire for inputJoinTy.
@@ -2483,13 +2499,12 @@ java.lang.String defaultValue);
      * @return The inputJoinTy.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
-      @SuppressWarnings("deprecation")
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(inputJoinTy_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
     }
 
     public static final int TRIGGERSJOINTY_FIELD_NUMBER = 5;
-    private int triggersJoinTy_;
+    private int triggersJoinTy_ = 0;
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
      * @return The enum numeric value on the wire for triggersJoinTy.
@@ -2502,13 +2517,12 @@ java.lang.String defaultValue);
      * @return The triggersJoinTy.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
-      @SuppressWarnings("deprecation")
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(triggersJoinTy_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
     }
 
     public static final int PASSEMPTYRESPONSES_FIELD_NUMBER = 6;
-    private boolean passEmptyResponses_;
+    private boolean passEmptyResponses_ = false;
     /**
      * <pre>
      * Forward empty response to following steps, default false
@@ -2523,7 +2537,7 @@ java.lang.String defaultValue);
     }
 
     public static final int JOINWINDOWMS_FIELD_NUMBER = 7;
-    private int joinWindowMs_;
+    private int joinWindowMs_ = 0;
     /**
      * <pre>
      * Join window millisecs, some nozero default (TBD)
@@ -2561,6 +2575,7 @@ java.lang.String defaultValue);
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "");
     }
+    @SuppressWarnings("serial")
     private com.google.protobuf.MapField<
         java.lang.String, java.lang.String> tensorMap_;
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
@@ -2571,7 +2586,6 @@ java.lang.String defaultValue);
       }
       return tensorMap_;
     }
-
     public int getTensorMapCount() {
       return internalGetTensorMap().getMap().size();
     }
@@ -2582,7 +2596,6 @@ java.lang.String defaultValue);
      *
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
-
     @java.lang.Override
     public boolean containsTensorMap(
         java.lang.String key) {
@@ -2605,7 +2618,6 @@ java.lang.String defaultValue);
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
-
     public java.util.Map<java.lang.String, java.lang.String> getTensorMapMap() {
       return internalGetTensorMap().getMap();
     }
@@ -2617,10 +2629,11 @@ java.lang.String defaultValue);
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
-
-    public java.lang.String getTensorMapOrDefault(
+    public /* nullable */
+java.lang.String getTensorMapOrDefault(
         java.lang.String key,
-        java.lang.String defaultValue) {
+        /* nullable */
+java.lang.String defaultValue) {
       if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, java.lang.String> map =
           internalGetTensorMap().getMap();
@@ -2634,7 +2647,6 @@ java.lang.String defaultValue);
      * <code>map&lt;string, string&gt; tensorMap = 8;</code>
      */
     @java.lang.Override
-
     public java.lang.String getTensorMapOrThrow(
         java.lang.String key) {
       if (key == null) { throw new NullPointerException("map key"); }
@@ -2681,7 +2693,7 @@ java.lang.String defaultValue);
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder() {
-      return getBatch();
+      return batch_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.Batch.getDefaultInstance() : batch_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3013,25 +3025,20 @@ java.lang.String defaultValue);
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         sources_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
         triggers_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         sink_ = "";
-
         inputJoinTy_ = 0;
-
         triggersJoinTy_ = 0;
-
         passEmptyResponses_ = false;
-
         joinWindowMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000004);
         internalGetMutableTensorMap().clear();
-        if (batchBuilder_ == null) {
-          batch_ = null;
-        } else {
-          batch_ = null;
+        batch_ = null;
+        if (batchBuilder_ != null) {
+          batchBuilder_.dispose();
           batchBuilder_ = null;
         }
         return this;
@@ -3060,8 +3067,13 @@ java.lang.String defaultValue);
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result) {
         if (((bitField0_ & 0x00000001) != 0)) {
           sources_ = sources_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
@@ -3072,24 +3084,37 @@ java.lang.String defaultValue);
           bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.triggers_ = triggers_;
-        result.sink_ = sink_;
-        result.inputJoinTy_ = inputJoinTy_;
-        result.triggersJoinTy_ = triggersJoinTy_;
-        result.passEmptyResponses_ = passEmptyResponses_;
+      }
+
+      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result) {
+        int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.sink_ = sink_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.inputJoinTy_ = inputJoinTy_;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          result.triggersJoinTy_ = triggersJoinTy_;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.passEmptyResponses_ = passEmptyResponses_;
+        }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000040) != 0)) {
           result.joinWindowMs_ = joinWindowMs_;
           to_bitField0_ |= 0x00000001;
         }
-        result.tensorMap_ = internalGetTensorMap();
-        result.tensorMap_.makeImmutable();
-        if (batchBuilder_ == null) {
-          result.batch_ = batch_;
-        } else {
-          result.batch_ = batchBuilder_.build();
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          result.tensorMap_ = internalGetTensorMap();
+          result.tensorMap_.makeImmutable();
         }
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.batch_ = batchBuilder_ == null
+              ? batch_
+              : batchBuilder_.build();
+        }
+        result.bitField0_ |= to_bitField0_;
       }
 
       @java.lang.Override
@@ -3158,6 +3183,7 @@ java.lang.String defaultValue);
         }
         if (!other.getSink().isEmpty()) {
           sink_ = other.sink_;
+          bitField0_ |= 0x00000004;
           onChanged();
         }
         if (other.inputJoinTy_ != 0) {
@@ -3174,6 +3200,7 @@ java.lang.String defaultValue);
         }
         internalGetMutableTensorMap().mergeFrom(
             other.internalGetTensorMap());
+        bitField0_ |= 0x00000080;
         if (other.hasBatch()) {
           mergeBatch(other.getBatch());
         }
@@ -3217,27 +3244,27 @@ java.lang.String defaultValue);
               } // case 18
               case 26: {
                 sink_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
               case 32: {
                 inputJoinTy_ = input.readEnum();
-
+                bitField0_ |= 0x00000008;
                 break;
               } // case 32
               case 40: {
                 triggersJoinTy_ = input.readEnum();
-
+                bitField0_ |= 0x00000010;
                 break;
               } // case 40
               case 48: {
                 passEmptyResponses_ = input.readBool();
-
+                bitField0_ |= 0x00000020;
                 break;
               } // case 48
               case 56: {
                 joinWindowMs_ = input.readUInt32();
-                bitField0_ |= 0x00000004;
+                bitField0_ |= 0x00000040;
                 break;
               } // case 56
               case 66: {
@@ -3246,13 +3273,14 @@ java.lang.String defaultValue);
                     TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
                 internalGetMutableTensorMap().getMutableMap().put(
                     tensorMap__.getKey(), tensorMap__.getValue());
+                bitField0_ |= 0x00000080;
                 break;
               } // case 66
               case 74: {
                 input.readMessage(
                     getBatchFieldBuilder().getBuilder(),
                     extensionRegistry);
-
+                bitField0_ |= 0x00000100;
                 break;
               } // case 74
               default: {
@@ -3349,10 +3377,8 @@ java.lang.String defaultValue);
        */
       public Builder setSources(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSourcesIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureSourcesIsMutable();
         sources_.set(index, value);
         onChanged();
         return this;
@@ -3370,10 +3396,8 @@ java.lang.String defaultValue);
        */
       public Builder addSources(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSourcesIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureSourcesIsMutable();
         sources_.add(value);
         onChanged();
         return this;
@@ -3426,10 +3450,8 @@ java.lang.String defaultValue);
        */
       public Builder addSourcesBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         ensureSourcesIsMutable();
         sources_.add(value);
         onChanged();
@@ -3483,10 +3505,8 @@ java.lang.String defaultValue);
        */
       public Builder setTriggers(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTriggersIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTriggersIsMutable();
         triggers_.set(index, value);
         onChanged();
         return this;
@@ -3498,10 +3518,8 @@ java.lang.String defaultValue);
        */
       public Builder addTriggers(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureTriggersIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureTriggersIsMutable();
         triggers_.add(value);
         onChanged();
         return this;
@@ -3536,10 +3554,8 @@ java.lang.String defaultValue);
        */
       public Builder addTriggersBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         ensureTriggersIsMutable();
         triggers_.add(value);
         onChanged();
@@ -3587,11 +3603,9 @@ java.lang.String defaultValue);
        */
       public Builder setSink(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         sink_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -3600,8 +3614,8 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearSink() {
-        
         sink_ = getDefaultInstance().getSink();
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -3612,12 +3626,10 @@ java.lang.String defaultValue);
        */
       public Builder setSinkBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         sink_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -3636,8 +3648,8 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder setInputJoinTyValue(int value) {
-        
         inputJoinTy_ = value;
+        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -3647,8 +3659,7 @@ java.lang.String defaultValue);
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
-        @SuppressWarnings("deprecation")
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(inputJoinTy_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
       }
       /**
@@ -3660,7 +3671,7 @@ java.lang.String defaultValue);
         if (value == null) {
           throw new NullPointerException();
         }
-        
+        bitField0_ |= 0x00000008;
         inputJoinTy_ = value.getNumber();
         onChanged();
         return this;
@@ -3670,7 +3681,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearInputJoinTy() {
-        
+        bitField0_ = (bitField0_ & ~0x00000008);
         inputJoinTy_ = 0;
         onChanged();
         return this;
@@ -3690,8 +3701,8 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder setTriggersJoinTyValue(int value) {
-        
         triggersJoinTy_ = value;
+        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
@@ -3701,8 +3712,7 @@ java.lang.String defaultValue);
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
-        @SuppressWarnings("deprecation")
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(triggersJoinTy_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
       }
       /**
@@ -3714,7 +3724,7 @@ java.lang.String defaultValue);
         if (value == null) {
           throw new NullPointerException();
         }
-        
+        bitField0_ |= 0x00000010;
         triggersJoinTy_ = value.getNumber();
         onChanged();
         return this;
@@ -3724,7 +3734,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearTriggersJoinTy() {
-        
+        bitField0_ = (bitField0_ & ~0x00000010);
         triggersJoinTy_ = 0;
         onChanged();
         return this;
@@ -3755,6 +3765,7 @@ java.lang.String defaultValue);
       public Builder setPassEmptyResponses(boolean value) {
         
         passEmptyResponses_ = value;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -3767,7 +3778,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearPassEmptyResponses() {
-        
+        bitField0_ = (bitField0_ & ~0x00000020);
         passEmptyResponses_ = false;
         onChanged();
         return this;
@@ -3784,7 +3795,7 @@ java.lang.String defaultValue);
        */
       @java.lang.Override
       public boolean hasJoinWindowMs() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000040) != 0);
       }
       /**
        * <pre>
@@ -3808,8 +3819,9 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder setJoinWindowMs(int value) {
-        bitField0_ |= 0x00000004;
+        
         joinWindowMs_ = value;
+        bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
@@ -3822,7 +3834,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearJoinWindowMs() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000040);
         joinWindowMs_ = 0;
         onChanged();
         return this;
@@ -3831,7 +3843,7 @@ java.lang.String defaultValue);
       private com.google.protobuf.MapField<
           java.lang.String, java.lang.String> tensorMap_;
       private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-      internalGetTensorMap() {
+          internalGetTensorMap() {
         if (tensorMap_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
               TensorMapDefaultEntryHolder.defaultEntry);
@@ -3839,8 +3851,7 @@ java.lang.String defaultValue);
         return tensorMap_;
       }
       private com.google.protobuf.MapField<java.lang.String, java.lang.String>
-      internalGetMutableTensorMap() {
-        onChanged();;
+          internalGetMutableTensorMap() {
         if (tensorMap_ == null) {
           tensorMap_ = com.google.protobuf.MapField.newMapField(
               TensorMapDefaultEntryHolder.defaultEntry);
@@ -3848,9 +3859,10 @@ java.lang.String defaultValue);
         if (!tensorMap_.isMutable()) {
           tensorMap_ = tensorMap_.copy();
         }
+        bitField0_ |= 0x00000080;
+        onChanged();
         return tensorMap_;
       }
-
       public int getTensorMapCount() {
         return internalGetTensorMap().getMap().size();
       }
@@ -3861,7 +3873,6 @@ java.lang.String defaultValue);
        *
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
-
       @java.lang.Override
       public boolean containsTensorMap(
           java.lang.String key) {
@@ -3884,7 +3895,6 @@ java.lang.String defaultValue);
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, java.lang.String> getTensorMapMap() {
         return internalGetTensorMap().getMap();
       }
@@ -3896,10 +3906,11 @@ java.lang.String defaultValue);
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
-
-      public java.lang.String getTensorMapOrDefault(
+      public /* nullable */
+java.lang.String getTensorMapOrDefault(
           java.lang.String key,
-          java.lang.String defaultValue) {
+          /* nullable */
+java.lang.String defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, java.lang.String> map =
             internalGetTensorMap().getMap();
@@ -3913,7 +3924,6 @@ java.lang.String defaultValue);
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
       @java.lang.Override
-
       public java.lang.String getTensorMapOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -3924,8 +3934,8 @@ java.lang.String defaultValue);
         }
         return map.get(key);
       }
-
       public Builder clearTensorMap() {
+        bitField0_ = (bitField0_ & ~0x00000080);
         internalGetMutableTensorMap().getMutableMap()
             .clear();
         return this;
@@ -3937,7 +3947,6 @@ java.lang.String defaultValue);
        *
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
-
       public Builder removeTensorMap(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -3950,7 +3959,8 @@ java.lang.String defaultValue);
        */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, java.lang.String>
-      getMutableTensorMap() {
+          getMutableTensorMap() {
+        bitField0_ |= 0x00000080;
         return internalGetMutableTensorMap().getMutableMap();
       }
       /**
@@ -3964,12 +3974,10 @@ java.lang.String defaultValue);
           java.lang.String key,
           java.lang.String value) {
         if (key == null) { throw new NullPointerException("map key"); }
-        if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+        if (value == null) { throw new NullPointerException("map value"); }
         internalGetMutableTensorMap().getMutableMap()
             .put(key, value);
+        bitField0_ |= 0x00000080;
         return this;
       }
       /**
@@ -3979,11 +3987,11 @@ java.lang.String defaultValue);
        *
        * <code>map&lt;string, string&gt; tensorMap = 8;</code>
        */
-
       public Builder putAllTensorMap(
           java.util.Map<java.lang.String, java.lang.String> values) {
         internalGetMutableTensorMap().getMutableMap()
             .putAll(values);
+        bitField0_ |= 0x00000080;
         return this;
       }
 
@@ -3999,7 +4007,7 @@ java.lang.String defaultValue);
        * @return Whether the batch field is set.
        */
       public boolean hasBatch() {
-        return batchBuilder_ != null || batch_ != null;
+        return ((bitField0_ & 0x00000100) != 0);
       }
       /**
        * <pre>
@@ -4029,11 +4037,11 @@ java.lang.String defaultValue);
             throw new NullPointerException();
           }
           batch_ = value;
-          onChanged();
         } else {
           batchBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000100;
+        onChanged();
         return this;
       }
       /**
@@ -4047,11 +4055,11 @@ java.lang.String defaultValue);
           io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder builderForValue) {
         if (batchBuilder_ == null) {
           batch_ = builderForValue.build();
-          onChanged();
         } else {
           batchBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000100;
+        onChanged();
         return this;
       }
       /**
@@ -4063,17 +4071,18 @@ java.lang.String defaultValue);
        */
       public Builder mergeBatch(io.seldon.mlops.chainer.ChainerOuterClass.Batch value) {
         if (batchBuilder_ == null) {
-          if (batch_ != null) {
-            batch_ =
-              io.seldon.mlops.chainer.ChainerOuterClass.Batch.newBuilder(batch_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000100) != 0) &&
+            batch_ != null &&
+            batch_ != io.seldon.mlops.chainer.ChainerOuterClass.Batch.getDefaultInstance()) {
+            getBatchBuilder().mergeFrom(value);
           } else {
             batch_ = value;
           }
-          onChanged();
         } else {
           batchBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000100;
+        onChanged();
         return this;
       }
       /**
@@ -4084,14 +4093,13 @@ java.lang.String defaultValue);
        * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder clearBatch() {
-        if (batchBuilder_ == null) {
-          batch_ = null;
-          onChanged();
-        } else {
-          batch_ = null;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        batch_ = null;
+        if (batchBuilder_ != null) {
+          batchBuilder_.dispose();
           batchBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -4102,7 +4110,7 @@ java.lang.String defaultValue);
        * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder getBatchBuilder() {
-        
+        bitField0_ |= 0x00000100;
         onChanged();
         return getBatchFieldBuilder().getBuilder();
       }
@@ -4279,7 +4287,7 @@ java.lang.String defaultValue);
 
     private int bitField0_;
     public static final int SIZE_FIELD_NUMBER = 1;
-    private int size_;
+    private int size_ = 0;
     /**
      * <code>optional uint32 size = 1;</code>
      * @return Whether the size field is set.
@@ -4298,7 +4306,7 @@ java.lang.String defaultValue);
     }
 
     public static final int WINDOWMS_FIELD_NUMBER = 2;
-    private int windowMs_;
+    private int windowMs_ = 0;
     /**
      * <code>optional uint32 windowMs = 2;</code>
      * @return Whether the windowMs field is set.
@@ -4317,7 +4325,7 @@ java.lang.String defaultValue);
     }
 
     public static final int ROLLING_FIELD_NUMBER = 3;
-    private boolean rolling_;
+    private boolean rolling_ = false;
     /**
      * <code>bool rolling = 3;</code>
      * @return The rolling.
@@ -4548,12 +4556,10 @@ java.lang.String defaultValue);
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         size_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
         windowMs_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
         rolling_ = false;
-
         return this;
       }
 
@@ -4580,6 +4586,12 @@ java.lang.String defaultValue);
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.Batch result = new io.seldon.mlops.chainer.ChainerOuterClass.Batch(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.Batch result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -4590,10 +4602,10 @@ java.lang.String defaultValue);
           result.windowMs_ = windowMs_;
           to_bitField0_ |= 0x00000002;
         }
-        result.rolling_ = rolling_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.rolling_ = rolling_;
+        }
+        result.bitField0_ |= to_bitField0_;
       }
 
       @java.lang.Override
@@ -4687,7 +4699,7 @@ java.lang.String defaultValue);
               } // case 16
               case 24: {
                 rolling_ = input.readBool();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 24
               default: {
@@ -4730,8 +4742,9 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder setSize(int value) {
-        bitField0_ |= 0x00000001;
+        
         size_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -4769,8 +4782,9 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder setWindowMs(int value) {
-        bitField0_ |= 0x00000002;
+        
         windowMs_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -4802,6 +4816,7 @@ java.lang.String defaultValue);
       public Builder setRolling(boolean value) {
         
         rolling_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -4810,7 +4825,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearRolling() {
-        
+        bitField0_ = (bitField0_ & ~0x00000004);
         rolling_ = false;
         onChanged();
         return this;
@@ -5004,11 +5019,11 @@ java.lang.String defaultValue);
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessageOrBuilder getUpdateOrBuilder() {
-      return getUpdate();
+      return update_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.getDefaultInstance() : update_;
     }
 
     public static final int SUCCESS_FIELD_NUMBER = 2;
-    private boolean success_;
+    private boolean success_ = false;
     /**
      * <code>bool success = 2;</code>
      * @return The success.
@@ -5019,7 +5034,8 @@ java.lang.String defaultValue);
     }
 
     public static final int REASON_FIELD_NUMBER = 3;
-    private volatile java.lang.Object reason_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object reason_ = "";
     /**
      * <code>string reason = 3;</code>
      * @return The reason.
@@ -5271,16 +5287,14 @@ java.lang.String defaultValue);
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        if (updateBuilder_ == null) {
-          update_ = null;
-        } else {
-          update_ = null;
+        bitField0_ = 0;
+        update_ = null;
+        if (updateBuilder_ != null) {
+          updateBuilder_.dispose();
           updateBuilder_ = null;
         }
         success_ = false;
-
         reason_ = "";
-
         return this;
       }
 
@@ -5307,15 +5321,24 @@ java.lang.String defaultValue);
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage(this);
-        if (updateBuilder_ == null) {
-          result.update_ = update_;
-        } else {
-          result.update_ = updateBuilder_.build();
-        }
-        result.success_ = success_;
-        result.reason_ = reason_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.update_ = updateBuilder_ == null
+              ? update_
+              : updateBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.success_ = success_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.reason_ = reason_;
+        }
       }
 
       @java.lang.Override
@@ -5370,6 +5393,7 @@ java.lang.String defaultValue);
         }
         if (!other.getReason().isEmpty()) {
           reason_ = other.reason_;
+          bitField0_ |= 0x00000004;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -5402,17 +5426,17 @@ java.lang.String defaultValue);
                 input.readMessage(
                     getUpdateFieldBuilder().getBuilder(),
                     extensionRegistry);
-
+                bitField0_ |= 0x00000001;
                 break;
               } // case 10
               case 16: {
                 success_ = input.readBool();
-
+                bitField0_ |= 0x00000002;
                 break;
               } // case 16
               case 26: {
                 reason_ = input.readStringRequireUtf8();
-
+                bitField0_ |= 0x00000004;
                 break;
               } // case 26
               default: {
@@ -5430,6 +5454,7 @@ java.lang.String defaultValue);
         } // finally
         return this;
       }
+      private int bitField0_;
 
       private io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage update_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -5443,7 +5468,7 @@ java.lang.String defaultValue);
        * @return Whether the update field is set.
        */
       public boolean hasUpdate() {
-        return updateBuilder_ != null || update_ != null;
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
@@ -5473,11 +5498,11 @@ java.lang.String defaultValue);
             throw new NullPointerException();
           }
           update_ = value;
-          onChanged();
         } else {
           updateBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000001;
+        onChanged();
         return this;
       }
       /**
@@ -5491,11 +5516,11 @@ java.lang.String defaultValue);
           io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.Builder builderForValue) {
         if (updateBuilder_ == null) {
           update_ = builderForValue.build();
-          onChanged();
         } else {
           updateBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000001;
+        onChanged();
         return this;
       }
       /**
@@ -5507,17 +5532,18 @@ java.lang.String defaultValue);
        */
       public Builder mergeUpdate(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage value) {
         if (updateBuilder_ == null) {
-          if (update_ != null) {
-            update_ =
-              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.newBuilder(update_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000001) != 0) &&
+            update_ != null &&
+            update_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.getDefaultInstance()) {
+            getUpdateBuilder().mergeFrom(value);
           } else {
             update_ = value;
           }
-          onChanged();
         } else {
           updateBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000001;
+        onChanged();
         return this;
       }
       /**
@@ -5528,14 +5554,13 @@ java.lang.String defaultValue);
        * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
        */
       public Builder clearUpdate() {
-        if (updateBuilder_ == null) {
-          update_ = null;
-          onChanged();
-        } else {
-          update_ = null;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        update_ = null;
+        if (updateBuilder_ != null) {
+          updateBuilder_.dispose();
           updateBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -5546,7 +5571,7 @@ java.lang.String defaultValue);
        * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.Builder getUpdateBuilder() {
-        
+        bitField0_ |= 0x00000001;
         onChanged();
         return getUpdateFieldBuilder().getBuilder();
       }
@@ -5603,6 +5628,7 @@ java.lang.String defaultValue);
       public Builder setSuccess(boolean value) {
         
         success_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -5611,7 +5637,7 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearSuccess() {
-        
+        bitField0_ = (bitField0_ & ~0x00000002);
         success_ = false;
         onChanged();
         return this;
@@ -5658,11 +5684,9 @@ java.lang.String defaultValue);
        */
       public Builder setReason(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         reason_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -5671,8 +5695,8 @@ java.lang.String defaultValue);
        * @return This builder for chaining.
        */
       public Builder clearReason() {
-        
         reason_ = getDefaultInstance().getReason();
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -5683,12 +5707,10 @@ java.lang.String defaultValue);
        */
       public Builder setReasonBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         reason_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
