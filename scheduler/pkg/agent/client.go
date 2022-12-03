@@ -550,12 +550,6 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 
-	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
-	if err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
-		return err
-	}
-
 	// we do not care about model versions here
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
 	if err := c.stateManager.UnloadModelVersion(modifiedModelVersionRequest); err != nil {
@@ -568,6 +562,12 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	// each one of them
 	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
 		logger.WithError(err).Warnf("Cannot delete model %s from scaling service", modelWithVersion)
+	}
+
+	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
+	if err != nil {
+		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+		return err
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)

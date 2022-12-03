@@ -138,6 +138,12 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 		return nil, err
 	}
 
+	// Purge rclone path now we have loaded successfully
+	err = r.rcloneClient.PurgeLocal(rclonePath)
+	if err != nil {
+		return nil, err
+	}
+
 	return &modelVersionFolder, nil
 }
 
