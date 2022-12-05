@@ -18,6 +18,7 @@ from mlserver.codecs import PandasCodec
 from mlserver.errors import MLServerError
 import pandas as pd
 from fastapi import status
+from mlserver.logging import logger
 
 QUERY_KEY = "query"
 
@@ -31,6 +32,7 @@ class ModelParametersMissing(MLServerError):
 class PandasQueryRuntime(MLModel):
 
   async def load(self) -> bool:
+    logger.info("Loading with settings %s", self.settings)
     if self.settings.parameters is None or \
       self.settings.parameters.extra is None:
       raise ModelParametersMissing(self.name, "no settings.parameters.extra found")

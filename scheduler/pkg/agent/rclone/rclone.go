@@ -37,15 +37,16 @@ import (
 )
 
 const (
-	ContentTypeJSON        = "application/json"
-	ContentType            = "Content-Type"
-	RcloneNoopPath         = "/rc/noop"
-	RcloneSyncCopyPath     = "/sync/copy"
-	RcloneConfigCreatePath = "/config/create"
-	RcloneConfigUpdatePath = "/config/update"
-	RcloneListRemotesPath  = "/config/listremotes"
-	RcloneConfigDeletePath = "/config/delete"
-	RcloneConfigGetPath    = "/config/get"
+	ContentTypeJSON           = "application/json"
+	ContentType               = "Content-Type"
+	RcloneNoopPath            = "/rc/noop"
+	RcloneSyncCopyPath        = "/sync/copy"
+	RcloneOperationsPurgePath = "/operations/purge"
+	RcloneConfigCreatePath    = "/config/create"
+	RcloneConfigUpdatePath    = "/config/update"
+	RcloneListRemotesPath     = "/config/listremotes"
+	RcloneConfigDeletePath    = "/config/delete"
+	RcloneConfigGetPath       = "/config/get"
 )
 
 type RCloneClient struct {
@@ -67,6 +68,11 @@ type RcloneCopy struct {
 	SrcFs              string `json:"srcFs"`
 	DstFs              string `json:"dstFs"`
 	CreateEmptySrcDirs bool   `json:"createEmptySrcDirs"`
+}
+
+type RclonePurge struct {
+	Fs     string `json:"fs"`
+	Remote string `json:"remote"`
 }
 
 type RcloneConfigKey struct {
@@ -282,7 +288,7 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	// If we just used srcUri it would mean models with same srcUri could share rclone download
 	// However, its unclear whether we might get partial updates under load if srcUri changes and two
 	// or more models are asking for the uri.
-	// TODO  reinvestigate how we can use rclone sharing maybe via an rclon eproxy caching layer?
+	// TODO  reinvestigate how we can use rclone sharing maybe via an rclone proxy caching layer?
 	hash, err := CreateRcloneModelHash(modelName, srcUri)
 	if err != nil {
 		return "", err
@@ -303,6 +309,22 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
 	}
 	return dst, nil
+}
+
+func (r *RCloneClient) PurgeLocal(path string) error {
+	p := RclonePurge{
+		Fs:     path,
+		Remote: "",
+	}
+	b, err := json.Marshal(p)
+	if err != nil {
+		return err
+	}
+	_, err = r.call(b, RcloneOperationsPurgePath)
+	if err != nil {
+		return fmt.Errorf("Failed to run %s for %s %w", RcloneOperationsPurgePath, path, err)
+	}
+	return nil
 }
 
 // Call Rclone /config/get
