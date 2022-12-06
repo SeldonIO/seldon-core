@@ -54,6 +54,89 @@ If you are using a service mesh like Istio or Ambassador, you will need to use t
 
 `````
 
+### Make Inference Requests
+
+Let us imagine making inference requests to a model called `iris`.
+Examples are given below for some common tools for making requests.
+
+```{tip}
+For pipelines, a synchronous request is possible if the pipeline has an `outputs` section defined in its spec.
+```
+
+`````{tabs}
+
+````{tab} Seldon CLI
+
+An example `seldon` request might look like this:
+
+```
+seldon model infer iris \
+        '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+
+The default inference mode is REST, but you can also send gRPC requests like this:
+
+```
+seldon model infer iris \
+        --inference-mode grpc \
+        '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+```
+````
+
+````{tab} cURL
+
+An example `curl` request might look like this:
+
+```
+curl -v http://0.0.0.0:9000/v2/models/iris/infer \
+        -H "Content-Type: application/json" \
+        -H "Seldon-Model: iris" \
+        -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+````
+
+````{tab} grpcurl
+
+An example `grpcurl` request might look like this:
+
+```
+grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
+        -plaintext \
+	-import-path apis \
+	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
+	-rpc-header seldon-model:iris \
+	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
+```
+
+The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
+````
+
+````{tab} Python tritonclient
+
+You can use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
+
+A short, self-contained example is:
+```python
+import tritonclient.http as httpclient
+import numpy as np
+
+client = httpclient.InferenceServerClient(
+    url="localhost:8080",
+    verbose=False,
+)
+
+inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
+inputs[0].set_data_from_numpy(
+    np.array([[1, 2, 3, 4]]).astype("float64"),
+    binary_data=False,
+)
+
+result = client.infer("iris", inputs)
+print("result is:", result.as_numpy("predict"))
+```
+````
+`````
+
 ### Request Routing
 
 #### Seldon Routes
@@ -153,89 +236,6 @@ This corresponds to the package (`inference`), service (`GRPCInferenceService`),
 You could use an exact match or a regex like `.*inference.*` to match this path, for example.
 ````
 
-`````
-
-### Make Inference Requests
-
-Let us imagine making inference requests to a model called `iris`.
-Examples are given below for some common tools for making requests.
-
-```{tip}
-For pipelines, a synchronous request is possible if the pipeline has an `outputs` section defined in its spec.
-```
-
-`````{tabs}
-
-````{tab} Seldon CLI
-
-An example `seldon` request might look like this:
-
-```
-seldon model infer iris \
-        '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
-
-The default inference mode is REST, but you can also send gRPC requests like this:
-
-```
-seldon model infer iris \
-        --inference-mode grpc \
-        '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
-```
-````
-
-````{tab} cURL
-
-An example `curl` request might look like this:
-
-```
-curl -v http://0.0.0.0:9000/v2/models/iris/infer \
-        -H "Content-Type: application/json" \
-        -H "Seldon-Model: iris" \
-        -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
-````
-
-````{tab} grpcurl
-
-An example `grpcurl` request might look like this:
-
-```
-grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
-        -plaintext \
-	-import-path apis \
-	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
-	-rpc-header seldon-model:iris \
-	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
-```
-
-The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
-````
-
-````{tab} Python tritonclient
-
-You can use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
-
-A short, self-contained example is:
-```python
-import tritonclient.http as httpclient
-import numpy as np
-
-client = httpclient.InferenceServerClient(
-    url="localhost:8080",
-    verbose=False,
-)
-
-inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
-inputs[0].set_data_from_numpy(
-    np.array([[1, 2, 3, 4]]).astype("float64"),
-    binary_data=False,
-)
-
-result = client.infer("iris", inputs)
-print("result is:", result.as_numpy("predict"))
-```
-````
 `````
 
 ## Asynchronous Requests
