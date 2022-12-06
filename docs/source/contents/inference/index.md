@@ -167,9 +167,9 @@ Seldon works around this limitation by introducing _virtual_ endpoints for pipel
 Virtual means that Seldon understands them, but v2 protocol-compatible components like inference servers do not.
 
 Use the following rules for paths to route to models and pipelines:
-* For models, use the path prefix `/v2/models/` and the model name.
+* For models, use the path prefix `/v2/models/{model name}`.
   This is normal usage of the inference v2 protocol.
-* For pipelines, use the path prefix `/v2/pipelines/` and the pipeline name.
+* For pipelines, use the path prefix `/v2/pipelines/{pipeline name}`.
   Otherwise calling pipelines looks just like the inference v2 protocol for models.
   Do **not** use any suffix for the pipeline name as you would for routing headers.
 ````
