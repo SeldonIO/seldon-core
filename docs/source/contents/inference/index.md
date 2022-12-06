@@ -222,7 +222,7 @@ import tritonclient.http as httpclient
 import numpy as np
 
 client = httpclient.InferenceServerClient(
-    url="172.19.255.9:80",
+    url="localhost:8080",
     verbose=False,
 )
 
