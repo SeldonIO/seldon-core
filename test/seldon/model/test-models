@@ -9,7 +9,7 @@ source "${COMMON_DIR}/with_backoff.sh"
 
 COMPUTE_NAMESPACE=seldon-regression-test
 
-EXPECTED_IRIS_RESULT_PAYLOAD='{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162835,0.00366803903943666,0.995633441507447]]},"meta":{"requestPath":{"classifier":"seldonio/sklearnserver:1.14.1"}}}'
+EXPECTED_IRIS_RESULT_PAYLOAD='{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162835,0.00366803903943666,0.995633441507447]]},"meta":{"requestPath":{"classifier":"seldonio/sklearnserver:1.15.0"}}}'
 EXPECTED_MOCK_RESULT_PAYLOAD='{"data":{"names":["proba"],"ndarray":[[0.43782349911420193]]},"meta":{"requestPath":{"classifier":"seldonio/mock_classifier:1.7.0-dev"}}}'
 
 echo ">>> Testing iris model..."
