@@ -169,9 +169,11 @@ Virtual means that Seldon understands them, but v2 protocol-compatible component
 Use the following rules for paths to route to models and pipelines:
 * For models, use the path prefix `/v2/models/{model name}`.
   This is normal usage of the inference v2 protocol.
-* For pipelines, use the path prefix `/v2/pipelines/{pipeline name}`.
+* For pipelines, you can use the path prefix `/v2/pipelines/{pipeline name}`.
   Otherwise calling pipelines looks just like the inference v2 protocol for models.
   Do **not** use any suffix for the pipeline name as you would for routing headers.
+* For pipelines, you can also use the path prefix `/v2/models/{pipeline name}.pipeline`.
+  Again, this form looks just like the inference v2 protocol for models.
 ````
 
 `````
