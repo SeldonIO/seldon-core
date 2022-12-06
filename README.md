@@ -1,6 +1,14 @@
 # Seldon Core: Blazing Fast, Industry-Ready ML
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
+## Seldon Core V2 Now Available
+
+[![scv2_image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/_static/scv2_banner.png)](https://docs.seldon.io/projects/seldon-core/en/v2.0.0/index.html)
+
+[Seldon Core V2](https://docs.seldon.io/projects/seldon-core/en/v2.0.0/index.html) **is now available** (in alpha). Check out the [docs here](https://docs.seldon.io/projects/seldon-core/en/v2.0.0/index.html) and make sure to leave feedback on [our slack community](https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg) and [submit bugs or feature requests on the repo](https://github.com/SeldonIO/seldon-core/issues/new/choose).
+
+Continue reading for info on Seldon Core V1...
+
 [![video_play_icon](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/core-play-logo.png)](https://www.youtube.com/watch?v=5Q-03We8aDE)
 
 ## Overview
