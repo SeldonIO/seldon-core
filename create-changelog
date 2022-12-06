@@ -5,8 +5,9 @@ set -o errexit
 set -o pipefail
 
 STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
+CURRENT_VERSION="$( cat version.txt )"
 
 docker run --rm -it \
     -v $STARTUP_DIR:/work \
     -w /work node \
-    bash -c "set -x && npm install -g auto-changelog && auto-changelog"
+    bash -c "set -x && npm install -g auto-changelog && auto-changelog --ending-version v$CURRENT_VERSION"
