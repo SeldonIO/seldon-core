@@ -11,8 +11,8 @@ The content of your request should be an [inference v2 protocol payload](../apis
 
 For making synchronous requests, the process will generally be:
 1. Find the appropriate service endpoint (IP address and port) for accessing the installation of Seldon Core v2.
-1. Determine the appropriate headers/metadata for the request.
-1. Make requests via REST or gRPC.
+2. Determine the appropriate headers/metadata for the request.
+3. Make requests via REST or gRPC.
 
 ### Find the Seldon Service Endpoint
 
