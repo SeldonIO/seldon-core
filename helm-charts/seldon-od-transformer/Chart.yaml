@@ -1,6 +1,6 @@
 apiVersion: v2
 name: seldon-od-transformer
-description: Chart to deploy an outlier detector as a transformer in an inference graph. 
+description: Chart to deploy an outlier detector as a transformer in a Seldon Core v1 inference graph.
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core
 sources:

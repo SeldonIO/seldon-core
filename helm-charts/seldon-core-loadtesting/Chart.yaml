@@ -1,6 +1,6 @@
 apiVersion: v2
 name: seldon-core-loadtesting
-description: Loadtesting for seldon core
+description: Loadtesting for Seldon Core v1
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core
 sources:
