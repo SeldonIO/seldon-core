@@ -72,8 +72,8 @@ make undeploy-k8s
 
 ## Documentation
 
-TODO
+[Seldon Core v2 docs](https://docs.seldon.io/projects/seldon-core/en/v2/)
 
 ## License
 
-TODO
+[Apache License 2.0](LICENSE)
