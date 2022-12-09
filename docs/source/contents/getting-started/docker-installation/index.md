@@ -16,7 +16,7 @@ From the project root run:
 make deploy-local
 ```
 
-This will run with `latest` images for the componnets.
+This will run with `latest` images for the components.
 
 Note: Triton and MLServer are large images at present (11G and 9G respectively) so will take time to download on first usage.
 
@@ -28,6 +28,14 @@ To run a particular release set the environment variable `CUSTOM_IMAGE_TAG` to t
 export CUSTOM_IMAGE_TAG=0.2.0
 make deploy-local
 ```
+
+### GPU support
+
+To enable GPU on servers: 
+
+1. Make sure that `nvidia-container-runtime` is installed, follow [link](https://docs.docker.com/config/containers/resource_constraints/#gpu)
+2. Enable GPU: `export GPU_ENABLED=1`
+
 
 ### Local Models
 
