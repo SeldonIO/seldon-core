@@ -37,6 +37,16 @@ spec:
       value: 'true'
 ```
 
+2. In the case of using Istio CNI, you may need to configure the `runAsUid` correctly when using MinIO. e.g£º
+```yaml
+spec:
+  predictors:
+  - graph:
+      modelUri: "s3://minio.default.svc.cluster.local:9000/model/"
+      name: "*****"
+      runAsUid: 1337
+```
+
 
 ### Namespace Seldon Core Install
 
