@@ -64,7 +64,7 @@ The model autoscaling architecture is designed such as each agent decides on whi
 ### Agent autoscaling stats collection
 
 #### Scale up logic:
-The main idea is that we keep the "lag" for each model. We define the "lag" as the different between incoming and outgoing requests in a given time period. If the lag crosses a threshold, then we trigger a model scale up event. This threshold can be defined via `SELDON_MODEL_INFERENCE_LAG_THRESHOLD` inference server environment variable.
+The main idea is that we keep the "lag" for each model. We define the "lag" as the difference between incoming and outgoing requests in a given time period. If the lag crosses a threshold, then we trigger a model scale up event. This threshold can be defined via `SELDON_MODEL_INFERENCE_LAG_THRESHOLD` inference server environment variable.
 
 #### Scale down logic:
 For now we keep things simple and we trigger model scale down events if a model has not been used for a number of seconds. This is defined in `SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD` inference server environment variable.
