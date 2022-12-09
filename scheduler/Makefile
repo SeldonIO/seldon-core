@@ -15,6 +15,7 @@ PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMA
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.05-py3
+GPU_ENABLED ?= 0
 
 KIND_NAME=ansible
 
@@ -277,6 +278,10 @@ ifneq ($(DOCKER_COMPOSE_BUILD_IMAGES),)
 endif
 
 DOCKER_COMPOSE_BASE_COMMAND = docker-compose --env-file env.all -f all-base.yaml
+ifeq ($(GPU_ENABLED),1)
+	DOCKER_COMPOSE_BASE_COMMAND := $(DOCKER_COMPOSE_BASE_COMMAND) -f all-gpu.yaml
+endif
+
 DOCKER_COMPOSE_INTERNAL = -f all-internal.yaml
 DOCKER_COMPOSE_HOST = -f all-host-network.yaml
 
