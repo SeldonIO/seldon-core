@@ -24,6 +24,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -271,6 +272,17 @@ func CreateRcloneModelHash(modelName string, srcUri string) (uint32, error) {
 	return util.Hash(keyTohash)
 }
 
+func pathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
 // Call Rclone /sync/copy
 func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
 	var srcUpdated string
@@ -307,6 +319,14 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	_, err = r.call(b, RcloneSyncCopyPath)
 	if err != nil {
 		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
+	}
+	// Even if we had success from rclone the src may be empty so need to check
+	pathExists, err := pathExists(dst)
+	if err != nil {
+		return "", err
+	}
+	if !pathExists {
+		return "", fmt.Errorf("Failed to download from %s any files", srcUri)
 	}
 	return dst, nil
 }
