@@ -37,7 +37,7 @@ spec:
       value: 'true'
 ```
 
-2. In the case of using Istio CNI, you may need to configure the `runAsUid` correctly when using MinIO. e.g£º
+2. In the case of using Istio CNI, you may need to configure the `runAsUid` correctly when using MinIO. e.g:
 ```yaml
 spec:
   predictors:
