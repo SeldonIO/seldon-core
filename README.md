@@ -34,15 +34,16 @@ Deploy via Docker Compose
 make deploy-local
 ```
 
+Run [local-examples.ipynb](samples/local-examples.ipynb)
+
+
 Undeploy
 
 ```
 make undeploy-local
 ```
 
-Run [local-examples.ipynb](sample/local-examples.ipynb)
-
-### Kubernetes (`KinD`) quick-start
+### Kubernetes quick-start via `KinD`
 
 Install Seldon ansible collection
 
@@ -51,17 +52,22 @@ pip install ansible openshift docker passlib
 ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-collection.git
 ```
 
-Create a KinD cluster:
+Create a KinD cluster and install dependencies:
 
 ```
-ansible-playbook seldonio.k8s.kind
+cd ansible
+ansible-playbook playbooks/kind-cluster.yaml
+ansible-playbook playbooks/setup-ecosystem.yaml
 ```
 
 Deploy Seldon Core v2
 
 ```
+cd ..
 make deploy-k8s
 ```
+
+Run [k8s-examples.ipynb](samples/k8s-examples.ipynb)
 
 Undeploy Seldon Core v2
 
