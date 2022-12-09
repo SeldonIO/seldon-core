@@ -45,3 +45,7 @@ inference-artifacts/index.md
 rclone/index.md
 parameterized-models/index.md
 ```
+
+## Autoscaling of models
+
+See [here](../kubernetes/autoscaling/index.md) for discussion of autoscaling of models.

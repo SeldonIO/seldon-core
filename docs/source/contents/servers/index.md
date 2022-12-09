@@ -24,6 +24,6 @@ There is a default capabilities for each server as follows:
 
 ## Autoscaling of Servers
 
-This is in the roadmap.
+Within docker we don't support this but for Kubernetes see [here](../kubernetes/autoscaling/index.md)
 
 
