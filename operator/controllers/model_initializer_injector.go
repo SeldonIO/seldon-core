@@ -111,7 +111,7 @@ func getStorageInitializerConfigsFromMap(configMap *corev1.ConfigMap) (*StorageI
 }
 
 // InjectModelInitializer injects an init container to provision model data
-func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string, storageInitializerImage string) (deploy *appsv1.Deployment, err error) {
+func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment, containerName string, srcURI string, serviceAccountName string, envSecretRefName string, storageInitializerImage string, runAsUid *int64) (deploy *appsv1.Deployment, err error) {
 
 	if srcURI == "" {
 		return deployment, nil
@@ -226,6 +226,7 @@ func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment
 			srcURI,
 			DefaultModelLocalMountPath,
 		},
+		SecurityContext:          createInitContainerSecurityContext(runAsUid),
 		VolumeMounts:             modelInitializerMounts,
 		TerminationMessagePath:   "/dev/termination-log",
 		TerminationMessagePolicy: corev1.TerminationMessageReadFile,
@@ -316,4 +317,19 @@ func parsePvcURI(srcURI string) (pvcName string, pvcPath string, err error) {
 	}
 
 	return pvcName, pvcPath, nil
+}
+
+// When using Istio CNI, the initcontainer will not be able to access the service.
+// In this case, the built-in minio service, for example, cannot be accessed.
+// We therefore need to follow the istio recommendation and use `runAsUser` in the initcontainer.
+// https://istio.io/latest/docs/setup/additional-setup/cni/#compatibility-with-application-init-containers
+func createInitContainerSecurityContext(runAsUid *int64) *corev1.SecurityContext {
+	if runAsUid != nil {
+		securityContext := corev1.SecurityContext{}
+		securityContext.RunAsUser = runAsUid
+		securityContext.RunAsGroup = runAsUid
+		return &securityContext
+	} else {
+		return nil
+	}
 }

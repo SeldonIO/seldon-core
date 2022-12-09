@@ -304,6 +304,7 @@ type Explainer struct {
 	StorageInitializerImage string             `json:"storageInitializerImage,omitempty" protobuf:"bytes,8,opt,name=storageInitializerImage"`
 	Replicas                *int32             `json:"replicas,omitempty" protobuf:"string,9,opt,name=replicas"`
 	InitParameters          string             `json:"initParameters,omitempty" protobuf:"string,10,opt,name=initParameters"`
+	RunAsUid                *int64             `json:"runAsUid,omitempty" protobuf:"bytes,11,opt,name=runAsUid"`
 }
 
 // ObjectMeta is a copy of the "k8s.io/apimachinery/pkg/apis/meta/v1" ObjectMeta.
@@ -602,6 +603,7 @@ type PredictiveUnit struct {
 	EnvSecretRefName        string                        `json:"envSecretRefName,omitempty" protobuf:"bytes,10,opt,name=envSecretRefName"`
 	StorageInitializerImage string                        `json:"storageInitializerImage,omitempty" protobuf:"bytes,11,opt,name=storageInitializerImage"`
 	Logger                  *Logger                       `json:"logger,omitempty" protobuf:"bytes,12,opt,name=logger"`
+	RunAsUid                *int64                        `json:"runAsUid,omitempty" protobuf:"bytes,13,opt,name=runAsUid"`
 }
 
 type LoggerMode string

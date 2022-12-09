@@ -258,7 +258,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			envSecretRefName := extractExplainerEnvSecretRefName(p.Explainer)
 
 			mi := NewModelInitializer(ei.ctx, ei.clientset)
-			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, envSecretRefName, p.Explainer.StorageInitializerImage)
+			deploy, err = mi.InjectModelInitializer(deploy, explainerContainer.Name, p.Explainer.ModelUri, p.Explainer.ServiceAccountName, envSecretRefName, p.Explainer.StorageInitializerImage, p.Explainer.RunAsUid)
 			if err != nil {
 				return err
 			}

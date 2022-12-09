@@ -11,6 +11,9 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+var nilRunAsUid *int64 = nil
+var runAsUid int64 = 1337
+
 func TestStorageInitalizerInjector(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme = createScheme()
@@ -32,10 +35,11 @@ func TestStorageInitalizerInjector(t *testing.T) {
 			},
 		},
 	}
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "", &runAsUid)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal("kfserving/storage-initializer:v0.6.1"))
+	g.Expect(*d.Spec.Template.Spec.InitContainers[0].SecurityContext.RunAsUser).To(Equal(runAsUid))
 }
 
 func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {
@@ -60,7 +64,7 @@ func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {
 		},
 	}
 	envStorageInitializerImage = "abc:1.2"
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "", nilRunAsUid)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(envStorageInitializerImage))
@@ -89,10 +93,11 @@ func TestStorageInitalizerInjectorWithGraphDefinedImage(t *testing.T) {
 		},
 	}
 	storageInitializerImage := "abc:1.3"
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage)
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage, nilRunAsUid)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(storageInitializerImage))
+	g.Expect(d.Spec.Template.Spec.InitContainers[0].SecurityContext).To(BeNil())
 }
 
 func TestStorageInitalizerInjectorWithGraphDefinedImagePriorityOverRelated(t *testing.T) {
@@ -118,7 +123,7 @@ func TestStorageInitalizerInjectorWithGraphDefinedImagePriorityOverRelated(t *te
 	}
 	envStorageInitializerImage = "abc:1.2"
 	storageInitializerImage := "abc:1.3"
-	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage)
+	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", storageInitializerImage, nilRunAsUid)
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
 	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal(storageInitializerImage))
