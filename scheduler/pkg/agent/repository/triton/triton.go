@@ -162,6 +162,6 @@ func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSp
 	return nil
 }
 
-func (t *TritonRepositoryHandler) SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
+func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	return nil
 }

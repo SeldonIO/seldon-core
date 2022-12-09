@@ -189,7 +189,7 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 	return nil
 }
 
-func (m *MLServerRepositoryHandler) SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
+func (m *MLServerRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
 	ms, err := m.loadModelSettingsFromFile(settingsPath)
 	if err != nil {

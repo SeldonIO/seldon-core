@@ -34,7 +34,7 @@ type ModelRepositoryHandler interface {
 	UpdateModelVersion(modelName string, version uint32, path string) error
 	UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
-	SeExtratParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
+	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
 }
 
 type ModelRepository interface {
@@ -127,7 +127,7 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Set init parameters inside model
-	err = r.modelrepositoryHandler.SeExtratParameters(modelVersionPathInRepo, parameters)
+	err = r.modelrepositoryHandler.SetExtraParameters(modelVersionPathInRepo, parameters)
 	if err != nil {
 		return nil, err
 	}
