@@ -65,7 +65,7 @@ For pipelines, a synchronous request is possible if the pipeline has an `outputs
 
 `````{tabs}
 
-````{tab} Seldon CLI
+````{group-tab} Seldon CLI
 
 An example `seldon` request might look like this:
 
@@ -83,7 +83,7 @@ seldon model infer iris \
 ```
 ````
 
-````{tab} cURL
+````{group-tab} cURL
 
 An example `curl` request might look like this:
 
@@ -94,7 +94,7 @@ curl -v http://0.0.0.0:9000/v2/models/iris/infer \
 ```
 ````
 
-````{tab} grpcurl
+````{group-tab} grpcurl
 
 An example `grpcurl` request might look like this:
 
@@ -110,7 +110,7 @@ grpcurl \
 The above request was run from the project root folder allowing reference to the Protobuf manifests defined in the `apis/` folder.
 ````
 
-````{tab} Python tritonclient
+````{group-tab} Python tritonclient
 
 You can use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
 
@@ -182,13 +182,13 @@ Extending our examples from [above](#make-inference-requests), the requests may 
 
 `````{tabs}
 
-````{tab} Seldon CLI
+````{group-tab} Seldon CLI
 
 No changes are required as the `seldon` CLI already understands how to set the appropriate gRPC and REST headers.
 
 ````
 
-````{tab} cURL
+````{group-tab} cURL
 
 Note the header in the last line:
 
@@ -200,7 +200,7 @@ curl -v http://0.0.0.0:9000/v2/models/iris/infer \
 ```
 ````
 
-````{tab} grpcurl
+````{group-tab} grpcurl
 
 Note the `rpc-header` flag in the penultimate line:
 
@@ -215,7 +215,7 @@ grpcurl \
 ```
 ````
 
-````{tab} Python tritonclient
+````{group-tab} Python tritonclient
 
 Note the `headers` dictionary in the `client.infer()` call:
 
