@@ -29,21 +29,20 @@ import java.time.Duration
  */
 class Joiner(
     builder: StreamsBuilder,
-    internal val inputTopics: Set<TopicName>,
-    internal val outputTopic: TopicName,
-    internal val tensorsByTopic: Map<TopicName, Set<TensorName>>?,
+    internal val inputTopics: Set<TopicForPipeline>,
+    internal val outputTopic: TopicForPipeline,
+    internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val tensorRenaming: Map<TensorName, TensorName>,
     internal val kafkaDomainParams: KafkaDomainParams,
     internal val joinType: PipelineJoinType,
-    internal val inputTriggerTopics: Set<TopicName>,
+    internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: PipelineJoinType,
-    internal val triggerTensorsByTopic: Map<TopicName, Set<TensorName>>?,
+    internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
 ) : PipelineStep {
     init {
         val dataStream = buildTopology(builder, inputTopics)
         addTriggerTopology(
-            pipelineName,
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -53,12 +52,13 @@ class Joiner(
             null
         )
             .headerRemover()
-            .to(outputTopic, producerSerde)
+            .headerSetter(pipelineName)
+            .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildTopology(
         builder: StreamsBuilder,
-        inputTopics: Set<TopicName>,
+        inputTopics: Set<TopicForPipeline>,
         pending: KStream<RequestId, TRecord>? = null,
     ): KStream<RequestId, TRecord> {
         if (inputTopics.isEmpty()) {
@@ -70,7 +70,7 @@ class Joiner(
 
         val topic = inputTopics.first()
 
-        val chainType = ChainType.create(topic, outputTopic)
+        val chainType = ChainType.create(topic.topicName, outputTopic.topicName)
         logger.info("Creating stream ${chainType} for ${topic}->${outputTopic}")
         val nextStream = when (chainType) {
             ChainType.OUTPUT_INPUT -> buildOutputInputStream(topic, builder)
@@ -136,49 +136,49 @@ class Joiner(
         }
     }
 
-    private fun buildPassThroughStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+    private fun buildPassThroughStream(topic: TopicForPipeline, builder: StreamsBuilder): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic, consumerSerde)
-            .filterForPipeline(pipelineName)
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
     }
 
-    private fun buildInputOutputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+    private fun buildInputOutputStream(topic: TopicForPipeline, builder: StreamsBuilder): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic, consumerSerde)
-            .filterForPipeline(pipelineName)
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
-            .convertToResponse(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            .convertToResponse(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
     }
 
-    private fun buildOutputOutputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+    private fun buildOutputOutputStream(topic: TopicForPipeline, builder: StreamsBuilder): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic, consumerSerde)
-            .filterForPipeline(pipelineName)
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
-            .filterResponses(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            .filterResponses(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
     }
 
-    private fun buildOutputInputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+    private fun buildOutputInputStream(topic: TopicForPipeline, builder: StreamsBuilder): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic, consumerSerde)
-            .filterForPipeline(pipelineName)
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
-            .convertToRequest(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            .convertToRequest(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             .marshallInferenceV2Request()
     }
 
-    private fun buildInputInputStream(topic: String, builder: StreamsBuilder): KStream<RequestId, TRecord> {
+    private fun buildInputInputStream(topic: TopicForPipeline, builder: StreamsBuilder): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic, consumerSerde)
-            .filterForPipeline(pipelineName)
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
-            .filterRequests(topic, tensorsByTopic?.get(topic), tensorRenaming)
+            .filterRequests(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.inputsList.size != 0 }
             .marshallInferenceV2Request()

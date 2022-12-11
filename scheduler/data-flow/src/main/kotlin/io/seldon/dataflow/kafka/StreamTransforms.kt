@@ -18,6 +18,7 @@ package io.seldon.dataflow.kafka
 
 import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
+import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
@@ -33,6 +34,11 @@ fun <T> KStream<T, TRecord>.filterForPipeline(pipelineName: String): KStream<T, 
 fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {
     return this
         .transformValues(ValueTransformerSupplier { AlibiDetectRemover() })
+}
+
+fun <T> KStream<T, TRecord>.headerSetter(pipelineName: String): KStream<T, TRecord> {
+    return this
+        .transformValues(ValueTransformerSupplier { PipelineHeaderSetter(pipelineName) })
 }
 
 fun <T> KStream<T, ByteArray>.unmarshallInferenceV2Response(): KStream<T, ModelInferResponse> {

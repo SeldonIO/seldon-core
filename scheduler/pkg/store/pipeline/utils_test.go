@@ -42,7 +42,7 @@ func TestUpdateInputsSteps(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			updated := updateInputSteps(test.pipelineName, test.inputs)
+			updated := updateInternalInputSteps(test.pipelineName, test.inputs)
 			g.Expect(updated).To(Equal(test.expected))
 		})
 	}

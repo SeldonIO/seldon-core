@@ -192,3 +192,13 @@ type PipelineStepNameEqualsPipelineNameErr struct {
 func (psr *PipelineStepNameEqualsPipelineNameErr) Error() string {
 	return fmt.Sprintf("pipeline %s must not have a step name with the same name as pipeline name", psr.pipeline)
 }
+
+type PipelineInputErr struct {
+	pipeline string
+	input    string
+	reason   string
+}
+
+func (pie *PipelineInputErr) Error() string {
+	return fmt.Sprintf("pipeline %s input %s is invalid. %s", pie.pipeline, pie.input, pie.reason)
+}

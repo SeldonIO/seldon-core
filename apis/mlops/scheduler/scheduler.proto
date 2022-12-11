@@ -273,6 +273,7 @@ message Pipeline {
   repeated PipelineStep steps = 4;
   optional PipelineOutput output = 5;
   optional KubernetesMeta kubernetesMeta = 6;
+  optional PipelineInput input = 7;
 }
 
 message PipelineStep {
@@ -294,6 +295,20 @@ message PipelineStep {
 message Batch {
   optional uint32 size = 1;
   optional uint32 windowMs = 2;
+}
+
+message PipelineInput {
+  enum JoinOp {
+    INNER = 0;
+    OUTER = 1;
+    ANY = 2;
+  }
+  repeated string externalInputs = 1;
+  repeated string externalTriggers = 2;
+  optional uint32 joinWindowMs = 3; // Join window millisecs for output, default 0
+  JoinOp joinType = 4;
+  JoinOp triggersJoin = 5;
+  map<string,string> tensorMap = 6; // optional map of tensor name mappings
 }
 
 message PipelineOutput {

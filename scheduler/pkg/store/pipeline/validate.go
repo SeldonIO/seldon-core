@@ -27,9 +27,10 @@ import (
 //	step1.outputs.out1 <out1 named tensor from step1>
 //	step1.inputs.in1 <in1 names tensor from step1>
 const (
-	StepInputSpecifier  = "inputs"
-	StepOutputSpecifier = "outputs"
-	StepNameSeperator   = "."
+	StepInputSpecifier    = "inputs"
+	StepOutputSpecifier   = "outputs"
+	PipelineStepSpecifier = "step"
+	StepNameSeperator     = "."
 )
 
 func validate(pv *PipelineVersion) error {
@@ -48,13 +49,16 @@ func validate(pv *PipelineVersion) error {
 	if err := checkStepReferencesExist(pv); err != nil {
 		return err
 	}
-	if err := checkStepOutputs(pv); err != nil {
+	if err := checkPipelineOutputs(pv); err != nil {
 		return err
 	}
 	if err := checkForCycles(pv); err != nil {
 		return err
 	}
 	if err := checkInputsAndTriggersDiffer(pv); err != nil {
+		return err
+	}
+	if err := checkPipelineInput(pv); err != nil {
 		return err
 	}
 	return nil
@@ -221,7 +225,59 @@ func checkStepTriggers(pv *PipelineVersion) error {
 	return nil
 }
 
-func checkStepOutputs(pv *PipelineVersion) error {
+const (
+	pipelineInputEmptyErr               = "At least one pipeline input must be specified"
+	pipelineInputEmptyErrReason         = "Input name must not be empty"
+	pipelineInputOnlyPipelineNameReason = "A Pipeline name must also specify one of inputs, outputs or a step name"
+	pipelineInputInvalidPrefixReason    = "A Pipeline inputs referencing another pipeline must be <pipeineName>.(inputs|outputs|step.<stepName>)"
+	pipelineInputStepBadSuffix          = "A pipeline step must be <pipelineName>.step.<stepName>.(inputs|outputs)"
+	pipelineInputTooLongReason          = "The input is too long. It must be <pipelineName>.(inputs|outputs).(tensorName)? or <pipelineName>.step.<stepName>.<inputs|outputs>.<tensorName>"
+)
+
+func checkPipelineInput(pv *PipelineVersion) error {
+	if pv.Input != nil {
+		if len(pv.Input.ExternalInputs) == 0 {
+			return &PipelineInputErr{pv.Name, "", pipelineInputEmptyErr}
+		}
+		for _, v := range pv.Input.ExternalInputs {
+			if strings.TrimSpace(v) == "" {
+				return &PipelineInputErr{pv.Name, v, pipelineInputEmptyErrReason}
+			}
+			parts := strings.Split(v, StepNameSeperator)
+			switch len(parts) {
+			case 1:
+				return &PipelineInputErr{pv.Name, v, pipelineInputOnlyPipelineNameReason}
+			case 2:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier) {
+					return &PipelineInputErr{pv.Name, v, pipelineInputInvalidPrefixReason}
+				}
+			case 3:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier || parts[1] == PipelineStepSpecifier) {
+					return &PipelineInputErr{pv.Name, v, pipelineInputInvalidPrefixReason}
+				}
+				if parts[1] == PipelineStepSpecifier {
+					return &PipelineInputErr{pv.Name, v, pipelineInputStepBadSuffix}
+				}
+			default:
+				if !(parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier || parts[1] == PipelineStepSpecifier) {
+					return &PipelineInputErr{pv.Name, v, pipelineInputInvalidPrefixReason}
+				}
+				if !(parts[3] == StepInputSpecifier || parts[3] == StepOutputSpecifier) {
+					return &PipelineInputErr{pv.Name, v, pipelineInputStepBadSuffix}
+				}
+				if parts[1] == StepInputSpecifier || parts[1] == StepOutputSpecifier {
+					return &PipelineInputErr{pv.Name, v, pipelineInputInvalidPrefixReason}
+				}
+				if len(parts) > 5 {
+					return &PipelineInputErr{pv.Name, v, pipelineInputTooLongReason}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkPipelineOutputs(pv *PipelineVersion) error {
 	if pv.Output != nil {
 		for _, v := range pv.Output.Steps {
 			parts := strings.Split(v, StepNameSeperator)

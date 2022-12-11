@@ -29,6 +29,7 @@ import (
 
 func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {
 	var protoSteps []*scheduler.PipelineStep
+	var protoInput *scheduler.PipelineInput
 	var protoOutput *scheduler.PipelineOutput
 	keys := make([]string, 0)
 	for k := range pv.Steps {
@@ -68,6 +69,30 @@ func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {
 		}
 		protoSteps = append(protoSteps, protoStep)
 	}
+	if pv.Input != nil {
+		protoInput = &scheduler.PipelineInput{
+			ExternalInputs:   pv.Input.ExternalInputs,
+			ExternalTriggers: pv.Input.ExternalTriggers,
+			JoinWindowMs:     pv.Input.JoinWindowMs,
+			TensorMap:        pv.Input.TensorMap,
+		}
+		switch pv.Input.InputsJoinType {
+		case JoinInner:
+			protoInput.JoinType = scheduler.PipelineInput_INNER
+		case JoinOuter:
+			protoInput.JoinType = scheduler.PipelineInput_OUTER
+		case JoinAny:
+			protoInput.JoinType = scheduler.PipelineInput_ANY
+		}
+		switch pv.Input.TriggersJoinType {
+		case JoinInner:
+			protoInput.TriggersJoin = scheduler.PipelineInput_INNER
+		case JoinOuter:
+			protoInput.TriggersJoin = scheduler.PipelineInput_OUTER
+		case JoinAny:
+			protoInput.TriggersJoin = scheduler.PipelineInput_ANY
+		}
+	}
 	if pv.Output != nil {
 		protoOutput = &scheduler.PipelineOutput{
 			Steps:        pv.Output.Steps,
@@ -94,6 +119,7 @@ func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {
 		Name:           pv.Name,
 		Uid:            pv.UID,
 		Version:        pv.Version,
+		Input:          protoInput,
 		Steps:          protoSteps,
 		Output:         protoOutput,
 		KubernetesMeta: kubernetesMeta,
@@ -105,10 +131,10 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 	for _, stepProto := range pipelineProto.Steps {
 		step := &PipelineStep{
 			Name:         stepProto.GetName(),
-			Inputs:       updateInputSteps(pipelineProto.Name, stepProto.Inputs),
+			Inputs:       updateInternalInputSteps(pipelineProto.Name, stepProto.Inputs),
 			TensorMap:    stepProto.TensorMap,
 			JoinWindowMs: stepProto.JoinWindowMs,
-			Triggers:     updateInputSteps(pipelineProto.Name, stepProto.Triggers),
+			Triggers:     updateInternalInputSteps(pipelineProto.Name, stepProto.Triggers),
 		}
 		switch stepProto.InputsJoin {
 		case scheduler.PipelineStep_INNER:
@@ -137,11 +163,36 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		}
 		steps[stepProto.Name] = step
 	}
+	var input *PipelineInput
+	if pipelineProto.Input != nil {
+		input = &PipelineInput{
+			ExternalInputs:   updateExternalInputSteps(pipelineProto.Input.ExternalInputs),
+			ExternalTriggers: updateExternalInputSteps(pipelineProto.Input.ExternalTriggers),
+			JoinWindowMs:     pipelineProto.Input.JoinWindowMs,
+			TensorMap:        pipelineProto.Input.TensorMap,
+		}
+		switch pipelineProto.Input.JoinType {
+		case scheduler.PipelineInput_INNER:
+			input.InputsJoinType = JoinInner
+		case scheduler.PipelineInput_OUTER:
+			input.InputsJoinType = JoinOuter
+		case scheduler.PipelineInput_ANY:
+			input.InputsJoinType = JoinAny
+		}
+		switch pipelineProto.Input.TriggersJoin {
+		case scheduler.PipelineInput_INNER:
+			input.TriggersJoinType = JoinInner
+		case scheduler.PipelineInput_OUTER:
+			input.TriggersJoinType = JoinOuter
+		case scheduler.PipelineInput_ANY:
+			input.TriggersJoinType = JoinAny
+		}
+	}
 
 	var output *PipelineOutput
 	if pipelineProto.Output != nil {
 		output = &PipelineOutput{
-			Steps:        updateInputSteps(pipelineProto.Name, pipelineProto.Output.Steps),
+			Steps:        updateInternalInputSteps(pipelineProto.Name, pipelineProto.Output.Steps),
 			JoinWindowMs: pipelineProto.Output.JoinWindowMs,
 			TensorMap:    pipelineProto.Output.TensorMap,
 		}
@@ -166,6 +217,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		Name:           pipelineProto.Name,
 		UID:            pipelineProto.Uid,
 		Version:        pipelineProto.Version,
+		Input:          input,
 		Steps:          steps,
 		State:          &PipelineState{},
 		Output:         output,
@@ -178,7 +230,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 	return pv, nil
 }
 
-func updateInputSteps(pipelineName string, inputs []string) []string {
+func updateInternalInputSteps(pipelineName string, inputs []string) []string {
 	if len(inputs) == 0 {
 		return inputs
 	}
@@ -192,6 +244,29 @@ func updateInputSteps(pipelineName string, inputs []string) []string {
 				updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepInputSpecifier))
 			} else {
 				updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepOutputSpecifier))
+			}
+		default:
+			updatedInputs = append(updatedInputs, inp)
+		}
+	}
+	return updatedInputs
+}
+
+func updateExternalInputSteps(inputs []string) []string {
+	if len(inputs) == 0 {
+		return inputs
+	}
+	var updatedInputs []string
+	for _, inp := range inputs {
+		parts := strings.Split(inp, StepNameSeperator)
+		switch len(parts) {
+		case 1: // Add outputs if just pipeline specified
+			updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepOutputSpecifier))
+		case 3: // Add outputs if step name only specified
+			if parts[1] == PipelineStepSpecifier {
+				updatedInputs = append(updatedInputs, fmt.Sprintf("%s.%s", inp, StepOutputSpecifier))
+			} else {
+				updatedInputs = append(updatedInputs, inp)
 			}
 		default:
 			updatedInputs = append(updatedInputs, inp)
