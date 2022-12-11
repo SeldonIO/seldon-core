@@ -288,10 +288,16 @@ Be sure to check the documentation for how to set this with your preferred tools
 
 ````{tab} Subdomains
 
-Like virtual host names, subdomain names constitute a part of the overall host name.
-As such, specifying a subdomain name for requests will involve setting the appropriate host via the URI or headers.
+Subdomain names constitute a part of the overall host name.
+As such, specifying a subdomain name for requests will involve setting the appropriate host in the URI.
 
-For example, you may expose inference services in the namespaces `seldon-1` and `seldon-2` with the following, full-qualified domain names: `seldon-1.example.com` and `seldon-2.example.com`.
+For example, you may expose inference services in the namespaces `seldon-1` and `seldon-2` as in the following snippets:
+
+```
+curl https://seldon-1.example.com/v2/models/iris/infer ...
+
+seldon model infer --inference-host https://seldon-2.example.com/v2/models/iris/infer ...
+```
 
 Many popular ingresses support subdomain-based routing, including Istio and Nginx.
 Please refer to the documentation for your ingress of choice for further information.
