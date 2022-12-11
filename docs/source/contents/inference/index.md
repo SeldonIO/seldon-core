@@ -99,8 +99,9 @@ curl -v http://0.0.0.0:9000/v2/models/iris/infer \
 An example `grpcurl` request might look like this:
 
 ```
-grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
-        -plaintext \
+grpcurl \
+	-d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
+	-plaintext \
 	-import-path apis \
 	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
 	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
