@@ -192,7 +192,9 @@ No changes are required as the `seldon` CLI already understands how to set the a
 
 Note the header in the last line:
 
-```
+```{code-block}
+:emphasize-lines: 4
+
 curl -v http://0.0.0.0:9000/v2/models/iris/infer \
         -H "Content-Type: application/json" \
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' \
@@ -204,7 +206,9 @@ curl -v http://0.0.0.0:9000/v2/models/iris/infer \
 
 Note the `rpc-header` flag in the penultimate line:
 
-```
+```{code-block}
+:emphasize-lines: 6
+
 grpcurl \
 	-d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
 	-plaintext \
@@ -219,7 +223,9 @@ grpcurl \
 
 Note the `headers` dictionary in the `client.infer()` call:
 
-```python
+```{code-block}
+:emphasize-lines: 18
+
 import tritonclient.http as httpclient
 import numpy as np
 
@@ -234,7 +240,11 @@ inputs[0].set_data_from_numpy(
     binary_data=False,
 )
 
-result = client.infer("iris", inputs, headers={"Seldon-Model": "iris"})
+result = client.infer(
+    "iris",
+    inputs,
+    headers={"Seldon-Model": "iris"},
+)
 print("result is:", result.as_numpy("predict"))
 ```
 ````
