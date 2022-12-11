@@ -178,6 +178,28 @@ Use the following rules for paths to route to models and pipelines:
 
 `````
 
+Extending our examples from [above](#make-inference-requests), the requests may look like the below when using header-based routing.
+
+`````{tabs}
+
+````{tab} Seldon CLI
+
+````
+
+````{tab} cURL
+
+````
+
+````{tab} grpcurl
+
+````
+
+````{tab} Python tritonclient
+
+````
+
+`````
+
 #### Ingress Routes
 
 If you are using an ingress controller to make inference requests with Seldon, you will need to configure the routing rules correctly.
