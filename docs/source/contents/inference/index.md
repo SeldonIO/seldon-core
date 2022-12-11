@@ -90,7 +90,6 @@ An example `curl` request might look like this:
 ```
 curl -v http://0.0.0.0:9000/v2/models/iris/infer \
         -H "Content-Type: application/json" \
-        -H "Seldon-Model: iris" \
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 ````
@@ -104,7 +103,6 @@ grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_con
         -plaintext \
 	-import-path apis \
 	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
-	-rpc-header seldon-model:iris \
 	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
 ```
 
@@ -116,6 +114,7 @@ The above request was run from the project root folder allowing reference to the
 You can use the Python [tritonclient](https://github.com/triton-inference-server/client) package to send inference requests.
 
 A short, self-contained example is:
+
 ```python
 import tritonclient.http as httpclient
 import numpy as np
@@ -184,18 +183,59 @@ Extending our examples from [above](#make-inference-requests), the requests may 
 
 ````{tab} Seldon CLI
 
+No changes are required as the `seldon` CLI already understands how to set the appropriate gRPC and REST headers.
+
 ````
 
 ````{tab} cURL
 
+Note the header in the last line:
+
+```
+curl -v http://0.0.0.0:9000/v2/models/iris/infer \
+        -H "Content-Type: application/json" \
+        -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' \
+        -H "Seldon-Model: iris"
+```
 ````
 
 ````{tab} grpcurl
 
+Note the `rpc-header` flag in the penultimate line:
+
+```
+grpcurl \
+	-d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
+	-plaintext \
+	-import-path apis \
+	-proto apis/mlops/v2_dataplane/v2_dataplane.proto \
+	-rpc-header seldon-model:iris \
+	0.0.0.0:9000 inference.GRPCInferenceService/ModelInfer
+```
 ````
 
 ````{tab} Python tritonclient
 
+Note the `headers` dictionary in the `client.infer()` call:
+
+```python
+import tritonclient.http as httpclient
+import numpy as np
+
+client = httpclient.InferenceServerClient(
+    url="localhost:8080",
+    verbose=False,
+)
+
+inputs = [httpclient.InferInput("predict", (1, 4), "FP64")]
+inputs[0].set_data_from_numpy(
+    np.array([[1, 2, 3, 4]]).astype("float64"),
+    binary_data=False,
+)
+
+result = client.infer("iris", inputs, headers={"Seldon-Model": "iris"})
+print("result is:", result.as_numpy("predict"))
+```
 ````
 
 `````
