@@ -164,7 +164,7 @@ See the [examples](../examples/index) and the [Seldon CLI docs](../cli/index.md)
 
 The inference v2 protocol is only aware of models, thus has no concept of pipelines.
 Seldon works around this limitation by introducing _virtual_ endpoints for pipelines.
-Virtual means that Seldon understands them, but v2 protocol-compatible components like inference servers do not.
+Virtual means that Seldon understands them, but other v2 protocol-compatible components like inference servers do not.
 
 Use the following rules for paths to route to models and pipelines:
 * For models, use the path prefix `/v2/models/{model name}`.
