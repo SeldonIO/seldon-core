@@ -259,7 +259,7 @@ There are many ways to do this, but custom path prefixes will not work with gRPC
 This is because gRPC determines the path based on the Protobuf definition.
 Some gRPC implementations permit manipulating paths when sending requests, but this is by no means universal.
 
-If you want to expose your inference endpoints via gRPC and REST in a consistent way, you should use virtual hosts or headers.
+If you want to expose your inference endpoints via gRPC and REST in a consistent way, you should use virtual hosts, subdomains, or headers.
 
 The downside of using only paths is that you cannot differentiate between different installations of Seldon Core v2 or between traffic to Seldon and any other inference endpoints you may have exposed via the same ingress.
 
@@ -284,6 +284,17 @@ Some common ones are given below:
 * In Python, the `requests` library accepts the host as a normal header.
 
 Be sure to check the documentation for how to set this with your preferred tools and languages.
+````
+
+````{tab} Subdomains
+
+Like virtual host names, subdomain names constitute a part of the overall host name.
+As such, specifying a subdomain name for requests will involve setting the appropriate host via the URI or headers.
+
+For example, you may expose inference services in the namespaces `seldon-1` and `seldon-2` with the following, full-qualified domain names: `seldon-1.example.com` and `seldon-2.example.com`.
+
+Many popular ingresses support subdomain-based routing, including Istio and Nginx.
+Please refer to the documentation for your ingress of choice for further information.
 ````
 
 ````{tab} Headers
