@@ -130,6 +130,35 @@ Here the `mul10` step is run if data is seen on the pipeline inputs in the `ok1`
 
 If we changed the `triggersJoinType` for `mul10` to `inner` then both `ok1` and `ok2` would need to appear before `mul10` is run.
 
+### Pipeline Inputs
+
+Pipelines by default can be accessed synchronously via http/grpc or via the Kafka topic created for them. However, it's also possible to create a pipeline to take input from one or more other pipelines by specifying an `input` section. If for example we already have the `tfsimple` pipeline shown below:
+
+```{literalinclude} ../../../../samples/pipelines/tfsimple.yaml
+:language: yaml
+```
+
+We can create another pipeline which takes its input from this pipeline, as shown below:
+
+```{literalinclude} ../../../../samples/pipelines/tfsimple-extended.yaml
+:language: yaml
+```
+
+In this way pipelines can be built to extend existing running pipelines to allow extensibility and sharing of data flows.
+
+The spec follows the spec for a step except that references to other pipelines are contained in the `externalInputs` section which takes the form of pipeline or pipeline step references:
+  * `<pipelineName>.(inputs|outputs).<tensorName>`
+  * `<pipelineName>.(step).<stepName>.<tensorName>`
+
+Tensor names are optional and only needed if you want to take just one tensor from an input or output.
+
+There is also an `externalTriggers` section which allows triggers from other pipelines.
+
+Further examples can be found in the [pipeline-to-pipeline examples](../examples/pipeline-to-pipeline.md).
+
+Present caveats:
+ * Circular dependencies are not detected.
+ * Pipeline status is local to each pipeline.
 
 ## Data Centric Implementation
 
