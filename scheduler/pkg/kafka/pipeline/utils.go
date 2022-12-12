@@ -51,7 +51,7 @@ func convertHttpHeadersToKafkaHeaders(httpHeaders http.Header) []kafka.Header {
 	for k, vals := range httpHeaders {
 		if strings.HasPrefix(strings.ToLower(k), resources.ExternalHeaderPrefix) {
 			for _, headerValue := range vals {
-				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(headerValue)})
+				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: strings.ToLower(k), Value: []byte(headerValue)})
 			}
 		}
 	}
