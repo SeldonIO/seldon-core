@@ -47,7 +47,7 @@ RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observ
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM quay.io/domino/distroless.base-debian10:nonroot-20221007-1838
+FROM quay.io/domino/distroless.base-debian10:nonroot-20221208-1806
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY licenses/license.txt licenses/license.txt
