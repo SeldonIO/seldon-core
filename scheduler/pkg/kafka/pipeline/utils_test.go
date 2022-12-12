@@ -96,8 +96,8 @@ func TestConvertHttpHeadersToKafkaHeaders(t *testing.T) {
 				"X-foo2":       []string{"bar2"},
 			},
 			expectedKafkaHeaders: map[string]kafka.Header{
-				"X-foo":  {Key: "x-foo", Value: []byte("bar")},
-				"X-foo2": {Key: "x-foo2", Value: []byte("bar2")},
+				"x-foo":  {Key: "x-foo", Value: []byte("bar")},
+				"x-foo2": {Key: "x-foo2", Value: []byte("bar2")},
 			},
 		},
 	}
