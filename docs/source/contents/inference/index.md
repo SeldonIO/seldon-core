@@ -86,10 +86,6 @@ This `iris` model has the following schema, which can be set in a `model-setting
 
 Examples are given below for some common tools for making requests.
 
-```{tip}
-For pipelines, a synchronous request is possible if the pipeline has an `outputs` section defined in its spec.
-```
-
 `````{tabs}
 
 ````{group-tab} Seldon CLI
@@ -163,6 +159,10 @@ print("result is:", result.as_numpy("predict"))
 ```
 ````
 `````
+
+```{tip}
+For pipelines, a synchronous request is possible if the pipeline has an `outputs` section defined in its spec.
+```
 
 ### Request Routing
 
