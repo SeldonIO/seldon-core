@@ -91,11 +91,9 @@ import tritonclient.http as httpclient
 import numpy as np
 
 http_triton_client = httpclient.InferenceServerClient(
-```yaml
-url=f"{MESH_IP}:80",
-verbose=False,
+    url=f"{MESH_IP}:80",
+    verbose=False,
 )
-```
 
 print("model ready:", http_triton_client.is_model_ready("iris"))
 print("model metadata:", http_triton_client.get_model_metadata("iris"))
@@ -152,12 +150,9 @@ import tritonclient.grpc as grpcclient
 import numpy as np
 
 grpc_triton_client = grpcclient.InferenceServerClient(
-```yaml
-url=f"{MESH_IP}:80",
-verbose=False,
+    url=f"{MESH_IP}:80",
+    verbose=False,
 )
-```
-
 ```
 
 ```python
@@ -181,11 +176,8 @@ model_name = "iris"
 headers = {"seldon-model": model_name}
 
 inputs = [
-```
-grpcclient.InferInput("predict", (1, 4), "FP64"),
+    grpcclient.InferInput("predict", (1, 4), "FP64"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"))
 
 outputs = [grpcclient.InferRequestedOutput("predict")]
@@ -206,11 +198,8 @@ model_name = "iris-pipeline.pipeline"
 headers = {"seldon-model": model_name}
 
 inputs = [
-```
-grpcclient.InferInput("predict", (1, 4), "FP64"),
+    grpcclient.InferInput("predict", (1, 4), "FP64"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.array([[1, 2, 3, 4]]).astype("float64"))
 
 outputs = [grpcclient.InferRequestedOutput("predict")]
@@ -294,11 +283,9 @@ import tritonclient.http as httpclient
 import numpy as np
 
 http_triton_client = httpclient.InferenceServerClient(
-```yaml
-url=f"{MESH_IP}:80",
-verbose=False,
+    url=f"{MESH_IP}:80",
+    verbose=False,
 )
-```
 
 print("model ready:", http_triton_client.is_model_ready("iris"))
 print("model metadata:", http_triton_client.get_model_metadata("iris"))
@@ -316,12 +303,9 @@ model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [],
 binary_data = False
 
 inputs = [
-```
-httpclient.InferInput("INPUT0", (1, 16), "INT32"),
-httpclient.InferInput("INPUT1", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT0", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT1", (1, 16), "INT32"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 inputs[1].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 
@@ -343,12 +327,9 @@ array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
 binary_data = True
 
 inputs = [
-```
-httpclient.InferInput("INPUT0", (1, 16), "INT32"),
-httpclient.InferInput("INPUT1", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT0", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT1", (1, 16), "INT32"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 inputs[1].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 
@@ -370,12 +351,9 @@ array([[ 2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]],
 binary_data = False
 
 inputs = [
-```
-httpclient.InferInput("INPUT0", (1, 16), "INT32"),
-httpclient.InferInput("INPUT1", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT0", (1, 16), "INT32"),
+    httpclient.InferInput("INPUT1", (1, 16), "INT32"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 inputs[1].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"), binary_data=binary_data)
 
@@ -418,12 +396,9 @@ import tritonclient.grpc as grpcclient
 import numpy as np
 
 grpc_triton_client = grpcclient.InferenceServerClient(
-```yaml
-url=f"{MESH_IP}:80",
-verbose=False,
+    url=f"{MESH_IP}:80",
+    verbose=False,
 )
-```
-
 ```
 
 ```python
@@ -473,12 +448,9 @@ model_name = "tfsimple1"
 headers = {"seldon-model": model_name}
 
 inputs = [
-```
-grpcclient.InferInput("INPUT0", (1, 16), "INT32"),
-grpcclient.InferInput("INPUT1", (1, 16), "INT32"),
+    grpcclient.InferInput("INPUT0", (1, 16), "INT32"),
+    grpcclient.InferInput("INPUT1", (1, 16), "INT32"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"))
 inputs[1].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"))
 
@@ -501,12 +473,9 @@ model_name = "tfsimple.pipeline"
 headers = {"seldon-model": model_name}
 
 inputs = [
-```
-grpcclient.InferInput("INPUT0", (1, 16), "INT32"),
-grpcclient.InferInput("INPUT1", (1, 16), "INT32"),
+    grpcclient.InferInput("INPUT0", (1, 16), "INT32"),
+    grpcclient.InferInput("INPUT1", (1, 16), "INT32"),
 ]
-```
-
 inputs[0].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"))
 inputs[1].set_data_from_numpy(np.arange(1, 17).reshape(-1, 16).astype("int32"))
 

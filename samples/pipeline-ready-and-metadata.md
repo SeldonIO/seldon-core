@@ -61,13 +61,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```yaml
@@ -107,13 +105,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```json
@@ -144,13 +140,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```json
@@ -181,13 +175,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```json
@@ -225,13 +217,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```yaml
@@ -273,13 +263,11 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimples.pipeline \
-${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimples.pipeline \
+    ${INFER_GRPC_ENDPOINT} inference.GRPCInferenceService/ModelReady
 ```
 
 ```json

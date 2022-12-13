@@ -60,9 +60,7 @@ seldon model status tfsimple1 -w ModelAvailable | jq -M .
 
 ```bash
 seldon model infer tfsimple1 --inference-host ${INFER_ENDPOINT} \
-```yaml
-'{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -129,9 +127,7 @@ seldon model infer tfsimple1 --inference-host ${INFER_ENDPOINT} \
 
 ```bash
 seldon model infer tfsimple1 --inference-mode grpc  --inference-host ${INFER_ENDPOINT} \
-```yaml
-'{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -141,9 +137,7 @@ seldon model infer tfsimple1 --inference-mode grpc  --inference-host ${INFER_END
 
 ```bash
 curl http://${INFER_ENDPOINT}/v2/models/tfsimple1/infer -H "Content-Type: application/json" -H "seldon-model: tfsimple1" \
-```yaml
--d '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+        -d '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -153,13 +147,11 @@ curl http://${INFER_ENDPOINT}/v2/models/tfsimple1/infer -H "Content-Type: applic
 
 ```bash
 grpcurl -d '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimple1 \
-${INFER_ENDPOINT} inference.GRPCInferenceService/ModelInfer
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimple1 \
+    ${INFER_ENDPOINT} inference.GRPCInferenceService/ModelInfer
 ```
 
 ```json
@@ -230,9 +222,7 @@ seldon pipeline status tfsimple -w PipelineReady
 
 ```bash
 seldon pipeline infer tfsimple  --inference-host ${INFER_ENDPOINT} \
-```yaml
-'{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -298,9 +288,7 @@ seldon pipeline infer tfsimple  --inference-host ${INFER_ENDPOINT} \
 
 ```bash
 seldon pipeline infer tfsimple --inference-mode grpc  --inference-host ${INFER_ENDPOINT} \
-```yaml
-'{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -310,9 +298,7 @@ seldon pipeline infer tfsimple --inference-mode grpc  --inference-host ${INFER_E
 
 ```bash
 curl http://${INFER_ENDPOINT}/v2/models/tfsimple1/infer -H "Content-Type: application/json" -H "seldon-model: tfsimple.pipeline" \
-```yaml
--d '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+        -d '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```json
@@ -322,13 +308,11 @@ curl http://${INFER_ENDPOINT}/v2/models/tfsimple1/infer -H "Content-Type: applic
 
 ```bash
 grpcurl -d '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' \
-```yaml
--plaintext \
--import-path ../apis \
--proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
--rpc-header seldon-model:tfsimple.pipeline \
-${INFER_ENDPOINT} inference.GRPCInferenceService/ModelInfer
-```
+    -plaintext \
+    -import-path ../apis \
+    -proto ../apis/mlops/v2_dataplane/v2_dataplane.proto \
+    -rpc-header seldon-model:tfsimple.pipeline \
+    ${INFER_ENDPOINT} inference.GRPCInferenceService/ModelInfer
 ```
 
 ```json

@@ -16,35 +16,25 @@ from prometheus_client.parser import text_string_to_metric_families
 import requests
 
 def scrape_metrics(host):
-```yaml
-data = requests.get(f"http://{host}/metrics").text
-return {
-    family.name: family for family in text_string_to_metric_families(data)
-}
-
-```
+    data = requests.get(f"http://{host}/metrics").text
+    return {
+        family.name: family for family in text_string_to_metric_families(data)
+    }
 
 def print_sample(family, label, value):
-```yaml
-for sample in family.samples:
-    if sample.labels[label] == value:
-        print(sample)
-
-```
+    for sample in family.samples:
+        if sample.labels[label] == value:
+            print(sample)
 
 def get_model_infer_count(host, model_name):
-```
-metrics = scrape_metrics(host)
-family = metrics["seldon_model_infer"]
-print_sample(family, "model", model_name)
-def get_pipeline_infer_count(host, pipeline_name):
-```
+    metrics = scrape_metrics(host)
+    family = metrics["seldon_model_infer"]
+    print_sample(family, "model", model_name)
 
-```
-metrics = scrape_metrics(host)
-family = metrics["seldon_pipeline_infer"]
-print_sample(family, "pipeline", pipeline_name)
-```
+def get_pipeline_infer_count(host, pipeline_name):
+    metrics = scrape_metrics(host)
+    family = metrics["seldon_pipeline_infer"]
+    print_sample(family, "pipeline", pipeline_name)
 ```
 
 ### MLServer Model
@@ -116,9 +106,7 @@ seldon model status tfsimple1 -w ModelAvailable | jq -M .
 
 ```bash
 seldon model infer tfsimple1 -i 50\
-```yaml
-'{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```yaml
@@ -128,9 +116,7 @@ Success: map[:tfsimple1_1::50]
 
 ```bash
 seldon model infer tfsimple1 --inference-mode grpc -i 100 \
-```yaml
-'{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```yaml
@@ -180,9 +166,7 @@ seldon pipeline status tfsimples -w PipelineReady
 
 ```bash
 seldon pipeline infer tfsimples -i 50 \
-```yaml
-'{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
-```
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
 ```yaml

@@ -79,9 +79,7 @@ kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 
 ```bash
 seldon model infer income --inference-host ${MESH_IP}:80 \
-```yaml
-'{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
-```
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
 ```json
@@ -172,9 +170,7 @@ kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq 
 
 ```bash
 seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
-```yaml
-'{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
-```
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
 ```json
@@ -279,9 +275,7 @@ kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 
 ```bash
 seldon model infer income --inference-host ${MESH_IP}:80 \
-```yaml
-'{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
-```
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
 ```json
@@ -349,9 +343,7 @@ pipeline.mlops.seldon.io/income-prod condition met
 
 ```bash
 seldon pipeline infer income-prod --inference-host ${MESH_IP}:80 \
-```yaml
-'{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
-```
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
 ```json
@@ -435,9 +427,7 @@ kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq 
 
 ```bash
 seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
-```yaml
-'{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
-```
+     '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
 ```json

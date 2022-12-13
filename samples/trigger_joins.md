@@ -6,27 +6,22 @@ In this notebook we show use of trigger joins of type "any" where we wait for an
 import json
 
 def get_request_string(use_trigger_1=True, use_trigger_2=True):
-```yaml
-request = {
-    "model_name": "whatever",
-    "inputs": [
-        {"name": "INPUT1", "contents": {"int64Contents": [1]}, "datatype": "INT64", "shape": [1]},
-        {"name": "INPUT2", "contents": {"int64Contents": [1]}, "datatype": "INT64", "shape": [1]},
-    ]
-}
+    request = {
+        "model_name": "whatever",
+        "inputs": [
+            {"name": "INPUT1", "contents": {"int64Contents": [1]}, "datatype": "INT64", "shape": [1]},
+            {"name": "INPUT2", "contents": {"int64Contents": [1]}, "datatype": "INT64", "shape": [1]},
+        ]
+    }
 
-```
+    if use_trigger_1:
+        request["inputs"].append({"name": "TRIGGER1", "contents": {"boolContents": [True]}, "datatype": "BOOL", "shape": [1]})
 
-```yaml
-if use_trigger_1:
-    request["inputs"].append({"name": "TRIGGER1", "contents": {"boolContents": [True]}, "datatype": "BOOL", "shape": [1]})
+    if use_trigger_2:
+        request["inputs"].append({"name": "TRIGGER2", "contents": {"boolContents": [True]}, "datatype": "BOOL", "shape": [1]})
 
-if use_trigger_2:
-    request["inputs"].append({"name": "TRIGGER2", "contents": {"boolContents": [True]}, "datatype": "BOOL", "shape": [1]})
-
-request_string = json.dumps(request)
-return request_string
-```
+    request_string = json.dumps(request)
+    return request_string
 ```
 
 Load models and pipelines
