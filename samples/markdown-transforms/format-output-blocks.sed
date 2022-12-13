@@ -1,5 +1,10 @@
 #!/usr/bin/sed -Enf
 
+# nbconvert formats output blocks as idented sections of Markdown.
+# We recognise these (with 4 spaces per indentation level),
+# remove this leading whitespace, then attempt to infer the type of
+# output as JSON, YAML, or simply a generic block.
+
 # We're within an output block
 /^\s{4}.*/ {
   s/^\s{4}//
