@@ -56,6 +56,9 @@ x
   s/^\s+//
   s/\s+$//
 
+  # Remove ANSI colour codes
+  s/\x1B\[[0-9;]*m//g
+
   # If it's JSON
   /^\s*\{.*\}\s*$/ {
     i\```json
