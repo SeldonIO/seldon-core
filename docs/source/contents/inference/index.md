@@ -57,6 +57,33 @@ If you are using a service mesh like Istio or Ambassador, you will need to use t
 ### Make Inference Requests
 
 Let us imagine making inference requests to a model called `iris`.
+
+This `iris` model has the following schema, which can be set in a `model-settings.json` file for MLServer:
+
+```
+{
+    "name": "iris",
+    "implementation": "mlserver_sklearn.SKLearnModel",
+    "inputs": [
+        {
+            "name": "predict",
+            "datatype": "INT64",
+            "shape": [-1, 4]
+        }
+    ],
+    "outputs": [
+        {
+            "name": "predict",
+            "datatype": "INT64",
+            "shape": [-1, 1]
+        }
+    ],
+    "parameters": {
+        "version": "1"
+    }
+}
+```
+
 Examples are given below for some common tools for making requests.
 
 ```{tip}
