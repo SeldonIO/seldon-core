@@ -63,7 +63,7 @@ x
   }
 
   # If it's YAML
-  /.*:.*/ {
+  /^\w+:[^:\n]*\n/ {
     i\```yaml
     b ENDBLOCK
   }
