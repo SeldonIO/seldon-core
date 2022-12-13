@@ -67,7 +67,7 @@ This `iris` model has the following schema, which can be set in a `model-setting
     "inputs": [
         {
             "name": "predict",
-            "datatype": "INT64",
+            "datatype": "FP32",
             "shape": [-1, 4]
         }
     ],
