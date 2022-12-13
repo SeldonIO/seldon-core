@@ -5,7 +5,42 @@
 # remove this leading whitespace, then attempt to infer the type of
 # output as JSON, YAML, or simply a generic block.
 
-# We're within an output block
+################################################################################
+
+# Ignore indentation within code blocks.
+
+# If we find a starting delimiter, record that we're in a code block.
+/^```.+/ {
+    h
+    p
+    b END
+}
+
+# If we find an ending delimiter, stop acting like we're in a code block.
+/^```$/ {
+    p
+    z
+    h
+    b END
+}
+
+# Check if we're in a code block.
+# If so, print this line and skip to the next.
+
+x
+
+/^```/ {
+    x
+    p
+    b END
+}
+
+# Otherwise, keep investigating the current line.
+x
+
+################################################################################
+
+# If we're within an output block...
 /^\s{4}.*/ {
   s/^\s{4}//
   H
