@@ -102,7 +102,7 @@ print("model ready:", await http_triton_client.is_model_ready("iris"))
 print("model metadata:", await http_triton_client.get_model_metadata("iris"))
 ```
 
-```yaml
+```
 model ready: True
 model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
 
@@ -170,7 +170,7 @@ print("model ready:", await grpc_triton_client.is_model_ready(model_name, header
 print(await grpc_triton_client.get_model_metadata(model_name, headers=headers))
 ```
 
-```yaml
+```
 model ready: True
 name: "iris_1"
 
@@ -313,7 +313,7 @@ print("model ready:", await http_triton_client.is_model_ready("tfsimple1"))
 print("model metadata:", await http_triton_client.get_model_metadata("tfsimple1"))
 ```
 
-```yaml
+```
 model ready: True
 model metadata: {'name': 'tfsimple1_1', 'versions': ['1'], 'platform': 'tensorflow_graphdef', 'inputs': [{'name': 'INPUT0', 'datatype': 'INT32', 'shape': [-1, 16]}, {'name': 'INPUT1', 'datatype': 'INT32', 'shape': [-1, 16]}], 'outputs': [{'name': 'OUTPUT0', 'datatype': 'INT32', 'shape': [-1, 16]}, {'name': 'OUTPUT1', 'datatype': 'INT32', 'shape': [-1, 16]}]}
 
@@ -427,7 +427,7 @@ print("model ready:", await grpc_triton_client.is_model_ready(model_name, header
 print(await grpc_triton_client.get_model_metadata(model_name, headers=headers))
 ```
 
-```yaml
+```
 model ready: True
 name: "tfsimple1_1"
 versions: "1"

@@ -55,7 +55,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris_1::50]
 
 ```
@@ -65,7 +65,7 @@ seldon model infer iris --inference-mode grpc -i 100 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris_1::100]
 
 ```
@@ -74,7 +74,7 @@ Success: map[:iris_1::100]
 get_model_infer_count(mlserver_metrics_host,"iris")
 ```
 
-```yaml
+```
 Sample(name='seldon_model_infer_total', labels={'code': '200', 'method_type': 'rest', 'model': 'iris', 'model_internal': 'iris_1', 'server': 'mlserver', 'server_replica': '0'}, value=50.0, timestamp=None, exemplar=None)
 Sample(name='seldon_model_infer_total', labels={'code': 'OK', 'method_type': 'grpc', 'model': 'iris', 'model_internal': 'iris_1', 'server': 'mlserver', 'server_replica': '0'}, value=100.0, timestamp=None, exemplar=None)
 
@@ -109,7 +109,7 @@ seldon model infer tfsimple1 -i 50\
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
-```yaml
+```
 Success: map[:tfsimple1_1::50]
 
 ```
@@ -119,7 +119,7 @@ seldon model infer tfsimple1 --inference-mode grpc -i 100 \
     '{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 ```
 
-```yaml
+```
 Success: map[:tfsimple1_1::100]
 
 ```
@@ -128,7 +128,7 @@ Success: map[:tfsimple1_1::100]
 get_model_infer_count(triton_metrics_host,"tfsimple1")
 ```
 
-```yaml
+```
 Sample(name='seldon_model_infer_total', labels={'code': '200', 'method_type': 'rest', 'model': 'tfsimple1', 'model_internal': 'tfsimple1_1', 'server': 'triton', 'server_replica': '0'}, value=50.0, timestamp=None, exemplar=None)
 Sample(name='seldon_model_infer_total', labels={'code': 'OK', 'method_type': 'grpc', 'model': 'tfsimple1', 'model_internal': 'tfsimple1_1', 'server': 'triton', 'server_replica': '0'}, value=100.0, timestamp=None, exemplar=None)
 
@@ -169,7 +169,7 @@ seldon pipeline infer tfsimples -i 50 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
-```yaml
+```
 Success: map[:tfsimple1_1::50 :tfsimple2_1::50 :tfsimples.pipeline::50]
 
 ```
@@ -178,7 +178,7 @@ Success: map[:tfsimple1_1::50 :tfsimple2_1::50 :tfsimples.pipeline::50]
 get_pipeline_infer_count(pipeline_metrics_host,"tfsimples")
 ```
 
-```yaml
+```
 Sample(name='seldon_pipeline_infer_total', labels={'code': '200', 'method_type': 'rest', 'pipeline': 'tfsimples', 'server': 'pipeline-gateway'}, value=50.0, timestamp=None, exemplar=None)
 
 ```

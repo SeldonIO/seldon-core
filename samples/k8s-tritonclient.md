@@ -99,7 +99,7 @@ print("model ready:", http_triton_client.is_model_ready("iris"))
 print("model metadata:", http_triton_client.get_model_metadata("iris"))
 ```
 
-```yaml
+```
 model ready: True
 model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
 
@@ -163,7 +163,7 @@ print("model ready:", grpc_triton_client.is_model_ready(model_name, headers=head
 print(grpc_triton_client.get_model_metadata(model_name, headers=headers))
 ```
 
-```yaml
+```
 model ready: True
 name: "iris_1"
 
@@ -291,7 +291,7 @@ print("model ready:", http_triton_client.is_model_ready("iris"))
 print("model metadata:", http_triton_client.get_model_metadata("iris"))
 ```
 
-```yaml
+```
 model ready: True
 model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
 
@@ -409,7 +409,7 @@ print("model ready:", grpc_triton_client.is_model_ready(model_name, headers=head
 print(grpc_triton_client.get_model_metadata(model_name, headers=headers))
 ```
 
-```yaml
+```
 model ready: True
 name: "tfsimple1_1"
 versions: "1"

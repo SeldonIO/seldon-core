@@ -322,7 +322,7 @@ mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris
 ```
 ```
 
-```yaml
+```
 2022-11-16 18:24:17,272 [mlserver] INFO - Using asyncio event-loop policy: uvloop
 2022-11-16 18:24:17,273 [mlserver] INFO - server url: 172.19.255.1
 2022-11-16 18:24:17,273 [mlserver] INFO - model name: iris
@@ -347,7 +347,7 @@ mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-inpu
 ```
 ```
 
-```yaml
+```
 2022-11-16 18:25:18,651 [mlserver] INFO - Using asyncio event-loop policy: uvloop
 2022-11-16 18:25:18,653 [mlserver] INFO - server url: 172.19.255.1
 2022-11-16 18:25:18,653 [mlserver] INFO - model name: iris-pipeline.pipeline
@@ -400,7 +400,7 @@ cat /tmp/iris-output.txt | head -n 1 | jq -M .
 cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
 ```
 
-```yaml
+```
 [1;39m{
   [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
   [0m[34;1m"id"[0m[1;39m: [0m[0;32m"0016feb9-781d-44c9-85ff-da65afd6842f"[0m[1;39m,
@@ -496,7 +496,7 @@ mlserver infer -u ${MESH_IP} -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o 
 ```
 ```
 
-```yaml
+```
 2022-11-16 18:26:08,522 [mlserver] INFO - Using asyncio event-loop policy: uvloop
 2022-11-16 18:26:08,523 [mlserver] INFO - server url: 172.19.255.1
 2022-11-16 18:26:08,523 [mlserver] INFO - model name: tfsimple1
@@ -521,7 +521,7 @@ mlserver infer -u ${MESH_IP} -m tfsimple.pipeline -i batch-inputs/tfsimple-input
 ```
 ```
 
-```yaml
+```
 2022-11-16 18:26:48,819 [mlserver] INFO - Using asyncio event-loop policy: uvloop
 2022-11-16 18:26:48,820 [mlserver] INFO - server url: 172.19.255.1
 2022-11-16 18:26:48,820 [mlserver] INFO - model name: tfsimple.pipeline

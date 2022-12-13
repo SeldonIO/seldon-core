@@ -266,7 +266,7 @@ seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 map[:iris2_1::25 :iris_1::25]
 
 ```
@@ -567,7 +567,7 @@ pipeline.mlops.seldon.io/join created
 kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 
-```yaml
+```
 error: timed out waiting for the condition on pipelines/join
 
 ```

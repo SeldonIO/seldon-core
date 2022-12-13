@@ -554,7 +554,7 @@ seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris2_1::41 :iris_1::59]
 
 ```
@@ -600,7 +600,7 @@ seldon model infer iris -s -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris_1::50]
 
 ```
@@ -610,7 +610,7 @@ seldon model infer iris --inference-mode grpc -s -i 50\
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris_1::50]
 
 ```
@@ -633,7 +633,7 @@ seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 Success: map[:iris_1::100]
 
 ```

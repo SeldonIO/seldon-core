@@ -12,7 +12,7 @@ We will show:
 %env INFER_ENDPOINT=0.0.0.0:9000
 ```
 
-```yaml
+```
 env: INFER_ENDPOINT=0.0.0.0:9000
 
 ```

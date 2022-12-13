@@ -65,7 +65,7 @@ seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
 seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
 ```
 
-```yaml
+```
 [1;39m{
   [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
   [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
@@ -187,7 +187,7 @@ seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
 seldon pipeline status triggers_join_internal -w PipelineReady | jq .
 ```
 
-```yaml
+```
 [1;39m{
   [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
   [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[

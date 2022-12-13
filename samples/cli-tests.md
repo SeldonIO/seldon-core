@@ -147,7 +147,7 @@ spec:
 seldon model load -f ./models/error-bad-spec.yaml
 ```
 
-```yaml
+```
 Error: json: unknown field "storagUri"
 
 ```
@@ -186,7 +186,7 @@ spec:
 seldon pipeline load -f ./pipelines/error-bad-spec.yaml
 ```
 
-```yaml
+```
 Error: json: unknown field "input"
 
 ```
@@ -214,7 +214,7 @@ spec:
 seldon experiment start -f ./experiments/error-bad-spec.yaml
 ```
 
-```yaml
+```
 Error: json: unknown field "candidate"
 
 ```
@@ -241,7 +241,7 @@ spec:
 seldon pipeline load -f ./pipelines/error-step-name.yaml
 ```
 
-```yaml
+```
 Error: rpc error: code = FailedPrecondition desc = pipeline iris must not have a step name with the same name as pipeline name
 
 ```
@@ -271,7 +271,7 @@ spec:
 seldon pipeline load -f ./pipelines/error-empty-input.yaml
 ```
 
-```yaml
+```
 Error: rpc error: code = FailedPrecondition desc = pipeline iris-pipeline step second has an empty input
 
 ```
@@ -304,7 +304,7 @@ spec:
 seldon pipeline load -f ./pipelines/error-empty-trigger.yaml
 ```
 
-```yaml
+```
 Error: rpc error: code = FailedPrecondition desc = pipeline iris-pipeline step third has an empty trigger
 
 ```
@@ -315,7 +315,7 @@ Error: rpc error: code = FailedPrecondition desc = pipeline iris-pipeline step t
 seldon model load -f ./models/error-bad-capabilities.yaml
 ```
 
-```yaml
+```
 Error: rpc error: code = FailedPrecondition desc = failed to schedule model badcapabilities. [failed replica filter RequirementsReplicaFilter for server replica mlserver:0 : model requirements [foobar] replica capabilities [mlserver alibi-detect alibi-explain huggingface lightgbm mlflow python sklearn spark-mlib xgboost] failed replica filter RequirementsReplicaFilter for server replica triton:0 : model requirements [foobar] replica capabilities [triton dali fil onnx openvino python pytorch tensorflow tensorrt]]
 
 ```

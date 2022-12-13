@@ -200,7 +200,7 @@ seldon pipeline infer tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,20]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
-```yaml
+```
 Error: V2 server error: 400 tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
 
 ```
@@ -279,7 +279,7 @@ seldon pipeline infer tfsimples --inference-mode grpc \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,20]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 ```
 
-```yaml
+```
 Error: rpc error: code = Unknown desc = tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
 
 ```

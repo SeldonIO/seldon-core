@@ -45,7 +45,7 @@ seldon model infer iris --seconds 5 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```yaml
+```
 {}
 Success: map[:iris_1::428 :iris_2::1958]
 

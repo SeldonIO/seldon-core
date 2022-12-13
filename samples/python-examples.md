@@ -12,7 +12,7 @@ import tensorflow as tf
 tf.keras.backend.clear_session()
 ```
 
-```yaml
+```
 2022-11-16 19:28:57.916579: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 2022-11-16 19:28:58.079213: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
@@ -35,7 +35,7 @@ X_test = X_test.astype('float32') / 255
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
 ```
 
-```yaml
+```
 Downloading data from https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
 170498071/170498071 [==============================] - 9s 0us/step
 (50000, 32, 32, 3) (50000, 1) (10000, 32, 32, 3) (10000, 1)
@@ -95,7 +95,7 @@ print(response_raw)
 print(response_raw.json())
 ```
 
-```yaml
+```
 <Response [200]>
 {'model_name': 'cifar10_1', 'model_version': '1', 'outputs': [{'name': 'fc10', 'datatype': 'FP32', 'shape': [2, 10], 'data': [1.4500082023971572e-08, 1.252571490972798e-09, 1.6298334060138586e-07, 0.11529310792684555, 1.7431312926419196e-07, 6.185642178024864e-06, 0.8847002387046814, 6.0738876150878696e-09, 7.437885329864002e-08, 4.731711022998297e-09, 1.2644841262954287e-06, 4.881440140991344e-09, 1.51533230408063e-09, 8.490559366691741e-09, 5.51305612273012e-10, 1.1617149464626664e-09, 5.772873845621973e-10, 2.8839554033766035e-07, 0.0006148957181721926, 0.9993835687637329]}]}
 

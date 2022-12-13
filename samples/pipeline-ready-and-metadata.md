@@ -8,7 +8,7 @@ Local example settings.
 %env SELDON_SCHEDULE_HOST=0.0.0.0:9004
 ```
 
-```yaml
+```
 env: INFER_REST_ENDPOINT=http://0.0.0.0:9000
 env: INFER_GRPC_ENDPOINT=0.0.0.0:9000
 env: SELDON_SCHEDULE_HOST=0.0.0.0:9004
@@ -348,7 +348,7 @@ pipeline.mlops.seldon.io/tfsimples created
 kubectl wait --for condition=ready --timeout=1s pipeline --all -n ${NAMESPACE}
 ```
 
-```yaml
+```
 error: timed out waiting for the condition on pipelines/tfsimples
 
 ```
