@@ -91,7 +91,7 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
 
 ```
-[1;30mnull[0m
+null
 
 ```
 
@@ -194,7 +194,7 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
 
 ```
-[0;39mtrue[0m
+true
 
 ```
 
@@ -238,7 +238,7 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
 
 ```
-[0;39mtrue[0m
+true
 
 ```
 
@@ -282,7 +282,7 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
 
 ```
-[0;39mtrue[0m
+true
 
 ```
 
@@ -302,7 +302,7 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
 
 ```
-[1;30mnull[0m
+null
 
 ```
 

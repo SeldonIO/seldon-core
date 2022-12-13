@@ -71,8 +71,8 @@ seldon model load -f ./models/cifar10.yaml
 seldon model status cifar10 -w ModelAvailable | jq .
 ```
 
-```
-[1;39m{}[0m
+```json
+{}
 
 ```
 

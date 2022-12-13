@@ -65,45 +65,45 @@ seldon pipeline load -f ./pipelines/triggers_join_inputs.yaml
 seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
 ```
 
-```
-[1;39m{
-  [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
-  [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
-    [1;39m{
-      [0m[34;1m"pipeline"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"name"[0m[1;39m: [0m[0;32m"triggers_join_inputs"[0m[1;39m,
-        [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cdqjkdhqa12c739ab3t0"[0m[1;39m,
-        [0m[34;1m"version"[0m[1;39m: [0m[0;39m1[0m[1;39m,
-        [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
-          [1;39m{
-            [0m[34;1m"name"[0m[1;39m: [0m[0;32m"join_node"[0m[1;39m,
-            [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-              [0;32m"triggers_join_inputs.inputs.INPUT1"[0m[1;39m,
-              [0;32m"triggers_join_inputs.inputs.INPUT2"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"triggers"[0m[1;39m: [0m[1;39m[
-              [0;32m"triggers_join_inputs.inputs.TRIGGER1"[0m[1;39m,
-              [0;32m"triggers_join_inputs.inputs.TRIGGER2"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"triggersJoin"[0m[1;39m: [0m[0;32m"ANY"[0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m][0m[1;39m,
-        [0m[34;1m"output"[0m[1;39m: [0m[1;39m{
-          [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
-            [0;32m"join_node.outputs"[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m,
-        [0m[34;1m"kubernetesMeta"[0m[1;39m: [0m[1;39m{}[0m[1;39m
-      [1;39m}[0m[1;39m,
-      [0m[34;1m"state"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"pipelineVersion"[0m[1;39m: [0m[0;39m1[0m[1;39m,
-        [0m[34;1m"status"[0m[1;39m: [0m[0;32m"PipelineReady"[0m[1;39m,
-        [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"created pipeline"[0m[1;39m,
-        [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-11-16T19:29:58.778539435Z"[0m[1;39m
-      [1;39m}[0m[1;39m
-    [1;39m}[0m[1;39m
-  [1;39m][0m[1;39m
-[1;39m}[0m
+```json
+{
+  "pipelineName": "triggers_join_inputs",
+  "versions": [
+    {
+      "pipeline": {
+        "name": "triggers_join_inputs",
+        "uid": "cdqjkdhqa12c739ab3t0",
+        "version": 1,
+        "steps": [
+          {
+            "name": "join_node",
+            "inputs": [
+              "triggers_join_inputs.inputs.INPUT1",
+              "triggers_join_inputs.inputs.INPUT2"
+            ],
+            "triggers": [
+              "triggers_join_inputs.inputs.TRIGGER1",
+              "triggers_join_inputs.inputs.TRIGGER2"
+            ],
+            "triggersJoin": "ANY"
+          }
+        ],
+        "output": {
+          "steps": [
+            "join_node.outputs"
+          ]
+        },
+        "kubernetesMeta": {}
+      },
+      "state": {
+        "pipelineVersion": 1,
+        "status": "PipelineReady",
+        "reason": "created pipeline",
+        "lastChangeTimestamp": "2022-11-16T19:29:58.778539435Z"
+      }
+    }
+  ]
+}
 
 ```
 
@@ -187,63 +187,63 @@ seldon pipeline load -f ./pipelines/triggers_join_internal.yaml
 seldon pipeline status triggers_join_internal -w PipelineReady | jq .
 ```
 
-```
-[1;39m{
-  [0m[34;1m"pipelineName"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
-  [0m[34;1m"versions"[0m[1;39m: [0m[1;39m[
-    [1;39m{
-      [0m[34;1m"pipeline"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"name"[0m[1;39m: [0m[0;32m"triggers_join_internal"[0m[1;39m,
-        [0m[34;1m"uid"[0m[1;39m: [0m[0;32m"cdqjkqpqa12c739ab3tg"[0m[1;39m,
-        [0m[34;1m"version"[0m[1;39m: [0m[0;39m1[0m[1;39m,
-        [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
-          [1;39m{
-            [0m[34;1m"name"[0m[1;39m: [0m[0;32m"id1_node"[0m[1;39m,
-            [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-              [0;32m"triggers_join_internal.inputs.TRIGGER1"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"tensorMap"[0m[1;39m: [0m[1;39m{
-              [0m[34;1m"triggers_join_internal.inputs.TRIGGER1"[0m[1;39m: [0m[0;32m"INPUT1"[0m[1;39m
-            [1;39m}[0m[1;39m
-          [1;39m}[0m[1;39m,
-          [1;39m{
-            [0m[34;1m"name"[0m[1;39m: [0m[0;32m"id2_node"[0m[1;39m,
-            [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-              [0;32m"triggers_join_internal.inputs.TRIGGER2"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"tensorMap"[0m[1;39m: [0m[1;39m{
-              [0m[34;1m"triggers_join_internal.inputs.TRIGGER2"[0m[1;39m: [0m[0;32m"INPUT1"[0m[1;39m
-            [1;39m}[0m[1;39m
-          [1;39m}[0m[1;39m,
-          [1;39m{
-            [0m[34;1m"name"[0m[1;39m: [0m[0;32m"join_node"[0m[1;39m,
-            [0m[34;1m"inputs"[0m[1;39m: [0m[1;39m[
-              [0;32m"triggers_join_internal.inputs.INPUT1"[0m[1;39m,
-              [0;32m"triggers_join_internal.inputs.INPUT2"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"triggers"[0m[1;39m: [0m[1;39m[
-              [0;32m"id1_node.outputs.OUTPUT1"[0m[1;39m,
-              [0;32m"id2_node.outputs.OUTPUT1"[0m[1;39m
-            [1;39m][0m[1;39m,
-            [0m[34;1m"triggersJoin"[0m[1;39m: [0m[0;32m"ANY"[0m[1;39m
-          [1;39m}[0m[1;39m
-        [1;39m][0m[1;39m,
-        [0m[34;1m"output"[0m[1;39m: [0m[1;39m{
-          [0m[34;1m"steps"[0m[1;39m: [0m[1;39m[
-            [0;32m"join_node.outputs"[0m[1;39m
-          [1;39m][0m[1;39m
-        [1;39m}[0m[1;39m,
-        [0m[34;1m"kubernetesMeta"[0m[1;39m: [0m[1;39m{}[0m[1;39m
-      [1;39m}[0m[1;39m,
-      [0m[34;1m"state"[0m[1;39m: [0m[1;39m{
-        [0m[34;1m"pipelineVersion"[0m[1;39m: [0m[0;39m1[0m[1;39m,
-        [0m[34;1m"status"[0m[1;39m: [0m[0;32m"PipelineReady"[0m[1;39m,
-        [0m[34;1m"reason"[0m[1;39m: [0m[0;32m"created pipeline"[0m[1;39m,
-        [0m[34;1m"lastChangeTimestamp"[0m[1;39m: [0m[0;32m"2022-11-16T19:30:51.996346140Z"[0m[1;39m
-      [1;39m}[0m[1;39m
-    [1;39m}[0m[1;39m
-  [1;39m][0m[1;39m
-[1;39m}[0m
+```json
+{
+  "pipelineName": "triggers_join_internal",
+  "versions": [
+    {
+      "pipeline": {
+        "name": "triggers_join_internal",
+        "uid": "cdqjkqpqa12c739ab3tg",
+        "version": 1,
+        "steps": [
+          {
+            "name": "id1_node",
+            "inputs": [
+              "triggers_join_internal.inputs.TRIGGER1"
+            ],
+            "tensorMap": {
+              "triggers_join_internal.inputs.TRIGGER1": "INPUT1"
+            }
+          },
+          {
+            "name": "id2_node",
+            "inputs": [
+              "triggers_join_internal.inputs.TRIGGER2"
+            ],
+            "tensorMap": {
+              "triggers_join_internal.inputs.TRIGGER2": "INPUT1"
+            }
+          },
+          {
+            "name": "join_node",
+            "inputs": [
+              "triggers_join_internal.inputs.INPUT1",
+              "triggers_join_internal.inputs.INPUT2"
+            ],
+            "triggers": [
+              "id1_node.outputs.OUTPUT1",
+              "id2_node.outputs.OUTPUT1"
+            ],
+            "triggersJoin": "ANY"
+          }
+        ],
+        "output": {
+          "steps": [
+            "join_node.outputs"
+          ]
+        },
+        "kubernetesMeta": {}
+      },
+      "state": {
+        "pipelineVersion": 1,
+        "status": "PipelineReady",
+        "reason": "created pipeline",
+        "lastChangeTimestamp": "2022-11-16T19:30:51.996346140Z"
+      }
+    }
+  ]
+}
 
 ```
 

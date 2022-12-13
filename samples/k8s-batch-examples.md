@@ -400,27 +400,27 @@ cat /tmp/iris-output.txt | head -n 1 | jq -M .
 cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
 ```
 
-```
-[1;39m{
-  [0m[34;1m"model_name"[0m[1;39m: [0m[0;32m""[0m[1;39m,
-  [0m[34;1m"id"[0m[1;39m: [0m[0;32m"0016feb9-781d-44c9-85ff-da65afd6842f"[0m[1;39m,
-  [0m[34;1m"parameters"[0m[1;39m: [0m[1;39m{
-    [0m[34;1m"batch_index"[0m[1;39m: [0m[0;39m0[0m[1;39m
-  [1;39m}[0m[1;39m,
-  [0m[34;1m"outputs"[0m[1;39m: [0m[1;39m[
-    [1;39m{
-      [0m[34;1m"name"[0m[1;39m: [0m[0;32m"predict"[0m[1;39m,
-      [0m[34;1m"shape"[0m[1;39m: [0m[1;39m[
-        [0;39m1[0m[1;39m,
-        [0;39m1[0m[1;39m
-      [1;39m][0m[1;39m,
-      [0m[34;1m"datatype"[0m[1;39m: [0m[0;32m"INT64"[0m[1;39m,
-      [0m[34;1m"data"[0m[1;39m: [0m[1;39m[
-        [0;39m0[0m[1;39m
-      [1;39m][0m[1;39m
-    [1;39m}[0m[1;39m
-  [1;39m][0m[1;39m
-[1;39m}[0m
+```json
+{
+  "model_name": "",
+  "id": "0016feb9-781d-44c9-85ff-da65afd6842f",
+  "parameters": {
+    "batch_index": 0
+  },
+  "outputs": [
+    {
+      "name": "predict",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        0
+      ]
+    }
+  ]
+}
 
 ```
 
