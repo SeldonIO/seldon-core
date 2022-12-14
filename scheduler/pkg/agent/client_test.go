@@ -257,6 +257,7 @@ func TestLoadModel(t *testing.T) {
 		v2Status                int
 		modelRepoErr            error
 		success                 bool
+		autoscalingEnabled      bool
 	}
 	smallMemory := uint64(500)
 	largeMemory := uint64(2000)
@@ -279,6 +280,26 @@ func TestLoadModel(t *testing.T) {
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true}, // Success
+		{
+			name:   "simple - autoscaling enabled",
+			models: []string{"iris"},
+			op: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+				},
+				AutoscalingEnabled: true,
+			},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			expectedAvailableMemory: 500,
+			v2Status:                200,
+			success:                 true,
+			autoscalingEnabled:      true}, // Success
 		{
 			name:   "V2Fail",
 			models: []string{"iris"},
@@ -365,12 +386,19 @@ func TestLoadModel(t *testing.T) {
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()
 				// we have only one version in the test
 				g.Expect(proto.Clone(loadedVersions[0])).To(Equal(proto.Clone(test.op.ModelVersion)))
-				// we have set model stats state
+				// we have set model stats state if autoscaling is enabled
 				versionedModelName := util.GetVersionedModelName(test.op.GetModelVersion().Model.Meta.Name, test.op.GetModelVersion().GetVersion())
-				_, err := lags.Stats.Get(versionedModelName)
-				g.Expect(err).To(BeNil())
-				_, err = lastUsed.Stats.Get(versionedModelName)
-				g.Expect(err).To(BeNil())
+				if test.autoscalingEnabled {
+					_, err := lags.Stats.Get(versionedModelName)
+					g.Expect(err).To(BeNil())
+					_, err = lastUsed.Stats.Get(versionedModelName)
+					g.Expect(err).To(BeNil())
+				} else {
+					_, err := lags.Stats.Get(versionedModelName)
+					g.Expect(err).ToNot(BeNil())
+					_, err = lastUsed.Stats.Get(versionedModelName)
+					g.Expect(err).ToNot(BeNil())
+				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
