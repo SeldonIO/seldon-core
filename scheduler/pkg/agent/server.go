@@ -264,8 +264,9 @@ func (s *Server) Sync(modelName string) {
 
 			as.mutex.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
-				Operation:    pb.ModelOperationMessage_LOAD_MODEL,
-				ModelVersion: &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
+				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion:       &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
+				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()),
 			})
 			as.mutex.Unlock()
 			if err != nil {
@@ -570,7 +571,7 @@ func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTrigge
 // which is hidden in this logic unfortunately as we reject the scaling up / down event.
 // a side effect is that we do not go below 1 replica of a model
 func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error {
-	if !autoscalingEnabled(model) {
+	if !AutoscalingEnabled(model) {
 		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
 	}
 
@@ -591,7 +592,7 @@ func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error
 // if min and max replicas are not set, we do not allow autoscaling
 // we check that they are not set if they are equal to zero as per
 // `GetMinReplicas` and `GetMaxReplicas` definition
-func autoscalingEnabled(model *pbs.Model) bool {
+func AutoscalingEnabled(model *pbs.Model) bool {
 	minReplicas := model.DeploymentSpec.GetMinReplicas()
 	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
 

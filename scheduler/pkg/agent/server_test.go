@@ -844,3 +844,50 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 	}
 
 }
+
+func TestAutoscalingEnabled(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	dummyModelName := "iris"
+
+	type test struct {
+		name    string
+		model   *pbs.Model
+		enabled bool
+	}
+	tests := []test{
+		{
+			name: "enabled - minreplica set",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+			},
+			enabled: true,
+		},
+		{
+			name: "enabled - maxreplica set",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MaxReplicas: 3},
+			},
+			enabled: true,
+		},
+		{
+			name: "disabled",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+			},
+			enabled: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			enabled := AutoscalingEnabled(test.model)
+			g.Expect(enabled).To(Equal(test.enabled))
+		})
+	}
+
+}

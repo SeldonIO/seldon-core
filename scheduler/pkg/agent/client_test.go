@@ -161,6 +161,7 @@ func (m *mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server 
 					ModelSpec: &pbs.ModelSpec{Uri: "gs://model"},
 				},
 			},
+			AutoscalingEnabled: false,
 		})
 		if err != nil {
 			m.errors++
