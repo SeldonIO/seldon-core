@@ -1,4 +1,4 @@
-EXAMPLES := $(wildcard *.ipynb)
+EXAMPLES := $(wildcard *.ipynb) $(wildcard examples/*/*.ipynb)
 EXAMPLES_MD := $(EXAMPLES:.ipynb=.md)
 
 .PHONY: all
@@ -10,5 +10,4 @@ all: $(EXAMPLES_MD)
 		--ClearOutputPreprocessor.enabled=False \
 		--to markdown \
 		--output $(@F)
-	./markdown-transforms.sh $(@F)
-
+	./markdown-transforms.sh $@
