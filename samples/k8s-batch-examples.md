@@ -319,7 +319,7 @@ cat batch-inputs/iris-input.txt | head -n 1 | jq -M .
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris-output.txt --workers 5
-```
+
 ```
 
 ```
@@ -344,7 +344,7 @@ mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-input.txt -o /tmp/iris-pipeline-output.txt --workers 5
-```
+
 ```
 
 ```
@@ -493,7 +493,7 @@ cat batch-inputs/tfsimple-input.txt | head -n 1 | jq -M .
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 5 -b
-```
+
 ```
 
 ```
@@ -518,7 +518,7 @@ mlserver infer -u ${MESH_IP} -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o 
 ```bash
 %%bash
 mlserver infer -u ${MESH_IP} -m tfsimple.pipeline -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-pipeline-output.txt --workers 5
-```
+
 ```
 
 ```
