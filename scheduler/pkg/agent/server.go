@@ -589,6 +589,8 @@ func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error
 }
 
 // if min and max replicas are not set, we do not allow autoscaling
+// we check that they are not set if they are equal to zero as per
+// `GetMinReplicas` and `GetMaxReplicas` definition
 func autoscalingEnabled(model *pbs.Model) bool {
 	minReplicas := model.DeploymentSpec.GetMinReplicas()
 	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
