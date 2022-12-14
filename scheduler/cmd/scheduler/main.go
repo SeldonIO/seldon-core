@@ -106,7 +106,7 @@ func init() {
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
 	// Whether to enable autoscaling, default is true
-	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", true, "Disable autoscaling feature")
+	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
 }
 
 func getNamespace() string {
