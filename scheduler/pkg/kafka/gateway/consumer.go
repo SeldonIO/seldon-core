@@ -308,6 +308,7 @@ func (kc *InferKafkaConsumer) Serve() {
 				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
 
 				headers := collectHeaders(e.Headers)
+				logger.Debugf("Headers received from kafka for model %s %v", modelName, e.Headers)
 
 				job := InferWork{
 					modelName: modelName,

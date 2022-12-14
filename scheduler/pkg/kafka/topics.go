@@ -115,8 +115,8 @@ func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) 
 		switch len(parts) {
 		case 3:
 			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
-		case 5:
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
+		case 5: // take value after <pipelineName>.step
+			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
 		}
 		tout[kout] = v
 	}
