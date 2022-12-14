@@ -244,7 +244,7 @@ func TestSync(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, test.store, nil, eventHub)
+			server := NewAgentServer(logger, test.store, nil, eventHub, false)
 			server.agents = test.agents
 			server.Sync(test.modelName)
 			model, err := test.store.GetModel(test.modelName)

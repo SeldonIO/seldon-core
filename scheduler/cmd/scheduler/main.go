@@ -191,7 +191,7 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 	)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingEnabled)
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)

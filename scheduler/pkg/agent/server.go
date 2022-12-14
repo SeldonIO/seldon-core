@@ -112,12 +112,13 @@ type ServerKey struct {
 type Server struct {
 	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
-	logger           log.FieldLogger
-	agents           map[ServerKey]*AgentSubscriber
-	store            store.ModelStore
-	scheduler        scheduler.Scheduler
-	certificateStore *seldontls.CertificateStore
-	waiter           *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
+	logger                    log.FieldLogger
+	agents                    map[ServerKey]*AgentSubscriber
+	store                     store.ModelStore
+	scheduler                 scheduler.Scheduler
+	certificateStore          *seldontls.CertificateStore
+	waiter                    *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
+	autoscalingServiceEnabled bool
 }
 
 type SchedulerAgent interface {
@@ -135,13 +136,15 @@ func NewAgentServer(
 	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
+	autoscalingServiceEnabled bool,
 ) *Server {
 	s := &Server{
-		logger:    logger.WithField("source", "AgentServer"),
-		agents:    make(map[ServerKey]*AgentSubscriber),
-		store:     store,
-		scheduler: scheduler,
-		waiter:    newModelRelocatedWaiter(),
+		logger:                    logger.WithField("source", "AgentServer"),
+		agents:                    make(map[ServerKey]*AgentSubscriber),
+		store:                     store,
+		scheduler:                 scheduler,
+		waiter:                    newModelRelocatedWaiter(),
+		autoscalingServiceEnabled: autoscalingServiceEnabled,
 	}
 
 	hub.RegisterModelEventHandler(
@@ -266,7 +269,7 @@ func (s *Server) Sync(modelName string) {
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion:       &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
-				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()),
+				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()) && s.autoscalingServiceEnabled,
 			})
 			as.mutex.Unlock()
 			if err != nil {
