@@ -23,7 +23,8 @@
   # Regardless of whether or not we've changed the block,
   # we print the block followed by the terminating delimiter.
   p
-  g
+  z
+  x
   p
   b END
 }
