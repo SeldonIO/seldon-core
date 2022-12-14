@@ -64,8 +64,8 @@ var (
 	tracingConfigPath       string
 	dbPath                  string
 	nodeID                  string
-	//scheduler server
-	allowPlaintxt bool
+	allowPlaintxt           bool //scheduler server
+	autoscalingEnabled      bool
 )
 
 func init() {
@@ -104,6 +104,9 @@ func init() {
 
 	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
+
+	// Whether to enable autoscaling, default is true
+	flag.BoolVar(&autoscalingEnabled, "enable-autoscaling", true, "Enable autoscaling feature")
 }
 
 func getNamespace() string {
