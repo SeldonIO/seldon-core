@@ -2,7 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Chart to deploy an outlier detector as a transformer in an inference graph.
+Chart to deploy an outlier detector as a transformer in a Seldon Core v1 inference graph.
 
 ## Usage
 

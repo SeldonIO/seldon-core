@@ -2,8 +2,8 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Chart to deploy a multi-armed bandits router over two Seldon deployments, so
-that traffic is sent to the best performing model.
+Chart to deploy a multi-armed bandits router over two Seldon Core v1 deployments,
+so that traffic is sent to the best performing model.
 You will need to utilize both the `predict` and `send_feedback` API methods.
 
 ## Usage

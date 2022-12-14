@@ -2,7 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Loadtesting for seldon core
+Loadtesting for Seldon Core v1
 
 ## Usage
 
@@ -13,7 +13,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Onca that's done, you should then be able to deploy the chart as:
+Once that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system
