@@ -570,13 +570,12 @@ func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTrigge
 // which is hidden in this logic unfortunately as we reject the scaling up / down event.
 // a side effect is that we do not go below 1 replica of a model
 func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error {
-	minReplicas := model.DeploymentSpec.GetMinReplicas()
-	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
-
-	if (minReplicas == 0) && (maxReplicas == 0) {
-		// no autoscaling
+	if !autoscalingEnabled(model) {
 		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
 	}
+
+	minReplicas := model.DeploymentSpec.GetMinReplicas()
+	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
 
 	if targetNumReplicas < int(minReplicas) || (targetNumReplicas < 1) {
 		return fmt.Errorf("Violating min replicas %d / %d for model %s", minReplicas, targetNumReplicas, model.GetMeta().GetName())
@@ -587,4 +586,17 @@ func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error
 	}
 
 	return nil
+}
+
+// if min and max replicas are not set, we do not allow autoscaling
+func autoscalingEnabled(model *pbs.Model) bool {
+	minReplicas := model.DeploymentSpec.GetMinReplicas()
+	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
+
+	if (minReplicas == 0) && (maxReplicas == 0) {
+		// no autoscaling
+		return false
+	} else {
+		return true
+	}
 }
