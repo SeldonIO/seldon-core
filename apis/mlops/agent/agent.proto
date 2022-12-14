@@ -86,6 +86,7 @@ message ModelOperationMessage {
   }
   Operation operation = 1;
   ModelVersion modelVersion = 2;
+  bool autoscalingEnabled = 3;
 }
 
 message ModelVersion {
