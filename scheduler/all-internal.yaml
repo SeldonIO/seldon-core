@@ -203,6 +203,8 @@ services:
       - "/mnt/config/tracing-internal.json"
       - --db-path
       - ${DB_PATH_COMPOSE}
+      - "--enable-autoscaling"
+      - "false"
     volumes:
       - type: bind
         source: ./config
