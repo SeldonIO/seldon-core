@@ -21,7 +21,7 @@ The label on services pointing to containers for each node in your inference gra
 ### OpenShift default storage initializer
 
 In this patch release we fixed the default storage initializer used on OpenShift (both Community and Certified operators).
-The image used now is `seldonio/rclone-storage-initializer:1.16.0-dev` which is the same as one used for the non-OpenShift releases (*).
+The image used now is `seldonio/rclone-storage-initializer:1.14.1` which is the same as one used for the non-OpenShift releases (*).
 
 For Certified operator you will find this image defined as
 ```yaml
