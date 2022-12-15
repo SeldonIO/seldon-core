@@ -47,11 +47,9 @@ def setup_env(model_folder):
 
     flavours = mlmodel["flavors"]
     pyfunc_flavour = flavours["python_function"]
-    mlflow_version = mlmodel["mlflow_version"]
-    if mlflow_version.startswith("2"):
-        env_file_name = pyfunc_flavour["env"]["conda"]
-    else:
-        env_file_name = pyfunc_flavour["env"]
+    env_file_name = pyfunc_flavour["env"]
+    if isinstance(env_file_name, dict):
+        env_file_name = env_file_name["conda"]
     env_file_path = os.path.join(model_folder, env_file_name)
     env_file_path = copy_env(env_file_path)
 
