@@ -36,13 +36,13 @@ spec:
 
 For kustomize v3 this works but for v4 it leaves `securityContext` as is.
 
-### Operastor-SDK
+### Operator-SDK
 
 Install [operator-sdk](https://sdk.operatorframework.io/).
 
 
 ```
-operator-sdk version
+$ operator-sdk version
 operator-sdk version: "v1.16.0", commit: "560044140c4f3d88677e4ef2872931f5bb97f255", kubernetes version: "1.21", go version: "go1.16.13", GOOS: "linux", GOARCH: "amd64"
 operator-sdk version: "v1.13.0", commit: "6e84414b468029c5c3e07352cabe64cf3a682111", kubernetes version: "1.21", go version: "go1.16.8", GOOS: "linux", GOARCH: "amd64"
 ```
@@ -93,7 +93,6 @@ Update the Makefile locally for
 
 ```
 COMMUNITY_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators
-UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 ```
 
 Create a branch for update in above fork. e.g.:
@@ -178,13 +177,8 @@ Push and create PR.
 
 The bundle certification process is desbribed in [official RedHat docs](https://access.redhat.com/documentation/en-us/red_hat_openshift_certification/4.9/html/red_hat_openshift_software_certification_workflow_guide/index) and on [Github redhat certification releases project](https://github.com/redhat-openshift-ecosystem/certification-releases/blob/main/4.9/ga/operator-cert-workflow.md).
 
-First create the bundle with
 
-```
-make update_openshift_certified
-```
-
-
+### Upload Images to Red Hat registries
 
 Then push all images to redhat. Requires:
 * download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
@@ -220,6 +214,24 @@ publish
 
 previously used images:
 * https://connect.redhat.com/project/1366491/view (Seldon Engine)
+
+
+### Prepare Certified Bundle
+
+
+1. Prepare Certified Bundle with
+```
+make create_certified_bundle
+```
+
+2. Update Certified Bundle with images digests to pin them
+
+3. Finish Certified Bundle
+```
+make update_openshift_certified
+```
+
+### Open PR to publish new certified operator
 
 Now fork the [certified operators repo](https://github.com/redhat-openshift-ecosystem/certified-operators). Seldon's operator is in `operators/seldon-operator-certified`. Update Makefile CERTIFIED_OPERATORS_FOLDER or set when running:
 
