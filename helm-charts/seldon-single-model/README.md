@@ -2,7 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Chart to deploy a machine learning model in Seldon Core.
+Chart to deploy a machine learning model in Seldon Core v1.
 
 ## Usage
 
