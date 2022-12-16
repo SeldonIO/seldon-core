@@ -1,8 +1,8 @@
 apiVersion: v2
 name: seldon-mab
 description: |
-  Chart to deploy a multi-armed bandits router over two Seldon deployments, so
-  that traffic is sent to the best performing model.
+  Chart to deploy a multi-armed bandits router over two Seldon Core v1 deployments,
+  so that traffic is sent to the best performing model.
   You will need to utilize both the `predict` and `send_feedback` API methods.
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core

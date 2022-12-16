@@ -1,6 +1,6 @@
 apiVersion: v2
 name: seldon-single-model
-description: Chart to deploy a machine learning model in Seldon Core.
+description: Chart to deploy a machine learning model in Seldon Core v1.
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core
 sources:

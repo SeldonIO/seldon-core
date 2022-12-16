@@ -18,7 +18,7 @@ helm repo update
 {{- $appCharts := list "seldon-core-operator" "seldon-core-analytics" "seldon-core-loadtesting" -}}
 {{ if has .Name $appCharts }}
 
-Onca that's done, you should then be able to deploy the chart as:
+Once that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system
