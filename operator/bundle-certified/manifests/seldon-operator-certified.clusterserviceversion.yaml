@@ -48,15 +48,15 @@ metadata:
     capabilities: Seamless Upgrades
     categories: AI/Machine Learning
     certified: 'false'
-    containerImage: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282
+    containerImage: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:1aa5a8efc07ac6caaf451fb0776748db21c93d51db5ed60aa61c24abc50884c4
     createdAt: '2019-05-21 15:00:00'
     description: The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale.
-    olm.skipRange: ">=1.12.0 <1.14.1-2"
+    olm.skipRange: "<1.15.0-0"
     operators.operatorframework.io/builder: operator-sdk-v1.22.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
     repository: https://github.com/SeldonIO/seldon-core
     support: Clive Cox
-  name: seldon-operator.v1.14.1-2
+  name: seldon-operator.v1.15.0-0
   namespace: seldon-operator-system
 spec:
   apiservicedefinitions: {}
@@ -193,6 +193,46 @@ spec:
           - autoscaling
           resources:
           - horizontalpodautoscalers/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - getambassador.io
+          resources:
+          - mappings
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - getambassador.io
+          resources:
+          - mappings/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - getambassador.io
+          resources:
+          - tlscontexts
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - getambassador.io
+          resources:
+          - tlscontexts/status
           verbs:
           - get
           - patch
@@ -449,7 +489,6 @@ spec:
                 - name: MANAGER_LEADER_ELECTION_ID
                   value: a33bd623.machinelearning.seldon.io
                 - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
-                  value: '0'
                 - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
                   value: '0'
                 - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
@@ -462,23 +501,31 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: RELATED_IMAGE_EXECUTOR
-                  value: registry.connect.redhat.com/seldonio/seldon-core-executor@sha256:0cdbe17a8d73b0dd9798e8acee9694282a3f4e9c2eb80b0c3bbc2958dbb452ab
+                  value: registry.connect.redhat.com/seldonio/seldon-core-executor@sha256:c9ca9efbe09706c4579e7b5c00d3fc7470615ddb6e12e88fa843ad30e41337bb
                 - name: RELATED_IMAGE_STORAGE_INITIALIZER
-                  value: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:a0280c13136dcc870194af72630b9d2f7fc8bcff4edb54dd3bfbce36741af50c
+                  value: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:55a1f79addb24a5b7e77603c2771e3b3b04a79f20463c0d051361d1aac142ebe
                 - name: RELATED_IMAGE_SKLEARNSERVER
-                  value: registry.connect.redhat.com/seldonio/sklearnserver@sha256:84a13b0c96d87f9d784bba1efae2d7a65453ebd6555359fa6d50e851a0520dc9
+                  value: registry.connect.redhat.com/seldonio/sklearnserver@sha256:ebb77b6fb05b85049ce3a5b4dd2f01014c8cd268604fe239c32bfa356f3a6fb6
+                - name: RELATED_IMAGE_SKLEARNSERVER_V2
+                  value: registry.connect.redhat.com/seldonio/mlserver@sha256:aabcac98eec1d7b758bbb420e5b7aaf1882634ff01bd67a319bc101a69c1441e
                 - name: RELATED_IMAGE_XGBOOSTSERVER
-                  value: registry.connect.redhat.com/seldonio/xgboostserver@sha256:266c697d5349c7d636240aa139b25c53e403ded43bb8a3eef8e7e9e40215dff2
+                  value: registry.connect.redhat.com/seldonio/xgboostserver@sha256:316dfe135d2023c562d30bc6e5f24c34182697bad65958e34b16a06647d187b9
+                - name: RELATED_IMAGE_XGBOOSTSERVER_V2
+                  value: registry.connect.redhat.com/seldonio/mlserver@sha256:2dea12e4c3bcbc6a573030d8d72043b3bd6da032c0996f707f4a0adde73a6c55
                 - name: RELATED_IMAGE_MLFLOWSERVER
-                  value: registry.connect.redhat.com/seldonio/mlflowserver@sha256:246681e031cd1b5bcde5400d9d86e50daebc13c2db7d2568f641ef391fb66dab
+                  value: registry.connect.redhat.com/seldonio/mlflowserver@sha256:1a187382f6c33c5e6b322bef9efaaad8fccd8e2ffdac20d9e7ce671389f5cc40
+                - name: RELATED_IMAGE_MLFLOWSERVER_V2
+                  value: registry.connect.redhat.com/seldonio/mlserver@sha256:736e5b5b6b49c8609256cf8ff1a4fe834dfc8f12bb0f1f5bc51fce446ca20e36
                 - name: RELATED_IMAGE_TFPROXY
-                  value: registry.connect.redhat.com/seldonio/tfproxy@sha256:d89faa03a12acf0028a2556ac4072a6d37ec3287d890396c99ebee076f64c519
+                  value: registry.connect.redhat.com/seldonio/tfproxy@sha256:a6c74913075f5305605749323d43fb53b2f030b390c505c4051e4837fdb4b1c3
                 - name: RELATED_IMAGE_TENSORFLOW
-                  value: registry.connect.redhat.com/seldonio/tensorflow-serving@sha256:747f7389db946fa331fb41f0cad84bfc3f7bff8cf189a7a69d08a888f50ae60e
+                  value: registry.connect.redhat.com/seldonio/tensorflow-serving@sha256:d020503bb1820ca20a56452fd4fa05a2fadd0edab49b93b299df6f14c107a567
                 - name: RELATED_IMAGE_EXPLAINER
-                  value: registry.connect.redhat.com/seldonio/alibiexplainer@sha256:2ab919e49b61638cf0921b6efb0f4db55465b02833c83ade21d6c3f81b8fbcf2
+                  value: registry.connect.redhat.com/seldonio/alibiexplainer@sha256:0ee6e055e149bb60d9ddb3fb332c205fb6bc9c1a79c95f7ef3fd9aed0a898e20
+                - name: RELATED_IMAGE_EXPLAINER_V2
+                  value: registry.connect.redhat.com/seldonio/mlserver@sha256:cf4873b77f526cdcec7429bf2b357c80b1c62d8124144e39b0a4c6cb53d2dc36
                 - name: RELATED_IMAGE_MOCK_CLASSIFIER
-                  value: registry.connect.redhat.com/seldonio/mock-classifier@sha256:075230960142845dba8decfa007c8a48474aad8cc90317ff77192c8fa9c1b84d
+                  value: registry.connect.redhat.com/seldonio/mock-classifier@sha256:657bd01a21e2f9b21f7be37e0426a942602836f75d5244eb66a506a8f47158e1
                 - name: POD_NAMESPACE
                   valueFrom:
                     fieldRef:
@@ -486,6 +533,8 @@ spec:
                 - name: CONTROLLER_ID
                 - name: AMBASSADOR_ENABLED
                   value: 'true'
+                - name: AMBASSADOR_VERSION
+                  value: v1
                 - name: AMBASSADOR_SINGLE_NAMESPACE
                   value: 'false'
                 - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
@@ -505,7 +554,7 @@ spec:
                 - name: USE_EXECUTOR
                   value: 'true'
                 - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-                  value: docker.io/seldonio/seldon-core-executor@sha256:0cdbe17a8d73b0dd9798e8acee9694282a3f4e9c2eb80b0c3bbc2958dbb452ab
+                  value: registry.connect.redhat.com/seldonio/seldon-core-executor@sha256:c9ca9efbe09706c4579e7b5c00d3fc7470615ddb6e12e88fa843ad30e41337bb
                 - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
                   value: IfNotPresent
                 - name: EXECUTOR_PROMETHEUS_PATH
@@ -535,7 +584,7 @@ spec:
                   value: 'false'
                 - name: EXECUTOR_FULL_HEALTH_CHECKS
                   value: 'false'
-                image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282
+                image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:1aa5a8efc07ac6caaf451fb0776748db21c93d51db5ed60aa61c24abc50884c4
                 name: manager
                 ports:
                 - containerPort: 8443
@@ -621,30 +670,36 @@ spec:
   minKubeVersion: 1.16.0
   provider:
     name: Seldon Technologies
+  relatedImages:
+  - name: manager
+    image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:1aa5a8efc07ac6caaf451fb0776748db21c93d51db5ed60aa61c24abc50884c4
+  - name: executor
+    image: registry.connect.redhat.com/seldonio/seldon-core-executor@sha256:c9ca9efbe09706c4579e7b5c00d3fc7470615ddb6e12e88fa843ad30e41337bb
+  - name: storage-initializer
+    image: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:55a1f79addb24a5b7e77603c2771e3b3b04a79f20463c0d051361d1aac142ebe
+  - name: sklearnserver
+    image: registry.connect.redhat.com/seldonio/sklearnserver@sha256:ebb77b6fb05b85049ce3a5b4dd2f01014c8cd268604fe239c32bfa356f3a6fb6
+  - name: sklearnserver_v2
+    image: registry.connect.redhat.com/seldonio/mlserver@sha256:aabcac98eec1d7b758bbb420e5b7aaf1882634ff01bd67a319bc101a69c1441e
+  - name: xgboostserver
+    image: registry.connect.redhat.com/seldonio/xgboostserver@sha256:316dfe135d2023c562d30bc6e5f24c34182697bad65958e34b16a06647d187b9
+  - name: xgboostserver_v2
+    image: registry.connect.redhat.com/seldonio/mlserver@sha256:2dea12e4c3bcbc6a573030d8d72043b3bd6da032c0996f707f4a0adde73a6c55
+  - name: mlflowserver
+    image: registry.connect.redhat.com/seldonio/mlflowserver@sha256:1a187382f6c33c5e6b322bef9efaaad8fccd8e2ffdac20d9e7ce671389f5cc40
+  - name: mlflowserver_v2
+    image: registry.connect.redhat.com/seldonio/mlserver@sha256:736e5b5b6b49c8609256cf8ff1a4fe834dfc8f12bb0f1f5bc51fce446ca20e36
+  - name: tfproxy
+    image: registry.connect.redhat.com/seldonio/tfproxy@sha256:a6c74913075f5305605749323d43fb53b2f030b390c505c4051e4837fdb4b1c3
+  - name: tensorflow
+    image: registry.connect.redhat.com/seldonio/tensorflow-serving@sha256:d020503bb1820ca20a56452fd4fa05a2fadd0edab49b93b299df6f14c107a567
+  - name: explainer
+    image: registry.connect.redhat.com/seldonio/alibiexplainer@sha256:0ee6e055e149bb60d9ddb3fb332c205fb6bc9c1a79c95f7ef3fd9aed0a898e20
+  - name: explainer_v2
+    image: registry.connect.redhat.com/seldonio/mlserver@sha256:cf4873b77f526cdcec7429bf2b357c80b1c62d8124144e39b0a4c6cb53d2dc36
+  - name: mock_model
+    image: registry.connect.redhat.com/seldonio/mock-classifier@sha256:657bd01a21e2f9b21f7be37e0426a942602836f75d5244eb66a506a8f47158e1
   selector:
     matchLabels:
       name: seldon-operator
-  version: 1.14.1-2
-  relatedImages:
-  - name: seldon-core-operator-41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282-annotation
-    image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282
-  - name: manager
-    image: registry.connect.redhat.com/seldonio/seldon-core-operator@sha256:41c921605c9a6ee1bd97583feaad70179fb46a3494c447c83caec25c20541282
-  - name: executor
-    image: registry.connect.redhat.com/seldonio/seldon-core-executor@sha256:0cdbe17a8d73b0dd9798e8acee9694282a3f4e9c2eb80b0c3bbc2958dbb452ab
-  - name: mock_classifier
-    image: registry.connect.redhat.com/seldonio/mock-classifier@sha256:075230960142845dba8decfa007c8a48474aad8cc90317ff77192c8fa9c1b84d
-  - name: rclone_storage_initializer
-    image: registry.connect.redhat.com/seldonio/rclone-storage-initializer@sha256:a0280c13136dcc870194af72630b9d2f7fc8bcff4edb54dd3bfbce36741af50c
-  - name: sklearnserver
-    image: registry.connect.redhat.com/seldonio/sklearnserver@sha256:84a13b0c96d87f9d784bba1efae2d7a65453ebd6555359fa6d50e851a0520dc9
-  - name: mlflowserver
-    image: registry.connect.redhat.com/seldonio/mlflowserver@sha256:246681e031cd1b5bcde5400d9d86e50daebc13c2db7d2568f641ef391fb66dab
-  - name: xgboostserver
-    image: registry.connect.redhat.com/seldonio/xgboostserver@sha256:266c697d5349c7d636240aa139b25c53e403ded43bb8a3eef8e7e9e40215dff2
-  - name: tfproxy
-    image: registry.connect.redhat.com/seldonio/tfproxy@sha256:d89faa03a12acf0028a2556ac4072a6d37ec3287d890396c99ebee076f64c519
-  - name: tensorflow
-    image: registry.connect.redhat.com/seldonio/tensorflow-serving@sha256:747f7389db946fa331fb41f0cad84bfc3f7bff8cf189a7a69d08a888f50ae60e
-  - name: explainer
-    image: registry.connect.redhat.com/seldonio/alibiexplainer@sha256:2ab919e49b61638cf0921b6efb0f4db55465b02833c83ade21d6c3f81b8fbcf2
+  version: 1.15.0-0
