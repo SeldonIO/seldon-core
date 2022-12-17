@@ -524,11 +524,14 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 		return err
 	}
 
-	// add pointers in model scaling stats
+	// if scheduler ask for autoscaling, add pointers in model scaling stats
 	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Add on
 	// each one of them
-	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
-		logger.WithError(err).Warnf("Cannot add model %s to scaling service", modelWithVersion)
+	if request.AutoscalingEnabled {
+		logger.Debugf("Enabling autoscaling checks for model %s", modelWithVersion)
+		if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
+			logger.WithError(err).Warnf("Cannot add model %s to scaling service", modelWithVersion)
+		}
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
@@ -560,8 +563,9 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	// remove pointers in model scaling stats
 	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Delete on
 	// each one of them
+	// note that we do not check if the model is already enabled for autoscaling, should we?
 	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
-		logger.WithError(err).Warnf("Cannot delete model %s from scaling service", modelWithVersion)
+		logger.WithError(err).Warnf("Cannot delete model %s from scaling service, likely that it was not enabled in the first place", modelWithVersion)
 	}
 
 	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
