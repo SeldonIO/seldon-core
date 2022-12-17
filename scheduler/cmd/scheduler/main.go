@@ -64,8 +64,8 @@ var (
 	tracingConfigPath       string
 	dbPath                  string
 	nodeID                  string
-	//scheduler server
-	allowPlaintxt bool
+	allowPlaintxt           bool //scheduler server
+	autoscalingDisabled     bool
 )
 
 func init() {
@@ -104,6 +104,9 @@ func init() {
 
 	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
+
+	// Whether to enable autoscaling, default is true
+	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
 }
 
 func getNamespace() string {
@@ -188,7 +191,8 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 	)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub)
+	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)

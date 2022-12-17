@@ -25,6 +25,7 @@ import (
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/proxy"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -62,8 +63,9 @@ func (p *ProxyServer) Start(port uint) error {
 func (p *ProxyServer) LoadModel(ctx context.Context, r *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
 	m := ModelEvent{
 		ModelOperationMessage: &pba.ModelOperationMessage{
-			Operation:    pba.ModelOperationMessage_LOAD_MODEL,
-			ModelVersion: &pba.ModelVersion{Model: r.GetRequest().GetModel(), Version: r.GetVersion()},
+			Operation:          pba.ModelOperationMessage_LOAD_MODEL,
+			ModelVersion:       &pba.ModelVersion{Model: r.GetRequest().GetModel(), Version: r.GetVersion()},
+			AutoscalingEnabled: agent.AutoscalingEnabled(r.GetRequest().GetModel()),
 		},
 	}
 	p.modelEvents <- m

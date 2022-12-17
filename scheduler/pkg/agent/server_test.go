@@ -244,7 +244,7 @@ func TestSync(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, test.store, nil, eventHub)
+			server := NewAgentServer(logger, test.store, nil, eventHub, false)
 			server.agents = test.agents
 			server.Sync(test.modelName)
 			model, err := test.store.GetModel(test.modelName)
@@ -840,6 +840,53 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 			}
 			// test signal random model, working fine
 			waiter.signalModel("dummy")
+		})
+	}
+
+}
+
+func TestAutoscalingEnabled(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	dummyModelName := "iris"
+
+	type test struct {
+		name    string
+		model   *pbs.Model
+		enabled bool
+	}
+	tests := []test{
+		{
+			name: "enabled - minreplica set",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+			},
+			enabled: true,
+		},
+		{
+			name: "enabled - maxreplica set",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MaxReplicas: 3},
+			},
+			enabled: true,
+		},
+		{
+			name: "disabled",
+			model: &pbs.Model{
+				Meta:           &pbs.MetaData{Name: dummyModelName},
+				DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+			},
+			enabled: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			enabled := AutoscalingEnabled(test.model)
+			g.Expect(enabled).To(Equal(test.enabled))
 		})
 	}
 
