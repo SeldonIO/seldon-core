@@ -19,7 +19,9 @@ package gateway
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -62,6 +64,8 @@ type InferKafkaConsumer struct {
 	replicationFactor int
 	numPartitions     int
 	tlsClientOptions  *util.TLSOptions
+	producerMu        sync.RWMutex
+	running           atomic.Bool
 }
 
 func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaConsumer, error) {
@@ -169,6 +173,22 @@ func collectHeaders(kheaders []kafka.Header) map[string]string {
 	return headers
 }
 
+func (kc *InferKafkaConsumer) Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error {
+	kc.producerMu.RLock()
+	defer kc.producerMu.RUnlock()
+	if kc.running.Load() {
+		return kc.producer.Produce(msg, deliveryChan)
+	} else {
+		return fmt.Errorf("The infer producer %s is no longer running", kc.producer.String())
+	}
+}
+
+func (kc *InferKafkaConsumer) closeProducer() {
+	kc.producerMu.Lock()
+	defer kc.producerMu.Unlock()
+	kc.producer.Close()
+}
+
 func (kc *InferKafkaConsumer) Stop() {
 	close(kc.done)
 }
@@ -265,10 +285,12 @@ func (kc *InferKafkaConsumer) Serve() {
 		go kc.workers[i].Start(jobChan, cancelChan)
 	}
 
+	kc.running.Store(true)
 	for run {
 		select {
 		case <-kc.done:
 			logger.Infof("Stopping")
+			kc.running.Store(false)
 			run = false
 		default:
 			ev := kc.consumer.Poll(pollTimeoutMillisecs)
@@ -328,6 +350,6 @@ func (kc *InferKafkaConsumer) Serve() {
 
 	logger.Info("Closing consumer")
 	close(cancelChan)
-	kc.producer.Close()
+	kc.closeProducer()
 	_ = kc.consumer.Close()
 }

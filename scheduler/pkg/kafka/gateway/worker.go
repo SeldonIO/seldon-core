@@ -244,7 +244,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 	otel.GetTextMapPropagator().Inject(ctx, carrierOut)
 
 	deliveryChan := make(chan kafka.Event)
-	err := iw.consumer.producer.Produce(msg, deliveryChan)
+	err := iw.consumer.Produce(msg, deliveryChan)
 	if err != nil {
 		iw.logger.WithError(err).Errorf("Failed to produce response for model %s", topic)
 		return err
