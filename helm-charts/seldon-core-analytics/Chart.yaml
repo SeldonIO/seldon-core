@@ -3,12 +3,12 @@ appVersion: 1.16.0-dev
 dependencies:
 - condition: grafana.enabled
   name: grafana
-  repository: https://charts.helm.sh/stable
-  version: ~5.1.4
+  repository: https://grafana.github.io/helm-charts
+  version: ~6.48.0
 - condition: prometheus.enabled
   name: prometheus
-  repository: https://charts.helm.sh/stable
-  version: ~11.4.0
+  repository: https://prometheus-community.github.io/helm-charts
+  version: ~19.0.2
 description: 'Prometheus and Grafana installation with a basic Grafana dashboard showing
 
   the default Prometheus metrics exposed by Seldon for each inference graph
