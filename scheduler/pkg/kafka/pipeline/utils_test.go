@@ -20,6 +20,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/grpc/metadata"
 
@@ -209,6 +211,59 @@ func TestConvertKafkaHeadersToGrpcMetadata(t *testing.T) {
 				g.Expect(ok).To(BeTrue())
 				g.Expect(v).To(Equal(vExpected))
 			}
+		})
+	}
+}
+
+func TestAddRequestIdToKafkaHeaders(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name              string
+		requestId         string
+		headers           []kafka.Header
+		expectedRequestId string
+	}
+
+	tests := []test{
+		{
+			name:      "request id header exists",
+			requestId: "foo",
+			headers: []kafka.Header{
+				{
+					Key:   "a",
+					Value: []byte("v1"),
+				},
+				{
+					Key:   util.RequestIdHeader,
+					Value: []byte("bar"),
+				},
+			},
+			expectedRequestId: "bar",
+		},
+		{
+			name:      "request id header does not exists",
+			requestId: "foo",
+			headers: []kafka.Header{
+				{
+					Key:   "a",
+					Value: []byte("v1"),
+				},
+			},
+			expectedRequestId: "foo",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			httpHeaders := addRequestIdToKafkaHeadersIfMissing(test.headers, test.requestId)
+			requestId := ""
+			for _, v := range httpHeaders {
+				if v.Key == util.RequestIdHeader {
+					requestId = string(v.Value)
+				}
+			}
+			g.Expect(requestId).To(Equal(test.expectedRequestId))
 		})
 	}
 }

@@ -196,6 +196,7 @@ func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel 
 	}
 	logger.Debugf("Produce on topic %s with key %s", outputTopic, key)
 	kafkaHeaders := append(headers, kafka.Header{Key: resources.SeldonPipelineHeader, Value: []byte(resourceName)})
+	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &outputTopic, Partition: kafka.PartitionAny},
