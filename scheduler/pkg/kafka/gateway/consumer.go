@@ -161,6 +161,7 @@ func (kc *InferKafkaConsumer) setup() error {
 		}
 		kc.workers = append(kc.workers, worker)
 	}
+	kc.running.Store(true)
 	return nil
 }
 
@@ -285,7 +286,6 @@ func (kc *InferKafkaConsumer) Serve() {
 		go kc.workers[i].Start(jobChan, cancelChan)
 	}
 
-	kc.running.Store(true)
 	for run {
 		select {
 		case <-kc.done:
