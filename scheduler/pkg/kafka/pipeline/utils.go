@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/grpc/metadata"
 
@@ -46,12 +48,26 @@ func createResourceNameFromHeader(header string) (string, bool, error) {
 		"Bad or missing header %s %s", resources.SeldonModelHeader, header)
 }
 
+func addRequestIdToKafkaHeadersIfMissing(headers []kafka.Header, requestId string) []kafka.Header {
+	for _, kafkaHeader := range headers {
+		if kafkaHeader.Key == util.RequestIdHeader { //already exists
+			return headers
+		}
+	}
+	return append(headers, kafka.Header{
+		Key:   util.RequestIdHeader,
+		Value: []byte(requestId),
+	})
+}
+
+// We ensure the Kafka headers are lower case as http headers may have been canonical uppercased
 func convertHttpHeadersToKafkaHeaders(httpHeaders http.Header) []kafka.Header {
 	var kafkaHeaders []kafka.Header
 	for k, vals := range httpHeaders {
-		if strings.HasPrefix(strings.ToLower(k), resources.ExternalHeaderPrefix) {
+		key := strings.ToLower(k)
+		if strings.HasPrefix(key, resources.ExternalHeaderPrefix) {
 			for _, headerValue := range vals {
-				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(headerValue)})
+				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: key, Value: []byte(headerValue)})
 			}
 		}
 	}
