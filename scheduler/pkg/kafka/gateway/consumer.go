@@ -268,7 +268,7 @@ func (kc *InferKafkaConsumer) Serve() {
 	for run {
 		select {
 		case <-kc.done:
-			logger.Infof("Stopping")
+			logger.Infof("Stopping consumer %s", kc.consumer.String())
 			run = false
 		default:
 			ev := kc.consumer.Poll(pollTimeoutMillisecs)

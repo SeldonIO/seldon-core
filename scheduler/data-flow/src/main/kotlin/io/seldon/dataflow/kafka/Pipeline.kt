@@ -22,6 +22,7 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.StateListener
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
@@ -86,6 +87,7 @@ class Pipeline(
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps)
             val streamsApp = KafkaStreams(topology, pipelineProperties)
+            logger.info("Create pipeline stream for name:${metadata.name} id:${metadata.id} version:${metadata.version} stream with kstream app id:${pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]}")
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps)
         }
 
@@ -121,7 +123,7 @@ class Pipeline(
         ): KafkaProperties {
             return kafkaProperties
                 .withAppId(
-                    HashUtils.hashIfLong(metadata.id),
+                    HashUtils.hashIfLong(metadata.name),
                 )
                 .withStreamThreads(
                     getNumThreadsFor(numSteps),
