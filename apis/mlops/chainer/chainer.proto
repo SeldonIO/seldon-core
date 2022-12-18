@@ -39,8 +39,14 @@ message PipelineStepUpdate {
   PipelineJoinType triggersJoinTy = 5;
   bool passEmptyResponses = 6; // Forward empty response to following steps, default false
   optional uint32 joinWindowMs = 7; // Join window millisecs, some nozero default (TBD)
-  map<string,string> tensorMap = 8; // optional map of tensor name mappings
+  repeated PipelineTensorMapping tensorMap = 8; // optional list of tensor name mappings
   Batch batch = 9; // Batch settings
+}
+
+message PipelineTensorMapping {
+  string pipelineName = 1;
+  string topicAndTensor = 2;
+  string tensorName = 3;
 }
 
 message PipelineTopic {

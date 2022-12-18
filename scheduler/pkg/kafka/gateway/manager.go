@@ -99,7 +99,7 @@ func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaConsumer) {
 	logger := cm.logger.WithField("func", "stopEmptyConsumer")
 	numModelsInConsumer := ic.GetNumModels()
 	if numModelsInConsumer == 0 {
-		logger.Debugf("Deleting consumer with no models wit bucket id %s", ic.consumerName)
+		logger.Debugf("Deleting consumer with no models with bucket id %s", ic.consumerName)
 		ic.Stop()
 		delete(cm.consumers, ic.consumerName)
 	}

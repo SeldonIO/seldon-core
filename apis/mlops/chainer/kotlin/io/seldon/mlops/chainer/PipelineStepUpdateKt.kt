@@ -335,82 +335,97 @@ public object PipelineStepUpdateKt {
     public class TensorMapProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
     /**
      * <pre>
-     * optional map of tensor name mappings
+     * optional list of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
      */
-     public val tensorMap: com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
+     public val tensorMap: com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>
       @kotlin.jvm.JvmSynthetic
-      @JvmName("getTensorMapMap")
-      get() = com.google.protobuf.kotlin.DslMap(
-        _builder.getTensorMapMap()
+      get() = com.google.protobuf.kotlin.DslList(
+        _builder.getTensorMapList()
       )
     /**
      * <pre>
-     * optional map of tensor name mappings
+     * optional list of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
-     */
-    @JvmName("putTensorMap")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
-      .put(key: kotlin.String, value: kotlin.String) {
-         _builder.putTensorMap(key, value)
-       }
-    /**
-     * <pre>
-     * optional map of tensor name mappings
-     * </pre>
-     *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     * @param value The tensorMap to add.
      */
     @kotlin.jvm.JvmSynthetic
-    @JvmName("setTensorMap")
+    @kotlin.jvm.JvmName("addTensorMap")
+    public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.add(value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping) {
+      _builder.addTensorMap(value)
+    }
+    /**
+     * <pre>
+     * optional list of tensor name mappings
+     * </pre>
+     *
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     * @param value The tensorMap to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("plusAssignTensorMap")
     @Suppress("NOTHING_TO_INLINE")
-    public inline operator fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
-      .set(key: kotlin.String, value: kotlin.String) {
-         put(key, value)
-       }
+    public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.plusAssign(value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping) {
+      add(value)
+    }
     /**
      * <pre>
-     * optional map of tensor name mappings
+     * optional list of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     * @param values The tensorMap to add.
      */
     @kotlin.jvm.JvmSynthetic
-    @JvmName("removeTensorMap")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
-      .remove(key: kotlin.String) {
-         _builder.removeTensorMap(key)
-       }
+    @kotlin.jvm.JvmName("addAllTensorMap")
+    public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.addAll(values: kotlin.collections.Iterable<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping>) {
+      _builder.addAllTensorMap(values)
+    }
     /**
      * <pre>
-     * optional map of tensor name mappings
+     * optional list of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     * @param values The tensorMap to add.
      */
     @kotlin.jvm.JvmSynthetic
-    @JvmName("putAllTensorMap")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
-      .putAll(map: kotlin.collections.Map<kotlin.String, kotlin.String>) {
-         _builder.putAllTensorMap(map)
-       }
+    @kotlin.jvm.JvmName("plusAssignAllTensorMap")
+    @Suppress("NOTHING_TO_INLINE")
+    public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.plusAssign(values: kotlin.collections.Iterable<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping>) {
+      addAll(values)
+    }
     /**
      * <pre>
-     * optional map of tensor name mappings
+     * optional list of tensor name mappings
      * </pre>
      *
-     * <code>map&lt;string, string&gt; tensorMap = 8;</code>
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     * @param index The index to set the value at.
+     * @param value The tensorMap to set.
      */
     @kotlin.jvm.JvmSynthetic
-    @JvmName("clearTensorMap")
-    fun com.google.protobuf.kotlin.DslMap<kotlin.String, kotlin.String, TensorMapProxy>
-      .clear() {
-         _builder.clearTensorMap()
-       }
+    @kotlin.jvm.JvmName("setTensorMap")
+    public operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.set(index: kotlin.Int, value: io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping) {
+      _builder.setTensorMap(index, value)
+    }
+    /**
+     * <pre>
+     * optional list of tensor name mappings
+     * </pre>
+     *
+     * <code>repeated .seldon.mlops.chainer.PipelineTensorMapping tensorMap = 8;</code>
+     */
+    @kotlin.jvm.JvmSynthetic
+    @kotlin.jvm.JvmName("clearTensorMap")
+    public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, TensorMapProxy>.clear() {
+      _builder.clearTensorMap()
+    }
+
 
     /**
      * <pre>

@@ -18,6 +18,7 @@ package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import org.apache.kafka.streams.StreamsBuilder
 
 /**
@@ -29,7 +30,7 @@ class Chainer(
     internal val outputTopic: TopicForPipeline,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
-    internal val tensorRenaming: Map<TensorName, TensorName>,
+    internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val batchProperties: ChainerOuterClass.Batch,
     private val kafkaDomainParams: KafkaDomainParams,
     internal val inputTriggerTopics: Set<TopicForPipeline>,
@@ -78,7 +79,7 @@ class Chainer(
             .stream(inputTopic.topicName, consumerSerde)
             .filterForPipeline(inputTopic.pipelineName)
             .unmarshallInferenceV2Request()
-            .convertToResponse(inputTopic.topicName, tensors, tensorRenaming)
+            .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
@@ -101,7 +102,7 @@ class Chainer(
             .stream(inputTopic.topicName, consumerSerde)
             .filterForPipeline(inputTopic.pipelineName)
             .unmarshallInferenceV2Response()
-            .filterResponses(inputTopic.topicName, tensors, tensorRenaming)
+            .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
@@ -124,7 +125,7 @@ class Chainer(
             .stream(inputTopic.topicName, consumerSerde)
             .filterForPipeline(inputTopic.pipelineName)
             .unmarshallInferenceV2Response()
-            .convertToRequest(inputTopic.topicName, tensors, tensorRenaming)
+            .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.inputsList.size != 0 }
             .batchMessages(batchProperties)
@@ -148,7 +149,7 @@ class Chainer(
             .stream(inputTopic.topicName, consumerSerde)
             .filterForPipeline(inputTopic.pipelineName)
             .unmarshallInferenceV2Request()
-            .filterRequests(inputTopic.topicName, tensors, tensorRenaming)
+            .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.inputsList.size != 0 }
             .batchMessages(batchProperties)

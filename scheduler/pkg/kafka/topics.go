@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -92,35 +94,43 @@ func (tn *TopicNamer) GetModelOrPipelineTopic(pipelineName string, stepReference
 
 }
 
-func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, tin map[string]string) map[string]string {
-	tout := make(map[string]string)
+func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, tin map[string]string) []*chainer.PipelineTensorMapping {
+	var mappings []*chainer.PipelineTensorMapping
 	for k, v := range tin {
 		stepName := strings.Split(k, pipeline.StepNameSeperator)[0]
-		var kout string
+		var topicAndTensor string
 		if stepName == pipelineName {
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
 		} else {
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
 		}
-		tout[kout] = v
+		mappings = append(mappings, &chainer.PipelineTensorMapping{
+			PipelineName:   pipelineName,
+			TopicAndTensor: topicAndTensor,
+			TensorName:     v,
+		})
 	}
-	return tout
+	return mappings
 }
 
-func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) map[string]string {
-	tout := make(map[string]string)
+func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) []*chainer.PipelineTensorMapping {
+	var mappings []*chainer.PipelineTensorMapping
 	for k, v := range tin {
 		parts := strings.Split(k, pipeline.StepNameSeperator)
-		var kout string
+		var topicAndTensor string
 		switch len(parts) {
 		case 3:
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
 		case 5: // take value after <pipelineName>.step
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
 		}
-		tout[kout] = v
+		mappings = append(mappings, &chainer.PipelineTensorMapping{
+			PipelineName:   parts[0],
+			TopicAndTensor: topicAndTensor,
+			TensorName:     v,
+		})
 	}
-	return tout
+	return mappings
 }
 
 func (tn *TopicNamer) GetPipelineNameFromInput(inputSpecifier string) string {

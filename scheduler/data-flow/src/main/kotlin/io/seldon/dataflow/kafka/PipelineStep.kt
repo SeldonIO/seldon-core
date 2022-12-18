@@ -18,6 +18,7 @@ package io.seldon.dataflow.kafka
 
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic
 import org.apache.kafka.streams.StreamsBuilder
 
@@ -38,7 +39,7 @@ fun stepFor(
     pipelineName: String,
     sources: List<PipelineTopic>,
     triggerSources: List<PipelineTopic>,
-    tensorMap: Map<TensorName, TensorName>,
+    tensorMap: List<PipelineTensorMapping>,
     sink: PipelineTopic,
     joinType: PipelineJoinType,
     triggerJoinType: PipelineJoinType,

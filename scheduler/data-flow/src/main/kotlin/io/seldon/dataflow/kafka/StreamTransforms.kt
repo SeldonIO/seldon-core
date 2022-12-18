@@ -19,9 +19,11 @@ package io.seldon.dataflow.kafka
 import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
 import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
+import jdk.incubator.vector.VectorOperators.Test
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier
 
@@ -63,10 +65,12 @@ fun <T> KStream<T, ModelInferResponse>.marshallInferenceV2Response(): KStream<T,
 
 
 fun <T> KStream<T, ModelInferResponse>.convertToRequest(
+    inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenaming: Map<TensorName, TensorName>
+    tensorRenamingList: List<PipelineTensorMapping>
 ): KStream<T, ModelInferRequest> {
+    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             convertToRequest(
@@ -145,10 +149,12 @@ private fun convertOutputToInputTensor(
 }
 
 fun <T> KStream<T, ModelInferRequest>.filterRequests(
+    inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenaming: Map<TensorName, TensorName>
+    tensorRenamingList: List<PipelineTensorMapping>
 ): KStream<T, ModelInferRequest> {
+    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             filterRequest(
@@ -214,10 +220,12 @@ private fun createInputTensor(
 
 
 fun <T> KStream<T, ModelInferResponse>.filterResponses(
+    inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenaming: Map<TensorName, TensorName>
+    tensorRenamingList: List<PipelineTensorMapping>
 ): KStream<T, ModelInferResponse> {
+    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             filterResponse(
@@ -282,10 +290,12 @@ private fun createOutputTensor(
 }
 
 fun <T> KStream<T, ModelInferRequest>.convertToResponse(
+    inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenaming: Map<TensorName, TensorName>
+    tensorRenamingList: List<PipelineTensorMapping>
 ): KStream<T, ModelInferResponse> {
+    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             convertToResponse(

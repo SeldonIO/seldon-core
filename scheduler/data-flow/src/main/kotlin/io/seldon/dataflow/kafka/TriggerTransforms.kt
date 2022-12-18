@@ -51,7 +51,7 @@ fun addTriggerTopology(
         .stream(topic.topicName, consumerSerde)
         .filterForPipeline(topic.pipelineName)
         .unmarshallInferenceV2Response()
-        .convertToRequest(topic.topicName, tensorsByTopic?.get(topic), emptyMap())
+        .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), emptyList())
         // handle cases where there are no tensors we want
         .filter { _, value -> value.inputsList.size != 0}
         .marshallInferenceV2Request()

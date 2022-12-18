@@ -18,6 +18,7 @@ package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.inference.v2.V2Dataplane
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.JoinWindows
@@ -33,7 +34,7 @@ class Joiner(
     internal val outputTopic: TopicForPipeline,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
-    internal val tensorRenaming: Map<TensorName, TensorName>,
+    internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val kafkaDomainParams: KafkaDomainParams,
     internal val joinType: PipelineJoinType,
     internal val inputTriggerTopics: Set<TopicForPipeline>,
@@ -147,7 +148,7 @@ class Joiner(
             .stream(topic.topicName, consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
-            .convertToResponse(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            .convertToResponse(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
@@ -158,7 +159,7 @@ class Joiner(
             .stream(topic.topicName, consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
-            .filterResponses(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            .filterResponses(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.outputsList.size != 0 }
             .marshallInferenceV2Response()
@@ -169,7 +170,7 @@ class Joiner(
             .stream(topic.topicName, consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
-            .convertToRequest(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             .marshallInferenceV2Request()
     }
 
@@ -178,7 +179,7 @@ class Joiner(
             .stream(topic.topicName, consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
-            .filterRequests(topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            .filterRequests(topic.pipelineName,topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
             .filter { _, value -> value.inputsList.size != 0 }
             .marshallInferenceV2Request()
