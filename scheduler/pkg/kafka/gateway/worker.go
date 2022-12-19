@@ -58,7 +58,7 @@ type InferWorker struct {
 	logger      log.FieldLogger
 	grpcClient  v2.GRPCInferenceServiceClient
 	httpClient  *http.Client
-	consumer    *InferKafkaConsumer
+	consumer    *InferKafkaHandler
 	tracer      trace.Tracer
 	callOptions []grpc.CallOption
 	topicNamer  *kafka2.TopicNamer
@@ -74,7 +74,7 @@ type V2Error struct {
 	Error string `json:"error"`
 }
 
-func NewInferWorker(consumer *InferKafkaConsumer, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
+func NewInferWorker(consumer *InferKafkaHandler, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
