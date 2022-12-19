@@ -4,7 +4,7 @@
 
  1. `git clone https://github.com/SeldonIO/seldon-core --branch=v2`
  2. Build [Seldon CLI](../cli.md)
- 3. Install [Docker Compose](https://docs.docker.com/compose/install/).
+ 3. Install [Docker Compose](https://docs.docker.com/compose/install/) (or directly from GitHub [release](https://github.com/docker/compose#linux) if not using Docker for Desktop).
  4. Install `make`. This will depend on your version of Linux, for example on Ubuntu run `sudo apt-get install build-essential`.
 
 
@@ -31,7 +31,7 @@ make deploy-local
 
 ### GPU support
 
-To enable GPU on servers: 
+To enable GPU on servers:
 
 1. Make sure that `nvidia-container-runtime` is installed, follow [link](https://docs.docker.com/config/containers/resource_constraints/#gpu)
 2. Enable GPU: `export GPU_ENABLED=1`
@@ -48,7 +48,7 @@ make deploy-local
 
 This folder will be mounted at `/mnt/models`. You can then specify models as shown below:
 
-```{literalinclude} ../../../../../samples/models/sklearn-iris-local.yaml 
+```{literalinclude} ../../../../../samples/models/sklearn-iris-local.yaml
 :language: yaml
 ```
 
