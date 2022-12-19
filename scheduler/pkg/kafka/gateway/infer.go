@@ -19,7 +19,9 @@ package gateway
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -45,7 +47,7 @@ const (
 	defaultNumPartitions        = 1
 )
 
-type InferKafkaConsumer struct {
+type InferKafkaHandler struct {
 	logger            log.FieldLogger
 	mu                sync.RWMutex
 	loadedModels      map[string]bool
@@ -62,9 +64,11 @@ type InferKafkaConsumer struct {
 	replicationFactor int
 	numPartitions     int
 	tlsClientOptions  *util.TLSOptions
+	producerMu        sync.RWMutex
+	producerActive    atomic.Bool
 }
 
-func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaConsumer, error) {
+func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaHandler, error) {
 	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
@@ -77,7 +81,7 @@ func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfi
 	if err != nil {
 		return nil, err
 	}
-	ic := &InferKafkaConsumer{
+	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
 		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
@@ -93,7 +97,7 @@ func NewInferKafkaConsumer(logger log.FieldLogger, consumerConfig *ConsumerConfi
 	return ic, ic.setup()
 }
 
-func (kc *InferKafkaConsumer) setup() error {
+func (kc *InferKafkaHandler) setup() error {
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
@@ -115,6 +119,7 @@ func (kc *InferKafkaConsumer) setup() error {
 	if err != nil {
 		return err
 	}
+	kc.producerActive.Store(true)
 	logger.Infof("Created producer %s", kc.producer.String())
 
 	consumerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Consumer)
@@ -169,11 +174,30 @@ func collectHeaders(kheaders []kafka.Header) map[string]string {
 	return headers
 }
 
-func (kc *InferKafkaConsumer) Stop() {
+func (kc *InferKafkaHandler) Produce(msg *kafka.Message, deliveryChan chan kafka.Event) error {
+	logger := kc.logger.WithField("func", "Produce")
+	kc.producerMu.RLock()
+	defer kc.producerMu.RUnlock()
+	if kc.producerActive.Load() {
+		return kc.producer.Produce(msg, deliveryChan)
+	} else {
+		err := fmt.Errorf("The infer producer %s is no longer running", kc.producer.String())
+		logger.WithError(err).Error("Failed to produce kafka message")
+		return err
+	}
+}
+
+func (kc *InferKafkaHandler) closeProducer() {
+	kc.producerMu.Lock()
+	defer kc.producerMu.Unlock()
+	kc.producer.Close()
+}
+
+func (kc *InferKafkaHandler) Stop() {
 	close(kc.done)
 }
 
-func (kc *InferKafkaConsumer) subscribeTopics() error {
+func (kc *InferKafkaHandler) subscribeTopics() error {
 	topics := make([]string, len(kc.subscribedTopics))
 	idx := 0
 	for k := range kc.subscribedTopics {
@@ -184,13 +208,13 @@ func (kc *InferKafkaConsumer) subscribeTopics() error {
 	return err
 }
 
-func (kc *InferKafkaConsumer) GetNumModels() int {
+func (kc *InferKafkaHandler) GetNumModels() int {
 	kc.mu.RLock()
 	defer kc.mu.RUnlock()
 	return len(kc.loadedModels)
 }
 
-func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
+func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	logger := kc.logger.WithField("func", "createTopics")
 	if kc.adminClient == nil {
 		logger.Warnf("Can't create topics %v as no admin client", topicNames)
@@ -218,7 +242,7 @@ func (kc *InferKafkaConsumer) createTopics(topicNames []string) error {
 	return nil
 }
 
-func (kc *InferKafkaConsumer) AddModel(modelName string) error {
+func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 	kc.loadedModels[modelName] = true
@@ -239,7 +263,7 @@ func (kc *InferKafkaConsumer) AddModel(modelName string) error {
 	return nil
 }
 
-func (kc *InferKafkaConsumer) RemoveModel(modelName string) error {
+func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 	delete(kc.loadedModels, modelName)
@@ -254,7 +278,7 @@ func (kc *InferKafkaConsumer) RemoveModel(modelName string) error {
 	return nil
 }
 
-func (kc *InferKafkaConsumer) Serve() {
+func (kc *InferKafkaHandler) Serve() {
 	logger := kc.logger.WithField("func", "Serve").WithField("consumerName", kc.consumerName)
 	run := true
 	// create a cancel and job channel
@@ -269,6 +293,7 @@ func (kc *InferKafkaConsumer) Serve() {
 		select {
 		case <-kc.done:
 			logger.Infof("Stopping")
+			kc.producerActive.Store(false)
 			run = false
 		default:
 			ev := kc.consumer.Poll(pollTimeoutMillisecs)
@@ -328,6 +353,6 @@ func (kc *InferKafkaConsumer) Serve() {
 
 	logger.Info("Closing consumer")
 	close(cancelChan)
-	kc.producer.Close()
+	kc.closeProducer()
 	_ = kc.consumer.Close()
 }

@@ -35,7 +35,7 @@ type ConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.Mutex
 	// all consumers we have
-	consumers       map[string]*InferKafkaConsumer
+	consumers       map[string]*InferKafkaHandler
 	consumerConfig  *ConsumerConfig
 	maxNumConsumers int
 }
@@ -52,12 +52,12 @@ func NewConsumerManager(logger log.FieldLogger, consumerConfig *ConsumerConfig, 
 	return &ConsumerManager{
 		logger:          logger.WithField("source", "ConsumerManager"),
 		consumerConfig:  consumerConfig,
-		consumers:       make(map[string]*InferKafkaConsumer),
+		consumers:       make(map[string]*InferKafkaHandler),
 		maxNumConsumers: maxNumConsumers,
 	}
 }
 
-func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaConsumer, error) {
+func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
 	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
@@ -68,7 +68,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 
 	if !ok {
 		var err error
-		ic, err = NewInferKafkaConsumer(cm.logger, cm.consumerConfig, consumerBucketId)
+		ic, err = NewInferKafkaHandler(cm.logger, cm.consumerConfig, consumerBucketId)
 		if err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func (cm *ConsumerManager) AddModel(modelName string) error {
 	return nil
 }
 
-func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaConsumer) {
+func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	logger := cm.logger.WithField("func", "stopEmptyConsumer")
 	numModelsInConsumer := ic.GetNumModels()
 	if numModelsInConsumer == 0 {
