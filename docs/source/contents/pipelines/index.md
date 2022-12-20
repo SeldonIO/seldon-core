@@ -146,7 +146,7 @@ We can create another pipeline which takes its input from this pipeline, as show
 
 In this way pipelines can be built to extend existing running pipelines to allow extensibility and sharing of data flows.
 
-The spec follows the spec for a step except that references to other pipelines are contained in the `externalInputs` section which takes the form of pipeline or pipeline step references:
+The spec follows the same spec for a step except that references to other pipelines are contained in the `externalInputs` section which takes the form of pipeline or pipeline.step references:
   * `<pipelineName>.(inputs|outputs).<tensorName>`
   * `<pipelineName>.(step).<stepName>.<tensorName>`
 
