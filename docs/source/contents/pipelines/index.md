@@ -132,7 +132,7 @@ If we changed the `triggersJoinType` for `mul10` to `inner` then both `ok1` and 
 
 ### Pipeline Inputs
 
-Pipelines by default can be accessed synchronously via http/grpc or via the Kafka topic created for them. However, it's also possible to create a pipeline to take input from one or more other pipelines by specifying an `input` section. If for example we already have the `tfsimple` pipeline shown below:
+Pipelines by default can be accessed synchronously via http/grpc or asynchronously via the Kafka topic created for them. However, it's also possible to create a pipeline to take input from one or more other pipelines by specifying an `input` section. If for example we already have the `tfsimple` pipeline shown below:
 
 ```{literalinclude} ../../../../samples/pipelines/tfsimple.yaml
 :language: yaml
