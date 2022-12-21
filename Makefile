@@ -89,3 +89,15 @@ prep-artifacts:
 
 update-copyright:
 	./hack/boilerplate.sh
+
+
+install-go-license-tools:
+	pip install \
+		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+
+.PHONY: update-3rd-party-licenses
+update-3rd-party-licenses:
+	make -C scheduler licenses
+	make -C operator licenses
+	make -C hodometer licenses
+	make -C components/tls licenses
