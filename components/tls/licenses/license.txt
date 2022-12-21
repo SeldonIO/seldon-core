@@ -655,7 +655,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-BurntSushi/xgb  Other  https://github.com/BurntSushi/xgb/blob/master/LICENSE
+BurntSushi/xgb  BSD 3-Clause "New" or "Revised" License  https://github.com/BurntSushi/xgb/blob/master/LICENSE
 --------------------------------------------------------------------------------
 // Copyright (c) 2009 The XGB Authors. All rights reserved.
 //
@@ -1386,7 +1386,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-bgentry/speakeasy  Other  https://github.com/bgentry/speakeasy/blob/master/LICENSE
+bgentry/speakeasy  MIT License  https://github.com/bgentry/speakeasy/blob/master/LICENSE
 --------------------------------------------------------------------------------
 MIT License
 
@@ -4366,7 +4366,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-dustin/go-humanize  Other  https://github.com/dustin/go-humanize/blob/master/LICENSE
+dustin/go-humanize  MIT License  https://github.com/dustin/go-humanize/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2005-2008  Dustin Sallings <dustin@spy.net>
 
@@ -5032,7 +5032,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-ghodss/yaml  Other  https://github.com/ghodss/yaml/blob/master/LICENSE
+ghodss/yaml  MIT License  https://github.com/ghodss/yaml/blob/master/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -6299,7 +6299,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gogo/protobuf  Other  https://github.com/gogo/protobuf/blob/master/LICENSE
+gogo/protobuf  BSD 3-Clause "New" or "Revised" License  https://github.com/gogo/protobuf/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013, The GoGo Authors. All rights reserved.
 
@@ -16956,7 +16956,7 @@ modern-go/reflect2  Apache License 2.0  https://github.com/modern-go/reflect2/bl
    limitations under the License.
 
 --------------------------------------------------------------------------------
-munnerz/goautoneg  Other  https://github.com/munnerz/goautoneg/blob/master/LICENSE
+munnerz/goautoneg  BSD 3-Clause "New" or "Revised" License  https://github.com/munnerz/goautoneg/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2011, Open Knowledge Foundation Ltd.
 All rights reserved.
@@ -18033,7 +18033,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-pmezard/go-difflib  Other  https://github.com/pmezard/go-difflib/blob/master/LICENSE
+pmezard/go-difflib  BSD 3-Clause "New" or "Revised" License  https://github.com/pmezard/go-difflib/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013, Patrick Mezard
 All rights reserved.
@@ -19585,7 +19585,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-russross/blackfriday  Other  https://github.com/russross/blackfriday/blob/master/LICENSE.txt
+russross/blackfriday  BSD 2-Clause "Simplified" License  https://github.com/russross/blackfriday/blob/master/LICENSE.txt
 --------------------------------------------------------------------------------
 Blackfriday is distributed under the Simplified BSD License:
 
@@ -19641,7 +19641,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-sean-/seed  Other  https://github.com/sean-/seed/blob/master/LICENSE
+sean-/seed  MIT License  https://github.com/sean-/seed/blob/master/LICENSE
 --------------------------------------------------------------------------------
 MIT License
 
@@ -19749,7 +19749,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-smartystreets/assertions  Other  https://github.com/smartystreets/assertions/blob/master/LICENSE.md
+smartystreets/assertions  MIT License  https://github.com/smartystreets/assertions/blob/master/LICENSE.md
 --------------------------------------------------------------------------------
 MIT License
 
@@ -19778,7 +19778,7 @@ requirements and restrictions.  Use of those components is subject to the terms
 and conditions outlined the respective license of each component.
 
 --------------------------------------------------------------------------------
-smartystreets/goconvey  Other  https://github.com/smartystreets/goconvey/blob/master/LICENSE.md
+smartystreets/goconvey  MIT License  https://github.com/smartystreets/goconvey/blob/master/LICENSE.md
 --------------------------------------------------------------------------------
 MIT License
 
@@ -22748,7 +22748,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-go-check/check  Other  https://github.com/go-check/check/blob/v1/LICENSE
+go-check/check  BSD 2-Clause "Simplified" License  https://github.com/go-check/check/blob/v1/LICENSE
 --------------------------------------------------------------------------------
 Gocheck - A rich testing framework for Go
  
@@ -22807,7 +22807,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-go-inf/inf  Other  https://github.com/go-inf/inf/blob/master/LICENSE
+go-inf/inf  BSD 3-Clause "New" or "Revised" License  https://github.com/go-inf/inf/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012 Péter Surányi. Portions Copyright (c) 2009 The Go
 Authors. All rights reserved.
@@ -23059,7 +23059,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-go-tomb/tomb  Other  https://github.com/go-tomb/tomb/blob/v1/LICENSE
+go-tomb/tomb  BSD 3-Clause "New" or "Revised" License  https://github.com/go-tomb/tomb/blob/v1/LICENSE
 --------------------------------------------------------------------------------
 tomb - support for clean goroutine termination in Go.
 
@@ -23092,7 +23092,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-go-yaml/yaml  Other  https://github.com/go-yaml/yaml/blob/v3/LICENSE
+go-yaml/yaml  MIT License  https://github.com/go-yaml/yaml/blob/v3/LICENSE
 --------------------------------------------------------------------------------
 
 This project is covered by two different licenses: MIT and Apache.
@@ -23146,7 +23146,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 --------------------------------------------------------------------------------
-gotestyourself/gotest.tools  Other  https://github.com/gotestyourself/gotest.tools/blob/main/LICENSE
+gotestyourself/gotest.tools  Apache License 2.0  https://github.com/gotestyourself/gotest.tools/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright 2018 gotest.tools authors
 
@@ -26151,7 +26151,7 @@ kubernetes-sigs/controller-runtime  Apache License 2.0  https://github.com/kuber
    limitations under the License.
 
 --------------------------------------------------------------------------------
-kubernetes-sigs/json  Other  https://github.com/kubernetes-sigs/json/blob/main/LICENSE
+kubernetes-sigs/json  Apache License 2.0  https://github.com/kubernetes-sigs/json/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Files other than internal/golang/* licensed under:
 
@@ -26598,7 +26598,7 @@ kubernetes-sigs/structured-merge-diff  Apache License 2.0  https://github.com/ku
    limitations under the License.
 
 --------------------------------------------------------------------------------
-kubernetes-sigs/yaml  Other  https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE
+kubernetes-sigs/yaml  MIT License  https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
