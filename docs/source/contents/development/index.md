@@ -26,4 +26,5 @@
 :hidden:
 
 release/index.md
+licenses.md
 ```

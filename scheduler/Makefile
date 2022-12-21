@@ -70,7 +70,7 @@ build: build-go build-jvm
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 .PHONY: .install-golangci-lint
-.ONESHELL: .install-golangci-lint
+#.ONESHELL: .install-golangci-lint
 .install-golangci-lint:
 	@installed=false
 	if [ -e "${.GOLANGCILINT_PATH}/golangci-lint" ]; then
@@ -715,3 +715,20 @@ build-triton-protos:
 		--go_opt=paths=source_relative \
 		--go_out=. \
 		./pkg/agent/repository/triton/config/model_config.proto
+
+.PHONY: licenses/dep.txt
+licenses/dep.txt:
+	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt
+
+.PHONY: licenses
+licenses: licenses/dep.txt
+	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
+	get-github-repo \
+		-o licenses/repo.txt \
+		--manual-dep-repo-mapping ../licenses/dep_repo.manual.csv \
+		licenses/dep.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	python -m 'patch_additional_license_info' \
+		licenses/license_info.csv \
+		../licenses/additional_license_info.csv
+	concatenate-license -o licenses/license.txt licenses/license_info.csv
