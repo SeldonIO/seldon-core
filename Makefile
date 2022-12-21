@@ -101,3 +101,4 @@ update-3rd-party-licenses:
 	make -C operator licenses
 	make -C hodometer licenses
 	make -C components/tls licenses
+	cat scheduler/licenses/license_info.csv operator/licenses/license_info.csv hodometer/licenses/license_info.csv components/tls/licenses/license_info.csv | cut -d, -f3 | sort | uniq -c > licenses/3rd-party-summary.txt

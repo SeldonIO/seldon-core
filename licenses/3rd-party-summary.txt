@@ -1,0 +1,8 @@
+    393 Apache License 2.0
+     45 BSD 2-Clause "Simplified" License
+    183 BSD 3-Clause "New" or "Revised" License
+      4 Creative Commons Zero v1.0 Universal
+      6 ISC License
+    447 MIT License
+     68 Mozilla Public License 2.0
+      4 The GNU lesser General Public License Version 3.0 with exceptions for static and dynamic linking
