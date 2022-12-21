@@ -84,6 +84,10 @@ func (m *mockChannel) Qos(prefetchCount int, prefetchSize int, global bool) erro
 	return args.Error(0)
 }
 
+func (m *mockChannel) NotifyClose(receiver chan *amqp.Error) chan *amqp.Error {
+	return receiver
+}
+
 type TestPayload struct {
 	Msg string
 }

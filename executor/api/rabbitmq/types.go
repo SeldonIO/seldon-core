@@ -56,6 +56,7 @@ type Channel interface {
 	Nack(tag uint64, multiple bool, requeue bool) error
 	Reject(tag uint64, requeue bool) error
 	Qos(prefetchCount int, prefetchSize int, global bool) error
+	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
 }
 
 type SeldonPayloadWithHeaders struct {

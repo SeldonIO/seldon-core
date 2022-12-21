@@ -65,8 +65,6 @@ func (c *consumer) Consume(
 		return fmt.Errorf("error '%w' consuming from rabbitmq queue", err)
 	}
 
-	// TODO does this need more error handling?  What about if the connection or channel fail while
-	// the handler is running?
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -102,6 +100,12 @@ func (c *consumer) Consume(
 		}
 	}
 	close(sigChan)
+
+	select {
+	case err = <-c.err:
+		return fmt.Errorf("error '%w' with rabbitmq connection", err)
+	default:
+	}
 
 	return nil
 }

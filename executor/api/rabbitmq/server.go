@@ -10,6 +10,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
+	"log"
 	"net/url"
 	"os"
 	"time"
@@ -34,7 +35,7 @@ const (
 	ENV_RABBITMQ_INPUT_QUEUE  = "RABBITMQ_INPUT_QUEUE"
 	ENV_RABBITMQ_OUTPUT_QUEUE = "RABBITMQ_OUTPUT_QUEUE"
 	ENV_RABBITMQ_FULL_GRAPH   = "RABBITMQ_FULL_GRAPH"
-	UNHANDLED_ERROR          = "Unhandled error from predictor process"
+	UNHANDLED_ERROR           = "Unhandled error from predictor process"
 )
 
 type SeldonRabbitMQServer struct {
@@ -121,6 +122,11 @@ func (rs *SeldonRabbitMQServer) Serve() error {
 		rs.Log.Error(err, "error connecting to rabbitmq")
 		return fmt.Errorf("error '%w' connecting to rabbitmq", err)
 	}
+
+	go func() {
+		err := <-conn.err
+		log.Fatal("RabbitMQ connection died", err) // causes app to exit with error
+	}()
 
 	return rs.serve(conn)
 }

@@ -109,6 +109,17 @@ func (c *connection) connect() error {
 			return fmt.Errorf("error '%w' creating rabbitmq channel to %q", err, c.uri)
 		}
 
+		go func() {
+			closed := make(chan *amqp.Error, 1)
+			c.channel.NotifyClose(closed)
+
+			reason, ok := <-closed
+			if ok {
+				c.log.Error(reason, "rabbitmq channel closed, registering err signal")
+				c.err <- reason
+			}
+		}()
+
 		err = c.channel.Qos(
 			1,
 			0,
