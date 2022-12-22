@@ -1419,3 +1419,56 @@ func TestValidateShadowTraffic(t *testing.T) {
 	err = spec.ValidateSeldonDeployment()
 	g.Expect(err).ToNot(BeNil())
 }
+
+func TestValidateTwoPrepackTwoPods(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				ComponentSpecs: []*SeldonPodSpec{
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Image: "seldonio/mock_classifier:1.0",
+									Name:  "classifier",
+								},
+							},
+						},
+					},
+					{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Name: "classifier2",
+								},
+							},
+						},
+					},
+				},
+				Graph: PredictiveUnit{
+					Name: "classifier",
+					Children: []PredictiveUnit{
+						{
+							Implementation: &impl,
+							Name:           "classifier2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	name := "mydep"
+	namespace := "default"
+	spec.DefaultSeldonDeployment(name, namespace)
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+	containerServiceValue := GetContainerServiceName(name, spec.Predictors[0], &spec.Predictors[0].ComponentSpecs[1].Spec.Containers[0])
+	dnsName := containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
+	g.Expect(spec.Predictors[0].Graph.Children[0].Endpoint.ServiceHost).To(Equal(dnsName))
+}

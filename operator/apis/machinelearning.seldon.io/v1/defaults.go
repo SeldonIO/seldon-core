@@ -235,6 +235,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 			if IsPrepack(pu) {
 
 				con := GetContainerForPredictiveUnit(&p, pu.Name)
+				compSpecIdx := GetComponentSpecIdxForPredictiveUnit(&p, pu.Name)
 
 				existing := con != nil
 				if !existing {
@@ -255,7 +256,7 @@ func (r *SeldonDeploymentSpec) DefaultSeldonDeployment(mldepName string, namespa
 				getUpdatePortNumMap(con.Name, &nextGrpcPortNum, portMapGrpc)
 				grpcPortNum := portMapGrpc[con.Name]
 
-				r.setContainerPredictiveUnitDefaults(0, httpPortNum, grpcPortNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
+				r.setContainerPredictiveUnitDefaults(compSpecIdx, httpPortNum, grpcPortNum, &nextMetricsPortNum, mldepName, namespace, &p, pu, con)
 				//Only set image default for non tensorflow graphs
 				if r.Protocol != ProtocolTensorflow {
 					serverConfig := GetPrepackServerConfig(string(*pu.Implementation))
