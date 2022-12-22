@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("com.github.hierynomus.license-report") version "0.16.1"
     kotlin("jvm") version "1.6.21"
     application
 }
@@ -87,4 +88,10 @@ tasks.withType<Jar> {
 
 application {
     mainClass.set(dataflowMainClass)
+}
+
+
+downloadLicenses {
+    includeProjectDependencies = true
+    dependencyConfiguration = "compileClasspath"
 }

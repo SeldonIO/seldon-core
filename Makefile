@@ -101,4 +101,5 @@ update-3rd-party-licenses:
 	make -C operator licenses
 	make -C hodometer licenses
 	make -C components/tls licenses
-	cat scheduler/licenses/license_info.csv operator/licenses/license_info.csv hodometer/licenses/license_info.csv components/tls/licenses/license_info.csv | cut -d, -f3 | sort | uniq -c > licenses/3rd-party-summary.txt
+	make -C scheduler/data-flow licenses
+	{ (cat scheduler/licenses/license_info.csv operator/licenses/license_info.csv hodometer/licenses/license_info.csv components/tls/licenses/license_info.csv | cut -d, -f3) ; (cat scheduler/data-flow/licenses/dependency-license.json | jq .dependencies[].licenses[0].name) } | sed 's/\"//g' | sort | uniq -c > licenses/3rd-party-summary.txt
