@@ -75,6 +75,7 @@ install_jaeger:
 	kubectl create namespace observability || echo "namespace observability exists"
 	kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
 	kubectl wait  --timeout=90s --for condition=Available -n observability deployment/jaeger-operator
+	sleep 20 # hack as Available condition does not seem to be enough for operator to be ready
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
 	kubectl apply -f ../resources/jaeger.yaml
 
