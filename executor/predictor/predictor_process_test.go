@@ -445,12 +445,14 @@ func TestModelWithLogRequests(t *testing.T) {
 	g := NewGomegaWithT(t)
 	modelName := "foo"
 	logged := false
+	logMessagesReceived := 0
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Equal(logger.CEInferenceRequest))
 		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
 		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(modelName))
 		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
 		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
+		logMessagesReceived++
 		w.Write([]byte(""))
 		logged = true
 		fmt.Printf("%+v\n", r.Header)
@@ -484,6 +486,7 @@ func TestModelWithLogRequests(t *testing.T) {
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 	g.Eventually(func() bool { return logged }).Should(Equal(true))
+	g.Expect(logMessagesReceived).To(Equal(1))
 }
 
 func TestModelWithLogRequestsAtDefaultedUrl(t *testing.T) {
@@ -630,4 +633,66 @@ func TestModelRequestSkipsLogging(t *testing.T) {
 	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
 	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
 	g.Eventually(func() bool { return logged }).Should(Equal(false))
+}
+
+func TestModelWithLogRequestsForRouter(t *testing.T) {
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+	modelName := "foo"
+	routerName := "bar"
+	logged := false
+	logMessagesReceived := 0
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g.Expect(r.Header.Get(logger.CloudEventsTypeHeader)).To(Or(Equal(logger.CEInferenceRequest), Equal(logger.CEInferenceResponse)))
+		g.Expect(r.Header.Get(logger.CloudEventsTypeSource)).To(Equal(testSourceUrl))
+		g.Expect(r.Header.Get(modelIdHeaderName)).To(Equal(routerName))
+		g.Expect(r.Header.Get(contentTypeHeaderName)).To(Equal(grpc.ProtobufContentType))
+		g.Expect(r.Header.Get(requestIdHeaderName)).To(Equal(testSeldonPuid))
+		logMessagesReceived++
+		w.Write([]byte(""))
+		logged = true
+		fmt.Printf("%+v\n", r.Header)
+		fmt.Printf("%+v\n", r.Body)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	logf.SetLogger(zap.New())
+	log := logf.Log.WithName("entrypoint")
+	logger.StartDispatcher(1, logger.DefaultWorkQueueSize, logger.DefaultWriteTimeoutMilliseconds, log, "", "", "", "", "", api.ProtocolSeldon)
+
+	router := v1.ROUTER
+	model := v1.MODEL
+	graph := &v1.PredictiveUnit{
+		Name: routerName,
+		Type: &router,
+		Endpoint: &v1.Endpoint{
+			ServiceHost: "foo",
+			ServicePort: 9000,
+			Type:        v1.REST,
+		},
+		Logger: &v1.Logger{
+			Mode: v1.LogAll,
+			Url:  &server.URL,
+		},
+		Children: []v1.PredictiveUnit{
+			{
+				Name: modelName,
+				Type: &model,
+				Endpoint: &v1.Endpoint{
+					ServiceHost: "foo",
+					ServicePort: 9000,
+					Type:        v1.REST,
+				},
+			},
+		},
+	}
+
+	pResp, err := createPredictorProcess(t).Predict(graph, createPredictPayload(g))
+	g.Expect(err).Should(BeNil())
+	smRes := pResp.GetPayload().(*proto.SeldonMessage)
+	g.Expect(smRes.GetData().GetNdarray().Values[0].GetNumberValue()).Should(Equal(1.1))
+	g.Expect(smRes.GetData().GetNdarray().Values[1].GetNumberValue()).Should(Equal(2.0))
+	g.Eventually(func() bool { return logged }).Should(Equal(true))
+	g.Expect(logMessagesReceived).To(Equal(2))
 }
