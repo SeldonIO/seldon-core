@@ -292,7 +292,7 @@ func (kc *InferKafkaHandler) Serve() {
 	for run {
 		select {
 		case <-kc.done:
-			logger.Infof("Stopping")
+			logger.Infof("Stopping consumer %s", kc.consumer.String())
 			kc.producerActive.Store(false)
 			run = false
 		default:
