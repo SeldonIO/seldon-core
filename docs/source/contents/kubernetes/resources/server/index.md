@@ -34,3 +34,21 @@ This server can then be targeted by a particular model by specifying this server
 :language: yaml
 ```
 
+### Server with PVC
+
+One can also create a Server definition to add a persistent volume to your server. This can be used to allow models to be loaded directly from the persistent volume.
+
+```{literalinclude} ../../../../../../samples/examples/k8s-pvc/server.yaml
+:language: yaml
+```
+
+The server can be targeted by a model whose artifact is on the persistent volume as shown below.
+
+```{literalinclude} ../../../../../../samples/examples/k8s-pvc/iris.yaml
+:language: yaml
+```
+
+A fully worked example for this can be found [here](../../../examples/k8s-pvc.md).
+
+An alternative would be to create your own [ServerConfig](../serverconfig/index.md) for more complex use cases or you want to standardise the Server definition in one place.
+

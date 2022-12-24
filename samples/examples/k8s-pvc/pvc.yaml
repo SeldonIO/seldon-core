@@ -1,0 +1,41 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path-immediate
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+mountOptions:
+  - debug
+volumeBindingMode: Immediate
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: ml-models-pv
+  namespace: seldon-mesh
+  labels:
+    type: local
+spec:
+  storageClassName: local-path-immediate
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/models"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ml-models-pvc
+  namespace: seldon-mesh
+spec:
+  storageClassName: local-path-immediate
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      type: local

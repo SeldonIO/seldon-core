@@ -1,0 +1,18 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver-pvc
+spec:
+  serverConfig: mlserver
+  extraCapabilities:
+  - "pvc"  
+  podSpec:
+    volumes:
+    - name: models-pvc
+      persistentVolumeClaim:
+        claimName: ml-models-pvc
+    containers:
+    - name: rclone
+      volumeMounts:
+      - name: models-pvc
+        mountPath: /var/models

@@ -41,6 +41,7 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Production image classifier with drift and outlier monitoring](cifar10.md)
  * [Production income classifier with drift, outlier and explanations](income.md)
  * [Conditional pipeline with pandas query model](pandasquery.md)
+ * [Kubernetes Server with PVC](k8s-pvc.md)
 
 ```{toctree}
 :maxdepth: 1
@@ -60,4 +61,5 @@ speech-to-sentiment.md
 cifar10.md
 income.md
 pandasquery.md
+k8s-pvc.md
 ```

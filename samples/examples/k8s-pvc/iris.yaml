@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+spec:
+  storageUri: "/var/models/iris"
+  requirements:
+  - sklearn
+  - pvc
