@@ -89,7 +89,7 @@ func TestRestRequest(t *testing.T) {
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
 			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
-			ic, err := NewInferKafkaConsumer(logger, config, "dummy")
+			ic, err := NewInferKafkaHandler(logger, config, "dummy")
 			g.Expect(err).To(BeNil())
 			tn := kafka2.NewTopicNamer("default")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
@@ -135,7 +135,7 @@ func TestProcessRequestRest(t *testing.T) {
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
 			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
-			ic, err := NewInferKafkaConsumer(logger, config, "dummy")
+			ic, err := NewInferKafkaHandler(logger, config, "dummy")
 			g.Expect(err).To(BeNil())
 			tn := kafka2.NewTopicNamer("default")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
@@ -201,14 +201,14 @@ func createInferWorkerWithMockConn(
 	logger log.FieldLogger,
 	serverConfig *InferenceServerConfig,
 	modelConfig *KafkaModelConfig,
-	g *WithT) (*InferKafkaConsumer, *InferWorker) {
+	g *WithT) (*InferKafkaHandler, *InferWorker) {
 	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
 	config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
-	ic, err := NewInferKafkaConsumer(logger, config, "dummy")
+	ic, err := NewInferKafkaHandler(logger, config, "dummy")
 	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
 		logger:     logger,
