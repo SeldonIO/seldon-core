@@ -1,0 +1,4 @@
+broker:
+  tls:
+    authentication:
+      type: scram-sha-512

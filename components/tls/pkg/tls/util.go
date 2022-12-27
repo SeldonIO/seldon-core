@@ -25,6 +25,7 @@ const (
 	EnvSecurityProtocolSuffix = "_SECURITY_PROTOCOL"
 	SecurityProtocolSSL       = "SSL"
 	SecurityProtocolPlaintxt  = "PLAINTEXT"
+	SecurityProtocolSASLSSL   = "SASL_SSL"
 
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
 	EnvSecurityPrefixControlPlaneServer = "CONTROL_PLANE_SERVER"

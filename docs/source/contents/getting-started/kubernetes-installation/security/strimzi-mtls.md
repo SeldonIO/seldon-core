@@ -1,4 +1,4 @@
-# Strimzi Example
+# Strimzi mTLS Example
 
 Create a Kafka User `seldon` in the namespace seldon was installed. This assumes Strimzi Kafka cluster is installed in the same namespace or is running with cluster wide permissions.
 

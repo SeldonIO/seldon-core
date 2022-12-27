@@ -114,7 +114,7 @@ func (kc *InferKafkaHandler) setup() error {
 	} else {
 		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer")
 	}
-
+	kc.logger.Infof("Creating producer with config %v", producerConfig)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
 		return err
@@ -148,6 +148,10 @@ func (kc *InferKafkaHandler) setup() error {
 	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
 		adminConfig := kafka.ConfigMap{
 			config.KafkaBootstrapServers: kc.consumerConfig.KafkaConfig.BootstrapServers,
+		}
+		err = config.AddKafkaSSLOptions(adminConfig)
+		if err != nil {
+			return err
 		}
 		kc.adminClient, err = kafka.NewAdminClient(&adminConfig)
 		if err != nil {

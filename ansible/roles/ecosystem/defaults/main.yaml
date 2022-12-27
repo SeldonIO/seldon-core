@@ -5,6 +5,7 @@ kafka_namespace: seldon-mesh
 
 kafka_wait_timeout: "300s"
 kafka_cluster_values: {}
+kafka_cluster_values_files: []
 
 # Installation on/off flags
 install_prometheus: true
