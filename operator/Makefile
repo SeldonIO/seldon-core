@@ -7,6 +7,7 @@ IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
+ENVTEST_K8S_VERSION = 1.22
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -34,7 +35,7 @@ lint: licenses/dep.txt
 test: install-ginkgo generate fmt vet manifests_all generate-resources
 	ACK_GINKGO_RC=true \
 	ACK_GINKGO_DEPRECATIONS=1.16.4 \
-	$(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -121,12 +122,10 @@ deploy-lite: manifests
 # See https://github.com/operator-framework/operator-registry/issues/385
 # Solution may be to drop v1alpha2 and v1alpha3 versions to decrease size by 2/3
 manifests: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
-	#$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
 
 manifests_v1_small: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
-
 
 # Run go fmt against code
 fmt:
@@ -138,7 +137,7 @@ vet:
 
 # Generate code
 generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
+	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./apis/machinelearning.seldon.io/..."
 
 # Generate Clientset
 create-client: test
@@ -177,16 +176,31 @@ kind-image-install-redhat: docker-build-redhat
 # find or download controller-gn
 # download controller-gen if necessary
 
-controller-gen:
-ifeq (, $(shell which controller-gen))
-	@{ \
-	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
-	}
+CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+.PHONY: controller-gen
+controller-gen: ## Download controller-gen locally if necessary.
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2)
 
-CONTROLLER_GEN=$(GOBIN)/controller-gen
-else
-CONTROLLER_GEN=$(shell which controller-gen)
-endif
+
+ENVTEST = $(shell pwd)/bin/setup-envtest
+.PHONY: envtest
+envtest: ## Download envtest-setup locally if necessary.
+	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@v0.0.0-20221206203637-3da2de04734a)
+
+
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
 
 .PHONY: install-ginkgo
 install-ginkgo:
