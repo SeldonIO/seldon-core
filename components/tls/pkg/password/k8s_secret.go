@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 	"k8s.io/client-go/kubernetes"
-	"os"
 	"path/filepath"
 	"sync"
 
@@ -60,27 +59,6 @@ func (s *PasswordSecretHandler) Stop() {
 	close(s.stopper)
 }
 
-func savePassword(data []byte, path string) error {
-	folder := filepath.Dir(path)
-	err := os.MkdirAll(folder, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	_, err = f.Write(data)
-	if err != nil {
-		return err
-	}
-	err = f.Close()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *PasswordSecretHandler) savePasswordFromSecret(secret *corev1.Secret) error {
 	dataKey := filepath.Base(s.folderHandler.passwordFilePath)
 	password, ok := secret.Data[dataKey]
@@ -98,8 +76,7 @@ func (s *PasswordSecretHandler) onAdd(obj interface{}) {
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("TLS Secret %s added", s.secretName)
-		var err error
-		err = s.savePasswordFromSecret(secret)
+		err := s.savePasswordFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract password from secret %s", secret.Name)
 		}
@@ -113,8 +90,7 @@ func (s *PasswordSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("TLS Secret %s updated", s.secretName)
-		var err error
-		err = s.savePasswordFromSecret(secret)
+		err := s.savePasswordFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract password from secret %s", secret.Name)
 		}
@@ -140,8 +116,7 @@ func (s *PasswordSecretHandler) loadPassword(secretName string) error {
 func (s *PasswordSecretHandler) GetPasswordAndWatch() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	var err error
-	err = s.loadPassword(s.secretName)
+	err := s.loadPassword(s.secretName)
 	if err != nil {
 		return err
 	}

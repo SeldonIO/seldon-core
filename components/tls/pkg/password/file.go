@@ -65,8 +65,7 @@ func (t *PasswordFolderHandler) reloadPassword() {
 func (t *PasswordFolderHandler) GetPasswordAndWatch() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	var err error
-	err = t.loadPassword()
+	err := t.loadPassword()
 	if err != nil {
 		return err
 	}
