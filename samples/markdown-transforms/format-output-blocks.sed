@@ -48,6 +48,16 @@ x
 # We're outside an output block
 x
 
+# Special case for unindented links
+/^.+$/ {
+    x
+    /^\!\[.+\]/ {
+        H
+        b END
+    }
+    x
+}
+
 # If we've encountered an output block...
 /^.+$/ {
   # Remove any lingering whitespace
