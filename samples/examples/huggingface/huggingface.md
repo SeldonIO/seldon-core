@@ -4,7 +4,7 @@ In this example we create a Pipeline to chain two huggingface models to allow sp
 
 This example also illustrates how explainers can target pipelines to allow complex explanations flows.
 
-![architetcure](speech-to-sentiment.jpg)
+![architecture](speech-to-sentiment.jpg)
 
 This example requires **ffmpeg** package to be installed locally. run `make install-requirements` for the Python dependencies.
 
