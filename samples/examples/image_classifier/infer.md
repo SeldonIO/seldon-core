@@ -266,184 +266,103 @@ seldon pipeline status cifar10-production -w PipelineReady| jq -M .
 infer("cifar10-production.pipeline",20, "normal")
 ```
 
-<!-- FIXME All these extra ``` are erroneous and added by my scripts -->
 ```
-
 ![png](infer_files/infer_14_0.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_1.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_2.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_3.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_4.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_5.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_6.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_7.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_8.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_9.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_10.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_11.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_12.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_13.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_14.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_15.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_16.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_17.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_18.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_14_19.png)
-```
-
-```
 
 ```
 
@@ -467,182 +386,102 @@ infer("cifar10-production.pipeline",20, "drift")
 ```
 
 ```
-
 ![png](infer_files/infer_16_0.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_1.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_2.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_3.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_4.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_5.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_6.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_7.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_8.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_9.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_10.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_11.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_12.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_13.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_14.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_15.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_16.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_17.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_18.png)
-```
 
 ```
 
 ```
-
-```
-
 ![png](infer_files/infer_16_19.png)
-```
-
-```
 
 ```
 
@@ -666,11 +505,7 @@ infer("cifar10-production.pipeline",1, "outlier")
 ```
 
 ```
-
 ![png](infer_files/infer_18_0.png)
-```
-
-```
 
 ```
 
@@ -685,11 +520,7 @@ infer("cifar10-production.pipeline",1, "ok")
 ```
 
 ```
-
 ![png](infer_files/infer_19_0.png)
-```
-
-```
 
 ```
 
