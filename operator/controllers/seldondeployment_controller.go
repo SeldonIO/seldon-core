@@ -1667,9 +1667,6 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			if err != nil {
 				return ready, progressing, err
 			}
-			// For this next check to work correctly we need to have added all the defaults k8s adds to our PodSpec otherwise
-			// we may get into prepetual Reconcile loops
-			//if !equality.Semantic.DeepDerivative(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
 			if !patchResult.IsEmpty() {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 				fmt.Printf("\n%s\n", patchResult.String())
@@ -1691,7 +1688,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				if deploy.Spec.Replicas == nil {
 					found.Spec.Replicas = desiredDeployment.Spec.Replicas
 				}
-				
+
 				if err := annotator.SetLastAppliedAnnotation(found); err != nil {
 					return ready, progressing, err
 				}
