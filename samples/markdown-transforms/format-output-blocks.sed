@@ -26,9 +26,7 @@
 
 # Check if we're in a code block.
 # If so, print this line and skip to the next.
-
 x
-
 /^```/ {
     x
     p

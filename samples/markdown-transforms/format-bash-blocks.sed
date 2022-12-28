@@ -32,7 +32,6 @@
 # If we're accumulating a block, keep accumulating.
 # Otherwise, just print the current line and continue.
 x
-
 /```python/ {
   x
   H
@@ -40,7 +39,6 @@ x
 }
 
 x
-
 p
 
 :END
