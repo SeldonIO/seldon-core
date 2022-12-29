@@ -4,6 +4,7 @@ census-ecosystem/opencensus-go-exporter-ocagent
 census-ecosystem/opencensus-go-exporter-prometheus
 census-ecosystem/opencensus-go-exporter-zipkin
 https://gotools.org/dmitri.shuralyov.com/gpu/mtl
+emperror/errors
 Azure/azure-amqp-common-go
 Azure/azure-event-hubs-go
 Azure/azure-kusto-go
@@ -39,6 +40,7 @@ armon/go-metrics
 armon/go-radix
 asaskevich/govalidator
 aws/aws-sdk-go
+banzaicloud/k8s-objectmatcher
 benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy

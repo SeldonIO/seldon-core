@@ -3,6 +3,7 @@ googleapis/google-cloud-go,https://github.com/googleapis/google-cloud-go/blob/ma
 census-ecosystem/opencensus-go-exporter-ocagent,https://github.com/census-ecosystem/opencensus-go-exporter-ocagent/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-ecosystem/opencensus-go-exporter-ocagent/master/LICENSE
 census-ecosystem/opencensus-go-exporter-prometheus,https://github.com/census-ecosystem/opencensus-go-exporter-prometheus/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-ecosystem/opencensus-go-exporter-prometheus/master/LICENSE
 census-ecosystem/opencensus-go-exporter-zipkin,https://github.com/census-ecosystem/opencensus-go-exporter-zipkin/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-ecosystem/opencensus-go-exporter-zipkin/master/LICENSE
+emperror/errors,https://github.com/emperror/errors/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/emperror/errors/master/LICENSE
 Azure/azure-amqp-common-go,https://github.com/Azure/azure-amqp-common-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-amqp-common-go/master/LICENSE
 Azure/azure-event-hubs-go,https://github.com/Azure/azure-event-hubs-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-event-hubs-go/master/LICENSE
 Azure/azure-kusto-go,https://github.com/Azure/azure-kusto-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-kusto-go/master/LICENSE
@@ -38,6 +39,7 @@ armon/go-metrics,https://github.com/hashicorp/go-metrics/blob/master/LICENSE,MIT
 armon/go-radix,https://github.com/armon/go-radix/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/armon/go-radix/master/LICENSE
 asaskevich/govalidator,https://github.com/asaskevich/govalidator/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/asaskevich/govalidator/master/LICENSE
 aws/aws-sdk-go,https://github.com/aws/aws-sdk-go/blob/main/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-sdk-go/main/LICENSE.txt
+banzaicloud/k8s-objectmatcher,https://github.com/banzaicloud/k8s-objectmatcher/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/banzaicloud/k8s-objectmatcher/master/LICENSE
 benbjohnson/clock,https://github.com/benbjohnson/clock/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/benbjohnson/clock/master/LICENSE
 beorn7/perks,https://github.com/beorn7/perks/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/beorn7/perks/master/LICENSE
 bgentry/speakeasy,https://github.com/bgentry/speakeasy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/bgentry/speakeasy/master/LICENSE

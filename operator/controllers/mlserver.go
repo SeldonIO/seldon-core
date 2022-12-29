@@ -132,8 +132,9 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 		},
 		ReadinessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeReadyPath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeReadyPath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
@@ -143,8 +144,9 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 		},
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeLivePath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeLivePath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,

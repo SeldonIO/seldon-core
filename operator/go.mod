@@ -3,6 +3,7 @@ module github.com/seldonio/seldon-core/operator
 go 1.17
 
 require (
+	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/emissary-ingress/emissary/v3 v3.1.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
@@ -26,6 +27,7 @@ require (
 
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
+	emperror.dev/errors v0.8.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect

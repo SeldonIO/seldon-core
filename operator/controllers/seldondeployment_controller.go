@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"net/url"
 	"strconv"
 	"strings"
@@ -63,6 +64,7 @@ import (
 )
 
 const (
+	LastAppliedConfig                   = "seldon.io/last-applied"
 	ENV_DEFAULT_ENGINE_SERVER_PORT      = "ENGINE_SERVER_PORT"
 	ENV_DEFAULT_ENGINE_SERVER_GRPC_PORT = "ENGINE_SERVER_GRPC_PORT"
 	ENV_CONTROLLER_ID                   = "CONTROLLER_ID"
@@ -931,7 +933,7 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 					Annotations: map[string]string{},
 				},
 			},
-			Strategy:                appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
+			Strategy:                appsv1.DeploymentStrategy{Type: appsv1.RollingUpdateDeploymentStrategyType, RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
 			ProgressDeadlineSeconds: p.ProgressDeadlineSeconds,
 		},
 	}
@@ -1615,8 +1617,8 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 	ready := true
 	progressing := true
 	var lastSuccessfulCondition *apis.Condition
+	annotator := patch.NewAnnotator(LastAppliedConfig)
 	for _, deploy := range components.deployments {
-
 		log.Info("Scheme", "r.scheme", r.Scheme)
 		log.Info("createDeployments", "deploy", deploy)
 		if err := ctrl.SetControllerReference(instance, deploy, r.Scheme); err != nil {
@@ -1629,6 +1631,9 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 		err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
 			ready = false
+			if err := annotator.SetLastAppliedAnnotation(deploy); err != nil {
+				return ready, progressing, err
+			}
 			log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 			err = r.Create(context.TODO(), deploy)
 			if err != nil {
@@ -1651,14 +1656,41 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateDeployment, "Recreated Deployment (selector changed) %q", deploy.GetName())
 		} else {
 			identical := true
-			if !equality.Semantic.DeepEqual(deploy.Spec.Template.Spec, found.Spec.Template.Spec) {
+			opts := []patch.CalculateOption{
+				patch.IgnoreStatusFields(),
+				patch.IgnoreField("kind"),
+				patch.IgnoreField("apiVersion"),
+				patch.IgnoreField("metadata"),
+			}
+			patcherMaker := patch.NewPatchMaker(annotator, &patch.K8sStrategicMergePatcher{}, &patch.BaseJSONMergePatcher{})
+			patchResult, err := patcherMaker.Calculate(found, deploy, opts...)
+			if err != nil {
+				return ready, progressing, err
+			}
+			if !patchResult.IsEmpty() {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
+				fmt.Printf("\n%s\n", patchResult.String())
+				b, err := json.Marshal(deploy.Spec.Template.Spec)
+				if err == nil {
+					fmt.Printf("\n%s\n", string(b))
+				}
+				b2, err := json.Marshal(found.Spec.Template.Spec)
+				if err == nil {
+					fmt.Printf("\n%s\n", string(b2))
+				}
 
 				desiredDeployment := found.DeepCopy()
 				found.Spec = deploy.Spec
+				// Add annotations and labels to main metadata
+				found.Annotations = deploy.Annotations
+				found.Labels = deploy.Labels
 
 				if deploy.Spec.Replicas == nil {
 					found.Spec.Replicas = desiredDeployment.Spec.Replicas
+				}
+
+				if err := annotator.SetLastAppliedAnnotation(found); err != nil {
+					return ready, progressing, err
 				}
 
 				err = r.Update(context.TODO(), found)
@@ -1667,7 +1699,7 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				}
 
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec) {
+				if !equality.Semantic.DeepDerivative(desiredDeployment.Spec.Template.Spec, found.Spec.Template.Spec) {
 					ready = false
 					identical = false
 					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateDeployment, "Updated Deployment %q", deploy.GetName())
