@@ -72,7 +72,7 @@ func (sc *SeldonCLIConfigs) listConfigs() error {
 	}
 	for k, v := range sc.Configs {
 		if sc.Active != nil && k == *sc.Active {
-			_, err = fmt.Fprintf(writer, "%s\t%s\t%s\n", k, v, "<-----")
+			_, err = fmt.Fprintf(writer, "%s\t%s\t%s\n", k, v, "*")
 			if err != nil {
 				return err
 			}
