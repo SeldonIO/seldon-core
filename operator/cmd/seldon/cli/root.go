@@ -63,6 +63,16 @@ func GetCmd() *cobra.Command {
 		},
 	}
 
+	cmdConfig := &cobra.Command{
+		Use:   "config <subcomand>",
+		Short: "manage configs",
+		Long:  `Manage and activate configuration files for the CLI`,
+		Args:  cobra.MinimumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return fmt.Errorf("config subcommand required")
+		},
+	}
+
 	// Model commands
 	cmdModelLoad := createModelLoad()
 	cmdModelUnload := createModelUnload()
@@ -89,17 +99,25 @@ func GetCmd() *cobra.Command {
 	cmdPipelineList := createPipelineList()
 	cmdPipelineInspect := createPipelineInspect()
 
+	// config commands
+	cmdConfigActivate := createConfigActivate()
+	cmdConfigDeactivate := createConfigDeactivate()
+	cmdConfigAdd := createConfigAdd()
+	cmdConfigRemove := createConfigRemove()
+	cmdConfigList := createConfigList()
+
 	var rootCmd = &cobra.Command{Use: "seldon", SilenceErrors: false, SilenceUsage: true}
 
 	rootCmd.PersistentFlags().BoolP(flagShowRequest, "r", false, "show request")
 	rootCmd.PersistentFlags().BoolP(flagShowResponse, "o", true, "show response")
 	rootCmd.DisableAutoGenTag = true
 
-	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline)
+	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline, cmdConfig)
 	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta, cmdModelList)
 	cmdServer.AddCommand(cmdServerStatus, cmdServerList)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus, cmdExperimentList)
 	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer, cmdPipelineList, cmdPipelineInspect)
+	cmdConfig.AddCommand(cmdConfigActivate, cmdConfigAdd, cmdConfigDeactivate, cmdConfigList, cmdConfigRemove)
 
 	return rootCmd
 }

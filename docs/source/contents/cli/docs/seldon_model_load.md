@@ -13,7 +13,8 @@ seldon model load [flags]
 ### Options
 
 ```
-  -f, --file-path string        model file to load
+      --authority string        authority (HTTP/2) or virtual host (HTTP/1)
+  -f, --file-path string        model manifest file (YAML)
   -h, --help                    help for load
       --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
 ```

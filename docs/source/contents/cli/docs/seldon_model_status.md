@@ -13,6 +13,7 @@ seldon model status <modelName> [flags]
 ### Options
 
 ```
+      --authority string        authority (HTTP/2) or virtual host (HTTP/1)
   -h, --help                    help for status
       --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
   -w, --wait string             model wait condition
