@@ -94,9 +94,9 @@ func (tn *TopicNamer) GetModelOrPipelineTopic(pipelineName string, stepReference
 
 }
 
-func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, tin map[string]string) []*chainer.PipelineTensorMapping {
+func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, userTensorMap map[string]string) []*chainer.PipelineTensorMapping {
 	var mappings []*chainer.PipelineTensorMapping
-	for k, v := range tin {
+	for k, v := range userTensorMap {
 		stepName := strings.Split(k, pipeline.StepNameSeperator)[0]
 		var topicAndTensor string
 		if stepName == pipelineName {
@@ -119,9 +119,10 @@ func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) 
 		parts := strings.Split(k, pipeline.StepNameSeperator)
 		var topicAndTensor string
 		switch len(parts) {
-		case 3:
+		case 3: // A pipeline reference <pipelineName>.<inputs|outputs>.<tensorName>
 			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
-		case 5: // take value after <pipelineName>.step
+		case 5: // A fully qualified pipeline step tensor  <pipelineName>.step.<stepName>.<inputs|outputs>.<tensorName>
+			// take value after <pipelineName>.step
 			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
 		}
 		mappings = append(mappings, &chainer.PipelineTensorMapping{
@@ -133,10 +134,14 @@ func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) 
 	return mappings
 }
 
+// Always the initial part for pipeline inputs
+// <pipelineName>. etc
 func (tn *TopicNamer) GetPipelineNameFromInput(inputSpecifier string) string {
 	return strings.Split(inputSpecifier, pipeline.StepNameSeperator)[0]
 }
 
+// if pipelineInput return it: <pipelineName>.<inputs|outputs>
+// If pipeline step return stepName (which is a model reference) onwards: <pipelineName>.step.<stepName>.<inputs|outputs>.(tensorName)?
 func (tn *TopicNamer) CreateStepReferenceFromPipelineInput(pipelineInputs string) string {
 	parts := strings.Split(pipelineInputs, pipeline.StepNameSeperator)
 	switch parts[1] {

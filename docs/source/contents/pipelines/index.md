@@ -157,7 +157,7 @@ There is also an `externalTriggers` section which allows triggers from other pip
 Further examples can be found in the [pipeline-to-pipeline examples](../examples/pipeline-to-pipeline.md).
 
 Present caveats:
- * Circular dependencies are not detected.
+ * Circular dependencies are not presently detected.
  * Pipeline status is local to each pipeline.
 
 ## Data Centric Implementation

@@ -168,10 +168,14 @@ func (c *ChainerServer) StopSendPipelineEvents() {
 	}
 }
 
+// Create the topics for pipeline inputs
+// This will be pipeline inputs/outputs or model topics
 func (c *ChainerServer) createPipelineTopicSources(inputs []string) []*chainer.PipelineTopic {
 	var pipelineTopics []*chainer.PipelineTopic
 	for _, inp := range inputs {
+		// The pipeline name being referred to by the input specification
 		pipelineName := c.topicNamer.GetPipelineNameFromInput(inp)
+		// The topic being referred to: either pipeline or model
 		source := c.topicNamer.GetModelOrPipelineTopic(pipelineName, c.topicNamer.CreateStepReferenceFromPipelineInput(inp))
 		pipelineTopics = append(pipelineTopics, &chainer.PipelineTopic{PipelineName: pipelineName, TopicName: source})
 	}
