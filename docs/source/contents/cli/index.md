@@ -98,10 +98,44 @@ To manage config files and activate them you can use the CLI command `seldon con
 For example:
 
 ```
-seldon config list
+$ seldon config list
 config		path						active
 ------		----						------
-kind-sasl	/home/work/.config/seldon/cli/config-sasl.json	*
+kind-sasl	/home/work/seldon/cli/config-sasl.json		*
+
+$ seldon config deactivate kind-sasl
+
+$ seldon config list
+config		path						active
+------		----						------
+kind-sasl	/home/work/seldon/cli/config-sasl.json	
+
+$ seldon config add gcp-scv2 ~/seldon/cli/gcp.json
+
+$ seldon config list
+config		path						active
+------		----						------
+gcp-scv2	/home/work/seldon/cli/gcp.json		
+kind-sasl	/home/work/seldon/cli/config-sasl.json	
+
+$ seldon config activate gcp-scv2
+
+$ seldon config list
+config		path						active
+------		----						------
+gcp-scv2	/home/work/seldon/cli/gcp.json	    		*
+kind-sasl	/home/work/seldon/cli/config-sasl.json
+
+$ seldon config list kind-sasl
+{
+  "controlplane": {
+    "schedulerHost": "172.19.255.2:9004"
+  },
+  "kafka": {
+    "bootstrap": "172.19.255.3:9093",
+    "caPath": "/home/work/gcp/scv2/certs/seldon-cluster-ca-cert/ca.crt"
+  }
+}
 ```
 
 ## TLS Certificates for Local Use
