@@ -23,7 +23,7 @@ RUN INSTALL_DIR=/tmp/flatc-install && \
 
 # Install python dependencies
 RUN pip install --upgrade pip setuptools wheel && \
-    pip install grpcio grpcio-tools flatbuffers twine mypy-protobuf
+    pip install grpcio grpcio-tools twine mypy-protobuf
 
 # Install latest git
 RUN apt-get upgrade -y && \
