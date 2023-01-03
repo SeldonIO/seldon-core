@@ -326,9 +326,12 @@ func TestToStatefulSet(t *testing.T) {
 					},
 					Template: v1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels:    map[string]string{constants.ServerLabelNameKey: "foo", constants.AppKey: constants.ServerLabelValue},
-							Name:      "foo",
-							Namespace: "default",
+							Labels: map[string]string{constants.ServerLabelNameKey: "foo",
+								constants.AppKey: constants.ServerLabelValue,
+								"l1":             "l1val"},
+							Annotations: map[string]string{"a1": "a1val"},
+							Name:        "foo",
+							Namespace:   "default",
 						},
 						Spec: v1.PodSpec{
 							Containers: []v1.Container{
