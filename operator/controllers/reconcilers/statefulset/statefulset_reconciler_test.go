@@ -42,7 +42,8 @@ func TestReconcile(t *testing.T) {
 
 	type test struct {
 		name                 string
-		meta                 metav1.ObjectMeta
+		metaServer           metav1.ObjectMeta
+		metaServerConfig     metav1.ObjectMeta
 		podSpec              *v1.PodSpec
 		volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim
 		scaling              *mlopsv1alpha1.ScalingSpec
@@ -58,7 +59,11 @@ func TestReconcile(t *testing.T) {
 	tests := []test{
 		{
 			name: "Create",
-			meta: metav1.ObjectMeta{
+			metaServer: metav1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "default",
+			},
+			metaServerConfig: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "default",
 			},
@@ -92,7 +97,11 @@ func TestReconcile(t *testing.T) {
 		},
 		{
 			name: "Update",
-			meta: metav1.ObjectMeta{
+			metaServer: metav1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "default",
+			},
+			metaServerConfig: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "default",
 			},
@@ -132,7 +141,11 @@ func TestReconcile(t *testing.T) {
 		},
 		{
 			name: "Same",
-			meta: metav1.ObjectMeta{
+			metaServer: metav1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "default",
+			},
+			metaServerConfig: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "default",
 			},
@@ -226,7 +239,7 @@ func TestReconcile(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			r := NewStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.meta, test.podSpec, test.volumeClaimTemplates, test.scaling)
+			r := NewStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, test.podSpec, test.volumeClaimTemplates, test.scaling, test.metaServerConfig)
 			rop, err := r.getReconcileOperation()
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
@@ -249,6 +262,8 @@ func TestToStatefulSet(t *testing.T) {
 		name                 string
 		meta                 metav1.ObjectMeta
 		podSpec              *v1.PodSpec
+		labels               map[string]string
+		annotations          map[string]string
 		volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim
 		scaling              *mlopsv1alpha1.ScalingSpec
 		statefulSet          *appsv1.StatefulSet
@@ -276,6 +291,8 @@ func TestToStatefulSet(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			labels:      map[string]string{"l1": "l1val"},
+			annotations: map[string]string{"a1": "a1val"},
 			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
 				{
 					Name: "model-repository",
@@ -296,7 +313,10 @@ func TestToStatefulSet(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
-					Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
+					Labels: map[string]string{
+						constants.AppKey: constants.ServerLabelValue,
+						"l1":             "l1val"},
+					Annotations: map[string]string{"a1": "a1val"},
 				},
 				Spec: appsv1.StatefulSetSpec{
 					ServiceName: "foo",
@@ -344,8 +364,64 @@ func TestToStatefulSet(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			statefulSet := toStatefulSet(test.meta, test.podSpec, test.volumeClaimTemplates, test.scaling)
+			statefulSet := toStatefulSet(test.meta, test.podSpec, test.volumeClaimTemplates, test.scaling, test.labels, test.annotations)
 			g.Expect(equality.Semantic.DeepEqual(statefulSet, test.statefulSet)).To(BeTrue())
 		})
 	}
+}
+
+func TestLabelsAnnotations(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                string
+		metaServer          metav1.ObjectMeta
+		metaServerConfig    metav1.ObjectMeta
+		expectedLabels      map[string]string
+		expectedAnnotations map[string]string
+	}
+	tests := []test{
+		{
+			name: "server",
+			metaServer: metav1.ObjectMeta{
+				Labels:      map[string]string{"l1": "l1"},
+				Annotations: map[string]string{"a1": "a1"},
+			},
+			metaServerConfig:    metav1.ObjectMeta{},
+			expectedLabels:      map[string]string{"l1": "l1"},
+			expectedAnnotations: map[string]string{"a1": "a1"},
+		},
+		{
+			name: "server overrrides",
+			metaServer: metav1.ObjectMeta{
+				Labels:      map[string]string{"l1": "l1"},
+				Annotations: map[string]string{"a1": "a1", "a2": "a2"},
+			},
+			metaServerConfig: metav1.ObjectMeta{
+				Labels: map[string]string{"l1": "server config",
+					"l2": "l2"},
+				Annotations: map[string]string{"a1": "server config"},
+			},
+			expectedLabels:      map[string]string{"l1": "l1", "l2": "l2"},
+			expectedAnnotations: map[string]string{"a1": "a1", "a2": "a2"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := logrtest.New(t)
+			var client client2.Client
+			scheme := runtime.NewScheme()
+			err := appsv1.AddToScheme(scheme)
+			g.Expect(err).To(BeNil())
+			client = testing2.NewFakeClient(scheme)
+			r := NewStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, &v1.PodSpec{}, []mlopsv1alpha1.PersistentVolumeClaim{}, &mlopsv1alpha1.ScalingSpec{}, test.metaServerConfig)
+			for k, v := range test.expectedLabels {
+				g.Expect(r.StatefulSet.Labels[k]).To(Equal(v))
+			}
+			for k, v := range test.expectedAnnotations {
+				g.Expect(r.StatefulSet.Annotations[k]).To(Equal(v))
+			}
+		})
+	}
+
 }
