@@ -6,6 +6,7 @@ const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
 const onnx_gpt2 = "onnx_gpt2"
 const mlflow_wine = "mlflow_wine"
+const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
 
 const models = {
     mlflow_wine: {
@@ -29,6 +30,14 @@ const models = {
             "uriTemplate": "gs://seldon-models/triton/simple",
             "maxUriSuffix": 0,
             "requirements": ["tensorflow"],
+            "memoryBytes": 20000,
+        },
+    },
+    add10: {
+        "modelTemplate": {
+            "uriTemplate": "gs://seldon-models/triton/add10",
+            "maxUriSuffix": 0,
+            "requirements": ["tensorflow", "python"],
             "memoryBytes": 20000,
         },
     },
@@ -98,6 +107,13 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         return {
             "http": {"inputs":[{"name":"INPUT0","data": data,"datatype":"INT32","shape":shape},{"name":"INPUT1","data":data,"datatype":"INT32","shape":shape}]},
             "grpc": {"inputs":[{"name":"INPUT0","contents":{"int_contents":data},"datatype":"INT32","shape":shape},{"name":"INPUT1","contents":{"int_contents":data},"datatype":"INT32","shape":shape}]}
+        }
+    } else if  (modelName == add10) {
+        const shape = [4]
+        var data = new Array(4).fill(0.1)
+        return {
+            "http": {"inputs":[{"name":"INPUT","data": data,"datatype":"FP32","shape":shape}]},
+            "grpc": {"inputs":[{"name":"INPUT","contents":{"int_contents":data},"datatype":"FP32","shape":shape}]}
         }
     } else if (modelName == iris) {
         const shape = [inferBatchSize, 4]
