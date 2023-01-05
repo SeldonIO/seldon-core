@@ -86,6 +86,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		transCreds = kc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+	// note: retry is done in the caller
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
 	}

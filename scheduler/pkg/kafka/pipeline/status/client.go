@@ -26,8 +26,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/cenkalti/backoff/v4"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -83,9 +81,6 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 			return err
 		}
 	}
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-	}
 	var transCreds credentials.TransportCredentials
 	var port int
 	if pc.certificateStore == nil {
@@ -97,10 +92,9 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 		transCreds = pc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+	// note: retry is done in the caller
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
