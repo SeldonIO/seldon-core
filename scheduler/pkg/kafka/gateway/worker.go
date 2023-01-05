@@ -229,6 +229,11 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 			}
 		}
 	}
+	if logger.Logger.IsLevelEnabled(log.DebugLevel) {
+		for _, h := range kafkaHeaders {
+			logger.Debugf("Adding kafka header for topic %s %s:%s", topic, h.Key, string(h.Value))
+		}
+	}
 	logger.Infof("Produce response to topic %s", topic)
 
 	msg := &kafka.Message{

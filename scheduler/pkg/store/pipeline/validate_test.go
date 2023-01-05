@@ -533,6 +533,217 @@ func TestCheckInputsAndTriggersDiffer(t *testing.T) {
 	}
 }
 
+func TestPipelineInput(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "No input",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "No external inputs",
+			pipelineVersion: &PipelineVersion{
+				Name:  "test",
+				Input: &PipelineInput{},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "", pipelineInputEmptyErr},
+		},
+		{
+			name: "Valid pipeline input",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.inputs",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "Valid pipeline outputs",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.outputs",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "Bad input specifier",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.foo",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "foo.foo", pipelineInputInvalidPrefixReason},
+		},
+		{
+			name: "Bad input specifier",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "foo.step", pipelineInputInvalidPrefixReason},
+		},
+		{
+			name: "Bad input step no suffix",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "foo.step.bar", pipelineInputStepBadSuffix},
+		},
+		{
+			name: "Bad input step no suffix",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar.zee",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "foo.step.bar.zee", pipelineInputStepBadSuffix},
+		},
+		{
+			name: "Bad input step inputs ok",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar.inputs",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "Bad input step outputs ok",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar.outputs",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "input step inputs tensor ok",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar.inputs.tensor",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+		},
+		{
+			name: "Bad input step inputs too long",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Input: &PipelineInput{
+					ExternalInputs: []string{
+						"foo.step.bar.inputs.tensor.xyz",
+					},
+				},
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+				},
+			},
+			err: &PipelineInputErr{"test", "foo.step.bar.inputs.tensor.xyz", pipelineInputTooLongReason},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkPipelineInput(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}
+
 func TestCheckStepNameNotPipelineName(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tests := []validateTest{
@@ -626,7 +837,7 @@ func TestCheckStepOutputs(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := checkStepOutputs(test.pipelineVersion)
+			err := checkPipelineOutputs(test.pipelineVersion)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 			} else {

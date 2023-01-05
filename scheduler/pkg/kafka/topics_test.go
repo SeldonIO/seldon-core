@@ -19,6 +19,8 @@ package kafka
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+
 	. "github.com/onsi/gomega"
 )
 
@@ -79,7 +81,7 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 		pipelineName string
 		topicNamer   *TopicNamer
 		in           map[string]string
-		expected     map[string]string
+		expected     []*chainer.PipelineTensorMapping
 	}
 
 	tests := []test{
@@ -88,23 +90,107 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 			pipelineName: "test",
 			topicNamer:   NewTopicNamer("default"),
 			in:           map[string]string{"step.inputs.t1": "t1in", "step.inputs.t2": "t2in"},
-			expected:     map[string]string{"seldon.default.model.step.inputs.t1": "t1in", "seldon.default.model.step.inputs.t2": "t2in"},
+			expected: []*chainer.PipelineTensorMapping{
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "seldon.default.model.step.inputs.t1",
+					TensorName:     "t1in",
+				},
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "seldon.default.model.step.inputs.t2",
+					TensorName:     "t2in",
+				},
+			},
 		},
 		{
 			name:         "pipeline references",
 			pipelineName: "test",
 			topicNamer:   NewTopicNamer("default"),
 			in:           map[string]string{"test.inputs.t1": "t1"},
-			expected:     map[string]string{"seldon.default.pipeline.test.inputs.t1": "t1"},
+			expected: []*chainer.PipelineTensorMapping{
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "seldon.default.pipeline.test.inputs.t1",
+					TensorName:     "t1",
+				},
+			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			res := test.topicNamer.GetFullyQualifiedTensorMap(test.pipelineName, test.in)
-			for k, v := range res {
-				g.Expect(v).To(Equal(test.expected[k]))
+			results := test.topicNamer.GetFullyQualifiedTensorMap(test.pipelineName, test.in)
+			for _, tm := range results {
+				found := false
+				for _, exp := range test.expected {
+					if tm.PipelineName == exp.PipelineName &&
+						tm.TopicAndTensor == exp.TopicAndTensor &&
+						tm.TensorName == exp.TensorName {
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue())
 			}
+		})
+	}
+}
 
+func TestGetFullyQualifiedPipelineTensorMap(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		topicNamer *TopicNamer
+		in         map[string]string
+		expected   *chainer.PipelineTensorMapping
+	}
+
+	tests := []test{
+		{
+			name:       "pipeline inputs",
+			topicNamer: NewTopicNamer("default"),
+			in: map[string]string{
+				"pipeline1.inputs.input1": "t1in",
+			},
+			expected: &chainer.PipelineTensorMapping{
+				PipelineName:   "pipeline1",
+				TopicAndTensor: "seldon.default.pipeline.pipeline1.inputs.input1",
+				TensorName:     "t1in",
+			},
+		},
+		{
+			name:       "pipeline outputs",
+			topicNamer: NewTopicNamer("default"),
+			in: map[string]string{
+				"pipeline2.outputs.output1": "output2",
+			},
+			expected: &chainer.PipelineTensorMapping{
+				PipelineName:   "pipeline2",
+				TopicAndTensor: "seldon.default.pipeline.pipeline2.outputs.output1",
+				TensorName:     "output2",
+			},
+		},
+		{
+			name:       "basic",
+			topicNamer: NewTopicNamer("default"),
+			in: map[string]string{
+				"pipeline3.steps.model1.outputs.output1": "output2",
+			},
+			expected: &chainer.PipelineTensorMapping{
+				PipelineName:   "pipeline3",
+				TopicAndTensor: "seldon.default.model.model1.outputs.output1",
+				TensorName:     "output2",
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := test.topicNamer.GetFullyQualifiedPipelineTensorMap(test.in)
+			result := results[0]
+			g.Expect(result.PipelineName).To(Equal(test.expected.PipelineName))
+			g.Expect(result.TopicAndTensor).To(Equal(test.expected.TopicAndTensor))
+			g.Expect(result.TensorName).To(Equal(test.expected.TensorName))
 		})
 	}
 }

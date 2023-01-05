@@ -1,0 +1,17 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimple-combined-step
+spec:
+  input:
+    externalInputs:
+      - tfsimple-extended.step.tfsimple2.outputs.OUTPUT0
+      - tfsimple-extended2.step.tfsimple2.outputs.OUTPUT0
+    tensorMap:
+      tfsimple-extended.step.tfsimple2.outputs.OUTPUT0: INPUT0
+      tfsimple-extended2.step.tfsimple2.outputs.OUTPUT0: INPUT1
+  steps:
+    - name: tfsimple2
+  output:
+    steps:
+    - tfsimple2

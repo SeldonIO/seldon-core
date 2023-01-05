@@ -55,6 +55,7 @@ type PipelineVersion struct {
 	Name           string
 	Version        uint32
 	UID            string
+	Input          *PipelineInput
 	Steps          map[string]*PipelineStep
 	State          *PipelineState
 	Output         *PipelineOutput
@@ -130,4 +131,13 @@ type PipelineOutput struct {
 	JoinWindowMs  uint32
 	StepsJoinType JoinType
 	TensorMap     map[string]string
+}
+
+type PipelineInput struct {
+	ExternalInputs   []string
+	ExternalTriggers []string
+	TensorMap        map[string]string
+	JoinWindowMs     *uint32
+	InputsJoinType   JoinType
+	TriggersJoinType JoinType
 }

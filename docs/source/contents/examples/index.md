@@ -14,6 +14,7 @@ This section will provide some examples to allow operations with Seldon to be te
 ## Pipelines
 
 * [Pipeline examples](pipeline-examples.md)
+* [Pipeline to pipeline examples](pipeline-to-pipeline.md)
 
 ## Explainers
 
@@ -51,6 +52,7 @@ local-examples.md
 k8s-examples.md
 huggingface.md
 pipeline-examples.md
+pipeline-to-pipeline.md
 explainer-examples.md
 local-experiments.md
 experiment-versions.md

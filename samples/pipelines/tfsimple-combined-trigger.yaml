@@ -1,0 +1,18 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimple-combined-trigger
+spec:
+  input:
+    externalInputs:
+      - tfsimple-extended.outputs
+    externalTriggers:
+      - tfsimple-extended2.outputs
+    tensorMap:
+      tfsimple-extended.outputs.OUTPUT0: INPUT0
+      tfsimple-extended.outputs.OUTPUT1: INPUT1
+  steps:
+    - name: tfsimple2
+  output:
+    steps:
+    - tfsimple2

@@ -104,7 +104,7 @@ class Pipeline(
                         metadata.name,
                         it.sourcesList,
                         it.triggersList,
-                        it.tensorMapMap,
+                        it.tensorMapList,
                         it.sink,
                         it.inputJoinTy,
                         it.triggersJoinTy,

@@ -26,8 +26,11 @@ import (
 
 // PipelineSpec defines the desired state of Pipeline
 type PipelineSpec struct {
+	// External inputs to this pipeline, optional
+	Input *PipelineInput `json:"input,omitempty"`
 	// The steps of this inference graph pipeline
-	Steps  []PipelineStep  `json:"steps"`
+	Steps []PipelineStep `json:"steps"`
+	// Synchronous output from this pipeline, optional
 	Output *PipelineOutput `json:"output,omitempty"`
 }
 
@@ -65,6 +68,21 @@ type PipelineBatch struct {
 	Size     *uint32 `json:"size,omitempty"`
 	WindowMs *uint32 `json:"windowMs,omitempty"`
 	Rolling  bool    `json:"rolling,omitempty"`
+}
+
+type PipelineInput struct {
+	// Previous external pipeline steps to receive data from
+	ExternalInputs []string `json:"externalInputs,omitempty"`
+	// Triggers required to activate inputs
+	ExternalTriggers []string `json:"externalTriggers,omitempty"`
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+	// One of inner (default), outer, or any (see above for details)
+	JoinType *JoinType `json:"joinType,omitempty"`
+	// One of inner (default), outer, or any (see above for details)
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
 }
 
 type PipelineOutput struct {
@@ -112,6 +130,39 @@ func init() {
 func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	var steps []*scheduler.PipelineStep
 	var output *scheduler.PipelineOutput
+	var input *scheduler.PipelineInput
+	if p.Spec.Input != nil {
+		input = &scheduler.PipelineInput{
+			ExternalInputs:   p.Spec.Input.ExternalInputs,
+			ExternalTriggers: p.Spec.Input.ExternalTriggers,
+			JoinWindowMs:     p.Spec.Input.JoinWindowMs,
+			TensorMap:        p.Spec.Input.TensorMap,
+		}
+		if p.Spec.Input.JoinType != nil {
+			switch *p.Spec.Input.JoinType {
+			case JoinTypeInner:
+				input.JoinType = scheduler.PipelineInput_INNER
+			case JoinTypeOuter:
+				input.JoinType = scheduler.PipelineInput_OUTER
+			case JoinTypeAny:
+				input.JoinType = scheduler.PipelineInput_ANY
+			default:
+				input.JoinType = scheduler.PipelineInput_INNER
+			}
+		}
+		if p.Spec.Input.TriggersJoinType != nil {
+			switch *p.Spec.Input.TriggersJoinType {
+			case JoinTypeInner:
+				input.TriggersJoin = scheduler.PipelineInput_INNER
+			case JoinTypeOuter:
+				input.TriggersJoin = scheduler.PipelineInput_OUTER
+			case JoinTypeAny:
+				input.TriggersJoin = scheduler.PipelineInput_ANY
+			default:
+				input.TriggersJoin = scheduler.PipelineInput_INNER
+			}
+		}
+	}
 	for _, step := range p.Spec.Steps {
 		pipelineStep := &scheduler.PipelineStep{
 			Name:         step.Name,
@@ -174,6 +225,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	return &scheduler.Pipeline{
 		Name:           p.GetName(),
 		Uid:            "", // ID Will be set on scheduler side. IDs don't change on k8s when updates are made so can't use it for each version
+		Input:          input,
 		Steps:          steps,
 		Output:         output,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
