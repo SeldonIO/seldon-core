@@ -471,14 +471,13 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	pip, err := p.pipelineHandler.GetPipeline(pipelineName)
-	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline %s", pipelineName)
 		return err
-	} else {
-		if pip.Deleted {
-			return p.removePipeline(pip)
-		}
+	}
+	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
+	if pip.Deleted {
+		return p.removePipeline(pip)
 	}
 	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
