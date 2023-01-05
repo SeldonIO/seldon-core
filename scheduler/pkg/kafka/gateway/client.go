@@ -101,7 +101,6 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		return err
 	}
 	kc.conn = conn
-	logger.Info("Connected to scheduler")
 	return nil
 }
 
