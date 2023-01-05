@@ -85,6 +85,13 @@ type V2Err struct {
 	errCode int
 }
 
+func (v2err *V2Err) Error() string {
+	if v2err != nil {
+		return v2err.err.Error()
+	}
+	return ""
+}
+
 func (v *V2Err) IsNotFound() bool {
 	if v.isGrpc {
 		return v.errCode == int(codes.NotFound)

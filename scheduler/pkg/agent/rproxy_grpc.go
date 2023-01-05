@@ -237,7 +237,9 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))
 	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
 
@@ -269,7 +271,9 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 
 	resp, err := rp.getV2GRPCClient().ModelMetadata(ctx, r)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelMetadata(ctx, r)
 	}
 	return resp, err
@@ -289,7 +293,9 @@ func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequ
 
 	resp, err := rp.getV2GRPCClient().ModelReady(ctx, r)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelReady(ctx, r)
 	}
 	return resp, err
