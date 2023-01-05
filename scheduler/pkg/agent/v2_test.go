@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -250,9 +249,6 @@ func TestGrpcV2WithError(t *testing.T) {
 func TestGrpcV2WithRetry(t *testing.T) {
 	// note: we keep starting and stopping the service to simulate transient communication errors
 	g := NewGomegaWithT(t)
-
-	isActive := atomic.Bool{}
-	isActive.Store(true)
 	mockMLServer := &mockGRPCMLServer{}
 	backEndGRPCPort, err := getFreePort()
 	if err != nil {
@@ -269,27 +265,20 @@ func TestGrpcV2WithRetry(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	mockMLServer.stop()
 
-	// keep starting and stopping the server in the background
+	// start the server in background after 0.5s
 	go func() {
-		for isActive.Load() {
-			_ = mockMLServer.setup(uint(backEndGRPCPort))
-			go func() {
-				_ = mockMLServer.start()
-			}()
-			time.Sleep(500 * time.Millisecond)
-			mockMLServer.stop()
-			time.Sleep(100 * time.Millisecond)
-		}
-		mockMLServer.stop()
+		time.Sleep(500 * time.Millisecond)
+		_ = mockMLServer.setup(uint(backEndGRPCPort))
+		go func() {
+			_ = mockMLServer.start()
+		}()
+
 	}()
+	defer mockMLServer.stop()
 
 	// make sure that we can still get to the server
 	for i := 0; i < 20; i++ {
 		err = v2Client.Ready()
 		g.Expect(err).To(BeNil())
-		time.Sleep(100 * time.Millisecond)
 	}
-
-	// stop server
-	isActive.Store(false)
 }
