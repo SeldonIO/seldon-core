@@ -247,7 +247,7 @@ func TestGrpcV2WithError(t *testing.T) {
 }
 
 func TestGrpcV2WithRetry(t *testing.T) {
-	// note: we keep starting and stopping the service to simulate transient communication errors
+	// note: we delay starting the server to simulate transient errors
 	g := NewGomegaWithT(t)
 	mockMLServer := &mockGRPCMLServer{}
 	backEndGRPCPort, err := getFreePort()
@@ -276,7 +276,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 	}()
 	defer mockMLServer.stop()
 
-	// make sure that we can still get to the server
+	// make sure that we can still get to the server, this will require retries as the server starts after 0.5s
 	for i := 0; i < 20; i++ {
 		err = v2Client.Ready()
 		g.Expect(err).To(BeNil())
