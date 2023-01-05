@@ -21,3 +21,6 @@ help:
 
 install-dev:
 	pip install -r requirements-docs.txt
+
+dev_server: clean
+	sphinx-autobuild --host 0.0.0.0 source build/html%

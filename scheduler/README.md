@@ -162,7 +162,7 @@ protoc --version
 libprotoc 3.18.0
 ```
 
-Intall [go grpc plugins](https://grpc.io/docs/languages/go/quickstart/)
+Install [go grpc plugins](https://grpc.io/docs/languages/go/quickstart/)
 
 ```
 $ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
