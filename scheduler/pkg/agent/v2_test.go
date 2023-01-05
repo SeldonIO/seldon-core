@@ -289,5 +289,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 		g.Expect(err).To(BeNil())
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	// stop server
 	isActive.Store(false)
 }
