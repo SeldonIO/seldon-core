@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/python-builder:0.6
 
     steps:
@@ -23,7 +23,7 @@ jobs:
 
   python-tests:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/python-builder:0.6
 
     steps:
