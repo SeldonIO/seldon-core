@@ -87,7 +87,7 @@ func NewInferWorker(consumer *InferKafkaHandler, logger log.FieldLogger, tracePr
 		callOptions: opts,
 		topicNamer:  topicNamer,
 	}
-	// Create HTTP and gRPC clients
+	// Create gRPC clients
 	grpcClient, err := iw.getGrpcClient(consumer.consumerConfig.InferenceServerConfig.Host, consumer.consumerConfig.InferenceServerConfig.GrpcPort)
 	if err != nil {
 		return nil, err
@@ -113,6 +113,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 	logger := iw.logger.WithField("func", "getGrpcClient")
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
+		grpc_retry.WithMax(util.GrpcRetryMaxCount),  // retry envoy connection
 	}
 	var creds credentials.TransportCredentials
 	if iw.consumer.tlsClientOptions.TLS {
