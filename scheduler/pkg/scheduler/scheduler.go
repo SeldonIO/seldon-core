@@ -80,10 +80,12 @@ func (s *SimpleScheduler) Schedule(modelKey string) error {
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
-	s.muFailedModels.RLock()
-	defer s.muFailedModels.RUnlock()
+	failedModels, err := s.getFailedModels()
+	if err != nil {
+		return nil, err
+	}
 	var updatedModels []string
-	for modelName := range s.failedModels {
+	for _, modelName := range failedModels {
 		err := s.scheduleToServer(modelName)
 		if err != nil {
 			s.logger.Debugf("Failed to schedule failed model %s", modelName)
