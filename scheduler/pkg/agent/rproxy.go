@@ -132,7 +132,9 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// this is likely to increase latency for genuine bad requests as we will retry twice
 	if res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusBadRequest {
 		internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
-		t.loader(internalModelName)
+		if v2Err := t.loader(internalModelName); v2Err != nil {
+			t.logger.WithError(v2Err).Warnf("cannot load model %s", internalModelName)
+		}
 
 		req2 := req.Clone(req.Context())
 

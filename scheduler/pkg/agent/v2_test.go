@@ -245,3 +245,40 @@ func TestGrpcV2WithError(t *testing.T) {
 	g.Expect(err).NotTo(BeNil())
 
 }
+
+func TestGrpcV2WithRetry(t *testing.T) {
+	// note: we delay starting the server to simulate transient errors
+	g := NewGomegaWithT(t)
+	mockMLServer := &mockGRPCMLServer{}
+	backEndGRPCPort, err := getFreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = mockMLServer.setup(uint(backEndGRPCPort))
+
+	//initial conn setup
+	go func() {
+		_ = mockMLServer.start()
+	}()
+	v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
+	err = v2Client.Ready()
+	g.Expect(err).To(BeNil())
+	mockMLServer.stop()
+
+	// start the server in background after 0.5s
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		_ = mockMLServer.setup(uint(backEndGRPCPort))
+		go func() {
+			_ = mockMLServer.start()
+		}()
+
+	}()
+	defer mockMLServer.stop()
+
+	// make sure that we can still get to the server, this will require retries as the server starts after 0.5s
+	for i := 0; i < 20; i++ {
+		err = v2Client.Ready()
+		g.Expect(err).To(BeNil())
+	}
+}

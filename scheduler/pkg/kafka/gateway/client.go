@@ -22,8 +22,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/cenkalti/backoff/v4"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -76,9 +74,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 			return err
 		}
 	}
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-	}
+
 	var transCreds credentials.TransportCredentials
 	var port int
 	if kc.certificateStore == nil {
@@ -90,10 +86,9 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		transCreds = kc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+	// note: retry is done in the caller
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
@@ -101,7 +96,6 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		return err
 	}
 	kc.conn = conn
-	logger.Info("Connected to scheduler")
 	return nil
 }
 
@@ -115,7 +109,7 @@ func (kc *KafkaSchedulerClient) Stop() {
 func (kc *KafkaSchedulerClient) Start() error {
 	logger := kc.logger.WithField("func", "Start")
 	// We keep trying to connect to scheduler.
-	// If SubscribeModelEvents returns we try to start connecing again.
+	// If SubscribeModelEvents returns we try to start connecting again.
 	// Only stop if asked to via the keepRunning flag.
 	// We allow the subscribeModelEvents to return nil on EOF to allow a new Exponential backoff to be started
 	// rather than return an error and continue the current Exponential backoff with might have reached large intervals

@@ -29,14 +29,14 @@ import (
 	"strconv"
 	"time"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -85,6 +85,13 @@ type V2Err struct {
 	errCode int
 }
 
+func (v2err *V2Err) Error() string {
+	if v2err != nil {
+		return v2err.err.Error()
+	}
+	return ""
+}
+
 func (v *V2Err) IsNotFound() bool {
 	if v.isGrpc {
 		return v.errCode == int(codes.NotFound)
@@ -104,6 +111,7 @@ var ErrServerNotReady = errors.New("Server not ready")
 func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
+		grpc_retry.WithMax(util.GrpcRetryMaxCount),
 	}
 
 	opts := []grpc.DialOption{
