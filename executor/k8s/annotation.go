@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	ANNOTATIONS_FILE                 = "/etc/podinfo/annotations"
-	ANNOTATION_GRPC_MAX_MESSAGE_SIZE = "seldon.io/grpc-max-message-size"
-	ANNOTATION_GRPC_TIMEOUT          = "seldon.io/grpc-timeout"
-	ANNOTATION_REST_TIMEOUT          = "seldon.io/rest-timeout"
+	ANNOTATIONS_FILE                     = "/etc/podinfo/annotations"
+	ANNOTATION_GRPC_MAX_MESSAGE_SIZE     = "seldon.io/grpc-max-message-size"
+	ANNOTATION_RABBITMQ_MAX_MESSAGE_SIZE = "seldon.io/rabbitmq-max-message-size-in-bytes"
+	ANNOTATION_GRPC_TIMEOUT              = "seldon.io/grpc-timeout"
+	ANNOTATION_REST_TIMEOUT              = "seldon.io/rest-timeout"
 )
 
 func trimQuotes(v string) string {

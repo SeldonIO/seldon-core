@@ -4,16 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/golang/protobuf/jsonpb"
 	guuid "github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/seldonio/seldon-core/executor/api/grpc/seldon/proto"
-	"log"
-	"net/url"
-	"os"
-	"time"
+	"github.com/seldonio/seldon-core/executor/k8s"
 
 	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/executor/api"
@@ -201,13 +204,40 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
 		rs.Log.Error(err, UNHANDLED_ERROR)
 		return fmt.Errorf("unhandled error %w from predictor process", err)
 	}
+	arrBytes, e := resPayload.GetBytes()
+	if e != nil {
+		return fmt.Errorf("error '%w' unmarshaling seldon payload", e)
+	}
+	annotations, _ := k8s.GetAnnotations()
+	msgLimit := annotations[k8s.ANNOTATION_RABBITMQ_MAX_MESSAGE_SIZE]
+	intMsgLimit, _ := strconv.Atoi(msgLimit)
+	rs.Log.Info("Maximum allowed message size for rabbitmq", "rabbitmq-max-message-size-in-bytes", intMsgLimit)
+	if len(arrBytes) > intMsgLimit {
+		message := &proto.SeldonMessage{
+			Status: &proto.Status{
+				Code:   -1,
+				Info:   "Payload size is greater than 10kb",
+				Reason: "payload is large",
+				Status: proto.Status_FAILURE,
+			},
+		}
+		jsonStr, err := new(jsonpb.Marshaler).MarshalToString(message)
+		if err != nil {
+			rs.Log.Error(err, "error marshaling seldon message")
+			return fmt.Errorf("error '%w' marshaling seldon message", err)
+		}
+		resPayload = &payload.BytesPayload{
+			Msg:             []byte(jsonStr),
+			ContentType:     rest.ContentTypeJSON,
+			ContentEncoding: "",
+		}
+	}
 
 	updatedPayload, err := UpdatePayloadWithPuid(reqPayload, resPayload)
 	if err != nil {
 		rs.Log.Error(err, UNHANDLED_ERROR)
 		return fmt.Errorf("unhandled error %w from predictor process", err)
 	}
-
 	return publishPayload(publisher, updatedPayload, seldonPuid)
 }
 
