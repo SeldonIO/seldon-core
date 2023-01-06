@@ -94,6 +94,26 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	return updatedModels, nil
 }
 
+
+func (s *SimpleScheduler) getFailedModels() ([]string, error) {
+	models, err := s.store.GetModels()
+	if err != nil {
+		return nil, err
+	}
+	var failedModels []string 
+	for _, model := range models {
+		version := model.GetLatest()
+		if version != nil {
+			versionState := version.ModelState() 
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed {
+				failedModels = append(failedModels, model.Name)
+			} 
+		}
+	}
+	return failedModels, nil
+}
+
+
 // TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	logger := s.logger.WithField("func", "scheduleToServer")
