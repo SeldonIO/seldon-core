@@ -1,4 +1,0 @@
-[ZoneTransfer]
-ZoneId=3
-ReferrerUrl=https://docs.seldon.io/projects/seldon-core/en/stable/analytics/logging.html
-HostUrl=https://raw.githubusercontent.com/SeldonIO/seldon-core/master/examples/centralised-logging/kibana-custom-search.png
