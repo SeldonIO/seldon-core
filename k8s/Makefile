@@ -13,7 +13,7 @@ RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 
 MLSERVER_IMG ?= seldonio/mlserver:1.2.1
-TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.05-py3
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.11-py3
 
 .PHONY: create
 create: create-yaml create-helm-charts

@@ -88,6 +88,7 @@ func (g *GatewayGrpcServer) Start() error {
 		opts = append(opts, grpc.Creds(g.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(maxConcurrentStreams))
+	opts = append(opts, grpc.MaxRecvMsgSize(util.GrpcMaxMsgSizeBytes))
 	opts = append(opts, grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	g.grpcServer = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(g.grpcServer, g)
