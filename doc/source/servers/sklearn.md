@@ -84,8 +84,7 @@ Acceptable values for the `method` parameter are `predict`, `predict_proba`,
 
 ## V2 protocol
 
-The SKLearn server can also be used to expose an API compatible with the [V2
-V2 Protocol](../graph/protocols.md#v2-protocol).
+The SKLearn server can also be used to expose an API compatible with the [V2 Protocol](../graph/protocols.md#v2-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
