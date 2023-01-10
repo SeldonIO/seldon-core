@@ -566,14 +566,14 @@ func isNilOutputContents(contents *v2_dataplane.InferTensorContents) bool {
 	if contents == nil {
 		return true
 	} else {
-		if contents.Fp32Contents == nil &&
-			contents.Fp64Contents == nil &&
-			contents.BoolContents == nil &&
-			contents.UintContents == nil &&
-			contents.Uint64Contents == nil &&
+		if contents.BoolContents == nil &&
 			contents.BytesContents == nil &&
 			contents.IntContents == nil &&
-			contents.Int64Contents == nil {
+			contents.Int64Contents == nil &&
+			contents.Fp32Contents == nil &&
+			contents.Fp64Contents == nil &&
+			contents.UintContents == nil &&
+			contents.Uint64Contents == nil {
 			return true
 		}
 	}

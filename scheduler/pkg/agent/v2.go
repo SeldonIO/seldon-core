@@ -116,7 +116,6 @@ func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(util.GrpcMaxMsgSizeBytes), grpc.MaxCallSendMsgSize(util.GrpcMaxMsgSizeBytes)),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
 	}
