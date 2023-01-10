@@ -562,12 +562,30 @@ func getDataSize(shape []int64) int64 {
 	return tot
 }
 
+func isNilOutputContents(contents *v2_dataplane.InferTensorContents) bool {
+	if contents == nil {
+		return true
+	} else {
+		if contents.BoolContents == nil &&
+			contents.BytesContents == nil &&
+			contents.IntContents == nil &&
+			contents.Int64Contents == nil &&
+			contents.Fp32Contents == nil &&
+			contents.Fp64Contents == nil &&
+			contents.UintContents == nil &&
+			contents.Uint64Contents == nil {
+			return true
+		}
+	}
+	return false
+}
+
 func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
 	outputIdx := 0
 	for _, rawOutput := range res.RawOutputContents {
 		contents := &v2_dataplane.InferTensorContents{}
 		for ; outputIdx < len(res.Outputs); outputIdx++ {
-			if res.Outputs[outputIdx].Contents == nil {
+			if isNilOutputContents(res.Outputs[outputIdx].Contents) {
 				break
 			}
 		}

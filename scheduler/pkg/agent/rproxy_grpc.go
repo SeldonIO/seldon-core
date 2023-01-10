@@ -119,6 +119,8 @@ func (rp *reverseGRPCProxy) Start() error {
 		opts = append(opts, grpc.Creds(rp.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
+	opts = append(opts, grpc.MaxRecvMsgSize(util.GrpcMaxMsgSizeBytes))
+	opts = append(opts, grpc.MaxSendMsgSize(util.GrpcMaxMsgSizeBytes))
 	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), rp.metrics.UnaryServerInterceptor())))
 	grpcServer := grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(grpcServer, rp)
