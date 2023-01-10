@@ -186,21 +186,21 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	}
 }
 
-func (rp *reverseGRPCProxy) addRequestIdToTrailer(ctx context.Context, trailer metadata.MD) {
+func (rp *reverseGRPCProxy) createOutgoingCtxWithRequestId(ctx context.Context) (context.Context, string) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		md = metadata.MD{}
 	}
+	var requestId string
 	requestIds := md.Get(util.RequestIdHeader)
-	trailerRequestIds := trailer.Get(util.RequestIdHeader)
-	rp.logger.Infof("Request ids %s and trailer request ids %s", requestIds, trailerRequestIds)
-	if len(trailerRequestIds) == 0 {
-		if len(requestIds) == 0 {
-			trailer.Set(util.RequestIdHeader, util.CreateRequestId())
-		} else {
-			trailer.Append(util.RequestIdHeader, requestIds...)
-		}
+	rp.logger.Debugf("Request ids from incoming meta %s", requestIds)
+	if len(requestIds) == 0 {
+		requestId = util.CreateRequestId()
+	} else {
+		requestId = requestIds[0]
 	}
+	ctxNew := metadata.NewOutgoingContext(ctx, md)
+	return metadata.AppendToOutgoingContext(ctxNew, util.RequestIdHeader, requestId), requestId
 }
 
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
@@ -235,22 +235,27 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
+
+	// Create an outgoing context for the proxy call to service from incoming context
+	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
+
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))
-	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
+	resp, err := rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
 	if retryForLazyReload(err) {
 		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
 			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
 		}
-		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
+		resp, err = rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
 	}
 
-	if trailer != nil {
-		rp.addRequestIdToTrailer(ctx, trailer)
-		errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
-		if errTrailer != nil {
-			logger.WithError(errTrailer).Error("Failed to set trailers")
-		}
+	if trailer == nil {
+		trailer = metadata.MD{}
+	}
+	trailer.Set(util.RequestIdHeader, requestId)
+	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
+	if errTrailer != nil {
+		logger.WithError(errTrailer).Error("Failed to set trailers")
 	}
 
 	grpcStatus, _ := status.FromError(err)

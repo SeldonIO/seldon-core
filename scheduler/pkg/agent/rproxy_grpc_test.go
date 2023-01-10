@@ -272,13 +272,12 @@ func TestReverseGRPCServiceEarlyStop(t *testing.T) {
 	g.Expect(ready).To(BeFalse())
 }
 
-func TestAddRequestIdToTrailer(t *testing.T) {
+func TestCreateOutgoingCtxWithRequestId(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
 		name               string
 		ctx                context.Context
-		trailer            metadata.MD
 		expectNewRequestId bool
 		expectedRequestId  string
 	}
@@ -286,27 +285,11 @@ func TestAddRequestIdToTrailer(t *testing.T) {
 		{
 			name:               "No request id in incoming context",
 			ctx:                context.TODO(),
-			trailer:            metadata.MD{},
 			expectNewRequestId: true,
 		},
 		{
 			name:               "request id already in incoming context",
 			ctx:                metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{util.RequestIdHeader: "1234"})),
-			trailer:            metadata.MD{},
-			expectNewRequestId: false,
-			expectedRequestId:  "1234",
-		},
-		{
-			name:               "request id already in trailer",
-			ctx:                context.TODO(),
-			trailer:            metadata.New(map[string]string{util.RequestIdHeader: "1234"}),
-			expectNewRequestId: false,
-			expectedRequestId:  "1234",
-		},
-		{
-			name:               "request id in context and in trailer",
-			ctx:                metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{util.RequestIdHeader: "9999"})),
-			trailer:            metadata.New(map[string]string{util.RequestIdHeader: "1234"}),
 			expectNewRequestId: false,
 			expectedRequestId:  "1234",
 		},
@@ -316,12 +299,13 @@ func TestAddRequestIdToTrailer(t *testing.T) {
 			rp := reverseGRPCProxy{
 				logger: log.New(),
 			}
-			rp.addRequestIdToTrailer(test.ctx, test.trailer)
-			data := test.trailer.Get(util.RequestIdHeader)
+			ctx, requestId := rp.createOutgoingCtxWithRequestId(test.ctx)
 			if test.expectNewRequestId {
-				g.Expect(len(data)).To(Equal(1))
+				md, _ := metadata.FromOutgoingContext(ctx)
+				g.Expect(len(md.Get(util.RequestIdHeader))).To(Equal(1))
+				g.Expect(md.Get(util.RequestIdHeader)[0]).To(Equal(requestId))
 			} else {
-				g.Expect(data[0]).To(Equal(test.expectedRequestId))
+				g.Expect(requestId).To(Equal(test.expectedRequestId))
 			}
 		})
 	}
