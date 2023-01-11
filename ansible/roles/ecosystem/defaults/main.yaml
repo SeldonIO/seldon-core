@@ -1,7 +1,7 @@
 repo_root_dir: "{{ inventory_dir }}/.."
 
 seldon_mesh_namespace: seldon-mesh
-kafka_namespace: seldon-mesh
+kafka_namespace: seldon-kafka
 
 kafka_wait_timeout: "300s"
 kafka_cluster_values: {}

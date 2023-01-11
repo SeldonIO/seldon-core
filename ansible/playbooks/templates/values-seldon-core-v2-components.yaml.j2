@@ -1,0 +1,33 @@
+dataflow:
+  resources:
+    cpu: 500m
+
+envoy:
+  service:
+    type: ClusterIP
+
+kafka:
+  bootstrap: "seldon-kafka-bootstrap.{{ strimzi_kafka_namespace }}:9092"
+  topics:
+    numPartitions: 4
+
+opentelemetry:
+  enable: false
+
+scheduler:
+  service:
+    type: ClusterIP
+
+serviceGRPCPrefix: "http2-"
+
+serverConfig:
+
+  mlserver:
+    resources:
+      cpu: 1
+      memory: 1Gi
+
+  triton:
+    resources:
+      cpu: 1
+      memory: 1Gi

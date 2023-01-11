@@ -9,7 +9,7 @@ Once installed you can use the following Playbooks that you will find in [Ansibl
 
 Further requirements:
   * Kubectl
-  * Helm 
+  * Helm
 
 ### Create Kind Cluster
 
@@ -35,10 +35,10 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 ```
 will only install Kafka when setting up the ecosystem.
 
-
 |                         | type   | default                     | comment                                                 |
 |-------------------------|--------|-----------------------------|---------------------------------------------------------|
-| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install seldon                             | 
+| seldon_kafka_namespace  | string | seldon-kafka                | namespace to install Kafka                              |
+| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
 | full_install            | bool   | yes                         | enables full ecosystem installation                     |
 | install_kafka           | bool   | {{ full_install }}          | installs Kafka using seldonio.k8s.strimzi_kafka         |
 | install_prometeus       | bool   | {{ full_install }}          | installs Prometheus using seldonio.k8s.prometheus       |
@@ -61,7 +61,7 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e seldon_mesh_namespace=<myname
 Run the following from the `ansible/` folder:
 
 ```bash
-ansible-playbook playbooks/setup-seldon-v2.yaml
+ansible-playbook playbooks/setup-seldon.yaml
 ```
 
 If you have changed the namespace you wish to use you will need to run with:
@@ -69,3 +69,13 @@ If you have changed the namespace you wish to use you will need to run with:
 ```bash
 ansible-playbook playbooks/setup-seldon-v2.yaml -e seldon_mesh_namespace=<mynamespace>
 ```
+
+|                         | type   | default                     | comment                                                 |
+|-------------------------|--------|-----------------------------|---------------------------------------------------------|
+| seldon_kafka_namespace  | string | seldon-kafka                | namespace to install Kafka                              |
+| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
+| seldon_crds_namespace   | string | default                     | namespace to install Seldon CRDs                        |
+| full_install            | bool   | yes                         | enables full ecosystem installation                     |
+| install_crds            | bool   | {{ full_install }}          | installs Seldon CRDs                                    |
+| install_components      | bool   | {{ full_install }}          | install Seldon components                               |
+| install_servers         | bool   | {{ full_install }}          | install Seldon servers                                  |

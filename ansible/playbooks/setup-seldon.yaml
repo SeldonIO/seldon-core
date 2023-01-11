@@ -1,0 +1,16 @@
+---
+- name: Setup SCV2 Ecosystem
+  hosts: localhost
+  roles:
+    - seldon
+  vars:
+    vars_file: vars/default.yaml
+    full_install: yes
+
+    seldon_install_crds: "{{ full_install }}"
+    seldon_install_components: "{{ full_install }}"
+    seldon_install_servers: "{{ full_install }}"
+
+  pre_tasks:
+  - name: "Load vars from {{ vars_file }}"
+    include_vars: "{{ vars_file }}"

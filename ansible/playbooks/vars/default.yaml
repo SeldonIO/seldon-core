@@ -1,3 +1,8 @@
+# Seldon Configuration
+seldon_mesh_namespace: seldon-mesh
+seldon_core_v2_component_values: "{{ lookup('template', 'values-seldon-core-v2-components.yaml.j2') | from_yaml }}"
+seldon_core_v2_servers_values: "{{ lookup('template', 'values-seldon-core-v2-servers.yaml.j2') | from_yaml }}"
+
 # Prometheus Operator Configuration
 seldon_monitoring_namespace: seldon-monitoring
 seldon_monitoring_create_default_podmonitor: false
@@ -8,7 +13,7 @@ seldon_monitoring_prometheus_operator_values:
       metric-labels-allowlist: pods=[*]
 
 # Strimzi Kafka Configuration
-strimzi_kafka_namespace: seldon-mesh
+strimzi_kafka_namespace: seldon-kafka
 strimzi_kafka_create_cluster: false
 strimzi_kafka_add_feature_gates: true
 strimzi_kafka_install_prometheus_operator: false
