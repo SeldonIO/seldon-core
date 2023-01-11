@@ -203,6 +203,18 @@ func (rp *reverseGRPCProxy) createOutgoingCtxWithRequestId(ctx context.Context) 
 	return metadata.AppendToOutgoingContext(ctxNew, util.RequestIdHeader, requestId), requestId
 }
 
+func (rp *reverseGRPCProxy) setTrailer(ctx context.Context, trailer metadata.MD, requestId string) {
+	logger := rp.logger.WithField("func", "SetTrailer")
+	if trailer == nil {
+		trailer = metadata.MD{}
+	}
+	trailer.Set(util.RequestIdHeader, requestId)
+	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
+	if errTrailer != nil {
+		logger.WithError(errTrailer).Error("Failed to set trailers")
+	}
+}
+
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
@@ -217,13 +229,13 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	wg.Add(1)
 	go func() {
 		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
-			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 		}
 	}()
 	defer func() {
 		go func() {
 			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
-				rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()
 	}()
@@ -244,19 +256,12 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	resp, err := rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
 	if retryForLazyReload(err) {
 		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
-			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+			logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
 		}
 		resp, err = rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
 	}
 
-	if trailer == nil {
-		trailer = metadata.MD{}
-	}
-	trailer.Set(util.RequestIdHeader, requestId)
-	errTrailer := grpc.SetTrailer(ctx, trailer) // pass on any trailers set by inference server such as MLServer
-	if errTrailer != nil {
-		logger.WithError(errTrailer).Error("Failed to set trailers")
-	}
+	rp.setTrailer(ctx, trailer, requestId)
 
 	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
