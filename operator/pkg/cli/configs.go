@@ -117,6 +117,9 @@ func (sc *SeldonCLIConfigs) Add(key string, configPath string) error {
 }
 
 func (sc *SeldonCLIConfigs) Remove(key string) error {
+	if sc.Active != nil && *sc.Active == key {
+		sc.Active = nil
+	}
 	delete(sc.Configs, key)
 	return sc.save()
 }

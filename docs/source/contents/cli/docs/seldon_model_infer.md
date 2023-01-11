@@ -22,14 +22,9 @@ seldon model infer <modelName> (data) [flags]
   -i, --iterations int          how many times to run inference (default 1)
   -t, --seconds int             number of secs to run inference
       --show-headers            show request and response headers
+  -r, --show-request            show request
+  -o, --show-response           show response (default true)
   -s, --sticky-session          use sticky session from last inference (only works with experiments)
-```
-
-### Options inherited from parent commands
-
-```
-  -r, --show-request    show request
-  -o, --show-response   show response (default true)
 ```
 
 ### SEE ALSO

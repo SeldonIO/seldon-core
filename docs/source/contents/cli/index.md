@@ -26,6 +26,7 @@ These defaults will be correct when Seldon Core v2 is installed locally as per t
 ```{literalinclude} ../../../../operator/cmd/seldon/cli/flags.go
 :language: golang
 :start-after: // Defaults
+:end-before: // Help statements
 ```
 
 ## Kubernetes Usage

@@ -89,7 +89,7 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagRequestId, "", "request id to show, if not specified will be all messages in offset range")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagOutputFormat, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
-	flags.String(flagNamespace, defaultNamespace, fmt.Sprintf("namespace. Default %s", defaultNamespace))
+	flags.String(flagNamespace, defaultNamespace, fmt.Sprintf("Kubernetes namespace. Default %s", defaultNamespace))
 	flags.Bool(flagVerbose, false, "display more details, such as headers")
 	return cmd
 }

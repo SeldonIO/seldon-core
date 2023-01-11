@@ -5,9 +5,7 @@
 ### Options
 
 ```
-  -h, --help            help for seldon
-  -r, --show-request    show request
-  -o, --show-response   show response (default true)
+  -h, --help   help for seldon
 ```
 
 ### SEE ALSO
