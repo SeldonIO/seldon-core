@@ -20,5 +20,7 @@ import "time"
 
 const (
 	GrpcRetryBackoffMillisecs         = 100
+	GrpcRetryMaxCount                 = 5 // around 3.2s in total wait duration
+	GrpcMaxMsgSizeBytes               = 1000 * 1024 * 1024
 	EnvoyUpdateDefaultBatchWaitMillis = 250 * time.Millisecond
 )

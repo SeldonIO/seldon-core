@@ -119,6 +119,8 @@ func (rp *reverseGRPCProxy) Start() error {
 		opts = append(opts, grpc.Creds(rp.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
+	opts = append(opts, grpc.MaxRecvMsgSize(util.GrpcMaxMsgSizeBytes))
+	opts = append(opts, grpc.MaxSendMsgSize(util.GrpcMaxMsgSizeBytes))
 	opts = append(opts, grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(otelgrpc.UnaryServerInterceptor(), rp.metrics.UnaryServerInterceptor())))
 	grpcServer := grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(grpcServer, rp)
@@ -237,7 +239,9 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))
 	resp, err := rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelInfer(ctx, r, opts...)
 	}
 
@@ -269,7 +273,9 @@ func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetada
 
 	resp, err := rp.getV2GRPCClient().ModelMetadata(ctx, r)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelMetadata(ctx, r)
 	}
 	return resp, err
@@ -289,7 +295,9 @@ func (rp *reverseGRPCProxy) ModelReady(ctx context.Context, r *v2.ModelReadyRequ
 
 	resp, err := rp.getV2GRPCClient().ModelReady(ctx, r)
 	if retryForLazyReload(err) {
-		rp.stateManager.v2Client.LoadModel(internalModelName)
+		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
+			rp.logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
+		}
 		resp, err = rp.getV2GRPCClient().ModelReady(ctx, r)
 	}
 	return resp, err
