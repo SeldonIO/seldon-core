@@ -26,6 +26,7 @@ These defaults will be correct when Seldon Core v2 is installed locally as per t
 ```{literalinclude} ../../../../operator/cmd/seldon/cli/flags.go
 :language: golang
 :start-after: // Defaults
+:end-before: // Help statements
 ```
 
 ## Kubernetes Usage
@@ -68,7 +69,7 @@ export SELDON_KAFKA_BROKER=<ip>:<port>
 
 ## Config file
 
-You can create a config file in `$HOME/.config/seldon/cli`. The settings will override any environment variable settings.
+You can create a config file to manage connections to running seldon core v2 installs. The settings will override any environment variable settings.
 
 The definition is shown below:
 
@@ -93,6 +94,51 @@ An example below shows an example where we connect via TLS to the Seldon schedul
 
 ```
 
+To manage config files and activate them you can use the CLI command `seldon config` which has subcommands to list, add, remove, activate and decative configs.
+
+For example:
+
+```
+$ seldon config list
+config		path						active
+------		----						------
+kind-sasl	/home/work/seldon/cli/config-sasl.json		*
+
+$ seldon config deactivate kind-sasl
+
+$ seldon config list
+config		path						active
+------		----						------
+kind-sasl	/home/work/seldon/cli/config-sasl.json	
+
+$ seldon config add gcp-scv2 ~/seldon/cli/gcp.json
+
+$ seldon config list
+config		path						active
+------		----						------
+gcp-scv2	/home/work/seldon/cli/gcp.json		
+kind-sasl	/home/work/seldon/cli/config-sasl.json	
+
+$ seldon config activate gcp-scv2
+
+$ seldon config list
+config		path						active
+------		----						------
+gcp-scv2	/home/work/seldon/cli/gcp.json	    		*
+kind-sasl	/home/work/seldon/cli/config-sasl.json
+
+$ seldon config list kind-sasl
+{
+  "controlplane": {
+    "schedulerHost": "172.19.255.2:9004"
+  },
+  "kafka": {
+    "bootstrap": "172.19.255.3:9093",
+    "caPath": "/home/work/gcp/scv2/certs/seldon-cluster-ca-cert/ca.crt"
+  }
+}
+```
+
 ## TLS Certificates for Local Use
 
 For running with Kubernetes TLS connections on the control and/or data plane, certificates will need to be downloaded locally. We provide an example script which will download certificates from a Kubernetes secret and store them in a folder. It can be found in `hack/download-k8s-certs.sh` and takes 2 or 3 arguments:
@@ -112,10 +158,16 @@ e.g.:
 :hidden:
 
 docs/seldon.md
+docs/seldon_config.md
 docs/seldon_model.md
 docs/seldon_experiment.md
 docs/seldon_pipeline.md
 docs/seldon_server.md
+docs/seldon_config_activate.md
+docs/seldon_config_add.md
+docs/seldon_config_deactivate.md
+docs/seldon_config_list.md
+docs/seldon_config_remove.md
 docs/seldon_model_infer.md
 docs/seldon_model_load.md
 docs/seldon_model_status.md

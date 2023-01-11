@@ -64,12 +64,18 @@ const (
 )
 
 func LoadSeldonCLIConfig() (*SeldonCLIConfig, error) {
-	path := getConfigFile()
-	_, err := os.Stat(path)
+	configs, err := LoadSeldonCLIConfigs()
 	if err != nil {
-		return &SeldonCLIConfig{}, nil
+		return nil, err
 	}
 
+	if path, ok := configs.getActiveConfigPath(); ok {
+		return loadConfig(path)
+	}
+	return &SeldonCLIConfig{}, nil
+}
+
+func loadConfig(path string) (*SeldonCLIConfig, error) {
 	byteValue, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load CLI config from %s: %s", path, err.Error())
@@ -89,4 +95,11 @@ func getConfigFile() string {
 func getConfigDir() string {
 	usr, _ := user.Current()
 	return filepath.Join(usr.HomeDir, seldonCfgFilepath)
+}
+
+func (sc SeldonCLIConfig) print() {
+	b, err := json.MarshalIndent(sc, "", "  ")
+	if err == nil {
+		fmt.Println(string(b))
+	}
 }

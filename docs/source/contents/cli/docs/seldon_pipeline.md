@@ -4,7 +4,7 @@ manage pipelines
 
 ### Synopsis
 
-pipelines allow you to join modles together into inference graphs.
+pipelines allow you to join models together into inference graphs.
 
 ```
 seldon pipeline <subcomand> [flags]
@@ -14,13 +14,6 @@ seldon pipeline <subcomand> [flags]
 
 ```
   -h, --help   help for pipeline
-```
-
-### Options inherited from parent commands
-
-```
-  -r, --show-request    show request
-  -o, --show-response   show response (default true)
 ```
 
 ### SEE ALSO
