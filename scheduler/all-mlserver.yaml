@@ -14,3 +14,4 @@ services:
       - "/mnt/agent/models"
     environment:
       - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
+      - MLSERVER_GRPC_MAX_MESSAGE_LENGTH=104857600 # 100MB (100 * 1024 * 1024)
