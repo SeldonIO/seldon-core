@@ -3,6 +3,12 @@ MLSERVER_VERSION ?= ${VERSION}
 PYTHON_SCRIPT = make_test_models.py
 OUTPUT_DIR ?= models
 
+define generate_file
+    mkdir -p ${OUTPUT_DIR}/${1}/data
+	.env/bin/python3 ${PYTHON_SCRIPT} --model ${1} --model_dir ${OUTPUT_DIR}/${1}/data
+	REPLACE_ME=${1} envsubst < model-settings.json.template > ${OUTPUT_DIR}/${1}/model-settings.json
+endef
+
 .PHONY: env
 env:
 	python3 -m venv .env
@@ -14,5 +20,28 @@ env:
 
 .PHONY: anchor_image
 anchor_image: env
-	mkdir -p ${OUTPUT_DIR}/anchor_image
-	.env/bin/python3 ${PYTHON_SCRIPT} --model anchor_image --model_dir ${OUTPUT_DIR}/anchor_image
+	$(call generate_file,anchor_image)
+
+.PHONY: kernel_shap
+kernel_shap: env
+	 $(call generate_file,kernel_shap)
+
+.PHONY: tree_shap
+tree_shap: env
+	 $(call generate_file,tree_shap)
+
+.PHONY: ale
+ale: env
+	 $(call generate_file,ale)
+
+.PHONY: anchor_tabular
+anchor_tabular: env
+	 $(call generate_file,anchor_tabular)
+
+.PHONY: anchor_tabular_income
+anchor_tabular_income: env
+	 $(call generate_file,anchor_tabular_income)
+
+.PHONY: anchor_text_moviesentiment
+anchor_text_moviesentiment: env
+	 $(call generate_file,anchor_text_moviesentiment)

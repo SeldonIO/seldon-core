@@ -1,0 +1,9 @@
+{
+  "name": "$REPLACE_ME",
+  "implementation": "mlserver_alibi_explain.AlibiExplainRuntime",
+  "parallel_workers": 0,
+  "parameters": {
+    "uri": "./data",
+    "version": "v0.1.0"
+  }
+}

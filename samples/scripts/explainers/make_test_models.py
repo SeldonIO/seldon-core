@@ -4,15 +4,21 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
+import spacy
 import tensorflow as tf
 import xgboost
-from alibi.datasets import fetch_adult
-from alibi.explainers import ALE, AnchorImage, AnchorTabular, KernelShap, TreeShap
+from alibi.datasets import fetch_adult, fetch_movie_sentiment
+from alibi.explainers import (ALE, AnchorImage, AnchorTabular, AnchorText,
+                              KernelShap, TreeShap)
+from alibi.utils import (BertBaseUncased, DistilbertBaseUncased, RobertaBase,
+                         spacy_model)
 from sklearn.compose import ColumnTransformer
 from sklearn.datasets import load_iris, load_wine
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -42,8 +48,6 @@ def make_kernel_shap(dirname: Optional[Path] = None) -> KernelShap:
     wine = load_wine()
     data = wine.data
     target = wine.target
-    target_names = wine.target_names
-    feature_names = wine.feature_names
 
     # train classifier
     X_train, X_test, y_train, y_test = train_test_split(
@@ -52,7 +56,6 @@ def make_kernel_shap(dirname: Optional[Path] = None) -> KernelShap:
 
     scaler = StandardScaler().fit(X_train)
     X_train_norm = scaler.transform(X_train)
-    X_test_norm = scaler.transform(X_test)
 
     classifier = SVC(
         kernel="rbf",
@@ -225,6 +228,43 @@ def make_anchor_tabular_income(dirname: Optional[Path] = None) -> AnchorTabular:
     return explainer
 
 
+def make_anchor_text_moviesentiment(dirname: Optional[Path] = None) -> AnchorText:
+    # adapted from:
+    # https://docs.seldon.io/projects/alibi/en/latest/examples/anchor_text_movie.html
+    movies = fetch_movie_sentiment()
+    movies.keys()
+    data = movies.data
+    labels = movies.target
+    train, _, train_labels, test_labels = train_test_split(data, labels, test_size=.2, random_state=42)
+    train, _, train_labels, val_labels = train_test_split(train, train_labels, test_size=.1, random_state=42)
+    train_labels = np.array(train_labels)
+    test_labels = np.array(test_labels)
+    val_labels = np.array(val_labels)
+
+    vectorizer = CountVectorizer(min_df=1)
+    vectorizer.fit(train)
+
+    np.random.seed(0)
+    clf = LogisticRegression(solver='liblinear')
+    clf.fit(vectorizer.transform(train), train_labels)
+
+    predict_fn = lambda x: clf.predict(vectorizer.transform(x))
+
+    model = 'en_core_web_md'
+    spacy_model(model=model)
+    nlp = spacy.load(model)
+
+    explainer = AnchorText(
+        predictor=predict_fn, 
+        sampling_strategy='unknown',
+        nlp=nlp,
+    )
+
+    if dirname is not None:
+        explainer.save(dirname)
+    return explainer
+
+
 def _main():
     args_parser = argparse.ArgumentParser(add_help=False)
     args_parser.add_argument(
@@ -252,6 +292,8 @@ def _main():
         make_anchor_tabular(model_dir)
     elif model_name == "anchor_tabular_income":
         make_anchor_tabular_income(model_dir)
+    elif model_name == "anchor_text_moviesentiment":
+        make_anchor_text_moviesentiment(model_dir)
 
 
 if __name__ == "__main__":

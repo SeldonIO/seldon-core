@@ -10,14 +10,14 @@ env:
 		mlserver-alibi-explain==${MLSERVER_VERSION} \
 		requests
 
-.PHONY: make-iris
+.PHONY: iris
 iris: env
 	cd iris && ../.env/bin/python3 train.py
 
-.PHONY: make-moviesentiment
+.PHONY: moviesentiment
 moviesentiment: env
 	cd moviesentiment && ../.env/bin/python3 train.py
 
-.PHONY: make-income
+.PHONY: income
 income: env
 	cd income && ../.env/bin/python3 train.py
