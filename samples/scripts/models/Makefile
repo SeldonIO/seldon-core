@@ -11,13 +11,13 @@ env:
 		requests
 
 .PHONY: make-iris
-make-iris: env
+iris: env
 	cd iris && ../.env/bin/python3 train.py
 
 .PHONY: make-moviesentiment
-make-moviesentiment: env
+moviesentiment: env
 	cd moviesentiment && ../.env/bin/python3 train.py
 
 .PHONY: make-income
-make-income: env
+income: env
 	cd income && ../.env/bin/python3 train.py
