@@ -1,0 +1,189 @@
+name: V2 Security Tests
+
+on:
+  push:
+    branches: [ v2 ]
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: 'Docker tag for scan'
+        default: 'latest'
+        required: false
+
+jobs:
+  security-operator:
+    runs-on: ubuntu-latest
+    container: snyk/snyk:golang
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-golang
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        make -C operator fmt
+        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
+
+  security-scheduler:
+    runs-on: ubuntu-latest
+    container: snyk/snyk:golang
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-golang
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        make -C scheduler lint
+        snyk test --file=scheduler/go.mod --fail-on=upgradable --severity-threshold=high
+
+  security-image-operator:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldonv2-controller:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=operator/Dockerfile
+
+  security-image-scheduler:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-scheduler:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.scheduler
+
+  security-image-data-flow-engine:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-dataflow-engine:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.dataflow
+
+  security-image-envoy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-envoy:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.envoy
+
+  security-image-modelgateway:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-modelgateway:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.modelgateway
+
+  security-image-pipelinegateway:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-pipelinegateway:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.pipelinegateway
+
+  security-image-agent:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-agent:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.agent
+
+  security-image-rclone:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-rclone:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.rclone
+
+  security-image-hodometer:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set default docker tag for builds from v2 branch
+      id: docker-tag
+      run: |
+        USER_INPUT="${{ github.event.inputs.docker-tag }}"
+        echo ::set-output name=value::${USER_INPUT:-"latest"}
+    - name: security-docker-image
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-hodometer:${{ steps.docker-tag.outputs.value }}
+        args: --fail-on=upgradable --severity-threshold=high --file=hodometer/Dockerfile.hodometer
