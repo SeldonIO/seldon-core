@@ -7,6 +7,7 @@ env:
 	.env/bin/pip install \
 		mlserver==${MLSERVER_VERSION} \
 		mlserver-sklearn==${MLSERVER_VERSION} \
+		mlserver-alibi-explain==${MLSERVER_VERSION} \
 		requests
 
 .PHONY: make-iris
@@ -16,3 +17,7 @@ make-iris: env
 .PHONY: make-moviesentiment
 make-moviesentiment: env
 	cd moviesentiment && ../.env/bin/python3 train.py
+
+.PHONY: make-income
+make-income: env
+	cd income && ../.env/bin/python3 train.py
