@@ -298,7 +298,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 			modelKey, version, modelVersion.GetVersion(),
 		)
 	}
-	
+
 	if serverKey == "" {
 		// nothing to do for a model that doesnt have a server, proceed with sending an event for downstream
 		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
