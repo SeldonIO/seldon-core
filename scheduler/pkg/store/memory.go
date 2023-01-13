@@ -298,6 +298,12 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 			modelKey, version, modelVersion.GetVersion(),
 		)
 	}
+	
+	if serverKey == "" {
+		// nothing to do for a model that doesnt have a server, proceed with sending an event for downstream
+		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
+	}
+
 	server, ok := m.store.servers[serverKey]
 	if !ok {
 		return nil, fmt.Errorf("failed to find server %s", serverKey)
