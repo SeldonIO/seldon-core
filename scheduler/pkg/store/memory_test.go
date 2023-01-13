@@ -631,6 +631,28 @@ func TestUpdateLoadedModels(t *testing.T) {
 			},
 			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}},
 		},
+		{
+			name: "DeleteFailedSchedulerModel",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+							server:    "",
+							version:   1,
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+				servers: map[string]*Server{},
+			},
+			modelKey:       "model",
+			version:        1,
+			serverKey:      "",
+			replicas:       []*ServerReplica{},
+			isModelDeleted: true,
+			expectedStates: map[int]ReplicaStatus{},
+		},
 	}
 
 	for _, test := range tests {
