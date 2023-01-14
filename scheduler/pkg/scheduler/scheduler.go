@@ -31,12 +31,10 @@ import (
 )
 
 type SimpleScheduler struct {
-	muFailedModels  sync.RWMutex
 	muSortAndUpdate sync.Mutex
 	store           store.ModelStore
 	logger          log.FieldLogger
 	SchedulerConfig
-	failedModels map[string]bool
 }
 
 type SchedulerConfig struct {
@@ -62,28 +60,21 @@ func NewSimpleScheduler(logger log.FieldLogger,
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
 		SchedulerConfig: schedulerConfig,
-		failedModels:    make(map[string]bool),
 	}
 	return s
 }
 
 func (s *SimpleScheduler) Schedule(modelKey string) error {
-	err := s.scheduleToServer(modelKey)
-	// Set model state using error
-	if err != nil {
-		s.muFailedModels.Lock()
-		defer s.muFailedModels.Unlock()
-		s.failedModels[modelKey] = true
-		return err
-	}
-	return nil
+	return s.scheduleToServer(modelKey)
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
-	s.muFailedModels.RLock()
-	defer s.muFailedModels.RUnlock()
+	failedModels, err := s.getFailedModels()
+	if err != nil {
+		return nil, err
+	}
 	var updatedModels []string
-	for modelName := range s.failedModels {
+	for _, modelName := range failedModels {
 		err := s.scheduleToServer(modelName)
 		if err != nil {
 			s.logger.Debugf("Failed to schedule failed model %s", modelName)
@@ -92,6 +83,24 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 		}
 	}
 	return updatedModels, nil
+}
+
+func (s *SimpleScheduler) getFailedModels() ([]string, error) {
+	models, err := s.store.GetModels()
+	if err != nil {
+		return nil, err
+	}
+	var failedModels []string
+	for _, model := range models {
+		version := model.GetLatest()
+		if version != nil {
+			versionState := version.ModelState()
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed {
+				failedModels = append(failedModels, model.Name)
+			}
+		}
+	}
+	return failedModels, nil
 }
 
 // TODO - clarify non shared models should not be scheduled
@@ -122,7 +131,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 				logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, latestModel.Server())
 			}
 		}
-		delete(s.failedModels, modelName) // Ensure model removed from failed models if its there
 	} else {
 		var debugTrail []string
 		var filteredServers []*store.ServerSnapshot

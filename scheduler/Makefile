@@ -14,7 +14,7 @@ OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
 PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
-TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.05-py3
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.11-py3
 GPU_ENABLED ?= 0
 
 KIND_NAME=ansible

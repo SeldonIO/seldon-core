@@ -64,9 +64,9 @@ type KafkaInspectTopic struct {
 }
 
 type KafkaInspectTopicMessage struct {
-	Headers map[string]string `json:"headers"`
-	Key     string            `json:"key"`
-	Value   json.RawMessage   `json:"value"`
+	Headers map[string][]string `json:"headers"`
+	Key     string              `json:"key"`
+	Value   json.RawMessage     `json:"value"`
 }
 
 func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
@@ -348,9 +348,9 @@ func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset in
 }
 
 func addInspectHeaders(e *kafka.Message, kitm *KafkaInspectTopicMessage) {
-	kitm.Headers = make(map[string]string)
+	kitm.Headers = make(map[string][]string)
 	for _, header := range e.Headers {
-		kitm.Headers[header.Key] = string(header.Value)
+		kitm.Headers[header.Key] = append(kitm.Headers[header.Key], string(header.Value))
 	}
 }
 

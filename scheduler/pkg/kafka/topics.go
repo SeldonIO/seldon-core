@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -58,7 +60,7 @@ func (tn *TopicNamer) GetKafkaModelTopicRegex() string {
 func (tn *TopicNamer) GetModelNameFromModelInputTopic(topic string) (string, error) {
 	parts := strings.Split(topic, ".")
 	if len(parts) != 5 {
-		return "", fmt.Errorf("Wrong number of sections in topic %s. Whas expecting 5 with separator '.'", topic)
+		return "", fmt.Errorf("Wrong number of sections in topic %s. Was expecting 5 with separator '.'", topic)
 	}
 	if parts[0] != seldonTopicPrefix || parts[1] != tn.namespace || parts[2] != modelTopic || parts[4] != inputsSuffix {
 		return "", fmt.Errorf("Bad topic name %s needs to match %s", topic, tn.GetKafkaModelTopicRegex())
@@ -92,17 +94,60 @@ func (tn *TopicNamer) GetModelOrPipelineTopic(pipelineName string, stepReference
 
 }
 
-func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, tin map[string]string) map[string]string {
-	tout := make(map[string]string)
-	for k, v := range tin {
+func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, userTensorMap map[string]string) []*chainer.PipelineTensorMapping {
+	var mappings []*chainer.PipelineTensorMapping
+	for k, v := range userTensorMap {
 		stepName := strings.Split(k, pipeline.StepNameSeperator)[0]
-		var kout string
+		var topicAndTensor string
 		if stepName == pipelineName {
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
 		} else {
-			kout = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, k)
 		}
-		tout[kout] = v
+		mappings = append(mappings, &chainer.PipelineTensorMapping{
+			PipelineName:   pipelineName,
+			TopicAndTensor: topicAndTensor,
+			TensorName:     v,
+		})
 	}
-	return tout
+	return mappings
+}
+
+func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) []*chainer.PipelineTensorMapping {
+	var mappings []*chainer.PipelineTensorMapping
+	for k, v := range tin {
+		parts := strings.Split(k, pipeline.StepNameSeperator)
+		var topicAndTensor string
+		switch len(parts) {
+		case 3: // A pipeline reference <pipelineName>.<inputs|outputs>.<tensorName>
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, pipelineTopic, k)
+		case 5: // A fully qualified pipeline step tensor  <pipelineName>.step.<stepName>.<inputs|outputs>.<tensorName>
+			// take value after <pipelineName>.step
+			topicAndTensor = fmt.Sprintf("%s.%s.%s.%s", seldonTopicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
+		}
+		mappings = append(mappings, &chainer.PipelineTensorMapping{
+			PipelineName:   parts[0],
+			TopicAndTensor: topicAndTensor,
+			TensorName:     v,
+		})
+	}
+	return mappings
+}
+
+// Always the initial part for pipeline inputs
+// <pipelineName>. etc
+func (tn *TopicNamer) GetPipelineNameFromInput(inputSpecifier string) string {
+	return strings.Split(inputSpecifier, pipeline.StepNameSeperator)[0]
+}
+
+// if pipelineInput return it: <pipelineName>.<inputs|outputs>
+// If pipeline step return stepName (which is a model reference) onwards: <pipelineName>.step.<stepName>.<inputs|outputs>.(tensorName)?
+func (tn *TopicNamer) CreateStepReferenceFromPipelineInput(pipelineInputs string) string {
+	parts := strings.Split(pipelineInputs, pipeline.StepNameSeperator)
+	switch parts[1] {
+	case pipeline.StepInputSpecifier, pipeline.StepOutputSpecifier:
+		return pipelineInputs
+	default:
+		return strings.Join(parts[2:], pipeline.StepNameSeperator)
+	}
 }

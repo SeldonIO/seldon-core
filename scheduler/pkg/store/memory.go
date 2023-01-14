@@ -370,6 +370,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	}
 
 	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
+	// this could be in the cases where we are scaling down a model and the new replica count can be all deployed
 	if updated || modelVersion.state.State == ScheduleFailed {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey

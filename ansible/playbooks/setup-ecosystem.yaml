@@ -5,7 +5,6 @@
     - ecosystem
   vars:
     vars_file: vars/default.yaml
-
     full_install: yes
 
     install_prometheus: "{{ full_install }}"

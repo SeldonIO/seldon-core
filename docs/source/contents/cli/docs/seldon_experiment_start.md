@@ -13,16 +13,12 @@ seldon experiment start [flags]
 ### Options
 
 ```
-  -f, --file-path string        model file to load
+      --authority string        authority (HTTP/2) or virtual host (HTTP/1)
+  -f, --file-path string        experiment manifest file (YAML)
   -h, --help                    help for start
       --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-```
-
-### Options inherited from parent commands
-
-```
-  -r, --show-request    show request
-  -o, --show-response   show response (default true)
+  -r, --show-request            show request
+  -o, --show-response           show response (default true)
 ```
 
 ### SEE ALSO

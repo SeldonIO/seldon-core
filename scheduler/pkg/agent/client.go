@@ -27,7 +27,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/protobuf/proto"
 
@@ -356,9 +355,6 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 			return nil, err
 		}
 	}
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-	}
 	var transCreds credentials.TransportCredentials
 	var port int
 	if c.certificateStore == nil {
@@ -372,8 +368,7 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 	}
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 	}
 	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)

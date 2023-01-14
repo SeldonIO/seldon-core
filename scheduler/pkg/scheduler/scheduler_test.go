@@ -519,3 +519,61 @@ func TestScheduler(t *testing.T) {
 	}
 
 }
+
+func TestFailedModels(t *testing.T) {
+	logger := log.New()
+	g := NewGomegaWithT(t)
+
+	newMockStore := func(models map[string]store.ModelState) *mockStore {
+		snapshots := map[string]*store.ModelSnapshot{}
+		for name, state := range models {
+			snapshot := &store.ModelSnapshot{
+				Name:     name,
+				Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{}, 1, "", map[int]store.ReplicaStatus{}, false, state)},
+			}
+			snapshots[name] = snapshot
+		}
+		return &mockStore{
+			models: snapshots,
+		}
+	}
+
+	type test struct {
+		name                 string
+		models               map[string]store.ModelState
+		expectedFailedModels []string
+	}
+
+	tests := []test{
+		{
+			name: "SmokeTest",
+			models: map[string]store.ModelState{
+				"model1": store.ScheduleFailed,
+				"model2": store.ModelFailed,
+				"model3": store.ModelAvailable,
+			},
+			expectedFailedModels: []string{"model1", "model2"},
+		},
+		{
+			name: "SmokeTest",
+			models: map[string]store.ModelState{
+				"model3": store.ModelAvailable,
+			},
+			expectedFailedModels: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockStore := newMockStore(test.models)
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore))
+			failedMoels, err := scheduler.getFailedModels()
+			g.Expect(err).To(BeNil())
+			sort.Strings(failedMoels)
+			sort.Strings(test.expectedFailedModels)
+			g.Expect(failedMoels).To(Equal(test.expectedFailedModels))
+		})
+
+	}
+
+}

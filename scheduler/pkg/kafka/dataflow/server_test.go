@@ -19,6 +19,8 @@ package dataflow
 import (
 	"testing"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 
 	. "github.com/onsi/gomega"
@@ -33,7 +35,7 @@ func TestCreateTopicSources(t *testing.T) {
 		server       *ChainerServer
 		pipelineName string
 		inputs       []string
-		sources      []string
+		sources      []*chainer.PipelineTopic
 	}
 
 	tests := []test{
@@ -49,10 +51,10 @@ func TestCreateTopicSources(t *testing.T) {
 				"b.inputs",
 				"c.inputs.t1",
 			},
-			sources: []string{
-				"seldon.default.model.a",
-				"seldon.default.model.b.inputs",
-				"seldon.default.model.c.inputs.t1",
+			sources: []*chainer.PipelineTopic{
+				{PipelineName: "p1", TopicName: "seldon.default.model.a"},
+				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs"},
+				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1"},
 			},
 		},
 		{
@@ -63,14 +65,57 @@ func TestCreateTopicSources(t *testing.T) {
 			},
 			pipelineName: "p1",
 			inputs:       []string{},
-			sources: []string{
-				"seldon.ns1.pipeline.p1.inputs",
+			sources: []*chainer.PipelineTopic{
+				{PipelineName: "p1", TopicName: "seldon.ns1.pipeline.p1.inputs"},
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			sources := test.server.createTopicSources(test.inputs, test.pipelineName)
+			g.Expect(sources).To(Equal(test.sources))
+		})
+	}
+}
+
+func TestCreatePipelineTopicSources(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name         string
+		server       *ChainerServer
+		pipelineName string
+		inputs       []string
+		sources      []*chainer.PipelineTopic
+	}
+
+	tests := []test{
+		{
+			name: "misc inputs",
+			server: &ChainerServer{
+				logger:     log.New(),
+				topicNamer: kafka.NewTopicNamer("default"),
+			},
+			pipelineName: "p1",
+			inputs: []string{
+				"foo.inputs",
+				"foo.outputs",
+				"foo.step.bar.inputs",
+				"foo.step.bar.outputs",
+				"foo.step.bar.inputs.tensora",
+			},
+			sources: []*chainer.PipelineTopic{
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.inputs"},
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.outputs"},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs"},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.outputs"},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs.tensora"},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sources := test.server.createPipelineTopicSources(test.inputs)
 			g.Expect(sources).To(Equal(test.sources))
 		})
 	}

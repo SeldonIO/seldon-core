@@ -66,6 +66,8 @@ func createPipelineStatus() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
+	flags.BoolP(flagShowRequest, "r", false, "show request")
+	flags.BoolP(flagShowResponse, "o", true, "show response")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagWaitCondition, "w", "", "pipeline wait condition")

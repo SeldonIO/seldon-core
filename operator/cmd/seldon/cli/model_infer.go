@@ -122,6 +122,8 @@ func createModelInfer() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
+	flags.BoolP(flagShowRequest, "r", false, "show request")
+	flags.BoolP(flagShowResponse, "o", true, "show response")
 	flags.StringP(flagFile, "f", "", helpFileInference)
 	flags.BoolP(flagStickySession, "s", false, helpStickySession)
 	flags.String(flagInferenceHost, env.GetString(envInfer, defaultInferHost), helpInferenceHost)

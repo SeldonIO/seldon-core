@@ -42,7 +42,7 @@ func TestUpdateInputsSteps(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			updated := updateInputSteps(test.pipelineName, test.inputs)
+			updated := updateInternalInputSteps(test.pipelineName, test.inputs)
 			g.Expect(updated).To(Equal(test.expected))
 		})
 	}
@@ -375,5 +375,29 @@ func TestCreatePipelineFromProto(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestUpdateExternalInputSteps(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name         string
+		pipelineName string
+		inputs       []string
+		expected     []string
+	}
+
+	tests := []test{
+		{
+			name:         "test update external inputs",
+			pipelineName: "pipeline",
+			inputs:       []string{"p1", "p1.outputs", "p1.inputs", "p1.inputs.t1", "p1.step.m1", "p1.step.m1.outputs.t1"},
+			expected:     []string{"p1.outputs", "p1.outputs", "p1.inputs", "p1.inputs.t1", "p1.step.m1.outputs", "p1.step.m1.outputs.t1"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			updated := updateExternalInputSteps(test.inputs)
+			g.Expect(updated).To(Equal(test.expected))
+		})
+	}
 }

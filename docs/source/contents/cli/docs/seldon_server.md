@@ -16,13 +16,6 @@ seldon server <subcomand> [flags]
   -h, --help   help for server
 ```
 
-### Options inherited from parent commands
-
-```
-  -r, --show-request    show request
-  -o, --show-response   show response (default true)
-```
-
 ### SEE ALSO
 
 * [seldon](seldon.md)	 - 
