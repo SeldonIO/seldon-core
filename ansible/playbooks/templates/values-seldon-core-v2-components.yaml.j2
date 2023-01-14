@@ -4,16 +4,17 @@ dataflow:
 
 envoy:
   service:
-    type: ClusterIP
+    type: "{{ seldon_core_v2_type_svc_type }}"
 
 kafka:
-  bootstrap: "seldon-kafka-bootstrap.{{ strimzi_kafka_namespace }}:9092"
+  debug: all
+  bootstrap: "seldon-kafka-bootstrap.{{ seldon_kafka_namespace }}.svc.cluster.local:9093"
   topics:
     numPartitions: 4
 
 scheduler:
   service:
-    type: ClusterIP
+    type: "{{ seldon_core_v2_scheduler_svc_type }}"
 
 serviceGRPCPrefix: "http2-"
 
@@ -28,3 +29,15 @@ serverConfig:
     resources:
       cpu: 1
       memory: 1Gi
+
+security:
+  kafka:
+    protocol: SSL
+    ssl:
+      client:
+        secret: seldon
+        brokerValidationSecret: seldon-cluster-ca-cert
+        keyPath: /tmp/certs/kafka/client/user.key
+        crtPath: /tmp/certs/kafka/client/user.crt
+        caPath: /tmp/certs/kafka/client/ca.crt
+        brokerCa: /tmp/certs/kafka/broker/ca.crt
