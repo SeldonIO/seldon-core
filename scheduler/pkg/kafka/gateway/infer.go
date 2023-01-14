@@ -149,6 +149,10 @@ func (kc *InferKafkaHandler) setup() error {
 		adminConfig := kafka.ConfigMap{
 			config.KafkaBootstrapServers: kc.consumerConfig.KafkaConfig.BootstrapServers,
 		}
+		err = config.AddKafkaSSLOptions(adminConfig)
+		if err != nil {
+			return err
+		}
 		kc.adminClient, err = kafka.NewAdminClient(&adminConfig)
 		if err != nil {
 			return err
