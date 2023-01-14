@@ -6,7 +6,7 @@ If you have installed Strimzi we have an example Helm chart to create a Kafka cl
 
 The Ansible `setup-ecosystem` playbook will also install Strimzi and this cluster. See [here](../ansible.md).
 
-## MTLS Example
+## mTLS Example
 
 Create a Kafka User `seldon` in the namespace seldon was installed. This assumes Strimzi Kafka cluster is installed in the same namespace or is running with cluster wide permissions. Our Ansible scripts to setup the ecosystem will also create this user if tls is active.
 
