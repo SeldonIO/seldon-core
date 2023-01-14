@@ -37,7 +37,7 @@ will only install Kafka when setting up the ecosystem.
 
 |                         | type   | default                     | comment                                                 |
 |-------------------------|--------|-----------------------------|---------------------------------------------------------|
-| seldon_kafka_namespace  | string | seldon-kafka                | namespace to install Kafka                              |
+| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka                              |
 | seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
 | full_install            | bool   | yes                         | enables full ecosystem installation                     |
 | install_kafka           | bool   | {{ full_install }}          | installs Kafka using seldonio.k8s.strimzi_kafka         |
@@ -72,7 +72,7 @@ ansible-playbook playbooks/setup-seldon-v2.yaml -e seldon_mesh_namespace=<myname
 
 |                         | type   | default                     | comment                                                 |
 |-------------------------|--------|-----------------------------|---------------------------------------------------------|
-| seldon_kafka_namespace  | string | seldon-kafka                | namespace to install Kafka                              |
+| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka                              |
 | seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
 | seldon_crds_namespace   | string | default                     | namespace to install Seldon CRDs                        |
 | full_install            | bool   | yes                         | enables full ecosystem installation                     |
