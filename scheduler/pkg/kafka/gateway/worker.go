@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc/credentials"
@@ -301,6 +302,19 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false, extractHeadersHttp(response.Header))
 }
 
+// Add all external headers to request metadata
+func (iw *InferWorker) addMetadataToOutgoingContext(ctx context.Context, job *InferWork) context.Context {
+	for k, v := range job.headers {
+		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) &&
+			k != resources.SeldonRouteHeader { // We don;t want to send x-seldon-route as this will confuse envoy
+			iw.logger.Debugf("Adding outgoing ctx metadata %s:%s", k, v)
+			ctx = metadata.AppendToOutgoingContext(ctx, k, v)
+		}
+	}
+	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, job.modelName)
+	return ctx
+}
+
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
 	logger.Debugf("gRPC request for %s", job.modelName)
@@ -308,10 +322,8 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	req.ModelName = job.modelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 
-	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, job.modelName)
-	if reqId, ok := job.headers[util.RequestIdHeader]; ok {
-		ctx = metadata.AppendToOutgoingContext(ctx, util.RequestIdHeader, reqId)
-	}
+	ctx = iw.addMetadataToOutgoingContext(ctx, job)
+
 	var header, trailer metadata.MD
 	opts := append(iw.callOptions, grpc.Header(&header))
 	opts = append(opts, grpc.Trailer(&trailer))

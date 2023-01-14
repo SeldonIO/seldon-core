@@ -954,7 +954,7 @@ func TestUpdateResponseFromRawContents(t *testing.T) {
 					},
 				},
 				RawOutputContents: [][]byte{
-					[]byte("result"),
+					createRawBytesFromStringSlice([]string{"result"}),
 				},
 			},
 			err: false,
@@ -1062,6 +1062,47 @@ func TestResponseV2ParametersToJson(t *testing.T) {
 			jStr, err := json.Marshal(resMap)
 			g.Expect(err).To(BeNil())
 			g.Expect(string(jStr)).To(Equal(test.expected))
+		})
+	}
+}
+
+func createRawBytesFromStringSlice(vals []string) []byte {
+	var result []byte
+	for _, val := range vals {
+		data := []byte(val)
+		strLen := len(data)
+		lenB := make([]byte, 4)
+		binary.LittleEndian.PutUint32(lenB, uint32(strLen))
+		result = append(result, lenB...)
+		result = append(result, data...)
+	}
+	return result
+}
+
+func TestConvertRawBytesToByteContents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		input    []byte
+		expected [][]byte
+	}
+	tests := []test{
+		{
+			name:     "single string",
+			input:    createRawBytesFromStringSlice([]string{"hello"}),
+			expected: [][]byte{[]byte("hello")},
+		},
+		{
+			name:     "multiple strings",
+			input:    createRawBytesFromStringSlice([]string{"hello", "there"}),
+			expected: [][]byte{[]byte("hello"), []byte("there")},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data := convertRawBytesToByteContents(test.input)
+			g.Expect(data).To(Equal(test.expected))
 		})
 	}
 }
