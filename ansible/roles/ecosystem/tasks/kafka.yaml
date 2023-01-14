@@ -7,7 +7,7 @@
   kubernetes.core.helm:
     state: present
     force: yes
-    namespace: "{{ kafka_namespace }}"
+    namespace: "{{ seldon_kafka_namespace }}"
     name: "seldon-core-v2-kafka"
     chart_ref: "{{ repo_root_dir }}/kafka/strimzi"
     values: "{{ kafka_cluster_values }}"

@@ -7,4 +7,3 @@
     state: present
   with_items:
   - "{{ seldon_mesh_namespace }}"
-  - "{{ seldon_kafka_namespace }}"

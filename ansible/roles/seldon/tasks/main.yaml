@@ -1,0 +1,14 @@
+- name: "Create namespaces"
+  import_tasks: namespaces.yaml
+
+- name: "Install CRDs"
+  import_tasks: install_crds.yaml
+  when: seldon_install_crds | bool
+
+- name: "Install components"
+  import_tasks: install_components.yaml
+  when: seldon_install_components | bool
+
+- name: "Install servers"
+  include_tasks: install_servers.yaml
+  when: seldon_install_servers | bool

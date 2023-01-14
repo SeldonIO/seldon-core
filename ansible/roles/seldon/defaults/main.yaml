@@ -1,0 +1,12 @@
+repo_root_dir: "{{ inventory_dir }}/.."
+seldon_crds_namespace: "default"
+seldon_mesh_namespace: "seldon-mesh"
+
+seldon_install_crds: true
+seldon_install_components: true
+seldon_install_servers: true
+
+seldon_force_install_crds: false
+seldon_core_v2_timeout_helm: "480s"
+
+seldon_core_v2_component_values: {}
