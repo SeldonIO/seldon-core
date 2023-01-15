@@ -311,8 +311,7 @@ func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
 			output.Contents.Fp64Contents = make([]float64, getDataSize(output.Shape))
 			err = binary.Read(bytes.NewBuffer(rawOutput), binary.LittleEndian, &output.Contents.Fp64Contents)
 		case tyBytes:
-			output.Contents.BytesContents = make([][]byte, 1)
-			output.Contents.BytesContents[0] = rawOutput
+			output.Contents.BytesContents = convertRawBytesToByteContents(rawOutput)
 		}
 		if err != nil {
 			return err
@@ -321,6 +320,20 @@ func updateResponseFromRawContents(res *v2_dataplane.ModelInferResponse) error {
 	// Clear the raw contents now we have copied
 	res.RawOutputContents = nil
 	return nil
+}
+
+// Follows Triton client
+// see https://github.com/triton-inference-server/client/blob/6cc412c50ca4282cec6e9f62b3c2781be433dcc6/src/python/library/tritonclient/utils/__init__.py#L246-L273
+func convertRawBytesToByteContents(raw []byte) [][]byte {
+	var result [][]byte
+	for offset := uint32(0); offset < uint32(len(raw)); {
+		dataLen := binary.LittleEndian.Uint32(raw[offset : offset+4])
+		offset += 4
+		data := raw[offset : offset+dataLen]
+		result = append(result, data)
+		offset += dataLen
+	}
+	return result
 }
 
 func convertV2toInferenceResponse(resV2 *v2_dataplane.ModelInferResponse) *InferenceResponse {
