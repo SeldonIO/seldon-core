@@ -124,13 +124,19 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	if model.Deleted {
+		// we need to LoadedModels anyway:
+		// - in case where we are deleting a model that doesnt have a server (FailedSchedule), server is ""
+		// - otherwise proceed a normal
+		server := ""
 		if latestModel.HasServer() {
-			logger.Debugf("Model %s is deleted ensuring removed", modelName)
-			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), latestModel.Server(), []*store.ServerReplica{})
-			if err != nil {
-				logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, latestModel.Server())
-			}
+			server = latestModel.Server()
 		}
+		logger.Debugf("Model %s is deleted ensuring removed", modelName)
+		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
+		if err != nil {
+			logger.Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, server)
+		}
+
 	} else {
 		var debugTrail []string
 		var filteredServers []*store.ServerSnapshot
