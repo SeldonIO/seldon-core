@@ -94,20 +94,21 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		if config.Kafka.Namespace != "" {
 			namespace = config.Kafka.Namespace
 		}
-		if config.Kafka.Protocol == "ssl" {
-			consumerConfig["security.protocol"] = "ssl"
+		switch config.Kafka.Protocol {
+		case KafkaConfigProtocolSSL:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSSL
 			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
 			consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
 			consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
-		} else if config.Kafka.Protocol == "sasl_ssl" {
-			consumerConfig["security.protocol"] = "sasl_ssl"
+		case KafkaConfigProtocolSASLSSL:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLSSL
 			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
 			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
 			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
 			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
 			consumerConfig["ssl.endpoint.identification.algorithm"] = "none"
-		} else if config.Kafka.Protocol == "sasl_plaintxt" {
-			consumerConfig["security.protocol"] = "sasl_plaintxt"
+		case KafkaConfigProtocolSASLPlaintxt:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLPlaintxt
 			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
 			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
 			consumerConfig["sasl.password"] = config.Kafka.SaslPassword

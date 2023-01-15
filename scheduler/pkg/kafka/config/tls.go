@@ -36,7 +36,7 @@ func AddKafkaSSLOptions(config kafka.ConfigMap) error {
 	switch protocol {
 	case tls.SecurityProtocolSSL:
 		return setupTLSAuthentication(config)
-	case tls.SecurityProtocolSASLSSL:
+	case tls.SecurityProtocolSASLSSL: // Note: we don't yet support SASL_PLAINTXT
 		return setupSASLSSLAuthentication(config)
 	case tls.SecurityProtocolPlaintxt:
 		return nil
@@ -64,7 +64,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	config["sasl.username"] = username
 	config["sasl.password"] = ps.GetPassword()
 	// issue is that ca.pem does not work with multiple certificiates defined
-	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed but not yet released)
+	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and testing in our code)
 	config["ssl.ca.location"] = caCert.CaPath
 	return nil
 }
@@ -79,7 +79,7 @@ func setupTLSAuthentication(config kafka.ConfigMap) error {
 	caCert := cs.GetValidationCertificate()
 	config["security.protocol"] = "ssl"
 	// issue is that ca.pem does not work with multiple certificiates defined
-	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed but not yet released)
+	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and test in our code)
 	if caCert != nil {
 		config["ssl.ca.location"] = caCert.CaPath
 	} else {

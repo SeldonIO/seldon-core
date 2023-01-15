@@ -51,7 +51,7 @@ func TestNewPasswordStoreWithSecret(t *testing.T) {
 	ps.Stop()
 }
 
-func TestWatchFolderCertificate(t *testing.T) {
+func TestWatchFolderSecret(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tmpFolder := t.TempDir()
 	err := copy.Copy("testdata/p1", tmpFolder)

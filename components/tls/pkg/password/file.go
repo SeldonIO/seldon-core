@@ -12,7 +12,6 @@ import (
 )
 
 type PasswordFolderHandler struct {
-	prefix           string
 	passwordFilePath string
 	logger           log.FieldLogger
 	watcher          filewatcher.FileWatcher
@@ -27,7 +26,6 @@ func NewPasswordFolderHandler(prefix string, suffix string, logger log.FieldLogg
 	}
 
 	return &PasswordFolderHandler{
-		prefix:           prefix,
 		passwordFilePath: passwordFilePath,
 		watcher:          filewatcher.NewWatcher(),
 		logger:           logger,
@@ -52,13 +50,11 @@ func (t *PasswordFolderHandler) loadPassword() error {
 
 func (t *PasswordFolderHandler) reloadPassword() {
 	logger := t.logger.WithField("func", "reloadPassword")
-	var err error
 	t.mu.Lock()
-	err = t.loadPassword()
-	t.mu.Unlock()
+	defer t.mu.Unlock()
+	err := t.loadPassword()
 	if err != nil {
 		logger.WithError(err).Error("Failed to reload password")
-		return
 	}
 }
 
