@@ -10,7 +10,7 @@
       4 Creative Commons Zero v1.0 Universal
       1 GNU General Public License, version 2 (GPL2), with the classpath exception
       7 ISC License
-    448 MIT License
+    446 MIT License
      68 Mozilla Public License 2.0
       8 The Apache License, Version 2.0
      19 The Apache Software License, Version 2.0

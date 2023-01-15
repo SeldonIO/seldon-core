@@ -194,7 +194,6 @@ niemeyer/pretty,https://github.com/niemeyer/pretty/blob/master/License,MIT Licen
 nxadm/tail,https://github.com/nxadm/tail/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/nxadm/tail/master/LICENSE
 oklog/ulid,https://github.com/oklog/ulid/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/oklog/ulid/main/LICENSE
 olekukonko/tablewriter,https://github.com/olekukonko/tablewriter/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/olekukonko/tablewriter/master/LICENSE.md
-onsi/ginkgo,https://github.com/onsi/ginkgo/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/onsi/ginkgo/master/LICENSE
 onsi/gomega,https://github.com/onsi/gomega/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/onsi/gomega/master/LICENSE
 opentracing/opentracing-go,https://github.com/opentracing/opentracing-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/opentracing/opentracing-go/master/LICENSE
 openzipkin/zipkin-go,https://github.com/openzipkin/zipkin-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/openzipkin/zipkin-go/master/LICENSE

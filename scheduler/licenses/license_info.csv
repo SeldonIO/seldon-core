@@ -148,7 +148,6 @@ hashicorp/go.net,https://github.com/hashicorp/go.net/blob/master/LICENSE,BSD 3-C
 hashicorp/golang-lru,https://github.com/hashicorp/golang-lru/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/golang-lru/master/LICENSE
 hashicorp/hcl,https://github.com/hashicorp/hcl/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/hcl/main/LICENSE
 hashicorp/logutils,https://github.com/hashicorp/logutils/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/logutils/master/LICENSE
-hashicorp/mdns,https://github.com/hashicorp/mdns/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/mdns/master/LICENSE
 hashicorp/memberlist,https://github.com/hashicorp/memberlist/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/memberlist/master/LICENSE
 hashicorp/serf,https://github.com/hashicorp/serf/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/serf/master/LICENSE
 heetch/avro,https://github.com/heetch/avro/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/heetch/avro/master/LICENSE
