@@ -4,7 +4,7 @@ DOCKERHUB_USERNAME ?= seldonio
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-MLSERVER_IMG ?= seldonio/mlserver:1.2.1
+MLSERVER_IMG ?= seldonio/mlserver:1.2.3.rc1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.11-py3
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22

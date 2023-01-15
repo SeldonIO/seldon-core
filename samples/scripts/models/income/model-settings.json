@@ -1,0 +1,8 @@
+{
+    "name": "income",
+    "implementation": "mlserver_sklearn.SKLearnModel",
+    "parameters": {
+        "uri": "./model.joblib",
+        "version": "v0.1.0"
+    }
+}
