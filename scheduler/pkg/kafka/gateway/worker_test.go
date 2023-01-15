@@ -23,6 +23,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	"google.golang.org/grpc/metadata"
+
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
@@ -471,6 +475,57 @@ func TestProcessRequest(t *testing.T) {
 				g.Eventually(ic.producer.Len).Should(Equal(1))
 			}
 			t.Log("End test", test.name)
+		})
+	}
+}
+
+func TestAddMetadataToOutgoingContext(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name            string
+		ctx             context.Context
+		job             *InferWork
+		expectedHeaders map[string][]string
+	}
+
+	tests := []test{
+		{
+			name:            "ignore xseldon-route header",
+			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
+			job:             &InferWork{modelName: "foo", headers: map[string]string{resources.SeldonRouteHeader: ":a:"}},
+			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}},
+		},
+		{
+			name:            "pass x-request-id header",
+			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
+			job:             &InferWork{modelName: "foo", headers: map[string]string{util.RequestIdHeader: "1234"}},
+			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}, util.RequestIdHeader: {"1234"}},
+		},
+		{
+			name:            "pass custom header",
+			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
+			job:             &InferWork{modelName: "foo", headers: map[string]string{"x-myheader": "1234"}},
+			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}, "x-myheader": {"1234"}},
+		},
+		{
+			name:            "ignore non x- prefix headers",
+			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
+			job:             &InferWork{modelName: "foo", headers: map[string]string{"myheader": "1234"}},
+			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			ctx := addMetadataToOutgoingContext(test.ctx, test.job, logger)
+			md, found := metadata.FromOutgoingContext(ctx)
+			g.Expect(found).To(BeTrue())
+			for k, v := range md {
+				vExpected, ok := test.expectedHeaders[k]
+				g.Expect(ok).To(BeTrue())
+				g.Expect(v).To(Equal(vExpected))
+			}
 		})
 	}
 }

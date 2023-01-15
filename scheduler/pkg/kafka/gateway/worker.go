@@ -303,11 +303,11 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 }
 
 // Add all external headers to request metadata
-func (iw *InferWorker) addMetadataToOutgoingContext(ctx context.Context, job *InferWork) context.Context {
+func addMetadataToOutgoingContext(ctx context.Context, job *InferWork, logger log.FieldLogger) context.Context {
 	for k, v := range job.headers {
 		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) &&
 			k != resources.SeldonRouteHeader { // We don;t want to send x-seldon-route as this will confuse envoy
-			iw.logger.Debugf("Adding outgoing ctx metadata %s:%s", k, v)
+			logger.Debugf("Adding outgoing ctx metadata %s:%s", k, v)
 			ctx = metadata.AppendToOutgoingContext(ctx, k, v)
 		}
 	}
@@ -322,7 +322,7 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	req.ModelName = job.modelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
 
-	ctx = iw.addMetadataToOutgoingContext(ctx, job)
+	ctx = addMetadataToOutgoingContext(ctx, job, logger)
 
 	var header, trailer metadata.MD
 	opts := append(iw.callOptions, grpc.Header(&header))
