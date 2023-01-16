@@ -1,4 +1,4 @@
-# TLS Settings Reference
+# Security Settings Reference
 
 ## Helm Settings
 
@@ -76,7 +76,7 @@ For a client (agent, modelgateway, hodometer, CRD controller):
 * - EnvVar
   - Value
 * - KAFKA_SECURITY_PROTOCOL
-  - SSL or PLAINTXT
+  - PLAINTXT, SSL, or SASL_SSL
 ```
 
 ```{list-table}
@@ -96,6 +96,12 @@ For a client (agent, modelgateway, hodometer, CRD controller):
   - (optional) the name of the namespaced secret which holds the validation ca roots for the kafka broker
 * - KAFKA_BROKER_TLS_CA_LOCATION
   - The path to the broker validatiob CA chain
+* - KAFKA_CLIENT_SASL_USERNAME
+  - SASL username
+* - KAFKA_CLIENT_SASL_SECRET_NAME
+  - the name of the namespaced secret which holds the SASL password
+* - KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+  - the path to the file containing the SASL password
 ```
 
 ### Envoy

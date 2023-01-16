@@ -1,4 +1,4 @@
-# TLS
+# Security
 
 Seldon can be run with secure control plane and data plane operations. There are three areas of concern:
 
@@ -27,12 +27,13 @@ helm install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
 
 ## Kafka
 
-TLS Kafka activation is switched on and off via the environment variable: `KAFKA_SECURITY_PROTOCOL` whose values can be `PLAINTEXT` or `SSL`.
+Kafka secure activation is switched on and off via the environment variable: `KAFKA_SECURITY_PROTOCOL` whose values can be `PLAINTEXT` or `SSL` or `SASL_SSL`.
 
-You can ensure the components that talk to Kafka run with mTLS. 
+Examples are shown below:
 
- * [Strimzi example](strimzi.md)
- * [AWS MSK example](msk.md)
+ * [mTLS Strimzi example](strimzi-mtls.md)
+ * [mTLS AWS MSK example](msk.md)
+ * [SASL SCRAM with Strimzi example](strimzi-sasl.md)
 
 ## Data Plane
 
@@ -88,7 +89,8 @@ helm install seldon-v2-certs k8s/helm-charts/seldon-core-v2-certs/ -n seldon-mes
 :maxdepth: 1
 :hidden:
 
-strimzi.md
+strimzi-mtls.md
+strimzi-sasl.md
 msk.md
 reference.md
 ```

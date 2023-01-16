@@ -20,11 +20,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/credentials"
 	"k8s.io/client-go/kubernetes"
 	"os"
-	"strings"
 )
 
 const (
@@ -74,18 +74,6 @@ func getDefaultCertificateStoreOptions() CertificateStoreOptions {
 	return CertificateStoreOptions{}
 }
 
-func getEnvVarKey(prefix string, suffix string) string {
-	return fmt.Sprintf("%s%s", prefix, suffix)
-}
-
-func getEnv(prefix string, suffix string) (string, bool) {
-	val, ok := os.LookupEnv(getEnvVarKey(prefix, suffix))
-	if ok {
-		ok = strings.TrimSpace(val) != ""
-	}
-	return val, ok
-}
-
 func Prefix(prefix string) TLSServerOption {
 	return newFuncServerOption(func(o *CertificateStoreOptions) {
 		o.prefix = prefix
@@ -121,7 +109,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 	var manager CertificateManager
 	var validationManager CertificateManager
 	if !opts.validationOnly {
-		if secretName, ok := getEnv(opts.prefix, envSecretSuffix); ok {
+		if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
 			logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
 			namespace, ok := os.LookupEnv(envNamespace)
 			if !ok {
@@ -134,7 +122,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 
 			// optionally add a validation secret ca
 			if opts.validationPrefix != "" {
-				if secretName, ok := getEnv(opts.validationPrefix, envSecretSuffix); ok {
+				if secretName, ok := util.GetEnv(opts.validationPrefix, envSecretSuffix); ok {
 					logger.Infof("Starting new certificate store for %s from secret %s", opts.validationPrefix, secretName)
 					validationManager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.validationPrefix, true, logger)
 					if err != nil {
@@ -157,7 +145,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 		}
 	} else if opts.validationPrefix != "" {
 		logger.Info("Just looking for validation cert")
-		if secretName, ok := getEnv(opts.validationPrefix, envSecretSuffix); ok {
+		if secretName, ok := util.GetEnv(opts.validationPrefix, envSecretSuffix); ok {
 			namespace, ok := os.LookupEnv(envNamespace)
 			if !ok {
 				return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)

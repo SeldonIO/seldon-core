@@ -23,7 +23,6 @@ import java.nio.charset.Charset
 import java.nio.file.attribute.PosixFilePermission
 import java.security.KeyFactory
 import java.security.KeyStore
-import java.security.PrivateKey
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -48,6 +47,14 @@ object Provider {
         return KeystoreConfig(
             keyStorePassword = keyStorePassword,
             keyStoreLocation = keyStoreLocation,
+            trustStorePassword = trustStorePassword,
+            trustStoreLocation = trustStoreLocation,
+        )
+    }
+
+    fun trustStoreFromCertificates(certs: CertificateConfig): TruststoreConfig {
+        val (trustStoreLocation, trustStorePassword) = trustStoreFromCACert(certs)
+        return TruststoreConfig(
             trustStorePassword = trustStorePassword,
             trustStoreLocation = trustStoreLocation,
         )

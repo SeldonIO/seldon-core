@@ -19,6 +19,7 @@ package io.seldon.dataflow
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.*
 import io.seldon.dataflow.mtls.CertificateConfig
+import io.seldon.dataflow.sasl.SaslConfig
 import kotlinx.coroutines.runBlocking
 
 object Main {
@@ -46,9 +47,17 @@ object Main {
             brokerSecret = config[Cli.brokerSecret],
             endpointIdentificationAlgorithm = config[Cli.endpointIdentificationAlgorithm],
         )
+
+        val saslConfig = SaslConfig(
+            username = config[Cli.saslUsername],
+            secret = config[Cli.saslSecret],
+            passwordPath = config[Cli.saslPasswordPath],
+        )
+
         val kafkaSecurityParams = KafkaSecurityParams(
             securityProtocol = config[Cli.kafkaSecurityProtocol],
             certConfig = tlsCertConfig,
+            saslConfig = saslConfig,
         )
         val kafkaStreamsParams = KafkaStreamsParams(
             bootstrapServers = config[Cli.kafkaBootstrapServers],

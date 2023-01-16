@@ -1,4 +1,4 @@
-# Strimzi Example
+# Strimzi mTLS Example
 
 ## Cluster Setup
 
