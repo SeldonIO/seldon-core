@@ -17,7 +17,9 @@ broker:
     enabled: true
     port: 9093
     listenerType: internal
-
+    authentication:
+      type: tls
+    
   readiness:
     initialDelaySeconds: 15
     timeoutSeconds: 5

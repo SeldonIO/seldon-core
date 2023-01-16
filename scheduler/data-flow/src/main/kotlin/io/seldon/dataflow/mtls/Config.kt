@@ -35,3 +35,8 @@ data class KeystoreConfig(
     val trustStorePassword: KeystorePassword,
     val trustStoreLocation: FilePath,
 )
+
+data class TruststoreConfig(
+    val trustStorePassword: KeystorePassword,
+    val trustStoreLocation: FilePath,
+)

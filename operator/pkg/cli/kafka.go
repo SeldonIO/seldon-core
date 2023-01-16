@@ -39,11 +39,13 @@ const (
 	PipelineSpecifier   = "pipeline"
 	ModelSpecifier      = "model"
 	kafkaTimeoutSeconds = 2
+	DefaultNamespace    = "default"
 )
 
 type KafkaClient struct {
 	consumer        *kafka.Consumer
 	schedulerClient *SchedulerClient
+	namespace       string
 }
 
 type PipelineTopics struct {
@@ -86,11 +88,31 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		"auto.offset.reset": "largest",
 	}
 
+	namespace := DefaultNamespace
+
 	if config.Kafka != nil {
-		consumerConfig["security.protocol"] = "ssl"
-		consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-		consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
-		consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
+		if config.Kafka.Namespace != "" {
+			namespace = config.Kafka.Namespace
+		}
+		switch config.Kafka.Protocol {
+		case KafkaConfigProtocolSSL:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSSL
+			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
+			consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
+			consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
+		case KafkaConfigProtocolSASLSSL:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLSSL
+			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
+			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
+			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
+			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
+			consumerConfig["ssl.endpoint.identification.algorithm"] = "none"
+		case KafkaConfigProtocolSASLPlaintxt:
+			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLPlaintxt
+			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
+			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
+			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
+		}
 	}
 
 	consumer, err := kafka.NewConsumer(&consumerConfig)
@@ -105,6 +127,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 	kc := &KafkaClient{
 		consumer:        consumer,
 		schedulerClient: scheduler,
+		namespace:       namespace,
 	}
 	return kc, nil
 }
@@ -229,6 +252,9 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 }
 
 func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, namespace string) error {
+	if namespace == "" {
+		namespace = kc.namespace
+	}
 	status, err := kc.getPipelineStatus(pipelineStep)
 	if err != nil {
 		return err

@@ -48,12 +48,21 @@ type ControlPlane struct {
 	CaPath        string `json:"caPath,omitempty"`
 }
 
+const (
+	KafkaConfigProtocolSSL          = "ssl"
+	KafkaConfigProtocolSASLSSL      = "sasl_ssl"
+	KafkaConfigProtocolSASLPlaintxt = "sasl_plaintxt"
+)
+
 type KafkaConfig struct {
-	Bootstrap string `json:"bootstrap,omitempty"`
-	Tls       bool   `json:"tls,omitempty"`
-	KeyPath   string `json:"keyPath,omitempty"`
-	CrtPath   string `json:"crtPath,omitempty"`
-	CaPath    string `json:"caPath,omitempty"`
+	Bootstrap    string `json:"bootstrap,omitempty"`
+	Namespace    string `json:"namespace,omitempty"`
+	Protocol     string `json:"protocol,omitempty"`
+	KeyPath      string `json:"keyPath,omitempty"`
+	CrtPath      string `json:"crtPath,omitempty"`
+	CaPath       string `json:"caPath,omitempty"`
+	SaslUsername string `json:"saslUsername,omitempty"`
+	SaslPassword string `json:"saslPassword,omitempty"`
 }
 
 // end config struct

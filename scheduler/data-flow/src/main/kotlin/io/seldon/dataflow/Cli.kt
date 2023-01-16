@@ -37,6 +37,7 @@ object Cli {
     private val supportedKafkaProtocols = arrayOf(
         SecurityProtocol.PLAINTEXT,
         SecurityProtocol.SSL,
+        SecurityProtocol.SASL_SSL,
     ) // TODO - move to Kafka package
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
     val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*supportedKafkaProtocols))
@@ -53,6 +54,11 @@ object Cli {
     val clientSecret = Key("tls.client.secret", stringType)
     val brokerSecret = Key("tls.broker.secret", stringType)
     val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
+
+    // SASL
+    val saslUsername = Key("sasl.username", stringType)
+    val saslSecret = Key("sasl.secret", stringType)
+    val saslPasswordPath = Key("sasl.password.path", stringType)
 
     fun args(): List<Key<Any>> {
         return listOf(
@@ -73,6 +79,9 @@ object Cli {
             clientSecret,
             brokerSecret,
             endpointIdentificationAlgorithm,
+            saslUsername,
+            saslSecret,
+            saslPasswordPath
         )
     }
 

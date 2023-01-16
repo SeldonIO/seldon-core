@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 	"os"
 	"sync"
 	"time"
@@ -50,16 +51,16 @@ func NewTlsFolderHandler(prefix string, validation bool, logger log.FieldLogger)
 	var certFilePath, keyFilePath string
 	var ok bool
 	if !validation {
-		certFilePath, ok = getEnv(prefix, EnvCrtLocationSuffix)
+		certFilePath, ok = util.GetEnv(prefix, EnvCrtLocationSuffix)
 		if !ok {
 			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCrtLocationSuffix)
 		}
-		keyFilePath, ok = getEnv(prefix, EnvKeyLocationSuffix)
+		keyFilePath, ok = util.GetEnv(prefix, EnvKeyLocationSuffix)
 		if !ok {
 			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvKeyLocationSuffix)
 		}
 	}
-	caFilePath, ok := getEnv(prefix, EnvCaLocationSuffix)
+	caFilePath, ok := util.GetEnv(prefix, EnvCaLocationSuffix)
 	if !ok {
 		if validation {
 			return nil, nil // Allow ca only to be optional and return nil

@@ -21,7 +21,7 @@ spec:
         type: {{ .Values.broker.tls.listenerType }}
         tls: true
         authentication:
-          type: tls
+          type: {{ .Values.broker.tls.authentication.type }}
       {{- end }}
     readinessProbe:
       initialDelaySeconds: {{ .Values.broker.readiness.initialDelaySeconds }}
