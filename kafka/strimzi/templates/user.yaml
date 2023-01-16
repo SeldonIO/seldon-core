@@ -7,5 +7,5 @@ metadata:
     strimzi.io/cluster: seldon
 spec:
   authentication:
-    type: tls
+    type: {{ .Values.broker.tls.authentication.type }}
 {{- end }}

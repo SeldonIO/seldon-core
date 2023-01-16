@@ -11,6 +11,7 @@
     name: "seldon-core-v2-kafka"
     chart_ref: "{{ repo_root_dir }}/kafka/strimzi"
     values: "{{ kafka_cluster_values }}"
+    values_files: "{{ kafka_cluster_values_files }}"
     wait: yes
     wait_timeout: "{{ kafka_wait_timeout }}"
   when: ecosystem_configure_kafka | bool

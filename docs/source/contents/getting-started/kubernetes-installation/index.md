@@ -43,7 +43,7 @@ Our recommended and supported way to install is via Helm or Ansible. If you wish
 
 ## Operations
 
- * [TLS](tls/index.md)
+ * [Security](security/index.md)
 
 ```{toctree}
 :maxdepth: 1
@@ -51,5 +51,5 @@ Our recommended and supported way to install is via Helm or Ansible. If you wish
 
 helm.md
 ansible.md
-tls/index.md
+security/index.md
 ```

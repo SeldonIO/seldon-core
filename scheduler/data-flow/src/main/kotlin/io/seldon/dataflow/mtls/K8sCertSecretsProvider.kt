@@ -28,7 +28,7 @@ import java.nio.file.Files
 
 
 
-object K8sSecretsProvider {
+object K8sCertSecretsProvider {
 
     val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
     val namespace = System.getenv("POD_NAMESPACE")
@@ -50,12 +50,16 @@ object K8sSecretsProvider {
         val client: ApiClient = getApiClient()
         Configuration.setDefaultApiClient(client)
 
-        val clientSecret = CoreV1Api().readNamespacedSecret(certs.clientSecret, namespace, null)
-        extractCertAndStore(clientSecret, certs.keyPath)
-        extractCertAndStore(clientSecret, certs.certPath)
-        extractCertAndStore(clientSecret, certs.caCertPath)
+        if (certs.clientSecret.isNotEmpty()) {
+            val clientSecret = CoreV1Api().readNamespacedSecret(certs.clientSecret, namespace, null)
+            extractCertAndStore(clientSecret, certs.keyPath)
+            extractCertAndStore(clientSecret, certs.certPath)
+            extractCertAndStore(clientSecret, certs.caCertPath)
+        }
 
-        val brokerSecret = CoreV1Api().readNamespacedSecret(certs.brokerSecret, namespace, null)
-        extractCertAndStore(brokerSecret, certs.brokerCaCertPath)
+        if (certs.brokerSecret.isNotEmpty()) {
+            val brokerSecret = CoreV1Api().readNamespacedSecret(certs.brokerSecret, namespace, null)
+            extractCertAndStore(brokerSecret, certs.brokerCaCertPath)
+        }
     }
 }

@@ -19,6 +19,11 @@ security:
         serverCaPath: /tmp/certs/cps/ca.crt
   kafka:
     protocol: PLAINTEXT
+    sasl:
+      client:
+        username: seldon
+        secret:
+        passwordPath: /tmp/sasl/kafka/client/password
     ssl:
       client:
         secret:
