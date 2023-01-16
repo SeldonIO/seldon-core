@@ -125,7 +125,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	updateCapabilities(server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
-	statefulSetReconciler := statefulset.NewStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec)
+	statefulSetReconciler := statefulset.NewStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec, serverConfig.ObjectMeta)
 	return statefulSetReconciler, nil
 }
 

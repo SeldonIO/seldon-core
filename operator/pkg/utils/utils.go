@@ -42,3 +42,30 @@ func RemoveStr(slice []string, s string) (result []string) {
 func GetStatefulSetReplicaName(name string, replicaIdx int) string {
 	return fmt.Sprintf("%s-%d", name, replicaIdx)
 }
+
+func MergeMaps(child map[string]string, parent map[string]string) map[string]string {
+	merged := make(map[string]string)
+	for k, v := range child {
+		merged[k] = v
+	}
+	for k, v := range parent {
+		if _, ok := child[k]; !ok {
+			merged[k] = v
+		}
+
+	}
+	return merged
+}
+
+func HasMappings(expected map[string]string, found map[string]string) bool {
+	for k, v := range expected {
+		if v2, ok := found[k]; ok {
+			if v != v2 {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
+}

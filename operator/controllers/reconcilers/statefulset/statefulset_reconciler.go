@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
@@ -43,10 +45,13 @@ func NewStatefulSetReconciler(
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
+	serverConfigMeta metav1.ObjectMeta,
 ) *StatefulSetReconciler {
+	labels := utils.MergeMaps(meta.Labels, serverConfigMeta.Labels)
+	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &StatefulSetReconciler{
 		ReconcilerConfig: common,
-		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling),
+		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, labels, annotations),
 	}
 }
 
@@ -54,12 +59,21 @@ func (s *StatefulSetReconciler) GetResources() []metav1.Object {
 	return []metav1.Object{s.StatefulSet}
 }
 
-func toStatefulSet(meta metav1.ObjectMeta, podSpec *v1.PodSpec, volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim, scaling *mlopsv1alpha1.ScalingSpec) *appsv1.StatefulSet {
+func toStatefulSet(meta metav1.ObjectMeta,
+	podSpec *v1.PodSpec,
+	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
+	scaling *mlopsv1alpha1.ScalingSpec,
+	labels map[string]string,
+	annotations map[string]string) *appsv1.StatefulSet {
+	labels[constants.AppKey] = constants.ServerLabelValue
+	metaLabels := utils.MergeMaps(map[string]string{constants.AppKey: constants.ServerLabelValue}, labels)
+	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.AppKey: constants.ServerLabelValue}, labels)
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      meta.Name,
-			Namespace: meta.Namespace,
-			Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
+			Name:        meta.Name,
+			Namespace:   meta.Namespace,
+			Labels:      metaLabels,
+			Annotations: annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			ServiceName: meta.Name,
@@ -69,9 +83,10 @@ func toStatefulSet(meta metav1.ObjectMeta, podSpec *v1.PodSpec, volumeClaimTempl
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:    map[string]string{constants.ServerLabelNameKey: meta.Name, constants.AppKey: constants.ServerLabelValue},
-					Name:      meta.Name,
-					Namespace: meta.Namespace,
+					Labels:      templateLabels,
+					Annotations: annotations,
+					Name:        meta.Name,
+					Namespace:   meta.Namespace,
 				},
 				Spec: *podSpec,
 			},
@@ -123,7 +138,9 @@ func (s *StatefulSetReconciler) getReconcileOperation() (constants.ReconcileOper
 		return constants.ReconcileUnknown, err
 	}
 	s.StatefulSet.Status = found.Status
-	if equality.Semantic.DeepEqual(s.StatefulSet.Spec, found.Spec) {
+	if equality.Semantic.DeepEqual(s.StatefulSet.Spec, found.Spec) &&
+		utils.HasMappings(s.StatefulSet.Labels, found.Labels) &&
+		utils.HasMappings(s.StatefulSet.Annotations, found.Annotations) {
 		// Update our version so we have Status which can be used
 		s.StatefulSet = found
 		return constants.ReconcileNoChange, nil
