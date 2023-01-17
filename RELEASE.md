@@ -13,8 +13,8 @@ It is aimed mainly at the maintainers.
 1. Cut branch for release, e.g. `release-0.1`
 2. Run "Draft New Release" workflow (e.g. choose `release-0.1` branch and `v0.1.0-rc1` version)
 3. Run "Build docker images" workflow (e.g. choose `release-0.1` branch and `0.1.0-rc1` tag)
-4. Verify correctness or created artifacts and images (not yet automated!)
-5. Publish the release
+4. Verify correctness of created artifacts and images (not yet automated!)
+5. Publish release
 
 
 ## Process discussion
