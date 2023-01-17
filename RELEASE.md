@@ -107,7 +107,7 @@ To add the appropriate tags:
   ```
 * Find all relevant Go modules and identify their subdirectory paths, e.g. with
   ```
-  find . -name go.mod -exec head -n 1 {} \; | sed 's|^module.*seldon-core/||;s|/v2$||'
+  find . -name go.mod -exec sed -n '1 { s|^module.*seldon-core/||; s|/v2$||; p }' {} \;
   ```
 * Add corresponding tags for each module, e.g.
   ```
