@@ -15,6 +15,7 @@ It is aimed mainly at the maintainers.
 3. Run "Build docker images" workflow (e.g. choose `release-0.1` branch and `0.1.0-rc1` tag)
 4. Verify correctness of created artifacts and images (not yet automated!)
 5. Publish release
+6. Publish tags for the Go modules
 
 
 ## Process discussion
