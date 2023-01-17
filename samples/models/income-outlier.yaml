@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: income-outlier
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/income/outlier-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/outlier-detector"
   requirements:
     - mlserver
     - alibi-detect

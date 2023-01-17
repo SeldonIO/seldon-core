@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
