@@ -84,7 +84,7 @@ This workflow will then run unit tests and build a series of Docker images that 
 ### Add Go module tags
 
 Go module versions are mapped to VCS versions via semantic version tags.
-This process is described [here](https://go.dev/ref/mod#vcs-version).
+This process is described in the [Go documentation](https://go.dev/ref/mod#vcs-version).
 
 As we have multiple Go modules in subdirectories of the repository, we need to use corresponding prefixes for our git tags.
 From the above link on mapping versions to commits:
