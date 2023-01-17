@@ -39,11 +39,11 @@ If the release draft needs to be updated before being published, the new commits
 ### Draft New Release Action
 
 The [Draft New Release](./.github/workflows/draft-release.yml) workflow is the first one to run.
-It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core/actions/workflows/draft-release.yml) interface in GitHub UI.
+It must be triggered manually using the [Actions](https://github.com/SeldonIO/seldon-core/actions/workflows/draft-release.yml) interface in the GitHub UI.
 
 When triggering the workflow, you must:
 - Select the release branch (here `release-0.1`)
-- Specify the release `version` (here `v0.1.0-rc1`).
+- Specify the release `version` (here `v0.1.0-rc1`)
 
 ![Triggering Draft Workflow](.images/release-4.png)
 
@@ -73,7 +73,7 @@ It must be triggered manually using the [Actions](https://github.com/SeldonIO/se
 
 When triggering the workflow, you must:
 - Select the release branch (here `release-0.1`)
-- Specify the release `version` (here `0.1.0-rc1` - note lack of `v` prefix!).
+- Specify the release `version` (here `0.1.0-rc1` - note lack of the `v` prefix!)
 
 ![Triggering Build images](.images/release-6.png)
 
