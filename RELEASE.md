@@ -31,7 +31,7 @@ When all features for a new release have been merged, for example `v0.1.0`, we c
 The `release-0.1` branch will be the base for the `v0.1.0` release as well as the release candidates, i.e. `v0.1.0-rcX`, and successive patch releases, i.e. `v0.1.X`.
 We use GitHub Actions to prepare the release, build images and run all necessary testing.
 
-If the release draft needs to be updated before the release is published, the new commits should be merged into the `release-0.1` branch and relevant workflows re-triggered as required.
+If the release draft needs to be updated before being published, the new commits should be merged into the `release-0.1` branch and relevant workflows re-triggered as required.
 
 ![Draft Update Graph](.images/release-2.png)
 
