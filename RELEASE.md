@@ -98,3 +98,28 @@ At the time of writing, this comprises:
 * `scheduler/v2.0.0`
 
 > :warning: Adding these tags is currently a **manual** process.
+
+To add the appropriate tags:
+* Check out the relevant tag, e.g.
+  ```
+  git checkout v2.0.0
+  ```
+* Find all relevant Go modules, e.g. with
+  ```
+  find . -name go.mod -exec head -n 1 {} \; | sed 's|module.*seldon-core/||'
+  ```
+* Add corresponding tags for each module, e.g.
+  ```
+  git tag apis/go/v2.0.0 v2.0.0
+  ```
+* Confirm that all tags point to the same place, e.g. with
+  ```
+  git tag contains v2.0.0
+  ```
+* Push the tags to the upstream repository, e.g.
+  ```
+  git push <upstream name> apis/go/v2.0.0 components/tls/v2.0.0 ...
+  ```
+
+If you are feeling confident in the process, you can chain these together into a longer pipeline.
+Either way, it is best to confirm that the tags appear as expected both via the git CLI and also in the GitHub UI.
