@@ -123,4 +123,4 @@ To add the appropriate tags:
   ```
 
 If you are feeling confident in the process, you can chain these together into a longer pipeline.
-Either way, it is best to confirm that the tags appear as expected both via the git CLI and also in the GitHub UI.
+In any case, it is best to confirm that the tags appear as expected both via the git CLI and also in the GitHub UI.
