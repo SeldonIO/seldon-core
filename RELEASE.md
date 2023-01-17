@@ -104,9 +104,9 @@ To add the appropriate tags:
   ```
   git checkout v2.0.0
   ```
-* Find all relevant Go modules, e.g. with
+* Find all relevant Go modules and identify their subdirectory paths, e.g. with
   ```
-  find . -name go.mod -exec head -n 1 {} \; | sed 's|module.*seldon-core/||'
+  find . -name go.mod -exec head -n 1 {} \; | sed 's|^module.*seldon-core/||;s|/v2$||'
   ```
 * Add corresponding tags for each module, e.g.
   ```
