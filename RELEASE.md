@@ -78,3 +78,23 @@ When triggering the workflow, you must:
 ![Triggering Build images](.images/release-6.png)
 
 This workflow will then run unit tests and build a series of Docker images that will be automatically pushed to [DockerHub](https://hub.docker.com/).
+
+
+### Add Go module tags
+
+Go module versions are mapped to VCS versions via semantic version tags.
+This process is described [here](https://go.dev/ref/mod#vcs-version).
+
+As we have multiple Go modules in subdirectories of the repository, we need to use corresponding prefixes for our git tags.
+From the above link on mapping versions to commits:
+> If a module is defined in a subdirectory within the repository, that is, the module subdirectory portion of the module path is not empty, then each tag name must be prefixed with the module subdirectory, followed by a slash. For example, the module golang.org/x/tools/gopls is defined in the gopls subdirectory of the repository with root path golang.org/x/tools. The version v0.4.0 of that module must have the tag named gopls/v0.4.0 in that repository.
+
+Thus, for any given release, we should have one tag for the release as a whole plus one corresponding tag for every Go module.
+At the time of writing, this comprises:
+* `apis/go/v2.0.0`
+* `components/tls/v2.0.0`
+* `hodometer/v2.0.0`
+* `operator/v2.0.0`
+* `scheduler/v2.0.0`
+
+> :warning: Adding these tags is currently a **manual** process.
