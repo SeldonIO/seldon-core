@@ -4,9 +4,8 @@ This document summarizes the release process for Seldon Core v2.
 It is aimed mainly at the maintainers.
 
 > :warning: **NOTE:** This is a work in progress.
-  This is an early version of the release process.
-  The process may change.
-  Please, always check this document before conducting a release and verify if everything goes as expected.
+  This is an early version of the release process, which is subject to change.
+  Please, always check this document before conducting a release, and verify if everything goes as expected.
 
 
 ## Process Summary
