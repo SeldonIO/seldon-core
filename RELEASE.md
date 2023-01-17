@@ -73,7 +73,8 @@ It must be triggered manually using the [Actions](https://github.com/SeldonIO/se
 
 When triggering the workflow, you must:
 - Select the release branch (here `release-0.1`)
-- Specify the release `version` (here `0.1.0-rc1` - note lack of the `v` prefix!)
+- Specify the release `version`, e.g. `0.1.0-rc1`
+  * Note the lack of the `v` prefix here
 
 ![Triggering Build images](.images/release-6.png)
 
