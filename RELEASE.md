@@ -115,7 +115,7 @@ To add the appropriate tags:
   ```
 * Confirm that all tags point to the same place, e.g. with
   ```
-  git tag contains v2.0.0
+  git tag --contains v2.0.0
   ```
 * Push the tags to the upstream repository, e.g.
   ```
