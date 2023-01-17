@@ -585,7 +585,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldonv2-controller:latest
+        image: seldonio/seldonv2-controller:2.1.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -653,7 +653,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-dataflow-engine:latest
+        image: seldonio/seldon-dataflow-engine:2.1.0
         imagePullPolicy: IfNotPresent
         name: dataflow-engine
         resources:
@@ -706,7 +706,7 @@ spec:
               key: ca.crt
               name: seldon-controlplane-server
               optional: true
-        image: seldonio/seldon-envoy:latest
+        image: seldonio/seldon-envoy:2.1.0
         imagePullPolicy: IfNotPresent
         name: envoy
         ports:
@@ -750,7 +750,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-hodometer:latest
+        image: seldonio/seldon-hodometer:2.1.0
         imagePullPolicy: IfNotPresent
         name: hodometer
       securityContext:
@@ -798,7 +798,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-modelgateway:latest
+        image: seldonio/seldon-modelgateway:2.1.0
         imagePullPolicy: IfNotPresent
         name: modelgateway
         resources:
@@ -861,7 +861,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-pipelinegateway:latest
+        image: seldonio/seldon-pipelinegateway:2.1.0
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
         ports:
@@ -927,7 +927,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-scheduler:latest
+        image: seldonio/seldon-scheduler:2.1.0
         imagePullPolicy: IfNotPresent
         name: scheduler
         ports:
@@ -979,7 +979,7 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: seldonio/seldon-rclone:latest
+    - image: seldonio/seldon-rclone:2.1.0
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
@@ -1062,7 +1062,7 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
-      image: seldonio/seldon-agent:latest
+      image: seldonio/seldon-agent:2.1.0
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
@@ -1179,7 +1179,7 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: seldonio/seldon-rclone:latest
+    - image: seldonio/seldon-rclone:2.1.0
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
@@ -1256,7 +1256,7 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      image: seldonio/seldon-agent:latest
+      image: seldonio/seldon-agent:2.1.0
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
