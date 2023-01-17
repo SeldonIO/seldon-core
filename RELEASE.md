@@ -92,11 +92,11 @@ From the above link on mapping versions to commits:
 
 Thus, for any given release, we should have one tag for the release as a whole plus one corresponding tag for every Go module.
 At the time of writing, this comprises:
-* `apis/go/v2.0.0`
-* `components/tls/v2.0.0`
-* `hodometer/v2.0.0`
-* `operator/v2.0.0`
-* `scheduler/v2.0.0`
+* `apis/go`
+* `components/tls`
+* `hodometer`
+* `operator`
+* `scheduler`
 
 > :warning: Adding these tags is currently a **manual** process.
 
