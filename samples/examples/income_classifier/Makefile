@@ -31,7 +31,3 @@ upload_artifacts:
 	gsutil cp -R drift-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
 	gsutil cp -R outlier-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
 	gsutil cp -R infer-data gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-
-.PHONY: install-dev
-install-dev:
-	pip install -r requirements.txt

@@ -1,3 +1,0 @@
-alibi==0.8.0
-alibi-detect==0.10.0
-scikit-learn==1.1.2
