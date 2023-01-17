@@ -10,7 +10,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.1/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/classifier"
   requirements:
   - sklearn
 
@@ -43,11 +43,8 @@ seldon model infer income \
 {
 	"model_name": "income_1",
 	"model_version": "1",
-	"id": "f1cadfd0-24b8-4dc8-aede-cf3c1dd0973c",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "e06e7238-d25f-412c-a3c4-ea77721d660d",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
@@ -56,7 +53,6 @@ seldon model infer income \
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
 			"data": [
 				0
 			]
@@ -76,7 +72,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
@@ -110,11 +106,8 @@ seldon model infer income-explainer \
 {
 	"model_name": "income-explainer_1",
 	"model_version": "1",
-	"id": "67460faa-a429-464f-8108-269ae21c024d",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "b8c18f49-3944-4841-8d1d-81585ba40830",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "explanation",
@@ -124,11 +117,10 @@ seldon model infer income-explainer \
 			],
 			"datatype": "BYTES",
 			"parameters": {
-				"content_type": "str",
-				"headers": null
+				"content_type": "str"
 			},
 			"data": [
-				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.8.0\"}, \"data\": {\"anchor\": [\"Relationship = Own-child\", \"Marital Status = Never-Married\"], \"precision\": 0.9666666666666667, \"coverage\": 0.07165109034267912, \"raw\": {\"feature\": [5, 3], \"mean\": [0.8118811881188119, 0.9666666666666667], \"precision\": [0.8118811881188119, 0.9666666666666667], \"coverage\": [0.0787716955941255, 0.07165109034267912], \"examples\": [{\"covered_true\": [[26, 4, 1, 1, 5, 3, 4, 0, 0, 0, 40, 9], [47, 4, 1, 0, 7, 3, 4, 1, 0, 0, 40, 8], [25, 4, 1, 1, 7, 3, 4, 0, 0, 0, 20, 9], [26, 2, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [38, 4, 1, 2, 8, 3, 4, 1, 0, 0, 55, 9], [26, 4, 1, 0, 8, 3, 4, 0, 0, 0, 55, 9], [52, 4, 1, 0, 8, 3, 4, 1, 0, 0, 55, 9], [49, 5, 1, 2, 5, 3, 4, 1, 6497, 0, 45, 9], [29, 0, 1, 1, 0, 3, 4, 1, 0, 0, 40, 9], [45, 5, 1, 0, 8, 3, 4, 1, 0, 0, 45, 9]], \"covered_false\": [[74, 6, 1, 3, 2, 3, 4, 1, 15831, 0, 8, 3], [45, 2, 1, 0, 2, 3, 1, 1, 7298, 0, 40, 9], [34, 7, 2, 0, 5, 3, 4, 0, 0, 0, 50, 9], [59, 4, 5, 0, 8, 3, 4, 1, 0, 0, 40, 9], [42, 5, 1, 0, 6, 3, 4, 1, 0, 0, 60, 9], [44, 4, 1, 0, 5, 3, 4, 1, 7688, 0, 40, 9], [46, 5, 1, 0, 6, 3, 4, 1, 0, 1902, 42, 0], [36, 4, 1, 0, 6, 3, 4, 1, 0, 2415, 45, 9], [41, 6, 1, 0, 2, 3, 4, 1, 0, 0, 75, 9], [48, 4, 5, 0, 8, 3, 4, 1, 0, 0, 40, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[48, 4, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [36, 6, 1, 1, 2, 3, 4, 1, 0, 0, 40, 9], [31, 6, 1, 1, 8, 3, 4, 1, 0, 0, 60, 9], [47, 4, 5, 1, 8, 3, 4, 1, 0, 0, 40, 9], [27, 4, 1, 1, 8, 3, 4, 0, 0, 0, 40, 9], [44, 6, 1, 1, 8, 3, 1, 1, 0, 0, 48, 4], [44, 4, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [24, 4, 1, 1, 8, 3, 4, 0, 0, 0, 40, 9], [49, 4, 1, 1, 2, 3, 4, 1, 0, 1902, 40, 9], [35, 4, 5, 1, 8, 3, 1, 1, 0, 0, 65, 2]], \"covered_false\": [[38, 4, 1, 1, 6, 3, 4, 1, 7298, 0, 40, 9], [41, 6, 5, 1, 8, 3, 4, 1, 7298, 0, 70, 9], [42, 2, 1, 1, 1, 3, 4, 0, 99999, 0, 40, 9], [63, 6, 1, 1, 6, 3, 4, 1, 10605, 0, 40, 9], [44, 5, 1, 1, 8, 3, 4, 1, 99999, 0, 45, 9], [41, 4, 1, 1, 8, 3, 4, 1, 7298, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Relationship = Own-child\", \"Marital Status = Never-Married\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
+				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"precision\": 1.0, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 5, 8], \"mean\": [0.8063492063492064, 0.9221902017291066, 1.0], \"precision\": [0.8063492063492064, 0.9221902017291066, 1.0], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], \"examples\": [{\"covered_true\": [[44, 7, 1, 1, 5, 0, 0, 1, 0, 0, 38, 9], [74, 6, 1, 1, 8, 0, 4, 1, 0, 1825, 12, 9], [58, 4, 1, 1, 2, 3, 4, 0, 0, 0, 20, 9], [48, 4, 1, 1, 6, 4, 4, 1, 0, 0, 40, 9], [22, 4, 1, 1, 2, 3, 4, 0, 0, 0, 15, 9], [57, 4, 1, 1, 8, 0, 4, 1, 0, 0, 40, 9], [36, 4, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [28, 7, 1, 1, 5, 3, 4, 1, 0, 0, 16, 9], [49, 7, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9], [27, 4, 1, 1, 4, 1, 4, 0, 0, 0, 40, 9]], \"covered_false\": [[50, 5, 1, 1, 8, 0, 4, 1, 15024, 0, 60, 9], [56, 4, 1, 1, 1, 0, 4, 1, 5178, 0, 44, 9], [50, 5, 2, 1, 5, 0, 4, 1, 15024, 0, 60, 9], [66, 4, 1, 1, 8, 0, 4, 1, 99999, 0, 55, 0], [36, 4, 1, 1, 5, 0, 4, 1, 15024, 0, 50, 9], [59, 4, 5, 1, 8, 0, 4, 1, 0, 0, 45, 9], [36, 4, 1, 1, 6, 0, 4, 1, 0, 1902, 45, 9], [37, 1, 1, 1, 1, 0, 1, 1, 7298, 0, 40, 7], [34, 4, 1, 1, 6, 0, 4, 1, 7298, 0, 60, 9], [52, 2, 5, 1, 5, 1, 4, 1, 0, 0, 32, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[33, 4, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [76, 4, 1, 1, 5, 3, 4, 0, 0, 0, 20, 9], [46, 4, 1, 1, 8, 3, 4, 1, 0, 0, 53, 9], [31, 5, 1, 1, 8, 3, 4, 1, 0, 0, 55, 9], [39, 4, 1, 1, 6, 3, 4, 1, 3464, 0, 40, 9], [41, 2, 1, 1, 5, 3, 4, 1, 0, 0, 20, 9], [30, 2, 1, 1, 5, 3, 4, 0, 0, 0, 15, 9], [37, 2, 1, 1, 5, 3, 4, 0, 0, 0, 30, 9], [45, 4, 1, 1, 5, 3, 4, 1, 0, 0, 55, 9], [54, 6, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9]], \"covered_false\": [[50, 4, 5, 1, 6, 3, 4, 1, 15024, 0, 40, 9], [45, 4, 1, 1, 6, 3, 4, 1, 8614, 0, 48, 9], [44, 4, 5, 1, 8, 3, 4, 1, 14084, 0, 56, 9], [39, 5, 1, 1, 8, 3, 4, 1, 7298, 0, 40, 9], [40, 4, 1, 1, 7, 3, 1, 0, 7688, 0, 52, 6], [64, 4, 1, 1, 8, 3, 4, 1, 27828, 0, 55, 9], [62, 5, 1, 1, 6, 3, 4, 1, 99999, 0, 40, 9], [55, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 48, 9], [32, 5, 1, 1, 2, 3, 4, 1, 7688, 0, 50, 9], [39, 4, 1, 1, 8, 3, 4, 1, 99999, 0, 70, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[66, 5, 1, 1, 8, 3, 4, 1, 0, 0, 70, 9], [49, 4, 1, 1, 8, 3, 2, 0, 0, 0, 60, 9], [40, 4, 2, 1, 5, 3, 4, 1, 0, 0, 40, 9], [59, 0, 1, 1, 0, 3, 4, 1, 0, 0, 40, 9], [62, 4, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [40, 4, 1, 1, 8, 3, 4, 1, 0, 1902, 32, 9], [37, 4, 1, 1, 7, 3, 4, 1, 0, 0, 70, 1], [38, 2, 5, 1, 8, 3, 4, 1, 0, 0, 70, 9], [23, 4, 1, 1, 1, 3, 4, 0, 0, 0, 30, 9], [32, 4, 1, 1, 6, 3, 2, 1, 0, 0, 50, 9]], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
 			]
 		}
 	]

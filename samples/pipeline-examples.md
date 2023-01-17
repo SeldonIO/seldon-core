@@ -108,7 +108,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "cdqjijpqa12c739ab3p0",
+        "uid": "ceb1joj3gshc73fmvpu0",
         "version": 1,
         "steps": [
           {
@@ -136,7 +136,8 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:26:08.037067065Z"
+        "lastChangeTimestamp": "2022-12-11T17:56:51.471467841Z",
+        "modelsReady": true
       }
     }
   ]
@@ -504,7 +505,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "join",
-        "uid": "cdqjit1qa12c739ab3pg",
+        "uid": "ceb1k1r3gshc73fmvpug",
         "version": 1,
         "steps": [
           {
@@ -536,7 +537,8 @@ seldon pipeline status join -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:26:44.706282241Z"
+        "lastChangeTimestamp": "2022-12-11T17:57:27.599682702Z",
+        "modelsReady": true
       }
     }
   ]
@@ -760,7 +762,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "tfsimple-conditional",
-        "uid": "cdqjj21qa12c739ab3q0",
+        "uid": "ceb1k7j3gshc73fmvpv0",
         "version": 1,
         "steps": [
           {
@@ -798,7 +800,8 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:27:04.928498607Z"
+        "lastChangeTimestamp": "2022-12-11T17:57:50.612064319Z",
+        "modelsReady": true
       }
     }
   ]
@@ -992,7 +995,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "pipeline-inputs",
-        "uid": "cdqjj89qa12c739ab3qg",
+        "uid": "ceb1kcj3gshc73fmvpvg",
         "version": 1,
         "steps": [
           {
@@ -1026,7 +1029,8 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:27:30.024128982Z"
+        "lastChangeTimestamp": "2022-12-11T17:58:11.137492043Z",
+        "modelsReady": true
       }
     }
   ]
@@ -1203,7 +1207,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "trigger-joins",
-        "uid": "cdqjjdpqa12c739ab3r0",
+        "uid": "ceb1khb3gshc73fmvq00",
         "version": 1,
         "steps": [
           {
@@ -1240,7 +1244,8 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:27:51.550445363Z"
+        "lastChangeTimestamp": "2022-12-11T17:58:30.105358917Z",
+        "modelsReady": true
       }
     }
   ]
