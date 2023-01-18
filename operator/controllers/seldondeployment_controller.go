@@ -1909,6 +1909,23 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				}
 			}
 		}
+
+		// cleanup any orphan services
+		seldonId := machinelearningv1.GetSeldonDeploymentName(instance)
+		var svcs corev1.ServiceList
+		err := r.List(context.TODO(), &svcs, client.MatchingLabels{machinelearningv1.Label_seldon_id: seldonId}, client.InNamespace(instance.Namespace))
+		if err != nil {
+			return err
+		}
+		for _, svc := range svcs.Items {
+			if _, ok := components.serviceDetails[svc.Name]; !ok {
+				log.Info("SVC check: Found orphaned svc so will delete it", "svc", svc.Name)
+				err := r.Delete(context.TODO(), &svc)
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }

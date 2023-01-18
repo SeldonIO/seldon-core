@@ -65,7 +65,7 @@ func (a *AmbassadoroResourceCleaner) cleanUnusedAmbassadorMappings() ([]*v2.Mapp
 					}
 				}
 				if !found {
-					a.logger.Info("Will delete Ambassador Maping", "name", mapping.Name, "namespace", mapping.Namespace)
+					a.logger.Info("Will delete Ambassador Mapping", "name", mapping.Name, "namespace", mapping.Namespace)
 					a.client.Delete(context.Background(), &mapping, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					deleted = append(deleted, mapping.DeepCopy())
 				}
