@@ -36,6 +36,10 @@ func startSubService(service interfaces.DependencyServiceInterface, logger *log.
 		return err
 	}
 
+	return isReady(service, logger, 15*time.Minute) // 15 mins is the default MaxElapsedTime
+}
+
+func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, maxElapsedTime time.Duration) error {
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("%s service not ready", service.Name())
 	}
@@ -47,8 +51,9 @@ func startSubService(service interfaces.DependencyServiceInterface, logger *log.
 			return fmt.Errorf("Service %s not ready", service.Name())
 		}
 	}
-	err = backoff.RetryNotify(readyToError, backoff.NewExponentialBackOff(), logFailure)
-	return err
+	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax.MaxElapsedTime = maxElapsedTime
+	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
 }
 
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
