@@ -28,6 +28,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
@@ -319,6 +320,28 @@ func (c *Client) UnloadAllModels() error {
 		}
 	}
 	return nil
+}
+
+func startSubService(service interfaces.DependencyServiceInterface, logger *log.Entry) error {
+	logger.Infof("Starting and waiting for %s", service.Name())
+	err := service.Start()
+	if err != nil {
+		return err
+	}
+
+	logFailure := func(err error, delay time.Duration) {
+		logger.WithError(err).Errorf("%s service not ready", service.Name())
+	}
+
+	readyToError := func() error {
+		if service.Ready() {
+			return nil
+		} else {
+			return fmt.Errorf("Service %s not ready", service.Name())
+		}
+	}
+	err = backoff.RetryNotify(readyToError, backoff.NewExponentialBackOff(), logFailure)
+	return err
 }
 
 func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
@@ -652,4 +675,11 @@ func (c *Client) consumeModelScalingEvents() {
 			continue
 		}
 	}
+}
+
+func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
+	mv := proto.Clone(originalModelVersion)
+	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
+	mv.(*agent.ModelVersion).Version = version
+	return mv.(*agent.ModelVersion)
 }
