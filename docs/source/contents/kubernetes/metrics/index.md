@@ -35,7 +35,7 @@ Pod monitors were chosen as ports for metrics are not exposed at service level a
 
 ## Example Grafana Dashboard
 
-Check [metrics](../metrics/index.md) for more infor
+Check [metrics](../metrics/index.md) for more information.
 
 ## Reference
 

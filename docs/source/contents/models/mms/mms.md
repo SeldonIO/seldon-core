@@ -18,22 +18,24 @@ In the below example, given that the model is `tensorflow`, the system will depl
 :language: yaml
 ```
 
+All models are loaded and active on this model server. Inference requests for these models are served concurrently and the hardware resources are shared to fullfil these inference requests.
+
 ## Overcommit
 
-Overcommit allows shared servers to handle more models than can fit in memory. This is done by keeping highly utilized models in memory and pushing other ones to disk using a least-recently-used (LRU) cache mechanism. From a user perspective all of these models are registered and "ready" for to serve inference requests. If an inference request comes for a model that is unloaded, the system will reload the model first before forwarding the request to the inference server.
+Overcommit allows shared servers to handle more models than can fit in memory. This is done by keeping highly utilized models in memory and evicting other ones to disk using a least-recently-used (LRU) cache mechanism. From a user perspective these models are all registered and "ready" to serve inference requests. If an inference request comes for a model that is unloaded/evicted to disk, the system will reload the model first before forwarding the request to the inference server.
 
-Overcommit is enabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` on shared servers as is set by default at 10%. In other words a given model inference server instance can register models with total memory requirement up to `MEMORY_REQUEST` * ( 1 + `SELDON_OVERCOMMIT_PERCENTAGE` / 100).
+Overcommit is enabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` on shared servers as is set by default at 10%. In other words a given model inference server instance can register models with a total memory requirement up to `MEMORY_REQUEST` * ( 1 + `SELDON_OVERCOMMIT_PERCENTAGE` / 100).
 
-The Seldon Agent (a side car next to each model inference server deployment) is keeping track of inference requests times on the different models. These models are sorted in time ascending order and the top of this priority queue data structure is used to evict the least recently used model in order to make room for another incoming model. This happens during two scenarios:
-- A new model load request beyond the active memory capacity.
+The Seldon Agent (a side car next to each model inference server deployment) is keeping track of inference requests times on the different models. These models are sorted in time ascending order and this data structure is used to evict the least recently used model in order to make room for another incoming model. This happens during two scenarios:
+- A new model load request beyond the active memory capacity of the inference server.
 - An incoming inference request to a registered model that is not loaded in-memory (previously evicted).
 
-This is all done seamlessly to users and specifically for reloading a model onto the inference server to respond to an inference request, the model artifact is cached on disk which allows a faster reload (no remote artifact fetch). Therefore we expect that the extra latency to reload a model during an inference request is acceptable in many cases (with a lower bound of ~100ms).
+This is done seamlessly to users and specifically for reloading a model onto the inference server to respond to an inference request, the model artifact is cached on disk which allows a faster reload (no remote artifact fetch). Therefore we expect that the extra latency to reload a model during an inference request is acceptable in many cases (with a lower bound of ~100ms).
 
 Overcommit can be disabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` to 0 for a given shared server.
 
 ![Overcommit](overcommit.png)
 
-**Note**: currently we are using memory requirement values that are specified by the user on the Server and Model side. In the future we are looking at how to make the system automatically handle memory consumption.
+**Note**: currently we are using memory requirement values that are specified by the user on the Server and Model side. In the future we are looking at how to make the system automatically handle memory management.
 
 Check [notebook](../../../../../samples/local-over-commit-test.md) for a local example.
