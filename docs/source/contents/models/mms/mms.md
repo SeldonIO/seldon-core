@@ -14,7 +14,7 @@ Multi-model serving is enabled by design in Seldon Core v2. Based on requirement
 In the below example, given that the model is `tensorflow`, the system will deploy the model onto a `triton` server instance (matching with the `Server` labels). Additionally as the model `memory` requirement is `100Ki`, the system will pick the server instance that has enough (memory) capacity to host this model in parallel to other potentially existing models. 
 
 
-```{literalinclude} ../../../../samples/models/tfsimple1.yaml 
+```{literalinclude} ../../../../../samples/models/tfsimple1.yaml 
 :language: yaml
 ```
 
@@ -38,4 +38,4 @@ Overcommit can be disabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` to 0 for a 
 
 **Note**: currently we are using memory requirement values that are specified by the user on the Server and Model side. In the future we are looking at how to make the system automatically handle memory management.
 
-Check [notebook](../../../../../samples/local-over-commit-test.md) for a local example.
+Check [notebook](../../examples/local-overcommit-examples.md) for a local example.
