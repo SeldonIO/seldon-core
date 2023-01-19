@@ -46,16 +46,16 @@ rclone/index.md
 parameterized-models/index.md
 ```
 
-## Multi-model serving with overcommit
+## Multi-model Serving with Overcommit
 
-Multi-model serving is an architecture pattern where one ML inference server hosts multiple models at the same time. This is a feature provided out of the box by Nvidia Triton and Seldon MLServer. This reduces infrastructure hardware requirements and system overheads which enables the deployment of a large number of models while making it simpler to operate the system at scale.
+Multi-model serving is an architecture pattern where one ML inference server hosts multiple models at the same time. This is a feature provided out of the box by Nvidia Triton and Seldon MLServer. This reduces infrastructure hardware requirements (e.g. expensive GPUs) which enables the deployment of a large number of models while making it efficient to operate the system at scale.
 
 Seldon Core v2 leverages multi-model serving by design and it is the default option for deploying models in the system. The scheduler is responsible of finding an appropriate server to load the model onto and it is based on requirements that the user defines in the `Model` deployment definition.
 
 Moreover, in many cases demand patterns allow for further optimisation such as overcommit of resources. This is currently based on memory requirement. Seldon Core v2 is able to register more models than what can be served by the provisioned (memory) infrastructure and will swap models dynamically according to usage without adding significant latency overheads to inference requests.
 
-See [Multi-model serving](mms.md) for more information. 
+See [Multi-model serving](mms/mms.md) for more information. 
 
-## Autoscaling of models
+## Autoscaling of Models
 
 See [here](../kubernetes/autoscaling/index.md) for discussion of autoscaling of models.
