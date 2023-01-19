@@ -51,6 +51,9 @@ func LoadSeldonCLIConfigs() (*SeldonCLIConfigs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load CLI configs from %s: %s", path, err.Error())
 	}
+	if cfg.Configs == nil {
+		cfg.Configs = map[string]string{}
+	}
 	return &cfg, nil
 }
 

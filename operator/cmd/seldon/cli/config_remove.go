@@ -23,9 +23,9 @@ import (
 
 func createConfigRemove() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remove",
-		Short: "remove config",
-		Long:  `remove config`,
+		Use:   "remove <key>",
+		Short: "remove config for given key",
+		Long:  `remove config for given key`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configKey := args[0]

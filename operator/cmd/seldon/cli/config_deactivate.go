@@ -23,9 +23,9 @@ import (
 
 func createConfigDeactivate() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "deactivate",
-		Short: "deactivate config",
-		Long:  `deactivate config`,
+		Use:   "deactivate <key>",
+		Short: "deactivate config for given key",
+		Long:  `deactivate config for given key`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configKey := args[0]
