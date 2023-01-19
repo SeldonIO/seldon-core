@@ -23,9 +23,9 @@ import (
 
 func createConfigAdd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "add config",
-		Long:  `add config`,
+		Use:   "add <key> <path>",
+		Short: "add config for given path under the supplied key",
+		Long:  `add config for given path under the supplied key. You should provide the full path to the config file`,
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configKey := args[0]
