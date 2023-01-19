@@ -27,5 +27,5 @@ Blackbox explainers can explain a Pipeline as well as a model. An example from t
 ## Examples
  * [Tabular income classification model with Anchor Tabular black box model explainer](../examples/income.md)
  * [Huggingface Sentiment model with Anchor Text black box pipeline explainer](../examples/speech-to-sentiment.md)
-  * [Anchor Text movies sentiment explainer](../examples/explainer-examples.md)
+* [Anchor Text movies sentiment explainer](../examples/explainer-examples.md)
  
