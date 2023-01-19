@@ -32,7 +32,7 @@ By packing multiple models onto a smaller set of servers users can save infrastr
 
 ![mms2](multimodel2.png)
 
-By allowing over-commit users can provision model models that available memory resources by allowing Seldon to transprently unload models that are not in use.
+By allowing over-commit users can provision model models that available memory resources by allowing Seldon to transparently unload models that are not in use.
 
 ![mms3](multimodel3.png)
 

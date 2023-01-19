@@ -35,3 +35,5 @@ Overcommit can be disabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` to 0 for a 
 ![Overcommit](overcommit.png)
 
 **Note**: currently we are using memory requirement values that are specified by the user on the Server and Model side. In the future we are looking at how to make the system automatically handle memory consumption.
+
+Check [notebook](../../../../../samples/local-over-commit-test.md) for a local example.
