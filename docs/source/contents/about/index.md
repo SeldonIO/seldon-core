@@ -30,11 +30,11 @@ Seldon transparently will provision your model onto the correct inference server
 
 By packing multiple models onto a smaller set of servers users can save infrastructure costs and efficiently utilize their models.
 
-![mms2](multimodel2.png)
+![mms2](../models/mms/mms.png)
 
 By allowing over-commit users can provision model models that available memory resources by allowing Seldon to transparently unload models that are not in use.
 
-![mms3](multimodel3.png)
+![mms3](../models/mms/overcommit.png)
 
 ## Inference Servers
 
