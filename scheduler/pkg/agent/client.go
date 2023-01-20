@@ -179,10 +179,10 @@ func (c *Client) Start() error {
 		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
 
 	// model scaling consumption
-	go c.consumeModelScalingEvents()
+	go c.modelScalingEventsConsumer()
 
 	// periodic subservices checker for readiness
-	go c.startSubServiCheckerCron()
+	go c.startSubServiChecker()
 
 	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
 	go func() {
@@ -633,7 +633,7 @@ func (c *Client) sendModelScalingTriggerEvent(
 	return err
 }
 
-func (c *Client) consumeModelScalingEvents() {
+func (c *Client) modelScalingEventsConsumer() {
 	ch := c.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
 	for c.modelScalingService.Ready() {
 		e := <-ch
@@ -659,7 +659,7 @@ func (c *Client) consumeModelScalingEvents() {
 	}
 }
 
-func (c *Client) startSubServiCheckerCron() {
+func (c *Client) startSubServiChecker() {
 	ticker := time.NewTicker(periodReadySubService)
 	defer ticker.Stop()
 	for !c.stop.Load() {
