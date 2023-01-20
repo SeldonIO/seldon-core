@@ -49,7 +49,7 @@ import (
 
 const (
 	// period for subservice ready "cron"
-	periodReadySubService = 15 * time.Second
+	periodReadySubService = 10 * time.Second
 )
 
 type Client struct {

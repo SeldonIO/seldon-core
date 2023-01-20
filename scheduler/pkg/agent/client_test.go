@@ -73,7 +73,11 @@ func (f FakeModelRepository) DownloadModelVersion(modelName string, version uint
 }
 
 func (f FakeModelRepository) Ready() error {
-	return nil
+	return f.err
+}
+
+func (f FakeModelRepository) setError() {
+	f.err = fmt.Errorf("dummy error")
 }
 
 type FakeDependencyService struct {
@@ -97,6 +101,10 @@ func (f FakeDependencyService) Stop() error {
 
 func (f FakeDependencyService) Name() string {
 	return "FakeService"
+}
+
+func (f FakeDependencyService) setError() {
+	f.err = fmt.Errorf("dummy error")
 }
 
 func addVerionToModels(models []string, version uint32) []string {
@@ -705,9 +713,9 @@ func TestClientClose(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
 
-	defer httpmock.DeactivateAndReset()
 	v2Client := createTestV2Client(nil, 200)
 	httpmock.ActivateNonDefault(v2Client.httpClient)
+	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
 	rpGRPC := FakeDependencyService{err: nil}
@@ -753,5 +761,53 @@ func TestClientClose(t *testing.T) {
 	client.Stop()
 	wg.Wait()
 	g.Expect(client.conn.GetState()).To(Equal(connectivity.Shutdown))
+	g.Expect(client.stop.Load()).To(BeTrue())
+}
+
+func TestClientCloseWithFailure(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	v2Client := createTestV2Client([]string{"dummy"}, 200)
+	httpmock.ActivateNonDefault(v2Client.httpClient)
+	defer httpmock.DeactivateAndReset()
+	modelRepository := FakeModelRepository{}
+	rpHTTP := FakeDependencyService{err: nil}
+	rpGRPC := FakeDependencyService{err: nil}
+	agentDebug := FakeDependencyService{err: nil}
+	lags := modelscaling.ModelScalingStatsWrapper{
+		Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+		Operator:  interfaces.Gte,
+		Threshold: 10,
+		Reset:     true,
+		EventType: modelscaling.ScaleUpEvent,
+	}
+	lastUsed := modelscaling.ModelScalingStatsWrapper{
+		Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+		Operator:  interfaces.Gte,
+		Threshold: 10,
+		Reset:     false,
+		EventType: modelscaling.ScaleDownEvent,
+	}
+	modelScalingService := modelscaling.NewStatsAnalyserService(
+		[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+	drainerServicePort, _ := getFreePort()
+	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+	client := NewClient(
+		"mlserver", 1, "scheduler", 9002, 9055,
+		logger, modelRepository, v2Client,
+		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
+		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		rpHTTP.setError() // induce a failure in one of the sub services
+	}()
+
+	err := client.Start()
+	g.Expect(err).To(BeNil()) //  we are here it means agent has stopped
+
 	g.Expect(client.stop.Load()).To(BeTrue())
 }
