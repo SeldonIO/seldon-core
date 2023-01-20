@@ -338,10 +338,10 @@ func (v *V2Client) Live() error {
 		ready, err = v.liveHttp()
 	}
 	if err != nil {
-		v.logger.WithError(err).Debugf("Server ready check failed on error")
+		v.logger.WithError(err).Debugf("Server live check failed on error")
 		return err
 	}
-	v.logger.Debugf("Server ready check returned with value %v", ready)
+	v.logger.Debugf("Server live check returned with value %v", ready)
 	if ready {
 		return nil
 	} else {

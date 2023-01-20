@@ -94,7 +94,7 @@ func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2Sta
 		createTestV2ClientMockResponders(host, port, model, status, state)
 	}
 	// we do not care about ready in tests
-	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/ready", host, port),
+	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/live", host, port),
 		httpmock.NewStringResponder(200, `{}`))
 	return v2, state
 }

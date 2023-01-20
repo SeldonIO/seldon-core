@@ -89,6 +89,10 @@ func (mlserver *mockGRPCMLServer) ServerReady(ctx context.Context, r *v2.ServerR
 	return &v2.ServerReadyResponse{Ready: true}, nil
 }
 
+func (mlserver *mockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveRequest) (*v2.ServerLiveResponse, error) {
+	return &v2.ServerLiveResponse{Live: true}, nil
+}
+
 func (mlserver *mockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
 	return &v2.RepositoryModelLoadResponse{}, nil
 }
