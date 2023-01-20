@@ -68,9 +68,9 @@ func getModifiedModelVersion(modelId string, version uint32, originalModelVersio
 }
 
 func isReadyChecker(
-	isStartup bool, 
-	service interfaces.DependencyServiceInterface, 
-	logger *log.Entry, 
+	isStartup bool,
+	service interfaces.DependencyServiceInterface,
+	logger *log.Entry,
 	logMessage string,
 	maxElapsedTimeReadySubServiceBeforeStart,
 	maxElapsedTimeReadySubServiceAfterStart time.Duration,
