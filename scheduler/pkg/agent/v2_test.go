@@ -78,9 +78,6 @@ func createTestV2ClientMockResponders(host string, port int, modelName string, s
 		state.loadResponder(modelName, status))
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/unload", host, port, modelName),
 		state.unloadResponder(modelName, status))
-	// we do not care about ready in tests
-	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/ready", host, port),
-		httpmock.NewStringResponder(200, `{}`))
 }
 
 func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2State) {
@@ -96,6 +93,9 @@ func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2Sta
 	for _, model := range models {
 		createTestV2ClientMockResponders(host, port, model, status, state)
 	}
+	// we do not care about ready in tests
+	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/ready", host, port),
+		httpmock.NewStringResponder(200, `{}`))
 	return v2, state
 }
 

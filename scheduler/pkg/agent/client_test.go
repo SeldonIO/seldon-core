@@ -76,10 +76,6 @@ func (f FakeModelRepository) Ready() error {
 	return f.err
 }
 
-func (f FakeModelRepository) setError() {
-	f.err = fmt.Errorf("dummy error")
-}
-
 type FakeDependencyService struct {
 	err error
 }
@@ -101,10 +97,6 @@ func (f FakeDependencyService) Stop() error {
 
 func (f FakeDependencyService) Name() string {
 	return "FakeService"
-}
-
-func (f FakeDependencyService) setError() {
-	f.err = fmt.Errorf("dummy error")
 }
 
 func addVerionToModels(models []string, version uint32) []string {
@@ -714,7 +706,7 @@ func TestClientClose(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	v2Client := createTestV2Client(nil, 200)
-	httpmock.ActivateNonDefault(v2Client.httpClient)
+	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
@@ -770,8 +762,8 @@ func TestClientCloseWithFailure(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
 
-	v2Client := createTestV2Client([]string{"dummy"}, 200)
-	httpmock.ActivateNonDefault(v2Client.httpClient)
+	v2Client := createTestV2Client([]string{}, 200)
+	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
@@ -793,20 +785,33 @@ func TestClientCloseWithFailure(t *testing.T) {
 	}
 	modelScalingService := modelscaling.NewStatsAnalyserService(
 		[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+	go func() {
+		_ = modelScalingService.Start()
+	}()
 	drainerServicePort, _ := getFreePort()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+	go func() {
+		_ = drainerService.Start()
+	}()
 	client := NewClient(
 		"mlserver", 1, "scheduler", 9002, 9055,
 		logger, modelRepository, v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 
+	mockAgentV2Server := &mockAgentV2Server{}
+	conn, err := grpc.DialContext(
+		context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+	g.Expect(err).To(BeNil())
+	client.conn = conn
+
 	go func() {
 		time.Sleep(1 * time.Second)
-		rpHTTP.setError() // induce a failure in one of the sub services
+		_ = drainerService.Stop() // induce a failure in one of the sub services
 	}()
 
-	err := client.Start()
+	err = client.Start()
 	g.Expect(err).To(BeNil()) //  we are here it means agent has stopped
 
 	g.Expect(client.stop.Load()).To(BeTrue())
