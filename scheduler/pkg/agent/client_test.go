@@ -763,17 +763,36 @@ func TestClientCloseWithFailure(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
 
+	const (
+		inference string = "inference"
+		drain            = "drain"
+		scale            = "scale"
+	)
+
 	type test struct {
-		name    string
-		isError bool
+		name        string
+		isError     bool
+		serviceName string
 	}
 	tests := []test{
 		{
 			name:    "no-error",
-			isError: true,
+			isError: false,
 		},
 		{
-			name: "error",
+			name:        "error-" + inference,
+			isError:     true,
+			serviceName: inference,
+		},
+		{
+			name:        "error-" + scale,
+			isError:     true,
+			serviceName: scale,
+		},
+		{
+			name:        "error-" + drain,
+			isError:     true,
+			serviceName: drain,
 		},
 	}
 
@@ -830,7 +849,14 @@ func TestClientCloseWithFailure(t *testing.T) {
 			if test.isError {
 				go func() {
 					time.Sleep(100 * time.Millisecond)
-					_ = drainerService.Stop() // induce a failure in one of the sub services
+					// induce a failure in one of the sub services
+					if test.serviceName == drain {
+						_ = drainerService.Stop()
+					} else if test.serviceName == scale {
+						_ = modelScalingService.Stop()
+					} else if test.serviceName == inference {
+						httpmock.DeactivateAndReset()
+					}
 				}()
 				err = client.Start()
 				g.Expect(err).To(BeNil()) //  we are here it means agent has stopped

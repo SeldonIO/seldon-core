@@ -158,7 +158,7 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 		Host:   net.JoinHostPort(r.host, strconv.Itoa(r.port)),
 		Path:   path,
 	}
-	r.logger.Infof("Calling Rclone server: %s with %s", path, string(op))
+
 	req, err := http.NewRequest("POST", rcloneUrl.String(), bytes.NewBuffer(op))
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.logger.Printf("rclone response: %s", b)
+	
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Failed rclone request to host:%s port:%d path:%s", r.host, r.port, path)
 	}

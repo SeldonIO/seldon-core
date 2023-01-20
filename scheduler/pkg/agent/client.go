@@ -267,13 +267,20 @@ func (c *Client) createConnection() error {
 func (c *Client) WaitReadySubServices(isStartup bool) error {
 	logger := c.logger.WithField("func", "waitReady")
 
+	backoffWithMax := backoff.NewExponentialBackOff()
+	if isStartup {
+		backoffWithMax.MaxElapsedTime = c.settings.maxElapsedTimeReadySubServiceBeforeStart
+	} else {
+		backoffWithMax.MaxElapsedTime = c.settings.maxElapsedTimeReadySubServiceAfterStart
+	}
+
 	// Wait for model repo to be ready
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
-	logger.Infof("Waiting for Model Repository to be ready")
+
 	//TODO make retry configurable
-	err := backoff.RetryNotify(c.ModelRepository.Ready, backoff.NewExponentialBackOff(), logFailure)
+	err := backoff.RetryNotify(c.ModelRepository.Ready, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for model repository to be ready")
 		return err
@@ -283,8 +290,8 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	logFailure = func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Inference server not ready")
 	}
-	logger.Infof("Waiting for inference server to be ready")
-	err = backoff.RetryNotify(c.stateManager.v2Client.Live, backoff.NewExponentialBackOff(), logFailure)
+
+	err = backoff.RetryNotify(c.stateManager.v2Client.Live, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for inference server to be ready")
 		return err

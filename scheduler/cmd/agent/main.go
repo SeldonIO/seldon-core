@@ -53,11 +53,11 @@ import (
 
 const (
 	// the max time to wait for a subservice ready after client start, i.e. during operation
-	maxElapsedTimeReadySubServiceAfterStart = 5 * time.Second
+	maxElapsedTimeReadySubServiceAfterStart = 30 * time.Second
 	// the max time to wait for a subservice ready before client start, i.e. during startup
 	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// period for subservice ready "cron"
-	periodReadySubService = 10 * time.Second
+	periodReadySubService = 60 * time.Second
 )
 
 func makeDirs() (string, string, error) {

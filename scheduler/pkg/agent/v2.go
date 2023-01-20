@@ -341,7 +341,6 @@ func (v *V2Client) Live() error {
 		v.logger.WithError(err).Debugf("Server live check failed on error")
 		return err
 	}
-	v.logger.Debugf("Server live check returned with value %v", ready)
 	if ready {
 		return nil
 	} else {
