@@ -765,8 +765,8 @@ func TestClientCloseWithFailure(t *testing.T) {
 
 	const (
 		inference string = "inference"
-		drain            = "drain"
-		scale            = "scale"
+		drain     string = "drain"
+		scale     string = "scale"
 	)
 
 	type test struct {

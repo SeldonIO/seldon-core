@@ -176,7 +176,7 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Failed rclone request to host:%s port:%d path:%s", r.host, r.port, path)
 	}
