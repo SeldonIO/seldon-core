@@ -47,7 +47,7 @@ func makeArgs() {
 	flag.StringVar(&ServerType, flagServerType, serverTypes[0], "Server type. Default mlserver")
 	flag.IntVar(&memoryBytes, flagMemoryBytes, 1000000, "Memory available for server")
 	flag.StringVar(&capabilitiesList, flagCapabilities, "sklearn,xgboost", "Server capabilities")
-	flag.IntVar(&OverCommitPercentage, flagOverCommitPercentage, 0, "Overcommit memory pecentage")
+	flag.IntVar(&OverCommitPercentage, flagOverCommitPercentage, 0, "Overcommit memory percentage")
 	flag.StringVar(&LogLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(&TracingConfigPath, flagTracingConfigPath, "", "Tracing config path")
 	flag.StringVar(&EnvoyHost, flagEnvoyHost, defaultEnvoyHost, "Envoy host")
