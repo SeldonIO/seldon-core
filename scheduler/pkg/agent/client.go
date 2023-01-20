@@ -47,6 +47,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+const (
+	// the max time to wait for a subservice ready after client start, i.e. during operation
+	maxElapsedTimeReadySubService = 5 * time.Second
+	// period for subservice ready "cron"
+	per
+
+)
+
 type Client struct {
 	logger                   log.FieldLogger
 	configChan               chan config.AgentConfiguration
@@ -229,7 +237,7 @@ func (c *Client) createConnection() error {
 	return nil
 }
 
-func (c *Client) WaitReadySubServices() error {
+func (c *Client) WaitReadySubServices(isStartup bool) error {
 	logger := c.logger.WithField("func", "waitReady")
 
 	// Wait for model repo to be ready
@@ -255,17 +263,26 @@ func (c *Client) WaitReadySubServices() error {
 		return err
 	}
 
-	// Unload any existing models on server to ensure we start in a clean state
-	logger.Infof("Unloading any existing models")
-	err = c.UnloadAllModels()
-	if err != nil {
-		return err
+	if isStartup {
+		// Unload any existing models on server to ensure we start in a clean state
+		logger.Infof("Unloading any existing models")
+		err = c.UnloadAllModels()
+		if err != nil {
+			return err
+		}
 	}
 
 	// http reverse proxy
-	if err := startSubService(c.rpHTTP, logger); err != nil {
-		logger.WithError(err).Error("Failed to start http proxy")
-		return err
+	if isStartup {
+		if err := startSubService(c.rpHTTP, logger); err != nil {
+			logger.WithError(err).Error("Failed to start http proxy")
+			return err
+		}
+	} else {
+		if err := isReady(c.rpHTTP, logger); err != nil {
+			logger.WithError(err).Error("Failed to start http proxy")
+			return err
+		}
 	}
 
 	// grpc reverse proxy
