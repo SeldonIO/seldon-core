@@ -182,7 +182,7 @@ func (c *Client) Start() error {
 	go c.modelScalingEventsConsumer()
 
 	// periodic subservices checker for readiness
-	go c.startSubServiChecker()
+	go c.startSubServiceChecker()
 
 	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
 	go func() {
@@ -659,7 +659,7 @@ func (c *Client) modelScalingEventsConsumer() {
 	}
 }
 
-func (c *Client) startSubServiChecker() {
+func (c *Client) startSubServiceChecker() {
 	ticker := time.NewTicker(periodReadySubService)
 	defer ticker.Stop()
 	for !c.stop.Load() {
