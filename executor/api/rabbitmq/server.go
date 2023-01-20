@@ -221,7 +221,7 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
 		message := &proto.SeldonMessage{
 			Status: &proto.Status{
 				Code:   -1,
-				Info:   "Payload size is greater than 10kb",
+				Info:   "Payload size is greater than allowed size",
 				Reason: "payload is large",
 				Status: proto.Status_FAILURE,
 			},
