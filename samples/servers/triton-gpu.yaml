@@ -1,0 +1,16 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: triton-gpu
+spec:
+  serverConfig: triton
+  podSpec:
+    containers:
+    - name: triton
+      resources:
+        limits:
+          memory: 3Gi
+          nvidia.com/gpu: 1
+        requests:
+          memory: 3Gi
+          nvidia.com/gpu: 1

@@ -469,6 +469,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 							version:   1,
 							replicas: map[int]ReplicaStatus{
 								0: {State: Loaded},
+								1: {State: Loading},
 							},
 						},
 					},
@@ -488,7 +489,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			serverKey:      "server",
 			replicas:       []*ServerReplica{},
 			isModelDeleted: true,
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}},
+			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: UnloadEnvoyRequested}},
 		},
 		{
 			name: "DeletedModelNoReplicas",

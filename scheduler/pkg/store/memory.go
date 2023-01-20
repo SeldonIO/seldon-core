@@ -300,7 +300,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	}
 
 	if serverKey == "" {
-		// nothing to do for a model that doesnt have a server, proceed with sending an event for downstream
+		// nothing to do for a model that doesn't have a server, proceed with sending an event for downstream
 		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
 	}
 
@@ -324,7 +324,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		return m.updateLoadedModelsImpl(modelKey, model.Latest().GetVersion(), serverKey, replicas)
 	}
 
-	// Update
+	// Update model that need to be placed on a replica to request loading
 	updatedReplicas := make(map[int]bool)
 	updated := false
 	for _, replica := range replicas {
@@ -345,6 +345,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		}
 		updatedReplicas[replica.GetReplicaIdx()] = true
 	}
+	// Unload any existing model replicas assignments no longer needed
 	for replicaIdx, existingState := range modelVersion.ReplicaState() {
 		logger.Debugf(
 			"Looking at replicaidx %d with state %s but ignoring processed %v",
