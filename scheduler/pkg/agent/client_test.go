@@ -215,7 +215,7 @@ func TestClientCreate(t *testing.T) {
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1, 1, 1),
+				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1 * time.Minute, 1 * time.Minute, 1 * time.Minute),
 				logger, modelRepository, v2Client,
 				test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
@@ -366,7 +366,7 @@ func TestLoadModel(t *testing.T) {
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1, 1, 1),
+				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1 * time.Minute, 1 * time.Minute, 1 * time.Minute),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
@@ -518,7 +518,7 @@ parameters:
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1, 1, 1),
+				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1 * time.Minute, 1 * time.Minute, 1 * time.Minute),
 				logger, modelRepository,
 				v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService,
@@ -660,7 +660,7 @@ func TestUnloadModel(t *testing.T) {
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1, 1, 1),
+				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1 * time.Minute, 1 * time.Minute, 1 * time.Minute),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
@@ -732,7 +732,7 @@ func TestClientClose(t *testing.T) {
 	drainerServicePort, _ := getFreePort()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 	client := NewClient(
-		NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1, 1, 1),
+		NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1 * time.Minute, 1 * time.Minute, 1 * time.Minute),
 		logger, modelRepository, v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
