@@ -48,11 +48,8 @@ import (
 )
 
 const (
-	// the max time to wait for a subservice ready after client start, i.e. during operation
-	maxElapsedTimeReadySubService = 5 * time.Second
 	// period for subservice ready "cron"
-	per
-
+	periodReadySubService = 15 * time.Second
 )
 
 type Client struct {
@@ -184,6 +181,9 @@ func (c *Client) Start() error {
 	// model scaling consumption
 	go c.consumeModelScalingEvents()
 
+	// periodic subservices checker for readiness
+	go c.startSubServiCheckerCron()
+
 	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
 	go func() {
 		_ = c.drainOnRequest(c.drainerService.(*drainservice.DrainerService))
@@ -252,9 +252,9 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 		return err
 	}
 
-	// Wait for V2 Server to be ready
+	// Wait for Inference server to be ready
 	logFailure = func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Server not ready")
+		logger.WithError(err).Errorf("Inference server not ready")
 	}
 	logger.Infof("Waiting for inference server to be ready")
 	err = backoff.RetryNotify(c.stateManager.v2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
@@ -273,39 +273,27 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	}
 
 	// http reverse proxy
-	if isStartup {
-		if err := startSubService(c.rpHTTP, logger); err != nil {
-			logger.WithError(err).Error("Failed to start http proxy")
-			return err
-		}
-	} else {
-		if err := isReady(c.rpHTTP, logger); err != nil {
-			logger.WithError(err).Error("Failed to start http proxy")
-			return err
-		}
+	if err := isReadyChecker(isStartup, c.rpHTTP, logger, "Rest proxy not ready"); err != nil {
+		return err
 	}
 
 	// grpc reverse proxy
-	if err := startSubService(c.rpGRPC, logger); err != nil {
-		logger.WithError(err).Error("Failed to start grpc proxy")
+	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready"); err != nil {
 		return err
 	}
 
 	// agent debug service
-	if err := startSubService(c.agentDebugService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start agent debug service")
+	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready"); err != nil {
 		return err
 	}
 
 	// model scaling service
-	if err := startSubService(c.modelScalingService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start scaling service")
+	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready"); err != nil {
 		return err
 	}
 
 	// drainer service
-	if err := startSubService(c.drainerService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start drainer service")
+	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready"); err != nil {
 		return err
 	}
 
@@ -667,6 +655,17 @@ func (c *Client) consumeModelScalingEvents() {
 				"Sending model scaling event %d for model %s failed",
 				e.EventType, e.StatsData.ModelName)
 			continue
+		}
+	}
+}
+
+func (c *Client) startSubServiCheckerCron() {
+	ticker := time.NewTicker(periodReadySubService)
+	defer ticker.Stop()
+	for !c.stop.Load() {
+		<-ticker.C
+		if err := c.WaitReadySubServices(false); err != nil {
+			c.Stop()
 		}
 	}
 }
