@@ -34,11 +34,12 @@ import (
  */
 
 const (
-	ENV_RABBITMQ_BROKER_URL   = "RABBITMQ_BROKER_URL"
-	ENV_RABBITMQ_INPUT_QUEUE  = "RABBITMQ_INPUT_QUEUE"
-	ENV_RABBITMQ_OUTPUT_QUEUE = "RABBITMQ_OUTPUT_QUEUE"
-	ENV_RABBITMQ_FULL_GRAPH   = "RABBITMQ_FULL_GRAPH"
-	UNHANDLED_ERROR           = "Unhandled error from predictor process"
+	ENV_RABBITMQ_BROKER_URL    = "RABBITMQ_BROKER_URL"
+	ENV_RABBITMQ_INPUT_QUEUE   = "RABBITMQ_INPUT_QUEUE"
+	ENV_RABBITMQ_OUTPUT_QUEUE  = "RABBITMQ_OUTPUT_QUEUE"
+	ENV_RABBITMQ_FULL_GRAPH    = "RABBITMQ_FULL_GRAPH"
+	UNHANDLED_ERROR            = "Unhandled error from predictor process"
+	DEFAULT_MAX_MSG_SIZE_BYTES = 10240
 )
 
 type SeldonRabbitMQServer struct {
@@ -210,7 +211,11 @@ func (rs *SeldonRabbitMQServer) predictAndPublishResponse(
 	}
 	annotations, _ := k8s.GetAnnotations()
 	msgLimit := annotations[k8s.ANNOTATION_RABBITMQ_MAX_MESSAGE_SIZE]
-	intMsgLimit, _ := strconv.Atoi(msgLimit)
+	intMsgLimit, e := strconv.Atoi(msgLimit)
+	if intMsgLimit == 0 || e != nil {
+		rs.Log.Info("Failed to read maximum allowed message size defaulting to 10240 bytes", "msg-size-found", intMsgLimit)
+		intMsgLimit = DEFAULT_MAX_MSG_SIZE_BYTES
+	}
 	rs.Log.Info("Maximum allowed message size for rabbitmq", "rabbitmq-max-message-size-in-bytes", intMsgLimit)
 	if len(arrBytes) > intMsgLimit {
 		message := &proto.SeldonMessage{
