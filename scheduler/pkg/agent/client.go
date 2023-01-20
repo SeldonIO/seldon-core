@@ -47,11 +47,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-const (
-	// period for subservice ready "cron"
-	periodReadySubService = 10 * time.Second
-)
-
 type Client struct {
 	logger                   log.FieldLogger
 	configChan               chan config.AgentConfiguration
@@ -66,6 +61,7 @@ type Client struct {
 	isDraining               atomic.Bool
 	stop                     atomic.Bool
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
+	settings                 *ClientSettings
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -91,6 +87,39 @@ type ClientServices struct {
 	ModelRepository repository.ModelRepository
 }
 
+type ClientSettings struct {
+	serverName                               string
+	replicaIdx                               uint32
+	schedulerHost                            string
+	schedulerPlaintxtPort                    int
+	schedulerTlsPort                         int
+	periodReadySubService                    time.Duration
+	maxElapsedTimeReadySubServiceBeforeStart time.Duration
+	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+}
+
+func NewClientSettings(
+	serverName string,
+	replicaIdx uint32,
+	schedulerHost string,
+	schedulerPlaintxtPort,
+	schedulerTlsPort int,
+	periodReadySubService,
+	maxElapsedTimeReadySubServiceBeforeStart,
+	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+) *ClientSettings {
+	return &ClientSettings{
+		serverName:                               serverName,
+		replicaIdx:                               replicaIdx,
+		schedulerHost:                            schedulerHost,
+		schedulerPlaintxtPort:                    schedulerPlaintxtPort,
+		schedulerTlsPort:                         schedulerTlsPort,
+		periodReadySubService:                    periodReadySubService,
+		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
+		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+	}
+}
+
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
 	err := protojson.Unmarshal([]byte(json), &config)
@@ -100,11 +129,8 @@ func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	return &config, nil
 }
 
-func NewClient(serverName string,
-	replicaIdx uint32,
-	schedulerHost string,
-	schedulerPlaintxtPort int,
-	schedulerTlsPort int,
+func NewClient(
+	settings *ClientSettings,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
@@ -146,11 +172,11 @@ func NewClient(serverName string,
 			ModelRepository: modelRepository,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
-			schedulerHost:         schedulerHost,
-			schedulerPlaintxtPort: schedulerPlaintxtPort,
-			schedulerTlsPort:      schedulerTlsPort,
-			serverName:            serverName,
-			replicaIdx:            replicaIdx,
+			schedulerHost:         settings.schedulerHost,
+			schedulerPlaintxtPort: settings.schedulerPlaintxtPort,
+			schedulerTlsPort:      settings.schedulerTlsPort,
+			serverName:            settings.serverName,
+			replicaIdx:            settings.replicaIdx,
 			callOptions:           opts,
 			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
 		},
@@ -159,6 +185,7 @@ func NewClient(serverName string,
 		},
 		isDraining: atomic.Bool{},
 		stop:       atomic.Bool{},
+		settings:   settings,
 	}
 }
 
@@ -273,27 +300,43 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	}
 
 	// http reverse proxy
-	if err := isReadyChecker(isStartup, c.rpHTTP, logger, "Rest proxy not ready"); err != nil {
+	if err := isReadyChecker(
+		isStartup, c.rpHTTP, logger, "Rest proxy not ready",
+		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
+		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+	); err != nil {
 		return err
 	}
 
 	// grpc reverse proxy
-	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready"); err != nil {
+	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready",
+		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
+		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+	); err != nil {
 		return err
 	}
 
 	// agent debug service
-	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready"); err != nil {
+	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready",
+		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
+		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+	); err != nil {
 		return err
 	}
 
 	// model scaling service
-	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready"); err != nil {
+	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready",
+		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
+		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+	); err != nil {
 		return err
 	}
 
 	// drainer service
-	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready"); err != nil {
+	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready",
+		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
+		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+	); err != nil {
 		return err
 	}
 
@@ -660,7 +703,7 @@ func (c *Client) modelScalingEventsConsumer() {
 }
 
 func (c *Client) startSubServiceChecker() {
-	ticker := time.NewTicker(periodReadySubService)
+	ticker := time.NewTicker(c.settings.periodReadySubService)
 	defer ticker.Stop()
 	for !c.stop.Load() {
 		<-ticker.C

@@ -29,14 +29,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	// the max time to wait for a subservice ready after client start, i.e. during operation
-	maxElapsedTimeReadySubServiceAfterStart = 5 * time.Second
-	// the max time to wait for a subservice ready before client start, i.e. during startup
-	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
-)
-
-func startSubService(service interfaces.DependencyServiceInterface, logger *log.Entry) error {
+func startSubService(
+	service interfaces.DependencyServiceInterface,
+	logger *log.Entry,
+	maxElapsedTimeReadySubServiceBeforeStart time.Duration,
+) error {
 	logger.Infof("Starting and waiting for %s", service.Name())
 	err := service.Start()
 	if err != nil {
@@ -70,9 +67,16 @@ func getModifiedModelVersion(modelId string, version uint32, originalModelVersio
 	return mv.(*agent.ModelVersion)
 }
 
-func isReadyChecker(isStartup bool, service interfaces.DependencyServiceInterface, logger *log.Entry, logMessage string) error {
+func isReadyChecker(
+	isStartup bool, 
+	service interfaces.DependencyServiceInterface, 
+	logger *log.Entry, 
+	logMessage string,
+	maxElapsedTimeReadySubServiceBeforeStart,
+	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+) error {
 	if isStartup {
-		if err := startSubService(service, logger); err != nil {
+		if err := startSubService(service, logger, maxElapsedTimeReadySubServiceBeforeStart); err != nil {
 			logger.WithError(err).Error(logMessage)
 			return err
 		}
