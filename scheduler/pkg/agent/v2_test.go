@@ -217,7 +217,7 @@ func TestGrpcV2(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	g.Expect(models).To(Equal([]MLServerModelInfo{{dummModel, MLServerModelState_READY}})) // empty string models should be discarded
 
-	err = v2Client.Ready()
+	err = v2Client.Live()
 	g.Expect(err).To(BeNil())
 
 }
@@ -241,7 +241,7 @@ func TestGrpcV2WithError(t *testing.T) {
 	v2Err = v2Client.UnloadModel(dummModel)
 	g.Expect(v2Err).NotTo(BeNil())
 
-	err = v2Client.Ready()
+	err = v2Client.Live()
 	g.Expect(err).NotTo(BeNil())
 
 }
@@ -261,7 +261,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 		_ = mockMLServer.start()
 	}()
 	v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
-	err = v2Client.Ready()
+	err = v2Client.Live()
 	g.Expect(err).To(BeNil())
 	mockMLServer.stop()
 
@@ -278,7 +278,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 
 	// make sure that we can still get to the server, this will require retries as the server starts after 0.5s
 	for i := 0; i < 20; i++ {
-		err = v2Client.Ready()
+		err = v2Client.Live()
 		g.Expect(err).To(BeNil())
 	}
 }

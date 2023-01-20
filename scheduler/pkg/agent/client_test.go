@@ -88,6 +88,7 @@ func (f FakeDependencyService) Start() error {
 }
 
 func (f FakeDependencyService) Ready() bool {
+	time.Sleep(15 * time.Second)
 	return f.err == nil
 }
 

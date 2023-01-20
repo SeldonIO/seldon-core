@@ -257,7 +257,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 		logger.WithError(err).Errorf("Inference server not ready")
 	}
 	logger.Infof("Waiting for inference server to be ready")
-	err = backoff.RetryNotify(c.stateManager.v2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
+	err = backoff.RetryNotify(c.stateManager.v2Client.Live, backoff.NewExponentialBackOff(), logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for inference server to be ready")
 		return err
