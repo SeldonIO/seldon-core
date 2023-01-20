@@ -36,29 +36,14 @@ func makeArgs() {
 	flag.StringVar(&InferenceHost, "inference-host", "0.0.0.0", "Inference server host")
 	flag.IntVar(&InferenceHttpPort, flagInferenceHttpPort, defaultInferenceHttpPort, "Inference server http port")
 	flag.IntVar(&InferenceGrpcPort, flagInferenceGrpcPort, defaultInferenceGrpcPort, "Inference server grpc port")
-	flag.IntVar(
-		&ReverseProxyHttpPort,
-		flagReverseProxyHttpPort,
-		agent.DefaultReverseProxyHTTPPort,
-		"Reverse proxy http port",
-	)
-	flag.IntVar(
-		&ReverseProxyGrpcPort,
-		flagReverseProxyGrpcPort,
-		agent.ReverseGRPCProxyPort,
-		"Reverse proxy grpc port",
-	)
+	flag.IntVar(&ReverseProxyHttpPort, flagReverseProxyHttpPort, agent.DefaultReverseProxyHTTPPort, "Reverse proxy http port")
+	flag.IntVar(&ReverseProxyGrpcPort, flagReverseProxyGrpcPort, agent.ReverseGRPCProxyPort, "Reverse proxy grpc port")
 	flag.IntVar(&DebugGrpcPort, flagDebugGrpcPort, agent.GRPCDebugServicePort, "Debug grpc port")
 	flag.IntVar(&MetricsPort, flagMetricsPort, defaultMetricsPort, "Metrics port")
 	flag.StringVar(&AgentFolder, "agent-folder", "/mnt/agent", "Model repository folder")
 	flag.StringVar(&ReplicaConfigStr, flagReplicaConfig, "", "Replica Json Config")
 	flag.StringVar(&Namespace, "namespace", "", "Namespace")
-	flag.StringVar(
-		&ConfigPath,
-		"config-path",
-		"/mnt/config",
-		"Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder",
-	)
+	flag.StringVar(&ConfigPath, "config-path", "/mnt/config", "Path to folder with configuration files. Will assume agent.yaml or agent.json in this folder")
 	flag.StringVar(&ServerType, flagServerType, serverTypes[0], "Server type. Default mlserver")
 	flag.IntVar(&memoryBytes, flagMemoryBytes, 1000000, "Memory available for server")
 	flag.StringVar(&capabilitiesList, flagCapabilities, "sklearn,xgboost", "Server capabilities")
