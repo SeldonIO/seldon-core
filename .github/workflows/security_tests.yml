@@ -46,7 +46,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
         make -C executor/ executor
-        snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
+        snyk test --file=executor/go.mod --app-vulns --fail-on=upgradable --severity-threshold=high
 
   security-image-executor:
 
@@ -59,7 +59,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-core-executor:1.15.0-dev
-        args: --fail-on=upgradable --severity-threshold=high --file=executor/Dockerfile.executor
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
 
   security-image-operator:
 
@@ -72,7 +72,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-core-operator:1.15.0-dev
-        args: --fail-on=upgradable --severity-threshold=high --file=operator/Dockerfile
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
   security-image-python-base:
 
@@ -160,4 +160,4 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/rclone-storage-initializer:1.15.0-dev
-        args: --fail-on=upgradable --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
