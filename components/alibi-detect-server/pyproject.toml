@@ -29,6 +29,8 @@ joblib = "1.2.0"
 
 pystan = "2.19.1.1"
 fbprophet = "0.6"
+# CVE-2022-29217
+PyJWT = "2.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
