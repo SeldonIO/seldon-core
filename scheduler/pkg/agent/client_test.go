@@ -707,7 +707,7 @@ func TestClientClose(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	v2Client := createTestV2Client(nil, 200)
-	httpmock.Activate()
+	httpmock.ActivateNonDefault(v2Client.httpClient)
 	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
@@ -803,7 +803,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			v2Client := createTestV2Client([]string{}, 200)
-			httpmock.Activate()
+			httpmock.ActivateNonDefault(v2Client.httpClient)
 
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
