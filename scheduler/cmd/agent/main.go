@@ -273,7 +273,7 @@ func main() {
 	)
 
 	// Wait for required services to be ready
-	err = client.WaitReadySubServices()
+	err = client.WaitReadySubServices(true)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
 		close(done)
