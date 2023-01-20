@@ -8,10 +8,10 @@ license = "Apache-2.0"
 [tool.poetry.dependencies]
 python = ">=3.7,<3.11"
 seldon-core = { path = "_seldon_core", develop = false }
-alibi-detect = "0.9.0"
+alibi-detect = "0.10.4"
 numpy = "1.21.5"
 cloudevents = "1.2.0"
-tensorflow = "2.7.2"
+tensorflow = "2.9.3"
 scikit-learn = "0.24.2"
 
 elasticsearch = "7.9.1"
