@@ -24,7 +24,7 @@ All models are loaded and active on this model server. Inference requests for th
 
 Overcommit allows shared servers to handle more models than can fit in memory. This is done by keeping highly utilized models in memory and evicting other ones to disk using a least-recently-used (LRU) cache mechanism. From a user perspective these models are all registered and "ready" to serve inference requests. If an inference request comes for a model that is unloaded/evicted to disk, the system will reload the model first before forwarding the request to the inference server.
 
-Overcommit is enabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` on shared servers as is set by default at 10%. In other words a given model inference server instance can register models with a total memory requirement up to `MEMORY_REQUEST` * ( 1 + `SELDON_OVERCOMMIT_PERCENTAGE` / 100).
+Overcommit is enabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` on shared servers; it is set by default at 10%. In other words a given model inference server instance can register models with a total memory requirement up to `MEMORY_REQUEST` * ( 1 + `SELDON_OVERCOMMIT_PERCENTAGE` / 100).
 
 The Seldon Agent (a side car next to each model inference server deployment) is keeping track of inference requests times on the different models. These models are sorted in time ascending order and this data structure is used to evict the least recently used model in order to make room for another incoming model. This happens during two scenarios:
 - A new model load request beyond the active memory capacity of the inference server.
