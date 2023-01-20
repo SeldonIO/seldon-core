@@ -229,7 +229,7 @@ func (c *Client) createConnection() error {
 	return nil
 }
 
-func (c *Client) WaitReady() error {
+func (c *Client) WaitReadySubServices() error {
 	logger := c.logger.WithField("func", "waitReady")
 
 	// Wait for model repo to be ready
