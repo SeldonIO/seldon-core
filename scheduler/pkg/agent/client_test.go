@@ -802,8 +802,19 @@ func TestClientCloseWithFailure(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			v2Client := createTestV2Client([]string{}, 200)
-			httpmock.ActivateNonDefault(v2Client.httpClient)
+			mockMLServer := &mockGRPCMLServer{}
+			backEndGRPCPort, err := getFreePort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			_ = mockMLServer.setup(uint(backEndGRPCPort))
+			go func() {
+				_ = mockMLServer.start()
+			}()
+
+			time.Sleep(10 * time.Millisecond)
+
+			v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
 
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
@@ -838,7 +849,6 @@ func TestClientCloseWithFailure(t *testing.T) {
 				logger, modelRepository, v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
-
 			mockAgentV2Server := &mockAgentV2Server{}
 			conn, err := grpc.DialContext(
 				context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -855,7 +865,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 					} else if test.serviceName == scale {
 						_ = modelScalingService.Stop()
 					} else if test.serviceName == inference {
-						httpmock.DeactivateAndReset()
+						mockMLServer.stop()
 					}
 				}()
 				err = client.Start()
@@ -870,7 +880,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 				client.Stop()
 			}
 
-			httpmock.DeactivateAndReset()
+			mockMLServer.stop()
 		})
 	}
 }
