@@ -196,22 +196,8 @@ func TestClientCreate(t *testing.T) {
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
-			lags := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     true,
-				EventType: modelscaling.ScaleUpEvent,
-			}
-			lastUsed := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     false,
-				EventType: modelscaling.ScaleDownEvent,
-			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
-				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
@@ -499,22 +485,8 @@ parameters:
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
-			lags := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     true,
-				EventType: modelscaling.ScaleUpEvent,
-			}
-			lastUsed := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     false,
-				EventType: modelscaling.ScaleDownEvent,
-			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
-				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := getFreePort()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
@@ -713,22 +685,8 @@ func TestClientClose(t *testing.T) {
 	rpHTTP := FakeDependencyService{err: nil}
 	rpGRPC := FakeDependencyService{err: nil}
 	agentDebug := FakeDependencyService{err: nil}
-	lags := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: 10,
-		Reset:     true,
-		EventType: modelscaling.ScaleUpEvent,
-	}
-	lastUsed := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: 10,
-		Reset:     false,
-		EventType: modelscaling.ScaleDownEvent,
-	}
 	modelScalingService := modelscaling.NewStatsAnalyserService(
-		[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 	drainerServicePort, _ := getFreePort()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 	client := NewClient(
@@ -812,7 +770,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 				_ = mockMLServer.start()
 			}()
 
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)
 
 			v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
 
@@ -820,22 +778,8 @@ func TestClientCloseWithFailure(t *testing.T) {
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
-			lags := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     true,
-				EventType: modelscaling.ScaleUpEvent,
-			}
-			lastUsed := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     false,
-				EventType: modelscaling.ScaleDownEvent,
-			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
-				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			go func() {
 				_ = modelScalingService.Start()
 			}()
@@ -865,7 +809,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 					} else if test.serviceName == scale {
 						_ = modelScalingService.Stop()
 					} else if test.serviceName == inference {
-						mockMLServer.stop()
+						go mockMLServer.stop()
 					}
 				}()
 				err = client.Start()
@@ -880,7 +824,7 @@ func TestClientCloseWithFailure(t *testing.T) {
 				client.Stop()
 			}
 
-			mockMLServer.stop()
+			go mockMLServer.stop()
 		})
 	}
 }

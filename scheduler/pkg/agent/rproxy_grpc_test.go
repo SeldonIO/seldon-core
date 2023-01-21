@@ -50,6 +50,7 @@ type mockGRPCMLServer struct {
 	listener net.Listener
 	server   *grpc.Server
 	models   []MLServerModelInfo
+	isReady  bool
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -66,10 +67,12 @@ func (m *mockGRPCMLServer) setup(port uint) error {
 }
 
 func (m *mockGRPCMLServer) start() error {
+	m.isReady = true
 	return m.server.Serve(m.listener)
 }
 
 func (m *mockGRPCMLServer) stop() {
+	m.isReady = false
 	m.server.Stop()
 }
 
@@ -77,43 +80,43 @@ func (m *mockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferReque
 	return &v2.ModelInferResponse{ModelName: r.ModelName, ModelVersion: r.ModelVersion}, nil
 }
 
-func (mlserver *mockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
+func (m *mockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
 	return &v2.ModelMetadataResponse{Name: r.Name, Versions: []string{r.Version}}, nil
 }
 
-func (mlserver *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
-	return &v2.ModelReadyResponse{Ready: true}, nil
+func (m *mockGRPCMLServer) ModelReady(ctx context.Context, r *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
+	return &v2.ModelReadyResponse{Ready: m.isReady}, nil
 }
 
-func (mlserver *mockGRPCMLServer) ServerReady(ctx context.Context, r *v2.ServerReadyRequest) (*v2.ServerReadyResponse, error) {
+func (m *mockGRPCMLServer) ServerReady(ctx context.Context, r *v2.ServerReadyRequest) (*v2.ServerReadyResponse, error) {
 	return &v2.ServerReadyResponse{Ready: true}, nil
 }
 
-func (mlserver *mockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveRequest) (*v2.ServerLiveResponse, error) {
+func (m *mockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveRequest) (*v2.ServerLiveResponse, error) {
 	return &v2.ServerLiveResponse{Live: true}, nil
 }
 
-func (mlserver *mockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
+func (m *mockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
 	return &v2.RepositoryModelLoadResponse{}, nil
 }
 
-func (mlserver *mockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.RepositoryModelUnloadRequest) (*v2.RepositoryModelUnloadResponse, error) {
+func (m *mockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.RepositoryModelUnloadRequest) (*v2.RepositoryModelUnloadResponse, error) {
 	if r.ModelName == modelNameMissing {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found", r.ModelName))
 	}
 	return &v2.RepositoryModelUnloadResponse{}, nil
 }
 
-func (mlserver *mockGRPCMLServer) RepositoryIndex(ctx context.Context, r *v2.RepositoryIndexRequest) (*v2.RepositoryIndexResponse, error) {
-	ret := make([]*v2.RepositoryIndexResponse_ModelIndex, len(mlserver.models))
-	for idx, model := range mlserver.models {
+func (m *mockGRPCMLServer) RepositoryIndex(ctx context.Context, r *v2.RepositoryIndexRequest) (*v2.RepositoryIndexResponse, error) {
+	ret := make([]*v2.RepositoryIndexResponse_ModelIndex, len(m.models))
+	for idx, model := range m.models {
 		ret[idx] = &v2.RepositoryIndexResponse_ModelIndex{Name: model.Name, State: string(model.State)}
 	}
 	return &v2.RepositoryIndexResponse{Models: ret}, nil
 }
 
-func (mlserver *mockGRPCMLServer) setModels(models []MLServerModelInfo) {
-	mlserver.models = models
+func (m *mockGRPCMLServer) setModels(models []MLServerModelInfo) {
+	m.models = models
 }
 
 func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort, backEndServerPort int) *reverseGRPCProxy {
