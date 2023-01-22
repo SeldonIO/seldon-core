@@ -460,7 +460,7 @@ func TestUpdateVersion(t *testing.T) {
 			err = os.WriteFile(settingsFilePath, data, fs.ModePerm)
 			g.Expect(err).To(BeNil())
 			m := &MLServerRepositoryHandler{}
-			err = m.UpdateNameAndVersion(path, test.modelName, test.version)
+			err = m.updateNameAndVersion(path, test.modelName, test.version)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

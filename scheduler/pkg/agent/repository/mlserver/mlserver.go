@@ -18,6 +18,7 @@ package mlserver
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -93,10 +94,18 @@ func (m *MLServerRepositoryHandler) UpdateModelRepository(_ string, _ string, _ 
 	return nil
 }
 
-func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version uint32, path string) error {
+func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error {
 	versionStr := fmt.Sprintf("%d", version)
+	settingsPath := filepath.Join(path, mlserverConfigFilename)
+	if _, err := os.Stat(settingsPath); errors.Is(err, os.ErrNotExist) {
+		// model-settings does not exist so try to create it from model spec
+		err := createSettingsFile(path, modelSpec)
+		if err != nil {
+			return err
+		}
+	}
 	//Modify model-settings
-	err := m.UpdateNameAndVersion(path, modelName, versionStr)
+	err := m.updateNameAndVersion(path, modelName, versionStr)
 	return err
 }
 
@@ -125,14 +134,19 @@ func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, ver
 			}
 		}
 	}
+	// Return top level folder if we can't find a model-settings.json and are not looking for a specific version
 	if mvp == "" {
+		if version == nil {
+			return path, nil
+		}
 		return "", fmt.Errorf("Failed to find an mlserver settings file model in %s for %s for passed in version %v", path, modelName, version)
+	} else {
+		logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
+		return mvp, nil
 	}
-	logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
-	return mvp, nil
 }
 
-func (m *MLServerRepositoryHandler) UpdateNameAndVersion(path string, modelName string, version string) error {
+func (m *MLServerRepositoryHandler) updateNameAndVersion(path string, modelName string, version string) error {
 	settingsPath := filepath.Join(path, mlserverConfigFilename)
 	ms, err := m.loadModelSettingsFromFile(settingsPath)
 	if err != nil {

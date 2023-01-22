@@ -47,7 +47,7 @@ func (t *TritonRepositoryHandler) UpdateModelRepository(modelName string, versio
 	configFilePathRepo := filepath.Join(modelRepoPath, TritonConfigFile)
 	configFilePathFromVersion := filepath.Join(filepath.Dir(versionPath), TritonConfigFile)
 	if _, err := os.Stat(configFilePathFromVersion); err != nil {
-		return fmt.Errorf("Can't find %s", configFilePathFromVersion)
+		return t.createConfigFileWithName(modelName, configFilePathRepo)
 	}
 	// Always copy config.pbtxt overwriting existing as we may have changes in configuration
 	err := copy2.Copy(configFilePathFromVersion, configFilePathRepo)
@@ -57,17 +57,27 @@ func (t *TritonRepositoryHandler) UpdateModelRepository(modelName string, versio
 	return t.updateModelNameInConfig(modelName, configFilePathRepo)
 }
 
+func saveConfigFile(path string, config *pb.ModelConfig) error {
+	data, err := prototext.Marshal(config)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, fs.ModePerm)
+}
+
+func (t *TritonRepositoryHandler) createConfigFileWithName(modelName string, path string) error {
+	config := pb.ModelConfig{}
+	config.Name = modelName
+	return saveConfigFile(path, &config)
+}
+
 func (t *TritonRepositoryHandler) updateModelNameInConfig(modelName string, path string) error {
 	s, err := t.loadConfigFromFile(path)
 	if err != nil {
 		return err
 	}
 	s.Name = modelName
-	data, err := prototext.Marshal(s)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(path, data, fs.ModePerm)
+	return saveConfigFile(path, s)
 }
 
 func (t *TritonRepositoryHandler) FindModelVersionFolder(_ string, version *uint32, path string) (string, error) {
@@ -79,7 +89,7 @@ func (t *TritonRepositoryHandler) FindModelVersionFolder(_ string, version *uint
 }
 
 // We don't need to change Triton model folders
-func (t *TritonRepositoryHandler) UpdateModelVersion(modelName string, version uint32, path string) error {
+func (t *TritonRepositoryHandler) UpdateModelVersion(_ string, _ uint32, _ string, _ *scheduler.ModelSpec) error {
 	return nil
 }
 
@@ -138,7 +148,9 @@ func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (st
 	if highestVersionFolderNum > 0 { // Triton versions need to be >0
 		return highestVersionPath, nil
 	}
-	return "", fmt.Errorf("Failed to find triton model version folder in path %s", modelPath)
+	//return "", fmt.Errorf("Failed to find triton model version folder in path %s", modelPath)
+	//If we don't find a version assume folder is the default version we want
+	return modelPath, nil
 }
 
 func (t *TritonRepositoryHandler) loadConfigFromFile(path string) (*pb.ModelConfig, error) {

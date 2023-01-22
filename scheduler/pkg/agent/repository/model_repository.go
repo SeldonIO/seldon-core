@@ -31,14 +31,14 @@ import (
 
 type ModelRepositoryHandler interface {
 	FindModelVersionFolder(modelName string, version *uint32, path string) (string, error)
-	UpdateModelVersion(modelName string, version uint32, path string) error
+	UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error
 	UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
 }
 
 type ModelRepository interface {
-	DownloadModelVersion(modelName string, version uint32, artifactVersion *uint32, srcUri string, config []byte, explainerSpec *scheduler.ExplainerSpec, parameters []*scheduler.ParameterSpec) (*string, error)
+	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
 	Ready() error
 }
@@ -70,12 +70,16 @@ func NewModelRepository(logger log.FieldLogger,
 
 func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	version uint32,
-	artifactVersion *uint32,
-	srcUri string,
+	modelSpec *scheduler.ModelSpec,
 	config []byte,
-	explainerSpec *scheduler.ExplainerSpec,
-	parameters []*scheduler.ParameterSpec) (*string, error) {
+) (*string, error) {
 	logger := r.logger.WithField("func", "DownloadModelVersion")
+
+	// Setup key vars
+	artifactVersion := modelSpec.ArtifactVersion
+	srcUri := modelSpec.Uri
+	explainerSpec := modelSpec.GetExplainer()
+	parameters := modelSpec.GetParameters()
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
 	// Run rclone copy sync
@@ -113,7 +117,7 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Update model version in repo
-	err = r.modelrepositoryHandler.UpdateModelVersion(modelName, version, modelVersionPathInRepo)
+	err = r.modelrepositoryHandler.UpdateModelVersion(modelName, version, modelVersionPathInRepo, modelSpec)
 	if err != nil {
 		return nil, err
 	}

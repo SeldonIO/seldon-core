@@ -65,9 +65,10 @@ func TestFindModelVersionFolder(t *testing.T) {
 			expectedFolder: "3",
 		},
 		{
-			name:    "NoVersionFolders",
-			folders: []string{"x"},
-			found:   false,
+			name:           "NoVersionFolders",
+			folders:        []string{},
+			found:          true,
+			expectedFolder: "hash",
 		},
 		{
 			name:            "NoVersionFoldersArtifactVersion",
@@ -80,7 +81,9 @@ func TestFindModelVersionFolder(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			rclonePath := t.TempDir()
-			modelFolder := filepath.Join(rclonePath, "12341234") // pretend hash
+			modelFolder := filepath.Join(rclonePath, "hash") // pretend hash
+			err := os.MkdirAll(modelFolder, fs.ModePerm)
+			g.Expect(err).To(BeNil())
 			for _, folder := range test.folders {
 				versionFolder := filepath.Join(modelFolder, folder)
 				err := os.MkdirAll(versionFolder, fs.ModePerm)

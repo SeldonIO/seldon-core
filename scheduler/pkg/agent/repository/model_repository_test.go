@@ -25,6 +25,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 
 	"github.com/jarcoal/httpmock"
@@ -52,15 +54,14 @@ func TestDownloadModelVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name            string
-		folders         map[string]*mlserver.ModelSettings
-		root            *mlserver.ModelSettings
-		srcUri          string
-		modelName       string
-		modelVersion    uint32
-		artifactVersion *uint32
-		chosenFolder    string
-		error           bool
+		name         string
+		folders      map[string]*mlserver.ModelSettings
+		root         *mlserver.ModelSettings
+		modelSpec    *scheduler.ModelSpec
+		modelName    string
+		modelVersion uint32
+		chosenFolder string
+		error        bool
 	}
 
 	getArtifactVersion := func(version uint32) *uint32 {
@@ -79,11 +80,13 @@ func TestDownloadModelVersion(t *testing.T) {
 					},
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: getArtifactVersion(1),
-			chosenFolder:    "1",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			chosenFolder: "1",
 		},
 		{
 			name: "ArtifactVersionMissing",
@@ -96,11 +99,12 @@ func TestDownloadModelVersion(t *testing.T) {
 					},
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: nil,
-			chosenFolder:    "1",
+			modelSpec: &scheduler.ModelSpec{
+				Uri: "gs://model",
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			chosenFolder: "1",
 		},
 		{
 			name: "HighestVersion",
@@ -120,11 +124,12 @@ func TestDownloadModelVersion(t *testing.T) {
 					},
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: nil,
-			chosenFolder:    "2",
+			modelSpec: &scheduler.ModelSpec{
+				Uri: "gs://model",
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			chosenFolder: "2",
 		},
 		{
 			name: "ArtifactVersionDifferentfromVersion",
@@ -137,11 +142,13 @@ func TestDownloadModelVersion(t *testing.T) {
 					},
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: getArtifactVersion(2),
-			chosenFolder:    "2",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(2),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			chosenFolder: "2",
 		},
 		{
 			name: "SettingsContradictsFolder",
@@ -154,11 +161,13 @@ func TestDownloadModelVersion(t *testing.T) {
 					},
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: getArtifactVersion(1),
-			chosenFolder:    "1",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			chosenFolder: "1",
 		},
 		{
 			name:    "VersionInRootVersionMatches",
@@ -170,10 +179,12 @@ func TestDownloadModelVersion(t *testing.T) {
 					Version: "1",
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: getArtifactVersion(1),
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
 		},
 		{
 			name:    "VersionInRootVersionMisMatches",
@@ -185,10 +196,12 @@ func TestDownloadModelVersion(t *testing.T) {
 					Version: "2",
 				},
 			},
-			srcUri:          "gs://model",
-			modelName:       "foo",
-			modelVersion:    1,
-			artifactVersion: getArtifactVersion(1),
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
 		},
 	}
 
@@ -198,7 +211,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 			rclonePath := t.TempDir()
 			for folderName, ms := range test.folders {
-				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.srcUri)
+				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.modelSpec.Uri)
 				g.Expect(err).To(BeNil())
 				folderPath := filepath.Join(rclonePath, fmt.Sprintf("%d/%s", hash, folderName))
 				err = os.MkdirAll(folderPath, fs.ModePerm)
@@ -212,7 +225,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			if test.root != nil {
 				data, err := json.Marshal(test.root)
 				g.Expect(err).To(BeNil())
-				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.srcUri)
+				hash, err := rclone.CreateRcloneModelHash(test.modelName, test.modelSpec.Uri)
 				g.Expect(err).To(BeNil())
 				folderPath := filepath.Join(rclonePath, fmt.Sprintf("%d", hash))
 				err = os.MkdirAll(folderPath, fs.ModePerm)
@@ -225,7 +238,7 @@ func TestDownloadModelVersion(t *testing.T) {
 			rcloneClient := createFakeRcloneClient(200, rclonePath)
 			modelRepoPath := t.TempDir()
 			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
-			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.artifactVersion, test.srcUri, nil, nil, nil)
+			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.modelSpec, nil)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
