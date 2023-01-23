@@ -203,8 +203,8 @@ python-versions = "~=3.5"
 
 [[package]]
 name = "catalogue"
-version = "2.1.0"
-description = "Lightweight function registries for your library"
+version = "2.0.8"
+description = "Super lightweight function registries for your library"
 category = "main"
 optional = false
 python-versions = ">=3.6"
@@ -1776,7 +1776,7 @@ numpy = ">=1.16.5,<1.23.0"
 
 [[package]]
 name = "seldon-core"
-version = "1.15.0.dev0"
+version = "1.16.0.dev0"
 description = "Seldon Core client and microservice wrapper"
 category = "main"
 optional = false
@@ -1802,7 +1802,8 @@ prometheus_client = ">=0.7.1,<0.9.0"
 protobuf = "<4.0.0"
 PyYAML = ">=5.4,<5.5"
 requests = "<3.0.0"
-urllib3 = "1.26.5"
+urllib3 = ">=1.26.5,<1.27"
+werkzeug = ">=2.1.1,<2.3"
 
 [package.extras]
 all = ["tensorflow"]
@@ -2221,7 +2222,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.11"
-content-hash = "fcb8051722d4f90843655a0b6f72af911c99730c9df2d2835f1bb024d29e09d1"
+content-hash = "d3deea935208929a675cdc4e17e1915dde3e55d9122559a307d68d0ea2bdc71f"
 
 [metadata.files]
 absl-py = [
@@ -2289,8 +2290,8 @@ cachetools = [
     {file = "cachetools-4.2.4.tar.gz", hash = "sha256:89ea6f1b638d5a73a4f9226be57ac5e4f399d22770b92355f92dcb0f7f001693"},
 ]
 catalogue = [
-    {file = "catalogue-2.1.0-py3-none-any.whl", hash = "sha256:29e6140052d5366c951b1caee562e72b45af684702b0f2ec35d368fda45439c0"},
-    {file = "catalogue-2.1.0.tar.gz", hash = "sha256:a1cce2f1738a31deb2aa24b3e4a89e6fb3e852555c183b0ecda8a2bcc1eaef2e"},
+    {file = "catalogue-2.0.8-py3-none-any.whl", hash = "sha256:2d786e229d8d202b4f8a2a059858e45a2331201d831e39746732daa704b99f69"},
+    {file = "catalogue-2.0.8.tar.gz", hash = "sha256:b325c77659208bfb6af1b0d93b1a1aa4112e1bb29a4c5ced816758a722f0e388"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
