@@ -167,6 +167,9 @@ func (m *mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server 
 			m.errors++
 		}
 	}
+	ctx := server.Context()
+	<-ctx.Done()
+
 	return nil
 }
 
@@ -216,11 +219,11 @@ func TestClientCreate(t *testing.T) {
 			}()
 			time.Sleep(10 * time.Millisecond)
 			if test.v2Status == 200 && test.modelRepoErr == nil {
-				g.Eventually(mockAgentV2Server.loaded).Should(BeNumerically(">", 1))
+				g.Eventually(mockAgentV2Server.loaded).Should(BeNumerically(">=", 1))
 				g.Eventually(mockAgentV2Server.loadFailed).Should(Equal(0))
 			} else {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(0))
-				g.Eventually(mockAgentV2Server.loadFailed).Should(BeNumerically(">", 1))
+				g.Eventually(mockAgentV2Server.loadFailed).Should(BeNumerically(">=", 1))
 			}
 			client.Stop()
 			httpmock.DeactivateAndReset()
@@ -715,7 +718,7 @@ func TestClientClose(t *testing.T) {
 	g.Expect(client.stop.Load()).To(BeTrue())
 }
 
-func TestClientCloseWithFailure(t *testing.T) {
+func TestAgentStopOnSubServicesFailure(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
