@@ -30,7 +30,8 @@ This section will provide some examples to allow operations with Seldon to be te
 
  * [Inference examples](inference.md)
  * [Tritonclient examples](tritonclient-examples.md)
- * [Batch Inference examples](batch-examples.md)
+ * [Batch Inference examples (kubernetes)](batch-examples-k8s.md)
+ * [Batch Inference examples (local)](batch-examples-local.md)
 
 ## Misc
 
