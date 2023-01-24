@@ -72,16 +72,15 @@ func isReadyChecker(
 	service interfaces.DependencyServiceInterface,
 	logger *log.Entry,
 	logMessage string,
-	maxElapsedTimeReadySubServiceBeforeStart,
-	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+	maxElapsedTime time.Duration,
 ) error {
 	if isStartup {
-		if err := startSubService(service, logger, maxElapsedTimeReadySubServiceBeforeStart); err != nil {
+		if err := startSubService(service, logger, maxElapsedTime); err != nil {
 			logger.WithError(err).Error(logMessage)
 			return err
 		}
 	} else {
-		if err := isReady(service, logger, maxElapsedTimeReadySubServiceAfterStart); err != nil {
+		if err := isReady(service, logger, maxElapsedTime); err != nil {
 			logger.WithError(err).Error(logMessage + " - after agent start")
 			return err
 		}

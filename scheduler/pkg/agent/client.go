@@ -267,12 +267,12 @@ func (c *Client) createConnection() error {
 func (c *Client) WaitReadySubServices(isStartup bool) error {
 	logger := c.logger.WithField("func", "waitReady")
 
-	backoffWithMax := backoff.NewExponentialBackOff()
-	if isStartup {
-		backoffWithMax.MaxElapsedTime = c.settings.maxElapsedTimeReadySubServiceBeforeStart
-	} else {
-		backoffWithMax.MaxElapsedTime = c.settings.maxElapsedTimeReadySubServiceAfterStart
+	maxElapsedTime := c.settings.maxElapsedTimeReadySubServiceBeforeStart
+	if !isStartup {
+		maxElapsedTime = c.settings.maxElapsedTimeReadySubServiceAfterStart
 	}
+	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax.MaxElapsedTime = maxElapsedTime
 
 	// Wait for model repo to be ready
 	logFailure := func(err error, delay time.Duration) {
@@ -309,40 +309,35 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	// http reverse proxy
 	if err := isReadyChecker(
 		isStartup, c.rpHTTP, logger, "Rest proxy not ready",
-		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
-		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// grpc reverse proxy
 	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready",
-		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
-		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// agent debug service
 	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready",
-		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
-		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// model scaling service
 	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready",
-		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
-		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// drainer service
 	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready",
-		c.settings.maxElapsedTimeReadySubServiceBeforeStart,
-		c.settings.maxElapsedTimeReadySubServiceAfterStart,
+		maxElapsedTime,
 	); err != nil {
 		return err
 	}
