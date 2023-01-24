@@ -633,7 +633,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}},
 		},
 		{
-			name: "DeleteFailedSchedulerModel",
+			name: "DeleteFailedScheduleModel",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{"model": {
 					versions: []*ModelVersion{
