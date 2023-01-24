@@ -162,6 +162,7 @@ type ServerReplica struct {
 	memory               uint64
 	availableMemory      uint64
 	loadedModels         map[ModelVersionID]bool
+	loadingModels        map[string]bool // for marking models that are in process of loading on this server (to speed up ops)
 	overCommitPercentage uint32
 	reservedMemory       uint64          // while loading models, internal to scheduler
 	uniqueLoadedModels   map[string]bool // precomputed values to speed up ops on scheduler
@@ -684,23 +685,32 @@ func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {
 	}
 }
 
-func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32) {
+func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32, replicaState ModelReplicaState) {
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
-	s.loadedModels[ModelVersionID{Name: modelName, Version: modelVersion}] = true
-	s.uniqueLoadedModels[modelName] = true
+	if replicaState != Loaded {
+		s.loadingModels[modelName] = true
+	} else {
+		delete(s.loadingModels, modelName)
+
+		s.loadedModels[ModelVersionID{Name: modelName, Version: modelVersion}] = true
+		s.uniqueLoadedModels[modelName] = true
+	}
 }
 
 func (s *ServerReplica) deleteModelVersion(modelName string, modelVersion uint32) {
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
+	// we do not care about the state of the model replica here (TBC)
+	delete(s.loadingModels, modelName)
 	delete(s.loadedModels, ModelVersionID{Name: modelName, Version: modelVersion})
 	if !modelExists(s.loadedModels, modelName) {
 		delete(s.uniqueLoadedModels, modelName)
 	}
 }
+
 
 func toUniqueModels(loadedModels map[ModelVersionID]bool) map[string]bool {
 	uniqueModels := make(map[string]bool)
