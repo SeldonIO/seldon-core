@@ -419,9 +419,6 @@ func (s *Server) StopAgentStreams() {
 }
 
 func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
 	if err != nil {
