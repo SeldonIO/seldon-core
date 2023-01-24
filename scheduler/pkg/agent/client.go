@@ -28,7 +28,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
@@ -62,6 +61,7 @@ type Client struct {
 	isDraining               atomic.Bool
 	stop                     atomic.Bool
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
+	settings                 *ClientSettings
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -87,6 +87,39 @@ type ClientServices struct {
 	ModelRepository repository.ModelRepository
 }
 
+type ClientSettings struct {
+	serverName                               string
+	replicaIdx                               uint32
+	schedulerHost                            string
+	schedulerPlaintxtPort                    int
+	schedulerTlsPort                         int
+	periodReadySubService                    time.Duration
+	maxElapsedTimeReadySubServiceBeforeStart time.Duration
+	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+}
+
+func NewClientSettings(
+	serverName string,
+	replicaIdx uint32,
+	schedulerHost string,
+	schedulerPlaintxtPort,
+	schedulerTlsPort int,
+	periodReadySubService,
+	maxElapsedTimeReadySubServiceBeforeStart,
+	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+) *ClientSettings {
+	return &ClientSettings{
+		serverName:                               serverName,
+		replicaIdx:                               replicaIdx,
+		schedulerHost:                            schedulerHost,
+		schedulerPlaintxtPort:                    schedulerPlaintxtPort,
+		schedulerTlsPort:                         schedulerTlsPort,
+		periodReadySubService:                    periodReadySubService,
+		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
+		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+	}
+}
+
 func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	config := agent.ReplicaConfig{}
 	err := protojson.Unmarshal([]byte(json), &config)
@@ -96,11 +129,8 @@ func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	return &config, nil
 }
 
-func NewClient(serverName string,
-	replicaIdx uint32,
-	schedulerHost string,
-	schedulerPlaintxtPort int,
-	schedulerTlsPort int,
+func NewClient(
+	settings *ClientSettings,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
 	v2Client *V2Client,
@@ -142,11 +172,11 @@ func NewClient(serverName string,
 			ModelRepository: modelRepository,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
-			schedulerHost:         schedulerHost,
-			schedulerPlaintxtPort: schedulerPlaintxtPort,
-			schedulerTlsPort:      schedulerTlsPort,
-			serverName:            serverName,
-			replicaIdx:            replicaIdx,
+			schedulerHost:         settings.schedulerHost,
+			schedulerPlaintxtPort: settings.schedulerPlaintxtPort,
+			schedulerTlsPort:      settings.schedulerTlsPort,
+			serverName:            settings.serverName,
+			replicaIdx:            settings.replicaIdx,
 			callOptions:           opts,
 			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
 		},
@@ -155,6 +185,7 @@ func NewClient(serverName string,
 		},
 		isDraining: atomic.Bool{},
 		stop:       atomic.Bool{},
+		settings:   settings,
 	}
 }
 
@@ -175,7 +206,10 @@ func (c *Client) Start() error {
 		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
 
 	// model scaling consumption
-	go c.consumeModelScalingEvents()
+	go c.modelScalingEventsConsumer()
+
+	// periodic subservices checker for readiness
+	go c.startSubServiceChecker()
 
 	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
 	go func() {
@@ -230,66 +264,81 @@ func (c *Client) createConnection() error {
 	return nil
 }
 
-func (c *Client) WaitReady() error {
+func (c *Client) WaitReadySubServices(isStartup bool) error {
 	logger := c.logger.WithField("func", "waitReady")
+
+	maxElapsedTime := c.settings.maxElapsedTimeReadySubServiceBeforeStart
+	if !isStartup {
+		maxElapsedTime = c.settings.maxElapsedTimeReadySubServiceAfterStart
+	}
+	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax.MaxElapsedTime = maxElapsedTime
 
 	// Wait for model repo to be ready
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
-	logger.Infof("Waiting for Model Repository to be ready")
+
 	//TODO make retry configurable
-	err := backoff.RetryNotify(c.ModelRepository.Ready, backoff.NewExponentialBackOff(), logFailure)
+	err := backoff.RetryNotify(c.ModelRepository.Ready, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for model repository to be ready")
 		return err
 	}
 
-	// Wait for V2 Server to be ready
+	// Wait for Inference server to be ready
 	logFailure = func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Server not ready")
+		logger.WithError(err).Errorf("Inference server not ready")
 	}
-	logger.Infof("Waiting for inference server to be ready")
-	err = backoff.RetryNotify(c.stateManager.v2Client.Ready, backoff.NewExponentialBackOff(), logFailure)
+
+	err = backoff.RetryNotify(c.stateManager.v2Client.Live, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for inference server to be ready")
 		return err
 	}
 
-	// Unload any existing models on server to ensure we start in a clean state
-	logger.Infof("Unloading any existing models")
-	err = c.UnloadAllModels()
-	if err != nil {
-		return err
+	if isStartup {
+		// Unload any existing models on server to ensure we start in a clean state
+		logger.Infof("Unloading any existing models")
+		err = c.UnloadAllModels()
+		if err != nil {
+			return err
+		}
 	}
 
 	// http reverse proxy
-	if err := startSubService(c.rpHTTP, logger); err != nil {
-		logger.WithError(err).Error("Failed to start http proxy")
+	if err := isReadyChecker(
+		isStartup, c.rpHTTP, logger, "Rest proxy not ready",
+		maxElapsedTime,
+	); err != nil {
 		return err
 	}
 
 	// grpc reverse proxy
-	if err := startSubService(c.rpGRPC, logger); err != nil {
-		logger.WithError(err).Error("Failed to start grpc proxy")
+	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready",
+		maxElapsedTime,
+	); err != nil {
 		return err
 	}
 
 	// agent debug service
-	if err := startSubService(c.agentDebugService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start agent debug service")
+	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready",
+		maxElapsedTime,
+	); err != nil {
 		return err
 	}
 
 	// model scaling service
-	if err := startSubService(c.modelScalingService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start scaling service")
+	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready",
+		maxElapsedTime,
+	); err != nil {
 		return err
 	}
 
 	// drainer service
-	if err := startSubService(c.drainerService, logger); err != nil {
-		logger.WithError(err).Error("Failed to start drainer service")
+	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready",
+		maxElapsedTime,
+	); err != nil {
 		return err
 	}
 
@@ -320,28 +369,6 @@ func (c *Client) UnloadAllModels() error {
 		}
 	}
 	return nil
-}
-
-func startSubService(service interfaces.DependencyServiceInterface, logger *log.Entry) error {
-	logger.Infof("Starting and waiting for %s", service.Name())
-	err := service.Start()
-	if err != nil {
-		return err
-	}
-
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("%s service not ready", service.Name())
-	}
-
-	readyToError := func() error {
-		if service.Ready() {
-			return nil
-		} else {
-			return fmt.Errorf("Service %s not ready", service.Name())
-		}
-	}
-	err = backoff.RetryNotify(readyToError, backoff.NewExponentialBackOff(), logFailure)
-	return err
 }
 
 func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
@@ -651,7 +678,7 @@ func (c *Client) sendModelScalingTriggerEvent(
 	return err
 }
 
-func (c *Client) consumeModelScalingEvents() {
+func (c *Client) modelScalingEventsConsumer() {
 	ch := c.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
 	for c.modelScalingService.Ready() {
 		e := <-ch
@@ -677,9 +704,13 @@ func (c *Client) consumeModelScalingEvents() {
 	}
 }
 
-func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
-	mv := proto.Clone(originalModelVersion)
-	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
-	mv.(*agent.ModelVersion).Version = version
-	return mv.(*agent.ModelVersion)
+func (c *Client) startSubServiceChecker() {
+	ticker := time.NewTicker(c.settings.periodReadySubService)
+	defer ticker.Stop()
+	for !c.stop.Load() {
+		<-ticker.C
+		if err := c.WaitReadySubServices(false); err != nil {
+			c.Stop()
+		}
+	}
 }

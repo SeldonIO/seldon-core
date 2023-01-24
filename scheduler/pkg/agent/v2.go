@@ -329,19 +329,18 @@ func (v *V2Client) unloadModelGrpc(name string) *V2Err {
 	return nil
 }
 
-func (v *V2Client) Ready() error {
+func (v *V2Client) Live() error {
 	var ready bool
 	var err error
 	if v.isGrpc {
-		ready, err = v.readyGrpc()
+		ready, err = v.liveGrpc()
 	} else {
-		ready, err = v.readyHttp()
+		ready, err = v.liveHttp()
 	}
 	if err != nil {
-		v.logger.WithError(err).Debugf("Server ready check failed on error")
+		v.logger.WithError(err).Debugf("Server live check failed on error")
 		return err
 	}
-	v.logger.Debugf("Server ready check returned with value %v", ready)
 	if ready {
 		return nil
 	} else {
@@ -349,8 +348,8 @@ func (v *V2Client) Ready() error {
 	}
 }
 
-func (v *V2Client) readyHttp() (bool, error) {
-	res, err := http.Get(v.getUrl("v2/health/ready").String())
+func (v *V2Client) liveHttp() (bool, error) {
+	res, err := http.Get(v.getUrl("v2/health/live").String())
 	if err != nil {
 		return false, err
 	}
@@ -361,15 +360,15 @@ func (v *V2Client) readyHttp() (bool, error) {
 	}
 }
 
-func (v *V2Client) readyGrpc() (bool, error) {
+func (v *V2Client) liveGrpc() (bool, error) {
 	ctx := context.Background()
-	req := &v2.ServerReadyRequest{}
+	req := &v2.ServerLiveRequest{}
 
-	res, err := v.grpcClient.ServerReady(ctx, req)
+	res, err := v.grpcClient.ServerLive(ctx, req)
 	if err != nil {
 		return false, err
 	}
-	return res.Ready, nil
+	return res.Live, nil
 }
 
 func (v *V2Client) GetModels() ([]MLServerModelInfo, error) {

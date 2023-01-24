@@ -1404,7 +1404,7 @@ spec:
         protocol: TCP
       readinessProbe:
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         initialDelaySeconds: 5
         periodSeconds: 5
@@ -1417,7 +1417,7 @@ spec:
       startupProbe:
         failureThreshold: 10
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         periodSeconds: 10
       volumeMounts:
@@ -1643,7 +1643,7 @@ spec:
         name: server-metrics
       readinessProbe:
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         initialDelaySeconds: 5
         periodSeconds: 5
@@ -1656,7 +1656,7 @@ spec:
       startupProbe:
         failureThreshold: 10
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         periodSeconds: 10
       volumeMounts:

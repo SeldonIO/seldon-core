@@ -24,6 +24,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 
@@ -48,6 +49,15 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
+)
+
+const (
+	// the max time to wait for a subservice ready after client start, i.e. during operation
+	maxElapsedTimeReadySubServiceAfterStart = 30 * time.Second
+	// the max time to wait for a subservice ready before client start, i.e. during startup
+	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
+	// period for subservice ready "cron"
+	periodReadySubService = 60 * time.Second
 )
 
 func makeDirs() (string, string, error) {
@@ -254,11 +264,16 @@ func main() {
 
 	// Create Agent
 	client := agent.NewClient(
-		cli.ServerName,
-		uint32(cli.ReplicaIdx),
-		cli.SchedulerHost,
-		cli.SchedulerPort,
-		cli.SchedulerTlsPort,
+		agent.NewClientSettings(
+			cli.ServerName,
+			uint32(cli.ReplicaIdx),
+			cli.SchedulerHost,
+			cli.SchedulerPort,
+			cli.SchedulerTlsPort,
+			periodReadySubService,
+			maxElapsedTimeReadySubServiceBeforeStart,
+			maxElapsedTimeReadySubServiceAfterStart,
+		),
 		logger,
 		modelRepository,
 		v2Client,
@@ -273,7 +288,7 @@ func main() {
 	)
 
 	// Wait for required services to be ready
-	err = client.WaitReady()
+	err = client.WaitReadySubServices(true)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
 		close(done)
