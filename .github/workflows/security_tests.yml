@@ -46,7 +46,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
         make -C executor/ executor
-        snyk test --file=executor/go.mod --app-vulns --fail-on=upgradable --severity-threshold=high
+        snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-image-executor:
 
