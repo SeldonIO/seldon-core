@@ -111,8 +111,6 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 }
 
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
 		Reason:              reason,
