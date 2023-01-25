@@ -4,20 +4,7 @@ This example runs you through a series of batch inference requests made to both 
 
 ## Setup
 
-If you haven't already, you'll need to clone the Seldon Core repository to run through this example:
-
-```bash
-git clone https://github.com/SeldonIO/seldon-core --branch=v2
-cd seldon-core/
-```
-
-You can then start Seldon Core locally by running:
-
-```bash
-metadata:
-  name: iris
-make deploy-local
-```
+If you haven't already, you'll need to [clone the Seldon Core repository and run it locally](../getting-started/docker-installation/index) before you run through this example.
 
 ```{important}
 By default, the CLI will expect your inference endpoint to be at `0.0.0.0:9000`. If you have customized this, you'll need to [redirect the CLI](../cli/index).
