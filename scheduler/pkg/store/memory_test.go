@@ -1503,7 +1503,7 @@ func TestRemoveServerReplica(t *testing.T) {
 						name: "server1",
 						replicas: map[int]*ServerReplica{
 							0: {
-								loadedModels: map[ModelVersionID]bool{{Name: "model1", Version: 1}: true},
+								loadedModels:  map[ModelVersionID]bool{{Name: "model1", Version: 1}: true},
 								loadingModels: map[ModelVersionID]bool{{Name: "model2", Version: 1}: true},
 							},
 							1: {},
