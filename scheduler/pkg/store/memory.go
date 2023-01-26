@@ -512,7 +512,7 @@ func (m *MemoryStore) updateModelStateImpl(
 		)
 
 		// Update models loaded onto replica if loaded or unloaded is state
-		if desiredState == Loaded || desiredState == Loading || desiredState == Unloaded ||  desiredState == LoadFailed {
+		if desiredState == Loaded || desiredState == Loading || desiredState == Unloaded || desiredState == LoadFailed {
 			server, ok := m.store.servers[serverKey]
 			if ok {
 				replica, ok := server.replicas[replicaIdx]
@@ -522,7 +522,7 @@ func (m *MemoryStore) updateModelStateImpl(
 							"Adding model %s(%d) to server %s replica %d list of loaded / loading models",
 							modelKey, version, serverKey, replicaIdx,
 						)
-						replica.addModelVersion(modelKey, version, desiredState)  // we need to distinguish between loaded and loading
+						replica.addModelVersion(modelKey, version, desiredState) // we need to distinguish between loaded and loading
 					} else {
 						logger.Infof(
 							"Removing model %s(%d) from server %s replica %d list of loaded / loading models",
@@ -623,7 +623,6 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 }
 
 func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
-	logger := m.logger.WithField("func", "RemoveServerReplica")
 	server, ok := m.store.servers[serverName]
 	if !ok {
 		return nil, fmt.Errorf("Failed to find server %s", serverName)
@@ -637,9 +636,19 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 	if len(server.replicas) == 0 {
 		delete(m.store.servers, serverName)
 	}
+	loadedModelsRemoved := m.removeModelfromServerReplica(serverReplica.loadedModels, replicaIdx)
+	loadingModelsRemoved := m.removeModelfromServerReplica(serverReplica.loadingModels, replicaIdx)
+
+	modelsRemoved := append(loadedModelsRemoved, loadingModelsRemoved...)
+
+	return modelsRemoved, nil
+}
+
+func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bool, replicaIdx int) []string {
+	logger := m.logger.WithField("func", "RemoveServerReplica")
 	var modelNames []string
 	// Find models to reschedule due to this server replica being removed
-	for modelVersionID := range serverReplica.loadedModels {
+	for modelVersionID := range lModels {
 		model, ok := m.store.models[modelVersionID.Name]
 		if ok {
 			modelVersion := model.GetVersion(modelVersionID.Version)
@@ -651,7 +660,7 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 			}
 		}
 	}
-	return modelNames, nil
+	return modelNames
 }
 
 func (m *MemoryStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
