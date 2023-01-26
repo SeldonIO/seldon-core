@@ -131,21 +131,6 @@ func TestLoadedModel(t *testing.T) {
 			},
 		},
 		{
-			name:                       "add load requested",
-			op:                         add,
-			model:                      "dummy",
-			version:                    1,
-			state:                      LoadRequested,
-			loadedModels:               map[ModelVersionID]bool{},
-			loadingModels:              map[ModelVersionID]bool{},
-			uniqueLoadedModels:         map[string]bool{},
-			expectedLoadedModels:       map[ModelVersionID]bool{},
-			expectedUniqueLoadedModels: map[string]bool{},
-			expectedLoadingModels: map[ModelVersionID]bool{
-				{Name: "dummy", Version: 1}: true,
-			},
-		},
-		{
 			name:         "add loaded",
 			op:           add,
 			model:        "dummy",
@@ -165,11 +150,11 @@ func TestLoadedModel(t *testing.T) {
 			expectedLoadingModels: map[ModelVersionID]bool{},
 		},
 		{
-			name:    "add load requested - new version",
+			name:    "add loading - new version",
 			op:      add,
 			model:   "dummy",
 			version: 2,
-			state:   LoadRequested,
+			state:   Loading,
 			loadedModels: map[ModelVersionID]bool{
 				{Name: "dummy", Version: 1}: true,
 			},
