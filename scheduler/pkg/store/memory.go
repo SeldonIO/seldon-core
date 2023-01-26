@@ -512,22 +512,23 @@ func (m *MemoryStore) updateModelStateImpl(
 		)
 
 		// Update models loaded onto replica if loaded or unloaded is state
-		if desiredState == Loaded || desiredState == Unloaded {
+		if desiredState == Loaded || desiredState == Loading || desiredState == Unloaded ||  desiredState == LoadFailed {
 			server, ok := m.store.servers[serverKey]
 			if ok {
 				replica, ok := server.replicas[replicaIdx]
 				if ok {
-					if desiredState == Loaded {
+					if desiredState == Loaded || desiredState == Loading {
 						logger.Infof(
-							"Adding model %s(%d) to server %s replica %d list of loaded models",
+							"Adding model %s(%d) to server %s replica %d list of loaded / loading models",
 							modelKey, version, serverKey, replicaIdx,
 						)
-						replica.addModelVersion(modelKey, version, Loaded)
+						replica.addModelVersion(modelKey, version, desiredState)  // we need to distinguish between loaded and loading
 					} else {
 						logger.Infof(
-							"Removing model %s(%d) from server %s replica %d list of loaded models",
+							"Removing model %s(%d) from server %s replica %d list of loaded / loading models",
 							modelKey, version, serverKey, replicaIdx,
 						)
+						// we could go from loaded -> unloaded or loading -> failed. in the case we have a failure then we just remove from loading
 						replica.deleteModelVersion(modelKey, version)
 					}
 				}

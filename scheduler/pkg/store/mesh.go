@@ -693,7 +693,7 @@ func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32, r
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
-	if replicaState == LoadRequested || replicaState == Loading {
+	if replicaState == Loading {
 		s.loadingModels[modelName] = true
 	} else if replicaState == Loaded {
 		delete(s.loadingModels, modelName)
