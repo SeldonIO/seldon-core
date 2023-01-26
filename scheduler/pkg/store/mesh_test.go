@@ -67,12 +67,30 @@ func TestCreateSnapshot(t *testing.T) {
 					{Name: "model1", Version: 1}: true,
 					{Name: "model2", Version: 2}: true,
 				},
+				loadingModels: map[ModelVersionID]bool{
+					{Name: "model10", Version: 1}: true,
+					{Name: "model20", Version: 2}: true,
+				},
 			},
 		},
 		kubernetesMeta: &pb.KubernetesMeta{Namespace: "default"},
 	}
 
 	snapshot := server.CreateSnapshot(false, true)
+
+	g.Expect(snapshot.Replicas[0].loadedModels).To(Equal(
+		map[ModelVersionID]bool{
+			{Name: "model1", Version: 1}: true,
+			{Name: "model2", Version: 2}: true,
+		},
+	))
+
+	g.Expect(snapshot.Replicas[0].loadingModels).To(Equal(
+		map[ModelVersionID]bool{
+			{Name: "model10", Version: 1}: true,
+			{Name: "model20", Version: 2}: true,
+		},
+	))
 
 	server.replicas[1] = &ServerReplica{
 		inferenceSvc: "svc",

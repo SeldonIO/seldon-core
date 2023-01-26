@@ -570,11 +570,16 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	copy(capabilities, s.capabilities)
 
 	var loadedModels map[ModelVersionID]bool
+	var loadingModels map[ModelVersionID]bool
 	var uniqueLoadedModels map[string]bool
 	if modelDetails {
 		loadedModels = make(map[ModelVersionID]bool, len(s.loadedModels))
 		for k, v := range s.loadedModels {
 			loadedModels[k] = v
+		}
+		loadingModels = make(map[ModelVersionID]bool, len(s.loadingModels))
+		for k, v := range s.loadingModels {
+			loadingModels[k] = v
 		}
 		uniqueLoadedModels = make(map[string]bool, len(s.loadedModels))
 		for k, v := range s.uniqueLoadedModels {
@@ -592,6 +597,7 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 		memory:               s.memory,
 		availableMemory:      s.availableMemory,
 		loadedModels:         loadedModels,
+		loadingModels:        loadingModels,
 		overCommitPercentage: s.overCommitPercentage,
 		reservedMemory:       s.reservedMemory,
 		uniqueLoadedModels:   uniqueLoadedModels,
