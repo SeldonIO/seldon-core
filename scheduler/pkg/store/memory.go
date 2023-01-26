@@ -522,7 +522,7 @@ func (m *MemoryStore) updateModelStateImpl(
 							"Adding model %s(%d) to server %s replica %d list of loaded models",
 							modelKey, version, serverKey, replicaIdx,
 						)
-						replica.addModelVersion(modelKey, version)
+						replica.addModelVersion(modelKey, version, Loaded)
 					} else {
 						logger.Infof(
 							"Removing model %s(%d) from server %s replica %d list of loaded models",

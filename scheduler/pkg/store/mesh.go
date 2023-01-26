@@ -150,23 +150,27 @@ func NewServer(name string, shared bool) *Server {
 }
 
 type ServerReplica struct {
-	muReservedMemory     sync.RWMutex
-	muLoadedModels       sync.RWMutex
-	muDrainingState      sync.RWMutex
-	inferenceSvc         string
-	inferenceHttpPort    int32
-	inferenceGrpcPort    int32
-	replicaIdx           int
-	server               *Server
-	capabilities         []string
-	memory               uint64
-	availableMemory      uint64
-	loadedModels         map[ModelVersionID]bool
-	loadingModels        map[string]bool // for marking models that are in process of loading on this server (to speed up ops)
+	muReservedMemory  sync.RWMutex
+	muLoadedModels    sync.RWMutex
+	muDrainingState   sync.RWMutex
+	inferenceSvc      string
+	inferenceHttpPort int32
+	inferenceGrpcPort int32
+	replicaIdx        int
+	server            *Server
+	capabilities      []string
+	memory            uint64
+	availableMemory   uint64
+	// precomputed values to speed up ops on scheduler
+	loadedModels map[ModelVersionID]bool
+	// for marking models that are in process of load requested or loading on this server (to speed up ops)
+	loadingModels        map[string]bool  // we do not care about the version of loading models really
 	overCommitPercentage uint32
-	reservedMemory       uint64          // while loading models, internal to scheduler
-	uniqueLoadedModels   map[string]bool // precomputed values to speed up ops on scheduler
-	isDraining           bool
+	// holding reserved memory on server replica while loading models, internal to scheduler
+	reservedMemory uint64
+	// precomputed values to speed up ops on scheduler
+	uniqueLoadedModels map[string]bool
+	isDraining         bool
 }
 
 func NewServerReplica(inferenceSvc string,
@@ -689,9 +693,9 @@ func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32, r
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
-	if replicaState != Loaded {
+	if replicaState == LoadRequested || replicaState == Loading {
 		s.loadingModels[modelName] = true
-	} else {
+	} else if replicaState == Loaded {
 		delete(s.loadingModels, modelName)
 
 		s.loadedModels[ModelVersionID{Name: modelName, Version: modelVersion}] = true
@@ -710,7 +714,6 @@ func (s *ServerReplica) deleteModelVersion(modelName string, modelVersion uint32
 		delete(s.uniqueLoadedModels, modelName)
 	}
 }
-
 
 func toUniqueModels(loadedModels map[ModelVersionID]bool) map[string]bool {
 	uniqueModels := make(map[string]bool)

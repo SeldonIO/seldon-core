@@ -89,3 +89,200 @@ func TestCreateSnapshot(t *testing.T) {
 	g.Expect(snapshot.KubernetesMeta.Namespace).To(Equal("default"))
 
 }
+
+func TestLoadedModel(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	const (
+		add int = iota
+		remove
+	)
+
+	type test struct {
+		name                       string
+		op                         int
+		model                      string
+		version                    int
+		state                      ModelReplicaState
+		loadedModels               map[ModelVersionID]bool
+		uniqueLoadedModels         map[string]bool
+		loadingModels              map[string]bool
+		expectedLoadedModels       map[ModelVersionID]bool
+		expectedLoadingModels      map[string]bool
+		expectedUniqueLoadedModels map[string]bool
+	}
+
+	tests := []test{
+		{
+			name:         "add loading",
+			op:           add,
+			model:        "dummy",
+			version:      1,
+			state:        Loading,
+			loadedModels: map[ModelVersionID]bool{
+			},
+			loadingModels: map[string]bool{
+				"dummy": true, // we should already have an entry from an earlier load request
+			},
+			uniqueLoadedModels:         map[string]bool{
+			},
+			expectedLoadedModels:       map[ModelVersionID]bool{
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+			},
+			expectedLoadingModels: map[string]bool{
+				"dummy": true,
+			},
+		},
+		{
+			name:                       "add load requested",
+			op:                         add,
+			model:                      "dummy",
+			version:                    1,
+			state:                      LoadRequested,
+			loadedModels:               map[ModelVersionID]bool{},
+			loadingModels:              map[string]bool{
+			},
+			uniqueLoadedModels:         map[string]bool{
+			},
+			expectedLoadedModels:       map[ModelVersionID]bool{},
+			expectedUniqueLoadedModels: map[string]bool{
+			},
+			expectedLoadingModels: map[string]bool{
+				"dummy": true,
+			},
+		},
+		{
+			name:         "add loaded",
+			op:           add,
+			model:        "dummy",
+			version:      1,
+			state:        LoadRequested,
+			loadedModels: map[ModelVersionID]bool{},
+			loadingModels: map[string]bool{
+				"dummy": true, // we should transition from loading to loaded
+			},
+			uniqueLoadedModels: map[string]bool{},
+			expectedLoadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadingModels: map[string]bool{
+			},
+		},
+		{
+			name:         "add load requested - new version",
+			op:           add,
+			model:        "dummy",
+			version:      2,
+			state:        LoadRequested,
+			loadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			loadingModels: map[string]bool{
+			},
+			uniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadingModels: map[string]bool{
+				"dummy": true,
+			},
+		},
+		{
+			name:         "add loaded - new version",
+			op:           add,
+			model:        "dummy",
+			version:      2,
+			state:        LoadRequested,
+			loadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			loadingModels: map[string]bool{
+				"dummy": true, // we should transition from loading to loaded
+			},
+			uniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+				{Name: "dummy", Version: 2}: true,
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadingModels: map[string]bool{
+			},
+		},
+		{
+			name:         "remove with early version",
+			op:           remove,
+			model:        "dummy",
+			version:      2,
+			loadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+				{Name: "dummy", Version: 2}: true,
+			},
+			loadingModels: map[string]bool{
+			},
+			uniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadingModels: map[string]bool{
+			},
+		},
+		{
+			name:         "remove",
+			op:           remove,
+			model:        "dummy",
+			version:      1,
+			loadedModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
+			},
+			loadingModels: map[string]bool{
+			},
+			uniqueLoadedModels: map[string]bool{
+				"dummy": true,
+			},
+			expectedLoadedModels: map[ModelVersionID]bool{
+			},
+			expectedUniqueLoadedModels: map[string]bool{
+			},
+			expectedLoadingModels: map[string]bool{
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			server := ServerReplica{
+				inferenceSvc:       "svc",
+				loadedModels:       test.loadedModels,
+				loadingModels:      test.loadingModels,
+				uniqueLoadedModels: test.uniqueLoadedModels,
+			}
+
+			if test.op == add {
+				server.addModelVersion(test.model, uint32(test.version), test.state)
+			} else {
+				server.deleteModelVersion(test.model, uint32(test.version))
+			}
+			g.Expect(server.loadedModels).To(Equal(test.loadedModels))
+			g.Expect(server.loadingModels).To(Equal(test.loadingModels))
+			g.Expect(server.uniqueLoadedModels).To(Equal(test.uniqueLoadedModels))
+		})
+	}
+}
