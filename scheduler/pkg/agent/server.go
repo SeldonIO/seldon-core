@@ -301,7 +301,9 @@ func (s *Server) Sync(modelName string) {
 			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
-				if errState := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.LoadFailed, err); errState != nil {
+				if errState := s.store.UpdateModelState(
+					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
+					store.LoadRequested, store.LoadFailed, err.Error()); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
