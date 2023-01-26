@@ -164,7 +164,7 @@ type ServerReplica struct {
 	// precomputed values to speed up ops on scheduler
 	loadedModels map[ModelVersionID]bool
 	// for marking models that are in process of load requested or loading on this server (to speed up ops)
-	loadingModels        map[string]bool  // we do not care about the version of loading models really
+	loadingModels        map[ModelVersionID]bool
 	overCommitPercentage uint32
 	// holding reserved memory on server replica while loading models, internal to scheduler
 	reservedMemory uint64
@@ -693,12 +693,13 @@ func (s *ServerReplica) addModelVersion(modelName string, modelVersion uint32, r
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
-	if replicaState == Loading {
-		s.loadingModels[modelName] = true
+	id := ModelVersionID{Name: modelName, Version: modelVersion}
+	if replicaState == Loading || replicaState == LoadRequested {
+		s.loadingModels[id] = true
 	} else if replicaState == Loaded {
-		delete(s.loadingModels, modelName)
+		delete(s.loadingModels, id)
 
-		s.loadedModels[ModelVersionID{Name: modelName, Version: modelVersion}] = true
+		s.loadedModels[id] = true
 		s.uniqueLoadedModels[modelName] = true
 	}
 }
@@ -707,9 +708,9 @@ func (s *ServerReplica) deleteModelVersion(modelName string, modelVersion uint32
 	s.muLoadedModels.Lock()
 	defer s.muLoadedModels.Unlock()
 
-	// we do not care about the state of the model replica here (TBC)
-	delete(s.loadingModels, modelName)
-	delete(s.loadedModels, ModelVersionID{Name: modelName, Version: modelVersion})
+	id := ModelVersionID{Name: modelName, Version: modelVersion}
+	delete(s.loadingModels, id)
+	delete(s.loadedModels, id)
 	if !modelExists(s.loadedModels, modelName) {
 		delete(s.uniqueLoadedModels, modelName)
 	}

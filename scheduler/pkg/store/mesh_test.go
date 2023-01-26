@@ -106,9 +106,9 @@ func TestLoadedModel(t *testing.T) {
 		state                      ModelReplicaState
 		loadedModels               map[ModelVersionID]bool
 		uniqueLoadedModels         map[string]bool
-		loadingModels              map[string]bool
+		loadingModels              map[ModelVersionID]bool
 		expectedLoadedModels       map[ModelVersionID]bool
-		expectedLoadingModels      map[string]bool
+		expectedLoadingModels      map[ModelVersionID]bool
 		expectedUniqueLoadedModels map[string]bool
 	}
 
@@ -119,19 +119,15 @@ func TestLoadedModel(t *testing.T) {
 			model:        "dummy",
 			version:      1,
 			state:        Loading,
-			loadedModels: map[ModelVersionID]bool{
+			loadedModels: map[ModelVersionID]bool{},
+			loadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true, // we should already have an entry from an earlier load request
 			},
-			loadingModels: map[string]bool{
-				"dummy": true, // we should already have an entry from an earlier load request
-			},
-			uniqueLoadedModels:         map[string]bool{
-			},
-			expectedLoadedModels:       map[ModelVersionID]bool{
-			},
-			expectedUniqueLoadedModels: map[string]bool{
-			},
-			expectedLoadingModels: map[string]bool{
-				"dummy": true,
+			uniqueLoadedModels:         map[string]bool{},
+			expectedLoadedModels:       map[ModelVersionID]bool{},
+			expectedUniqueLoadedModels: map[string]bool{},
+			expectedLoadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
 			},
 		},
 		{
@@ -141,15 +137,12 @@ func TestLoadedModel(t *testing.T) {
 			version:                    1,
 			state:                      LoadRequested,
 			loadedModels:               map[ModelVersionID]bool{},
-			loadingModels:              map[string]bool{
-			},
-			uniqueLoadedModels:         map[string]bool{
-			},
+			loadingModels:              map[ModelVersionID]bool{},
+			uniqueLoadedModels:         map[string]bool{},
 			expectedLoadedModels:       map[ModelVersionID]bool{},
-			expectedUniqueLoadedModels: map[string]bool{
-			},
-			expectedLoadingModels: map[string]bool{
-				"dummy": true,
+			expectedUniqueLoadedModels: map[string]bool{},
+			expectedLoadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true,
 			},
 		},
 		{
@@ -157,10 +150,10 @@ func TestLoadedModel(t *testing.T) {
 			op:           add,
 			model:        "dummy",
 			version:      1,
-			state:        LoadRequested,
+			state:        Loaded,
 			loadedModels: map[ModelVersionID]bool{},
-			loadingModels: map[string]bool{
-				"dummy": true, // we should transition from loading to loaded
+			loadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 1}: true, // we should transition from loading to loaded
 			},
 			uniqueLoadedModels: map[string]bool{},
 			expectedLoadedModels: map[ModelVersionID]bool{
@@ -169,20 +162,18 @@ func TestLoadedModel(t *testing.T) {
 			expectedUniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
-			expectedLoadingModels: map[string]bool{
-			},
+			expectedLoadingModels: map[ModelVersionID]bool{},
 		},
 		{
-			name:         "add load requested - new version",
-			op:           add,
-			model:        "dummy",
-			version:      2,
-			state:        LoadRequested,
+			name:    "add load requested - new version",
+			op:      add,
+			model:   "dummy",
+			version: 2,
+			state:   LoadRequested,
 			loadedModels: map[ModelVersionID]bool{
 				{Name: "dummy", Version: 1}: true,
 			},
-			loadingModels: map[string]bool{
-			},
+			loadingModels: map[ModelVersionID]bool{},
 			uniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
@@ -192,21 +183,21 @@ func TestLoadedModel(t *testing.T) {
 			expectedUniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
-			expectedLoadingModels: map[string]bool{
-				"dummy": true,
+			expectedLoadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 2}: true,
 			},
 		},
 		{
-			name:         "add loaded - new version",
-			op:           add,
-			model:        "dummy",
-			version:      2,
-			state:        LoadRequested,
+			name:    "add loaded- new version",
+			op:      add,
+			model:   "dummy",
+			version: 2,
+			state:   Loaded,
 			loadedModels: map[ModelVersionID]bool{
 				{Name: "dummy", Version: 1}: true,
 			},
-			loadingModels: map[string]bool{
-				"dummy": true, // we should transition from loading to loaded
+			loadingModels: map[ModelVersionID]bool{
+				{Name: "dummy", Version: 2}: true, // we should transition from loading to loaded
 			},
 			uniqueLoadedModels: map[string]bool{
 				"dummy": true,
@@ -218,20 +209,18 @@ func TestLoadedModel(t *testing.T) {
 			expectedUniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
-			expectedLoadingModels: map[string]bool{
-			},
+			expectedLoadingModels: map[ModelVersionID]bool{},
 		},
 		{
-			name:         "remove with early version",
-			op:           remove,
-			model:        "dummy",
-			version:      2,
+			name:    "remove with early version",
+			op:      remove,
+			model:   "dummy",
+			version: 2,
 			loadedModels: map[ModelVersionID]bool{
 				{Name: "dummy", Version: 1}: true,
 				{Name: "dummy", Version: 2}: true,
 			},
-			loadingModels: map[string]bool{
-			},
+			loadingModels: map[ModelVersionID]bool{},
 			uniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
@@ -241,28 +230,23 @@ func TestLoadedModel(t *testing.T) {
 			expectedUniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
-			expectedLoadingModels: map[string]bool{
-			},
+			expectedLoadingModels: map[ModelVersionID]bool{},
 		},
 		{
-			name:         "remove",
-			op:           remove,
-			model:        "dummy",
-			version:      1,
+			name:    "remove",
+			op:      remove,
+			model:   "dummy",
+			version: 1,
 			loadedModels: map[ModelVersionID]bool{
 				{Name: "dummy", Version: 1}: true,
 			},
-			loadingModels: map[string]bool{
-			},
+			loadingModels: map[ModelVersionID]bool{},
 			uniqueLoadedModels: map[string]bool{
 				"dummy": true,
 			},
-			expectedLoadedModels: map[ModelVersionID]bool{
-			},
-			expectedUniqueLoadedModels: map[string]bool{
-			},
-			expectedLoadingModels: map[string]bool{
-			},
+			expectedLoadedModels:       map[ModelVersionID]bool{},
+			expectedUniqueLoadedModels: map[string]bool{},
+			expectedLoadingModels:      map[ModelVersionID]bool{},
 		},
 	}
 
@@ -280,9 +264,9 @@ func TestLoadedModel(t *testing.T) {
 			} else {
 				server.deleteModelVersion(test.model, uint32(test.version))
 			}
-			g.Expect(server.loadedModels).To(Equal(test.loadedModels))
-			g.Expect(server.loadingModels).To(Equal(test.loadingModels))
-			g.Expect(server.uniqueLoadedModels).To(Equal(test.uniqueLoadedModels))
+			g.Expect(server.loadedModels).To(Equal(test.expectedLoadedModels))
+			g.Expect(server.loadingModels).To(Equal(test.expectedLoadingModels))
+			g.Expect(server.uniqueLoadedModels).To(Equal(test.expectedUniqueLoadedModels))
 		})
 	}
 }
