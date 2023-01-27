@@ -35,9 +35,9 @@ function inferGrpcIterations() {
 
 function modelType() {
     if (__ENV.MODEL_TYPE) {
-        return __ENV.MODEL_TYPE
+        return __ENV.MODEL_TYPE.split(",")
     }
-    return "iris"
+    return ["iris"]
 }
 
 function loadModel() {
@@ -77,9 +77,9 @@ function unloadExperiment() {
 
 function maxNumModels() {
     if (__ENV.MAX_NUM_MODELS) {
-        return __ENV.MAX_NUM_MODELS
+        return __ENV.MAX_NUM_MODELS.split(",")
     }
-    return 10
+    return [10]
 }
 
 function isSchedulerProxy() {
@@ -98,16 +98,16 @@ function isEnvoy() {
 
 function modelMemoryBytes() {
     if (__ENV.MODEL_MEMORY_BYTES) {
-        return __ENV.MODEL_MEMORY_BYTES
+        return __ENV.MODEL_MEMORY_BYTES.split(",")
     }
-    return null
+    return [null]
 }
 
 function inferBatchSize() {
     if (__ENV.INFER_BATCH_SIZE) {
-        return parseInt(__ENV.INFER_BATCH_SIZE)
+        return __ENV.INFER_BATCH_SIZE.split(",")
     }
-    return 1
+    return [1]
 }
 
 function modelStartIdx() {
@@ -140,9 +140,9 @@ function dataflowTag() {
 
 function modelNamePrefix() {
     if (__ENV.MODELNAME_PREFIX) {
-        return __ENV.MODELNAME_PREFIX
+        return __ENV.MODELNAME_PREFIX.split(",")
     }
-    return "model"
+    return ["model"]
 }
 
 function modelName() {
