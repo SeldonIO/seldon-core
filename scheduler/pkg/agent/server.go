@@ -434,6 +434,18 @@ func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentS
 	if err != nil {
 		return err
 	}
+
+	// we have to reschedule models that are loaded on the incoming agent
+	// this is because we can have a network glitch that causes the communication between the agent and the scheduler
+	// to drop and the scheduler loading the models on other servers.
+	// we need then to reconcile this case
+	for _, model := range request.LoadedModels {
+		modelName := model.GetModel().GetMeta().GetName()
+		if err := s.scheduler.Schedule(model.GetModel().GetMeta().GetName()); err != nil {
+			s.logger.WithError(err).Warnf("Failed to reschedule model %s from agent starting with state", modelName)
+		}
+	}
+
 	_, err = s.scheduler.ScheduleFailedModels()
 	if err != nil {
 		return err
