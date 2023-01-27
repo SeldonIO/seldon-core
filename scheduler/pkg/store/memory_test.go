@@ -633,7 +633,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			expectedStates: map[int]ReplicaStatus{0: {State: LoadRequested}},
 		},
 		{
-			name: "DeleteFailedSchedulerModel",
+			name: "DeleteFailedScheduleModel",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{"model": {
 					versions: []*ModelVersion{
@@ -1401,7 +1401,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			serverName:     "server1",
 			replicaIdx:     0,
 			serverExists:   true,
-			modelsReturned: 0,
+			modelsReturned: 0, // no models really defined in store
 		},
 		{
 			name: "ReplicaRemovedAndDeleted",
@@ -1478,6 +1478,45 @@ func TestRemoveServerReplica(t *testing.T) {
 			replicaIdx:     0,
 			serverExists:   false,
 			modelsReturned: 0,
+		},
+		{
+			name: "ReplicaRemovedAndDeleted - loading models",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model1": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+							},
+						},
+					},
+					"model2": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {
+								loadedModels:  map[ModelVersionID]bool{{Name: "model1", Version: 1}: true},
+								loadingModels: map[ModelVersionID]bool{{Name: "model2", Version: 1}: true},
+							},
+							1: {},
+						},
+						expectedReplicas: -1,
+						shared:           true,
+					},
+				},
+			},
+			serverName:     "server1",
+			replicaIdx:     0,
+			serverExists:   true,
+			modelsReturned: 2,
 		},
 	}
 
