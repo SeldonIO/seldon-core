@@ -9,9 +9,11 @@ export function setup() {
 }
 
 export default function (config) {
-    const modelName = config.modelNamePrefix + scenario.iterationInTest.toString()
-    const model = generateModel(config.modelType, modelName, vu.idInTest, 1, 
-        config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
+    // only assume one model type in this scenario
+    const idx = 0
+    const modelName = config.modelNamePrefix[idx] + scenario.iterationInTest.toString()
+    const model = generateModel(config.modelType[idx], modelName, vu.idInTest, 1, 
+        config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
     const modelDefn = model.modelDefn
     const schedulerEndpoint = config.schedulerEndpoint
     const httpEndpoint = config.inferHttpEndpoint

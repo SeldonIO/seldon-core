@@ -20,12 +20,13 @@ export function setup() {
 }
 
 export default function (config) {
-
-    for (let i = 0; i < config.maxNumModels; i++) {
-        var modelName = config.modelNamePrefix + i.toString()
+    // only assume one model type in this scenario
+    const idx = 0
+    for (let i = 0; i < config.maxNumModels[idx]; i++) {
+        var modelName = config.modelNamePrefix[idx] + i.toString()
 
         var modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
-        doInfer(modelName, modelNameWithVersion, config, false)
+        doInfer(modelName, modelNameWithVersion, config, false, idx)
     }
 }
 

@@ -32,15 +32,17 @@ export function setup() {
 }
 
 export default function (config) {
-    const modelId = Math.floor(Math.random() * config.maxNumModels)
-    const modelName = config.modelNamePrefix + modelId.toString()
+    const numModelTypes = config.modelType.length
+    const idx = Math.floor(Math.random() * numModelTypes)
+    const modelId = Math.floor(Math.random() * config.maxNumModels[idx])
+    const modelName = config.modelNamePrefix[idx] + modelId.toString()
 
     const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
 
     if (config.inferType === "REST") {
-        doInfer(modelName, modelNameWithVersion, config, true)
+        doInfer(modelName, modelNameWithVersion, config, true, idx)
     } else {
-        doInfer(modelName, modelNameWithVersion, config, false)
+        doInfer(modelName, modelNameWithVersion, config, false, idx)
     }
 }
 

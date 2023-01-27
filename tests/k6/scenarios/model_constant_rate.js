@@ -21,11 +21,13 @@ export function setup() {
 }
 
 export default function (config) {
-    const endIdx = (config.modelEndIdx > 0) ? config.modelEndIdx : config.maxNumModels  
+    // only assume one model type in this scenario
+    const idx = 0
+    const endIdx = (config.modelEndIdx > 0) ? config.modelEndIdx : config.maxNumModels[idx]  
     const modelIdx = randomIntBetween(config.modelStartIdx, endIdx)
-    const modelName = config.modelNamePrefix + modelIdx.toString()
-    const model = generateModel(config.modelType, modelName, 0, 1,
-        config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
+    const modelName = config.modelNamePrefix[idx] + modelIdx.toString()
+    const model = generateModel(config.modelType[idx], modelName, 0, 1,
+        config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
     const httpEndpoint = config.inferHttpEndpoint
     const grpcEndpoint = config.inferGrpcEndpoint
 
