@@ -118,7 +118,7 @@ func createAlibiDetectModelSettings() (*ModelSettings, error) {
 	return &ModelSettings{
 		Implementation: "mlserver_alibi_detect.AlibiDetectRuntime",
 		Parameters: &ModelParameters{
-			Uri: fmt.Sprintf("%s", "./"),
+			Uri: "./",
 		},
 	}, nil
 }
@@ -127,7 +127,7 @@ func createMLFlowModelSettings() (*ModelSettings, error) {
 	return &ModelSettings{
 		Implementation: "mlserver_mlflow.MLflowRuntime",
 		Parameters: &ModelParameters{
-			Uri: fmt.Sprintf("%s", "./"),
+			Uri: "./",
 		},
 	}, nil
 }
