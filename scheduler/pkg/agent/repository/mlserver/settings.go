@@ -30,18 +30,20 @@ func createSettingsFile(path string, modelSpec *scheduler.ModelSpec) error {
 func getModelSettings(path string, modelSpec *scheduler.ModelSpec) (*ModelSettings, error) {
 	for _, requirement := range modelSpec.Requirements {
 		switch requirement {
-		case "sklearn":
-			return createSKLearnModelSettings(path)
-		case "xgboost":
-			return createXGBoostModelSettings(path)
-		case "lightgbm":
-			return createLightGBMModelSettings(path)
 		case "alibi-detect":
 			return createAlibiDetectModelSettings()
 		case "alibi-explain":
 			return createAlibiExplainModelSettings(path)
+		case "lightgbm":
+			return createLightGBMModelSettings(path)
+		case "mlflow":
+			return createMLFlowModelSettings()
 		case "python":
 			return createCustomPythonModelSettings(path)
+		case "sklearn":
+			return createSKLearnModelSettings(path)
+		case "xgboost":
+			return createXGBoostModelSettings(path)
 		}
 	}
 	return nil, fmt.Errorf("Can't create model-settings from requirements %v", modelSpec.Requirements)
@@ -116,7 +118,16 @@ func createAlibiDetectModelSettings() (*ModelSettings, error) {
 	return &ModelSettings{
 		Implementation: "mlserver_alibi_detect.AlibiDetectRuntime",
 		Parameters: &ModelParameters{
-			Uri: fmt.Sprintf(".%s", "./"),
+			Uri: fmt.Sprintf("%s", "./"),
+		},
+	}, nil
+}
+
+func createMLFlowModelSettings() (*ModelSettings, error) {
+	return &ModelSettings{
+		Implementation: "mlserver_mlflow.MLflowRuntime",
+		Parameters: &ModelParameters{
+			Uri: fmt.Sprintf("%s", "./"),
 		},
 	}, nil
 }

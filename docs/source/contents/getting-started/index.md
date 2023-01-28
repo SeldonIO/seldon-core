@@ -4,6 +4,11 @@
  * [Install locally with Docker Compose](./docker-installation/index.md)
  * [Install onto a Kubernetes cluster](./kubernetes-installation/index.md)
 
+Once installed:
+
+  * Try the existing [examples](../examples/index.md).
+  * Save your own [model artifact](../models/inference-artifacts/index.html#saving-model-artifacts) to test. 
+
 
 ## Core Concepts
 

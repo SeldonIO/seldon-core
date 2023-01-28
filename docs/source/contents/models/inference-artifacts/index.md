@@ -92,55 +92,55 @@ For many machine learning artifacts you can simply save them to a folder and loa
   - Custom Model Settings
 
 * - Alibi-Detect
-  - [Save model using Alibi-Detect](https://docs.seldon.io/projects/alibi-detect/en/stable/overview/saving.html)
+  - [Save model using Alibi-Detect](https://docs.seldon.io/projects/alibi-detect/en/stable/overview/saving.html).
   - [docs](https://docs.seldon.io/projects/alibi-detect/en/stable/)
 * - Alibi-Explain
-  - [Save model using Alibi-Explain](https://docs.seldon.io/projects/alibi/en/stable/overview/saving.html)
+  - [Save model using Alibi-Explain](https://docs.seldon.io/projects/alibi/en/stable/overview/saving.html).
   - [docs](https://docs.seldon.io/projects/alibi/en/stable/)
 * - DALI
-  - 
+  - Follow the Triton docs to create a config.pbtxt and model folder with artifact.
   - [docs](https://github.com/triton-inference-server/dali_backend)
 * - Huggingface
-  - Create an MLServer model-settings.json with the Huggingface model required
+  - Create an MLServer `model-settings.json` with the Huggingface model required
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/huggingface/README.md)
 * - LightGBM
-  - Save model to file with extension`.bst`
+  - Save model to file with extension`.bst`.
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/lightgbm/README.md)
 * - MLFlow
-  - 
+  - Use the created `artifacts/model` folder from your training run.
   - [docs](https://github.com/SeldonIO/MLServer/tree/master/runtimes/mlflow)
 * - ONNX
-  - 
+  - Save you model with name `model.onnx`.
   - [docs](https://github.com/triton-inference-server/onnxruntime_backend)
 * - OpenVino
-  - 
+  - Follow the Triton docs to create your model artifacts.
   - [docs](https://github.com/triton-inference-server/openvino_backend)
 * - Custom MLServer Python
   - Create a python file with a class that extends `MLModel`.
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/custom/README.md)
 * - Custom Triton Python
-  - 
+  - Follow the Triton docs to create your `config.pbtxt` and associated python files.
   - [docs](https://github.com/triton-inference-server/python_backend)
 * - PyTorch
-  - 
+  - Create a Triton `config.pbtxt` describing inputs and outputs and place traced torchscript in versioned subfolder.
   - [docs](https://github.com/triton-inference-server/pytorch_backend)
 * - SKLearn
-  - Save model via joblib to a file with extension `.joblib` or with pickle to a file with extension `.pkl` or `.pickle`
+  - Save model via joblib to a file with extension `.joblib` or with pickle to a file with extension `.pkl` or `.pickle`.
   - [docs](https://github.com/SeldonIO/MLServer/tree/master/runtimes/sklearn)
 * - Spark Mlib
-  - 
+  - Follow the MLServer docs.
   - [docs](https://github.com/SeldonIO/MLServer/tree/master/runtimes/mllib)
 * - Tensorflow
-  - Save model as Saved Model format. If using graphdef format you will need to create Triton config.pbtxt.
+  - Save model in "Saved Model" format as `model.savedodel`. If using graphdef format you will need to create Triton config.pbtxt and place your model in a numbered sub folder.
   - [docs](https://github.com/triton-inference-server/tensorflow_backend)
 * - TensorRT
-  - 
+  - Follow the Triton docs to create your model artifacts.
   - [docs](https://github.com/triton-inference-server/tensorrt_backend)
 * - Triton FIL
-  - 
+  - Follow the Triton docs to create your model artifacts.
   - [docs](https://github.com/triton-inference-server/fil_backend)
 * - XGBoost
-  - Save model to file with extension`.bst` or `.json`
+  - Save model to file with extension`.bst` or `.json`.
   - [docs](https://github.com/SeldonIO/MLServer/blob/master/docs/examples/xgboost/README.md)
 ```
 
