@@ -274,9 +274,14 @@ func (s *Server) Sync(modelName string) {
 			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
+				if errState := s.store.UpdateModelState(
+					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
+					store.LoadRequested, store.LoadFailed, err.Error()); errState != nil {
+					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
+				}
 				continue
 			}
-			err := s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "")
+			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -301,9 +306,14 @@ func (s *Server) Sync(modelName string) {
 			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
+				if errState := s.store.UpdateModelState(
+					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
+					store.UnloadRequested, store.UnloadFailed, err.Error()); errState != nil {
+					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
+				}
 				continue
 			}
-			err := s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "")
+			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "")
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -419,14 +429,23 @@ func (s *Server) StopAgentStreams() {
 }
 
 func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
 	if err != nil {
 		return err
 	}
+
+	// we have to reschedule models that are loaded on the incoming agent
+	// this is because we can have a network glitch that causes the communication between the agent and the scheduler
+	// to drop and the scheduler loading the models on other servers.
+	// we need then to reconcile this case
+	for _, model := range request.LoadedModels {
+		modelName := model.GetModel().GetMeta().GetName()
+		if err := s.scheduler.Schedule(model.GetModel().GetMeta().GetName()); err != nil {
+			s.logger.WithError(err).Warnf("Failed to reschedule model %s from agent starting with state", modelName)
+		}
+	}
+
 	_, err = s.scheduler.ScheduleFailedModels()
 	if err != nil {
 		return err

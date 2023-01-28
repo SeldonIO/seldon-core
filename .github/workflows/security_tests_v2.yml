@@ -50,7 +50,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldonv2-controller:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=operator/Dockerfile
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
   security-image-scheduler:
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-scheduler:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.scheduler
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.scheduler
 
   security-image-data-flow-engine:
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-dataflow-engine:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.dataflow
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.dataflow
 
   security-image-envoy:
     runs-on: ubuntu-latest
@@ -101,7 +101,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-envoy:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.envoy
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.envoy
 
   security-image-modelgateway:
     runs-on: ubuntu-latest
@@ -118,7 +118,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-modelgateway:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.modelgateway
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.modelgateway
 
   security-image-pipelinegateway:
     runs-on: ubuntu-latest
@@ -135,7 +135,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-pipelinegateway:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.pipelinegateway
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.pipelinegateway
 
   security-image-agent:
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-agent:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.agent
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.agent
 
   security-image-rclone:
     runs-on: ubuntu-latest
@@ -169,7 +169,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-rclone:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=scheduler/Dockerfile.rclone
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=scheduler/Dockerfile.rclone
 
   security-image-hodometer:
     runs-on: ubuntu-latest
@@ -186,4 +186,4 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: seldonio/seldon-hodometer:${{ steps.docker-tag.outputs.value }}
-        args: --fail-on=upgradable --severity-threshold=high --file=hodometer/Dockerfile.hodometer
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=hodometer/Dockerfile.hodometer

@@ -17,6 +17,7 @@ limitations under the License.
 package agent
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -120,11 +121,12 @@ func (m *mockStore) GetAllModels() []string {
 }
 
 type mockGrpcStream struct {
+	err error
 	grpc.ServerStream
 }
 
 func (ms *mockGrpcStream) Send(msg *pb.ModelOperationMessage) error {
-	return nil
+	return ms.err
 }
 
 func TestSync(t *testing.T) {
@@ -172,6 +174,34 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
+			name:      "simple - error load",
+			modelName: "iris",
+			agents: map[ServerKey]*AgentSubscriber{
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{err: fmt.Errorf("error send")}},
+			},
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.LoadRequested},
+								}, false, store.ModelProgressing),
+						},
+					},
+				},
+			},
+			expectedVersionStates: []ExpectedVersionState{
+				{
+					version: 1,
+					expectedStates: map[int]store.ReplicaStatus{
+						1: {State: store.LoadFailed},
+					},
+				},
+			},
+		},
+		{
 			name:      "simple - unload",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
@@ -195,6 +225,34 @@ func TestSync(t *testing.T) {
 					version: 1,
 					expectedStates: map[int]store.ReplicaStatus{
 						1: {State: store.Unloading},
+					},
+				},
+			},
+		},
+		{
+			name:      "simple - error unload",
+			modelName: "iris",
+			agents: map[ServerKey]*AgentSubscriber{
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{err: fmt.Errorf("error send")}},
+			},
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.UnloadRequested},
+								}, false, store.ModelTerminating),
+						},
+					},
+				},
+			},
+			expectedVersionStates: []ExpectedVersionState{
+				{
+					version: 1,
+					expectedStates: map[int]store.ReplicaStatus{
+						1: {State: store.UnloadFailed},
 					},
 				},
 			},

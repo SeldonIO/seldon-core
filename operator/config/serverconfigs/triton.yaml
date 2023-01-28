@@ -142,13 +142,13 @@ spec:
           port: server-http
       readinessProbe:
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         initialDelaySeconds: 5
         periodSeconds: 5          
       startupProbe:
         httpGet:
-          path: /v2/health/ready
+          path: /v2/health/live
           port: server-http
         failureThreshold: 10
         periodSeconds: 10
