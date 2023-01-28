@@ -1,8 +1,22 @@
 ## Seldon Model Zoo
 
-Examples of various model artefact types from various frameworks.
+Examples of various model artefact types from various frameworks running under Seldon Core V2.
+
+ * SKlearn
+ * Tensorflow
+ * XGBoost
+ * ONNX
+ * Lightgbm
+ * MLFlow
+ * PyTorch
+
+```python
+import numpy as np
+```
 
 ### SKLearn Iris Classification Model
+
+The training code for this model can be found at `./scripts/models/iris`
 
 ```bash
 cat ./models/sklearn-iris-gs.yaml
@@ -213,7 +227,7 @@ infer("cifar10",4, "normal")
 ```
 
 ```
-![png](model-zoo_files/model-zoo_17_0.png)
+![png](model-zoo_files/model-zoo_18_0.png)
 
 ```
 
@@ -232,6 +246,8 @@ seldon model unload cifar10
 ```
 
 ### XGBoost Model
+
+The training code for this model can be found at `./scripts/models/income-xgb`
 
 ```bash
 cat ./models/income-xgb.yaml
@@ -304,7 +320,9 @@ seldon model unload income-xgb
 
 ```
 
-## ONNX Model
+## ONNX MNIST Model
+
+This model is a pretrained model as defined in `./scripts/models/Makefile` target `mnist-onnx`
 
 ```python
 import matplotlib.pyplot as plt
@@ -314,6 +332,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from torchvision import transforms
 from torch.utils.data import DataLoader
+import numpy as np
 training_data = MNIST(
     root=".",
     download=True,
@@ -322,67 +341,6 @@ training_data = MNIST(
               transforms.ToTensor()
           ])
 )
-
-```
-
-```
-/home/clive/miniconda3/envs/scv2/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
-  warn(f"Failed to load image Python extension: {e}")
-
-```
-
-```
-Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ./MNIST/raw/train-images-idx3-ubyte.gz
-
-```
-
-```
-0%|          | 0/9912422 [00:00<?, ?it/s]
-
-```
-
-```
-Extracting ./MNIST/raw/train-images-idx3-ubyte.gz to ./MNIST/raw
-
-Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ./MNIST/raw/train-labels-idx1-ubyte.gz
-
-```
-
-```
-0%|          | 0/28881 [00:00<?, ?it/s]
-
-```
-
-```
-Extracting ./MNIST/raw/train-labels-idx1-ubyte.gz to ./MNIST/raw
-
-Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ./MNIST/raw/t10k-images-idx3-ubyte.gz
-
-```
-
-```
-0%|          | 0/1648877 [00:00<?, ?it/s]
-
-```
-
-```
-Extracting ./MNIST/raw/t10k-images-idx3-ubyte.gz to ./MNIST/raw
-
-Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz to ./MNIST/raw/t10k-labels-idx1-ubyte.gz
-
-```
-
-```
-0%|          | 0/4542 [00:00<?, ?it/s]
-
-```
-
-```
-Extracting ./MNIST/raw/t10k-labels-idx1-ubyte.gz to ./MNIST/raw
 
 ```
 
@@ -397,7 +355,7 @@ def infer_mnist():
     data = x.cpu().numpy()
     reqJson["inputs"][0]["data"] = data.flatten().tolist()
     reqJson["inputs"][0]["shape"] = [1, 1, 28, 28]
-    headers = {"Content-Type": "application/json", "seldon-model":"mnist"}
+    headers = {"Content-Type": "application/json", "seldon-model":"mnist-onnx"}
     response_raw = requests.post(url, json=reqJson, headers=headers)
     show_mnist(x)
     probs = np.array(response_raw.json()["outputs"][0]["data"])
@@ -411,14 +369,14 @@ def show_mnist(X):
 ```
 
 ```bash
-cat ./models/mnist.yaml
+cat ./models/mnist-onnx.yaml
 ```
 
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
-  name: mnist
+  name: mnist-onnx
 spec:
   storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/mnist-onnx"
   requirements:
@@ -427,7 +385,7 @@ spec:
 ```
 
 ```bash
-seldon model load -f ./models/mnist.yaml
+seldon model load -f ./models/mnist-onnx.yaml
 ```
 
 ```json
@@ -436,7 +394,7 @@ seldon model load -f ./models/mnist.yaml
 ```
 
 ```bash
-seldon model status mnist -w ModelAvailable | jq -M .
+seldon model status mnist-onnx -w ModelAvailable | jq -M .
 ```
 
 ```json
@@ -449,16 +407,27 @@ infer_mnist()
 ```
 
 ```
-![png](model-zoo_files/model-zoo_31_0.png)
+![png](model-zoo_files/model-zoo_32_0.png)
 
 ```
 
 ```
-2
+7
+
+```
+
+```bash
+seldon model unload mnist-onnx
+```
+
+```json
+{}
 
 ```
 
 ### LightGBM Model
+
+The training code for this model can be found at `./scripts/models/income-lgb`
 
 ```bash
 cat ./models/income-lgb.yaml
@@ -532,6 +501,8 @@ seldon model unload income-lgb
 ```
 
 ### MLFlow Wine Model
+
+The training code for this model can be found at `./scripts/models/wine-mlflow`
 
 ```bash
 cat ./models/wine-mlflow.yaml
@@ -652,6 +623,110 @@ print(response_raw.json())
 
 ```bash
 seldon model unload wine
+```
+
+```json
+{}
+
+```
+
+## Pytorch MNIST Model
+
+This example model is downloaded and trained in `./scripts/models/Makefile` target `mnist-pytorch`
+
+```python
+import matplotlib.pyplot as plt
+import json
+import requests
+from torchvision.datasets import MNIST
+from torchvision.transforms import ToTensor
+from torchvision import transforms
+from torch.utils.data import DataLoader
+training_data = MNIST(
+    root=".",
+    download=True,
+    train=False,
+    transform = transforms.Compose([
+              transforms.ToTensor()
+          ])
+)
+
+```
+
+```python
+reqJson = json.loads('{"inputs":[{"name":"x__0","data":[],"datatype":"FP32","shape":[]}]}')
+url = "http://0.0.0.0:9000/v2/models/model/infer"
+dl = DataLoader(training_data, batch_size=1, shuffle=False)
+dlIter = iter(dl)
+
+def infer_mnist():
+    x, y = next(dlIter)
+    data = x.cpu().numpy()
+    reqJson["inputs"][0]["data"] = data.flatten().tolist()
+    reqJson["inputs"][0]["shape"] = [1, 1, 28, 28]
+    headers = {"Content-Type": "application/json", "seldon-model":"mnist-pytorch"}
+    response_raw = requests.post(url, json=reqJson, headers=headers)
+    show_mnist(x)
+    probs = np.array(response_raw.json()["outputs"][0]["data"])
+    print(probs.argmax(axis=0))
+
+
+def show_mnist(X):
+    plt.imshow(X.reshape(28, 28))
+    plt.axis("off")
+    plt.show()
+```
+
+```bash
+cat ./models/mnist-pytorch.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: mnist-pytorch
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-pytorch"
+  requirements:
+  - pytorch
+
+```
+
+```bash
+seldon model load -f ./models/mnist-pytorch.yaml
+```
+
+```json
+{}
+
+```
+
+```bash
+seldon model status mnist-pytorch -w ModelAvailable | jq -M .
+```
+
+```json
+{}
+
+```
+
+```python
+infer_mnist()
+```
+
+```
+![png](model-zoo_files/model-zoo_52_0.png)
+
+```
+
+```
+7
+
+```
+
+```bash
+seldon model unload mnist-pytorch
 ```
 
 ```json

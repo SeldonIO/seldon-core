@@ -1,0 +1,23 @@
+name: "classifier"
+platform: "pytorch_libtorch"
+max_batch_size: 512
+input [
+    {
+        name: "x__0"
+        data_type: TYPE_FP32
+        dims: [ 1, 28, 28 ]
+    }
+]
+output [
+    {
+        name: "y__0"
+        data_type: TYPE_FP32
+        dims: [ 10 ]
+    }
+]
+parameters: {
+key: "INFERENCE_MODE"
+    value: {
+    string_value: "true"
+    }
+}

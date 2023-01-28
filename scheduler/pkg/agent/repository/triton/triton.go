@@ -42,12 +42,17 @@ func NewTritonRepositoryHandler(logger log.FieldLogger) *TritonRepositoryHandler
 	return &TritonRepositoryHandler{logger: logger.WithField("name", "TritonRepositoryHandler")}
 }
 
-// Copy config file to dst if it doesn't exist and set modelName
+// Copy config file to dst creating if required and setting the correct model name
 func (t *TritonRepositoryHandler) UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error {
 	configFilePathRepo := filepath.Join(modelRepoPath, TritonConfigFile)
+	// look for config.pbtxt in folder above or current folder
 	configFilePathFromVersion := filepath.Join(filepath.Dir(versionPath), TritonConfigFile)
 	if _, err := os.Stat(configFilePathFromVersion); err != nil {
-		return t.createConfigFileWithName(modelName, configFilePathRepo)
+		configFilePathFromVersion = filepath.Join(versionPath, TritonConfigFile)
+		if _, err := os.Stat(configFilePathFromVersion); err != nil {
+			// Create basic config.pbtxt as we didn't find it
+			return t.createConfigFileWithName(modelName, configFilePathRepo)
+		}
 	}
 	// Always copy config.pbtxt overwriting existing as we may have changes in configuration
 	err := copy2.Copy(configFilePathFromVersion, configFilePathRepo)
@@ -148,7 +153,6 @@ func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (st
 	if highestVersionFolderNum > 0 { // Triton versions need to be >0
 		return highestVersionPath, nil
 	}
-	//return "", fmt.Errorf("Failed to find triton model version folder in path %s", modelPath)
 	//If we don't find a version assume folder is the default version we want
 	return modelPath, nil
 }

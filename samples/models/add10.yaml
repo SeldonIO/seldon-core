@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python

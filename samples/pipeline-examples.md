@@ -657,7 +657,7 @@ kind: Model
 metadata:
   name: conditional
 spec:
-  storageUri: "gs://seldon-models/triton/conditional"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/conditional"
   requirements:
   - triton
   - python
@@ -667,7 +667,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -677,7 +677,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -762,7 +762,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "tfsimple-conditional",
-        "uid": "ceb1k7j3gshc73fmvpv0",
+        "uid": "cfajkd95jl3s73dcqflg",
         "version": 1,
         "steps": [
           {
@@ -800,7 +800,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:57:50.612064319Z",
+        "lastChangeTimestamp": "2023-01-28T15:07:33.574747475Z",
         "modelsReady": true
       }
     }

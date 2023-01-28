@@ -29,15 +29,15 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - LightGBM
   - MLServer
   - `lightgbm`
-  - TBC
+  - [example](../../examples/model-zoo.html#lightgbm-model)
 * - MLFlow
   - MLServer
   - `mlflow`
-  - TBC
+  - [example](../../examples/model-zoo.html#mlflow-wine-model)
 * - ONNX
   - Triton
   - `onnx`
-  - TBC
+  - [example](../../examples/model-zoo.html#onnx-mnist-model)
 * - OpenVino
   - Triton
   - `openvino`
@@ -49,11 +49,11 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - Custom Python
   - Triton
   - `python, triton`
-  - TBC
+  - [example](https://github.com/SeldonIO/triton-python-examples)
 * - PyTorch
   - Triton
   - `pytorch`
-  - TBC
+  - [example](../../examples/model-zoo.html#pytorch-mnist-model)
 * - SKLearn
   - MLServer
   - `sklearn`
@@ -77,7 +77,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - XGBoost
   - MLServer
   - `xgboost`
-  - TBC
+  - [example](../../examples/model-zoo.html#xgboost-model)
 ```
 
 ## Saving Model artifacts
@@ -122,7 +122,7 @@ For many machine learning artifacts you can simply save them to a folder and loa
   - Follow the Triton docs to create your `config.pbtxt` and associated python files.
   - [docs](https://github.com/triton-inference-server/python_backend)
 * - PyTorch
-  - Create a Triton `config.pbtxt` describing inputs and outputs and place traced torchscript in versioned subfolder.
+  - Create a Triton `config.pbtxt` describing inputs and outputs and place traced torchscript in folder as `model.pt`.
   - [docs](https://github.com/triton-inference-server/pytorch_backend)
 * - SKLearn
   - Save model via joblib to a file with extension `.joblib` or with pickle to a file with extension `.pkl` or `.pickle`.
@@ -146,7 +146,7 @@ For many machine learning artifacts you can simply save them to a folder and loa
 
 ## Custom MLServer Model Settings
 
-For [MLServer](https://github.com/SeldonIO/MLServer) targeted models you can create a model-settings.json file to help MLServer load your model and place this alongside your artifact. See the [MLServer project](https://mlserver.readthedocs.io/en/latest/reference/model-settings.html)  for details.
+For [MLServer](https://github.com/SeldonIO/MLServer) targeted models you can create a `model-settings.json` file to help MLServer load your model and place this alongside your artifact. See the [MLServer project](https://mlserver.readthedocs.io/en/latest/reference/model-settings.html)  for details.
 
 ## Custom Triton Configuration
 
