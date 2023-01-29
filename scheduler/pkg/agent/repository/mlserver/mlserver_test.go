@@ -605,11 +605,12 @@ func TestFindModelVersionFolder(t *testing.T) {
 			}
 			logger := log.New()
 			m := NewMLServerRepositoryHandler(logger)
-			foundPath, err := m.FindModelVersionFolder("iris", test.version, path)
+			foundPath, found, err := m.FindModelVersionFolder("iris", test.version, path)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+				g.Expect(found).To(BeTrue())
 				g.Expect(foundPath).ToNot(BeNil())
 				pathBase := filepath.Base(foundPath)
 				g.Expect(pathBase).To(Equal(test.expectedPathDir))

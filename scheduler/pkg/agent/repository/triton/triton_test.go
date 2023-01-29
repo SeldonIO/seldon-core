@@ -38,6 +38,7 @@ func TestFindModelVersionFolder(t *testing.T) {
 		artifactVersion *uint32
 		found           bool
 		expectedFolder  string
+		error           bool
 	}
 
 	getArtifactVersion := func(version uint32) *uint32 {
@@ -50,6 +51,7 @@ func TestFindModelVersionFolder(t *testing.T) {
 			artifactVersion: getArtifactVersion(1),
 			found:           true,
 			expectedFolder:  "1",
+			error:           false,
 		},
 		{
 			name:            "MidVersion",
@@ -57,24 +59,28 @@ func TestFindModelVersionFolder(t *testing.T) {
 			artifactVersion: getArtifactVersion(2),
 			found:           true,
 			expectedFolder:  "2",
+			error:           false,
 		},
 		{
 			name:           "HighestVersion",
 			folders:        []string{"1", "2", "3"},
 			found:          true,
 			expectedFolder: "3",
+			error:          false,
 		},
 		{
 			name:           "NoVersionFolders",
 			folders:        []string{},
 			found:          false,
 			expectedFolder: "hash",
+			error:          false,
 		},
 		{
 			name:            "NoVersionFoldersArtifactVersion",
 			folders:         []string{"x"},
 			artifactVersion: getArtifactVersion(2),
 			found:           false,
+			error:           true,
 		},
 	}
 
@@ -92,12 +98,17 @@ func TestFindModelVersionFolder(t *testing.T) {
 			logger := log.New()
 			triton := TritonRepositoryHandler{logger: logger}
 			foundPath, found, err := triton.FindModelVersionFolder("foo", test.artifactVersion, modelFolder)
-			if !test.found {
+			if test.error {
+				g.Expect(err).ToNot(BeNil())
 				g.Expect(found).To(BeFalse())
-				g.Expect(foundPath).To(Equal(modelFolder))
 			} else {
-				g.Expect(err).To(BeNil())
-				g.Expect(filepath.Base(foundPath)).To(Equal(test.expectedFolder))
+				if !test.found {
+					g.Expect(found).To(BeFalse())
+					g.Expect(foundPath).To(Equal(modelFolder))
+				} else {
+					g.Expect(err).To(BeNil())
+					g.Expect(filepath.Base(foundPath)).To(Equal(test.expectedFolder))
+				}
 			}
 		})
 	}
