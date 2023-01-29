@@ -30,9 +30,9 @@ import (
 )
 
 type ModelRepositoryHandler interface {
-	FindModelVersionFolder(modelName string, version *uint32, path string) (string, error)
+	FindModelVersionFolder(modelName string, version *uint32, path string) (string, bool, error)
 	UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error
-	UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error
+	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
 }
@@ -89,7 +89,7 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Find the version folder we want
-	modelVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(modelName, artifactVersion, rclonePath)
+	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(modelName, artifactVersion, rclonePath)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Update global model configuration
-	err = r.modelrepositoryHandler.UpdateModelRepository(modelName, modelVersionFolder, modelPathInRepo)
+	err = r.modelrepositoryHandler.UpdateModelRepository(modelName, modelVersionFolder, foundVersionFolder, modelPathInRepo)
 	if err != nil {
 		return nil, err
 	}

@@ -67,7 +67,7 @@ func TestFindModelVersionFolder(t *testing.T) {
 		{
 			name:           "NoVersionFolders",
 			folders:        []string{},
-			found:          true,
+			found:          false,
 			expectedFolder: "hash",
 		},
 		{
@@ -91,10 +91,10 @@ func TestFindModelVersionFolder(t *testing.T) {
 			}
 			logger := log.New()
 			triton := TritonRepositoryHandler{logger: logger}
-			foundPath, err := triton.FindModelVersionFolder("foo", test.artifactVersion, modelFolder)
+			foundPath, found, err := triton.FindModelVersionFolder("foo", test.artifactVersion, modelFolder)
 			if !test.found {
-				g.Expect(err).ToNot(BeNil())
-				g.Expect(foundPath).To(Equal(""))
+				g.Expect(found).To(BeFalse())
+				g.Expect(foundPath).To(Equal(modelFolder))
 			} else {
 				g.Expect(err).To(BeNil())
 				g.Expect(filepath.Base(foundPath)).To(Equal(test.expectedFolder))
@@ -107,10 +107,11 @@ func TestUpdateModelRepository(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name       string
-		config     *pb.ModelConfig
-		repoConfig *pb.ModelConfig
-		modelName  string
+		name            string
+		config          *pb.ModelConfig
+		repoConfig      *pb.ModelConfig
+		isVersionFolder bool
+		modelName       string
 	}
 
 	tests := []test{
@@ -176,7 +177,7 @@ func TestUpdateModelRepository(t *testing.T) {
 			versionPath := filepath.Join(rclonePath, "1")
 			logger := log.New()
 			triton := TritonRepositoryHandler{logger: logger}
-			err = triton.UpdateModelRepository(test.modelName, versionPath, repoPath)
+			err = triton.UpdateModelRepository(test.modelName, versionPath, true, repoPath)
 			g.Expect(err).To(BeNil())
 			_, err = os.Stat(repoPathConfig)
 			g.Expect(err).To(BeNil())
@@ -255,6 +256,76 @@ output [
 				g.Expect(err).To(BeNil())
 				g.Expect(proto.Equal(c, test.expected)).To(BeTrue())
 			} else {
+				g.Expect(err).ToNot(BeNil())
+			}
+		})
+	}
+}
+
+func TestCopyNonConfigFilesToModelRepo(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                 string
+		rcloneFiles          []string
+		rcloneFolders        []string
+		repoFoldersToCreate  []string
+		expectedRepoPaths    []string
+		notExpectedRepoPaths []string
+	}
+
+	tests := []test{
+		{
+			name:              "files",
+			rcloneFiles:       []string{"t"},
+			expectedRepoPaths: []string{"t"},
+		},
+		{
+			name:                 "files and folders",
+			rcloneFiles:          []string{"t"},
+			rcloneFolders:        []string{"folder"},
+			expectedRepoPaths:    []string{"t"},
+			notExpectedRepoPaths: []string{"folder"},
+		},
+		{
+			name:                 "files and folders with config.pbtxt and existing folders in repo",
+			rcloneFiles:          []string{"t", "config.pbtxt"},
+			rcloneFolders:        []string{"folder"},
+			repoFoldersToCreate:  []string{"1"},
+			expectedRepoPaths:    []string{"t", "1"},
+			notExpectedRepoPaths: []string{"folder", "config.pbtxt"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rclonePath := t.TempDir()
+			repoPath := t.TempDir()
+			for _, filename := range test.rcloneFiles {
+				path := filepath.Join(rclonePath, filename)
+				err := os.WriteFile(path, []byte{}, fs.ModePerm)
+				g.Expect(err).To(BeNil())
+			}
+			for _, filename := range test.rcloneFolders {
+				path := filepath.Join(rclonePath, filename)
+				err := os.MkdirAll(path, os.ModePerm)
+				g.Expect(err).To(BeNil())
+			}
+			for _, filename := range test.repoFoldersToCreate {
+				path := filepath.Join(repoPath, filename)
+				err := os.MkdirAll(path, os.ModePerm)
+				g.Expect(err).To(BeNil())
+			}
+			err := copyNonConfigFilesToModelRepo(rclonePath, repoPath)
+			g.Expect(err).To(BeNil())
+			for _, filename := range test.expectedRepoPaths {
+				path := filepath.Join(repoPath, filename)
+				_, err := os.Stat(path)
+				g.Expect(err).To(BeNil())
+			}
+			for _, filename := range test.notExpectedRepoPaths {
+				path := filepath.Join(repoPath, filename)
+				_, err := os.Stat(path)
 				g.Expect(err).ToNot(BeNil())
 			}
 		})

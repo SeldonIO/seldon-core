@@ -10,9 +10,7 @@ Examples of various model artefact types from various frameworks running under S
  * MLFlow
  * PyTorch
 
-```python
-import numpy as np
-```
+Python requirements in `model-zoo-requirements.txt`
 
 ### SKLearn Iris Classification Model
 
@@ -34,8 +32,6 @@ spec:
   memory: 100Ki
 
 ```
-
-Load the model
 
 ```bash
 seldon model load -f ./models/sklearn-iris-gs.yaml
@@ -64,7 +60,7 @@ seldon model infer iris \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "fa880d0d-2262-42bf-b5b1-f083b891fb81",
+	"id": "8af36906-c363-4459-9dbb-e22946f08d99",
 	"parameters": {},
 	"outputs": [
 		{
@@ -108,8 +104,19 @@ tf.keras.backend.clear_session()
 ```
 
 ```
-2023-01-27 18:51:43.394466: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-2023-01-27 18:51:43.394480: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2023-01-29 13:52:09.182778: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-01-29 13:52:09.262542: I tensorflow/core/util/port.cc:104] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2023-01-29 13:52:09.265025: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2023-01-29 13:52:09.265036: I tensorflow/compiler/xla/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2023-01-29 13:52:09.638889: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+2023-01-29 13:52:09.638932: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+2023-01-29 13:52:09.638936: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+2023-01-29 13:52:10.249978: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
+2023-01-29 13:52:10.249993: W tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:265] failed call to cuInit: UNKNOWN ERROR (303)
+2023-01-29 13:52:10.250005: I tensorflow/compiler/xla/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (clive-ThinkPad-P1-Gen-5): /proc/driver/nvidia/version does not exist
+2023-01-29 13:52:10.250610: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 
 ```
 
@@ -202,8 +209,6 @@ spec:
 
 ```
 
-Load the model.
-
 ```bash
 seldon model load -f ./models/cifar10-no-config.yaml
 ```
@@ -227,7 +232,7 @@ infer("cifar10",4, "normal")
 ```
 
 ```
-![png](model-zoo_files/model-zoo_18_0.png)
+![png](model-zoo_files/model-zoo_15_0.png)
 
 ```
 
@@ -292,7 +297,7 @@ seldon model infer income-xgb \
 {
 	"model_name": "income-xgb_1",
 	"model_version": "1",
-	"id": "bc128d69-6156-4df7-9ba6-dbbf6ea5bc3c",
+	"id": "c3b6b1e6-2a1f-428b-baaf-9eea65fc5123",
 	"parameters": {},
 	"outputs": [
 		{
@@ -407,7 +412,7 @@ infer_mnist()
 ```
 
 ```
-![png](model-zoo_files/model-zoo_32_0.png)
+![png](model-zoo_files/model-zoo_29_0.png)
 
 ```
 
@@ -472,7 +477,7 @@ seldon model infer income-lgb \
 {
 	"model_name": "income-lgb_1",
 	"model_version": "1",
-	"id": "4dde5b4e-a6c8-411e-a53d-0d67279b241d",
+	"id": "566b6127-134d-4cea-9244-62d17bb5328f",
 	"parameters": {},
 	"outputs": [
 		{
@@ -617,7 +622,7 @@ print(response_raw.json())
 ```
 
 ```json
-{'model_name': 'wine_1', 'model_version': '1', 'id': '0d5570ac-539e-4846-b945-ac5742e781f8', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
+{'model_name': 'wine_1', 'model_version': '1', 'id': '31e35628-ab5e-4e70-975d-46fe5a1d343f', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
 
 ```
 
@@ -716,12 +721,12 @@ infer_mnist()
 ```
 
 ```
-![png](model-zoo_files/model-zoo_52_0.png)
+![png](model-zoo_files/model-zoo_49_0.png)
 
 ```
 
 ```
-7
+1
 
 ```
 

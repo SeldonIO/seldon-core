@@ -90,7 +90,7 @@ type ModelParameters struct {
 }
 
 // No need to update anything at top level for mlserver
-func (m *MLServerRepositoryHandler) UpdateModelRepository(_ string, _ string, _ string) error {
+func (m *MLServerRepositoryHandler) UpdateModelRepository(_ string, _ string, _ bool, _ string) error {
 	return nil
 }
 
@@ -113,36 +113,36 @@ func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version
 // 1. a model repo with a default model at top level - always taken irrespective of whether version specified
 // 2. a model repo with a matching version folder to version passed in
 // 3. the highest numbered version folder
-func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, version *uint32, path string) (string, error) {
+func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, version *uint32, path string) (string, bool, error) {
 	logger := m.logger.WithField("func", "FindModelVersionFolder")
 	// If there is just 1 model version we will take that irrespective of foldername or model-settings fields
 	mvp, err := m.getDefaultModelSettingsPath(path)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	if mvp == "" {
 		if version != nil {
 			mvp, err = m.findModelVersionInPath(path, *version)
 			if err != nil {
-				return "", err
+				return "", false, err
 			}
 		} else {
 			// Find highest numbered version folder
 			mvp, err = m.findHighestVersionInPath(path)
 			if err != nil {
-				return "", err
+				return "", false, err
 			}
 		}
 	}
 	// Return top level folder if we can't find a model-settings.json and are not looking for a specific version
 	if mvp == "" {
 		if version == nil {
-			return path, nil
+			return path, false, nil
 		}
-		return "", fmt.Errorf("Failed to find an mlserver settings file model in %s for %s for passed in version %v", path, modelName, version)
+		return "", false, fmt.Errorf("Failed to find an mlserver settings file model in %s for %s for passed in version %v", path, modelName, version)
 	} else {
 		logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
-		return mvp, nil
+		return mvp, true, nil
 	}
 }
 

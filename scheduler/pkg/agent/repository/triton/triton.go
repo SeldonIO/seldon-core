@@ -42,20 +42,61 @@ func NewTritonRepositoryHandler(logger log.FieldLogger) *TritonRepositoryHandler
 	return &TritonRepositoryHandler{logger: logger.WithField("name", "TritonRepositoryHandler")}
 }
 
+func copyNonConfigFilesToModelRepo(src string, dst string) error {
+	err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && src != path { //Don't descend into directories
+			return filepath.SkipDir
+		}
+		// Copy non- config.pbtxt files to dst folder
+		if !info.IsDir() && filepath.Base(path) != TritonConfigFile {
+			err := copy2.Copy(path, filepath.Join(dst, filepath.Base(path)))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return err
+}
+
 // Copy config file to dst creating if required and setting the correct model name
-func (t *TritonRepositoryHandler) UpdateModelRepository(modelName string, versionPath, modelRepoPath string) error {
+func (t *TritonRepositoryHandler) UpdateModelRepository(modelName string, rclonePath string, isVersionFolder bool, modelRepoPath string) error {
 	configFilePathRepo := filepath.Join(modelRepoPath, TritonConfigFile)
-	// look for config.pbtxt in folder above or current folder
-	configFilePathFromVersion := filepath.Join(filepath.Dir(versionPath), TritonConfigFile)
-	if _, err := os.Stat(configFilePathFromVersion); err != nil {
-		configFilePathFromVersion = filepath.Join(versionPath, TritonConfigFile)
-		if _, err := os.Stat(configFilePathFromVersion); err != nil {
+	var configFilePath string
+	if isVersionFolder {
+		t.logger.Infof("Copy files from versioned folder %s to %s", filepath.Dir(rclonePath), modelRepoPath)
+		// copy all non-config.pbtxt files from folder above version to repo folder
+		err := copyNonConfigFilesToModelRepo(filepath.Dir(rclonePath), modelRepoPath)
+		if err != nil {
+			return err
+		}
+		// look for config.pbtxt in folder above of current folder if this is a version folder
+		configFilePath = filepath.Join(filepath.Dir(rclonePath), TritonConfigFile)
+		if _, err := os.Stat(configFilePath); err != nil {
+			// Create basic config.pbtxt as we didn't find it
+			return t.createConfigFileWithName(modelName, configFilePathRepo)
+		}
+	} else {
+		t.logger.Infof("Copy files from non-versioned folder %s to %s", rclonePath, modelRepoPath)
+		// copy all non-config.pbtxt files from folder to repo folder
+		err := copyNonConfigFilesToModelRepo(rclonePath, modelRepoPath)
+		if err != nil {
+			return err
+		}
+		// look for config.pbtxt in same folder as model artifacts
+		configFilePath = filepath.Join(rclonePath, TritonConfigFile)
+		if _, err := os.Stat(configFilePath); err != nil {
 			// Create basic config.pbtxt as we didn't find it
 			return t.createConfigFileWithName(modelName, configFilePathRepo)
 		}
 	}
+
+	// If we are here we found a config.pbtxt
 	// Always copy config.pbtxt overwriting existing as we may have changes in configuration
-	err := copy2.Copy(configFilePathFromVersion, configFilePathRepo)
+	err := copy2.Copy(configFilePath, configFilePathRepo)
 	if err != nil {
 		return err
 	}
@@ -85,7 +126,7 @@ func (t *TritonRepositoryHandler) updateModelNameInConfig(modelName string, path
 	return saveConfigFile(path, s)
 }
 
-func (t *TritonRepositoryHandler) FindModelVersionFolder(_ string, version *uint32, path string) (string, error) {
+func (t *TritonRepositoryHandler) FindModelVersionFolder(_ string, version *uint32, path string) (string, bool, error) {
 	if version != nil {
 		return t.findModelVersionInPath(path, *version)
 	} else {
@@ -98,7 +139,7 @@ func (t *TritonRepositoryHandler) UpdateModelVersion(_ string, _ uint32, _ strin
 	return nil
 }
 
-func (t *TritonRepositoryHandler) findModelVersionInPath(modelPath string, version uint32) (string, error) {
+func (t *TritonRepositoryHandler) findModelVersionInPath(modelPath string, version uint32) (string, bool, error) {
 	var found []string
 	versionStr := fmt.Sprintf("%d", version)
 	err := filepath.Walk(modelPath, func(path string, info os.FileInfo, err error) error {
@@ -115,19 +156,19 @@ func (t *TritonRepositoryHandler) findModelVersionInPath(modelPath string, versi
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	switch len(found) {
 	case 0:
-		return "", fmt.Errorf("Failed to find requested version %d in path %s", version, modelPath)
+		return "", false, fmt.Errorf("Failed to find requested version %d in path %s", version, modelPath)
 	case 1:
-		return found[0], nil
+		return found[0], true, nil
 	default:
-		return "", fmt.Errorf("Found multiple folders with version %d %v", version, found)
+		return "", false, fmt.Errorf("Found multiple folders with version %d %v", version, found)
 	}
 }
 
-func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (string, error) {
+func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (string, bool, error) {
 	highestVersionFolderNum := -1
 	var highestVersionPath string
 	err := filepath.Walk(modelPath, func(path string, info os.FileInfo, err error) error {
@@ -148,13 +189,13 @@ func (m *TritonRepositoryHandler) findHighestVersionInPath(modelPath string) (st
 		return nil
 	})
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 	if highestVersionFolderNum > 0 { // Triton versions need to be >0
-		return highestVersionPath, nil
+		return highestVersionPath, true, nil
 	}
-	//If we don't find a version assume folder is the default version we want
-	return modelPath, nil
+	// return modelPath if no version found
+	return modelPath, false, nil
 }
 
 func (t *TritonRepositoryHandler) loadConfigFromFile(path string) (*pb.ModelConfig, error) {
