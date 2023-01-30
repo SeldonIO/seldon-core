@@ -1,9 +1,13 @@
 #!/bin/bash
 
 NUM_MODELS="1,100"
+MODEL_NAME="mlflow_wine,tfsimple" # check model.js
+MODELNAME_PREFIX_VAR="mlflow_winea,tfsimplea"
+INFER_BATCH_SIZE_VAR="1,1"
+MODEL_MEMORY_BYTES_VAR="400,500"
+
 NUM_ITERS=500
 NUM_VUS=5
-MODEL_NAME="mlflow_wine,tfsimple" # check model.js
 EXTRA="--out influxdb=http://localhost:8086/k6db ../../scenarios/infer_constant_vu.js"
 DIR="results"
 
@@ -19,9 +23,9 @@ export MODEL_TYPE=$MODEL_NAME
 export MAX_NUM_MODELS=$NUM_MODELS
 export SCHEDULER_PROXY="false"
 export ENVOY="true"
-export INFER_BATCH_SIZE="1,1"
-export MODELNAME_PREFIX="mlflow_winea,tfsimplea"
-export MODEL_MEMORY_BYTES="400,500"
+export INFER_BATCH_SIZE=$INFER_BATCH_SIZE_VAR
+export MODELNAME_PREFIX=$MODELNAME_PREFIX_VAR
+export MODEL_MEMORY_BYTES=$MODEL_MEMORY_BYTES_VAR
 #export DATAFLOW_TAG="pipeline"  # "model" or "pipeline" or "", "pipeline" would trigger kstreams
 #export SKIP_UNLOAD_MODEL=1
 
