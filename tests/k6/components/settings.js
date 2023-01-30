@@ -105,7 +105,7 @@ function modelMemoryBytes() {
 
 function inferBatchSize() {
     if (__ENV.INFER_BATCH_SIZE) {
-        return __ENV.INFER_BATCH_SIZE.split(",")
+        return __ENV.INFER_BATCH_SIZE.split(",").map( s => parseInt(s))
     }
     return [1]
 }
