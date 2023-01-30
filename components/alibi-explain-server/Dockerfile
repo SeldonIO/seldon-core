@@ -33,7 +33,11 @@ ENV POETRY_VIRTUALENVS_CREATE false
 
 # Install the server
 COPY poetry.lock pyproject.toml ./
-RUN poetry install && rm ~/.cache/pip -rf
+## Disable Poetry's new installer to avoid JSONDecodeError
+## https://github.com/python-poetry/poetry/issues/4210
+RUN poetry config experimental.new-installer false && \
+    poetry install && \
+    rm ~/.cache/pip -rf
 
 
 # Add licences

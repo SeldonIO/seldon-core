@@ -26,6 +26,11 @@ TENACITY_WAIT = 10
 TENACITY_STOP_AFTER_ATTEMPT = 5
 
 
+def print_logs(app, namespace):
+    cmd = f"kubectl logs -lapp={app} -n {namespace}"
+    run(cmd, shell=True)
+
+
 class TestADServer:
     truck_json = "../../components/alibi-detect-server/cifar10-v2.json"
     truck_json_outlier = "../../components/alibi-detect-server/cifar10-v2-outlier.json"
@@ -53,17 +58,25 @@ class TestADServer:
         with open(self.truck_json) as f:
             data = json.load(f)
 
+        print(f"==== AT START ======")
+        print_logs(app="cifar10-od-server", namespace=namespace)
+        idx = 0
         for attempt in Retrying(
             wait=wait_fixed(TENACITY_WAIT),
             stop=stop_after_attempt(TENACITY_STOP_AFTER_ATTEMPT),
         ):
             with attempt:
-                r = requests.post(
-                    f"http://localhost:8004/{vs_prefix}/",
-                    json=data,
-                    headers=self.HEADERS,
-                )
-                j = r.json()
+                try:
+                    r = requests.post(
+                        f"http://localhost:8004/{vs_prefix}/",
+                        json=data,
+                        headers=self.HEADERS,
+                    )
+                    j = r.json()
+                finally:
+                    print(f"==== AFTER ATTEMPT {idx} ======")
+                    print_logs(app="cifar10-od-server", namespace=namespace)
+                    idx += 1
 
         assert j["data"]["is_outlier"][0] == 0
         assert j["meta"]["name"] == "OutlierVAE"
