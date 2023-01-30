@@ -1,7 +1,9 @@
 #!/bin/bash
 
-NUM_MODELS="1,100"
-MODEL_NAME="mlflow_wine,tfsimple" # check model.js
+
+# we allow a list (packed as comma seperated string) to be passed in the below set of variables
+MAX_NUM_MODELS_VAR="1,100"
+MODEL_TYPE_VAR="mlflow_wine,tfsimple" # check model.js
 MODELNAME_PREFIX_VAR="mlflow_winea,tfsimplea"
 INFER_BATCH_SIZE_VAR="1,1"
 MODEL_MEMORY_BYTES_VAR="400,500"
@@ -19,8 +21,8 @@ export INFER_GRPC_ENDPOINT=0.0.0.0:9000
 export INFER_HTTP_ENDPOINT=http://0.0.0.0:9000
 export INFER_HTTP_ITERATIONS=1 
 export INFER_GRPC_ITERATIONS=1 
-export MODEL_TYPE=$MODEL_NAME
-export MAX_NUM_MODELS=$NUM_MODELS
+export MODEL_TYPE=$MODEL_TYPE_VAR
+export MAX_NUM_MODELS=$MAX_NUM_MODELS_VAR
 export SCHEDULER_PROXY="false"
 export ENVOY="true"
 export INFER_BATCH_SIZE=$INFER_BATCH_SIZE_VAR
