@@ -1,7 +1,10 @@
-from typing import Optional
+from typing import Optional, Union
 from adserver.base.model import CEModel
 from adserver.base.storage import download_model
-from alibi_detect.utils.saving import load_detector, Data
+from alibi_detect.base import ConfigurableDetector, Detector
+from alibi_detect.utils.saving import load_detector
+
+Data = Union[Detector, ConfigurableDetector]
 
 
 class AlibiDetectModel(CEModel):  # pylint:disable=c-extension-no-member
