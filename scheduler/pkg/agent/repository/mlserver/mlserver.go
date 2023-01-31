@@ -99,7 +99,7 @@ func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version
 	settingsPath := filepath.Join(path, mlserverConfigFilename)
 	if _, err := os.Stat(settingsPath); errors.Is(err, os.ErrNotExist) {
 		// model-settings does not exist so try to create it from model spec
-		err := createSettingsFile(path, modelSpec)
+		err := createModelSettingsFile(path, modelSpec)
 		if err != nil {
 			return err
 		}
@@ -139,7 +139,7 @@ func (m *MLServerRepositoryHandler) FindModelVersionFolder(modelName string, ver
 		if version == nil {
 			return path, false, nil
 		}
-		return "", false, fmt.Errorf("Failed to find an mlserver settings file model in %s for %s for passed in version %v", path, modelName, version)
+		return "", false, fmt.Errorf("Failed to find an mlserver model-settings.json file for model in %s for %s for passed in version %v", path, modelName, version)
 	} else {
 		logger.Debugf("Found model settings for %s at %s for passed in version %v", modelName, mvp, version)
 		return mvp, true, nil

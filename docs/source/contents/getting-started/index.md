@@ -7,7 +7,7 @@
 Once installed:
 
   * Try the existing [examples](../examples/index.md).
-  * Save your own [model artifact](../models/inference-artifacts/index.html#saving-model-artifacts) to test. 
+  * Train and deploy your own [model artifact](../models/inference-artifacts/index.html#saving-model-artifacts). 
 
 
 ## Core Concepts

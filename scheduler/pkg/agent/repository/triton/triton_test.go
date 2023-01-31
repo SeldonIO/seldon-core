@@ -68,7 +68,8 @@ func TestFindModelVersionFolder(t *testing.T) {
 			expectedFolder: "3",
 			error:          false,
 		},
-		{
+		{ // We allow users to put their artifacts in the top level folder so no error here even though this is not a
+			// proper Triton structure which assumes numbered version folders.
 			name:           "NoVersionFolders",
 			folders:        []string{},
 			found:          false,

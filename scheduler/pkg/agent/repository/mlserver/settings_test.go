@@ -135,7 +135,7 @@ func TestCreateSettingsFile(t *testing.T) {
 				err = os.WriteFile(artifactFilePath, []byte{}, fs.ModePerm)
 				g.Expect(err).To(BeNil())
 			}
-			err = createSettingsFile(path, test.modelSpec)
+			err = createModelSettingsFile(path, test.modelSpec)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -213,6 +213,124 @@ func TestCreateSKLearnModelSettings(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 			ms, err := createSKLearnModelSettings(path)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(ms).To(Equal(test.expected))
+			}
+		})
+	}
+}
+
+func TestCreateXGBoostModelSettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name         string
+		fileToCreate string
+		err          bool
+		expected     *ModelSettings
+	}
+
+	tests := []test{
+		{
+			name:         "bst, top folder, ok",
+			fileToCreate: "model.bst",
+			expected: &ModelSettings{
+				Implementation: "mlserver_xgboost.XGBoostModel",
+				Parameters: &ModelParameters{
+					Uri: "./model.bst",
+				},
+			},
+		},
+		{
+			name:         "json, top folder, ok",
+			fileToCreate: "model.json",
+			expected: &ModelSettings{
+				Implementation: "mlserver_xgboost.XGBoostModel",
+				Parameters: &ModelParameters{
+					Uri: "./model.json",
+				},
+			},
+		},
+		{
+			name:         "unknown, top folder, not ok",
+			fileToCreate: "model.foo",
+			err:          true,
+		},
+		{
+			name:         "bst, sub folder, not ok",
+			fileToCreate: "/tt/model.bst",
+			err:          true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := t.TempDir()
+			if test.fileToCreate != "" {
+				artifactFilePath := filepath.Join(path, test.fileToCreate)
+				err := os.MkdirAll(filepath.Dir(artifactFilePath), fs.ModePerm)
+				g.Expect(err).To(BeNil())
+				err = os.WriteFile(artifactFilePath, []byte{}, fs.ModePerm)
+				g.Expect(err).To(BeNil())
+			}
+			ms, err := createXGBoostModelSettings(path)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(ms).To(Equal(test.expected))
+			}
+		})
+	}
+}
+
+func TestCreateLightgbmModelSettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name         string
+		fileToCreate string
+		err          bool
+		expected     *ModelSettings
+	}
+
+	tests := []test{
+		{
+			name:         "bst, top folder, ok",
+			fileToCreate: "model.bst",
+			expected: &ModelSettings{
+				Implementation: "mlserver_lightgbm.LightGBMModel",
+				Parameters: &ModelParameters{
+					Uri: "./model.bst",
+				},
+			},
+		},
+		{
+			name:         "unknown, top folder, not ok",
+			fileToCreate: "model.foo",
+			err:          true,
+		},
+		{
+			name:         "bst, sub folder, not ok",
+			fileToCreate: "/tt/model.bst",
+			err:          true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := t.TempDir()
+			if test.fileToCreate != "" {
+				artifactFilePath := filepath.Join(path, test.fileToCreate)
+				err := os.MkdirAll(filepath.Dir(artifactFilePath), fs.ModePerm)
+				g.Expect(err).To(BeNil())
+				err = os.WriteFile(artifactFilePath, []byte{}, fs.ModePerm)
+				g.Expect(err).To(BeNil())
+			}
+			ms, err := createLightGBMModelSettings(path)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {

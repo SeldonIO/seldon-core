@@ -19,7 +19,7 @@ var (
 )
 
 // Look at requirements and take first matching one to our known list of ones we can handle
-func createSettingsFile(path string, modelSpec *scheduler.ModelSpec) error {
+func createModelSettingsFile(path string, modelSpec *scheduler.ModelSpec) error {
 	modelSettings, err := getModelSettings(path, modelSpec)
 	if err != nil {
 		return err
@@ -115,21 +115,11 @@ func createLightGBMModelSettings(path string) (*ModelSettings, error) {
 }
 
 func createAlibiDetectModelSettings() (*ModelSettings, error) {
-	return &ModelSettings{
-		Implementation: "mlserver_alibi_detect.AlibiDetectRuntime",
-		Parameters: &ModelParameters{
-			Uri: "./",
-		},
-	}, nil
+	return createModelSettingsFromUri("./", "mlserver_alibi_detect.AlibiDetectRuntime"), nil
 }
 
 func createMLFlowModelSettings() (*ModelSettings, error) {
-	return &ModelSettings{
-		Implementation: "mlserver_mlflow.MLflowRuntime",
-		Parameters: &ModelParameters{
-			Uri: "./",
-		},
-	}, nil
+	return createModelSettingsFromUri("./", "mlserver_mlflow.MLflowRuntime"), nil
 }
 
 func createAlibiExplainModelSettings(path string) (*ModelSettings, error) {
@@ -139,14 +129,10 @@ func createAlibiExplainModelSettings(path string) (*ModelSettings, error) {
 	}
 	for _, f := range files {
 		if f.IsDir() {
+			ms := createModelSettingsFromUri(fmt.Sprintf("./%s", f.Name()), "mlserver_alibi_explain.AlibiExplainRuntime")
 			parallelWorkers := 0
-			return &ModelSettings{
-				Implementation:  "mlserver_alibi_explain.AlibiExplainRuntime",
-				ParallelWorkers: &parallelWorkers,
-				Parameters: &ModelParameters{
-					Uri: fmt.Sprintf("./%s", f.Name()),
-				},
-			}, nil
+			ms.ParallelWorkers = &parallelWorkers
+			return ms, nil
 		}
 	}
 	return nil, fmt.Errorf("Failed to find alibi-explain saved folder in %s", path)
