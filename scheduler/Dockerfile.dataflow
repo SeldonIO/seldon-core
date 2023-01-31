@@ -14,7 +14,7 @@ RUN gradle build --no-daemon --info
 ################################################################################
 
 # Some dependencies require glibc, which Alpine does not provide
-FROM gcr.io/distroless/java17-debian11:latest-amd64
+FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:latest
 
 USER 1000
 
