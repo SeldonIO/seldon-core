@@ -5,9 +5,9 @@ const pytorch_cifar10 = "pytorch_cifar10"
 const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
 const onnx_gpt2 = "onnx_gpt2"
-const mlflow_wine = "mlflow_wine"
+const mlflow_wine = "mlflow_wine" // mlserver
 const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
-const sentiment = "sentiment"
+const sentiment = "sentiment" // mlserver
 
 const models = {
     mlflow_wine: {
