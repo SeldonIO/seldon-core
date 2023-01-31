@@ -130,7 +130,7 @@ func createAlibiExplainModelSettings(path string) (*ModelSettings, error) {
 	for _, f := range files {
 		if f.IsDir() {
 			ms := createModelSettingsFromUri(fmt.Sprintf("./%s", f.Name()), "mlserver_alibi_explain.AlibiExplainRuntime")
-			parallelWorkers := 0
+			parallelWorkers := 0 // Was needed for MLServer running of explainers but needs validation it can be removed
 			ms.ParallelWorkers = &parallelWorkers
 			return ms, nil
 		}
