@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: conditional
 spec:
-  storageUri: "gs://seldon-models/triton/conditional"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/conditional"
   requirements:
   - triton
   - python

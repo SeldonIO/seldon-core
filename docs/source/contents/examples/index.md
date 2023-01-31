@@ -10,6 +10,7 @@ This section will provide some examples to allow operations with Seldon to be te
 ## Models
 
  * [Huggingface models](huggingface.md)
+ * [Model zoo](model-zoo.md)
 
 ## Pipelines
 
@@ -52,6 +53,7 @@ This section will provide some examples to allow operations with Seldon to be te
 local-examples.md
 k8s-examples.md
 huggingface.md
+model-zoo.md
 pipeline-examples.md
 pipeline-to-pipeline.md
 explainer-examples.md

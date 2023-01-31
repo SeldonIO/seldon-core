@@ -1,0 +1,7 @@
+alibi_detect
+matplotlib
+numpy
+requests
+tensorflow
+torch
+torchvision

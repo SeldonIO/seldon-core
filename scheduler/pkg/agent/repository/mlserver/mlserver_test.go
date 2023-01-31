@@ -460,7 +460,7 @@ func TestUpdateVersion(t *testing.T) {
 			err = os.WriteFile(settingsFilePath, data, fs.ModePerm)
 			g.Expect(err).To(BeNil())
 			m := &MLServerRepositoryHandler{}
-			err = m.UpdateNameAndVersion(path, test.modelName, test.version)
+			err = m.updateNameAndVersion(path, test.modelName, test.version)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -605,11 +605,12 @@ func TestFindModelVersionFolder(t *testing.T) {
 			}
 			logger := log.New()
 			m := NewMLServerRepositoryHandler(logger)
-			foundPath, err := m.FindModelVersionFolder("iris", test.version, path)
+			foundPath, found, err := m.FindModelVersionFolder("iris", test.version, path)
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+				g.Expect(found).To(BeTrue())
 				g.Expect(foundPath).ToNot(BeNil())
 				pathBase := filepath.Base(foundPath)
 				g.Expect(pathBase).To(Equal(test.expectedPathDir))
