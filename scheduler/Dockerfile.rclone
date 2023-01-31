@@ -1,7 +1,20 @@
-FROM rclone/rclone:1.56.2
+FROM rclone/rclone:1.61.1 as builder
 
-RUN mkdir -p /rclone && chmod a+rw /rclone && touch /rclone/rclone.conf
-RUN chown -R rclone /rclone
-USER rclone
+RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+# Run update to pickup any necessary security updates
+RUN microdnf update -y
+
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+COPY --from=builder /licenses/ /licenses/
+
+RUN mkdir /rclone && \
+    touch /rclone/rclone.conf && \
+    chown -R 1000 /rclone
+
+USER 1000
+
+ENTRYPOINT [ "rclone" ]
 CMD ["rcd","--rc-no-auth","--config=/rclone/rclone.conf","--rc-addr=0.0.0.0:5572","--verbose"]
-
