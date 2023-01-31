@@ -8,6 +8,6 @@ RUN apk add --no-cache make
 RUN make -C scheduler -o test-go build-scheduler
 
 # Copy binary
-FROM gcr.io/distroless/static:nonroot
+FROM registry.access.redhat.com/ubi9/ubi-micro
 COPY --from=builder /build/scheduler/bin/scheduler /bin/scheduler
 ENTRYPOINT ["/bin/scheduler"]

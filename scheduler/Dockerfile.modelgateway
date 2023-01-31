@@ -8,6 +8,6 @@ RUN apt-get install make
 RUN make -C scheduler -o test-go build-modelgateway
 
 # Kafka dependencies necessitate leaving CGo enabled and using a base image with C dependencies
-FROM gcr.io/distroless/base-debian11:nonroot
+FROM registry.access.redhat.com/ubi9/ubi-micro
 COPY --from=builder /build/scheduler/bin/modelgateway /bin/modelgateway
 ENTRYPOINT ["/bin/modelgateway"]

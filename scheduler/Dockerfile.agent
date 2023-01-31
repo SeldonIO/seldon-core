@@ -8,18 +8,10 @@ RUN apk add --no-cache make
 RUN make -C scheduler -o test-go build-agent
 
 # Copy binary
-# Need to be careful about: https://github.com/GoogleContainerTools/distroless/issues/718
-# for environments like Openshift that set a random UID
-# if we want to use FROM gcr.io/distroless/static:noroot
-# Keeping with Alpine at present to allow setting of volume permissions for Docker Compose use
-# both with shared and bind mounted volumes
-FROM alpine:latest
+FROM registry.access.redhat.com/ubi9/ubi-micro
 
 RUN mkdir /mnt/agent && chmod o+rwx /mnt/agent
 VOLUME /mnt/agent
-
-RUN addgroup -S agent && adduser -S agent -G agent
-USER agent
 
 COPY --from=builder /build/scheduler/bin/agent /bin/agent
 ENTRYPOINT ["/bin/agent"]

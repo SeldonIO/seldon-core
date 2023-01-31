@@ -23,7 +23,7 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM gcr.io/distroless/static:nonroot
+FROM registry.access.redhat.com/ubi9/ubi-micro
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 ARG UID=1000
