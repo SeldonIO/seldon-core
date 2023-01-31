@@ -131,7 +131,7 @@ For many machine learning artifacts you can simply save them to a folder and loa
   - Follow the MLServer docs.
   - [docs](https://github.com/SeldonIO/MLServer/tree/master/runtimes/mllib)
 * - Tensorflow
-  - Save model in "Saved Model" format as `model.savedodel`. If using graphdef format you will need to create Triton config.pbtxt and place your model in a numbered sub folder.
+  - Save model in "Saved Model" format as `model.savedodel`. If using graphdef format you will need to create Triton config.pbtxt and place your model in a numbered sub folder. HDF5 is not supported.
   - [docs](https://github.com/triton-inference-server/tensorflow_backend)
 * - TensorRT
   - Follow the Triton docs to create your model artifacts.

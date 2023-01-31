@@ -120,6 +120,8 @@ mnist-pytorch: env
 	sed -i  's/torch.save(model.state_dict(), "mnist_cnn.pt")/model_scripted = torch.jit.script(model);model_scripted.save("model.pt")/g' mnist-pytorch/main.py
 	cd mnist-pytorch && ../.env/bin/python3 main.py --save-model --epochs 1
 
+# Note: https://github.com/pytorch/pytorch/issues/38273
+# Triton can't autogenerate config for pytorch artifacts
 .PHONY: upload-mnist-pytorch
 upload-mnist-pytorch:
 	gsutil cp mnist-pytorch/model.pt gs://seldon-models/scv2/samples/${TRITON_FOLDER}/mnist-pytorch/model.pt
