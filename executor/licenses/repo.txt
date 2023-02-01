@@ -36,6 +36,7 @@ apache/thrift
 armon/circbuf
 armon/go-metrics
 armon/go-radix
+armon/go-socks5
 asaskevich/govalidator
 aws/aws-sdk-go
 banzaicloud/k8s-objectmatcher
@@ -135,6 +136,7 @@ golang/snappy
 google/btree
 google/cel-go
 google/cel-spec
+google/gnostic
 google/go-cmp
 google/go-github
 google/go-querystring

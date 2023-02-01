@@ -56,6 +56,7 @@ github.com/argoproj/argo-rollouts
 github.com/armon/circbuf
 github.com/armon/go-metrics
 github.com/armon/go-radix
+github.com/armon/go-socks5
 github.com/asaskevich/govalidator
 github.com/aws/aws-sdk-go
 github.com/banzaicloud/k8s-objectmatcher
@@ -164,6 +165,7 @@ github.com/golang/snappy
 github.com/google/btree
 github.com/google/cel-go
 github.com/google/cel-spec
+github.com/google/gnostic
 github.com/google/go-cmp
 github.com/google/go-github/v27
 github.com/google/go-querystring
