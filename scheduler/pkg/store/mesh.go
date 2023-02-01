@@ -590,11 +590,13 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	}
 
 	return &ServerReplica{
-		inferenceSvc:         s.inferenceSvc,
-		inferenceHttpPort:    s.inferenceHttpPort,
-		inferenceGrpcPort:    s.inferenceGrpcPort,
-		replicaIdx:           s.replicaIdx,
-		server:               nil, //TODO change ServerReplica to snapshot struct
+		inferenceSvc:      s.inferenceSvc,
+		inferenceHttpPort: s.inferenceHttpPort,
+		inferenceGrpcPort: s.inferenceGrpcPort,
+		replicaIdx:        s.replicaIdx,
+		// note: this is a dummy representation of the server to add to the snapshot
+		// TODO: should we consider just having the server name stored in ServerReplica?
+		server:               NewServer(s.server.name, s.server.shared),
 		capabilities:         capabilities,
 		memory:               s.memory,
 		availableMemory:      s.availableMemory,
