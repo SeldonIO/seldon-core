@@ -1,10 +1,8 @@
 approvers:
 - adriangonz
 - agrski
-- axsaucedo
 - cliveseldon
 - gsunner
-- ivan-valkov
 - jklaise
 - majolo
 - RafalSkolasinski
@@ -13,13 +11,10 @@ reviewers:
 - adriangonz
 - agrski
 - arnaudvl
-- axsaucedo
 - cliveseldon
 - gipster
 - gsunner
-- ivan-valkov
 - jklaise
 - majolo
-- phsiao
 - RafalSkolasinski
 - SachinVarghese
