@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	autoscaling "k8s.io/api/autoscaling/v2"
 	"os"
 	"path/filepath"
 	"testing"
@@ -209,6 +210,9 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = v2.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = autoscaling.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:scheme

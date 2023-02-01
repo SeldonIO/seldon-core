@@ -7,7 +7,7 @@ IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
-ENVTEST_K8S_VERSION = 1.22
+ENVTEST_K8S_VERSION = 1.23
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
