@@ -1,4 +1,4 @@
-VERSION=0.4
+VERSION=$(shell cat ../../../../../version.txt)
 IMAGE_BASE=seldonio/metadata-generic-node
 S2I_IMAGE_VERSION:= $(shell cat ../../../../../version.txt)
 

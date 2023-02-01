@@ -1,4 +1,4 @@
-name: Executor Tests
+name: V1 Executor Tests
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   executor-tests:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/core-builder:0.27
 
     steps:

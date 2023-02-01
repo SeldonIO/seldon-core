@@ -100,8 +100,8 @@ orchestrator so GRPC requests would no longer work. An example of this would be 
 Threads
 -------
 
-By default, Seldon will process your model's incoming requests using a
-pool of **10 threads per worker process**. You can increase this number
+By default, Seldon will process your model's incoming requests using 
+**1 thread per worker process**. You can increase this number
 through the ``GUNICORN_THREADS`` environment variable. This variable can
 be controlled directly through the ``SeldonDeployment`` CRD.
 
@@ -244,7 +244,7 @@ line flags.
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``--workers``               | ``GUNICORN_WORKERS``                       | ``1``           | Number of Gunicorn workers for handling requests.                                                                                                                                |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--threads``               | ``GUNICORN_THREADS``                       | ``10``          | Number of threads to run per Gunicorn worker.                                                                                                                                    |
+| ``--threads``               | ``GUNICORN_THREADS``                       | ``1``           | Number of threads to run per Gunicorn worker.                                                                                                                                    |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``--max-requests``          | ``GUNICORN_MAX_REQUESTS``                  | ``0``           | Maximum number of requests gunicorn worker will process before restarting.                                                                                                       |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -264,3 +264,15 @@ line flags.
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | N/A                         | ``PAYLOAD_PASSTHROUGH``                    | ``false``       | Skip decoding of payloads.                                                                                                                                                       |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Running Processes
+-----------------
+
+The total processes started for the python server will be as follows:
+
+* REST server. A Gunicorn server which will have 1 master process and N worker processes where N is defined by the environment variable GUNICORN_WORKERS.
+* gRPC server. A master process and N worker processes where N is defined by the environment variable GRPC_WORKERS.
+* Metrics server. A Gunicorn server with 1 master and 1 worker.
+* Metrics collector. A single process that collects the metrics across workers.
+
+ 

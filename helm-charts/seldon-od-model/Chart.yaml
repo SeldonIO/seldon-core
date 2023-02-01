@@ -1,6 +1,6 @@
 apiVersion: v2
 name: seldon-od-model
-description: Chart to deploy an outlier detector as a single Seldon model. 
+description: Chart to deploy an outlier detector as a single model with Seldon Core v1.
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core
 sources:

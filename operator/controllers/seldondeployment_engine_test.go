@@ -54,7 +54,7 @@ func createTestSeldonDeployment() *machinelearningv1.SeldonDeployment {
 	}
 }
 
-func cleanEnvImages() {
+func cleanEnvImagesExecutor() {
 	envUseExecutor = ""
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
@@ -62,18 +62,18 @@ func cleanEnvImages() {
 
 func TestExecutorCreateNoEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	envExecutorImage = ""
 	envExecutorImageRelated = ""
 	mlDep := createTestSeldonDeployment()
 	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }
 
 func TestExecutorCreateEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	imageName := "myimage"
 	envExecutorImage = imageName
 	envExecutorImageRelated = ""
@@ -81,12 +81,12 @@ func TestExecutorCreateEnv(t *testing.T) {
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageName))
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }
 
 func TestExecutorCreateEnvRelated(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	imageName := "myimage"
 	imageNameRelated := "myimage2"
 	envExecutorImage = imageName
@@ -95,22 +95,22 @@ func TestExecutorCreateEnvRelated(t *testing.T) {
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).To(BeNil())
 	g.Expect(con.Image).To(Equal(imageNameRelated))
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }
 
 func TestExecutorCreateKafka(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	mlDep := createTestSeldonDeployment()
 	mlDep.Spec.ServerType = machinelearningv1.ServerKafka
 	_, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
 	g.Expect(err).ToNot(BeNil())
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }
 
 func TestEngineCreateLoggerParams(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	envExecutorImage = "executor"
 	mlDep := createTestSeldonDeployment()
 	con, err := createExecutorContainer(mlDep, &mlDep.Spec.Predictors[0], "", 1, 2, &v1.ResourceRequirements{})
@@ -123,12 +123,12 @@ func TestEngineCreateLoggerParams(t *testing.T) {
 			g.Expect(con.Args[idx+1]).To(Equal(constants.DefaultExecutorReqLoggerWriteTimeoutMs))
 		}
 	}
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }
 
 func TestEngineCreateLoggerParamsEnv(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	envExecutorImage = "executor"
 	executorReqLoggerWorkQueueSize = "1"
 	executorReqLoggerWriteTimeoutMs = "1"
@@ -143,14 +143,14 @@ func TestEngineCreateLoggerParamsEnv(t *testing.T) {
 			g.Expect(con.Args[idx+1]).To(Equal("1"))
 		}
 	}
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	executorReqLoggerWorkQueueSize = constants.DefaultExecutorReqLoggerWorkQueueSize
 	executorReqLoggerWriteTimeoutMs = constants.DefaultExecutorReqLoggerWriteTimeoutMs
 }
 
 func TestEngineCreateLoggerAnnotation(t *testing.T) {
 	g := NewGomegaWithT(t)
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 	envExecutorImage = "executor"
 	mlDep := createTestSeldonDeployment()
 	mlDep.Annotations[machinelearningv1.ANNOTATION_LOGGER_WORK_QUEUE_SIZE] = "22"
@@ -165,5 +165,5 @@ func TestEngineCreateLoggerAnnotation(t *testing.T) {
 			g.Expect(con.Args[idx+1]).To(Equal("5"))
 		}
 	}
-	cleanEnvImages()
+	cleanEnvImagesExecutor()
 }

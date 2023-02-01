@@ -12,6 +12,7 @@ contrib.go.opencensus.io/exporter/ocagent
 contrib.go.opencensus.io/exporter/prometheus
 contrib.go.opencensus.io/exporter/zipkin
 dmitri.shuralyov.com/gpu/mtl
+emperror.dev/errors
 github.com/Azure/azure-amqp-common-go/v3
 github.com/Azure/azure-event-hubs-go/v3
 github.com/Azure/azure-kusto-go
@@ -37,7 +38,6 @@ github.com/BurntSushi/toml
 github.com/BurntSushi/xgb
 github.com/DataDog/datadog-api-client-go
 github.com/Huawei/gophercloud
-github.com/Masterminds/semver
 github.com/NYTimes/gziphandler
 github.com/OneOfOne/xxhash
 github.com/PuerkitoBio/purell
@@ -56,6 +56,7 @@ github.com/armon/go-metrics
 github.com/armon/go-radix
 github.com/asaskevich/govalidator
 github.com/aws/aws-sdk-go
+github.com/banzaicloud/k8s-objectmatcher
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/bgentry/speakeasy
@@ -109,6 +110,7 @@ github.com/elastic/go-elasticsearch/v7
 github.com/elazarl/goproxy
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful-swagger12
+github.com/emissary-ingress/emissary/v3
 github.com/envoyproxy/go-control-plane
 github.com/envoyproxy/protoc-gen-validate
 github.com/evanphx/json-patch

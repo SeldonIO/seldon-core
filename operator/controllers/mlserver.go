@@ -132,8 +132,9 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 		},
 		ReadinessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeReadyPath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeReadyPath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
@@ -143,8 +144,9 @@ func getMLServerContainer(pu *machinelearningv1.PredictiveUnit, namespace string
 		},
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeLivePath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeLivePath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 20,
 			PeriodSeconds:       5,
@@ -172,7 +174,7 @@ func getMLServerImage(pu *machinelearningv1.PredictiveUnit) (string, error) {
 		return "", fmt.Errorf("failed to get server config for %s", *pu.Implementation)
 	}
 
-	if kfservingConfig, ok := prepackConfig.Protocols[machinelearningv1.ProtocolKfserving]; ok {
+	if kfservingConfig, ok := prepackConfig.Protocols[machinelearningv1.ProtocolKFServing]; ok {
 		// Ignore version if empty
 		image := kfservingConfig.ContainerImage
 		if kfservingConfig.DefaultImageVersion != "" {
@@ -265,11 +267,11 @@ func getMLServerModelImplementation(pu *machinelearningv1.PredictiveUnit) (strin
 	switch *pu.Implementation {
 	case machinelearningv1.PrepackSklearnName:
 		return MLServerSKLearnImplementation, nil
-	case machinelearningv1.PrepackXgboostName:
+	case machinelearningv1.PrepackXGBoostName:
 		return MLServerXGBoostImplementation, nil
 	case machinelearningv1.PrepackTempoName:
 		return MLServerTempoImplementation, nil
-	case machinelearningv1.PrepackMlflowName:
+	case machinelearningv1.PrepackMLFlowName:
 		return MLServerMLFlowImplementation, nil
 	case machinelearningv1.PrepackHuggingFaceName:
 		return MLServerHuggingFaceImplementation, nil

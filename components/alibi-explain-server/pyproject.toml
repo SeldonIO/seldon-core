@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "alibiexplainer"
-version = "1.12.0-dev"
+version = "1.16.0-dev"
 description = "Model Explanation Server"
 authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
 license = "Apache-2.0"
@@ -8,9 +8,9 @@ license = "Apache-2.0"
 [tool.poetry.dependencies]
 python = "^3.7,<3.8"
 alibi = "0.7.0"
-numpy = "1.19.5"
+numpy = "1.21.6"
 numba = "0.55.0"
-tensorflow = "2.7.0"
+tensorflow = "2.9.3"
 scikit-learn = "1.0.2"
 xgboost = "1.5.2"
 lightgbm = "3.3.2"
@@ -19,6 +19,10 @@ catboost = "^1.0"
 tornado = "^6.1"
 fastapi = "^0.73.0"
 protobuf = "^3.17.3"
+joblib = "1.2.0"
+
+werkzeug = "^2.1.1"
+pillow = "^9.0.1"
 
 shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
 
@@ -29,12 +33,11 @@ mypy = "^0.910"
 grpcio-tools = "1.31.0"
 mypy-protobuf = "1.22"
 pip-licenses = "^3.5.2"
-black = "21.7b0"
+black = "22.12.0"
 isort = "5.9.0"
 types-requests = "2.26.0"
 gsutil = "5.5"
 requests-mock = "1.9.3"
-
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -11,18 +11,24 @@ import (
 )
 
 const (
-	EnvSklearnServerImageRelated = "RELATED_IMAGE_SKLEARNSERVER"
-	EnvXgboostserverImageRelated = "RELATED_IMAGE_XGBOOSTSERVER"
-	EnvMlflowserverImageRelated  = "RELATED_IMAGE_MLFLOWSERVER"
-	EnvTensorflowImageRelated    = "RELATED_IMAGE_TENSORFLOW"
-	EnvTfproxyImageRelated       = "RELATED_IMAGE_TFPROXY"
-	PrepackTensorflowName        = "TENSORFLOW_SERVER"
-	PrepackSklearnName           = "SKLEARN_SERVER"
-	PrepackXgboostName           = "XGBOOST_SERVER"
-	PrepackMlflowName            = "MLFLOW_SERVER"
-	PrepackHuggingFaceName       = "HUGGINGFACE_SERVER"
-	PrepackTritonName            = "TRITON_SERVER"
-	PrepackTempoName             = "TEMPO_SERVER"
+	EnvRelatedImageSklearnServer   = "RELATED_IMAGE_SKLEARNSERVER"
+	EnvRelatedImageXGBoostServer   = "RELATED_IMAGE_XGBOOSTSERVER"
+	EnvRelatedImageMLFlowServer    = "RELATED_IMAGE_MLFLOWSERVER"
+	EnvRelatedImageSklearnServerV2 = "RELATED_IMAGE_SKLEARNSERVER_V2"
+	EnvRelatedImageXGBoostServerV2 = "RELATED_IMAGE_XGBOOSTSERVER_V2"
+	EnvRelatedImageMLFlowServerV2  = "RELATED_IMAGE_MLFLOWSERVER_V2"
+	EnvRelatedImageTensorflow      = "RELATED_IMAGE_TENSORFLOW"
+	EnvRelatedImageTFProxy         = "RELATED_IMAGE_TFPROXY"
+)
+
+const (
+	PrepackTensorflowName  = "TENSORFLOW_SERVER"
+	PrepackSklearnName     = "SKLEARN_SERVER"
+	PrepackXGBoostName     = "XGBOOST_SERVER"
+	PrepackMLFlowName      = "MLFLOW_SERVER"
+	PrepackHuggingFaceName = "HUGGINGFACE_SERVER"
+	PrepackTritonName      = "TRITON_SERVER"
+	PrepackTempoName       = "TEMPO_SERVER"
 )
 
 const PredictorServerConfigMapKeyName = "predictor_servers"
@@ -43,10 +49,10 @@ func (p *PredictorServerConfig) PrepackImageName(protocol Protocol, pu *Predicti
 	imageConfig := p.PrepackImageConfig(protocol)
 
 	if imageConfig == nil && protocol == ProtocolV2 {
-		imageConfig = p.PrepackImageConfig(ProtocolKfserving)
+		imageConfig = p.PrepackImageConfig(ProtocolKFServing)
 	}
 
-	if imageConfig == nil && protocol == ProtocolKfserving {
+	if imageConfig == nil && protocol == ProtocolKFServing {
 		imageConfig = p.PrepackImageConfig(ProtocolV2)
 	}
 
@@ -76,54 +82,64 @@ type PredictorProtocolsConfig struct {
 }
 
 var (
-	ControllerConfigMapName       = "seldon-config"
-	envSklearnServerImageRelated  = os.Getenv(EnvSklearnServerImageRelated)
-	envXgboostServerImageRelated  = os.Getenv(EnvXgboostserverImageRelated)
-	envMlflowServerImageRelated   = os.Getenv(EnvMlflowserverImageRelated)
-	envTfserverServerImageRelated = os.Getenv(EnvTensorflowImageRelated)
-	envTfproxyServerImageRelated  = os.Getenv(EnvTfproxyImageRelated)
-	relatedImageConfig            = map[string]PredictorServerConfig{}
+	ControllerConfigMapName = "seldon-config"
+	envSklearnServer        = os.Getenv(EnvRelatedImageSklearnServer)
+	envXGBoostServer        = os.Getenv(EnvRelatedImageXGBoostServer)
+	envMLFlowServer         = os.Getenv(EnvRelatedImageMLFlowServer)
+	envSklearnServerV2      = os.Getenv(EnvRelatedImageSklearnServerV2)
+	envXGBoostServerV2      = os.Getenv(EnvRelatedImageXGBoostServerV2)
+	envMLFlowServerV2       = os.Getenv(EnvRelatedImageMLFlowServerV2)
+	envTFServerServer       = os.Getenv(EnvRelatedImageTensorflow)
+	envTFProxyServer        = os.Getenv(EnvRelatedImageTFProxy)
+	relatedImageConfig      = map[string]PredictorServerConfig{}
 )
 
 func init() {
-	if envSklearnServerImageRelated != "" {
-		relatedImageConfig[PrepackSklearnName] = PredictorServerConfig{
+	relatedImageConfig = getRelatedImageConfig()
+}
+
+func getRelatedImageConfig() map[string]PredictorServerConfig {
+	return map[string]PredictorServerConfig{
+		PrepackSklearnName: {
 			Protocols: map[Protocol]PredictorImageConfig{
 				ProtocolSeldon: {
-					ContainerImage: envSklearnServerImageRelated,
+					ContainerImage: envSklearnServer,
+				},
+				ProtocolV2: {
+					ContainerImage: envSklearnServerV2,
 				},
 			},
-		}
-	}
-	if envXgboostServerImageRelated != "" {
-		relatedImageConfig[PrepackXgboostName] = PredictorServerConfig{
+		},
+		PrepackXGBoostName: {
 			Protocols: map[Protocol]PredictorImageConfig{
 				ProtocolSeldon: {
-					ContainerImage: envXgboostServerImageRelated,
+					ContainerImage: envXGBoostServer,
+				},
+				ProtocolV2: {
+					ContainerImage: envXGBoostServerV2,
 				},
 			},
-		}
-	}
-	if envMlflowServerImageRelated != "" {
-		relatedImageConfig[PrepackMlflowName] = PredictorServerConfig{
+		},
+		PrepackMLFlowName: {
 			Protocols: map[Protocol]PredictorImageConfig{
 				ProtocolSeldon: {
-					ContainerImage: envMlflowServerImageRelated,
+					ContainerImage: envMLFlowServer,
+				},
+				ProtocolV2: {
+					ContainerImage: envMLFlowServerV2,
 				},
 			},
-		}
-	}
-	if envTfserverServerImageRelated != "" {
-		relatedImageConfig[PrepackTensorflowName] = PredictorServerConfig{
+		},
+		envTFServerServer: {
 			Protocols: map[Protocol]PredictorImageConfig{
 				ProtocolTensorflow: {
-					ContainerImage: envTfserverServerImageRelated,
+					ContainerImage: envTFServerServer,
 				},
 				ProtocolSeldon: {
-					ContainerImage: envTfproxyServerImageRelated,
+					ContainerImage: envTFProxyServer,
 				},
 			},
-		}
+		},
 	}
 }
 
@@ -158,21 +174,32 @@ func getPredictorServerConfigsFromMap(configMap *corev1.ConfigMap) (map[string]P
 }
 
 func getPrepackServerConfigWithRelated(serverName string, relatedImages map[string]PredictorServerConfig) *PredictorServerConfig {
-	//Use related images if present
-	if val, ok := relatedImages[serverName]; ok {
-		return &val
-	}
-
+	// Get Server Config
 	ServersConfigs, err := getPredictorServerConfigs()
 	if err != nil {
-		seldondeploymentlog.Error(err, "Failed to read prepacked model servers from configmap")
+		seldondeploymentLog.Error(err, "Failed to read prepacked model servers from configmap")
 		return nil
 	}
 	ServerConfig, ok := ServersConfigs[serverName]
 	if !ok {
-		seldondeploymentlog.Error(nil, "No entry in predictors map for "+serverName)
+		seldondeploymentLog.Error(nil, "No entry in predictors map for "+serverName)
 		return nil
 	}
+
+	// Set related images if present
+	RelatedServerConfig, present := relatedImages[serverName]
+	if !present {
+		return &ServerConfig
+	}
+
+	// If PredictorImageConfig.ContainerImage is not an empty string overwrite whole
+	// PredictorImageConfig as this is expected by callers of this function.
+	for protocol, imageConfig := range RelatedServerConfig.Protocols {
+		if imageConfig.ContainerImage != "" {
+			ServerConfig.Protocols[protocol] = imageConfig
+		}
+	}
+
 	return &ServerConfig
 }
 

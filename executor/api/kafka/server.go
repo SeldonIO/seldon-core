@@ -58,9 +58,26 @@ type SeldonKafkaServer struct {
 	AutoCommit      bool
 }
 
-func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, protocol, transport string, annotations map[string]string, serverUrl *url.URL, predictor *v1.PredictorSpec, broker, topicIn, topicOut string, log logr.Logger, fullHealthCheck bool, autoCommit bool) (*SeldonKafkaServer, error) {
+func NewKafkaServer(
+	fullGraph bool,
+	workers int,
+	deploymentName,
+	namespace,
+	protocol,
+	transport string,
+	annotations map[string]string,
+	serverUrl *url.URL,
+	predictor *v1.PredictorSpec,
+	broker,
+	topicIn,
+	topicOut string,
+	log logr.Logger,
+	fullHealthCheck bool,
+	autoCommit bool,
+) (*SeldonKafkaServer, error) {
 	var apiClient client.SeldonApiClient
 	var err error
+
 	if fullGraph {
 		log.Info("Starting full graph kafka server")
 		apiClient = NewKafkaClient(serverUrl.Hostname(), deploymentName, namespace, protocol, transport, predictor, broker, log)
@@ -83,26 +100,10 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 			return nil, fmt.Errorf("Unknown transport %s", transport)
 		}
 	}
-	var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": broker,
-		"go.delivery.reports": false, // Need this othewise will get memory leak
-	}
-	if broker != "" {
-		if util.GetKafkaSecurityProtocol() == "SSL" {
-			sslKakfaServer := util.GetSslElements()
-			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
-			if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
-				producerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
-				producerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
-			}
-			if sslKakfaServer.CACert != "" && sslKakfaServer.ClientCert != "" {
-				producerConfigMap["ssl.ca.pem"] = sslKakfaServer.CACert
-				producerConfigMap["ssl.key.pem"] = sslKakfaServer.ClientKey
-				producerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
-			}
-			producerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
 
-		}
+	var producerConfig *kafka.ConfigMap
+	if broker != "" {
+		producerConfig = util.GetKafkaProducerConfig(broker)
 	}
 
 	if !autoCommit && workers > 1 {
@@ -111,7 +112,7 @@ func NewKafkaServer(fullGraph bool, workers int, deploymentName, namespace, prot
 
 	// Create Producer
 	log.Info("Creating producer", "broker", broker)
-	p, err := kafka.NewProducer(&producerConfigMap)
+	p, err := kafka.NewProducer(producerConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -170,36 +171,12 @@ func getProto(messageType string, messageBytes []byte) (proto2.Message, error) {
 }
 
 func (ks *SeldonKafkaServer) Serve() error {
-
-	consumerConfigMap := kafka.ConfigMap{
-		"bootstrap.servers":     ks.Broker,
-		"broker.address.family": "v4",
-		"group.id":              ks.getGroupName(),
-		"session.timeout.ms":    6000,
-		"enable.auto.commit":    ks.AutoCommit,
-		"auto.offset.reset":     "earliest",
-	}
-
-	if util.GetKafkaSecurityProtocol() == "SSL" {
-		sslKakfaServer := util.GetSslElements()
-		consumerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
-		if sslKakfaServer.CACertFile != "" && sslKakfaServer.ClientCertFile != "" {
-			consumerConfigMap["ssl.ca.location"] = sslKakfaServer.CACertFile
-			consumerConfigMap["ssl.key.location"] = sslKakfaServer.ClientKeyFile
-			consumerConfigMap["ssl.certificate.location"] = sslKakfaServer.ClientCertFile
-		}
-		if sslKakfaServer.CACert != "" && sslKakfaServer.ClientCert != "" {
-			consumerConfigMap["ssl.ca.pem"] = sslKakfaServer.CACert
-			consumerConfigMap["ssl.key.pem"] = sslKakfaServer.ClientKey
-			consumerConfigMap["ssl.certificate.pem"] = sslKakfaServer.ClientCert
-		}
-		consumerConfigMap["ssl.key.password"] = sslKakfaServer.ClientKeyPass // Key password, if any
-	}
-
-	c, err := kafka.NewConsumer(&consumerConfigMap)
+	consumerConfig := util.GetKafkaConsumerConfig(ks.Broker, ks.AutoCommit, ks.getGroupName())
+	c, err := kafka.NewConsumer(consumerConfig)
 	if err != nil {
 		return err
 	}
+
 	ks.Consumer = c
 	ks.Log.Info("Created", "consumer", c.String(), "consumer group", ks.getGroupName(), "topic", ks.TopicIn)
 
@@ -212,9 +189,7 @@ func (ks *SeldonKafkaServer) Serve() error {
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	// create a cancel channel
 	cancelChan := make(chan struct{})
-	// make a channel with a capacity of the number of workers
 	jobChan := make(chan *KafkaJob, ks.Workers)
 	for i := 0; i < ks.Workers; i++ {
 		go ks.worker(jobChan, cancelChan)

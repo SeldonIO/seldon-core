@@ -6274,6 +6274,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer
@@ -12753,6 +12756,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer
@@ -19232,6 +19238,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer

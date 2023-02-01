@@ -2,7 +2,7 @@
 
 ![Version: 0.1](https://img.shields.io/static/v1?label=Version&message=0.1&color=informational&style=flat-square)
 
-Seldon Benchmark Workflow
+Seldon Core v1 Benchmark Workflow
 
 ## Usage
 

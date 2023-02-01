@@ -6,6 +6,7 @@ from typing import Dict, Union
 from flask import current_app
 from flask import jsonify as flask_jsonify
 from flask import request
+from werkzeug.exceptions import BadRequest
 
 
 def get_multi_form_data_request() -> Dict:
@@ -68,13 +69,19 @@ def get_request(skip_decoding=False) -> Union[Dict, bytes]:
         return json.loads(j_str)
 
     if skip_decoding:
-        data = request.get_data()
+        try:
+            data = request.get_data()
+        except BadRequest:
+            raise SeldonMicroserviceException("Can't find data")
         if data is None:
             raise SeldonMicroserviceException("Can't find data")
 
         return data
 
-    message = request.get_json()
+    try:
+        message = request.get_json()
+    except BadRequest:
+        raise SeldonMicroserviceException("Can't find JSON in data")
     if message is None:
         raise SeldonMicroserviceException("Can't find JSON in data")
 

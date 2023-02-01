@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/seldonio/seldon-core/operator/controllers/resources/credentials"
@@ -26,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"os"
 )
 
 // TODO: change image to seldon? is at least configurable by configmap now (with fixed version there)
@@ -264,8 +264,17 @@ func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment
 	}
 
 	// Inject credentials using secretRef
+	addEnvFromSecret(initContainer, envSecretRefName)
+
+	// Add init container to the spec
+	podSpec.InitContainers = append(podSpec.InitContainers, *initContainer)
+
+	return deployment, nil
+}
+
+func addEnvFromSecret(userContainer *corev1.Container, envSecretRefName string) {
 	if envSecretRefName != "" {
-		initContainer.EnvFrom = append(initContainer.EnvFrom,
+		userContainer.EnvFrom = append(userContainer.EnvFrom,
 			corev1.EnvFromSource{
 				SecretRef: &corev1.SecretEnvSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -274,11 +283,6 @@ func (mi *ModelInitialiser) InjectModelInitializer(deployment *appsv1.Deployment
 				},
 			})
 	}
-
-	// Add init container to the spec
-	podSpec.InitContainers = append(podSpec.InitContainers, *initContainer)
-
-	return deployment, nil
 }
 
 func addVolumeMountToContainer(userContainer *corev1.Container, ModelInitializerVolumeName string, MountPath string) {

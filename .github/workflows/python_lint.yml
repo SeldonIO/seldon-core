@@ -1,4 +1,4 @@
-name: Python Lint
+name: V1 Python Lint
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   python-lint:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/python-builder:0.5
 
     steps:
@@ -17,4 +17,3 @@ jobs:
     - name: lint-python
       run: |
         make -C python install_dev lint
-

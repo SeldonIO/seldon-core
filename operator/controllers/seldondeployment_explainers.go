@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 
+	utils2 "github.com/seldonio/seldon-core/operator/controllers/utils"
+
 	"k8s.io/client-go/kubernetes"
 
 	"encoding/json"
@@ -40,12 +42,14 @@ import (
 )
 
 const (
-	ExplainerConfigMapKeyName = "explainer"
-	EnvExplainerImageRelated  = "RELATED_IMAGE_EXPLAINER"
+	ExplainerConfigMapKeyName  = "explainer"
+	EnvRelatedImageExplainer   = "RELATED_IMAGE_EXPLAINER"
+	EnvRelatedImageExplainerV2 = "RELATED_IMAGE_EXPLAINER_V2"
 )
 
 var (
-	envExplainerImage = os.Getenv(EnvExplainerImageRelated)
+	envExplainerImage   = os.Getenv(EnvRelatedImageExplainer)
+	envExplainerImageV2 = os.Getenv(EnvRelatedImageExplainerV2)
 )
 
 type ExplainerInitialiser struct {
@@ -94,7 +98,7 @@ func getExplainerConfigsFromMap(configMap *corev1.ConfigMap) (*ExplainerConfig, 
 
 func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pSvcName string, podSecurityContect *corev1.PodSecurityContext, log logr.Logger) error {
 
-	if !isEmptyExplainer(p.Explainer) {
+	if !utils2.IsEmptyExplainer(p.Explainer) {
 
 		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 
@@ -118,22 +122,30 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		if mlDep.Spec.Protocol == machinelearningv1.ProtocolTensorflow {
 			explainerProtocol = string(machinelearningv1.ProtocolTensorflow)
 		}
-		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
+		if mlDep.Spec.Protocol == machinelearningv1.ProtocolKFServing || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
 			explainerProtocol = string(machinelearningv1.ProtocolV2)
 		}
 
 		// Image from configMap or Relalated Image if its not set
 		if explainerContainer.Image == "" {
-			if envExplainerImage != "" {
-				explainerContainer.Image = envExplainerImage
-			} else {
-				config, err := ei.getExplainerConfigs()
-				if err != nil {
-					return err
-				}
-				if explainerProtocol == string(machinelearningv1.ProtocolV2) {
-					explainerContainer.Image = config.Image_v2
+			if explainerProtocol == string(machinelearningv1.ProtocolV2) {
+				if envExplainerImageV2 != "" {
+					explainerContainer.Image = envExplainerImageV2
 				} else {
+					config, err := ei.getExplainerConfigs()
+					if err != nil {
+						return err
+					}
+					explainerContainer.Image = config.Image_v2
+				}
+			} else {
+				if envExplainerImage != "" {
+					explainerContainer.Image = envExplainerImage
+				} else {
+					config, err := ei.getExplainerConfigs()
+					if err != nil {
+						return err
+					}
 					explainerContainer.Image = config.Image
 				}
 			}
@@ -210,7 +222,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 
 			// Order explainer config map keys
 			var keys []string
-			for k, _ := range p.Explainer.Config {
+			for k := range p.Explainer.Config {
 				keys = append(keys, k)
 			}
 			sort.Strings(keys)
@@ -266,7 +278,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 		c.deployments = append(c.deployments, deploy)
 
 		// Use seldondeployment name dash explainer as the external service name. This should allow canarying.
-		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log)
+		eSvc, err := createPredictorService(eSvcName, seldonId, p, mlDep, httpPort, grpcPort, true, log, c)
 		if err != nil {
 			return err
 		}
@@ -286,7 +298,7 @@ func (ei *ExplainerInitialiser) createExplainer(mlDep *machinelearningv1.SeldonD
 			c.serviceDetails[eSvcName].GrpcEndpoint = eSvcName + "." + eSvc.Namespace + ":" + strconv.Itoa(grpcPort)
 		}
 		if utils.GetEnv(ENV_ISTIO_ENABLED, "false") == "true" {
-			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, getNamespace(mlDep), httpPort, grpcPort)
+			vsvcs, dstRule := createExplainerIstioResources(eSvcName, p, mlDep, seldonId, utils2.GetNamespace(mlDep), httpPort, grpcPort)
 			c.virtualServices = append(c.virtualServices, vsvcs...)
 			c.destinationRules = append(c.destinationRules, dstRule...)
 		}
@@ -323,8 +335,8 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Hosts:    []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
+			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
@@ -344,16 +356,16 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{"*"},
-			Gateways: []string{getAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
+			Hosts:    []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
+			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
 					Match: []*istio_networking.HTTPMatchRequest{
 						{
 							Uri: &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Prefix{Prefix: "/seldon.protos.Seldon/"}},
 							Headers: map[string]*istio_networking.StringMatch{
-								"seldon":    &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.GetName()}},
-								"namespace": &istio_networking.StringMatch{MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
+								"seldon":    {MatchType: &istio_networking.StringMatch_Exact{Exact: mlDep.GetName()}},
+								"namespace": {MatchType: &istio_networking.StringMatch_Exact{Exact: namespace}},
 							},
 						},
 					},

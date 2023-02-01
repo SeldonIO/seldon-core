@@ -1,4 +1,4 @@
-name: Executor Lint
+name: V1 Executor Lint
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   executor-lint:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/core-builder:0.27
 
     steps:

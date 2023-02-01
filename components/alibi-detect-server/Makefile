@@ -2,13 +2,13 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../../version.txt)
 REPO=seldonio
 IMAGE=alibi-detect-server
+KIND_NAME=kind
 
 SELDON_CORE_DIR=../..
 
 BASE_IMAGE ?= seldonio/conda-ubi8
 PYTHON_VERSION ?= 3.7.10
-CONDA_VERSION ?= 4.7.12
-
+CONDA_VERSION ?= 4.13.0
 
 
 get_local_repo: clean
@@ -112,16 +112,19 @@ docker-push-gpu:
 	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image ${REPO}/${IMAGE}:${VERSION}
+	kind load docker-image ${REPO}/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 #
 # RedHat
 #
 
-# password can be found at: https://connect.redhat.com/project/3993461/view
+# password can be found at: https://connect.redhat.com/projects/5e9d53076c2dde3913c2bb66/overview
+project=5e9d53076c2dde3913c2bb66
 redhat-image-scan:
 	docker pull ${REPO}/${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_alibi_detect} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${REPO}/${IMAGE}:${VERSION} scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}
-	docker push scan.connect.redhat.com/ospid-32ed6498-bce5-4c3b-9486-fe1c6e2582d3/${IMAGE}:${VERSION}
+		echo $${rh_password_alibi_detect} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
+	docker tag ${REPO}/${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit

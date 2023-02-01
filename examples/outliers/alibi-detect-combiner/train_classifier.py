@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 
-
+# make sure this directory or another, if you change, exists.
 DATA_DIR = "pipeline/loanclassifier"
 
 
@@ -50,7 +50,7 @@ def train_preprocessor(data):
     categorical_transformer = Pipeline(steps=[
             ('imputer', SimpleImputer(strategy='median')),
             ('onehot', OneHotEncoder(handle_unknown='ignore'))
-        ])
+    ])
 
     preprocessor = ColumnTransformer(transformers=[
         ('num', ordinal_transformer, ordinal_features),

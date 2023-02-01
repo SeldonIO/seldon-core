@@ -6,7 +6,7 @@ annotations:
   operators.operatorframework.io.bundle.package.v1: seldon-operator-certified
   operators.operatorframework.io.bundle.channels.v1: stable
   operators.operatorframework.io.bundle.channel.default.v1: stable
-  operators.operatorframework.io.metrics.builder: operator-sdk-v1.15.0+git
+  operators.operatorframework.io.metrics.builder: operator-sdk-v1.22.2
   operators.operatorframework.io.metrics.mediatype.v1: metrics+v1
   operators.operatorframework.io.metrics.project_layout: go.kubebuilder.io/v2
-  com.redhat.openshift.versions: "v4.8-v4.9"
+  com.redhat.openshift.versions: "v4.8-v4.11"

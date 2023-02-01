@@ -24,8 +24,14 @@ const (
 	GrpcPortName          = "grpc"
 	HttpPortName          = "http"
 
-	TritonDefaultGrpcPort = 2001
-	TritonDefaultHttpPort = 2000
+	TritonDefaultGrpcPort      = 2001
+	TritonDefaultHttpPort      = 2000
+	TritonArgGrpcPort          = "--grpc-port="
+	TritonArgHttpPort          = "--http-port="
+	TritonArgModelRepository   = "--model-repository="
+	TritonArgModelControlMode  = "--model-control-mode="
+	TritonArgLoadModel         = "--load-model="
+	TritonArgStrictModelConfig = "--strict-model-config="
 
 	KFServingProbeLivePath  = "/v2/health/live"
 	KFServingProbeReadyPath = "/v2/health/ready"
@@ -46,29 +52,32 @@ const (
 
 // Event messages
 const (
-	EventsCreateVirtualService  = "CreateVirtualService"
-	EventsUpdateVirtualService  = "UpdateVirtualService"
-	EventsDeleteVirtualService  = "DeleteVirtualService"
-	EventsCreateDestinationRule = "CreateDestinationRule"
-	EventsUpdateDestinationRule = "UpdateDestinationRule"
-	EventsCreateService         = "CreateService"
-	EventsUpdateService         = "UpdateService"
-	EventsDeleteService         = "DeleteService"
-	EventsCreateHPA             = "CreateHPA"
-	EventsUpdateHPA             = "UpdateHPA"
-	EventsDeleteHPA             = "DeleteHPA"
-	EventsCreateScaledObject    = "CreateScaledObject"
-	EventsUpdateScaledObject    = "UpdateScaledObject"
-	EventsDeleteScaledObject    = "DeleteScaledObject"
-	EventsCreatePDB             = "CreatePDB"
-	EventsUpdatePDB             = "UpdatePDB"
-	EventsDeletePDB             = "DeletePDB"
-	EventsCreateDeployment      = "CreateDeployment"
-	EventsUpdateDeployment      = "UpdateDeployment"
-	EventsDeleteDeployment      = "DeleteDeployment"
-	EventsInternalError         = "InternalError"
-	EventsUpdated               = "Updated"
-	EventsUpdateFailed          = "UpdateFailed"
+	EventsCreateAmbassadorMapping = "CreateAmbassadorMapping"
+	EventsUpdateAmbassadorMapping = "UpdateAmbassadorMapping"
+	EventsDeleteAmbassadorMapping = "DeleteAmbassadorMapping"
+	EventsCreateVirtualService    = "CreateVirtualService"
+	EventsUpdateVirtualService    = "UpdateVirtualService"
+	EventsDeleteVirtualService    = "DeleteVirtualService"
+	EventsCreateDestinationRule   = "CreateDestinationRule"
+	EventsUpdateDestinationRule   = "UpdateDestinationRule"
+	EventsCreateService           = "CreateService"
+	EventsUpdateService           = "UpdateService"
+	EventsDeleteService           = "DeleteService"
+	EventsCreateHPA               = "CreateHPA"
+	EventsUpdateHPA               = "UpdateHPA"
+	EventsDeleteHPA               = "DeleteHPA"
+	EventsCreateScaledObject      = "CreateScaledObject"
+	EventsUpdateScaledObject      = "UpdateScaledObject"
+	EventsDeleteScaledObject      = "DeleteScaledObject"
+	EventsCreatePDB               = "CreatePDB"
+	EventsUpdatePDB               = "UpdatePDB"
+	EventsDeletePDB               = "DeletePDB"
+	EventsCreateDeployment        = "CreateDeployment"
+	EventsUpdateDeployment        = "UpdateDeployment"
+	EventsDeleteDeployment        = "DeleteDeployment"
+	EventsInternalError           = "InternalError"
+	EventsUpdated                 = "Updated"
+	EventsUpdateFailed            = "UpdateFailed"
 )
 
 // Explainers

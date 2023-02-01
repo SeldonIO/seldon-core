@@ -33,34 +33,24 @@ const (
 // NewWorker creates, and returns a new Worker object. Its only argument
 // is a channel that the worker can add itself to whenever it is done its
 // work.
-func NewWorker(id int, workQueue chan LogRequest, log logr.Logger, sdepName string, namespace string, predictorName string, kafkaBroker string, kafkaTopic string, protocol string) (*Worker, error) {
+func NewWorker(
+	id int,
+	workQueue chan LogRequest,
+	log logr.Logger,
+	sdepName string,
+	namespace string,
+	predictorName string,
+	kafkaBroker string,
+	kafkaTopic string,
+	protocol string,
+) (*Worker, error) {
 
 	var producer *kafka.Producer
 	var err error
 	if kafkaBroker != "" {
 		log.Info("Creating producer", "broker", kafkaBroker, "topic", kafkaTopic)
-		var producerConfigMap = kafka.ConfigMap{"bootstrap.servers": kafkaBroker,
-			"go.delivery.reports": false, // Need this othewise will get memory leak
-		}
-		log.Info("kafkaSecurityProtocol", "kafkaSecurityProtocol", util.GetKafkaSecurityProtocol())
-		if util.GetKafkaSecurityProtocol() == "SSL" {
-			sslKafka := util.GetSslElements()
-			producerConfigMap["security.protocol"] = util.GetKafkaSecurityProtocol()
-			if sslKafka.CACertFile != "" && sslKafka.ClientCertFile != "" {
-				producerConfigMap["ssl.ca.location"] = sslKafka.CACertFile
-				producerConfigMap["ssl.key.location"] = sslKafka.ClientKeyFile
-				producerConfigMap["ssl.certificate.location"] = sslKafka.ClientCertFile
-			}
-			if sslKafka.CACert != "" && sslKafka.ClientCert != "" {
-				producerConfigMap["ssl.ca.pem"] = sslKafka.CACert
-				producerConfigMap["ssl.key.pem"] = sslKafka.ClientKey
-				producerConfigMap["ssl.certificate.pem"] = sslKafka.ClientCert
-			}
-			producerConfigMap["ssl.key.password"] = sslKafka.ClientKeyPass // Key password, if any
-
-		}
-
-		producer, err = kafka.NewProducer(&producerConfigMap)
+		producerConfig := util.GetKafkaProducerConfig(kafkaBroker)
+		producer, err = kafka.NewProducer(producerConfig)
 		if err != nil {
 			return nil, err
 		}

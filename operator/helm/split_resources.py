@@ -18,9 +18,9 @@ HELM_CONTROLLERID_IF_START = "{{- if .Values.controllerId }}\n"
 HELM_NOT_CONTROLLERID_IF_START = "{{- if not .Values.controllerId }}\n"
 HELM_RBAC_IF_START = "{{- if .Values.rbac.create }}\n"
 HELM_RBAC_CSS_IF_START = "{{- if .Values.rbac.configmap.create }}\n"
-HELM_SA_IF_START = "{{- if .Values.serviceAccount.create -}}\n"
-HELM_CERTMANAGER_IF_START = "{{- if .Values.certManager.enabled -}}\n"
-HELM_NOT_CERTMANAGER_IF_START = "{{- if not .Values.certManager.enabled -}}\n"
+HELM_SA_IF_START = "{{- if .Values.serviceAccount.create }}\n"
+HELM_CERTMANAGER_IF_START = "{{- if .Values.certManager.enabled }}\n"
+HELM_NOT_CERTMANAGER_IF_START = "{{- if not .Values.certManager.enabled }}\n"
 HELM_VERSION_IF_START = (
     '{{- if semverCompare ">=1.15.0" .Capabilities.KubeVersion.GitVersion }}\n'
 )
@@ -39,6 +39,7 @@ HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
     "AMBASSADOR_ENABLED": "ambassador.enabled",
+    "AMBASSADOR_VERSION": "ambassador.version",
     "AMBASSADOR_SINGLE_NAMESPACE": "ambassador.singleNamespace",
     "ISTIO_ENABLED": "istio.enabled",
     "KEDA_ENABLED": "keda.enabled",
@@ -63,6 +64,10 @@ HELM_ENV_SUBST = {
     "EXECUTOR_DEFAULT_MEMORY_REQUEST": "executor.resources.memoryRequest",
     "MANAGER_LOG_LEVEL": "manager.logLevel",
     "MANAGER_LEADER_ELECTION_ID": "manager.leaderElectionID",
+    "MANAGER_LEADER_ELECTION_RESOURCE_LOCK": "manager.leaderElectionResourceLock",
+    "MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS": "manager.leaderElectionLeaseDurationSecs",
+    "MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS": "manager.leaderElectionRenewDeadlineSecs",
+    "MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS": "manager.leaderElectionRetryPeriodSecs",
     "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE": "executor.requestLogger.workQueueSize",
     "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS": "executor.requestLogger.writeTimeoutMs",
     "DEPLOYMENT_NAME_AS_PREFIX": "manager.deploymentNameAsPrefix",
@@ -518,6 +523,14 @@ if __name__ == "__main__":
     )
     kubeflowSelector = (
         "    matchLabels:\n      serving.kubeflow.org/inferenceservice: enabled\n"
+    )
+    webhookData = re.sub(
+        r"(.*caBundle:.*\n)",
+        HELM_NOT_CERTMANAGER_IF_START
+        + r"\1"
+        + HELM_IF_END,
+        webhookData,
+        re.M,
     )
     webhookData = re.sub(
         r"(.*namespaceSelector:\n.*matchExpressions:\n.*\n.*\n)",

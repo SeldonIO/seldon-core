@@ -29,6 +29,16 @@ var (
 	envEnableRoutingInjection       = len(os.Getenv(ENV_ENABLE_ROUTING_INJECTION)) != 0
 )
 
+// Routing-related constants.
+// Ref: https://github.com/SeldonIO/seldon-core/blob/master/doc/source/analytics/routers.md
+const (
+	// Route to all children.
+	routeToAllChildren = -1
+	// Route to no children.
+	routeToNoChildren = -2
+	// Any other positive integer N means route to child N.
+)
+
 type PredictorProcess struct {
 	Ctx               context.Context
 	Client            client.SeldonApiClient
@@ -100,6 +110,11 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 	modelName := p.getModelName(node)
 
 	if callModel || callTransformInput {
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
+		if err != nil {
+			return nil, err
+		}
+
 		//Log Request
 		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
 			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
@@ -108,10 +123,6 @@ func (p *PredictorProcess) transformInput(node *v1.PredictiveUnit, msg payload.S
 			}
 		}
 
-		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
-		if err != nil {
-			return nil, err
-		}
 		p.RoutingMutex.Lock()
 		p.Routing[node.Name] = -1
 		p.RoutingMutex.Unlock()
@@ -151,6 +162,11 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 	modelName := p.getModelName(node)
 
 	if callClient {
+		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
+		if err != nil {
+			return nil, err
+		}
+
 		//Log Request
 		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
 			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
@@ -159,10 +175,6 @@ func (p *PredictorProcess) transformOutput(node *v1.PredictiveUnit, msg payload.
 			}
 		}
 
-		msg, err := p.Client.Chain(p.Ctx, modelName, msg)
-		if err != nil {
-			return nil, err
-		}
 		tmsg, err := p.Client.TransformOutput(p.Ctx, modelName, node.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
 		if tmsg != nil && err == nil {
 			// Log Response
@@ -281,8 +293,7 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 			return nil, err
 		}
 		var cmsgs []payload.SeldonPayload
-		if route == -1 {
-
+		if route == routeToAllChildren { // Routes msg to all children of the current node.
 			cmsgs = make([]payload.SeldonPayload, len(node.Children))
 			var errs = make([]error, len(node.Children))
 			wg := sync.WaitGroup{}
@@ -302,13 +313,13 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 					return cmsgs[i], err
 				}
 			}
-		} else if route == -2 {
+		} else if route == routeToNoChildren { // Returns msg as is.
 			//Abort and return request
 			p.RoutingMutex.Lock()
 			p.Routing[node.Name] = -2
 			p.RoutingMutex.Unlock()
 			return msg, nil
-		} else {
+		} else { // Calls SeldonApiClient.Predict.
 			cmsgs = make([]payload.SeldonPayload, 1)
 			cmsgs[0], err = p.Predict(&node.Children[route], msg)
 			p.RoutingMutex.Lock()
@@ -443,7 +454,7 @@ func (p *PredictorProcess) Status(node *v1.PredictiveUnit, modelName string, msg
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Status(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(nodeModel), msg, p.Meta.Meta)
 	}
 }
 
@@ -451,7 +462,7 @@ func (p *PredictorProcess) Metadata(node *v1.PredictiveUnit, modelName string, m
 	if nodeModel := v1.GetPredictiveUnit(node, modelName); nodeModel == nil {
 		return nil, fmt.Errorf("Failed to find model %s", modelName)
 	} else {
-		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(node), msg, p.Meta.Meta)
+		return p.Client.Metadata(p.Ctx, modelName, nodeModel.Endpoint.ServiceHost, p.getPort(nodeModel), msg, p.Meta.Meta)
 	}
 }
 

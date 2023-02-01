@@ -2,7 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Chart to deploy an AB test in Seldon Core. Allows you to split traffic between two models.
+Chart to deploy an AB test in Seldon Core v1. Allows you to split traffic between two models.
 
 ## Usage
 
@@ -38,10 +38,10 @@ helm install $MY_MODEL_NAME seldonio/seldon-abtest --namespace $MODELS_NAMESPACE
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | modela.image.name | string | `"seldonio/mock_classifier"` |  |
-| modela.image.version | string | `"1.14.0-dev"` |  |
+| modela.image.version | string | `"1.15.0-dev"` |  |
 | modela.name | string | `"classifier-1"` |  |
 | modelb.image.name | string | `"seldonio/mock_classifier"` |  |
-| modelb.image.version | string | `"1.14.0-dev"` |  |
+| modelb.image.version | string | `"1.15.0-dev"` |  |
 | modelb.name | string | `"classifier-2"` |  |
 | predictor.name | string | `"default"` |  |
 | replicas | int | `1` |  |

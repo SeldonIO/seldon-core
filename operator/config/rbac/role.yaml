@@ -1,4 +1,3 @@
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -69,6 +68,46 @@ rules:
   - autoscaling
   resources:
   - horizontalpodautoscalers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - getambassador.io
+  resources:
+  - mappings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - getambassador.io
+  resources:
+  - mappings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - getambassador.io
+  resources:
+  - tlscontexts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - getambassador.io
+  resources:
+  - tlscontexts/status
   verbs:
   - get
   - patch

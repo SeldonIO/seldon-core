@@ -1,6 +1,6 @@
 # seldon-core-analytics
 
-![Version: 1.14.0-dev](https://img.shields.io/static/v1?label=Version&message=1.14.0--dev&color=informational&style=flat-square)
+![Version: 1.15.0-dev](https://img.shields.io/static/v1?label=Version&message=1.15.0--dev&color=informational&style=flat-square)
 
 Prometheus and Grafana installation with a basic Grafana dashboard showing
 the default Prometheus metrics exposed by Seldon for each inference graph
@@ -15,7 +15,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Onca that's done, you should then be able to deploy the chart as:
+Once that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system

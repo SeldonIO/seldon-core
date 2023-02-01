@@ -4,7 +4,7 @@
 
 ![Version: 0.1](https://img.shields.io/static/v1?label=Version&message=0.1&color=informational&style=flat-square)
 
-Proxy integration to deploy models optimized for Intel OpenVINO in Seldon Core
+Proxy integration to deploy models optimized for Intel OpenVINO in Seldon Core v1
 
 ## Usage
 

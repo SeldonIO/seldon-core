@@ -1,4 +1,4 @@
-name: Operator Lint
+name: V1 Operator Lint
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   operator-lint:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     container: seldonio/core-builder:0.27
 
     steps:

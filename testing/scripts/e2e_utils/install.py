@@ -16,6 +16,7 @@ def install_seldon(name=SC_NAME, namespace=SC_NAMESPACE, version=None):
 
     values = {
         "istio.enabled": "true",
+        "ambassador.enabled": "true",
         "istio.gateway": "istio-system/seldon-gateway",
         "certManager.enabled": "false",
     }

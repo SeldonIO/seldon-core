@@ -4,6 +4,9 @@ FROM $BASE_IMAGE:$IMAGE_VERSION
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
+# We are setting default image user as 8888 but s2i build may require root
+LABEL io.openshift.s2i.assemble-user="0"
+
 # This is to install desired version of Python without updating conda version
 # Note: ARGs must be after FROM statement , see source:
 # https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
@@ -14,11 +17,12 @@ ARG CONDA_VERSION
 # MPL based licenses
 RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
 
-RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
-RUN dnf install -y make automake gcc gcc-c++
+RUN microdnf update -y && \
+    microdnf install -y make automake gcc gcc-c++ && \
+    conda install -c conda-forge --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Pin pip and setuptools
-RUN pip install pip==20.2 setuptools==46.1
+RUN pip install pip==22.1.2 setuptools==63.1.0
 
 RUN mkdir microservice
 WORKDIR /microservice
@@ -31,8 +35,6 @@ COPY _python/python/licenses/license.txt .
 COPY _python /microservice
 RUN cd /microservice/python && pip install .
 
-RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
-
 # Default user is 8888 so changing for permissiosn to modify (needed in mlflow
 # server).
 # Clean Conda's cache to avoid cache file conflicts between user IDs:
@@ -40,6 +42,7 @@ RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Cri
 RUN mkdir -p /.conda && \
     chmod a+rwx /.conda && \
     chown -R 8888 /microservice  && \
-    conda clean --index-cache
+    conda clean --yes --index-cache
 
+USER 8888
 EXPOSE 5000

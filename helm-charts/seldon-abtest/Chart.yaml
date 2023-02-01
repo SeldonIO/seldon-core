@@ -1,6 +1,6 @@
 apiVersion: v2
 name: seldon-abtest
-description: Chart to deploy an AB test in Seldon Core. Allows you to split traffic between two models.
+description: Chart to deploy an AB test in Seldon Core v1. Allows you to split traffic between two models.
 version: 0.2.0
 home: https://github.com/SeldonIO/seldon-core
 sources:
