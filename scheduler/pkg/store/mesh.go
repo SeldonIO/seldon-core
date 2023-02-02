@@ -156,6 +156,7 @@ type ServerReplica struct {
 	inferenceSvc      string
 	inferenceHttpPort int32
 	inferenceGrpcPort int32
+	serverName        string
 	replicaIdx        int
 	server            *Server
 	capabilities      []string
@@ -187,6 +188,7 @@ func NewServerReplica(inferenceSvc string,
 		inferenceSvc:         inferenceSvc,
 		inferenceHttpPort:    inferenceHttpPort,
 		inferenceGrpcPort:    inferenceGrpcPort,
+		serverName:           server.name,
 		replicaIdx:           replicaIdx,
 		server:               server,
 		capabilities:         cleanCapabilities(capabilities),
@@ -205,6 +207,7 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		inferenceSvc:         config.GetInferenceSvc(),
 		inferenceHttpPort:    config.GetInferenceHttpPort(),
 		inferenceGrpcPort:    config.GetInferenceGrpcPort(),
+		serverName:           server.name,
 		replicaIdx:           replicaIdx,
 		server:               server,
 		capabilities:         cleanCapabilities(config.GetCapabilities()),
@@ -590,13 +593,12 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	}
 
 	return &ServerReplica{
-		inferenceSvc:      s.inferenceSvc,
-		inferenceHttpPort: s.inferenceHttpPort,
-		inferenceGrpcPort: s.inferenceGrpcPort,
-		replicaIdx:        s.replicaIdx,
-		// note: this is a dummy representation of the server to add to the snapshot
-		// TODO: should we consider just having the server name stored in ServerReplica?
-		server:               NewServer(s.server.name, s.server.shared),
+		inferenceSvc:         s.inferenceSvc,
+		inferenceHttpPort:    s.inferenceHttpPort,
+		inferenceGrpcPort:    s.inferenceGrpcPort,
+		serverName:           s.serverName,
+		replicaIdx:           s.replicaIdx,
+		server:               nil,
 		capabilities:         capabilities,
 		memory:               s.memory,
 		availableMemory:      s.availableMemory,
@@ -640,7 +642,7 @@ func (s *ServerReplica) GetCapabilities() []string {
 }
 
 func (s *ServerReplica) GetServerName() string {
-	return s.server.name
+	return s.serverName
 }
 
 func (s *ServerReplica) GetReplicaIdx() int {
