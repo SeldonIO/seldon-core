@@ -85,7 +85,7 @@ func createModelSettingsFromUri(modelUri string, implementation string) *ModelSe
 	return &ModelSettings{
 		Implementation: implementation,
 		Parameters: &ModelParameters{
-			Uri: fmt.Sprintf(".%s", modelUri),
+			Uri: modelUri,
 		},
 	}
 }
@@ -95,7 +95,7 @@ func createSKLearnModelSettings(path string) (*ModelSettings, error) {
 	if err != nil {
 		return nil, err
 	}
-	return createModelSettingsFromUri(modelUri, "mlserver_sklearn.SKLearnModel"), nil
+	return createModelSettingsFromUri(fmt.Sprintf(".%s", modelUri), "mlserver_sklearn.SKLearnModel"), nil
 }
 
 func createXGBoostModelSettings(path string) (*ModelSettings, error) {
@@ -103,7 +103,7 @@ func createXGBoostModelSettings(path string) (*ModelSettings, error) {
 	if err != nil {
 		return nil, err
 	}
-	return createModelSettingsFromUri(modelUri, "mlserver_xgboost.XGBoostModel"), nil
+	return createModelSettingsFromUri(fmt.Sprintf(".%s", modelUri), "mlserver_xgboost.XGBoostModel"), nil
 }
 
 func createLightGBMModelSettings(path string) (*ModelSettings, error) {
@@ -111,7 +111,7 @@ func createLightGBMModelSettings(path string) (*ModelSettings, error) {
 	if err != nil {
 		return nil, err
 	}
-	return createModelSettingsFromUri(modelUri, "mlserver_lightgbm.LightGBMModel"), nil
+	return createModelSettingsFromUri(fmt.Sprintf(".%s", modelUri), "mlserver_lightgbm.LightGBMModel"), nil
 }
 
 func createAlibiDetectModelSettings() (*ModelSettings, error) {
