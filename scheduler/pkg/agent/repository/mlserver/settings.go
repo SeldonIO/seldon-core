@@ -85,7 +85,7 @@ func createModelSettingsFromUri(modelUri string, implementation string) *ModelSe
 	return &ModelSettings{
 		Implementation: implementation,
 		Parameters: &ModelParameters{
-			Uri: fmt.Sprintf("%s", modelUri),
+			Uri: modelUri,
 		},
 	}
 }
