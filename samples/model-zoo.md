@@ -60,7 +60,7 @@ seldon model infer iris \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "8af36906-c363-4459-9dbb-e22946f08d99",
+	"id": "4eb764d3-fa80-4f4d-b0c5-37a8e2466c16",
 	"parameters": {},
 	"outputs": [
 		{
@@ -104,19 +104,8 @@ tf.keras.backend.clear_session()
 ```
 
 ```
-2023-01-29 13:52:09.182778: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2023-01-29 13:52:09.262542: I tensorflow/core/util/port.cc:104] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2023-01-29 13:52:09.265025: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-2023-01-29 13:52:09.265036: I tensorflow/compiler/xla/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
-2023-01-29 13:52:09.638889: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
-2023-01-29 13:52:09.638932: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
-2023-01-29 13:52:09.638936: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
-2023-01-29 13:52:10.249978: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
-2023-01-29 13:52:10.249993: W tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:265] failed call to cuInit: UNKNOWN ERROR (303)
-2023-01-29 13:52:10.250005: I tensorflow/compiler/xla/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (clive-ThinkPad-P1-Gen-5): /proc/driver/nvidia/version does not exist
-2023-01-29 13:52:10.250610: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX_VNNI FMA
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-02-02 16:29:58.359841: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2023-02-02 16:29:58.359854: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 
 ```
 
@@ -149,34 +138,11 @@ classes = (
 ```
 
 ```python
-outliers = []
-for idx in range(0,X_train.shape[0]):
-    X_mask, mask = apply_mask(X_train[idx].reshape(1, 32, 32, 3),
-                                  mask_size=(12,12),
-                                  n_masks=1,
-                                  channels=[0,1,2],
-                                  mask_type='normal',
-                                  noise_distr=(0,1),
-                                  clip_rng=(0,1))
-    outliers.append(X_mask)
-X_outliers = np.vstack(outliers)
-X_outliers.shape
-corruption = ['gaussian_noise']
-X_corr, y_corr = fetch_cifar10c(corruption=corruption, severity=5, return_X_y=True)
-X_corr = X_corr.astype('float32') / 255
-```
-
-```python
 reqJson = json.loads('{"inputs":[{"name":"input_1","data":[],"datatype":"FP32","shape":[]}]}')
 url = "http://0.0.0.0:9000/v2/models/model/infer"
 
-def infer(resourceName: str, idx: int, requestType: str):
-    if requestType == "outlier":
-        rows = X_outliers[idx:idx+1]
-    elif requestType == "drift":
-        rows = X_corr[idx:idx+1]
-    else:
-        rows = X_train[idx:idx+1]
+def infer(resourceName: str, idx: int):
+    rows = X_train[idx:idx+1]
     show(rows[0])
     reqJson["inputs"][0]["data"] = rows.flatten().tolist()
     reqJson["inputs"][0]["shape"] = [1, 32, 32, 3]
@@ -228,11 +194,11 @@ seldon model status cifar10 -w ModelAvailable | jq -M .
 ```
 
 ```python
-infer("cifar10",4, "normal")
+infer("cifar10",4)
 ```
 
 ```
-![png](model-zoo_files/model-zoo_15_0.png)
+![png](model-zoo_files/model-zoo_14_0.png)
 
 ```
 
@@ -297,7 +263,7 @@ seldon model infer income-xgb \
 {
 	"model_name": "income-xgb_1",
 	"model_version": "1",
-	"id": "c3b6b1e6-2a1f-428b-baaf-9eea65fc5123",
+	"id": "ab32e5d2-29a6-4e4f-adb1-44845aef9e9f",
 	"parameters": {},
 	"outputs": [
 		{
@@ -346,6 +312,12 @@ training_data = MNIST(
               transforms.ToTensor()
           ])
 )
+
+```
+
+```
+/home/clive/miniconda3/envs/scv2/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
 
 ```
 
@@ -412,7 +384,7 @@ infer_mnist()
 ```
 
 ```
-![png](model-zoo_files/model-zoo_29_0.png)
+![png](model-zoo_files/model-zoo_28_0.png)
 
 ```
 
@@ -477,7 +449,7 @@ seldon model infer income-lgb \
 {
 	"model_name": "income-lgb_1",
 	"model_version": "1",
-	"id": "566b6127-134d-4cea-9244-62d17bb5328f",
+	"id": "d39cd4ce-5eef-4c68-b21a-e51ed7ada0ae",
 	"parameters": {},
 	"outputs": [
 		{
@@ -622,7 +594,7 @@ print(response_raw.json())
 ```
 
 ```json
-{'model_name': 'wine_1', 'model_version': '1', 'id': '31e35628-ab5e-4e70-975d-46fe5a1d343f', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
+{'model_name': 'wine_1', 'model_version': '1', 'id': '7be046a4-8334-4ca3-8fa2-143d562d0412', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
 
 ```
 
@@ -640,6 +612,7 @@ seldon model unload wine
 This example model is downloaded and trained in `./scripts/models/Makefile` target `mnist-pytorch`
 
 ```python
+import numpy as np
 import matplotlib.pyplot as plt
 import json
 import requests
@@ -721,12 +694,12 @@ infer_mnist()
 ```
 
 ```
-![png](model-zoo_files/model-zoo_49_0.png)
+![png](model-zoo_files/model-zoo_48_0.png)
 
 ```
 
 ```
-1
+7
 
 ```
 
