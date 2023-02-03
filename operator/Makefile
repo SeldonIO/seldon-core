@@ -38,7 +38,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: install-ginkgo generate fmt vet manifests_all generate-resources
+test: install-ginkgo generate fmt vet manifests_all generate-resources envtest
 	ACK_GINKGO_RC=true \
 	ACK_GINKGO_DEPRECATIONS=1.16.4 \
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
