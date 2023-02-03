@@ -991,6 +991,13 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			overCommitPercentage:                  50,
 			expectedAvailableMemoryWithOverCommit: 2,
 		},
+		{
+			name:                                  "overflow",
+			numModels:                             10,
+			capacity:                              8,
+			overCommitPercentage:                  0,
+			expectedAvailableMemoryWithOverCommit: 0,
+		},
 	}
 
 	for _, test := range tests {
