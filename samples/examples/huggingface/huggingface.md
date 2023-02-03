@@ -298,7 +298,7 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "sentiment-explain",
-        "uid": "cdrn2c5jr36s73eg9om0",
+        "uid": "cfekrhgq4n3c73fctnp0",
         "version": 1,
         "steps": [
           {
@@ -325,7 +325,8 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-18T11:49:04.697311598Z"
+        "lastChangeTimestamp": "2023-02-03T18:09:10.174677246Z",
+        "modelsReady": true
       }
     }
   ]
@@ -422,7 +423,7 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "speech-to-sentiment",
-        "uid": "cdrn2htjr36s73eg9omg",
+        "uid": "cfekrnoq4n3c73fctnpg",
         "version": 1,
         "steps": [
           {
@@ -462,7 +463,8 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-18T11:49:27.793654254Z"
+        "lastChangeTimestamp": "2023-02-03T18:09:35.558610135Z",
+        "modelsReady": true
       }
     }
   ]
@@ -488,9 +490,9 @@ infer("speech-to-sentiment.pipeline")
 ```
 
 ```
-cdrn3iits0ps73bgtaeg
-{"text": " Cambridge is wonderful and beautiful."}
-{"label": "POSITIVE", "score": 0.9998691082000732}
+cfeks30fh5ss739vr63g
+{"text": " I hate working on Sundays."}
+{"label": "NEGATIVE", "score": 0.9994712471961975}
 
 ```
 
@@ -515,8 +517,8 @@ while True:
 ```
 
 ```
-.....
-Explanation anchors: ['beautiful']
+......
+Explanation anchors: ['hate']
 
 ```
 
@@ -537,10 +539,12 @@ seldon pipeline unload sentiment-explain
 seldon model unload whisper
 seldon model unload sentiment
 seldon model unload sentiment-explainer
-seldon model unload sentiment-transform
+seldon model unload sentiment-output-transform
+seldon model unload sentiment-input-transform
 ```
 
 ```json
+{}
 {}
 {}
 {}

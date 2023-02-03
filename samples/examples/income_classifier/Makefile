@@ -16,13 +16,6 @@ env:
 train: env
 	.env/bin/python3 train.py
 
-infer.md: infer.ipynb
-	jupyter nbconvert \
-		infer.ipynb \
-		--ClearOutputPreprocessor.enabled=False \
-		--to markdown \
-		--output infer.md
-
 .PHONY: upload_artifacts
 upload_artifacts:
 	gsutil cp -R preprocessor gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
