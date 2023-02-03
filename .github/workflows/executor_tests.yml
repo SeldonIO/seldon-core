@@ -6,14 +6,20 @@ on:
   pull_request:
     branches: [ master ]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   executor-tests:
 
     runs-on: ubuntu-latest
-    container: seldonio/core-builder:0.27
 
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-go@v3      
+      with:
+        go-version: '^1.17.0'      
     - name: test-executor
       run: |
         make -C executor test

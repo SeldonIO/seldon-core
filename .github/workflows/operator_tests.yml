@@ -22,4 +22,4 @@ jobs:
         go-version: '^1.17.0'
     - name: test-operator
       run: |
-        make -d -C operator test
+        make -C operator test
