@@ -19,9 +19,9 @@ spec:
           "--out",
           "csv=results/base.gz",
           "-u",
-          "1",
+          "5",
           "-i",
-          "1",
+          "100000",
           "-d",
           "120m",
           "scenarios/infer_constant_vu.js",
@@ -43,15 +43,16 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea"
+          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa"
         - name: MODEL_TYPE
-          value: "tfsimple"
+          value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
         - name: MODEL_MEMORY_BYTES
-          value: "400000"
+          value: "400000,8000000,43000000,200000,3000000"
         - name: MAX_NUM_MODELS
-          value: "1"
+          value: "800,100,25,100,100"
+          # value: "0,0,25,100,100"
         - name: INFER_BATCH_SIZE
-          value: "1"
+          value: "1,1,1,1,1"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS

@@ -9,11 +9,13 @@ export function setup() {
 }
 
 export default function (config) {
+    // only assume one model type in this scenario
+    const idx = 0
     const experimentName = config.experimentNamePrefix + scenario.iterationInTest.toString()
-    const modelName1 = config.modelNamePrefix + scenario.iterationInTest.toString() + "_1"
-    const modelName2 = config.modelNamePrefix + scenario.iterationInTest.toString() + "_2"
-    const experiment = generateExperiment(experimentName, config.modelType, modelName1, modelName2, vu.idInTest, 1,
-        config.isSchedulerProxy, config.modelMemoryBytes, config.inferBatchSize)
+    const modelName1 = config.modelNamePrefix[idx] + scenario.iterationInTest.toString() + "_1"
+    const modelName2 = config.modelNamePrefix[idx] + scenario.iterationInTest.toString() + "_2"
+    const experiment = generateExperiment(experimentName, config.modelType[idx], modelName1, modelName2, vu.idInTest, 1,
+        config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
     const model1Defn = experiment.model1Defn
     const model2Defn = experiment.model2Defn
     const experimentDefn = experiment.experimentDefn

@@ -5,8 +5,9 @@ const pytorch_cifar10 = "pytorch_cifar10"
 const tfmnist = "tfmnist"
 const tfresnet152 = "tfresnet152"
 const onnx_gpt2 = "onnx_gpt2"
-const mlflow_wine = "mlflow_wine"
+const mlflow_wine = "mlflow_wine" // mlserver
 const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
+const sentiment = "sentiment" // mlserver
 
 const models = {
     mlflow_wine: {
@@ -22,6 +23,14 @@ const models = {
             "uriTemplate": "gs://seldon-models/testing/iris",
             "maxUriSuffix": 10,
             "requirements": ["sklearn"],
+            "memoryBytes": 20000,
+        },
+    },
+    sentiment: {
+        "modelTemplate": {
+            "uriTemplate": "gs://seldon-models/mlserver/huggingface/sentiment",
+            "maxUriSuffix": 0,
+            "requirements": ["huggingface"],
             "memoryBytes": 20000,
         },
     },
@@ -124,6 +133,20 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         return {
             "http": {"inputs": [{"name": "predict", "shape": shape, "datatype": "FP32", "data": [data]}]},
             "grpc": {"inputs":[{"name":"input","contents":{"fp32_contents":data},"datatype":"FP32","shape":shape}]}
+        }
+    } else if (modelName == sentiment) {
+        const shape = [inferBatchSize]
+        var httpBytes = []
+        var grpcBytes = []
+        const base64 = "dGhpcyBpcyBhIGNvb2wgdGVzdA=="
+        const str = "this is a cool test"
+        for (var i = 0; i < inferBatchSize; i++) {
+            httpBytes.push(str)
+            grpcBytes.push(base64)
+        }
+        return {
+            "http": {"inputs": [{"name": "args", "shape": shape, "datatype": "BYTES", "data": httpBytes}]},
+            "grpc": {"inputs":[{"name":"args","contents":{"bytes_contents":grpcBytes},"datatype":"BYTES","shape":shape}]}
         }
     } else if (modelName == pytorch_cifar10) {
         const shape = [inferBatchSize, 3, 32, 32]

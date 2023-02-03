@@ -13,7 +13,7 @@ FROM grafana/k6
 USER root
 
 
-RUN apk add --update python2 uuidgen sed
+RUN apk add --update python3 uuidgen sed
 
 COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
 
