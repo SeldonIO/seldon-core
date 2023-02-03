@@ -1,5 +1,4 @@
 SHELL := /bin/bash
-export SHELL
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-operator
