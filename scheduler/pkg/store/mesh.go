@@ -611,12 +611,15 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	}
 }
 
-func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {
+func (s *ServerReplica) GetLoadedOrLoadingModelVersions() []ModelVersionID {
 	s.muLoadedModels.RLock()
 	defer s.muLoadedModels.RUnlock()
 
 	var models []ModelVersionID
 	for model := range s.loadedModels {
+		models = append(models, model)
+	}
+	for model := range s.loadingModels {
 		models = append(models, model)
 	}
 	return models
