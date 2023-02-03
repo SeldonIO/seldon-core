@@ -84,9 +84,20 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	ch := service.GetEventChannel()
 
 	t.Logf("Test lags")
+
+	// add the models, note only 0,1,3
+	err = service.AddModel(dummyModelPrefix + "0")
+	g.Expect(err).To(BeNil())
+	err = service.AddModel(dummyModelPrefix + "1")
+	g.Expect(err).To(BeNil())
+	err = service.AddModel(dummyModelPrefix + "3")
+	g.Expect(err).To(BeNil())
+
 	err = lags.Set(dummyModelPrefix+"0", lagThresholdDefault-1)
 	g.Expect(err).To(BeNil())
 	err = lags.Set(dummyModelPrefix+"1", lagThresholdDefault+1)
+	g.Expect(err).To(BeNil())
+	err = lags.Set(dummyModelPrefix+"2", lagThresholdDefault+1) //  model 2 not added so will not get returned to ch
 	g.Expect(err).To(BeNil())
 	event := <-ch
 	g.Expect(event.StatsData.ModelName).To(Equal(dummyModelPrefix + "1"))
@@ -95,6 +106,8 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 
 	t.Logf("Test last used")
 	err = lastUsed.Set(dummyModelPrefix+"3", uint32(time.Now().Unix())-lastUsedThresholdSecondsDefault)
+	g.Expect(err).To(BeNil())
+	err = lastUsed.Set(dummyModelPrefix+"4", uint32(time.Now().Unix())-lastUsedThresholdSecondsDefault) // model 4 not added
 	g.Expect(err).To(BeNil())
 	event = <-ch
 	g.Expect(event.StatsData.ModelName).To(Equal(dummyModelPrefix + "3"))

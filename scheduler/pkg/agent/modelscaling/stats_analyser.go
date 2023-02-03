@@ -58,6 +58,7 @@ type StatsAnalyserService struct {
 	isReady       bool
 	events        chan *ModelScalingEvent
 	logger        log.FieldLogger
+	modelsEnabled sync.Map
 }
 
 func NewStatsAnalyserService(
@@ -73,6 +74,7 @@ func NewStatsAnalyserService(
 		isReady:       false,
 		events:        make(chan *ModelScalingEvent, channelBufferSize),
 		logger:        logger.WithField("source", "StatsAnalyzerService"),
+		modelsEnabled: sync.Map{},
 	}
 }
 
@@ -109,6 +111,9 @@ func (ss *StatsAnalyserService) GetEventChannel() chan *ModelScalingEvent {
 
 func (ss *StatsAnalyserService) DeleteModel(modelName string) error {
 	for _, stats := range ss.statsList {
+		// delete from list of models to report back
+		ss.modelsEnabled.Delete(modelName)
+
 		if err := stats.Stats.Delete(modelName); err != nil {
 			return err
 		}
@@ -116,8 +121,15 @@ func (ss *StatsAnalyserService) DeleteModel(modelName string) error {
 	return nil
 }
 
+// we allow allow models loaded on agent to have metrics collected for scaling purposes:
+// it is hard to shortcut individual models without causing extra performance overheads
+// we might need in the future to enable scaling after the model has been deployed and therefore
+// keeping metrics for all models is useful
 func (ss *StatsAnalyserService) AddModel(modelName string) error {
 	for _, stats := range ss.statsList {
+		// add to list pf models to report back
+		ss.modelsEnabled.Store(modelName, struct{}{})
+
 		if err := stats.Stats.Add(modelName); err != nil {
 			return err
 		}
@@ -175,6 +187,11 @@ func (ss *StatsAnalyserService) processImpl(statsWrapper ModelScalingStatsWrappe
 		return err
 	}
 	for _, modelStatsData := range modelsToScale {
+		_, enabled := ss.modelsEnabled.Load(modelStatsData.ModelName)
+		if !enabled {
+			continue
+		}
+
 		select {
 		case ss.events <- &ModelScalingEvent{
 			EventType: statsWrapper.EventType,
