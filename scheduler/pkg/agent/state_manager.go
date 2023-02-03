@@ -260,6 +260,10 @@ func (manager *LocalStateManager) GetAvailableMemoryBytesWithOverCommit() uint64
 	if manager.modelVersions.getTotalMemoryBytesForAllModels() > manager.totalMainMemoryBytes {
 		// we are overcommiting already, so there should be no main memory available
 		overCommitUsedBytes := manager.modelVersions.getTotalMemoryBytesForAllModels() - manager.totalMainMemoryBytes
+		// sometimes we can get assigned more than we can handle by scheduler
+		if overCommitUsedBytes > uint64(overCommitBytesMax) {
+			return 0
+		}
 		return uint64(overCommitBytesMax) - overCommitUsedBytes
 	} else {
 		return uint64(manager.availableMainMemoryBytes) + uint64(overCommitBytesMax)

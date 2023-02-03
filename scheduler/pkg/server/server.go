@@ -255,7 +255,7 @@ func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	}
 	models := make(map[string]bool)
 	for _, replica := range server.Replicas {
-		for _, model := range replica.GetLoadedModelVersions() {
+		for _, model := range replica.GetLoadedOrLoadingModelVersions() {
 			models[model.Name] = true
 		}
 	}

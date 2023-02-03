@@ -39,8 +39,8 @@ func getTestModelWithMemory(requiredmemory *uint64, serverName string, replicaId
 		store.ModelProgressing)
 }
 
-func getTestServerReplicaWithMemory(availableMemory uint64, serverName string, replicaId int) *store.ServerReplica {
-	return store.NewServerReplica("svc", 8080, 5001, replicaId, store.NewServer(serverName, true), []string{}, availableMemory, availableMemory, nil, 100)
+func getTestServerReplicaWithMemory(availableMemory, reservedMemory uint64, serverName string, replicaId int) *store.ServerReplica {
+	return store.NewServerReplica("svc", 8080, 5001, replicaId, store.NewServer(serverName, true), []string{}, availableMemory, availableMemory, reservedMemory, nil, 100)
 }
 
 func TestReplicaMemoryFilter(t *testing.T) {
@@ -55,10 +55,11 @@ func TestReplicaMemoryFilter(t *testing.T) {
 
 	memory := uint64(100)
 	tests := []test{
-		{name: "EnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(100, "server1", 0), expected: true},
-		{name: "NoMemorySpecified", model: getTestModelWithMemory(nil, "", -1), server: getTestServerReplicaWithMemory(200, "server1", 0), expected: true},
-		{name: "NotEnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(50, "server1", 0), expected: false},
-		{name: "ModelAlreadyLoaded", model: getTestModelWithMemory(&memory, "server1", 0), server: getTestServerReplicaWithMemory(0, "server1", 0), expected: true}, // note not enough memory on server replica
+		{name: "EnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(100, 0, "server1", 0), expected: true},
+		{name: "NoMemorySpecified", model: getTestModelWithMemory(nil, "", -1), server: getTestServerReplicaWithMemory(200, 0, "server1", 0), expected: true},
+		{name: "NotEnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(50, 0, "server1", 0), expected: false},
+		{name: "NotEnoughMemoryWithReserved", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(200, 150, "server1", 0), expected: false},
+		{name: "ModelAlreadyLoaded", model: getTestModelWithMemory(&memory, "server1", 0), server: getTestServerReplicaWithMemory(0, 0, "server1", 0), expected: true}, // note not enough memory on server replica
 	}
 
 	for _, test := range tests {

@@ -161,7 +161,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			server: &store.ServerSnapshot{
 				Name: "server",
 				Replicas: map[int]*store.ServerReplica{
-					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, nil, 100),
+					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
 				},
 			},
 			traffic:          100,
@@ -189,7 +189,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			server: &store.ServerSnapshot{
 				Name: "server",
 				Replicas: map[int]*store.ServerReplica{
-					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, nil, 100),
+					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
 				},
 			},
 			traffic:          100,
@@ -229,7 +229,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			server: &store.ServerSnapshot{
 				Name: "server",
 				Replicas: map[int]*store.ServerReplica{
-					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, nil, 100),
+					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
 				},
 			},
 			traffic:          100,
@@ -269,8 +269,8 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			server: &store.ServerSnapshot{
 				Name: "server",
 				Replicas: map[int]*store.ServerReplica{
-					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, nil, 100),
-					2: store.NewServerReplica("host2", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, nil, 100),
+					1: store.NewServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
+					2: store.NewServerReplica("host2", 8080, 5000, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
 				},
 			},
 			traffic:          100,
@@ -343,7 +343,7 @@ func createTestModel(modelName string,
 				}
 			}
 			if serverReplica == nil {
-				serverReplica = store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, nil, 0)
+				serverReplica = store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, 0, nil, 0)
 			}
 			serverReplicas = append(serverReplicas, serverReplica)
 		}

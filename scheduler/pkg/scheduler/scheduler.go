@@ -153,14 +153,15 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
 			var candidateReplicas *sorters.CandidateServer
-			candidateReplicas, debugTrail = s.filterReplicas(latestModel, candidateServer, debugTrail)
-			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
-				continue
-			}
 
 			// we need a lock here, we could have many goroutines at sorting
 			// without the store being reflected and hence sorting on stale values
 			s.muSortAndUpdate.Lock()
+			candidateReplicas, debugTrail = s.filterReplicas(latestModel, candidateServer, debugTrail)
+			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
+				s.muSortAndUpdate.Unlock()
+				continue
+			}
 			s.sortReplicas(candidateReplicas)
 			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
 			s.muSortAndUpdate.Unlock()

@@ -18,6 +18,7 @@ package filters
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
@@ -36,7 +37,8 @@ func isModelReplicaLoadedOnServerReplica(model *store.ModelVersion, replica *sto
 }
 
 func (r AvailableMemoryReplicaFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
-	return model.GetRequiredMemory() <= replica.GetAvailableMemory() || isModelReplicaLoadedOnServerReplica(model, replica)
+	mem := math.Max(0, float64(replica.GetAvailableMemory()-replica.GetReservedMemory()))
+	return model.GetRequiredMemory() <= uint64(mem) || isModelReplicaLoadedOnServerReplica(model, replica)
 }
 
 func (r AvailableMemoryReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {

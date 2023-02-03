@@ -180,8 +180,9 @@ func NewServerReplica(inferenceSvc string,
 	replicaIdx int,
 	server *Server,
 	capabilities []string,
-	memory uint64,
-	availableMemory uint64,
+	memory,
+	availableMemory,
+	reservedMemory uint64,
 	loadedModels map[ModelVersionID]bool,
 	overCommitPercentage uint32) *ServerReplica {
 	return &ServerReplica{
@@ -194,6 +195,7 @@ func NewServerReplica(inferenceSvc string,
 		capabilities:         cleanCapabilities(capabilities),
 		memory:               memory,
 		availableMemory:      availableMemory,
+		reservedMemory:       reservedMemory,
 		loadedModels:         loadedModels,
 		loadingModels:        map[ModelVersionID]bool{},
 		overCommitPercentage: overCommitPercentage,
@@ -611,12 +613,15 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 	}
 }
 
-func (s *ServerReplica) GetLoadedModelVersions() []ModelVersionID {
+func (s *ServerReplica) GetLoadedOrLoadingModelVersions() []ModelVersionID {
 	s.muLoadedModels.RLock()
 	defer s.muLoadedModels.RUnlock()
 
 	var models []ModelVersionID
 	for model := range s.loadedModels {
+		models = append(models, model)
+	}
+	for model := range s.loadingModels {
 		models = append(models, model)
 	}
 	return models
