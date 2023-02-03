@@ -44,9 +44,9 @@ func TestReplicaIndexSorter(t *testing.T) {
 		{
 			name: "OrderByIndex",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 20, store.NewServer("dummy", true), []string{}, 100, 200, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 10, store.NewServer("dummy", true), []string{}, 100, 100, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 30, store.NewServer("dummy", true), []string{}, 100, 150, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 20, store.NewServer("dummy", true), []string{}, 100, 200, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 10, store.NewServer("dummy", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 30, store.NewServer("dummy", true), []string{}, 100, 150, 0, map[store.ModelVersionID]bool{}, 100)},
 			},
 			ordering: []int{10, 20, 30},
 		},
