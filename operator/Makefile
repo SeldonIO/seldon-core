@@ -7,7 +7,7 @@ IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
-ENVTEST_K8S_VERSION = 1.22
+ENVTEST_K8S_VERSION = 1.24
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -16,6 +16,12 @@ GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
+
+# Setting SHELL to bash allows bash commands to be executed by recipes.
+# This is a requirement for 'setup-envtest.sh' in the test target.
+# Options are set to exit when a recipe line exits non-zero or a piped command fails.
+#SHELL = /usr/bin/env bash -o pipefail
+.SHELLFLAGS = -ec
 
 .PHONY:show_image
 show_image:
@@ -32,7 +38,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: install-ginkgo generate fmt vet manifests_all generate-resources
+test: install-ginkgo generate fmt vet manifests_all generate-resources envtest
 	ACK_GINKGO_RC=true \
 	ACK_GINKGO_DEPRECATIONS=1.16.4 \
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
