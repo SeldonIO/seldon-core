@@ -140,7 +140,7 @@ class TestNotebooks(object):
     #
 
     # As we make a jump to v1 HPA for 1.16 hard to test on 1 k8s cluster upgrade
-    #def test_upgrade(self):
+    # def test_upgrade(self):
     #    try:
     #        create_and_run_script("../../notebooks", "operator_upgrade")
     #    except:
