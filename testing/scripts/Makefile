@@ -67,7 +67,7 @@ install_ambassador:
 	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/3.1.0/aes-crds.yaml
 	kubectl wait --timeout=90s --for=condition=available deployment emissary-apiext -n emissary-system
 	helm install -n ambassador --create-namespace edge-stack datawire/edge-stack \
-		-f ../resources/ambassador_values.yaml
+		-f ../resources/ambassador_values.yaml --wait
 	kubectl rollout status  -n ambassador deployment/edge-stack -w
 	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
@@ -86,6 +86,7 @@ install_cert_manager:
 	    --namespace cert-manager \
 	    --create-namespace \
 	    --version v1.10.0 \
+	    --wait \
 	    --set installCRDs=true
 	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
@@ -127,7 +128,7 @@ set_namespace:
 .PHONY: install_metrics
 # Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
 install_metrics:
-	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system
+	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --wait
 
 .PHONY: kind_setup
 kind_setup: create_namespaces helm_setup install_cert_manager install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
