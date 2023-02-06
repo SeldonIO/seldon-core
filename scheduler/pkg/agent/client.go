@@ -96,6 +96,8 @@ type ClientSettings struct {
 	periodReadySubService                    time.Duration
 	maxElapsedTimeReadySubServiceBeforeStart time.Duration
 	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+	maxLoadRetryCount                        uint8
+	maxUnloadRetryCount                      uint8
 }
 
 func NewClientSettings(
@@ -107,6 +109,8 @@ func NewClientSettings(
 	periodReadySubService,
 	maxElapsedTimeReadySubServiceBeforeStart,
 	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+	maxLoadRetryCount,
+	maxUnloadRetryCount uint8,
 ) *ClientSettings {
 	return &ClientSettings{
 		serverName:                               serverName,
@@ -117,6 +121,8 @@ func NewClientSettings(
 		periodReadySubService:                    periodReadySubService,
 		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
 		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+		maxLoadRetryCount:                        maxLoadRetryCount,
+		maxUnloadRetryCount:                      maxUnloadRetryCount,
 	}
 }
 
@@ -540,7 +546,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(loaderFn, 3, logger); err != nil {
+	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -580,7 +586,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(unloaderFn, 3, logger); err != nil {
+	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
