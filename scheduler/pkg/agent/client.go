@@ -535,7 +535,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	// TODO: do we need the actual protos being sent
+	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
 	err = c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	if err != nil {

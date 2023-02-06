@@ -87,3 +87,31 @@ func isReadyChecker(
 	}
 	return nil
 }
+
+// BackOffWithMaxCount is a backoff policy that retries up to a max count
+type BackOffWithMaxCount struct {
+	backoffPolicy backoff.BackOff
+	maxCount      uint8
+	currentCount  uint8
+}
+
+func NewBackOffWithMaxCount(maxCount uint8, backOffPolicy backoff.BackOff) *BackOffWithMaxCount {
+	return &BackOffWithMaxCount{
+		maxCount:      maxCount,
+		backoffPolicy: backOffPolicy,
+		currentCount:  0,
+	}
+}
+
+func (b *BackOffWithMaxCount) Reset() {
+	b.backoffPolicy.Reset()
+}
+
+func (b *BackOffWithMaxCount) NextBackOff() time.Duration {
+	if b.currentCount >= b.maxCount {
+		return backoff.Stop
+	} else {
+		b.currentCount++
+		return b.backoffPolicy.NextBackOff()
+	}
+}
