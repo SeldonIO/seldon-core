@@ -59,7 +59,7 @@ const (
 	// period for subservice ready "cron"
 	periodReadySubService = 60 * time.Second
 	// number of retries for loading a model onto a server
-	maxLoadRetryCount = 3
+	maxLoadRetryCount = 6
 	// number of retries for unloading a model onto a server
 	maxUnloadRetryCount = 1
 )
