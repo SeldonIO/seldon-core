@@ -278,7 +278,7 @@ func main() {
 			maxElapsedTimeReadySubServiceBeforeStart,
 			maxElapsedTimeReadySubServiceAfterStart,
 			maxLoadRetryCount,
-			maxLoadRetryCount,
+			maxUnloadRetryCount,
 		),
 		logger,
 		modelRepository,
