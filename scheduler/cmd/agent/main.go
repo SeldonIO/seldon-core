@@ -58,6 +58,10 @@ const (
 	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// period for subservice ready "cron"
 	periodReadySubService = 60 * time.Second
+	// number of retries for loading a model onto a server
+	maxLoadRetryCount = 10
+	// number of retries for unloading a model onto a server
+	maxUnloadRetryCount = 1
 )
 
 func makeDirs() (string, string, error) {
@@ -273,6 +277,8 @@ func main() {
 			periodReadySubService,
 			maxElapsedTimeReadySubServiceBeforeStart,
 			maxElapsedTimeReadySubServiceAfterStart,
+			maxLoadRetryCount,
+			maxUnloadRetryCount,
 		),
 		logger,
 		modelRepository,
