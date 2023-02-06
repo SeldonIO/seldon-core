@@ -96,6 +96,8 @@ type ClientSettings struct {
 	periodReadySubService                    time.Duration
 	maxElapsedTimeReadySubServiceBeforeStart time.Duration
 	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+	maxLoadRetryCount                        uint8
+	maxUnloadRetryCount                      uint8
 }
 
 func NewClientSettings(
@@ -107,6 +109,8 @@ func NewClientSettings(
 	periodReadySubService,
 	maxElapsedTimeReadySubServiceBeforeStart,
 	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+	maxLoadRetryCount,
+	maxUnloadRetryCount uint8,
 ) *ClientSettings {
 	return &ClientSettings{
 		serverName:                               serverName,
@@ -117,6 +121,8 @@ func NewClientSettings(
 		periodReadySubService:                    periodReadySubService,
 		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
 		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+		maxLoadRetryCount:                        maxLoadRetryCount,
+		maxUnloadRetryCount:                      maxUnloadRetryCount,
 	}
 }
 
@@ -535,10 +541,12 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	// TODO: do we need the actual protos being sent
+	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
-	err = c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
-	if err != nil {
+	loaderFn := func() error {
+		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
+	}
+	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -574,7 +582,11 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	// we do not care about model versions here
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
-	if err := c.stateManager.UnloadModelVersion(modifiedModelVersionRequest); err != nil {
+
+	unloaderFn := func() error {
+		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
+	}
+	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
