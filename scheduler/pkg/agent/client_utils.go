@@ -88,6 +88,19 @@ func isReadyChecker(
 	return nil
 }
 
+func fnWithRetry(fn func() error, count uint8, logger log.FieldLogger) error {
+	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax.MaxElapsedTime = 15 * time.Minute // default
+
+	// Wait for model repo to be ready
+	i := 0
+	logFailure := func(err error, delay time.Duration) {
+		logger.WithError(err).Errorf("Retry op #%d", i)
+		i++
+	}
+	return backoff.RetryNotify(fn, NewBackOffWithMaxCount(count, backoffWithMax), logFailure)
+}
+
 // BackOffWithMaxCount is a backoff policy that retries up to a max count
 type BackOffWithMaxCount struct {
 	backoffPolicy backoff.BackOff

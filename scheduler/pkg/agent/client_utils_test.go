@@ -36,12 +36,23 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 	type test struct {
 		name  string
 		count uint8
+		err   error
 	}
 	tests := []test{
 		{
-
 			name:  "simple",
 			count: 3,
+			err:   fmt.Errorf("retry"),
+		},
+		{
+			name:  "no retry",
+			count: 0,
+			err:   fmt.Errorf("retry"),
+		},
+		{
+			name:  "no error",
+			count: 3,
+			err:   nil,
 		},
 	}
 
@@ -49,7 +60,7 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			policy := backoff.ZeroBackOff{}
 			fn := func() error {
-				return fmt.Errorf("err")
+				return test.err
 			}
 			count := uint8(0)
 			policyWithMax := NewBackOffWithMaxCount(test.count, &policy)
@@ -60,7 +71,39 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 
 			//TODO make retry configurable
 			_ = backoff.RetryNotify(fn, policyWithMax, logFailure)
-			g.Expect(count).To(Equal(test.count))
+			if test.err != nil {
+				g.Expect(count).To(Equal(test.count))
+			} else {
+				g.Expect(count).To(Equal(uint8(0)))
+			}
+		})
+	}
+}
+
+func TestFnWrapperWithMax(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+
+	type test struct {
+		name  string
+		count uint8
+	}
+	tests := []test{
+		{
+			name:  "simple",
+			count: 3,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			fn := func() error {
+				return fmt.Errorf("error")
+			}
+			_ = fnWithRetry(fn, test.count, logger)
+			// if we are here we are done
 		})
 	}
 }
