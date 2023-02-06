@@ -59,6 +59,7 @@ func TestReplicaMemoryFilter(t *testing.T) {
 		{name: "NoMemorySpecified", model: getTestModelWithMemory(nil, "", -1), server: getTestServerReplicaWithMemory(200, 0, "server1", 0), expected: true},
 		{name: "NotEnoughMemory", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(50, 0, "server1", 0), expected: false},
 		{name: "NotEnoughMemoryWithReserved", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(200, 150, "server1", 0), expected: false},
+		{name: "NotEnoughMemoryWithReservedOverflow", model: getTestModelWithMemory(&memory, "", -1), server: getTestServerReplicaWithMemory(200, 250, "server1", 0), expected: false},
 		{name: "ModelAlreadyLoaded", model: getTestModelWithMemory(&memory, "server1", 0), server: getTestServerReplicaWithMemory(0, 0, "server1", 0), expected: true}, // note not enough memory on server replica
 	}
 
