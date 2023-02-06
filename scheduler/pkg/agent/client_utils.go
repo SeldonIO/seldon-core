@@ -88,7 +88,7 @@ func isReadyChecker(
 	return nil
 }
 
-func fnWithRetry(fn func() error, count uint8, logger log.FieldLogger) error {
+func backoffWithMaxNumRetry(fn func() error, count uint8, logger log.FieldLogger) error {
 	backoffWithMax := backoff.NewExponentialBackOff()
 	backoffWithMax.MaxElapsedTime = 15 * time.Minute // default
 
@@ -98,29 +98,29 @@ func fnWithRetry(fn func() error, count uint8, logger log.FieldLogger) error {
 		logger.WithError(err).Errorf("Retry op #%d", i)
 		i++
 	}
-	return backoff.RetryNotify(fn, NewBackOffWithMaxCount(count, backoffWithMax), logFailure)
+	return backoff.RetryNotify(fn, newBackOffWithMaxCount(count, backoffWithMax), logFailure)
 }
 
-// BackOffWithMaxCount is a backoff policy that retries up to a max count
-type BackOffWithMaxCount struct {
+// backOffWithMaxCount is a backoff policy that retries up to a max count
+type backOffWithMaxCount struct {
 	backoffPolicy backoff.BackOff
 	maxCount      uint8
 	currentCount  uint8
 }
 
-func NewBackOffWithMaxCount(maxCount uint8, backOffPolicy backoff.BackOff) *BackOffWithMaxCount {
-	return &BackOffWithMaxCount{
+func newBackOffWithMaxCount(maxCount uint8, backOffPolicy backoff.BackOff) *backOffWithMaxCount {
+	return &backOffWithMaxCount{
 		maxCount:      maxCount,
 		backoffPolicy: backOffPolicy,
 		currentCount:  0,
 	}
 }
 
-func (b *BackOffWithMaxCount) Reset() {
+func (b *backOffWithMaxCount) Reset() {
 	b.backoffPolicy.Reset()
 }
 
-func (b *BackOffWithMaxCount) NextBackOff() time.Duration {
+func (b *backOffWithMaxCount) NextBackOff() time.Duration {
 	if b.currentCount >= b.maxCount {
 		return backoff.Stop
 	} else {

@@ -63,7 +63,7 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 				return test.err
 			}
 			count := uint8(0)
-			policyWithMax := NewBackOffWithMaxCount(test.count, &policy)
+			policyWithMax := newBackOffWithMaxCount(test.count, &policy)
 			logFailure := func(err error, delay time.Duration) {
 				logger.WithError(err).Errorf("retry")
 				count++
@@ -102,7 +102,7 @@ func TestFnWrapperWithMax(t *testing.T) {
 			fn := func() error {
 				return fmt.Errorf("error")
 			}
-			_ = fnWithRetry(fn, test.count, logger)
+			_ = backoffWithMaxNumRetry(fn, test.count, logger)
 			// if we are here we are done
 		})
 	}

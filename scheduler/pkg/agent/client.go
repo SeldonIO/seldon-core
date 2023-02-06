@@ -540,7 +540,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := fnWithRetry(loaderFn, 3, logger); err != nil {
+	if err := backoffWithMaxNumRetry(loaderFn, 3, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -580,7 +580,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := fnWithRetry(unloaderFn, 3, logger); err != nil {
+	if err := backoffWithMaxNumRetry(unloaderFn, 3, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
