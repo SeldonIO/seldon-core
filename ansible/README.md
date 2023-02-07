@@ -41,7 +41,7 @@ will only install Kafka when setting up the ecosystem.
 | seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
 | full_install            | bool   | yes                         | enables full ecosystem installation                     |
 | install_kafka           | bool   | {{ full_install }}          | installs Kafka using seldonio.k8s.strimzi_kafka         |
-| install_prometeus       | bool   | {{ full_install }}          | installs Prometheus using seldonio.k8s.prometheus       |
+| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus using seldonio.k8s.prometheus       |
 | install_certmanager     | bool   | {{ full_install }}          | installs certmanager using seldonio.k8s.certmanager     |
 | install_jaeger          | bool   | {{ full_install }}          | installs Jaeger using seldonio.k8s.jaeger               |
 | install_opentelemetry   | bool   | {{ full_install }}          | installs OpenTelemetry using seldonio.k8s.opentelemetry |
@@ -67,7 +67,7 @@ ansible-playbook playbooks/setup-seldon.yaml
 If you have changed the namespace you wish to use you will need to run with:
 
 ```bash
-ansible-playbook playbooks/setup-seldon-v2.yaml -e seldon_mesh_namespace=<mynamespace>
+ansible-playbook playbooks/setup-seldon.yaml -e seldon_mesh_namespace=<mynamespace>
 ```
 
 |                         | type   | default                     | comment                                                 |
