@@ -629,7 +629,17 @@ func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showRespo
 	return nil
 }
 
-func (sc *SchedulerClient) UnloadPipeline(pipelineName string, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []byte, showRequest bool, showResponse bool) error {
+
+	if len(pipelineBytes) > 0 && pipelineName == "" {
+		pipeline := &mlopsv1alpha1.Pipeline{}
+		err := unMarshallYamlStrict(pipelineBytes, pipeline)
+		if err != nil {
+			return err
+		}
+		pipelineName = pipeline.Name
+	}
+
 	req := &scheduler.UnloadPipelineRequest{
 		Name: pipelineName,
 	}

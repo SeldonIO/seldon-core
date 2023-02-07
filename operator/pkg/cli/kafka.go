@@ -251,7 +251,7 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 	return res, nil
 }
 
-func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, namespace string) error {
+func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
 	if namespace == "" {
 		namespace = kc.namespace
 	}
@@ -266,7 +266,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 
 	ki := KafkaInspect{}
 	for _, topic := range pipelineTopics.topics {
-		kit, err := kc.createInspectTopic(topic, pipelineTopics.tensor, offset, key, verbose)
+		kit, err := kc.createInspectTopic(topic, pipelineTopics.tensor, offset, key, verbose, truncateData)
 		if err != nil {
 			return err
 		}
@@ -300,7 +300,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 	return nil
 }
 
-func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset int64, key string, verbose bool) (*KafkaInspectTopic, error) {
+func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset int64, key string, verbose bool, truncateData bool) (*KafkaInspectTopic, error) {
 	kit := KafkaInspectTopic{
 		Name: topic,
 	}
@@ -328,7 +328,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset in
 			case *kafka.Message:
 				seen = seen + 1
 				if (string(e.Key) == key) || key == "" {
-					kitm, err := createKafkaMsg(e, topic, tensor, verbose)
+					kitm, err := createKafkaMsg(e, topic, tensor, verbose, truncateData)
 					if err != nil {
 						return nil, err
 					}
@@ -355,7 +355,7 @@ func addInspectHeaders(e *kafka.Message, kitm *KafkaInspectTopicMessage) {
 	}
 }
 
-func createKafkaMsg(e *kafka.Message, topic string, tensor string, verbose bool) (*KafkaInspectTopicMessage, error) {
+func createKafkaMsg(e *kafka.Message, topic string, tensor string, verbose bool, truncateData bool) (*KafkaInspectTopicMessage, error) {
 	kitm := KafkaInspectTopicMessage{
 		Key: string(e.Key),
 	}
@@ -364,9 +364,9 @@ func createKafkaMsg(e *kafka.Message, topic string, tensor string, verbose bool)
 	}
 	var err error
 	if strings.HasSuffix(topic, OutputsSpecifier) {
-		err = addInspectKafkaOutputMsg(e, tensor, &kitm)
+		err = addInspectKafkaOutputMsg(e, tensor, &kitm, truncateData)
 	} else {
-		err = addInspectKafkaInputMsg(e, tensor, &kitm)
+		err = addInspectKafkaInputMsg(e, tensor, &kitm, truncateData)
 	}
 	return &kitm, err
 }
@@ -379,16 +379,33 @@ func protoTojson(msg proto.Message) (json.RawMessage, error) {
 	return b, nil
 }
 
-func addInspectKafkaOutputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage) error {
+func clearTensorContents(c *v2_dataplane.InferTensorContents) {
+	c.IntContents = nil
+	c.Uint64Contents = nil
+	c.UintContents = nil
+	c.Int64Contents = nil
+	c.Fp32Contents = nil
+	c.Fp64Contents = nil
+	c.BoolContents = nil
+	c.BytesContents = nil
+}
+
+func addInspectKafkaOutputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage, truncateData bool) error {
 	res := &v2_dataplane.ModelInferResponse{}
 	err := proto.Unmarshal(e.Value, res)
 	if err != nil {
-		kitm.Value = json.RawMessage(e.Value)
+		kitm.Value = e.Value
 		return nil
 	}
 	err = updateResponseFromRawContents(res)
 	if err != nil {
 		return err
+	}
+	if truncateData {
+		for _, output := range res.Outputs {
+			clearTensorContents(output.Contents)
+		}
+		res.RawOutputContents = nil
 	}
 	if tensor != "" {
 		for _, output := range res.Outputs {
@@ -409,7 +426,7 @@ func addInspectKafkaOutputMsg(e *kafka.Message, tensor string, kitm *KafkaInspec
 	return nil
 }
 
-func addInspectKafkaInputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage) error {
+func addInspectKafkaInputMsg(e *kafka.Message, tensor string, kitm *KafkaInspectTopicMessage, truncateData bool) error {
 	req := &v2_dataplane.ModelInferRequest{}
 	err := proto.Unmarshal(e.Value, req)
 	if err != nil {
@@ -419,6 +436,12 @@ func addInspectKafkaInputMsg(e *kafka.Message, tensor string, kitm *KafkaInspect
 	err = updateRequestFromRawContents(req)
 	if err != nil {
 		return err
+	}
+	if truncateData {
+		for _, output := range req.Inputs {
+			clearTensorContents(output.Contents)
+		}
+		req.RawInputContents = nil
 	}
 	if tensor != "" {
 		for _, input := range req.Inputs {
