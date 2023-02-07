@@ -166,24 +166,7 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
 
 .. tabbed:: Ambassador
 
-    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. 
-
-    **Install Ambassador**
-
-    First, we must install the Custom Resource Definitions by running:
-
-    .. code-block:: bash 
-
-        kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
-
-    Now install the kind-specific manifests in the ``ambassador`` namespace:
-
-    .. code-block:: bash 
-
-        kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
-        kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
-
-    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Ambassador please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
+    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. Install Ambassador following their docs.
 
 Install Seldon Core
 ----------------------------
