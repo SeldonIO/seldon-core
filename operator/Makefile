@@ -131,7 +131,7 @@ manifests: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
 
 manifests_v1_small: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
+	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
 
 # Run go fmt against code
 fmt:
