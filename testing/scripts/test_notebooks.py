@@ -139,13 +139,12 @@ class TestNotebooks(object):
     # Upgrade
     #
 
-    # As we make a jump to v1 HPA for 1.16 hard to test on 1 k8s cluster upgrade
-    # def test_upgrade(self):
-    #    try:
-    #        create_and_run_script("../../notebooks", "operator_upgrade")
-    #    except:
-    #        run("make install_seldon", shell=True, check=False)
-    #        raise
+    def test_upgrade(self):
+        try:
+            create_and_run_script("../../notebooks", "operator_upgrade")
+        except:
+            run("make install_seldon", shell=True, check=False)
+            raise
 
     def test_disruption_budgets(self):
         create_and_run_script(
