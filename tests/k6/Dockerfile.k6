@@ -1,27 +1,17 @@
 FROM alpine:3.6 AS builder
 
-RUN apk add --update \
- python \
- curl \
- which \
- bash
-
-RUN curl -sSL https://sdk.cloud.google.com | bash
+RUN apk add --update --no-cache python curl which bash && \
+    curl -sSL https://sdk.cloud.google.com | bash
 
 FROM grafana/k6
 
 USER root
 
-
-RUN apk add --update python3 uuidgen sed
-
-COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
+RUN apk add --update --no-cache python3 uuidgen sed
 
 ENV PATH $PATH:/root/google-cloud-sdk/bin
 
-RUN mkdir k6
-RUN mkdir /home/apis
-
+COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
 # k6.tar.gz is created by make to get around .dockerignore
 ADD k6.tar.gz k6/
 # copy protos
@@ -29,15 +19,12 @@ ADD apis /home/apis/
 
 WORKDIR k6
 
-RUN mkdir results
+RUN mkdir results && \
+    chmod +x k6wrapper.sh
 
-RUN chmod +x k6wrapper.sh
-ENTRYPOINT ["./k6wrapper.sh", "run"]
-
-ARG GIT_COMMIT $GIT_COMMIT}
-ARG GIT_BRANCH ${GIT_COMMIT}
 ENV GIT_COMMIT ${GIT_COMMIT}
 ENV GIT_BRANCH ${GIT_BRANCH}
 
-# should be overriden in practice 
+# should be overriden in practice
+ENTRYPOINT ["./k6wrapper.sh", "run"]
 CMD ["-u", "5", "scenarios/infer_constant_vu.js"]
