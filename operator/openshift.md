@@ -89,8 +89,6 @@ Will need to be run in release branch
 
 Create a fork of https://github.com/k8s-operatorhub/community-operators
 
-Create a PR for community operator
-
 Update the Makefile locally for
 
 ```
@@ -101,12 +99,20 @@ UPSTREAM_OPERATORS_FOLDER=~/work/seldon-core/redhat/community-operators-prod
 Create a branch for update in above fork. e.g.:
 
 ```
-git checkout -b 1.12.0
+git checkout -b 1.14.0
 ```
 
 ```
 make update_community
 ```
+
+Add to `manifests/seldon-operator.clusterserviceversion.yaml`
+```
+  replaces: seldon-operator.v1.13.1
+```
+line with previous version of operator (see previous releases for example)
+
+Create a PR for community operator
 
 Follow [instructions](https://operator-framework.github.io/community-operators/). At present the test instructions fail to work.
 
@@ -175,10 +181,17 @@ The bundle certification process is desbribed in [official RedHat docs](https://
 First create the bundle with
 
 ```
-make create_certified_bundle
+make update_openshift_certified
 ```
 
-Then push all images to redhat. requires download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+
+
+Then push all images to redhat. Requires:
+* download of passwords from 1password to `~/.config/seldon/seldon-core/redhat-image-passwords.sh`
+* creation of [pyxis api](https://connect.redhat.com/account/api-keys) key under `~/.config/seldon/seldon-core/pyxie-api-key.sh` in format:
+```
+api_key=<key here
+```
 
 ```
 cd {project_base_folder}/marketplaces/redhat
@@ -189,19 +202,26 @@ After these are finished (approx 1.5 hours) you will need to manually publish im
 
 publish
 
- * https://connect.redhat.com/project/5912261/view
- * https://connect.redhat.com/project/5912271/view
- * https://connect.redhat.com/project/5912311/view
- * https://connect.redhat.com/project/5912301/view
- * https://connect.redhat.com/project/1366481/view
- * https://connect.redhat.com/project/1366491/view
- * https://connect.redhat.com/project/3977851/view
- * https://connect.redhat.com/project/3986991/view
- * https://connect.redhat.com/project/3987291/view
- * https://connect.redhat.com/project/3993461/view
- * https://connect.redhat.com/project/4035711/view
+ * https://connect.redhat.com/projects/5e6352370307ea9e345f6084/images (Seldon Core Operator)
+ * https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/images (Seldon Executor)
+ * https://connect.redhat.com/projects/5fb94ae7888dca360c9231e1/images (Seldon SKLearn Server)
+ * https://connect.redhat.com/projects/5fb94ef5cfcfc6ed71445fa0/images (MLFlow Seldon Server)
+ * https://connect.redhat.com/projects/5fb9531ecfcfc6ed71445fa1/images (Seldon XGBoost Server)
+ * https://connect.redhat.com/projects/5ea822fdd0743cfaca95fc76/images (Seldon Tensorflow Serving)
+ * https://connect.redhat.com/projects/5fb955facfcfc6ed71445fa2/images (Seldon Tensorflow Serving Proxy)
+ * https://connect.redhat.com/projects/5e9c884a014eb1d2cfa8f217/images (Seldon Alibi Explainer Wrapper)
+ * https://connect.redhat.com/projects/5e9d53076c2dde3913c2bb66/images (Alibi Detect Server)
+ * https://connect.redhat.com/projects/5ea15983ebed1415210b4b26/images (Seldon Dummy Model)
+ * https://connect.redhat.com/projects/5e9c7eea929b3d289e60977a/images (Seldon Storage Initializer)
+ * https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/images (Rclone Storage Initializer)
+ * https://connect.redhat.com/projects/63566bb9822ce8cef9ba27fc/images (MLServer)
+ * https://connect.redhat.com/projects/635670d3624969b495b6936f/images (MLServer SC)
+ * https://connect.redhat.com/projects/63567143624969b495b69370/images (MLServer SC Slim)
 
-Noe fork the [certified operators repo](https://github.com/redhat-openshift-ecosystem/certified-operators). Seldon's operator is in `operators/seldon-operator-certified`. Update Makefile CERTIFIED_OPERATORS_FOLDER or set when running:
+previously used images:
+* https://connect.redhat.com/project/1366491/view (Seldon Engine)
+
+Now fork the [certified operators repo](https://github.com/redhat-openshift-ecosystem/certified-operators). Seldon's operator is in `operators/seldon-operator-certified`. Update Makefile CERTIFIED_OPERATORS_FOLDER or set when running:
 
 ```
 make update_certified

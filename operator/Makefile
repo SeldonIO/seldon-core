@@ -2,9 +2,10 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-operator
+IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
+
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
-IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
+IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
 KIND_NAME ?= kind
 
@@ -155,6 +156,9 @@ docker-build-no-test: generate-resources
 docker-build-redhat: test generate-resources
 	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
 
+docker-build-redhat-no-test: generate-resources
+	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
+
 # Push the docker image
 docker-push:
 	docker push ${IMG}
@@ -163,25 +167,20 @@ docker-push:
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
 
-kind-image-install: docker-build
+kind-image-install: docker-build-no-test
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
 
 kind-image-install-redhat: docker-build-redhat
 	docker save ${IMG_REDHAT} > operator.tar
 	kind load image-archive operator.tar --name ${KIND_NAME}
 
-# find or download controller-gen
+# find or download controller-gn
 # download controller-gen if necessary
 
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	@{ \
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
 	}
 
 CONTROLLER_GEN=$(GOBIN)/controller-gen
@@ -254,14 +253,15 @@ config/crd/patches/graph_children.yaml:
 #
 ###################################
 
+OPENSHIFT_VERSIONS=v4.8-v4.11
 
 .PHONY: bundle
 recreate_bundle:
 	rm -fr bundle
 	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
-	echo '  com.redhat.openshift.versions: "v4.8-v4.9"' >> bundle/metadata/annotations.yaml
-	echo 'LABEL com.redhat.openshift.versions=v4.8-v4.9' >> bundle.Dockerfile
+	echo '  com.redhat.openshift.versions: "${OPENSHIFT_VERSIONS}"' >> bundle/metadata/annotations.yaml
+	echo 'LABEL com.redhat.openshift.versions=${OPENSHIFT_VERSIONS}' >> bundle.Dockerfile
 
 create_bundle_image:
 	docker build . -f bundle.Dockerfile -t quay.io/seldon/seldon-operator:v${VERSION}
@@ -329,15 +329,40 @@ create_certified_bundle:
 	cp -r bundle/manifests bundle-certified
 	mv bundle-certified/manifests/seldon-operator.clusterserviceversion.yaml bundle-certified/manifests/seldon-operator-certified.clusterserviceversion.yaml
 	./hack/update-openshift-certified.sh ${VERSION}
+	cp bundle.Dockerfile bundle-certified.Dockerfile
+	sed -i 's|COPY bundle/manifests|COPY bundle-certified/manifests|g' bundle-certified.Dockerfile
+	sed -i 's|COPY bundle/manifests|COPY bundle-certified/manifests|g' bundle-certified.Dockerfile
+
+create_certified_bundle_image:
+	docker build . -f bundle-certified.Dockerfile -t quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+push_certified_bundle_image:
+	docker push quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+validate_certified_bundle_image:
+	operator-sdk bundle validate quay.io/seldon/seldon-operator-certified:v${VERSION}
+
+opm_index_certified:
+	opm index add -c docker --bundles quay.io/seldon/seldon-operator-certified:v${VERSION} --mode replaces --tag quay.io/seldon/test-catalog-certified:latest
+
+opm_push_certified:
+	docker push quay.io/seldon/test-catalog-certified:latest
+
+# this does not include "create_certified_bundle" target to not affect manual pinning of images
+update_openshift_certified: create_certified_bundle_image push_certified_bundle_image validate_certified_bundle_image opm_index_certified opm_push_certified
 
 
-# password can be found at: https://connect.redhat.com/project/1366481/view
+# password can be found at: https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview
+project=5e6352370307ea9e345f6084
 redhat-image-scan:
 	docker pull ${IMG_REDHAT}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_operator} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-7f50cebe-122b-495a-a143-41426dfcb6c9/${IMG_VERSION_REDHAT}
+		echo $${rh_password_operator} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
+	docker tag ${IMG_REDHAT} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
+
 
 
 

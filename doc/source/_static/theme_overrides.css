@@ -1,12 +1,19 @@
 .rst-versions .rst-current-version {
-    background-color: #3f51b5 !important;
-    color: #fff !important;
+  background-color: #3f51b5 !important;
+  color: #fff !important;
 }
 
 .rst-versions {
-    background-color: #fff !important;
+  background-color: #fff !important;
 }
 
 .rst-versions .rst-other-versions dd a {
-    color: #3f51b5 !important
+  color: #3f51b5 !important;
+}
+
+/**
+ * Override Sphinx UI rules
+ **/
+.opblock-tag {
+  text-transform: capitalize;
 }

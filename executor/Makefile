@@ -2,9 +2,10 @@ SHELL := /bin/bash
 VERSION := $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
 IMAGE_NAME_BASE=seldon-core-executor
+IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
+
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_VERSION_REDHAT ?= ${IMAGE_NAME_BASE}-ubi8:${VERSION}
-IMG_REDHAT ?= seldonio/${IMG_VERSION_REDHAT}
+IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
 EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
@@ -104,13 +105,16 @@ docker-push:
 docker-push-redhat:
 	docker push ${IMG_REDHAT}
 
-# password can be found at: https://connect.redhat.com/project/3977851/view
+# password can be found at: https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/overview
+project=5e9b34726c2dde3913c2bb65
 redhat-image-scan:
 	docker pull ${IMG_REDHAT}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
-		echo $${rh_password_executor} | docker login -u unused scan.connect.redhat.com --password-stdin
-	docker tag ${IMG_REDHAT} scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
-	docker push scan.connect.redhat.com/ospid-fffb6f6b-90b5-4f1d-be69-71baa8fb16cb/${IMG_VERSION_REDHAT}
+		echo $${rh_password_executor} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
+	docker tag ${IMG_REDHAT} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
+	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
+		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}

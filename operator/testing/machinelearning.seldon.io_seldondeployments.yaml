@@ -4,6 +4,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
     controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
   labels:
     app: seldon
     app.kubernetes.io/instance: seldon1
@@ -10946,6 +10947,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer
@@ -22154,6 +22158,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer
@@ -33362,6 +33369,9 @@ spec:
                       type: object
                     name:
                       type: string
+                    progressDeadlineSeconds:
+                      format: int32
+                      type: integer
                     replicas:
                       format: int32
                       type: integer

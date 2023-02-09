@@ -440,7 +440,7 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 				}
 			default:
 				// If protocol is V2, try to add container with MLServer
-				if mlDep.Spec.Protocol == machinelearningv1.ProtocolKfserving || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
+				if mlDep.Spec.Protocol == machinelearningv1.ProtocolKFServing || mlDep.Spec.Protocol == machinelearningv1.ProtocolV2 {
 					err := pi.addMLServerDefault(pu, deploy)
 					if err != nil {
 						return err

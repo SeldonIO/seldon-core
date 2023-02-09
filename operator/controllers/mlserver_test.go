@@ -197,9 +197,9 @@ var _ = Describe("MLServer helpers", func() {
 				Expect(mlServerImplementation).To(Equal(expected))
 			},
 			Entry("sklearn", machinelearningv1.PrepackSklearnName, MLServerSKLearnImplementation),
-			Entry("xgboost", machinelearningv1.PrepackXgboostName, MLServerXGBoostImplementation),
+			Entry("xgboost", machinelearningv1.PrepackXGBoostName, MLServerXGBoostImplementation),
 			Entry("tempo", machinelearningv1.PrepackTempoName, MLServerTempoImplementation),
-			Entry("mlserver", machinelearningv1.PrepackMlflowName, MLServerMLFlowImplementation),
+			Entry("mlserver", machinelearningv1.PrepackMLFlowName, MLServerMLFlowImplementation),
 			Entry("unknown", "foo", ""),
 		)
 	})

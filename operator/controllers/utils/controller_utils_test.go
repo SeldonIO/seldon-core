@@ -1,10 +1,9 @@
-package controllers
+package utils
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
 )
 
@@ -12,7 +11,7 @@ var _ = Describe("Controller utils", func() {
 	DescribeTable(
 		"isEmptyExplainer",
 		func(explainer *machinelearningv1.Explainer, expected bool) {
-			empty := isEmptyExplainer(explainer)
+			empty := IsEmptyExplainer(explainer)
 			Expect(empty).To(Equal(expected))
 		},
 		Entry("empty if nil", nil, true),

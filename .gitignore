@@ -228,6 +228,7 @@ examples/models/autoscaling/autoscaling_example.py
 
 # vscode local history
 .history/
+.vscode/
 
 # python venv
 venv/

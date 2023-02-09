@@ -9,4 +9,4 @@ spec:
   displayName: Seldon Core Catalog
   updateStrategy:
     registryPoll: 
-      interval: 30m
+      interval: 1m

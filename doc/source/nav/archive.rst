@@ -24,7 +24,6 @@ Archived Docs for Review
     Server Examples </examples/server_examples.nblink>
     Triton E2E </examples/triton_mnist_e2e.nblink>
     Custom Service Name Example </graph/custom_svc_name.md>
-    gRPC Load Balancing </graph/grpc_load_balancing_ambassador.md>
     Rest gRPC Settings </graph/model_rest_grpc_settings.md>
     Model Service Orchestrator </graph/model_svcorch_sep.md>
     Java JNI</java-jni/README.md>

@@ -47,9 +47,6 @@ class TestNotebooks(object):
     def test_ambassador_shadow(self):
         create_and_run_script("../../examples/ambassador/shadow", "ambassador_shadow")
 
-    def test_ambassador_custom(self):
-        create_and_run_script("../../examples/ambassador/custom", "ambassador_custom")
-
     #
     # KEDA Examples
     #

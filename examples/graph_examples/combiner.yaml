@@ -1,0 +1,34 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: test
+spec:
+  name: test
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: combiner
+          image: seldonio/metadata-generic-node:1.14.0-dev
+        - name: model-1
+          image: seldonio/metadata-generic-node:1.14.0-dev
+        - name: model-2
+          image: seldonio/metadata-generic-node:1.14.0-dev
+    graph:
+      children:
+      - children: []
+        name: model-1
+        type: MODEL
+        endpoint:
+          type: REST
+      - children: []
+        name: model-2
+        type: MODEL
+        endpoint:
+          type: REST
+      endpoint:
+        type: REST
+      name: combiner
+      type: COMBINER
+    name: combiner
+    replicas: 1

@@ -46,7 +46,7 @@ spec:
         - name: MANAGER_LEADER_ELECTION_ID
           value: "a33bd623.machinelearning.seldon.io"
         - name: MANAGER_LEADER_ELECTION_RESOURCE_LOCK
-          value: "0"
+          value: ""
         - name: MANAGER_LEADER_ELECTION_LEASE_DURATION_SECS
           value: "0"
         - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
@@ -63,15 +63,23 @@ spec:
           value: ""
         - name: RELATED_IMAGE_SKLEARNSERVER
           value: ""
+        - name: RELATED_IMAGE_SKLEARNSERVER_V2
+          value: ""
         - name: RELATED_IMAGE_XGBOOSTSERVER
           value: ""
+        - name: RELATED_IMAGE_XGBOOSTSERVER_V2
+          value: ""
         - name: RELATED_IMAGE_MLFLOWSERVER
+          value: ""
+        - name: RELATED_IMAGE_MLFLOWSERVER_V2
           value: ""
         - name: RELATED_IMAGE_TFPROXY
           value: ""
         - name: RELATED_IMAGE_TENSORFLOW
           value: ""
         - name: RELATED_IMAGE_EXPLAINER
+          value: ""
+        - name: RELATED_IMAGE_EXPLAINER_V2
           value: ""
         - name: RELATED_IMAGE_MOCK_CLASSIFIER
           value: ""
@@ -85,6 +93,8 @@ spec:
           value: ""
         - name: AMBASSADOR_ENABLED
           value: "true"
+        - name: AMBASSADOR_VERSION
+          value: "v1"
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: "false"
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT
@@ -106,7 +116,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.15.0-dev
+          value: seldonio/seldon-core-executor:1.15.0
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH

@@ -35,9 +35,7 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
   * ```seldon.io/engine-separate-pod``` : Use a separate pod for the service orchestrator
     * Locations : SeldonDeployment.metadata.annotations, SeldonDeployment.spec.annotations
     * [Separate svc-orc pod example](model_svcorch_sep.md)
-  * ```seldon.io/headless-svc``` : Run main endpoint as headless kubernetes service. This is required for gRPC load balancing via Ambassador.
     * Locations : SeldonDeployment.metadata.annotations, SeldonDeployment.spec.annotations
-    * [gRPC headless example](grpc_load_balancing_ambassador.md)
   * ```seldon.io/executor-logger-queue-size``` : Size of request logging worker queue
     * Locations: SeldonDeployment.metadata.annotations, SeldonDeployment.spec.annotations
   * ```seldon.io/executor-logger-write-timeout-ms``` : Write timeout for adding to logging work queue

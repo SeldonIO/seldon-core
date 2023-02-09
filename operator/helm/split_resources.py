@@ -39,6 +39,7 @@ HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
     "AMBASSADOR_ENABLED": "ambassador.enabled",
+    "AMBASSADOR_VERSION": "ambassador.version",
     "AMBASSADOR_SINGLE_NAMESPACE": "ambassador.singleNamespace",
     "ISTIO_ENABLED": "istio.enabled",
     "KEDA_ENABLED": "keda.enabled",

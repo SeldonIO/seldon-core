@@ -72,15 +72,23 @@ spec:
           value: ''
         - name: RELATED_IMAGE_SKLEARNSERVER
           value: ''
+        - name: RELATED_IMAGE_SKLEARNSERVER_V2
+          value: ''
         - name: RELATED_IMAGE_XGBOOSTSERVER
           value: ''
+        - name: RELATED_IMAGE_XGBOOSTSERVER_V2
+          value: ''
         - name: RELATED_IMAGE_MLFLOWSERVER
+          value: ''
+        - name: RELATED_IMAGE_MLFLOWSERVER_V2
           value: ''
         - name: RELATED_IMAGE_TFPROXY
           value: ''
         - name: RELATED_IMAGE_TENSORFLOW
           value: ''
         - name: RELATED_IMAGE_EXPLAINER
+          value: ''
+        - name: RELATED_IMAGE_EXPLAINER_V2
           value: ''
         - name: RELATED_IMAGE_MOCK_CLASSIFIER
           value: ''
@@ -94,6 +102,8 @@ spec:
           value: '{{ .Values.controllerId }}'
         - name: AMBASSADOR_ENABLED
           value: '{{ .Values.ambassador.enabled }}'
+        - name: AMBASSADOR_VERSION
+          value: '{{ .Values.ambassador.version }}'
         - name: AMBASSADOR_SINGLE_NAMESPACE
           value: '{{ .Values.ambassador.singleNamespace }}'
         - name: PREDICTIVE_UNIT_HTTP_SERVICE_PORT

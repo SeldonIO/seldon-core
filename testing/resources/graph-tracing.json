@@ -23,7 +23,7 @@
             },
             {
               "name": "JAEGER_AGENT_HOST",
-              "value": "jaeger-agent.seldon"
+              "value": "jaeger-agent.seldon-system"
             },
             {
               "name": "JAEGER_AGENT_PORT",
@@ -50,7 +50,7 @@
                     { "name": "TRACING", "value": "1" },
                     {
                       "name": "JAEGER_AGENT_HOST",
-                      "value": "jaeger-agent.seldon"
+                      "value": "jaeger-agent.seldon-system"
                     },
                     {
                       "name": "JAEGER_AGENT_PORT",

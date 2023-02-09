@@ -48,7 +48,7 @@ RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observ
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="Seldon Operator" \
       vendor="Seldon Technologies" \
-      version="1.15.0-dev" \
+      version="1.15.0" \
       release="1" \
       summary="An Operator to deploy, monitor, explain and manage production machine learning models at scale." \
       description="The Seldon operator for management, monitoring and operations of machine learning systems through the Seldon Engine. Once installed, the Seldon Operator provides multiple functions which facilitate the productisation, monitoring and maintenance of machine learning systems at scale."
@@ -61,4 +61,9 @@ COPY generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_se
 COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
 COPY generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1.yaml
+
+# Run update to pickup any necessary security updates
+RUN microdnf update -y
+
+USER 8888
 ENTRYPOINT ["/manager"]

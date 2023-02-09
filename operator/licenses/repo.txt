@@ -15,7 +15,10 @@ BurntSushi/toml
 BurntSushi/xgb
 DataDog/datadog-api-client-go
 Huawei/gophercloud
+MakeNowJust/heredoc
+Masterminds/goutils
 Masterminds/semver
+Masterminds/sprig
 NYTimes/gziphandler
 OneOfOne/xxhash
 PuerkitoBio/purell
@@ -26,6 +29,7 @@ alecthomas/units
 andybalholm/brotli
 antihax/optional
 antlr/antlr4
+argoproj/argo-rollouts
 armon/circbuf
 armon/go-metrics
 armon/go-radix
@@ -58,6 +62,9 @@ coreos/go-systemd
 coreos/pkg
 cpuguy83/go-md2man
 creack/pty
+datawire/dlib
+datawire/dtest
+datawire/go-mkopensource
 davecgh/go-spew
 deepmap/oapi-codegen
 denisenkom/go-mssqldb
@@ -67,6 +74,7 @@ dgryski/go-gk
 dgryski/go-rendezvous
 dgryski/go-sip13
 dimchansky/utfbom
+docker/distribution
 docker/spdystream
 docopt/docopt-go
 dustin/go-humanize
@@ -79,9 +87,12 @@ elastic/go-elasticsearch
 elazarl/goproxy
 emicklei/go-restful
 emicklei/go-restful-swagger12
+emissary-ingress/emissary
 envoyproxy/go-control-plane
 envoyproxy/protoc-gen-validate
 evanphx/json-patch
+exponent-io/jsonpath
+fatih/camelcase
 fatih/color
 felixge/httpsnoop
 form3tech-oss/jwt-go
@@ -89,6 +100,7 @@ fsnotify/fsnotify
 getkin/kin-openapi
 getsentry/raven-go
 ghodss/yaml
+go-errors/errors
 go-gl/glfw
 go-kit/kit
 go-kit/log
@@ -131,6 +143,7 @@ google/mako
 google/martian
 google/pprof
 google/renameio
+google/shlex
 google/uuid
 googleapis/gax-go
 googleapis/gnostic
@@ -168,12 +181,14 @@ hashicorp/serf
 hashicorp/vault
 hashicorp/yamux
 hpcloud/tail
+huandu/xstrings
 ianlancetaylor/demangle
 imdario/mergo
 inconshreveable/mousetrap
 influxdata/influxdb-client-go
 influxdata/line-protocol
 influxdata/tdigest
+invopop/yaml
 jcmturner/aescts
 jcmturner/dnsutils
 jcmturner/gofork
@@ -188,6 +203,7 @@ json-iterator/go
 jstemmer/go-junit-report
 jtolds/gls
 julienschmidt/httprouter
+kballard/go-shellquote
 kedacore/keda
 kelseyhightower/envconfig
 kisielk/errcheck
@@ -201,6 +217,7 @@ kr/pty
 kr/text
 leodido/go-urn
 lib/pq
+liggitt/tabwriter
 magiconair/properties
 mailru/easyjson
 mattn/go-colorable
@@ -213,6 +230,7 @@ mitchellh/cli
 mitchellh/copystructure
 mitchellh/go-homedir
 mitchellh/go-testing-interface
+mitchellh/go-wordwrap
 mitchellh/gox
 mitchellh/hashstructure
 mitchellh/iochan
@@ -222,6 +240,7 @@ moby/spdystream
 moby/term
 modern-go/concurrent
 modern-go/reflect2
+monochromegane/go-gitignore
 munnerz/goautoneg
 mwitkow/go-conntrack
 mxk/go-flowrate
@@ -233,6 +252,7 @@ oklog/ulid
 olekukonko/tablewriter
 onsi/ginkgo
 onsi/gomega
+opencontainers/go-digest
 opentracing/opentracing-go
 openzipkin/zipkin-go
 pascaldekloe/goe
@@ -294,6 +314,7 @@ xdg/scram
 xdg/stringprep
 xhit/go-str2duration
 xiang90/probing
+xlab/treeprint
 youmark/pkcs8
 yuin/goldmark
 gomodules/jsonpatch

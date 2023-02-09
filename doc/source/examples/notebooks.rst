@@ -156,6 +156,7 @@ Complex Graph Examples
   
    Chainer MNIST <chainer_mnist>
    Custom pre-processors with the V2 Protocol <transformers-v2-protocol>
+   graph-examples <graph-examples>
 
 Ingress
 -------
@@ -166,7 +167,6 @@ Ingress
    Ambassador Canary <ambassador_canary>
    Ambassador Shadow <ambassador_shadow>
    Ambassador Headers <ambassador_headers>
-   Ambassador Custom Config <ambassador_custom>
    Istio Examples <istio_examples> 
    Istio Canary <istio_canary>
 
