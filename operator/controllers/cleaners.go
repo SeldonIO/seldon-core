@@ -34,7 +34,7 @@ func (r *IstioResourceCleaner) cleanUnusedVirtualServices() ([]*istio.VirtualSer
 				}
 				if !found {
 					r.logger.Info("Will delete VirtualService", "name", vsvc.Name, "namespace", vsvc.Namespace)
-					r.client.Delete(context.Background(), &vsvc, client.PropagationPolicy(metav1.DeletePropagationForeground))
+					r.client.Delete(context.Background(), vsvc, client.PropagationPolicy(metav1.DeletePropagationForeground))
 					deleted = append(deleted, vsvc.DeepCopy())
 				}
 			}
