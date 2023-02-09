@@ -414,7 +414,15 @@ func (sc *SchedulerClient) ListServers() error {
 	return nil
 }
 
-func (sc *SchedulerClient) UnloadModel(modelName string, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) UnloadModel(modelName string, modelBytes []byte, showRequest bool, showResponse bool) error {
+	if len(modelBytes) > 0 && modelName == "" {
+		model := &mlopsv1alpha1.Model{}
+		err := unMarshallYamlStrict(modelBytes, model)
+		if err != nil {
+			return err
+		}
+		modelName = model.Name
+	}
 	req := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
 			Name: modelName,
@@ -467,7 +475,15 @@ func (sc *SchedulerClient) StartExperiment(data []byte, showRequest bool, showRe
 	return nil
 }
 
-func (sc *SchedulerClient) StopExperiment(experimentName string, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) StopExperiment(experimentName string, experimentBytes []byte, showRequest bool, showResponse bool) error {
+	if len(experimentBytes) > 0 && experimentName == "" {
+		experiment := &mlopsv1alpha1.Experiment{}
+		err := unMarshallYamlStrict(experimentBytes, experiment)
+		if err != nil {
+			return err
+		}
+		experimentName = experiment.Name
+	}
 	req := &scheduler.StopExperimentRequest{
 		Name: experimentName,
 	}

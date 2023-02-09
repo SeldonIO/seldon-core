@@ -28,7 +28,6 @@ func createModelUnload() *cobra.Command {
 		Use:   "unload <modelName>",
 		Short: "unload a model",
 		Long:  `unload a model`,
-		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags := cmd.Flags()
 
@@ -49,14 +48,25 @@ func createModelUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			modelName := args[0]
+			filename, err := flags.GetString(flagFile)
+			if err != nil {
+				return err
+			}
+			var fileBytes []byte
+			if filename != "" {
+				fileBytes = loadFile(filename)
+			}
+			modelName := ""
+			if len(args) > 0 {
+				modelName = args[0]
+			}
 
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
 			if err != nil {
 				return err
 			}
 
-			err = schedulerClient.UnloadModel(modelName, showRequest, showResponse)
+			err = schedulerClient.UnloadModel(modelName, fileBytes, showRequest, showResponse)
 			return err
 		},
 	}
@@ -66,6 +76,7 @@ func createModelUnload() *cobra.Command {
 	flags.BoolP(flagShowResponse, "o", true, "show response")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
+	flags.StringP(flagFile, "f", "", "model manifest file (YAML)")
 
 	return cmd
 }

@@ -28,7 +28,6 @@ func createPipelineUnload() *cobra.Command {
 		Use:   "unload <pipelineName> or -f <filename>",
 		Short: "unload a pipeline",
 		Long:  `unload a pipeline`,
-		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags := cmd.Flags()
 
