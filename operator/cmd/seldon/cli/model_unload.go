@@ -48,17 +48,9 @@ func createModelUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			filename, err := flags.GetString(flagFile)
+			fileBytes, modelName, err := extractFileOrName(flags, args)
 			if err != nil {
 				return err
-			}
-			var fileBytes []byte
-			if filename != "" {
-				fileBytes = loadFile(filename)
-			}
-			modelName := ""
-			if len(args) > 0 {
-				modelName = args[0]
 			}
 
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)

@@ -53,17 +53,9 @@ func createExperimentStop() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			filename, err := flags.GetString(flagFile)
+			fileBytes, experimentName, err := extractFileOrName(flags, args)
 			if err != nil {
 				return err
-			}
-			var fileBytes []byte
-			if filename != "" {
-				fileBytes = loadFile(filename)
-			}
-			experimentName := ""
-			if len(args) > 0 {
-				experimentName = args[0]
 			}
 			err = schedulerClient.StopExperiment(experimentName, fileBytes, showRequest, showResponse)
 			return err

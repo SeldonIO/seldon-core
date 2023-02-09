@@ -48,17 +48,9 @@ func createPipelineUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			filename, err := flags.GetString(flagFile)
+			fileBytes, pipelineName, err := extractFileOrName(flags, args)
 			if err != nil {
 				return err
-			}
-			var fileBytes []byte
-			if filename != "" {
-				fileBytes = loadFile(filename)
-			}
-			pipelineName := ""
-			if len(args) > 0 {
-				pipelineName = args[0]
 			}
 
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
