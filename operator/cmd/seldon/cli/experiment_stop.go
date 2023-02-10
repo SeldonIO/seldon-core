@@ -28,7 +28,6 @@ func createExperimentStop() *cobra.Command {
 		Use:   "stop <experimentName>",
 		Short: "stop an experiment",
 		Long:  `stop an experiment`,
-		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags := cmd.Flags()
 
@@ -54,9 +53,11 @@ func createExperimentStop() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			experimentName := args[0]
-			err = schedulerClient.StopExperiment(experimentName, showRequest, showResponse)
+			fileBytes, experimentName, err := extractFileOrName(flags, args)
+			if err != nil {
+				return err
+			}
+			err = schedulerClient.StopExperiment(experimentName, fileBytes, showRequest, showResponse)
 			return err
 		},
 	}
@@ -66,6 +67,7 @@ func createExperimentStop() *cobra.Command {
 	flags.BoolP(flagShowResponse, "o", true, "show response")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
+	flags.StringP(flagFile, "f", "", "experiment manifest file (YAML)")
 
 	return cmd
 }

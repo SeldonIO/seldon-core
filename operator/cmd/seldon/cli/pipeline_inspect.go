@@ -30,6 +30,7 @@ const (
 	flagRequestId    = "request-id"
 	flagOutputFormat = "format"
 	flagVerbose      = "verbose"
+	flagTruncate     = "truncate"
 	flagNamespace    = "namespace"
 )
 
@@ -68,6 +69,10 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			truncateData, err := flags.GetBool(flagTruncate)
+			if err != nil {
+				return err
+			}
 			namespace, err := flags.GetString(flagNamespace)
 			if err != nil {
 				return err
@@ -77,7 +82,7 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			err = kc.InspectStep(string(data), offset, requestId, format, verbose, namespace)
+			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace)
 			return err
 		},
 	}
@@ -89,6 +94,7 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagOutputFormat, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
 	flags.String(flagNamespace, "", fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
-	flags.Bool(flagVerbose, false, "display more details, such as headers")
+	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
+	flags.BoolP(flagTruncate, "t", false, "truncate data")
 	return cmd
 }

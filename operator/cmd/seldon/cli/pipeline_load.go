@@ -27,9 +27,9 @@ import (
 
 func createPipelineLoad() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "load",
-		Short: "load a pipeline",
-		Long:  `load a pipeline`,
+		Use:   "load -f <file>",
+		Short: "load a pipeline from a yaml file",
+		Long:  `load a pipeline from a yaml file`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags := cmd.Flags()

@@ -37,7 +37,7 @@ func isModelReplicaLoadedOnServerReplica(model *store.ModelVersion, replica *sto
 }
 
 func (r AvailableMemoryReplicaFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
-	mem := math.Max(0, float64(replica.GetAvailableMemory()-replica.GetReservedMemory()))
+	mem := math.Max(0, float64(replica.GetAvailableMemory())-float64(replica.GetReservedMemory()))
 	return model.GetRequiredMemory() <= uint64(mem) || isModelReplicaLoadedOnServerReplica(model, replica)
 }
 

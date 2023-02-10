@@ -25,10 +25,9 @@ import (
 
 func createPipelineUnload() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "unload <pipelineName>",
+		Use:   "unload <pipelineName> or -f <filename>",
 		Short: "unload a pipeline",
 		Long:  `unload a pipeline`,
-		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags := cmd.Flags()
 
@@ -49,14 +48,17 @@ func createPipelineUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			pipelineName := args[0]
+			fileBytes, pipelineName, err := extractFileOrName(flags, args)
+			if err != nil {
+				return err
+			}
 
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
 			if err != nil {
 				return err
 			}
 
-			err = schedulerClient.UnloadPipeline(pipelineName, showRequest, showResponse)
+			err = schedulerClient.UnloadPipeline(pipelineName, fileBytes, showRequest, showResponse)
 			return err
 		},
 	}
@@ -66,6 +68,7 @@ func createPipelineUnload() *cobra.Command {
 	flags.BoolP(flagShowResponse, "o", true, "show response")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
+	flags.StringP(flagFile, "f", "", "pipeline manifest file (YAML)")
 
 	return cmd
 }
