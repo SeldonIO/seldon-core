@@ -23,6 +23,7 @@ import (
 
 const (
 	EnvSecurityProtocolSuffix = "_SECURITY_PROTOCOL"
+	SecurityProtocolTLS       = "TLS"
 	SecurityProtocolSSL       = "SSL"
 	SecurityProtocolPlaintxt  = "PLAINTEXT"
 	SecurityProtocolSASLSSL   = "SASL_SSL"

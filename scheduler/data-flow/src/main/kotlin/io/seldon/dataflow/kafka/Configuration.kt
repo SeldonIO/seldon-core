@@ -60,17 +60,24 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
         if (params.security.securityProtocol == SecurityProtocol.SSL) {
             this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.clientSecret != "" &&
+            if (params.security.certConfig.clientSecret != "" ||
                     params.security.certConfig.brokerSecret != "") {
                 K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
             }
+             if (params.security.certConfig.clientSecret != "") {
             val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
 
             this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
             this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
             this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            }
+
+             if (params.security.certConfig.brokerSecret != "") {
+            val keyStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
+
             this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+            }
         } else if (params.security.securityProtocol == SecurityProtocol.SASL_SSL) {
             this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
             if (params.security.certConfig.brokerSecret != "") {
@@ -104,17 +111,24 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
         if (params.security.securityProtocol == SecurityProtocol.SSL) {
             this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.clientSecret != "" &&
-                params.security.certConfig.brokerSecret != "") {
+             if (params.security.certConfig.clientSecret != "" ||
+                    params.security.certConfig.brokerSecret != "") {
                 K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
             }
-            val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
+             if (params.security.certConfig.clientSecret != "") {
+                val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
 
-            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
-            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
-            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+                this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+                this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+                this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            }
+
+             if (params.security.certConfig.brokerSecret != "") {
+                val keyStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
+
+                this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
+                this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+            }    
         } else if (params.security.securityProtocol == SecurityProtocol.SASL_SSL) {
             this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
             if (params.security.certConfig.brokerSecret != "") {
