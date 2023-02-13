@@ -29,5 +29,6 @@ By default, the input and output of every step in a pipeline (as well as the pip
 From there it's up to you what to do with the data.
 You could use something like [Kafka Connect](https://docs.confluent.io/platform/current/connect/index.html) to stream the logs to a datastore of your choice. 
 
-Note that direct inference to a model outside of a pipeline will not automatically be logged.
+Note that there is no automatic request logging for models being accessed directly over REST or gRPC.
+Requests need to be sent via pipelines to be recorded in Kafka.
 
