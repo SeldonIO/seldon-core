@@ -12,5 +12,6 @@ cloud-storage/index.md
 metrics/index.md
 tracing/index.md
 service-meshes/index.md
+scaling/index.md
 autoscaling/index.md
 ```
