@@ -283,14 +283,8 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 			return err
 		}
 	}
-	if !showResponse {
-		if len(res.Versions) > 0 {
-			modelStatus := res.Versions[0].State.GetState().String()
-			fmt.Printf("{\"%s\":\"%s\"}\n", modelName, modelStatus)
-		} else {
-			fmt.Println("Unknown")
-		}
-	} else {
+
+	if showResponse {
 		printProto(res)
 	}
 	return nil
@@ -540,8 +534,6 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest b
 	}
 	if showResponse {
 		printProto(res)
-	} else {
-		fmt.Printf("%v", res.Active)
 	}
 	return nil
 }
@@ -715,13 +707,6 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool,
 	}
 	if showResponse {
 		printProto(res)
-	} else {
-		if len(res.Versions) > 0 {
-			fmt.Printf("%v", res.Versions[0].State.Status.String())
-		} else {
-			fmt.Println("Unknown status")
-		}
-
 	}
 	return nil
 }
