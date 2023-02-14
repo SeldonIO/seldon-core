@@ -3,55 +3,88 @@ package cli
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
-func createDecoder(data []byte) *yaml2.YAMLOrJSONDecoder {
+type seldonKind int64
+
+const (
+	Undefined seldonKind = iota
+	model
+	pipeline
+	experiment
+)
+
+var kindMap = map[string]seldonKind{
+	"Model":      model,
+	"Pipeline":   pipeline,
+	"Experiment": experiment,
+}
+
+type k8sResource struct {
+	kind seldonKind
+	name string
+	data []byte
+}
+
+func createDecoder(data []byte) *yaml.YAMLOrJSONDecoder {
 	var reader io.Reader
 	if len(data) > 0 {
 		reader = bytes.NewReader(data)
 	} else {
 		reader = io.Reader(os.Stdin)
 	}
-	dec := yaml2.NewYAMLOrJSONDecoder(reader, 10)
+	dec := yaml.NewYAMLOrJSONDecoder(reader, 10)
 	return dec
 }
 
-func getNextResource(dec *yaml2.YAMLOrJSONDecoder) (string, string, []byte, bool, error) {
+func getNextResource(dec *yaml.YAMLOrJSONDecoder) (*k8sResource, bool, error) {
 	unstructuredObject := &unstructured.Unstructured{}
 	if err := dec.Decode(unstructuredObject); err != nil {
 		if errors.Is(err, io.EOF) {
-			return "", "", nil, false, nil
+			return nil, false, nil
 		}
-		return "", "", nil, false, err
+		return nil, false, err
 	}
 	// Get the resource kind nad original bytes
 	gvk := unstructuredObject.GroupVersionKind()
 	data, err := unstructuredObject.MarshalJSON()
 	if err != nil {
-		return "", "", nil, false, err
+		return nil, false, err
 	}
-	return gvk.Kind, unstructuredObject.GetName(), data, true, nil
+	if kind, ok := kindMap[gvk.Kind]; ok {
+		return &k8sResource{
+			kind: kind,
+			name: unstructuredObject.GetName(),
+			data: data,
+		}, true, nil
+	} else {
+		return nil, false, fmt.Errorf("Unknown Seldon Kind %s - only Model, Pipeline and Experiment allowed", gvk.Kind)
+	}
 }
 
 func (sc *SchedulerClient) Load(data []byte, showRequest bool, showResponse bool) error {
 	dec := createDecoder(data)
 	for {
-		kind, _, data, keepGoing, err := getNextResource(dec)
+		resource, keepGoing, err := getNextResource(dec)
+		if err != nil {
+			return err
+		}
 		if !keepGoing {
 			return err
 		}
-		switch kind {
-		case "Model":
-			err = sc.LoadModel(data, showRequest, showResponse)
-		case "Pipeline":
-			err = sc.LoadPipeline(data, showRequest, showResponse)
-		case "Experiment":
-			err = sc.StartExperiment(data, showRequest, showResponse)
+		switch resource.kind {
+		case model:
+			err = sc.LoadModel(resource.data, showRequest, showResponse)
+		case pipeline:
+			err = sc.LoadPipeline(resource.data, showRequest, showResponse)
+		case experiment:
+			err = sc.StartExperiment(resource.data, showRequest, showResponse)
 		}
 		if err != nil {
 			return err
@@ -62,17 +95,17 @@ func (sc *SchedulerClient) Load(data []byte, showRequest bool, showResponse bool
 func (sc *SchedulerClient) Unload(data []byte, showRequest bool, showResponse bool) error {
 	dec := createDecoder(data)
 	for {
-		kind, _, data, keepGoing, err := getNextResource(dec)
+		resource, keepGoing, err := getNextResource(dec)
 		if !keepGoing {
 			return err
 		}
-		switch kind {
-		case "Model":
-			err = sc.UnloadModel("", data, showRequest, showResponse)
-		case "Pipeline":
-			err = sc.UnloadPipeline("", data, showRequest, showResponse)
-		case "Experiment":
-			err = sc.StopExperiment("", data, showRequest, showResponse)
+		switch resource.kind {
+		case model:
+			err = sc.UnloadModel("", resource.data, showRequest, showResponse)
+		case pipeline:
+			err = sc.UnloadPipeline("", resource.data, showRequest, showResponse)
+		case experiment:
+			err = sc.StopExperiment("", resource.data, showRequest, showResponse)
 		}
 		if err != nil {
 			return err
@@ -83,24 +116,24 @@ func (sc *SchedulerClient) Unload(data []byte, showRequest bool, showResponse bo
 func (sc *SchedulerClient) Status(data []byte, showRequest bool, showResponse bool, wait bool) error {
 	dec := createDecoder(data)
 	for {
-		kind, name, _, keepGoing, err := getNextResource(dec)
+		resource, keepGoing, err := getNextResource(dec)
 		if !keepGoing {
 			return err
 		}
 		waitCondition := ""
-		switch kind {
-		case "Model":
+		switch resource.kind {
+		case model:
 			if wait {
 				waitCondition = "ModelAvailable"
 			}
-			err = sc.ModelStatus(name, showRequest, showResponse, waitCondition)
-		case "Pipeline":
+			err = sc.ModelStatus(resource.name, showRequest, showResponse, waitCondition)
+		case pipeline:
 			if wait {
 				waitCondition = "PipelineReady"
 			}
-			err = sc.PipelineStatus(name, showRequest, showResponse, waitCondition)
-		case "Experiment":
-			err = sc.ExperimentStatus(name, showRequest, showResponse, wait)
+			err = sc.PipelineStatus(resource.name, showRequest, showResponse, waitCondition)
+		case experiment:
+			err = sc.ExperimentStatus(resource.name, showRequest, showResponse, wait)
 		}
 		if err != nil {
 			return err
