@@ -143,7 +143,7 @@ services:
       - otel-collector
 
   prometheus:
-    image: prom/prometheus:latest
+    image: "${PROMETHEUS_IMAGE_AND_TAG}"
 
   rclone-mlserver:
     build:
@@ -203,7 +203,7 @@ services:
       stack: 67108864
 
   zookeeper:
-    image: docker.io/bitnami/zookeeper:3.8
+    image: ${ZK_IMAGE_AND_TAG}
     volumes:
       - "zookeeper_data:/bitnami"
     environment:
