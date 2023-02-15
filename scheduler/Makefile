@@ -6,8 +6,10 @@ DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 # Grafana image only used for Docker compose not k8s
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
+PROMETHEUS_IMG ?= prom/prometheus:latest
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
 KAFKA_IMG ?= docker.io/bitnami/kafka:3.3
+ZOOKEEPER_IMG ?= docker.io/bitnami/zookeeper:3.8
 MLSERVER_IMG ?= seldonio/mlserver:1.2.3
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
@@ -243,6 +245,8 @@ DOCKER_COMPOSE_IMAGES = \
 	DATAFLOW_IMAGE_AND_TAG=${DATAFLOW_IMG} \
 	HODOMETER_IMAGE_AND_TAG=${HODOMETER_IMG} \
 	KAFKA_IMAGE_AND_TAG=${KAFKA_IMG} \
+	PROMETHEUS_IMAGE_AND_TAG=${PROMETHEUS_IMG} \
+	ZK_IMAGE_AND_TAG=${ZOOKEEPER_IMG} \
 	OTELCOL_IMG=${OTELCOL_IMG}
 
 DOCKER_COMPOSE_ENV = \
