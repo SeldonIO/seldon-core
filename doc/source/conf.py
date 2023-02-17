@@ -65,7 +65,7 @@ extensions = [
     "sphinx_search.extension",
     "sphinx_copybutton",
     "sphinx_panels",
-    "sphinxcontrib.youtube"
+    "sphinxcontrib.youtube",
 ]
 
 # Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)
@@ -168,6 +168,8 @@ linkcheck_ignore = [
     r"^(?!http).*\.png$",
     # Ignore Google Calendar links which seem to require auth
     "https://calendar.google.com",
+    # Ignore the following, which identify our request as a false DDoS
+    "https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/",
 ]
 # Ignore anchors, as they doesn't seem to work very well
 linkcheck_anchors_ignore = [".*"]
