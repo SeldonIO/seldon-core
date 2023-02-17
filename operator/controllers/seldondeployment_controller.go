@@ -133,7 +133,7 @@ func init() {
 }
 
 func createFqdn(svcName string, namespace string) string {
-	return svcName + "." + namespace + ".svc.cluster.local"
+	return svcName + "." + namespace + constants.DNSClusterLocalSuffix
 }
 
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string, externalPorts []httpGrpcPorts) (*machinelearningv1.SeldonAddressable, error) {
