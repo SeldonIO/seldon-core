@@ -355,7 +355,42 @@ spec:
           spec:
             description: PipelineSpec defines the desired state of Pipeline
             properties:
+              input:
+                description: External inputs to this pipeline, optional
+                properties:
+                  externalInputs:
+                    description: Previous external pipeline steps to receive data
+                      from
+                    items:
+                      type: string
+                    type: array
+                  externalTriggers:
+                    description: Triggers required to activate inputs
+                    items:
+                      type: string
+                    type: array
+                  joinType:
+                    description: One of inner (default), outer, or any (see above
+                      for details)
+                    type: string
+                  joinWindowMs:
+                    description: msecs to wait for messages from multiple inputs to
+                      arrive before joining the inputs
+                    format: int32
+                    type: integer
+                  tensorMap:
+                    additionalProperties:
+                      type: string
+                    description: Map of tensor name conversions to use e.g. output1
+                      -> input1
+                    type: object
+                  triggersJoinType:
+                    description: One of inner (default), outer, or any (see above
+                      for details)
+                    type: string
+                type: object
               output:
+                description: Synchronous output from this pipeline, optional
                 properties:
                   joinWindowMs:
                     description: msecs to wait for messages from multiple inputs to
