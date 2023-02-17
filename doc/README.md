@@ -61,9 +61,9 @@ The full list of plugins and their options can be found in `source/conf.py`.
 Referencing documents outside of `doc/source` tree does not work out of the box but there
 is an easy workaround:
 
-1. Create a simple `rst` file including `include` or `mdinclude` directive, e.g. see [this](source/reference/integration_nvidia_link.rst) link referenced [here](source/reference/images.md)
+1. Create a simple `rst` file including `include` or `mdinclude` directive, e.g. see [this](source/reference/integration_sagemaker_link.rst) link referenced [here](source/reference/images.md)
 
-        .. mdinclude:: ../../../integrations/nvidia-inference-server/README.md
+        .. mdinclude:: ../../../integrations/sagemaker/README.md
 
 2. Reference this file instead of included one
 
