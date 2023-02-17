@@ -2,9 +2,9 @@ name: Python Lint
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, rabbitmq* ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, rabbitmq*  ]
 
 jobs:
   python-lint:

@@ -2,9 +2,9 @@ name: Operator Lint
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, rabbitmq* ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, rabbitmq*  ]
 
 jobs:
   operator-lint:

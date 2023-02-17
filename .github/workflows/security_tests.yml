@@ -2,7 +2,9 @@ name: Security Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, rabbitmq* ]
+  pull_request:
+    branches: [ master, rabbitmq*  ]
   workflow_dispatch:
 
 jobs:
