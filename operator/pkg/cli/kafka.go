@@ -33,19 +33,20 @@ import (
 )
 
 const (
-	SeldonPrefix        = "seldon"
-	InputsSpecifier     = "inputs"
-	OutputsSpecifier    = "outputs"
-	PipelineSpecifier   = "pipeline"
-	ModelSpecifier      = "model"
-	kafkaTimeoutSeconds = 2
-	DefaultNamespace    = "default"
+	SeldonDefaultTopicPrefix = "seldon"
+	InputsSpecifier          = "inputs"
+	OutputsSpecifier         = "outputs"
+	PipelineSpecifier        = "pipeline"
+	ModelSpecifier           = "model"
+	kafkaTimeoutSeconds      = 2
+	DefaultNamespace         = "default"
 )
 
 type KafkaClient struct {
 	consumer        *kafka.Consumer
 	schedulerClient *SchedulerClient
 	namespace       string
+	topicPrefix     string
 }
 
 type PipelineTopics struct {
@@ -89,10 +90,13 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 	}
 
 	namespace := DefaultNamespace
-
+	topicPrefix := SeldonDefaultTopicPrefix
 	if config.Kafka != nil {
 		if config.Kafka.Namespace != "" {
 			namespace = config.Kafka.Namespace
+		}
+		if config.Kafka.TopicPrefix != "" {
+			topicPrefix = config.Kafka.TopicPrefix
 		}
 		switch config.Kafka.Protocol {
 		case KafkaConfigProtocolSSL:
@@ -128,6 +132,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		consumer:        consumer,
 		schedulerClient: scheduler,
 		namespace:       namespace,
+		topicPrefix:     topicPrefix,
 	}
 	return kc, nil
 }
@@ -166,17 +171,17 @@ func hasStep(stepName string, response *scheduler.PipelineStatusResponse) bool {
 	return false
 }
 
-func createPipelineInspectTopics(pipelineSpec string, response *scheduler.PipelineStatusResponse, namespace string) (*PipelineTopics, error) {
+func createPipelineInspectTopics(pipelineSpec string, response *scheduler.PipelineStatusResponse, namespace string, topicPrefix string) (*PipelineTopics, error) {
 	parts := strings.Split(pipelineSpec, ".")
 	switch len(parts) {
 	case 1: //Just pipeline - show all steps and pipeline itself
 		var topics []string
 		for _, step := range response.Versions[len(response.Versions)-1].Pipeline.Steps {
-			topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, step.Name, InputsSpecifier))
-			topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, step.Name, OutputsSpecifier))
+			topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, step.Name, InputsSpecifier))
+			topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, step.Name, OutputsSpecifier))
 		}
-		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, PipelineSpecifier, parts[0], InputsSpecifier))
-		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, PipelineSpecifier, parts[0], OutputsSpecifier))
+		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], InputsSpecifier))
+		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], OutputsSpecifier))
 		return &PipelineTopics{
 			pipeline: pipelineSpec,
 			topics:   topics,
@@ -185,15 +190,15 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 		if parts[1] == InputsSpecifier || parts[1] == OutputsSpecifier {
 			return &PipelineTopics{
 				pipeline: parts[0],
-				topics:   []string{fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, PipelineSpecifier, parts[0], parts[1])},
+				topics:   []string{fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], parts[1])},
 			}, nil
 		} else {
 			if hasStep(parts[1], response) {
 				return &PipelineTopics{
 					pipeline: parts[0],
 					topics: []string{
-						fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, parts[1], InputsSpecifier),
-						fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, parts[1], OutputsSpecifier),
+						fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, parts[1], InputsSpecifier),
+						fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, parts[1], OutputsSpecifier),
 					},
 				}, nil
 			} else {
@@ -206,7 +211,7 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 				return &PipelineTopics{
 					pipeline: parts[0],
 					topics: []string{
-						fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, parts[1], parts[2]),
+						fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, parts[1], parts[2]),
 					},
 				}, nil
 			} else {
@@ -221,7 +226,7 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 				return &PipelineTopics{
 					pipeline: parts[0],
 					topics: []string{
-						fmt.Sprintf("%s.%s.%s.%s.%s", SeldonPrefix, namespace, ModelSpecifier, parts[1], parts[2]),
+						fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, ModelSpecifier, parts[1], parts[2]),
 					},
 					tensor: parts[3],
 				}, nil
@@ -259,7 +264,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 	if err != nil {
 		return err
 	}
-	pipelineTopics, err := createPipelineInspectTopics(pipelineStep, status, namespace)
+	pipelineTopics, err := createPipelineInspectTopics(pipelineStep, status, namespace, kc.topicPrefix)
 	if err != nil {
 		return err
 	}

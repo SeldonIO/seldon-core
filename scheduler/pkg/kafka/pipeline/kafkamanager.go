@@ -81,7 +81,7 @@ func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *c
 	km := &KafkaManager{
 		kafkaConfig:     kafkaConfig,
 		logger:          logger.WithField("source", "KafkaManager"),
-		topicNamer:      kafka2.NewTopicNamer(namespace),
+		topicNamer:      kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix),
 		tracer:          tracer,
 		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},

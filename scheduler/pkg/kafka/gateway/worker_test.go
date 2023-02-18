@@ -95,7 +95,7 @@ func TestRestRequest(t *testing.T) {
 			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, "dummy")
 			g.Expect(err).To(BeNil())
-			tn := kafka2.NewTopicNamer("default")
+			tn := kafka2.NewTopicNamer("default", "seldon")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
 			g.Expect(err).To(BeNil())
 			err = iw.restRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}}, false)
@@ -141,7 +141,7 @@ func TestProcessRequestRest(t *testing.T) {
 			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, "dummy")
 			g.Expect(err).To(BeNil())
-			tn := kafka2.NewTopicNamer("default")
+			tn := kafka2.NewTopicNamer("default", "seldon")
 			iw, err := NewInferWorker(ic, logger, tp, tn)
 			g.Expect(err).To(BeNil())
 			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}})
@@ -220,7 +220,7 @@ func createInferWorkerWithMockConn(
 		httpClient: http.DefaultClient,
 		consumer:   ic,
 		tracer:     tp.GetTraceProvider().Tracer("test"),
-		topicNamer: kafka2.NewTopicNamer("default"),
+		topicNamer: kafka2.NewTopicNamer("default", "seldon"),
 	}
 	return ic, iw
 }

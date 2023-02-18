@@ -43,7 +43,7 @@ func TestCreateTopicSources(t *testing.T) {
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("default"),
+				topicNamer: kafka.NewTopicNamer("default", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs: []string{
@@ -61,7 +61,7 @@ func TestCreateTopicSources(t *testing.T) {
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("ns1"),
+				topicNamer: kafka.NewTopicNamer("ns1", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs:       []string{},
@@ -94,7 +94,7 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("default"),
+				topicNamer: kafka.NewTopicNamer("default", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs: []string{

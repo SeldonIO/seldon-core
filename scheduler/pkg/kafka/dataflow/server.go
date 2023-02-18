@@ -22,6 +22,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
@@ -59,13 +61,14 @@ type ChainerSubscription struct {
 	fin    chan bool
 }
 
-func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler, namespace string, loadBalancer util.LoadBalancer) *ChainerServer {
+func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
+	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *config.KafkaConfig) *ChainerServer {
 	c := &ChainerServer{
 		logger:          logger.WithField("source", "dataflow"),
 		streams:         make(map[string]*ChainerSubscription),
 		eventHub:        eventHub,
 		pipelineHandler: pipelineHandler,
-		topicNamer:      kafka.NewTopicNamer(namespace),
+		topicNamer:      kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix),
 		loadBalancer:    loadBalancer,
 	}
 

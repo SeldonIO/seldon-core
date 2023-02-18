@@ -29,7 +29,7 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	CGO_ENABLED=0 go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
+	go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go

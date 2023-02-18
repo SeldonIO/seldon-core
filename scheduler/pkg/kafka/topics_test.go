@@ -39,28 +39,28 @@ func TestGetModelTopic(t *testing.T) {
 		{
 			name:          "model",
 			pipelineName:  "test",
-			topicNamer:    NewTopicNamer("default"),
+			topicNamer:    NewTopicNamer("default", "foo"),
 			stepReference: "model1.inputs",
-			expected:      "seldon.default.model.model1.inputs",
+			expected:      "foo.default.model.model1.inputs",
 		},
 		{
 			name:          "model with tensor",
 			pipelineName:  "test",
-			topicNamer:    NewTopicNamer("default"),
+			topicNamer:    NewTopicNamer("default", defaultSeldonTopicPrefix),
 			stepReference: "model1.outputs.t1",
 			expected:      "seldon.default.model.model1.outputs.t1",
 		},
 		{
 			name:          "pipeline reference",
 			pipelineName:  "test",
-			topicNamer:    NewTopicNamer("default"),
+			topicNamer:    NewTopicNamer("default", defaultSeldonTopicPrefix),
 			stepReference: "test.inputs",
 			expected:      "seldon.default.pipeline.test.inputs",
 		},
 		{
 			name:          "pipeline reference tensor",
 			pipelineName:  "test",
-			topicNamer:    NewTopicNamer("default"),
+			topicNamer:    NewTopicNamer("default", defaultSeldonTopicPrefix),
 			stepReference: "test.inputs.t1",
 			expected:      "seldon.default.pipeline.test.inputs.t1",
 		},
@@ -88,7 +88,7 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 		{
 			name:         "basic",
 			pipelineName: "test",
-			topicNamer:   NewTopicNamer("default"),
+			topicNamer:   NewTopicNamer("default", defaultSeldonTopicPrefix),
 			in:           map[string]string{"step.inputs.t1": "t1in", "step.inputs.t2": "t2in"},
 			expected: []*chainer.PipelineTensorMapping{
 				{
@@ -106,7 +106,7 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 		{
 			name:         "pipeline references",
 			pipelineName: "test",
-			topicNamer:   NewTopicNamer("default"),
+			topicNamer:   NewTopicNamer("default", defaultSeldonTopicPrefix),
 			in:           map[string]string{"test.inputs.t1": "t1"},
 			expected: []*chainer.PipelineTensorMapping{
 				{
@@ -149,7 +149,7 @@ func TestGetFullyQualifiedPipelineTensorMap(t *testing.T) {
 	tests := []test{
 		{
 			name:       "pipeline inputs",
-			topicNamer: NewTopicNamer("default"),
+			topicNamer: NewTopicNamer("default", defaultSeldonTopicPrefix),
 			in: map[string]string{
 				"pipeline1.inputs.input1": "t1in",
 			},
@@ -161,19 +161,19 @@ func TestGetFullyQualifiedPipelineTensorMap(t *testing.T) {
 		},
 		{
 			name:       "pipeline outputs",
-			topicNamer: NewTopicNamer("default"),
+			topicNamer: NewTopicNamer("default", "foo"),
 			in: map[string]string{
 				"pipeline2.outputs.output1": "output2",
 			},
 			expected: &chainer.PipelineTensorMapping{
 				PipelineName:   "pipeline2",
-				TopicAndTensor: "seldon.default.pipeline.pipeline2.outputs.output1",
+				TopicAndTensor: "foo.default.pipeline.pipeline2.outputs.output1",
 				TensorName:     "output2",
 			},
 		},
 		{
 			name:       "basic",
-			topicNamer: NewTopicNamer("default"),
+			topicNamer: NewTopicNamer("default", defaultSeldonTopicPrefix),
 			in: map[string]string{
 				"pipeline3.steps.model1.outputs.output1": "output2",
 			},
@@ -247,7 +247,7 @@ func TestGetModelNameFromModelInputTopic(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tn := NewTopicNamer(test.namespace)
+			tn := NewTopicNamer(test.namespace, defaultSeldonTopicPrefix)
 			modelName, err := tn.GetModelNameFromModelInputTopic(test.topic)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())

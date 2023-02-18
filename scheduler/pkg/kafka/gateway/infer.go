@@ -85,7 +85,7 @@ func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
 		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:        kafka2.NewTopicNamer(consumerConfig.Namespace),
+		topicNamer:        kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix),
 		loadedModels:      make(map[string]bool),
 		subscribedTopics:  make(map[string]bool),
 		consumerConfig:    consumerConfig,
