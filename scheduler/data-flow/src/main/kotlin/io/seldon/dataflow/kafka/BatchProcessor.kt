@@ -62,7 +62,6 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
             }
             else -> null
         }
-        logger.info("BatchSize: $batchSize, Threshold: $threshold, RequestId: ${value.id}, Key: ${key}, ReturnValue: ${returnValue}")
         return returnValue
     }
 
