@@ -114,7 +114,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
 		}
 	}
-
+	consumerConfig["message.max.bytes"] = 1000000000
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err
