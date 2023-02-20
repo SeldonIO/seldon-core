@@ -29,7 +29,6 @@ Archived Docs for Review
     Java JNI</java-jni/README.md>
     APIs readme </reference/apis/readme.md>
     Concepts </reference/concepts.md>
-    Nvidia Integration </reference/integration_nvidia_link.rst>
     Sagemaker Integration </reference/integration_sagemaker_link.rst>
     Blogs </tutorials/blogs.rst>
     Podcasts </tutorials/podcasts.rst>

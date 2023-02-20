@@ -94,7 +94,7 @@ class TestExplainV2Server:
         name = "cifar10-default-explainer"
         vs_prefix = (
             f"seldon/{namespace}/cifar10-explainer/default/v2/models/"
-            f"cifar10-default-explainer/infer"
+            f"cifar10-anchor-image/infer"
         )
 
         test_data = np.random.randn(1, 32, 32, 3)

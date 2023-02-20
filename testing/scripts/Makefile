@@ -59,6 +59,7 @@ helm_setup:
 	helm repo add seldonio https://storage.googleapis.com/seldon-charts
 	helm repo add datawire https://app.getambassador.io
 	helm repo add jetstack https://charts.jetstack.io
+	helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 	helm repo update
 
 .PHONY: install_ambassador
@@ -66,7 +67,7 @@ install_ambassador:
 	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/3.1.0/aes-crds.yaml
 	kubectl wait --timeout=90s --for=condition=available deployment emissary-apiext -n emissary-system
 	helm install -n ambassador --create-namespace edge-stack datawire/edge-stack \
-		-f ../resources/ambassador_values.yaml
+		-f ../resources/ambassador_values.yaml --wait
 	kubectl rollout status  -n ambassador deployment/edge-stack -w
 	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
@@ -86,6 +87,7 @@ install_cert_manager:
 	    --namespace cert-manager \
 	    --create-namespace \
 	    --version v1.10.0 \
+	    --wait \
 	    --set installCRDs=true
 	sleep 5 #https://github.com/jetstack/cert-manager/issues/2273
 
@@ -106,8 +108,8 @@ install_seldon:
 # Install istio and patch nodePort to allow 8004 to point to ingress gateway
 .PHONY: install_istio
 install_istio:
-	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 TARGET_ARCH=x86_64 sh -
-	istio-1.6.8/bin/istioctl install --set profile=demo
+	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.16.2 TARGET_ARCH=x86_64 sh -
+	istio-1.16.2/bin/istioctl install -y --set profile=demo
 	kubectl patch svc istio-ingressgateway -n istio-system --patch "$$(cat ../resources/istio-ingressgateway-patch.yaml)"
 	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
 
@@ -127,7 +129,7 @@ set_namespace:
 .PHONY: install_metrics
 # Derived from https://github.com/kubernetes-sigs/kind/issues/398#issuecomment-478325705
 install_metrics:
-	kubectl apply -f metrics.yaml
+	helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --wait
 
 .PHONY: kind_setup
 kind_setup: create_namespaces helm_setup install_cert_manager install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics

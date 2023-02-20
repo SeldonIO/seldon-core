@@ -133,7 +133,7 @@ clean:
 install-dev:
 	# Tool to generate license info
 	pip install \
-		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+		'git+https://github.com/seldonio/kubeflow-testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 
 .PHONY: licenses/dep.txt
@@ -146,12 +146,12 @@ licenses: licenses/dep.txt
 	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
 	get-github-repo \
 		-o licenses/repo.txt \
-		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		--manual-dep-repo-mapping ../licenses/dep_repo.manual.csv \
 		licenses/dep.txt
 	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
 	python -m 'patch_additional_license_info' \
 		licenses/license_info.csv \
-		licenses/additional_license_info.csv
+		../licenses/additional_license_info.csv
 	concatenate-license -o licenses/license.txt licenses/license_info.csv
 
 

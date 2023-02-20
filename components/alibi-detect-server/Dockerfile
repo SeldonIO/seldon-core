@@ -23,10 +23,10 @@ RUN microdnf update -y && \
       gcc-c++
 
 # Install Rclone Binary to be present in the image
-RUN wget https://downloads.rclone.org/v1.55.1/rclone-v1.55.1-linux-amd64.zip && \
-    unzip rclone-v1.55.1-linux-amd64.zip && \
-    mv rclone-v1.55.1-linux-amd64/rclone /usr/bin/rclone && \
-    rm -rf rclone-v1.55.1-linux-amd64.zip rclone-v1.55.1-linux-amd64
+RUN wget https://downloads.rclone.org/v1.61.1/rclone-v1.61.1-linux-amd64.zip && \
+    unzip rclone-v1.61.1-linux-amd64.zip && \
+    mv rclone-v1.61.1-linux-amd64/rclone /usr/bin/rclone && \
+    rm -rf rclone-v1.61.1-linux-amd64.zip rclone-v1.61.1-linux-amd64
 
 # Install Python / Conda
 # Note that we need to force Conda to use the system's std-c++ library, as

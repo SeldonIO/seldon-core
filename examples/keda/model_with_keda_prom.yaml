@@ -8,7 +8,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.5.0-dev
+        - image: seldonio/mock_classifier:1.16.0-dev
           imagePullPolicy: IfNotPresent
           name: classifier
           resources:
@@ -22,10 +22,10 @@ spec:
         - type: prometheus
           metadata:
             # Required
-            serverAddress: http://seldon-core-analytics-prometheus-seldon.seldon-system.svc.cluster.local
+            serverAddress: http://seldon-monitoring-prometheus.seldon-monitoring.svc.cluster.local:9090
             metricName: access_frequency
             threshold: '10'
-            query: rate(seldon_api_executor_client_requests_seconds_count{seldon_app=~"seldon-model-example"}[1m])
+            query: rate(seldon_api_executor_client_requests_seconds_count{model_name="classifier"}[1m])
     graph:
       children: []
       endpoint:

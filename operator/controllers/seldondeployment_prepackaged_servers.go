@@ -84,6 +84,8 @@ func createTensorflowServingContainer(mlDepSepc *machinelearningv1.SeldonDeploym
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: v1.TerminationMessageReadFile,
 	}
 }
 
@@ -180,8 +182,9 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		},
 		ReadinessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeReadyPath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeReadyPath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 20,
 			TimeoutSeconds:      1,
@@ -191,8 +194,9 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 		},
 		LivenessProbe: &v1.Probe{
 			ProbeHandler: v1.ProbeHandler{HTTPGet: &v1.HTTPGetAction{
-				Path: constants.KFServingProbeLivePath,
-				Port: intstr.FromString("http"),
+				Path:   constants.KFServingProbeLivePath,
+				Port:   intstr.FromString("http"),
+				Scheme: v1.URISchemeHTTP,
 			}},
 			InitialDelaySeconds: 60,
 			TimeoutSeconds:      1,
@@ -206,6 +210,8 @@ func (pi *PrePackedInitialiser) addTritonServer(mlDepSpec *machinelearningv1.Sel
 				MountPath: machinelearningv1.PODINFO_VOLUME_PATH,
 			},
 		},
+		TerminationMessagePath:   "/dev/termination-log",
+		TerminationMessagePolicy: v1.TerminationMessageReadFile,
 	}
 	cServer.Image = serverConfig.PrepackImageName(mlDepSpec.Protocol, pu)
 

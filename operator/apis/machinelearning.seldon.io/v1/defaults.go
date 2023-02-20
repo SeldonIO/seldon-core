@@ -77,6 +77,16 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 	portNumHttp int32, portNumGrpc int32, nextMetricsPortNum *int32, mldepName string, namespace string,
 	p *PredictorSpec, pu *PredictiveUnit, con *corev1.Container) {
 
+	if con.ImagePullPolicy == "" {
+		con.ImagePullPolicy = corev1.PullIfNotPresent
+	}
+	if con.TerminationMessagePath == "" {
+		con.TerminationMessagePath = "/dev/termination-log"
+	}
+	if con.TerminationMessagePolicy == "" {
+		con.TerminationMessagePolicy = corev1.TerminationMessageReadFile
+	}
+
 	if pu.Endpoint == nil {
 		pu.Endpoint = &Endpoint{}
 	}
