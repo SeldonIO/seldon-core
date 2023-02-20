@@ -418,7 +418,6 @@ gotest.tools/v3
 honnef.co/go/tools
 istio.io/api
 istio.io/client-go
-istio.io/gogo-genproto
 k8s.io/api
 k8s.io/apiextensions-apiserver
 k8s.io/apimachinery

@@ -421,7 +421,6 @@ gotest.tools/v3
 honnef.co/go/tools
 istio.io/api
 istio.io/client-go
-istio.io/gogo-genproto
 k8s.io/api
 k8s.io/apiextensions-apiserver
 k8s.io/apimachinery
@@ -431,7 +430,6 @@ k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
 k8s.io/gengo
-k8s.io/klog
 k8s.io/klog/v2
 k8s.io/kube-openapi
 k8s.io/kubectl
@@ -452,6 +450,5 @@ sigs.k8s.io/gateway-api
 sigs.k8s.io/json
 sigs.k8s.io/kustomize/api
 sigs.k8s.io/kustomize/kyaml
-sigs.k8s.io/structured-merge-diff
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml

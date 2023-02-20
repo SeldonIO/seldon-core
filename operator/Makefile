@@ -7,7 +7,7 @@ IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
 IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
 
-ENVTEST_K8S_VERSION = 1.23
+ENVTEST_K8S_VERSION = 1.24
 KIND_NAME ?= kind
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -131,7 +131,7 @@ manifests: controller-gen
 	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
 
 manifests_v1_small: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
+	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
 
 # Run go fmt against code
 fmt:

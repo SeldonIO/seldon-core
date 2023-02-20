@@ -360,7 +360,6 @@ gotestyourself/gotest.tools
 dominikh/go-tools
 istio/api
 istio/client-go
-istio/gogo-genproto
 kubernetes/api
 kubernetes/apiextensions-apiserver
 kubernetes/apimachinery

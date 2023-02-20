@@ -29,7 +29,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/constants"
 	testutils "github.com/seldonio/seldon-core/operator/controllers/testing"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscaling "k8s.io/api/autoscaling/v2"
+	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -629,7 +629,7 @@ var _ = Describe("Create a Seldon Deployment with two ComponentSpecs", func() {
 })
 
 var _ = Describe("Create a Seldon Deployment with hpa", func() {
-	const timeout = time.Second * 15
+	const timeout = time.Second * 30
 	const interval = time.Second * 1
 	namespaceName := rand.String(10)
 	utilization := int32(10)
@@ -667,11 +667,8 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 										{
 											Type: autoscaling.ResourceMetricSourceType,
 											Resource: &autoscaling.ResourceMetricSource{
-												Name: v1.ResourceCPU,
-												Target: autoscaling.MetricTarget{
-													Type:               autoscaling.AverageValueMetricType,
-													AverageUtilization: &utilization,
-												},
+												Name:                     v1.ResourceCPU,
+												TargetAverageUtilization: &utilization,
 											},
 										},
 									},

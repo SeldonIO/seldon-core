@@ -21,6 +21,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/google/go-cmp/cmp"
+	"google.golang.org/protobuf/testing/protocmp"
 	"net/url"
 	"strconv"
 	"strings"
@@ -33,7 +35,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"knative.dev/pkg/apis"
 
-	types2 "github.com/gogo/protobuf/types"
+	duration "github.com/golang/protobuf/ptypes/duration"
 	"github.com/seldonio/seldon-core/operator/constants"
 	"github.com/seldonio/seldon-core/operator/utils"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -57,9 +59,9 @@ import (
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscaling "k8s.io/api/autoscaling/v2"
+	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
-	policy "k8s.io/api/policy/v1beta1"
+	policy "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -130,12 +132,16 @@ func init() {
 	istio_networking.GatewayUnmarshaler.AllowUnknownFields = true
 }
 
+func createFqdn(svcName string, namespace string) string {
+	return svcName + "." + namespace + constants.DNSClusterLocalSuffix
+}
+
 func createAddressableResource(mlDep *machinelearningv1.SeldonDeployment, namespace string, externalPorts []httpGrpcPorts) (*machinelearningv1.SeldonAddressable, error) {
 	// It was an explicit design decision to expose the service name instead of the ingress
 	// Currently there will only be a URL for the first predictor, and assumes always REST
 	firstPredictor := &mlDep.Spec.Predictors[0]
 	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
-	addressableHost := sdepSvcName + "." + namespace + ".svc.cluster.local" + ":" + strconv.Itoa(externalPorts[0].httpPort)
+	addressableHost := createFqdn(sdepSvcName, namespace) + ":" + strconv.Itoa(externalPorts[0].httpPort)
 	addressablePath := utils.GetPredictionPath(mlDep)
 	addressableUrl := url.URL{Scheme: "http", Host: addressableHost, Path: addressablePath}
 
@@ -269,8 +275,8 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 	// Add retries
 	if istioRetries > 0 {
-		vsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
-		vsvc.Spec.Http[1].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &types2.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		vsvc.Spec.Http[0].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &duration.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
+		vsvc.Spec.Http[1].Retries = &istio_networking.HTTPRetry{Attempts: int32(istioRetries), PerTryTimeout: &duration.Duration{Seconds: int64(istioRetriesTimeout)}, RetryOn: "gateway-error,connect-failure,refused-stream"}
 	}
 
 	// shadows don't get destinations in the vs as a shadow is a mirror instead
@@ -292,6 +298,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 
 		p := mlDep.Spec.Predictors[i]
 		pSvcName := machinelearningv1.GetPredictorKey(mlDep, &p)
+		pSvcFqdn := createFqdn(pSvcName, namespace)
 
 		drule := &istio.DestinationRule{
 			ObjectMeta: metav1.ObjectMeta{
@@ -299,7 +306,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 				Namespace: namespace,
 			},
 			Spec: istio_networking.DestinationRule{
-				Host: pSvcName,
+				Host: pSvcFqdn,
 				Subsets: []*istio_networking.Subset{
 					{
 						Name: p.Name,
@@ -308,14 +315,14 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 						},
 					},
 				},
-				TrafficPolicy: &istio_networking.TrafficPolicy{ConnectionPool: &istio_networking.ConnectionPoolSettings{Http: &istio_networking.ConnectionPoolSettings_HTTPSettings{IdleTimeout: &types2.Duration{Seconds: 60}}}},
+				TrafficPolicy: &istio_networking.TrafficPolicy{ConnectionPool: &istio_networking.ConnectionPoolSettings{Http: &istio_networking.ConnectionPoolSettings_HTTPSettings{IdleTimeout: &duration.Duration{Seconds: 60}}}},
 			},
 		}
 
 		if istioTLSMode != "" {
 			drule.Spec.TrafficPolicy = &istio_networking.TrafficPolicy{
-				Tls: &istio_networking.TLSSettings{
-					Mode: istio_networking.TLSSettings_TLSmode(istio_networking.TLSSettings_TLSmode_value[istioTLSMode]),
+				Tls: &istio_networking.ClientTLSSettings{
+					Mode: istio_networking.ClientTLSSettings_TLSmode(istio_networking.ClientTLSSettings_TLSmode_value[istioTLSMode]),
 				},
 			}
 		}
@@ -325,7 +332,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			//if there's a shadow then add a mirror section to the VirtualService
 
 			vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
@@ -333,7 +340,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			}
 
 			vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
@@ -358,7 +365,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
 		routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
 			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].httpPort),
@@ -368,7 +375,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 		routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
 			Destination: &istio_networking.Destination{
-				Host:   pSvcName,
+				Host:   pSvcFqdn,
 				Subset: p.Name,
 				Port: &istio_networking.PortSelector{
 					Number: uint32(ports[i].grpcPort),
@@ -1129,9 +1136,10 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 			return ready, err
 		} else {
 			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
+			if !cmp.Equal(&svc.Spec, &found.Spec, protocmp.Transform()) {
+
 				desiredSvc := found.DeepCopy()
-				found.Spec = svc.Spec
+				found.Spec = *svc.Spec.DeepCopy()
 				log.Info("Updating Virtual Service", "namespace", svc.Namespace, "name", svc.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
@@ -1139,16 +1147,12 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 				}
 
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+				if !cmp.Equal(&desiredSvc.Spec, &found.Spec, protocmp.Transform()) {
 					ready = false
-					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateVirtualService, "Updated VirtualService %q", svc.GetName())
-					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredSvc.Spec, found.Spec)
-					if err != nil {
-						log.Error(err, "Failed to diff")
-					} else {
-						log.Info(fmt.Sprintf("Difference in VSVC: %v", diff))
+					if diff := cmp.Diff(&desiredSvc.Spec, &found.Spec, protocmp.Transform()); diff != "" {
+						log.Info("Found virtual service differences", "diff", diff)
 					}
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateVirtualService, "Updated VirtualService %q", svc.GetName())
 				} else {
 					log.Info("The VSVC are the same - api server defaults ignored")
 				}
@@ -1177,9 +1181,9 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 			return ready, err
 		} else {
 			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(drule.Spec, found.Spec) {
+			if !cmp.Equal(&drule.Spec, &found.Spec, protocmp.Transform()) {
 				desiredDrule := found.DeepCopy()
-				found.Spec = drule.Spec
+				found.Spec = *drule.Spec.DeepCopy()
 				log.Info("Updating Istio Destination Rule", "namespace", drule.Namespace, "name", drule.Name)
 				err = r.Update(context.TODO(), found)
 				if err != nil {
@@ -1187,16 +1191,12 @@ func (r *SeldonDeploymentReconciler) createIstioServices(components *components,
 				}
 
 				// Check if what came back from server modulo the defaults applied by k8s is the same or not
-				if !equality.Semantic.DeepEqual(desiredDrule.Spec, found.Spec) {
+				if !cmp.Equal(&desiredDrule.Spec, &found.Spec, protocmp.Transform()) {
 					ready = false
-					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateDestinationRule, "Updated DestinationRule %q", drule.GetName())
-					//For debugging we will show the difference
-					diff, err := kmp.SafeDiff(desiredDrule.Spec, found.Spec)
-					if err != nil {
-						log.Error(err, "Failed to diff")
-					} else {
-						log.Info(fmt.Sprintf("Difference in Destination Rules: %v", diff))
+					if diff := cmp.Diff(&desiredDrule.Spec, &found.Spec, protocmp.Transform()); diff != "" {
+						log.Info("Found virtual service differences", "diff", diff)
 					}
+					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateDestinationRule, "Updated DestinationRule %q", drule.GetName())
 				} else {
 					log.Info("The Destination Rules are the same - api server defaults ignored")
 				}
@@ -1904,6 +1904,23 @@ func (r *SeldonDeploymentReconciler) completeServiceCreation(instance *machinele
 				// clean up status
 				delete(instance.Status.ServiceStatus, k)
 				err := r.Delete(context.TODO(), found)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// cleanup any orphan services
+		seldonId := machinelearningv1.GetSeldonDeploymentName(instance)
+		var svcs corev1.ServiceList
+		err := r.List(context.TODO(), &svcs, client.MatchingLabels{machinelearningv1.Label_seldon_id: seldonId}, client.InNamespace(instance.Namespace))
+		if err != nil {
+			return err
+		}
+		for _, svc := range svcs.Items {
+			if _, ok := components.serviceDetails[svc.Name]; !ok {
+				log.Info("SVC check: Found orphaned svc so will delete it", "svc", svc.Name)
+				err := r.Delete(context.TODO(), &svc)
 				if err != nil {
 					return err
 				}

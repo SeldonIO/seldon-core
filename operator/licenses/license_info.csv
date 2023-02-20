@@ -357,7 +357,6 @@ gotestyourself/gotest.tools,https://github.com/gotestyourself/gotest.tools/blob/
 dominikh/go-tools,https://github.com/dominikh/go-tools/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/dominikh/go-tools/master/LICENSE
 istio/api,https://github.com/istio/api/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/istio/api/master/LICENSE
 istio/client-go,https://github.com/istio/client-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/istio/client-go/master/LICENSE
-istio/gogo-genproto,https://github.com/istio/gogo-genproto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/istio/gogo-genproto/master/LICENSE
 kubernetes/api,https://github.com/kubernetes/api/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/api/master/LICENSE
 kubernetes/apiextensions-apiserver,https://github.com/kubernetes/apiextensions-apiserver/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/apiextensions-apiserver/master/LICENSE
 kubernetes/apimachinery,https://github.com/kubernetes/apimachinery/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes/apimachinery/master/LICENSE
