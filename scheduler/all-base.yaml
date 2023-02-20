@@ -104,6 +104,8 @@ services:
 
   kafka:
     image: "${KAFKA_IMAGE_AND_TAG}"
+    environment:
+    - KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES=1000000000
     volumes:
       - "kafka_data:/bitnami"
     depends_on:
@@ -183,7 +185,7 @@ services:
       - "/mnt/agent/models"
     environment:
       - MLSERVER_LOAD_MODELS_AT_STARTUP=${MLSERVER_LOAD_MODELS_AT_STARTUP}
-      - MLSERVER_GRPC_MAX_MESSAGE_LENGTH=104857600 # 100MB (100 * 1024 * 1024)
+      - MLSERVER_GRPC_MAX_MESSAGE_LENGTH=1048576000 # 1000MB (1000 * 1024 * 1024)
       - MLSERVER_METRICS_PORT=${SERVER_MLSERVER_METRICS_PORT}
       - MLSERVER_DEBUG=TRUE
 

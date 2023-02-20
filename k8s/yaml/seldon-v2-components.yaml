@@ -1103,7 +1103,7 @@ spec:
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
-        value: "104857600"
+        value: "1048576000"
       image: seldonio/mlserver:1.2.3
       imagePullPolicy: IfNotPresent
       lifecycle:
