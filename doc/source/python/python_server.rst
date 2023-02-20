@@ -100,8 +100,8 @@ orchestrator so GRPC requests would no longer work. An example of this would be 
 Threads
 -------
 
-By default, Seldon will process your model's incoming requests using a
-pool of **10 threads per worker process**. You can increase this number
+By default, Seldon will process your model's incoming requests using 
+**1 thread per worker process**. You can increase this number
 through the ``GUNICORN_THREADS`` environment variable. This variable can
 be controlled directly through the ``SeldonDeployment`` CRD.
 
@@ -244,7 +244,7 @@ line flags.
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``--workers``               | ``GUNICORN_WORKERS``                       | ``1``           | Number of Gunicorn workers for handling requests.                                                                                                                                |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--threads``               | ``GUNICORN_THREADS``                       | ``10``          | Number of threads to run per Gunicorn worker.                                                                                                                                    |
+| ``--threads``               | ``GUNICORN_THREADS``                       | ``1``           | Number of threads to run per Gunicorn worker.                                                                                                                                    |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``--max-requests``          | ``GUNICORN_MAX_REQUESTS``                  | ``0``           | Maximum number of requests gunicorn worker will process before restarting.                                                                                                       |
 +-----------------------------+--------------------------------------------+-----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

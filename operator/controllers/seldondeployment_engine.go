@@ -105,8 +105,9 @@ func addEngineToDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machine
 		deploy.Spec.Template.Annotations = make(map[string]string)
 	}
 	//overwrite annotations with predictor annotations
-	for _, ann := range p.Annotations {
-		deploy.Spec.Template.Annotations[ann] = p.Annotations[ann]
+	for k, v := range p.Annotations {
+		deploy.Annotations[k] = v
+		deploy.Spec.Template.Annotations[k] = v
 	}
 
 	deploy.ObjectMeta.Labels[machinelearningv1.Label_seldon_app] = pSvcName
@@ -421,7 +422,7 @@ func createEngineDeployment(mlDep *machinelearningv1.SeldonDeployment, p *machin
 					RestartPolicy: corev1.RestartPolicyAlways,
 				},
 			},
-			Strategy: appsv1.DeploymentStrategy{RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
+			Strategy: appsv1.DeploymentStrategy{Type: appsv1.RollingUpdateDeploymentStrategyType, RollingUpdate: &appsv1.RollingUpdateDeployment{MaxUnavailable: &intstr.IntOrString{StrVal: "10%"}}},
 		},
 	}
 

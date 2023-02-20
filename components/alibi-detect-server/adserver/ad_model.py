@@ -5,8 +5,8 @@ import numpy as np
 from adserver.constants import HEADER_RETURN_INSTANCE_SCORE
 from .numpy_encoder import NumpyEncoder
 from adserver.protocols.util import read_inputs_as_numpy
-from alibi_detect.utils.saving import load_detector, Data
-from adserver.base import CEModel, ModelResponse
+from alibi_detect.utils.saving import load_detector
+from adserver.base import CEModel, ModelResponse, Data
 from adserver.base.storage import download_model
 
 
@@ -76,5 +76,5 @@ class AlibiDetectAdversarialDetectionModel(
 
         ad_preds = self.model.predict(X, return_instance_score=ret_instance_score)
 
-        data =  json.loads(json.dumps(ad_preds, cls=NumpyEncoder))
+        data = json.loads(json.dumps(ad_preds, cls=NumpyEncoder))
         return ModelResponse(data=data, metrics=None)

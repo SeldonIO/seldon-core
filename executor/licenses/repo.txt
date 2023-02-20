@@ -4,6 +4,7 @@ census-ecosystem/opencensus-go-exporter-ocagent
 census-ecosystem/opencensus-go-exporter-prometheus
 census-ecosystem/opencensus-go-exporter-zipkin
 https://gotools.org/dmitri.shuralyov.com/gpu/mtl
+emperror/errors
 Azure/azure-amqp-common-go
 Azure/azure-event-hubs-go
 Azure/azure-kusto-go
@@ -35,8 +36,10 @@ apache/thrift
 armon/circbuf
 armon/go-metrics
 armon/go-radix
+armon/go-socks5
 asaskevich/govalidator
 aws/aws-sdk-go
+banzaicloud/k8s-objectmatcher
 benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy
@@ -133,6 +136,7 @@ golang/snappy
 google/btree
 google/cel-go
 google/cel-spec
+google/gnostic
 google/go-cmp
 google/go-github
 google/go-querystring
@@ -353,7 +357,6 @@ gotestyourself/gotest.tools
 dominikh/go-tools
 istio/api
 istio/client-go
-istio/gogo-genproto
 kubernetes/api
 kubernetes/apiextensions-apiserver
 kubernetes/apimachinery
