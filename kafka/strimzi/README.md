@@ -27,3 +27,5 @@ Create Kafka cluster in `seldon-mesh` namespace
 helm upgrade seldon-core-v2-kafka . -n seldon-mesh --install
 ```
 
+Note that a specific strimzi operator version is assciated with a subset of supported Kafka versions. 
+
