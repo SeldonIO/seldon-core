@@ -1,30 +1,29 @@
 # Kafka Integration
 
+Seldon Core v2 relies on Kafka to implement datacentric inference Pipleines. 
+
+To install kafka in your k8s cluster, we higlight two options, ansible and helm.
+
+
 ## Install Kafka
 
-Clone https://github.com/SeldonIO/ansible-k8s-collection
+### Ansible
 
-Create a kafka operator install in kafka namespace
+We provide automation around the installation of a Kafka cluster for Seldon Core v2 to help with development and testing usecases.
 
-create playbooks/kafka_scv2.yaml
+You can follow the steps defined [here](../../ansible/README.md) to install kafka via ansible.
 
-```
-- name: Install Kafka
-  hosts: localhost
-  roles:
-    - strimzi_kafka
-  vars:
-    strimzi_kafka_create_cluster: false
-    strimzi_kafka_create_metrics: false
-```
+### Helm
 
-```
-ansible-playbook playbooks/kafka_scv2.yaml
-```
+Use helm if you require changes and customisations to the Kafka cluster.
 
-Create our Kafka cluster
+The installation of a kafka cluster requires the strimzi operator installed in the same namespace.
+
+One option to install the strimzi operator is via [helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
+
+Create Kafka cluster in `seldon-mesh` namespace
 
 ```
-kubectl create -f cluster.yaml -n kafka
+helm upgrade seldon-core-v2-kafka . -n seldon-mesh --install
 ```
 
