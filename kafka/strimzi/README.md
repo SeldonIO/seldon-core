@@ -21,6 +21,12 @@ The installation of a kafka cluster requires the strimzi operator installed in t
 
 One option to install the strimzi operator is via [helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
 
+Note that we recommend using KRaft instead of Zookeeper for Kafka. To enable KRaft set `featureGates` during installation via `helm`
+
+```
+helm upgrade --install strimzi-kafka-operator strimzi/strimzi-kafka-operator --namespace seldon-mesh  --set featureGates='+UseKRaft\,+UseStrimziPodSets'
+```
+
 Create Kafka cluster in `seldon-mesh` namespace
 
 ```
