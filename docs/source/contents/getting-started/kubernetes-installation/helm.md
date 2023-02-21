@@ -12,8 +12,6 @@ The Helm charts can be found within the `k8s/helm-charts` folder.
 Assuming you have installed any ecosystem components: Jaeger, Prometheus, Kafka as discussed [here](./index.md) you can follow the
 following steps.
 
-The Helm charts are provided as part of the repository. To use the instructions below clone the repostitory. They will be published in future.
-
 For Kafka follow the steps discussed [here](kafka.md) 
 
 ## Install the CRDs
