@@ -14,6 +14,8 @@ following steps.
 
 The Helm charts are provided as part of the repository. To use the instructions below clone the repostitory. They will be published in future.
 
+For Kafka follow the steps discussed [here](kafka.md) 
+
 ## Install the CRDs
 
 ```bash
