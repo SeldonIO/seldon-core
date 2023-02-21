@@ -23,13 +23,13 @@ One option to install the strimzi operator is via [helm](https://strimzi.io/docs
 
 Note that we recommend using KRaft instead of Zookeeper for Kafka. To enable KRaft set `featureGates` during installation via `helm`
 
-```
+```bash
 helm upgrade --install strimzi-kafka-operator strimzi/strimzi-kafka-operator --namespace seldon-mesh  --set featureGates='+UseKRaft\,+UseStrimziPodSets'
 ```
 
 Create Kafka cluster in `seldon-mesh` namespace
 
-```
+```bash
 helm upgrade seldon-core-v2-kafka . -n seldon-mesh --install
 ```
 
