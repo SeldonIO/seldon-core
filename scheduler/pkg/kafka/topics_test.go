@@ -39,9 +39,23 @@ func TestGetModelTopic(t *testing.T) {
 		{
 			name:          "model",
 			pipelineName:  "test",
-			topicNamer:    NewTopicNamer("default", "foo"),
+			topicNamer:    NewTopicNamer("default", ""),
 			stepReference: "model1.inputs",
-			expected:      "foo.default.model.model1.inputs",
+			expected:      "seldon.default.model.model1.inputs",
+		},
+		{
+			name:          "model with custom prefix",
+			pipelineName:  "test",
+			topicNamer:    NewTopicNamer("default", "foo.bar"),
+			stepReference: "model1.inputs",
+			expected:      "foo.bar.default.model.model1.inputs",
+		},
+		{
+			name:          "model with custom prefix with a dot",
+			pipelineName:  "test",
+			topicNamer:    NewTopicNamer("default", "foo.bar."),
+			stepReference: "model1.inputs",
+			expected:      "foo.bar..default.model.model1.inputs",
 		},
 		{
 			name:          "model with tensor",
@@ -104,6 +118,24 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 			},
 		},
 		{
+			name:         "basic with custom prefix",
+			pipelineName: "test",
+			topicNamer:   NewTopicNamer("default", "foo.bar"),
+			in:           map[string]string{"step.inputs.t1": "t1in", "step.inputs.t2": "t2in"},
+			expected: []*chainer.PipelineTensorMapping{
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "foo.bar.default.model.step.inputs.t1",
+					TensorName:     "t1in",
+				},
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "foo.bar.default.model.step.inputs.t2",
+					TensorName:     "t2in",
+				},
+			},
+		},
+		{
 			name:         "pipeline references",
 			pipelineName: "test",
 			topicNamer:   NewTopicNamer("default", defaultSeldonTopicPrefix),
@@ -112,6 +144,19 @@ func TestGetFullyQualifiedTensorMap(t *testing.T) {
 				{
 					PipelineName:   "test",
 					TopicAndTensor: "seldon.default.pipeline.test.inputs.t1",
+					TensorName:     "t1",
+				},
+			},
+		},
+		{
+			name:         "pipeline references with custom prefix",
+			pipelineName: "test",
+			topicNamer:   NewTopicNamer("default", "foo.bar"),
+			in:           map[string]string{"test.inputs.t1": "t1"},
+			expected: []*chainer.PipelineTensorMapping{
+				{
+					PipelineName:   "test",
+					TopicAndTensor: "foo.bar.default.pipeline.test.inputs.t1",
 					TensorName:     "t1",
 				},
 			},
@@ -160,7 +205,19 @@ func TestGetFullyQualifiedPipelineTensorMap(t *testing.T) {
 			},
 		},
 		{
-			name:       "pipeline outputs",
+			name:       "pipeline inputs custom prefix",
+			topicNamer: NewTopicNamer("default", "foo.bar"),
+			in: map[string]string{
+				"pipeline1.inputs.input1": "t1in",
+			},
+			expected: &chainer.PipelineTensorMapping{
+				PipelineName:   "pipeline1",
+				TopicAndTensor: "foo.bar.default.pipeline.pipeline1.inputs.input1",
+				TensorName:     "t1in",
+			},
+		},
+		{
+			name:       "pipeline outputs with custom prefix",
 			topicNamer: NewTopicNamer("default", "foo"),
 			in: map[string]string{
 				"pipeline2.outputs.output1": "output2",
@@ -200,6 +257,7 @@ func TestGetModelNameFromModelInputTopic(t *testing.T) {
 
 	type test struct {
 		name          string
+		topicPrefix   string
 		namespace     string
 		topic         string
 		expectedModel string
@@ -226,28 +284,42 @@ func TestGetModelNameFromModelInputTopic(t *testing.T) {
 			err:       true,
 		},
 		{
-			name:      "bad prefix",
+			name:      "bad default prefix",
 			namespace: "default",
 			topic:     "seldons.default.model.mymodel.inputs",
 			err:       true,
 		},
 		{
-			name:      "bad model separator",
+			name:      "bad model separator models",
 			namespace: "default",
 			topic:     "seldon.default.models.mymodel.inputs",
 			err:       true,
 		},
 		{
-			name:      "bad model separator",
+			name:      "not input separator",
 			namespace: "default",
-			topic:     "seldon.default.models.mymodel.outputs",
+			topic:     "seldon.default.models.mymodel.inputs",
 			err:       true,
+		},
+		{
+			name:          "custom prefix",
+			topicPrefix:   "foo.bar",
+			namespace:     "default",
+			topic:         "foo.bar.default.model.mymodel.inputs",
+			expectedModel: "mymodel",
+		},
+		{
+			name:        "custom prefix bad separator models",
+			topicPrefix: "foo.bar",
+			namespace:   "default",
+			topic:       "foo.bar.default.models.mymodel.inputs",
+			err:         true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tn := NewTopicNamer(test.namespace, defaultSeldonTopicPrefix)
+			tn := NewTopicNamer(test.namespace, test.topicPrefix)
 			modelName, err := tn.GetModelNameFromModelInputTopic(test.topic)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())

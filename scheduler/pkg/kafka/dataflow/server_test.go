@@ -52,13 +52,13 @@ func TestCreateTopicSources(t *testing.T) {
 				"c.inputs.t1",
 			},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "p1", TopicName: "seldon.default.model.a"},
-				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs"},
-				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1"},
+				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: false},
+				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: false},
+				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1", Tensor: true},
 			},
 		},
 		{
-			name: "misc inputs",
+			name: "default inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
 				topicNamer: kafka.NewTopicNamer("ns1", "seldon"),
@@ -66,7 +66,7 @@ func TestCreateTopicSources(t *testing.T) {
 			pipelineName: "p1",
 			inputs:       []string{},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "p1", TopicName: "seldon.ns1.pipeline.p1.inputs"},
+				{PipelineName: "p1", TopicName: "seldon.ns1.pipeline.p1.inputs", Tensor: false},
 			},
 		},
 	}
@@ -105,17 +105,56 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 				"foo.step.bar.inputs.tensora",
 			},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.inputs"},
-				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.outputs"},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs"},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.outputs"},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs.tensora"},
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.inputs", Tensor: false},
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.outputs", Tensor: false},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs", Tensor: false},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.outputs", Tensor: false},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs.tensora", Tensor: true},
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			sources := test.server.createPipelineTopicSources(test.inputs)
+			g.Expect(sources).To(Equal(test.sources))
+		})
+	}
+}
+
+func TestCreateTriggerSources(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name         string
+		server       *ChainerServer
+		pipelineName string
+		inputs       []string
+		sources      []*chainer.PipelineTopic
+	}
+
+	tests := []test{
+		{
+			name: "misc inputs",
+			server: &ChainerServer{
+				logger:     log.New(),
+				topicNamer: kafka.NewTopicNamer("default", "seldon"),
+			},
+			pipelineName: "p1",
+			inputs: []string{
+				"a",
+				"b.inputs",
+				"c.inputs.t1",
+			},
+			sources: []*chainer.PipelineTopic{
+				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: false},
+				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: false},
+				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1", Tensor: true},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sources := test.server.createTriggerSources(test.inputs, test.pipelineName)
 			g.Expect(sources).To(Equal(test.sources))
 		})
 	}

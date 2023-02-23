@@ -5650,6 +5650,12 @@ public final class ChainerOuterClass {
      */
     com.google.protobuf.ByteString
         getTopicNameBytes();
+
+    /**
+     * <code>bool tensor = 3;</code>
+     * @return The tensor.
+     */
+    boolean getTensor();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineTopic}
@@ -5771,6 +5777,17 @@ public final class ChainerOuterClass {
       }
     }
 
+    public static final int TENSOR_FIELD_NUMBER = 3;
+    private boolean tensor_ = false;
+    /**
+     * <code>bool tensor = 3;</code>
+     * @return The tensor.
+     */
+    @java.lang.Override
+    public boolean getTensor() {
+      return tensor_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -5791,6 +5808,9 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, topicName_);
       }
+      if (tensor_ != false) {
+        output.writeBool(3, tensor_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -5805,6 +5825,10 @@ public final class ChainerOuterClass {
       }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, topicName_);
+      }
+      if (tensor_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, tensor_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5825,6 +5849,8 @@ public final class ChainerOuterClass {
           .equals(other.getPipelineName())) return false;
       if (!getTopicName()
           .equals(other.getTopicName())) return false;
+      if (getTensor()
+          != other.getTensor()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -5840,6 +5866,9 @@ public final class ChainerOuterClass {
       hash = (53 * hash) + getPipelineName().hashCode();
       hash = (37 * hash) + TOPICNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTopicName().hashCode();
+      hash = (37 * hash) + TENSOR_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getTensor());
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5971,6 +6000,7 @@ public final class ChainerOuterClass {
         bitField0_ = 0;
         pipelineName_ = "";
         topicName_ = "";
+        tensor_ = false;
         return this;
       }
 
@@ -6009,6 +6039,9 @@ public final class ChainerOuterClass {
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
           result.topicName_ = topicName_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.tensor_ = tensor_;
         }
       }
 
@@ -6066,6 +6099,9 @@ public final class ChainerOuterClass {
           bitField0_ |= 0x00000002;
           onChanged();
         }
+        if (other.getTensor() != false) {
+          setTensor(other.getTensor());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -6102,6 +6138,11 @@ public final class ChainerOuterClass {
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
+              case 24: {
+                tensor_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6259,6 +6300,38 @@ public final class ChainerOuterClass {
         checkByteStringIsUtf8(value);
         topicName_ = value;
         bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private boolean tensor_ ;
+      /**
+       * <code>bool tensor = 3;</code>
+       * @return The tensor.
+       */
+      @java.lang.Override
+      public boolean getTensor() {
+        return tensor_;
+      }
+      /**
+       * <code>bool tensor = 3;</code>
+       * @param value The tensor to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTensor(boolean value) {
+        
+        tensor_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool tensor = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTensor() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        tensor_ = false;
         onChanged();
         return this;
       }
@@ -8365,24 +8438,24 @@ public final class ChainerOuterClass {
       "\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020" +
       "\003B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMapp" +
       "ing\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTen" +
-      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"8\n\rPipelin" +
+      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"H\n\rPipelin" +
       "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicNam" +
-      "e\030\002 \001(\t\"X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010w" +
-      "indowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_" +
-      "sizeB\013\n\t_windowMs\"{\n\033PipelineUpdateStatu" +
-      "sMessage\022;\n\006update\030\001 \001(\0132+.seldon.mlops." +
-      "chainer.PipelineUpdateMessage\022\017\n\007success" +
-      "\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdate" +
-      "StatusResponse2\211\002\n\007Chainer\022~\n\030SubscribeP" +
-      "ipelineUpdates\0221.seldon.mlops.chainer.Pi" +
-      "pelineSubscriptionRequest\032+.seldon.mlops" +
-      ".chainer.PipelineUpdateMessage\"\0000\001\022~\n\023Pi" +
-      "pelineUpdateEvent\0221.seldon.mlops.chainer" +
-      ".PipelineUpdateStatusMessage\0322.seldon.ml" +
-      "ops.chainer.PipelineUpdateStatusResponse" +
-      "\"\000BS\n\027io.seldon.mlops.chainerZ8github.co" +
-      "m/seldonio/seldon-core/apis/go/v2/mlops/" +
-      "chainerb\006proto3"
+      "e\030\002 \001(\t\022\016\n\006tensor\030\003 \001(\010\"X\n\005Batch\022\021\n\004size" +
+      "\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007ro" +
+      "lling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pip" +
+      "elineUpdateStatusMessage\022;\n\006update\030\001 \001(\013" +
+      "2+.seldon.mlops.chainer.PipelineUpdateMe" +
+      "ssage\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036" +
+      "\n\034PipelineUpdateStatusResponse2\211\002\n\007Chain" +
+      "er\022~\n\030SubscribePipelineUpdates\0221.seldon." +
+      "mlops.chainer.PipelineSubscriptionReques" +
+      "t\032+.seldon.mlops.chainer.PipelineUpdateM" +
+      "essage\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seld" +
+      "on.mlops.chainer.PipelineUpdateStatusMes" +
+      "sage\0322.seldon.mlops.chainer.PipelineUpda" +
+      "teStatusResponse\"\000BS\n\027io.seldon.mlops.ch" +
+      "ainerZ8github.com/seldonio/seldon-core/a" +
+      "pis/go/v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8417,7 +8490,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineTopic_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineTopic_descriptor,
-        new java.lang.String[] { "PipelineName", "TopicName", });
+        new java.lang.String[] { "PipelineName", "TopicName", "Tensor", });
     internal_static_seldon_mlops_chainer_Batch_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_seldon_mlops_chainer_Batch_fieldAccessorTable = new
