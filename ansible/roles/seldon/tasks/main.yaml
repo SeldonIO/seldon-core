@@ -1,3 +1,4 @@
+---
 - name: "Create namespaces"
   import_tasks: namespaces.yaml
 

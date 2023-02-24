@@ -1,3 +1,4 @@
+---
 # Seldon Configuration
 seldon_mesh_namespace: seldon-mesh
 
@@ -9,12 +10,6 @@ seldon_core_v2_scheduler_svc_type: LoadBalancer
 
 # Prometheus Operator Configuration
 seldon_monitoring_namespace: seldon-monitoring
-seldon_monitoring_create_default_podmonitor: false
-seldon_monitoring_prometheus_operator_values:
-  fullnameOverride: seldon-monitoring
-  kube-state-metrics:
-    extraArgs:
-      metric-labels-allowlist: pods=[*]
 
 # Strimzi Kafka Configuration
 seldon_kafka_namespace: seldon-mesh

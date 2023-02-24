@@ -10,4 +10,4 @@
     template: "{{ repo_root_dir }}/{{ item }}"
   with_items:
     - tracing/k8s/jaeger.yaml
-  when: ecosystem_configure_jaeger | bool
+  when: configure_jaeger | bool

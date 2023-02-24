@@ -9,4 +9,4 @@
     template: "{{ repo_root_dir }}/{{ item }}"
   with_items:
     - tracing/k8s/otel-collector.yaml
-  when: ecosystem_configure_opentelemetry | bool
+  when: configure_opentelemetry | bool
