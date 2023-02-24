@@ -1,0 +1,48 @@
+---
+
+# helm repo add metallb https://metallb.github.io/metallb
+# helm install metallb metallb/metallb -n metallb-system --create-namespace
+
+- name: "Create metallb-system namespace"
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "metallb-system"
+    state: present
+
+- name: "Install MetalLB"
+  kubernetes.core.helm:
+    state: "present"
+    name: "metallb"
+    namespace: "metallb-system"
+    chart_ref: "metallb"
+    chart_version: "{{ kind_metallb_chart_version }}"
+    chart_repo_url: "https://metallb.github.io/metallb"
+    wait: true
+    wait_timeout: "{{ kind_metallb_wait_timeout }}"
+
+- name: "Get information about kind network in docker."
+  community.docker.docker_network:
+    name: kind
+  register: docker_kind_network
+
+- name: "Extract subnet of kind network"
+  set_fact:
+    kind_subnet: "{{ docker_kind_network.network.IPAM.Config[0].Subnet }}"
+
+- name: "Set ranges for MetalLB"
+  set_fact:
+    metallb_range_start: "{{ kind_subnet.split('.')[:2] | join('.') }}.255.1"
+    metallb_range_stop: "{{ kind_subnet.split('.')[:2] | join('.') }}.255.255"
+
+- name: Echo message about kind network
+  ansible.builtin.debug:
+    msg:
+      - "metallb_range_start: {{ metallb_range_start }}"
+      - "metallb_range_stop: {{ metallb_range_stop }}"
+
+- name: Create MetalLB Config
+  kubernetes.core.k8s:
+    state: present
+    template: templates/metallb_config.yaml.j2
+  when: (metallb_range_start is defined) and (metallb_range_stop is defined)
