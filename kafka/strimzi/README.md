@@ -1,19 +1,19 @@
 # Kafka Integration
 
-Seldon Core v2 requies Kafka to implement datacentric inference Pipleines. 
-To install Kafka for testing purposed in your k8s cluster, we higlight different options:
+Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
+To install Kafka for testing purposed in your k8s cluster, we highlight different options:
 ## Helm
 
-The installation of a kafka cluster requires the strimzi operator installed in the same namespace.
+The installation of a Kafka cluster requires the Strimzi Kafka operator installed in the same namespace.
 
-One option to install the strimzi operator is via [helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
+One option to install the Strimzi operator is via [Helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
 
 Note that we recommend using KRaft instead of Zookeeper for Kafka. To enable KRaft set `featureGates` during installation via `helm`.
 
 ```bash
-helm upgrade --install strimzi-kafka-operator  \ 
-  strimzi/strimzi-kafka-operator \ 
-  --namespace seldon-mesh --create-namespace \ 
+helm upgrade --install strimzi-kafka-operator \
+  strimzi/strimzi-kafka-operator \
+  --namespace seldon-mesh --create-namespace \
   --set featureGates='+UseKRaft\,+UseStrimziPodSets'
 ```
 
@@ -35,4 +35,3 @@ You can follow the steps defined [here](../../ansible/README.md) to install kafk
 - You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
 - As we recommned using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.3 or above.
 - For security settings check [here](../../docs/source/contents/getting-started/kubernetes-installation/security/index.md#kafka).
-
