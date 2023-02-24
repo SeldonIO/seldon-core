@@ -6,7 +6,7 @@ To install Kafka for testing purposed in your k8s cluster, we higlight different
 
 The installation of a Kafka cluster requires the Strimzi Kafka operator installed in the same namespace.
 
-One option to install the Strimzi Operator is via [helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
+One option to install the Strimzi operator is via [Helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
 
 Note that we recommend using KRaft instead of Zookeeper for Kafka. To enable KRaft set `featureGates` during installation via `helm`.
 
