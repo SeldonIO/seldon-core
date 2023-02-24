@@ -1,15 +1,33 @@
 ## Ansible Setup for Seldon Core V2
 
-To use these playbooks follow the installation of the Ansible collection at https://github.com/SeldonIO/ansible-k8s-collection
+
+### Installing Ansible
+
+Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
+Check Ansible [documentation] for further information.
+
+
+To install Ansible and required collections
 ```bash
-ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-collection.git
+pip install ansible openshift kubernetes docker
+ansible-galaxy collection install kubernetes.core
 ```
+
+We have tested provided instructions on Python 3.8 - 3.11 with following version Python libraries
+
+| Python | Ansible | Docker | Kubernetes |
+|--------|---------|--------|------------|
+| 3.8    | 6.7.0   | 6.0.1  | 26.1.0     |
+| 3.9    | 7.2.0   | 6.0.1  | 26.1.0     |
+| 3.10   | 7.2.0   | 6.0.1  | 26.1.0     |
+| 3.11   | 7.2.0   | 6.0.1  | 26.1.0     |
+
+and `kubernetes.core` collection in version `2.4.0`.
+
 
 Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core V2 repository.
 
-Further requirements:
-  * Kubectl
-  * Helm
+You also need to have installed `kubectl`
 
 ### Create Kind Cluster
 
