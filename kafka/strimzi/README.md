@@ -1,6 +1,6 @@
 # Kafka Integration
 
-Seldon Core v2 requires Kafka to implement Data-Centric inference Pipelines.
+Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we higlight different options:
 ## Helm
 
