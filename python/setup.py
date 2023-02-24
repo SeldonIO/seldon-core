@@ -27,7 +27,7 @@ setup(
         "requests<3.0.0",
         "numpy<2.0.0",
         "flatbuffers<2.0.0",
-        "protobuf<4.0.0",
+        "protobuf>=3.20.2,<4.0.0",
         "grpcio<2.0.0",
         "Flask-OpenTracing >= 1.1.0, < 1.2.0",
         "opentracing >= 2.2.0, < 2.5.0",
@@ -45,6 +45,7 @@ setup(
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
         "urllib3 >= 1.26.5, < 1.27",
+        "importlib-metadata<5; python_version < '3.8'",
     ],
     extras_require=extras,
     entry_points={
