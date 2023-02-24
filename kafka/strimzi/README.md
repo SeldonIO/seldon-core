@@ -4,7 +4,7 @@ Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we higlight different options:
 ## Helm
 
-The installation of a kafka cluster requires the Strimzi Kafka Operator installed in the same namespace.
+The installation of a Kafka cluster requires the Strimzi Kafka operator installed in the same namespace.
 
 One option to install the Strimzi Operator is via [helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
 
