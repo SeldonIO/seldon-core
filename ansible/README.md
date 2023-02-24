@@ -13,7 +13,7 @@ pip install ansible openshift kubernetes docker
 ansible-galaxy collection install kubernetes.core
 ```
 
-We have tested provided instructions on Python 3.8 - 3.11 with following version Python libraries
+We have tested provided instructions on Python 3.8 - 3.11 with following version of Python libraries
 
 | Python | Ansible | Docker | Kubernetes |
 |--------|---------|--------|------------|
