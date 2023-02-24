@@ -13,3 +13,4 @@ seldon_monitoring_namespace: seldon-monitoring
 
 # Strimzi Kafka Configuration
 strimzi_kafka_operator_namespace: "{{ seldon_mesh_namespace }}"
+seldon_kafka_namespace: "{{ seldon_mesh_namespace }}"

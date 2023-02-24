@@ -1,0 +1,19 @@
+---
+
+# Decided to keep using raw YAML manifest as no customization is required
+# and Helm installation was for unknown reason significantly slower.
+
+- name: "Install Certmanager"
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('url', item, split_lines=False) }}"
+  with_items:
+    - "{{ certmanager_yaml }}"
+
+- name: "Wait for rollout - cert-manager"
+  shell: "kubectl rollout status -n cert-manager deploy/{{ item }}"
+  with_items:
+    - cert-manager
+    - cert-manager-cainjector
+    - cert-manager-webhook
+  when: certmanager_wait_for_deployments | bool

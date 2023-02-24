@@ -1,9 +1,9 @@
 ---
 - name: "Create {{ seldon_monitoring_namespace }} namespace if it doesn't exist"
   kubernetes.core.k8s:
-    name: "{{ seldon_monitoring_namespace }}"
     api_version: v1
     kind: Namespace
+    name: "{{ seldon_monitoring_namespace }}"
     state: present
 
 - name: Install Prometheus Operator

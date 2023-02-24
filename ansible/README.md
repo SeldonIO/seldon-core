@@ -27,7 +27,7 @@ and `kubernetes.core` collection in version `2.4.0`.
 
 Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core V2 repository.
 
-You also need to have installed `kubectl`
+You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/).
 
 ### Create Kind Cluster
 
@@ -37,7 +37,7 @@ ansible-playbook playbooks/kind-cluster.yaml
 
 ### Setup Ecosystem
 
-Seldon runs by default in `seldon-mesh` namespace and a Jaeger pod and  and OpenTelemtry collector are installed in the chosen namespace. Run the following:
+Seldon runs by default in `seldon-mesh` namespace and a Jaeger pod and  and OpenTelemetry collector are installed in the chosen namespace. Run the following:
 
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml
@@ -49,24 +49,24 @@ The ecosystem setup can be parametrized by providing extra Ansible variables, e.
 
 For example run the following from the `ansible/` folder:
 ```bash
-ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_strimzi=yes
+ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_kafka=yes
 ```
 will only install Kafka when setting up the ecosystem.
 
-|                         | type   | default                     | comment                                                 |
-|-------------------------|--------|-----------------------------|---------------------------------------------------------|
-| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka                              |
-| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
-| full_install            | bool   | yes                         | enables full ecosystem installation                     |
-| install_strimzi         | bool   | {{ full_install }}          | installs Strimzi Kafka Operator                         |
-| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus Operator                            |
-| install_certmanager     | bool   | {{ full_install }}          | installs certmanager using seldonio.k8s.certmanager     |
-| install_jaeger          | bool   | {{ full_install }}          | installs Jaeger using seldonio.k8s.jaeger               |
-| install_opentelemetry   | bool   | {{ full_install }}          | installs OpenTelemetry using seldonio.k8s.opentelemetry |
-| configure_kafka         | bool   | {{ install_strimzi }}       | configures Kafka using V2 specific resources            |
-| configure_prometheus    | bool   | {{ install_prometheus }}    | configure Prometheus using V2 specific resources        |
-| configure_jaeger        | bool   | {{ install_jaeger }}        | configure Jaeger using V2 specific resoruces            |
-| configure_opentelemetry | bool   | {{ install_opentelemetry }} | configure OpenTelemetry using V2 specific resources     |
+|                         | type   | default                     | comment                                                  |
+|-------------------------|--------|-----------------------------|----------------------------------------------------------|
+| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon Core v2                      |
+| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka Cluster for Core v2           |
+| full_install            | bool   | yes                         | enables full ecosystem installation                      |
+| install_kafka           | bool   | {{ full_install }}          | installs Strimzi Kafka Operator                          |
+| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus Operator                             |
+| install_certmanager     | bool   | {{ full_install }}          | installs Cert Manager                                    |
+| install_jaeger          | bool   | {{ full_install }}          | installs Jaeger                                          |
+| install_opentelemetry   | bool   | {{ full_install }}          | installs OpenTelemetry                                   |
+| configure_kafka         | bool   | {{ install_kafka }}         | configures Kafka Cluster for Core v2                     |
+| configure_prometheus    | bool   | {{ install_prometheus }}    | configure Prometheus using Core v2 specific resources    |
+| configure_jaeger        | bool   | {{ install_jaeger }}        | configure Jaeger using Core v2 specific resources        |
+| configure_opentelemetry | bool   | {{ install_opentelemetry }} | configure OpenTelemetry using Core v2 specific resources |
 
 The most common change will be to install in another namespace with:
 
