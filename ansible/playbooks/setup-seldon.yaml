@@ -2,7 +2,7 @@
 - name: Setup SCV2 Ecosystem
   hosts: localhost
   roles:
-    - seldon
+  - seldon
   vars:
     vars_file: vars/default.yaml
     full_install: yes

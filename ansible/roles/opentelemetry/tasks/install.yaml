@@ -1,0 +1,26 @@
+- name: Install OpenTelemetry Operator
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ opentelemetry_namespace }}"
+    definition: "{{ lookup('url', item, split_lines=False) }}"
+  with_items:
+    - "{{ opentelemetry_yaml }}"
+
+
+- name: Sleep for 1s before waiting for CRDs
+  wait_for:
+    timeout: 1
+  when: opentelemetry_wait_for_deployments | bool
+
+- name: "Wait for Jaeger CRDs"
+  shell: "kubectl wait --for condition=established --timeout 60s {{ item }}"
+  with_items:
+    - crd/instrumentations.opentelemetry.io
+    - crd/opentelemetrycollectors.opentelemetry.io
+  when: opentelemetry_wait_for_deployments | bool
+
+- name: "Wait for OpenTelemetry Deployment"
+  shell: "kubectl rollout status -n {{ opentelemetry_namespace }} deploy/{{ item }}"
+  with_items:
+    - opentelemetry-operator-controller-manager
+  when: opentelemetry_wait_for_deployments | bool

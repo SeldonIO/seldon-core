@@ -1,0 +1,4 @@
+---
+certmanager_version: "v1.11.0"
+certmanager_yaml: "https://github.com/cert-manager/cert-manager/releases/download/{{ certmanager_version }}/cert-manager.yaml"
+certmanager_wait_for_deployments: true

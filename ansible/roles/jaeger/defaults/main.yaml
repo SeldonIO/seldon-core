@@ -1,0 +1,7 @@
+---
+jaeger_namespace: observability
+
+jaeger_version: v1.33.0
+jaeger_yaml: "https://github.com/jaegertracing/jaeger-operator/releases/download/{{ jaeger_version }}/jaeger-operator.yaml"
+
+jaeger_wait_for_deployments: true
