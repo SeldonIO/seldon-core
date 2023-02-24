@@ -1,0 +1,4 @@
+---
+- include_role:
+    name: minio
+  when: install_minio | bool

@@ -1,0 +1,5 @@
+---
+- name: "Wait for rollout - Seldon Core"
+  shell: "kubectl rollout status -n {{ seldon_system_namespace }} deploy/{{ item }}"
+  with_items:
+    - seldon-controller-manager

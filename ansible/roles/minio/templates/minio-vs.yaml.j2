@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: minio
+  namespace: "{{ minio_namespace }}"
+spec:
+  gateways:
+  - "{{ minio_virtualservice_gateway }}"
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: "{{ minio_virtualservice_prefix }}"
+    route:
+    - destination:
+        host: minio
+        port:
+          number: 9000

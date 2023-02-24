@@ -1,0 +1,12 @@
+---
+- name: "Install Prometheus Operator"
+  include_role:
+    name: prometheus
+  when: install_prometheus | bool
+
+- name: Create Seldon Core v1 PodMonitor
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_monitoring_namespace }}"
+    definition: "{{ seldon_monitoring_podmonitor }}"
+  when: configure_prometheus | bool

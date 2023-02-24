@@ -1,0 +1,4 @@
+---
+- include_role:
+    name: istio
+  when: install_istio | bool

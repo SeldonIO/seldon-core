@@ -1,0 +1,71 @@
+---
+- name: Generate CA Private Key with RSA 2048
+  community.crypto.openssl_privatekey:
+    path: "{{ tmp_cert_dir.path }}/ca.key"
+    size: 2048
+
+- name: Generate CA CSR
+  community.crypto.openssl_csr:
+    path: "{{ tmp_cert_dir.path }}/ca.csr"
+    privatekey_path: "{{ tmp_cert_dir.path }}/ca.key"
+    common_name: "{{ istio_external_ip }}"
+    basic_constraints:
+      - "CA:TRUE"
+    basic_constraints_critical: true
+
+- name: Generate CA Self Signed Certificate
+  community.crypto.x509_certificate:
+    path: "{{ tmp_cert_dir.path }}/ca.crt"
+    privatekey_path: "{{ tmp_cert_dir.path }}/ca.key"
+    csr_path: "{{ tmp_cert_dir.path }}/ca.csr"
+    provider: selfsigned
+    selfsigned_not_after: "+365d"
+
+- name: Generate Server OpenSSL private key with RSA 2048
+  community.crypto.openssl_privatekey:
+    path: "{{ tmp_cert_dir.path }}/server.key"
+    size: 2048
+
+- name: Generate an OpenSSL Certificate Signing Request for server
+  community.crypto.openssl_csr:
+    path: "{{ tmp_cert_dir.path }}/server.csr"
+    privatekey_path: "{{ tmp_cert_dir.path }}/server.key"
+    common_name: "{{ istio_external_ip }}"
+    basic_constraints:
+      - "CA:FALSE"
+    key_usage:
+      - nonRepudiation
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+    subject_alt_name: # TODO: put istio-ingressgateway and istio-system into variables? {{service}} {{namespace}}
+      - "IP:{{ istio_external_ip }}"
+      - "DNS:istio-ingressgateway"
+      - "DNS:istio-ingressgateway.istio-system"
+      - "DNS:istio-ingressgateway.istio-system.svc"
+      - "DNS:istio-ingressgateway.istio-system.svc.cluster"
+      - "DNS:istio-ingressgateway.istio-system.svc.cluster.local"
+
+# TODO: It is uncertain if a ca.srl file that is generated from the CAcreateserial flag is required
+- name: Generate an OpenSSL certificate from the server CSR signed with our CA certificate
+  community.crypto.x509_certificate:
+    path: "{{ tmp_cert_dir.path }}/server.crt"
+    csr_path: "{{ tmp_cert_dir.path }}/server.csr"
+    ownca_path: "{{ tmp_cert_dir.path }}/ca.crt"
+    ownca_privatekey_path: "{{ tmp_cert_dir.path }}/ca.key"
+    ownca_not_after: "+365d"
+    provider: ownca
+    ## These are left as assertions
+    key_usage:
+      - nonRepudiation
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+    subject_alt_name:
+      - "DNS:istio-ingressgateway"
+      - "DNS:istio-ingressgateway.istio-system"
+      - "DNS:istio-ingressgateway.istio-system.svc"
+      - "DNS:istio-ingressgateway.istio-system.svc.cluster"
+      - "DNS:istio-ingressgateway.istio-system.svc.cluster.local"
