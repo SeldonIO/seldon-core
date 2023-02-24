@@ -49,7 +49,7 @@ The ecosystem setup can be parametrized by providing extra Ansible variables, e.
 
 For example run the following from the `ansible/` folder:
 ```bash
-ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_kafka=yes
+ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_strimzi=yes
 ```
 will only install Kafka when setting up the ecosystem.
 
@@ -58,12 +58,12 @@ will only install Kafka when setting up the ecosystem.
 | seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka                              |
 | seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
 | full_install            | bool   | yes                         | enables full ecosystem installation                     |
-| install_kafka           | bool   | {{ full_install }}          | installs Kafka using seldonio.k8s.strimzi_kafka         |
-| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus using seldonio.k8s.prometheus       |
+| install_strimzi         | bool   | {{ full_install }}          | installs Strimzi Kafka Operator                         |
+| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus Operator                            |
 | install_certmanager     | bool   | {{ full_install }}          | installs certmanager using seldonio.k8s.certmanager     |
 | install_jaeger          | bool   | {{ full_install }}          | installs Jaeger using seldonio.k8s.jaeger               |
 | install_opentelemetry   | bool   | {{ full_install }}          | installs OpenTelemetry using seldonio.k8s.opentelemetry |
-| configure_kafka         | bool   | {{ install_kafka }}         | configures Kafka using V2 specific resources            |
+| configure_kafka         | bool   | {{ install_strimzi }}       | configures Kafka using V2 specific resources            |
 | configure_prometheus    | bool   | {{ install_prometheus }}    | configure Prometheus using V2 specific resources        |
 | configure_jaeger        | bool   | {{ install_jaeger }}        | configure Jaeger using V2 specific resoruces            |
 | configure_opentelemetry | bool   | {{ install_opentelemetry }} | configure OpenTelemetry using V2 specific resources     |
