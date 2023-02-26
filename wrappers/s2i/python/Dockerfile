@@ -22,7 +22,7 @@ RUN microdnf update -y && \
     conda install -c conda-forge --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
 
 # Pin pip and setuptools
-RUN pip install pip==22.1.2 setuptools==63.1.0
+RUN pip install pip==22.1.2 setuptools==65.5.1
 
 RUN mkdir microservice
 WORKDIR /microservice
