@@ -6,7 +6,7 @@ model: env train
 
 env:
 	python3 -m venv .env
-	./.env/bin/pip install --upgrade pip==22.1.2 setuptools==62.4.0
+	./.env/bin/pip install --upgrade pip==22.1.2 setuptools==65.5.1
 	./.env/bin/pip install -r requirements.txt
 
 train:
