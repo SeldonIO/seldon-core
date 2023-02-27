@@ -8,9 +8,8 @@ on:
 
 jobs:
   python-lint:
-
-    runs-on: ubuntu-18.04
-    container: seldonio/python-builder:0.5
+    runs-on: ubuntu-latest
+    container: seldonio/python-builder:0.8
 
     steps:
     - uses: actions/checkout@v2
