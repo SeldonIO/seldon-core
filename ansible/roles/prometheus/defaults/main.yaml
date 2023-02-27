@@ -1,0 +1,4 @@
+---
+seldon_monitoring_namespace: "seldon-monitoring"
+seldon_monitoring_prometheus_operator_values: "{{ lookup('file', 'prometheus-operator-values.yaml') | from_yaml }}"
+seldon_monitoring_prometheus_operator_chart_version: "8.3.6"

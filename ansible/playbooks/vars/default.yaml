@@ -23,33 +23,22 @@ seldon_core_values:
 
 ############################ Istio Configuration ##############################
 
-# Version of Istio to be installed
-istio_version: 1.13.1
-
-# This flag controls creation of Seldon Gateway, default: true
+istio_version: 1.17.1
 istio_create_seldon_gateway: true
 
 
 ########################### MinIO Configuration ###############################
 
-# Type of MinIO Service; default: ClusterIP
 minio_service_type: LoadBalancer
-
-# Name of rclone-compatible secret; default: seldon-rclone-secret
-# If set to "null" then secret will not be written
-minio_rclone_secret_name: seldon-rclone-secret
+minio_rclone_secret_name: "minio-bucket"
 
 
 # List of namespaces to which MinIO secret should be written
+
 minio_secret_namespaces: "{{ seldon_namespaces }}"
 
 
 ###################### Seldon Monitoring Configuration ########################
-seldon_monitoring_namespace: seldon-monitoring
-seldon_monitoring_prometheus_operator_chart_version: "8.1.12"
 
-seldon_monitoring_prometheus_operator_values:
-  fullnameOverride: seldon-monitoring
-  kube-state-metrics:
-    extraArgs:
-      metric-labels-allowlist: pods=[*]
+seldon_monitoring_namespace: "seldon-monitoring"
+seldon_monitoring_prometheus_operator_chart_version: "8.3.6"

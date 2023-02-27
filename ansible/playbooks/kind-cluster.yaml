@@ -1,13 +1,12 @@
 ---
-- name: Create Kind Cluster and Install MetalLB
+- name: Create Kind Cluster for Seldon Core v2
   hosts: localhost
   roles:
-    - seldonio.k8s.kind
-    - seldonio.k8s.metallb
+    - kind
   vars:
     kind_use_many_workers: no
 
-    kind_cluster_name: ansible
+    kind_cluster_name: seldon
 
     # For compatible version of image for each kind version please see https://github.com/kubernetes-sigs/kind/releases
     kind_version: v0.17.0

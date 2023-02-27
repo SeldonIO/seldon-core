@@ -1,0 +1,53 @@
+---
+# Can't pass in external_ip like other roles as it comes from the Istio role itself, needs to be fetched here.
+- name: Wait for External IP Address to be ready
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Service
+    name: istio-ingressgateway
+    namespace: istio-system
+    wait: yes
+    wait_timeout: 360
+  register: istio_web_service
+  until: >
+    'ingress' in istio_web_service.resources[0].status.loadBalancer and
+    istio_web_service.resources[0].status.loadBalancer.ingress[0].ip != ""
+  retries: 20
+  delay: 5
+
+- name: Set fact about Istio Ingress Gateway External IP
+  set_fact:
+    istio_external_ip: "{{ istio_web_service.resources[0].status.loadBalancer.ingress[0].ip }}"
+
+- name: Create temporary certificates directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: certificate
+  register: tmp_cert_dir
+
+- name: Generate Self Signed Server SSL Certs from Self Signed CA
+  import_tasks: self_signed.yaml
+
+- name: Set fact about Server SSL Certs Paths
+  set_fact:
+    server_crt_path: "{{ tmp_cert_dir.path + '/server.crt' }}"
+    server_key_path: "{{ tmp_cert_dir.path + '/server.key' }}"
+
+- name: Create Istio Ingressgateway SSL Certs Secret
+  kubernetes.core.k8s:
+    state: present
+    namespace: istio-system
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: istio-ingressgateway-certs
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ lookup('file', server_crt_path) | b64encode }}"
+        tls.key: "{{ lookup('file', server_key_path) | b64encode }}"
+
+- name: Remove temporary certificates directory
+  ansible.builtin.file:
+    path: "{{ tmp_cert_dir.path }}"
+    state: absent

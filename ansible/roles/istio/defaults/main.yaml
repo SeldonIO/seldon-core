@@ -1,0 +1,12 @@
+---
+seldon_cache_directory: "{{ ansible_env.HOME }}/.cache/seldon"
+
+istio_version: 1.17.1
+istio_verify_install: true
+istio_create_seldon_gateway: true
+
+istio_use_ssl: false
+istio_self_signed_certs: "{{ istio_use_ssl }}"
+istio_ingress_cert_secret: "seldon-deploy-cert-tls"
+
+istio_seldon_gateway: "{{ lookup('template', 'default-seldon-gateway.yaml.j2') | from_yaml }}"

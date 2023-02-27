@@ -1,0 +1,7 @@
+---
+
+# this file specifies the stable / tested version of required collections
+
+collections:
+  - name: kubernetes.core
+    version: 2.4.0

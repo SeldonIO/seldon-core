@@ -1,0 +1,24 @@
+---
+- name: Create Namespaces
+  import_tasks: namespaces.yaml
+
+- name: Git clone Seldon Core repo and checkout {{ seldon_core_version }}
+  ansible.builtin.git:
+    version: "{{ seldon_core_version }}"
+    repo: "{{ seldon_core_repo }}"
+    dest: "{{ seldon_cache_directory }}/seldon-core"
+    force: yes
+  when: seldon_core_source_dir is undefined
+
+- name: Set Seldon Core Directory
+  set_fact:
+    seldon_core_source_dir: "{{ seldon_cache_directory }}/seldon-core"
+  when: seldon_core_source_dir is undefined
+
+- name: Deploy Seldon Core
+  kubernetes.core.helm:
+    name: seldon-core
+    release_namespace: "{{ seldon_system_namespace }}"
+    chart_ref: "{{ seldon_core_source_dir }}/helm-charts/seldon-core-operator"
+    values: "{{ seldon_core_values }}"
+  notify: "Wait for rollout - Seldon Core"

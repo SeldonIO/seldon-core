@@ -1,0 +1,4 @@
+fullnameOverride: seldon-monitoring
+kube-state-metrics:
+  extraArgs:
+    metric-labels-allowlist: pods=[*]

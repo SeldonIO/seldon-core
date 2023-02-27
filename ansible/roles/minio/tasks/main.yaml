@@ -1,0 +1,9 @@
+---
+- name: Create Namespaces
+  import_tasks: namespaces.yaml
+
+- name: Install Minio
+  import_tasks: install.yaml
+
+- name: Create Secrets
+  import_tasks: secrets.yaml

@@ -1,0 +1,30 @@
+---
+- name: "Check if KinD Cluster already exists: {{ kind_cluster_name }}"
+  community.docker.docker_container_info:
+    name: "{{ kind_cluster_name + '-control-plane' }}"
+  register: cluster_check_result
+
+- name: "Start KinD Cluster: '{{ kind_cluster_name }}'"
+  command:
+    argv:
+      - "{{ seldon_cache_directory }}/kind-{{ kind_version }}"
+      - create
+      - cluster
+      - --name={{ kind_cluster_name }}
+      - --image={{ kind_image_version }}
+      - --config={{ kind_config_file }}
+  register: kind_cluster_command
+  when: not cluster_check_result.exists
+
+- name: Echo output of "kind create cluster ..." command
+  ansible.builtin.debug:
+    msg: "{{ kind_cluster_command.stderr.split('\n') }}"
+  when: kind_cluster_command is not skipped
+
+- name: "Export kubeconfig for KinD Cluster: '{{ kind_cluster_name }}'"
+  command:
+    argv:
+      - "{{ seldon_cache_directory }}/kind-{{ kind_version }}"
+      - export
+      - kubeconfig
+      - --name={{ kind_cluster_name }}
