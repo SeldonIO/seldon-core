@@ -1,4 +1,4 @@
-## Ansible Setup for Seldon Core V2
+## Ansible Setup for Seldon Core v2
 
 
 ### Installing Ansible
