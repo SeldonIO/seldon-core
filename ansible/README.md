@@ -1,5 +1,7 @@
 # Ansible Setup for Seldon Core v1
 
+> :warning: **NOTE:** Ansible way of installing Seldon Core and associated ecosystem is meant for dev/testing purposes. For production use cases follow [Helm installation](https://docs.seldon.io/projects/seldon-core/en/stable/workflow/install.html)
+
 ## Installing Ansible
 
 Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
