@@ -166,7 +166,7 @@ services:
       - "--verbose"
 
   scheduler:
-    user: "1000:1000"
+    user: "1001:1001"
     volumes:
       - type: bind
         source: ./mnt
