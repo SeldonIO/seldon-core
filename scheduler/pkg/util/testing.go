@@ -16,22 +16,20 @@ limitations under the License.
 
 package util
 
-import "time"
-
-const (
-	// REST constants
-	DefaultReverseProxyHTTPPort = 9999
-	MaxIdleConnsHTTP            = 10
-	MaxIdleConnsPerHostHTTP     = 10
-	DisableKeepAlivesHTTP       = false
-	MaxConnsPerHostHTTP         = 20
-	DefaultTimeoutSeconds       = 5
-	IdleConnTimeoutSeconds      = 60
+import (
+	"net"
 )
 
-const (
-	GrpcRetryBackoffMillisecs         = 100
-	GrpcRetryMaxCount                 = 5 // around 3.2s in total wait duration
-	GrpcMaxMsgSizeBytes               = 1000 * 1024 * 1024
-	EnvoyUpdateDefaultBatchWaitMillis = 250 * time.Millisecond
-)
+func GetFreePortForTest() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
+}

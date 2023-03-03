@@ -14,80 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package agent
+package oip
 
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
-type v2State struct {
-	models map[string]bool
-	mu     sync.Mutex
-}
-
-func (s *v2State) loadResponder(model string, status int) func(req *http.Request) (*http.Response, error) {
-	return func(req *http.Request) (*http.Response, error) {
-		s.setModel(model, true)
-		if status == 200 {
-			return httpmock.NewStringResponse(status, ""), nil
-		} else {
-			return httpmock.NewStringResponse(status, ""), ErrV2BadRequest
-		}
-	}
-}
-
-func (s *v2State) unloadResponder(model string, status int) func(req *http.Request) (*http.Response, error) {
-	return func(req *http.Request) (*http.Response, error) {
-		s.setModel(model, false)
-		if status == 200 {
-			return httpmock.NewStringResponse(status, ""), nil
-		} else {
-			return httpmock.NewStringResponse(status, ""), ErrV2BadRequest
-		}
-	}
-}
-
-func (s *v2State) setModel(modelId string, val bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.models[modelId] = val
-}
-
-func (s *v2State) isModelLoaded(modelId string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	val, loaded := s.models[modelId]
-	if loaded {
-		return val
-	}
-	return false
-}
-
-func createTestV2ClientMockResponders(host string, port int, modelName string, status int, state *v2State) {
+func createTestV2ClientMockResponders(host string, port int, modelName string, status int, state *testing_utils.V2State) {
 
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/load", host, port, modelName),
-		state.loadResponder(modelName, status))
+		state.LoadResponder(modelName, status))
 	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/unload", host, port, modelName),
-		state.unloadResponder(modelName, status))
+		state.UnloadResponder(modelName, status))
 }
 
-func createTestV2ClientwithState(models []string, status int) (*V2Client, *v2State) {
+func createTestV2ClientwithState(models []string, status int) (*V2Client, *testing_utils.V2State) {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	host := "model-server"
 	port := 8080
 	v2 := NewV2Client(host, port, logger, false)
-	state := &v2State{
-		models: make(map[string]bool, len(models)),
+	state := &testing_utils.V2State{
+		Models: make(map[string]bool, len(models)),
 	}
 
 	for _, model := range models {
@@ -110,7 +68,7 @@ func TestCommunicationErrors(t *testing.T) {
 	modelName := "dummy"
 	r := createTestV2Client([]string{modelName}, 200)
 	err := r.LoadModel(modelName)
-	g.Expect(err.errCode).To(Equal(V2CommunicationErrCode))
+	g.Expect(err.ErrCode).To(Equal(interfaces.V2CommunicationErrCode))
 }
 
 func TestRequestErrors(t *testing.T) {
@@ -120,7 +78,7 @@ func TestRequestErrors(t *testing.T) {
 	modelName := "dummy"
 	v2 := NewV2Client("httpwrong://server", 0, log.New(), false)
 	err := v2.LoadModel(modelName)
-	g.Expect(err.errCode).To(Equal(V2RequestErrCode))
+	g.Expect(err.ErrCode).To(Equal(interfaces.V2RequestErrCode))
 }
 
 func TestLoad(t *testing.T) {
@@ -132,7 +90,7 @@ func TestLoad(t *testing.T) {
 	}
 	tests := []test{
 		{models: []string{"iris"}, status: 200, err: nil},
-		{models: []string{"iris"}, status: 400, err: ErrV2BadRequest},
+		{models: []string{"iris"}, status: 400, err: interfaces.ErrV2BadRequest},
 	}
 	for _, test := range tests {
 		r := createTestV2Client(test.models, test.status)
@@ -144,7 +102,7 @@ func TestLoad(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				if test.err != nil {
-					g.Expect(errors.Is(err.err, test.err)).To(BeTrue())
+					g.Expect(errors.Is(err.Err, test.err)).To(BeTrue())
 				}
 			}
 		}
@@ -162,7 +120,7 @@ func TestUnload(t *testing.T) {
 	}
 	tests := []test{
 		{models: []string{"iris"}, status: 200, err: nil},
-		{models: []string{"iris"}, status: 400, err: ErrV2BadRequest},
+		{models: []string{"iris"}, status: 400, err: interfaces.ErrV2BadRequest},
 	}
 	for _, test := range tests {
 		r := createTestV2Client(test.models, test.status)
@@ -174,7 +132,7 @@ func TestUnload(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				if test.err != nil {
-					g.Expect(errors.Is(err.err, test.err)).To(BeTrue())
+					g.Expect(errors.Is(err.Err, test.err)).To(BeTrue())
 				}
 			}
 		}
@@ -186,16 +144,16 @@ func TestUnload(t *testing.T) {
 func TestGrpcV2(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	mockMLServer := &mockGRPCMLServer{}
-	backEndGRPCPort, err := getFreePort()
+	mockMLServer := &testing_utils.MockGRPCMLServer{}
+	backEndGRPCPort, err := util.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = mockMLServer.setup(uint(backEndGRPCPort))
+	_ = mockMLServer.Setup(uint(backEndGRPCPort))
 	go func() {
-		_ = mockMLServer.start()
+		_ = mockMLServer.Start()
 	}()
-	defer mockMLServer.stop()
+	defer mockMLServer.Stop()
 
 	time.Sleep(10 * time.Millisecond)
 
@@ -209,13 +167,13 @@ func TestGrpcV2(t *testing.T) {
 	v2Err = v2Client.UnloadModel(dummModel)
 	g.Expect(v2Err).To(BeNil())
 
-	v2Err = v2Client.UnloadModel(modelNameMissing)
+	v2Err = v2Client.UnloadModel(testing_utils.ModelNameMissing)
 	g.Expect(v2Err.IsNotFound()).To(BeTrue())
 
-	mockMLServer.setModels([]MLServerModelInfo{{dummModel, MLServerModelState_READY}, {"", MLServerModelState_UNAVAILABLE}})
+	mockMLServer.SetModels([]interfaces.ServerModelInfo{{dummModel, interfaces.ServerModelState_READY}, {"", interfaces.ServerModelState_UNAVAILABLE}})
 	models, err := v2Client.GetModels()
 	g.Expect(err).To(BeNil())
-	g.Expect(models).To(Equal([]MLServerModelInfo{{dummModel, MLServerModelState_READY}})) // empty string models should be discarded
+	g.Expect(models).To(Equal([]interfaces.ServerModelInfo{{dummModel, interfaces.ServerModelState_READY}})) // empty string models should be discarded
 
 	err = v2Client.Live()
 	g.Expect(err).To(BeNil())
@@ -227,7 +185,7 @@ func TestGrpcV2WithError(t *testing.T) {
 
 	// note no grpc server to respond
 
-	backEndGRPCPort, err := getFreePort()
+	backEndGRPCPort, err := util.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,32 +207,32 @@ func TestGrpcV2WithError(t *testing.T) {
 func TestGrpcV2WithRetry(t *testing.T) {
 	// note: we delay starting the server to simulate transient errors
 	g := NewGomegaWithT(t)
-	mockMLServer := &mockGRPCMLServer{}
-	backEndGRPCPort, err := getFreePort()
+	mockMLServer := &testing_utils.MockGRPCMLServer{}
+	backEndGRPCPort, err := util.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = mockMLServer.setup(uint(backEndGRPCPort))
+	_ = mockMLServer.Setup(uint(backEndGRPCPort))
 
 	//initial conn setup
 	go func() {
-		_ = mockMLServer.start()
+		_ = mockMLServer.Start()
 	}()
 	v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
 	err = v2Client.Live()
 	g.Expect(err).To(BeNil())
-	mockMLServer.stop()
+	mockMLServer.Stop()
 
 	// start the server in background after 0.5s
 	go func() {
 		time.Sleep(500 * time.Millisecond)
-		_ = mockMLServer.setup(uint(backEndGRPCPort))
+		_ = mockMLServer.Setup(uint(backEndGRPCPort))
 		go func() {
-			_ = mockMLServer.start()
+			_ = mockMLServer.Start()
 		}()
 
 	}()
-	defer mockMLServer.stop()
+	defer mockMLServer.Stop()
 
 	// make sure that we can still get to the server, this will require retries as the server starts after 0.5s
 	for i := 0; i < 20; i++ {

@@ -36,6 +36,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
@@ -200,7 +201,7 @@ func main() {
 	)
 
 	// Create V2 Protocol Handler
-	v2Client := agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
+	v2Client := oip.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {

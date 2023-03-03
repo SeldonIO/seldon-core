@@ -17,6 +17,7 @@ limitations under the License.
 package agent
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"sort"
@@ -28,6 +29,9 @@ import (
 	"github.com/jarcoal/httpmock"
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	log "github.com/sirupsen/logrus"
@@ -35,12 +39,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) (bool, []string) {
+func checkModelsStateIsSame(manager *LocalStateManager, v2State *testing_utils.V2State) (bool, []string) {
 	modelsInCache, _ := manager.cache.GetItems()
 	modelsInCacheMLServer := make([]string, len(modelsInCache))
 	counter := 0
-	for model := range v2State.models {
-		if v2State.isModelLoaded(model) {
+	for model := range v2State.Models {
+		if v2State.IsModelLoaded(model) {
 			modelsInCacheMLServer[counter] = model
 			counter++
 		}
@@ -103,15 +107,42 @@ func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersio
 	return &mv
 }
 
+func createTestV2ClientMockResponders(host string, port int, modelName string, status int, state *testing_utils.V2State) {
+
+	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/load", host, port, modelName),
+		state.LoadResponder(modelName, status))
+	httpmock.RegisterResponder("POST", fmt.Sprintf("http://%s:%d/v2/repository/models/%s/unload", host, port, modelName),
+		state.UnloadResponder(modelName, status))
+}
+
+func createTestV2ClientwithState(models []string, status int) (*oip.V2Client, *testing_utils.V2State) {
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	host := "model-server"
+	port := 8080
+	v2 := oip.NewV2Client(host, port, logger, false)
+	state := &testing_utils.V2State{
+		Models: make(map[string]bool, len(models)),
+	}
+
+	for _, model := range models {
+		createTestV2ClientMockResponders(host, port, model, status, state)
+	}
+	// we do not care about ready in tests
+	httpmock.RegisterResponder("GET", fmt.Sprintf("http://%s:%d/v2/health/live", host, port),
+		httpmock.NewStringResponder(200, `{}`))
+	return v2, state
+}
+
 func setupLocalTestManagerWithState(
-	numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int, overCommitPercentage uint32) (*LocalStateManager, *v2State) {
+	numModels int, modelPrefix string, v2Client interfaces.V2Client, capacity int, numVersions int, overCommitPercentage uint32) (*LocalStateManager, *testing_utils.V2State) {
 
 	logger := log.New()
 	logger.SetLevel(log.InfoLevel)
 
 	modelState := NewModelState()
 	//create mock v2 client
-	var v2ClientState *v2State
+	var v2ClientState *testing_utils.V2State
 	if v2Client == nil {
 		models := make([]string, numModels*numVersions)
 		for i := 0; i < numModels; i++ {
@@ -133,7 +164,7 @@ func setupLocalTestManagerWithState(
 	return manager, v2ClientState
 }
 
-func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int) *LocalStateManager {
+func setupLocalTestManager(numModels int, modelPrefix string, v2Client *oip.V2Client, capacity int, numVersions int) *LocalStateManager {
 	manager, _ := setupLocalTestManagerWithState(numModels, modelPrefix, v2Client, capacity, numVersions, 0)
 
 	return manager

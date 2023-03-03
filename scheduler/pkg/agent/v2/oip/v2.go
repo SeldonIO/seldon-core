@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package agent
+package oip
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -36,34 +35,11 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-type MLServerModelState string
-
-const (
-	MLServerModelState_UNKNOWN     MLServerModelState = "UNKNOWN"
-	MLServerModelState_READY       MLServerModelState = "READY"
-	MLServerModelState_UNAVAILABLE MLServerModelState = "UNAVAILABLE"
-	MLServerModelState_LOADING     MLServerModelState = "LOADING"
-	MLServerModelState_UNLOADING   MLServerModelState = "UNLOADING"
-)
-
-const (
-	// we define all communication error into one bucket
-	// TODO: separate out the different comm issues (e.g. DNS vs Connection refused etc.)
-	V2CommunicationErrCode = -100
-	// i.e invalid method etc.
-	V2RequestErrCode = -200
-)
-
-type MLServerModelInfo struct {
-	Name  string
-	State MLServerModelState
-}
 
 type V2Client struct {
 	host       string
@@ -74,39 +50,6 @@ type V2Client struct {
 	logger     log.FieldLogger
 	isGrpc     bool
 }
-
-// Error wrapper with client and server errors + error code
-// errCode should have the standard http error codes (for server)
-// and client communication error codes (defined above)
-type V2Err struct {
-	isGrpc bool
-	err    error
-	// one bucket for http/grpc status code and client codes (for error)
-	errCode int
-}
-
-func (v2err *V2Err) Error() string {
-	if v2err != nil {
-		return v2err.err.Error()
-	}
-	return ""
-}
-
-func (v *V2Err) IsNotFound() bool {
-	if v.isGrpc {
-		return v.errCode == int(codes.NotFound)
-	} else {
-		// assumes http
-		return v.errCode == http.StatusNotFound
-	}
-}
-
-type V2ServerError struct {
-	Error string `json:"error"`
-}
-
-var ErrV2BadRequest = errors.New("V2 Bad Request")
-var ErrServerNotReady = errors.New("Server not ready")
 
 func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
@@ -158,14 +101,14 @@ func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2
 		}
 	} else {
 		netTransport := &http.Transport{
-			MaxIdleConns:        maxIdleConnsHTTP,
-			MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
-			DisableKeepAlives:   disableKeepAlivesHTTP,
-			MaxConnsPerHost:     maxConnsPerHostHTTP,
-			IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
+			MaxIdleConns:        util.MaxIdleConnsHTTP,
+			MaxIdleConnsPerHost: util.MaxIdleConnsPerHostHTTP,
+			DisableKeepAlives:   util.DisableKeepAlivesHTTP,
+			MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
+			IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 		}
 		netClient := &http.Client{
-			Timeout:   time.Second * defaultTimeoutSeconds,
+			Timeout:   time.Second * util.DefaultTimeoutSeconds,
 			Transport: netTransport,
 		}
 
@@ -187,69 +130,69 @@ func (v *V2Client) getUrl(path string) *url.URL {
 	}
 }
 
-func (v *V2Client) call(path string) *V2Err {
+func (v *V2Client) call(path string) *interfaces.V2Err {
 	v2Url := v.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return &V2Err{
-			isGrpc:  false,
-			err:     err,
-			errCode: V2RequestErrCode,
+		return &interfaces.V2Err{
+			IsGrpc:  false,
+			Err:     err,
+			ErrCode: interfaces.V2RequestErrCode,
 		}
 	}
 	response, err := v.httpClient.Do(req)
 	if err != nil {
-		return &V2Err{
-			isGrpc:  false,
-			err:     err,
-			errCode: V2CommunicationErrCode,
+		return &interfaces.V2Err{
+			IsGrpc:  false,
+			Err:     err,
+			ErrCode: interfaces.V2CommunicationErrCode,
 		}
 	}
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		return &V2Err{
-			isGrpc:  false,
-			err:     err,
-			errCode: response.StatusCode,
+		return &interfaces.V2Err{
+			IsGrpc:  false,
+			Err:     err,
+			ErrCode: response.StatusCode,
 		}
 	}
 	err = response.Body.Close()
 	if err != nil {
-		return &V2Err{
-			isGrpc:  false,
-			err:     err,
-			errCode: response.StatusCode,
+		return &interfaces.V2Err{
+			IsGrpc:  false,
+			Err:     err,
+			ErrCode: response.StatusCode,
 		}
 	}
 	v.logger.Infof("v2 server response: %s", b)
 	if response.StatusCode != http.StatusOK {
 		if response.StatusCode == http.StatusBadRequest {
-			v2Error := V2ServerError{}
+			v2Error := interfaces.V2ServerError{}
 			err := json.Unmarshal(b, &v2Error)
 			if err != nil {
-				return &V2Err{
-					isGrpc:  false,
-					err:     err,
-					errCode: response.StatusCode,
+				return &interfaces.V2Err{
+					IsGrpc:  false,
+					Err:     err,
+					ErrCode: response.StatusCode,
 				}
 			}
-			return &V2Err{
-				isGrpc:  false,
-				err:     fmt.Errorf("%s. %w", v2Error.Error, ErrV2BadRequest),
-				errCode: response.StatusCode,
+			return &interfaces.V2Err{
+				IsGrpc:  false,
+				Err:     fmt.Errorf("%s. %w", v2Error.Error, interfaces.ErrV2BadRequest),
+				ErrCode: response.StatusCode,
 			}
 		} else {
-			return &V2Err{
-				isGrpc:  false,
-				err:     fmt.Errorf("V2 server error: %s", b),
-				errCode: response.StatusCode,
+			return &interfaces.V2Err{
+				IsGrpc:  false,
+				Err:     fmt.Errorf("V2 server error: %s", b),
+				ErrCode: response.StatusCode,
 			}
 		}
 	}
 	return nil
 }
 
-func (v *V2Client) LoadModel(name string) *V2Err {
+func (v *V2Client) LoadModel(name string) *interfaces.V2Err {
 	if v.isGrpc {
 		return v.loadModelGrpc(name)
 	} else {
@@ -257,13 +200,13 @@ func (v *V2Client) LoadModel(name string) *V2Err {
 	}
 }
 
-func (v *V2Client) loadModelHttp(name string) *V2Err {
+func (v *V2Client) loadModelHttp(name string) *interfaces.V2Err {
 	path := fmt.Sprintf("v2/repository/models/%s/load", name)
 	v.logger.Infof("Load request: %s", path)
 	return v.call(path)
 }
 
-func (v *V2Client) loadModelGrpc(name string) *V2Err {
+func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 	ctx := context.Background()
 
 	req := &v2.RepositoryModelLoadRequest{
@@ -274,23 +217,23 @@ func (v *V2Client) loadModelGrpc(name string) *V2Err {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
-			return &V2Err{
-				err:     err,
-				errCode: int(errCode),
-				isGrpc:  true,
+			return &interfaces.V2Err{
+				Err:     err,
+				ErrCode: int(errCode),
+				IsGrpc:  true,
 			}
 		}
-		return &V2Err{
-			err:     err,
-			errCode: V2CommunicationErrCode,
-			isGrpc:  true,
+		return &interfaces.V2Err{
+			Err:     err,
+			ErrCode: interfaces.V2CommunicationErrCode,
+			IsGrpc:  true,
 		}
 
 	}
 	return nil
 }
 
-func (v *V2Client) UnloadModel(name string) *V2Err {
+func (v *V2Client) UnloadModel(name string) *interfaces.V2Err {
 	if v.isGrpc {
 		return v.unloadModelGrpc(name)
 	} else {
@@ -298,13 +241,13 @@ func (v *V2Client) UnloadModel(name string) *V2Err {
 	}
 }
 
-func (v *V2Client) unloadModelHttp(name string) *V2Err {
+func (v *V2Client) unloadModelHttp(name string) *interfaces.V2Err {
 	path := fmt.Sprintf("v2/repository/models/%s/unload", name)
 	v.logger.Infof("Unload request: %s", path)
 	return v.call(path)
 }
 
-func (v *V2Client) unloadModelGrpc(name string) *V2Err {
+func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
 	ctx := context.Background()
 
 	req := &v2.RepositoryModelUnloadRequest{
@@ -315,16 +258,16 @@ func (v *V2Client) unloadModelGrpc(name string) *V2Err {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
-			return &V2Err{
-				err:     err,
-				errCode: int(errCode),
-				isGrpc:  true,
+			return &interfaces.V2Err{
+				Err:     err,
+				ErrCode: int(errCode),
+				IsGrpc:  true,
 			}
 		}
-		return &V2Err{
-			err:     err,
-			errCode: V2CommunicationErrCode,
-			isGrpc:  true,
+		return &interfaces.V2Err{
+			Err:     err,
+			ErrCode: interfaces.V2CommunicationErrCode,
+			IsGrpc:  true,
 		}
 	}
 	return nil
@@ -345,7 +288,7 @@ func (v *V2Client) Live() error {
 	if ready {
 		return nil
 	} else {
-		return ErrServerNotReady
+		return interfaces.ErrServerNotReady
 	}
 }
 
@@ -372,17 +315,17 @@ func (v *V2Client) liveGrpc() (bool, error) {
 	return res.Live, nil
 }
 
-func (v *V2Client) GetModels() ([]MLServerModelInfo, error) {
+func (v *V2Client) GetModels() ([]interfaces.ServerModelInfo, error) {
 	if v.isGrpc {
 		return v.getModelsGrpc()
 	} else {
 		v.logger.Warnf("Http GetModels not available returning empty list")
-		return []MLServerModelInfo{}, nil
+		return []interfaces.ServerModelInfo{}, nil
 	}
 }
 
-func (v *V2Client) getModelsGrpc() ([]MLServerModelInfo, error) {
-	var models []MLServerModelInfo
+func (v *V2Client) getModelsGrpc() ([]interfaces.ServerModelInfo, error) {
+	var models []interfaces.ServerModelInfo
 	ctx := context.Background()
 	req := &v2.RepositoryIndexRequest{}
 
@@ -397,7 +340,9 @@ func (v *V2Client) getModelsGrpc() ([]MLServerModelInfo, error) {
 			continue
 		}
 		models = append(
-			models, MLServerModelInfo{Name: modelRes.Name, State: MLServerModelState(modelRes.State)})
+			models, interfaces.ServerModelInfo{
+				Name:  modelRes.Name,
+				State: interfaces.ServerModelState(modelRes.State)})
 	}
 	return models, nil
 }

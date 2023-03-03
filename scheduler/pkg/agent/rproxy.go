@@ -35,20 +35,11 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	DefaultReverseProxyHTTPPort = 9999
-	maxIdleConnsHTTP            = 10
-	maxIdleConnsPerHostHTTP     = 10
-	disableKeepAlivesHTTP       = false
-	maxConnsPerHostHTTP         = 20
-	defaultTimeoutSeconds       = 5
-	idleConnTimeoutSeconds      = 60 * 30
 )
 
 type reverseHTTPProxy struct {
@@ -67,7 +58,7 @@ type reverseHTTPProxy struct {
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
 type lazyModelLoadTransport struct {
-	loader func(string) *V2Err
+	loader func(string) *interfaces.V2Err
 	http.RoundTripper
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
@@ -195,11 +186,11 @@ func (rp *reverseHTTPProxy) Start() error {
 	backend := rp.getBackEndPath()
 	proxy := httputil.NewSingleHostReverseProxy(backend)
 	t := &http.Transport{
-		MaxIdleConns:        maxIdleConnsHTTP,
-		MaxIdleConnsPerHost: maxIdleConnsPerHostHTTP,
-		DisableKeepAlives:   disableKeepAlivesHTTP,
-		MaxConnsPerHost:     maxConnsPerHostHTTP,
-		IdleConnTimeout:     idleConnTimeoutSeconds * time.Second,
+		MaxIdleConns:        util.MaxIdleConnsHTTP,
+		MaxIdleConnsPerHost: util.MaxIdleConnsPerHostHTTP,
+		DisableKeepAlives:   util.DisableKeepAlivesHTTP,
+		MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
+		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
 	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelScalingStatsCollector, rp.logger}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)

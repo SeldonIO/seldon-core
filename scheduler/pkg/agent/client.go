@@ -139,7 +139,7 @@ func NewClient(
 	settings *ClientSettings,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
-	v2Client *V2Client,
+	v2Client interfaces.V2Client,
 	replicaConfig *agent.ReplicaConfig,
 	namespace string,
 	reverseProxyHTTP interfaces.DependencyServiceInterface,
@@ -358,12 +358,12 @@ func (c *Client) UnloadAllModels() error {
 		return err
 	}
 	for _, model := range models {
-		if model.State == MLServerModelState_READY || model.State == MLServerModelState_LOADING {
+		if model.State == interfaces.ServerModelState_READY || model.State == interfaces.ServerModelState_LOADING {
 			logger.Infof("Unloading existing model %s", model)
 			v2Err := c.stateManager.v2Client.UnloadModel(model.Name)
 			if v2Err != nil {
 				if !v2Err.IsNotFound() {
-					return v2Err.err
+					return v2Err.Err
 				} else {
 					c.logger.Warnf("Model %s not found on server", model)
 				}
