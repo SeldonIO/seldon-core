@@ -21,7 +21,7 @@ RELEASE_TYPE ?= pre-release
 
 ################################################################################
 
-.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_VERSION := v1.51.0
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint: 
