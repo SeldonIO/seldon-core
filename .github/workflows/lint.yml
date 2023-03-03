@@ -14,7 +14,7 @@ jobs:
       - name: lint-operator
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.1
+          version: v1.51.2
           working-directory: operator
           # NOTE: We need to skip caching completely until the following issues
           # are resolved (same applies to the other steps):
@@ -24,19 +24,19 @@ jobs:
       - name: lint-scheduler
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.1
+          version: v1.51.2
           working-directory: scheduler
           skip-cache: true
       - name: lint-hodometer
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.1
+          version: v1.51.2
           working-directory: hodometer
           skip-cache: true
       - name: lint-tls
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.51.1
+          version: v1.51.2
           working-directory: components/tls
           skip-cache: true
           args: --timeout 3m --verbose
