@@ -16,26 +16,27 @@ jobs:
         with:
           version: v1.51.2
           working-directory: operator
-          # NOTE: We need to skip the pkg cache until the following issue is
-          # resolved (same applies to the other steps):
+          # NOTE: We need to skip caching completely until the following issues
+          # are resolved (same applies to the other steps):
           # https://github.com/golangci/golangci-lint-action/issues/677
-          skip-pkg-cache: true
+          # https://github.com/golangci/golangci-lint-action/issues/496
+          skip-cache: true
       - name: lint-scheduler
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.51.2
           working-directory: scheduler
-          skip-pkg-cache: true
+          skip-cache: true
       - name: lint-hodometer
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.51.2
           working-directory: hodometer
-          skip-pkg-cache: true
+          skip-cache: true
       - name: lint-tls
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.51.2
           working-directory: components/tls
-          skip-pkg-cache: true
+          skip-cache: true
           args: --timeout 3m --verbose
