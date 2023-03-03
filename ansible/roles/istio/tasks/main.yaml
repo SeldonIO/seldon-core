@@ -1,0 +1,45 @@
+---
+- name: Check if Istio {{ istio_version }} already downloaded
+  stat:
+    path: "{{ seldon_cache_directory }}/istio-{{ istio_version }}"
+  register: istio_directory
+
+
+- name: "Create resources directory if does not exist: {{ seldon_cache_directory }}/"
+  ansible.builtin.file:
+    path: "{{ seldon_cache_directory }}/"
+    state: directory
+    mode: '0755'
+
+
+- name: Download Istio {{ istio_version }}
+  shell: "curl -L https://istio.io/downloadIstio | ISTIO_VERSION={{ istio_version }} sh -"
+  args:
+    chdir: "{{ seldon_cache_directory }}"
+    warn: false
+  when: istio_directory.stat.exists == false
+
+
+- name: Install Istio {{ istio_version }}
+  shell: "./bin/istioctl install --set profile=default -y"
+  args:
+    chdir: "{{ seldon_cache_directory }}/istio-{{ istio_version }}"
+
+
+- name: Verify Install Istio {{ istio_version }}
+  shell: "./bin/istioctl verify-install"
+  args:
+    chdir: "{{ seldon_cache_directory }}/istio-{{ istio_version }}"
+  when: istio_verify_install | bool
+
+
+- name: Create Seldon Gateway
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ istio_seldon_gateway }}"
+  when: istio_create_seldon_gateway | bool
+
+
+- name: Configure certificates
+  import_tasks: certificates.yaml
+  when: istio_self_signed_certs | bool

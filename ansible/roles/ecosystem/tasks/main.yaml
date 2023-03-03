@@ -1,0 +1,9 @@
+---
+- name: Install and configure Istio
+  import_tasks: istio.yaml
+
+- name: Install and configure MinIO
+  import_tasks: minio.yaml
+
+- name: Install and Configure Prometheus Operator
+  import_tasks: prometheus.yaml

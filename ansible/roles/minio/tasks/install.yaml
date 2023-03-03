@@ -1,0 +1,27 @@
+---
+- name: Install MinIO
+  kubernetes.core.helm:
+    name: minio
+    release_namespace: "{{ minio_namespace }}"
+    chart_ref: "minio"
+    chart_version: "{{ minio_chart_version }}"
+    chart_repo_url: "https://helm.min.io/"
+    values:
+      accessKey: "{{ minio_access_key }}"
+      secretKey: "{{ minio_secret_key }}"
+      service:
+        type: "{{ minio_service_type }}"
+
+- name: Echo message about client configuration
+  ansible.builtin.debug:
+    msg:
+      - MinIO installed in the cluster. To configure your local client launch
+      - "kubectl port-forward -n {{ minio_namespace }} svc/minio 8090:9000"
+      - in one terminal and execute
+      - "mc config host add minio-seldon http://localhost:8090 ACCESS_KEY SECRET_KEY"
+
+- name: Configure Minio VirtualService
+  kubernetes.core.k8s:
+    state: present
+    template: templates/minio-vs.yaml.j2
+  when: minio_create_virtualservice | bool

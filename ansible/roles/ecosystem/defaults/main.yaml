@@ -1,0 +1,17 @@
+---
+
+# Note: variables defined here are not passed to other roles
+# Include only variables directly used by this role!
+
+# Installation on/off flags
+install_istio: true
+install_minio: true
+install_prometheus: true
+install_seldon_core: true
+
+# Configuration on/off flags
+configure_prometheus: "{{ install_prometheus }}"
+
+# Seldon Prometheus Configuration
+seldon_monitoring_namespace: "seldon-monitoring"
+seldon_monitoring_podmonitor: "{{ lookup('file', 'seldon-podmonitor.yaml') | from_yaml }}"
