@@ -51,7 +51,7 @@ type V2Client struct {
 	isGrpc     bool
 }
 
-func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
+func GetV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 		grpc_retry.WithMax(util.GrpcRetryMaxCount),
@@ -72,7 +72,7 @@ func getV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error
 }
 
 func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
-	conn, err := getV2GrpcConnection(host, port)
+	conn, err := GetV2GrpcConnection(host, port)
 	if err != nil {
 		// TODO: this could fail in later iterations, so close earlier connections
 		conn.Close()
