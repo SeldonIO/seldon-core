@@ -1,0 +1,34 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: test
+spec:
+  name: test
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - name: combiner
+          image: seldonio/metadata-generic-node:1.14.0-dev
+    - spec:
+        containers:
+        - name: model-1
+    - spec:
+        containers:
+        - name: model-2
+    graph:
+      children:
+      - children: []
+        name: model-1
+        implementation: SKLEARN_SERVER
+        modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
+      - children: []
+        name: model-2
+        implementation: SKLEARN_SERVER
+        modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
+      endpoint:
+        type: REST
+      name: combiner
+      type: COMBINER
+    name: combiner
+    replicas: 1

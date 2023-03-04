@@ -70,6 +70,19 @@ func GetContainerForPredictiveUnit(p *PredictorSpec, name string) *corev1.Contai
 	return nil
 }
 
+func GetComponentSpecIdxForPredictiveUnit(p *PredictorSpec, name string) int {
+	for j := 0; j < len(p.ComponentSpecs); j++ {
+		cSpec := p.ComponentSpecs[j]
+		for k := 0; k < len(cSpec.Spec.Containers); k++ {
+			c := &cSpec.Spec.Containers[k]
+			if c.Name == name {
+				return j
+			}
+		}
+	}
+	return 0
+}
+
 // --- Validating
 
 // Check the predictive units to ensure the graph matches up with defined containers.
