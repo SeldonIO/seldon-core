@@ -42,16 +42,16 @@ import (
 )
 
 type V2Client struct {
+	HttpClient *http.Client
+	GrpcClient v2.GRPCInferenceServiceClient
 	host       string
 	httpPort   int
-	httpClient *http.Client
 	grpcPort   int
-	grpcClient v2.GRPCInferenceServiceClient
 	logger     log.FieldLogger
 	isGrpc     bool
 }
 
-func GetV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
+func CreateV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 		grpc_retry.WithMax(util.GrpcRetryMaxCount),
@@ -72,7 +72,7 @@ func GetV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error
 }
 
 func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
-	conn, err := GetV2GrpcConnection(host, port)
+	conn, err := CreateV2GrpcConnection(host, port)
 	if err != nil {
 		// TODO: this could fail in later iterations, so close earlier connections
 		conn.Close()
@@ -95,7 +95,7 @@ func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2
 		return &V2Client{
 			host:       host,
 			grpcPort:   port,
-			grpcClient: grpcClient,
+			GrpcClient: grpcClient,
 			logger:     logger.WithField("Source", "V2InferenceServerClientGrpc"),
 			isGrpc:     isGrpc,
 		}
@@ -115,7 +115,7 @@ func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2
 		return &V2Client{
 			host:       host,
 			httpPort:   port,
-			httpClient: netClient,
+			HttpClient: netClient,
 			logger:     logger.WithField("Source", "V2InferenceServerClientHttp"),
 			isGrpc:     isGrpc,
 		}
@@ -140,7 +140,7 @@ func (v *V2Client) call(path string) *interfaces.V2Err {
 			ErrCode: interfaces.V2RequestErrCode,
 		}
 	}
-	response, err := v.httpClient.Do(req)
+	response, err := v.HttpClient.Do(req)
 	if err != nil {
 		return &interfaces.V2Err{
 			IsGrpc:  false,
@@ -213,7 +213,7 @@ func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 		ModelName: name,
 	}
 
-	_, err := v.grpcClient.RepositoryModelLoad(ctx, req)
+	_, err := v.GrpcClient.RepositoryModelLoad(ctx, req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
@@ -254,7 +254,7 @@ func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
 		ModelName: name,
 	}
 
-	_, err := v.grpcClient.RepositoryModelUnload(ctx, req)
+	_, err := v.GrpcClient.RepositoryModelUnload(ctx, req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
@@ -308,7 +308,7 @@ func (v *V2Client) liveGrpc() (bool, error) {
 	ctx := context.Background()
 	req := &v2.ServerLiveRequest{}
 
-	res, err := v.grpcClient.ServerLive(ctx, req)
+	res, err := v.GrpcClient.ServerLive(ctx, req)
 	if err != nil {
 		return false, err
 	}
@@ -329,7 +329,7 @@ func (v *V2Client) getModelsGrpc() ([]interfaces.ServerModelInfo, error) {
 	ctx := context.Background()
 	req := &v2.RepositoryIndexRequest{}
 
-	res, err := v.grpcClient.RepositoryIndex(ctx, req)
+	res, err := v.GrpcClient.RepositoryIndex(ctx, req)
 	if err != nil {
 		return nil, err
 	}

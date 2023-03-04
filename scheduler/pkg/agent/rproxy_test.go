@@ -29,7 +29,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
@@ -163,7 +165,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 }
 
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
-	v2Client := NewV2Client("localhost", serverPort, logger, false)
+	v2Client := oip.NewV2Client("localhost", serverPort, logger, false)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		modelscaling.NewModelReplicaLagsKeeper(),
@@ -416,7 +418,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 
 			basePath := "http://localhost:" + strconv.Itoa(serverPort)
 
-			loader := func(model string) *V2Err {
+			loader := func(model string) *interfaces.V2Err {
 				loadV2Path := basePath + "/v2/repository/models/" + model + "/load"
 				httpClient := http.DefaultClient
 				httpClient.Transport = http.DefaultTransport

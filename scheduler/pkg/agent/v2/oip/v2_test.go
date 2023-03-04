@@ -94,7 +94,7 @@ func TestLoad(t *testing.T) {
 	}
 	for _, test := range tests {
 		r := createTestV2Client(test.models, test.status)
-		httpmock.ActivateNonDefault(r.httpClient)
+		httpmock.ActivateNonDefault(r.HttpClient)
 		for _, model := range test.models {
 			err := r.LoadModel(model)
 			if test.status == 200 {
@@ -124,7 +124,7 @@ func TestUnload(t *testing.T) {
 	}
 	for _, test := range tests {
 		r := createTestV2Client(test.models, test.status)
-		httpmock.ActivateNonDefault(r.httpClient)
+		httpmock.ActivateNonDefault(r.HttpClient)
 		for _, model := range test.models {
 			err := r.UnloadModel(model)
 			if test.status == 200 {

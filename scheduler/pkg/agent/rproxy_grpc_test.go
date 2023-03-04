@@ -28,6 +28,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
@@ -84,20 +85,20 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		_ = mlserver.Shutdown(context.Background())
 	}()
 
-	mockMLServer := &oip.MockGRPCMLServer{}
+	mockMLServer := &testing_utils.MockGRPCMLServer{}
 
 	backEndGRPCPort, err := getFreePort()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = mockMLServer.setup(uint(backEndGRPCPort))
+	err = mockMLServer.Setup(uint(backEndGRPCPort))
 	g.Expect(err).To(BeNil())
 	go func() {
-		err := mockMLServer.start()
+		err := mockMLServer.Start()
 		g.Expect(err).To(BeNil())
 	}()
-	defer mockMLServer.stop()
+	defer mockMLServer.Stop()
 
 	rpPort, err := getFreePort()
 	if err != nil {

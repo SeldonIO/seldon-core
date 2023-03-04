@@ -331,7 +331,7 @@ func (rp *reverseGRPCProxy) createV2CRPCClients(backendGRPCServerHost string, ba
 		return nil, nil, err
 	}
 	for i := 0; i < size; i++ {
-		conn, err := oip.GetV2GrpcConnection(backendGRPCServerHost, backendGRPCServerPort)
+		conn, err := oip.CreateV2GrpcConnection(backendGRPCServerHost, backendGRPCServerPort)
 
 		if err != nil {
 			// TODO: this could fail in later iterations, so close earlier connections

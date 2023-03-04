@@ -36,6 +36,8 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -173,6 +175,11 @@ func (m *mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server 
 	return nil
 }
 
+func createTestV2Client(models []string, status int) interfaces.V2Client {
+	v2, _ := createTestV2ClientwithState(models, status)
+	return v2
+}
+
 func TestClientCreate(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
@@ -194,7 +201,7 @@ func TestClientCreate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.httpClient)
+			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -331,7 +338,7 @@ func TestLoadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.httpClient)
+			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -483,7 +490,7 @@ parameters:
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.httpClient)
+			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -611,7 +618,7 @@ func TestUnloadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.httpClient)
+			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -682,7 +689,7 @@ func TestClientClose(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	v2Client := createTestV2Client(nil, 200)
-	httpmock.ActivateNonDefault(v2Client.httpClient)
+	httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
 	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
@@ -763,19 +770,19 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			mockMLServer := &mockGRPCMLServer{}
+			mockMLServer := &testing_utils.MockGRPCMLServer{}
 			backEndGRPCPort, err := getFreePort()
 			if err != nil {
 				t.Fatal(err)
 			}
-			_ = mockMLServer.setup(uint(backEndGRPCPort))
+			_ = mockMLServer.Setup(uint(backEndGRPCPort))
 			go func() {
-				_ = mockMLServer.start()
+				_ = mockMLServer.Start()
 			}()
 
 			time.Sleep(50 * time.Millisecond)
 
-			v2Client := NewV2Client("", backEndGRPCPort, log.New(), true)
+			v2Client := oip.NewV2Client("", backEndGRPCPort, log.New(), true)
 
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
@@ -812,7 +819,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 					} else if test.serviceName == scale {
 						_ = modelScalingService.Stop()
 					} else if test.serviceName == inference {
-						go mockMLServer.stop()
+						go mockMLServer.Stop()
 					}
 				}()
 				err = client.Start()
@@ -827,7 +834,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 				client.Stop()
 			}
 
-			go mockMLServer.stop()
+			go mockMLServer.Stop()
 		})
 	}
 }

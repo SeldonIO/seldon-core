@@ -216,7 +216,7 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, numModels-2, 1, 100)
 
 	//activate mock http server for v2
-	httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+	httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 	defer httpmock.DeactivateAndReset()
 
 	g := NewGomegaWithT(t)
@@ -289,7 +289,7 @@ func TestConcurrentReload(t *testing.T) {
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			// load the first numModels, this will evict in reverse order
@@ -386,7 +386,7 @@ func TestConcurrentInfer(t *testing.T) {
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			// load the first numModels, this will evict in reverse order
@@ -487,7 +487,7 @@ func TestConcurrentLoad(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Start test")
@@ -580,7 +580,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Start test")
@@ -675,7 +675,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Add a single version for all models")
@@ -859,7 +859,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, capacity, 1, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			var barrier sync.WaitGroup
@@ -1037,7 +1037,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(test.overCommitPercentage))
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {
@@ -1064,7 +1064,7 @@ func TestServerConnectionIssues(t *testing.T) {
 	manager := setupLocalTestManager(numModels, dummyModelPrefix, nil, numModels-1, 1)
 
 	//activate httpmock for v2
-	httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+	httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 	g := NewGomegaWithT(t)
 
 	for i := 0; i < numModels; i++ {
@@ -1117,7 +1117,7 @@ func TestModelMetricsStats(t *testing.T) {
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(50))
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*oip.V2Client).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {
