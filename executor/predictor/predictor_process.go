@@ -288,6 +288,13 @@ func (p *PredictorProcess) aggregate(node *v1.PredictiveUnit, cmsg []payload.Sel
 
 func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.SeldonPayload, puid string) (payload.SeldonPayload, error) {
 	if node.Children != nil && len(node.Children) > 0 {
+		//Log Request
+		if node.Logger != nil && (node.Logger.Mode == v1.LogRequest || node.Logger.Mode == v1.LogAll) {
+			err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceRequest, msg, puid)
+			if err != nil {
+				return nil, err
+			}
+		}
 		route, err := p.route(node, msg)
 		if err != nil {
 			return nil, err
@@ -329,7 +336,17 @@ func (p *PredictorProcess) predictChildren(node *v1.PredictiveUnit, msg payload.
 				return cmsgs[0], err
 			}
 		}
-		return p.aggregate(node, cmsgs, msg, puid)
+		amsg, err := p.aggregate(node, cmsgs, msg, puid)
+		if amsg != nil && err == nil {
+			// Log Response
+			if node.Logger != nil && (node.Logger.Mode == v1.LogResponse || node.Logger.Mode == v1.LogAll) {
+				err := p.logPayload(node.Name, node.Logger, payloadLogger.InferenceResponse, amsg, puid)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		return amsg, err
 	} else {
 		// Don't add routing for leaf nodes
 		return msg, nil
