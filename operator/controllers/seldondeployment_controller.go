@@ -59,7 +59,7 @@ import (
 	istio_networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscaling "k8s.io/api/autoscaling/v2beta1"
+	autoscaling "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policy "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -188,8 +188,11 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 				Kind:       "Deployment",
 			},
 			MaxReplicas: podSpec.HpaSpec.MaxReplicas,
-			Metrics:     podSpec.HpaSpec.Metrics,
+			Metrics:     podSpec.HpaSpec.Metricsv2,
 		},
+	}
+	if podSpec.HpaSpec.Metrics != nil {
+		hpa.Spec.Metrics = machinelearningv1.ConvertMetricSpecSlice(podSpec.HpaSpec.Metrics)
 	}
 	if podSpec.HpaSpec.MinReplicas != nil {
 		hpa.Spec.MinReplicas = podSpec.HpaSpec.MinReplicas

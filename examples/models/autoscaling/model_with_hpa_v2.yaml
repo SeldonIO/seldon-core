@@ -8,11 +8,11 @@ spec:
   - componentSpecs:
     - hpaSpec:
         maxReplicas: 3
-        metrics:
+        metricsv2:
         - resource:
             name: cpu
             target:
-              type: AverageValue
+              type: Utilization
               averageUtilization: 10
           type: Resource
         minReplicas: 1
