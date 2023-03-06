@@ -201,7 +201,7 @@ func main() {
 	)
 
 	// Create V2 Protocol Handler
-	v2Client := oip.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
+	v2Client := oip.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger)
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
