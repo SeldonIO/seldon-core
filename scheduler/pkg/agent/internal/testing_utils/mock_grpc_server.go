@@ -46,7 +46,7 @@ func (s *V2State) LoadResponder(model string, status int) func(req *http.Request
 		if status == 200 {
 			return httpmock.NewStringResponse(status, ""), nil
 		} else {
-			return httpmock.NewStringResponse(status, ""), interfaces.ErrV2BadRequest
+			return httpmock.NewStringResponse(status, ""), interfaces.ErrControlPlaneBadRequest
 		}
 	}
 }
@@ -57,7 +57,7 @@ func (s *V2State) UnloadResponder(model string, status int) func(req *http.Reque
 		if status == 200 {
 			return httpmock.NewStringResponse(status, ""), nil
 		} else {
-			return httpmock.NewStringResponse(status, ""), interfaces.ErrV2BadRequest
+			return httpmock.NewStringResponse(status, ""), interfaces.ErrControlPlaneBadRequest
 		}
 	}
 }

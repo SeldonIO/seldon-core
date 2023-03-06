@@ -58,7 +58,7 @@ type reverseHTTPProxy struct {
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
 type lazyModelLoadTransport struct {
-	loader func(string) *interfaces.V2Err
+	loader func(string) *interfaces.ControlPlaneErr
 	http.RoundTripper
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector

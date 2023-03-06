@@ -71,11 +71,11 @@ func (v *V2RestClientForTest) getUrl(path string) *url.URL {
 	}
 }
 
-func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
+func (v *V2RestClientForTest) call(path string) *interfaces.ControlPlaneErr {
 	v2Url := v.getUrl(path)
 	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer([]byte{}))
 	if err != nil {
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			IsGrpc:  false,
 			Err:     err,
 			ErrCode: interfaces.V2RequestErrCode,
@@ -83,7 +83,7 @@ func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
 	}
 	response, err := v.HttpClient.Do(req)
 	if err != nil {
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			IsGrpc:  false,
 			Err:     err,
 			ErrCode: interfaces.V2CommunicationErrCode,
@@ -91,7 +91,7 @@ func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
 	}
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			IsGrpc:  false,
 			Err:     err,
 			ErrCode: response.StatusCode,
@@ -99,7 +99,7 @@ func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
 	}
 	err = response.Body.Close()
 	if err != nil {
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			IsGrpc:  false,
 			Err:     err,
 			ErrCode: response.StatusCode,
@@ -111,19 +111,19 @@ func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
 			v2Error := interfaces.V2ServerError{}
 			err := json.Unmarshal(b, &v2Error)
 			if err != nil {
-				return &interfaces.V2Err{
+				return &interfaces.ControlPlaneErr{
 					IsGrpc:  false,
 					Err:     err,
 					ErrCode: response.StatusCode,
 				}
 			}
-			return &interfaces.V2Err{
+			return &interfaces.ControlPlaneErr{
 				IsGrpc:  false,
-				Err:     fmt.Errorf("%s. %w", v2Error.Error, interfaces.ErrV2BadRequest),
+				Err:     fmt.Errorf("%s. %w", v2Error.Error, interfaces.ErrControlPlaneBadRequest),
 				ErrCode: response.StatusCode,
 			}
 		} else {
-			return &interfaces.V2Err{
+			return &interfaces.ControlPlaneErr{
 				IsGrpc:  false,
 				Err:     fmt.Errorf("V2 server error: %s", b),
 				ErrCode: response.StatusCode,
@@ -133,21 +133,21 @@ func (v *V2RestClientForTest) call(path string) *interfaces.V2Err {
 	return nil
 }
 
-func (v *V2RestClientForTest) LoadModel(name string) *interfaces.V2Err {
+func (v *V2RestClientForTest) LoadModel(name string) *interfaces.ControlPlaneErr {
 	return v.loadModelHttp(name)
 }
 
-func (v *V2RestClientForTest) loadModelHttp(name string) *interfaces.V2Err {
+func (v *V2RestClientForTest) loadModelHttp(name string) *interfaces.ControlPlaneErr {
 	path := fmt.Sprintf("v2/repository/models/%s/load", name)
 	v.logger.Infof("Load request: %s", path)
 	return v.call(path)
 }
 
-func (v *V2RestClientForTest) UnloadModel(name string) *interfaces.V2Err {
+func (v *V2RestClientForTest) UnloadModel(name string) *interfaces.ControlPlaneErr {
 	return v.unloadModelHttp(name)
 }
 
-func (v *V2RestClientForTest) unloadModelHttp(name string) *interfaces.V2Err {
+func (v *V2RestClientForTest) unloadModelHttp(name string) *interfaces.ControlPlaneErr {
 	path := fmt.Sprintf("v2/repository/models/%s/unload", name)
 	v.logger.Infof("Unload request: %s", path)
 	return v.call(path)

@@ -26,21 +26,21 @@ import (
 // Error wrapper with client and server errors + error code
 // errCode should have the standard http error codes (for server)
 // and client communication error codes (defined above)
-type V2Err struct {
+type ControlPlaneErr struct {
 	IsGrpc bool
 	Err    error
 	// one bucket for http/grpc status code and client codes (for error)
 	ErrCode int
 }
 
-func (v2err *V2Err) Error() string {
-	if v2err != nil {
-		return v2err.Err.Error()
+func (err *ControlPlaneErr) Error() string {
+	if err != nil {
+		return err.Err.Error()
 	}
 	return ""
 }
 
-func (v *V2Err) IsNotFound() bool {
+func (v *ControlPlaneErr) IsNotFound() bool {
 	if v.IsGrpc {
 		return v.ErrCode == int(codes.NotFound)
 	} else {
@@ -76,12 +76,12 @@ type V2ServerError struct {
 	Error string `json:"error"`
 }
 
-var ErrV2BadRequest = errors.New("V2 Bad Request")
+var ErrControlPlaneBadRequest = errors.New("ControlPlane Bad Request")
 var ErrServerNotReady = errors.New("Server not ready")
 
 type V2Client interface {
-	LoadModel(name string) *V2Err
-	UnloadModel(name string) *V2Err
+	LoadModel(name string) *ControlPlaneErr
+	UnloadModel(name string) *ControlPlaneErr
 	Live() error
 	GetModels() ([]ServerModelInfo, error)
 }

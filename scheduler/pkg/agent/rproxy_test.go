@@ -404,7 +404,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 
 			basePath := "http://localhost:" + strconv.Itoa(serverPort)
 
-			loader := func(model string) *interfaces.V2Err {
+			loader := func(model string) *interfaces.ControlPlaneErr {
 				loadV2Path := basePath + "/v2/repository/models/" + model + "/load"
 				httpClient := http.DefaultClient
 				httpClient.Transport = http.DefaultTransport

@@ -90,13 +90,13 @@ func NewV2Client(host string, port int, logger log.FieldLogger) *V2Client {
 
 }
 
-func (v *V2Client) LoadModel(name string) *interfaces.V2Err {
+func (v *V2Client) LoadModel(name string) *interfaces.ControlPlaneErr {
 
 	return v.loadModelGrpc(name)
 
 }
 
-func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
+func (v *V2Client) loadModelGrpc(name string) *interfaces.ControlPlaneErr {
 	ctx := context.Background()
 
 	req := &v2.RepositoryModelLoadRequest{
@@ -107,13 +107,13 @@ func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
-			return &interfaces.V2Err{
+			return &interfaces.ControlPlaneErr{
 				Err:     err,
 				ErrCode: int(errCode),
 				IsGrpc:  true,
 			}
 		}
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			Err:     err,
 			ErrCode: interfaces.V2CommunicationErrCode,
 			IsGrpc:  true,
@@ -123,11 +123,11 @@ func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 	return nil
 }
 
-func (v *V2Client) UnloadModel(name string) *interfaces.V2Err {
+func (v *V2Client) UnloadModel(name string) *interfaces.ControlPlaneErr {
 	return v.unloadModelGrpc(name)
 }
 
-func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
+func (v *V2Client) unloadModelGrpc(name string) *interfaces.ControlPlaneErr {
 	ctx := context.Background()
 
 	req := &v2.RepositoryModelUnloadRequest{
@@ -138,13 +138,13 @@ func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
-			return &interfaces.V2Err{
+			return &interfaces.ControlPlaneErr{
 				Err:     err,
 				ErrCode: int(errCode),
 				IsGrpc:  true,
 			}
 		}
-		return &interfaces.V2Err{
+		return &interfaces.ControlPlaneErr{
 			Err:     err,
 			ErrCode: interfaces.V2CommunicationErrCode,
 			IsGrpc:  true,
