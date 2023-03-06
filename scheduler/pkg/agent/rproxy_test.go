@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,6 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
@@ -42,20 +42,6 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
-
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
-}
 
 type mockMLServerState struct {
 	models         map[string]bool
@@ -227,7 +213,7 @@ func TestReverseProxySmoke(t *testing.T) {
 				modelsNotFound: make(map[string]bool),
 				mu:             &sync.Mutex{},
 			}
-			serverPort, err := getFreePort()
+			serverPort, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -236,7 +222,7 @@ func TestReverseProxySmoke(t *testing.T) {
 				_ = mlserver.ListenAndServe()
 			}()
 
-			rpPort, err := getFreePort()
+			rpPort, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -401,7 +387,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 				modelsNotFound: make(map[string]bool),
 				mu:             &sync.Mutex{},
 			}
-			serverPort, err := getFreePort()
+			serverPort, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}

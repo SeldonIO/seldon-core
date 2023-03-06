@@ -26,7 +26,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -145,7 +145,7 @@ func TestGrpcV2(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	mockMLServer := &testing_utils.MockGRPCMLServer{}
-	backEndGRPCPort, err := util.GetFreePortForTest()
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +185,7 @@ func TestGrpcV2WithError(t *testing.T) {
 
 	// note no grpc server to respond
 
-	backEndGRPCPort, err := util.GetFreePortForTest()
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -208,7 +208,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 	// note: we delay starting the server to simulate transient errors
 	g := NewGomegaWithT(t)
 	mockMLServer := &testing_utils.MockGRPCMLServer{}
-	backEndGRPCPort, err := util.GetFreePortForTest()
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}

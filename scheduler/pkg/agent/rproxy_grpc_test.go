@@ -23,12 +23,13 @@ import (
 	"testing"
 	"time"
 
+	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
@@ -73,7 +74,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		mu:             &sync.Mutex{},
 	}
 
-	serverPort, err := getFreePort()
+	serverPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +88,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	mockMLServer := &testing_utils.MockGRPCMLServer{}
 
-	backEndGRPCPort, err := getFreePort()
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +101,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	}()
 	defer mockMLServer.Stop()
 
-	rpPort, err := getFreePort()
+	rpPort, err := testing_utils2.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}

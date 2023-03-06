@@ -34,10 +34,11 @@ import (
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
+	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -208,7 +209,7 @@ func TestClientCreate(t *testing.T) {
 			agentDebug := FakeDependencyService{err: nil}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
-			drainerServicePort, _ := getFreePort()
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
@@ -359,7 +360,7 @@ func TestLoadModel(t *testing.T) {
 			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
-			drainerServicePort, _ := getFreePort()
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
@@ -497,7 +498,7 @@ parameters:
 			agentDebug := FakeDependencyService{err: nil}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
-			drainerServicePort, _ := getFreePort()
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
@@ -639,7 +640,7 @@ func TestUnloadModel(t *testing.T) {
 			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
-			drainerServicePort, _ := getFreePort()
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			client := NewClient(
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
@@ -697,7 +698,7 @@ func TestClientClose(t *testing.T) {
 	agentDebug := FakeDependencyService{err: nil}
 	modelScalingService := modelscaling.NewStatsAnalyserService(
 		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
-	drainerServicePort, _ := getFreePort()
+	drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 	client := NewClient(
 		NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
@@ -771,7 +772,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			mockMLServer := &testing_utils.MockGRPCMLServer{}
-			backEndGRPCPort, err := getFreePort()
+			backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -793,7 +794,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			go func() {
 				_ = modelScalingService.Start()
 			}()
-			drainerServicePort, _ := getFreePort()
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			go func() {
 				_ = drainerService.Start()
