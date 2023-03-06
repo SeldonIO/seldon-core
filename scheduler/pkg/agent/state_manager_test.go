@@ -164,7 +164,7 @@ func setupLocalTestManagerWithState(
 	return manager, v2ClientState
 }
 
-func setupLocalTestManager(numModels int, modelPrefix string, v2Client *oip.V2Client, capacity int, numVersions int) *LocalStateManager {
+func setupLocalTestManager(numModels int, modelPrefix string, v2Client interfaces.V2Client, capacity int, numVersions int) *LocalStateManager {
 	manager, _ := setupLocalTestManagerWithState(numModels, modelPrefix, v2Client, capacity, numVersions, 0)
 
 	return manager
