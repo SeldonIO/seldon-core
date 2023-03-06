@@ -1104,7 +1104,7 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000"
-      image: seldonio/mlserver:1.2.4.rc1
+      image: seldonio/mlserver:1.2.4
       imagePullPolicy: IfNotPresent
       lifecycle:
         preStop:
