@@ -17,15 +17,8 @@ limitations under the License.
 package oip
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net"
-	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -42,13 +35,10 @@ import (
 )
 
 type V2Client struct {
-	HttpClient *http.Client
 	grpcClient v2.GRPCInferenceServiceClient
 	host       string
-	httpPort   int
 	grpcPort   int
 	logger     log.FieldLogger
-	isGrpc     bool
 }
 
 func CreateV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
@@ -83,127 +73,27 @@ func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceC
 	return client, nil
 }
 
-func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2Client {
+func NewV2Client(host string, port int, logger log.FieldLogger) *V2Client {
 	logger.Infof("V2 Inference Server %s:%d", host, port)
 
-	if isGrpc {
-		grpcClient, err := createV2ControlPlaneClient(host, port)
-		if err != nil {
-			return nil
-		}
-
-		return &V2Client{
-			host:       host,
-			grpcPort:   port,
-			grpcClient: grpcClient,
-			logger:     logger.WithField("Source", "V2InferenceServerClientGrpc"),
-			isGrpc:     isGrpc,
-		}
-	} else {
-		netTransport := &http.Transport{
-			MaxIdleConns:        util.MaxIdleConnsHTTP,
-			MaxIdleConnsPerHost: util.MaxIdleConnsPerHostHTTP,
-			DisableKeepAlives:   util.DisableKeepAlivesHTTP,
-			MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
-			IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
-		}
-		netClient := &http.Client{
-			Timeout:   time.Second * util.DefaultTimeoutSeconds,
-			Transport: netTransport,
-		}
-
-		return &V2Client{
-			host:       host,
-			httpPort:   port,
-			HttpClient: netClient,
-			logger:     logger.WithField("Source", "V2InferenceServerClientHttp"),
-			isGrpc:     isGrpc,
-		}
-	}
-}
-
-func (v *V2Client) getUrl(path string) *url.URL {
-	return &url.URL{
-		Scheme: "http",
-		Host:   net.JoinHostPort(v.host, strconv.Itoa(v.httpPort)),
-		Path:   path,
-	}
-}
-
-func (v *V2Client) call(path string) *interfaces.V2Err {
-	v2Url := v.getUrl(path)
-	req, err := http.NewRequest("POST", v2Url.String(), bytes.NewBuffer([]byte{}))
+	grpcClient, err := createV2ControlPlaneClient(host, port)
 	if err != nil {
-		return &interfaces.V2Err{
-			IsGrpc:  false,
-			Err:     err,
-			ErrCode: interfaces.V2RequestErrCode,
-		}
+		return nil
 	}
-	response, err := v.HttpClient.Do(req)
-	if err != nil {
-		return &interfaces.V2Err{
-			IsGrpc:  false,
-			Err:     err,
-			ErrCode: interfaces.V2CommunicationErrCode,
-		}
+
+	return &V2Client{
+		host:       host,
+		grpcPort:   port,
+		grpcClient: grpcClient,
+		logger:     logger.WithField("Source", "V2InferenceServerClientGrpc"),
 	}
-	b, err := io.ReadAll(response.Body)
-	if err != nil {
-		return &interfaces.V2Err{
-			IsGrpc:  false,
-			Err:     err,
-			ErrCode: response.StatusCode,
-		}
-	}
-	err = response.Body.Close()
-	if err != nil {
-		return &interfaces.V2Err{
-			IsGrpc:  false,
-			Err:     err,
-			ErrCode: response.StatusCode,
-		}
-	}
-	v.logger.Infof("v2 server response: %s", b)
-	if response.StatusCode != http.StatusOK {
-		if response.StatusCode == http.StatusBadRequest {
-			v2Error := interfaces.V2ServerError{}
-			err := json.Unmarshal(b, &v2Error)
-			if err != nil {
-				return &interfaces.V2Err{
-					IsGrpc:  false,
-					Err:     err,
-					ErrCode: response.StatusCode,
-				}
-			}
-			return &interfaces.V2Err{
-				IsGrpc:  false,
-				Err:     fmt.Errorf("%s. %w", v2Error.Error, interfaces.ErrV2BadRequest),
-				ErrCode: response.StatusCode,
-			}
-		} else {
-			return &interfaces.V2Err{
-				IsGrpc:  false,
-				Err:     fmt.Errorf("V2 server error: %s", b),
-				ErrCode: response.StatusCode,
-			}
-		}
-	}
-	return nil
+
 }
 
 func (v *V2Client) LoadModel(name string) *interfaces.V2Err {
-	if v.isGrpc {
-		return v.loadModelGrpc(name)
-	} else {
-		return v.loadModelHttp(name)
-	}
-}
 
-func (v *V2Client) loadModelHttp(name string) *interfaces.V2Err {
-	path := fmt.Sprintf("v2/repository/models/%s/load", name)
-	v.logger.Infof("Load request: %s", path)
-	return v.call(path)
+	return v.loadModelGrpc(name)
+
 }
 
 func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
@@ -234,17 +124,7 @@ func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 }
 
 func (v *V2Client) UnloadModel(name string) *interfaces.V2Err {
-	if v.isGrpc {
-		return v.unloadModelGrpc(name)
-	} else {
-		return v.unloadModelHttp(name)
-	}
-}
-
-func (v *V2Client) unloadModelHttp(name string) *interfaces.V2Err {
-	path := fmt.Sprintf("v2/repository/models/%s/unload", name)
-	v.logger.Infof("Unload request: %s", path)
-	return v.call(path)
+	return v.unloadModelGrpc(name)
 }
 
 func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
@@ -276,11 +156,9 @@ func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
 func (v *V2Client) Live() error {
 	var ready bool
 	var err error
-	if v.isGrpc {
-		ready, err = v.liveGrpc()
-	} else {
-		ready, err = v.liveHttp()
-	}
+
+	ready, err = v.liveGrpc()
+
 	if err != nil {
 		v.logger.WithError(err).Debugf("Server live check failed on error")
 		return err
@@ -289,18 +167,6 @@ func (v *V2Client) Live() error {
 		return nil
 	} else {
 		return interfaces.ErrServerNotReady
-	}
-}
-
-func (v *V2Client) liveHttp() (bool, error) {
-	res, err := http.Get(v.getUrl("v2/health/live").String())
-	if err != nil {
-		return false, err
-	}
-	if res.StatusCode == http.StatusOK {
-		return true, nil
-	} else {
-		return false, nil
 	}
 }
 
@@ -316,12 +182,7 @@ func (v *V2Client) liveGrpc() (bool, error) {
 }
 
 func (v *V2Client) GetModels() ([]interfaces.ServerModelInfo, error) {
-	if v.isGrpc {
-		return v.getModelsGrpc()
-	} else {
-		v.logger.Warnf("Http GetModels not available returning empty list")
-		return []interfaces.ServerModelInfo{}, nil
-	}
+	return v.getModelsGrpc()
 }
 
 func (v *V2Client) getModelsGrpc() ([]interfaces.ServerModelInfo, error) {

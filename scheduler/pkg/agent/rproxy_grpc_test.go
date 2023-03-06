@@ -23,14 +23,14 @@ import (
 	"testing"
 	"time"
 
-	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
+	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
 	. "github.com/onsi/gomega"
@@ -45,7 +45,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 
-	v2Client := oip.NewV2Client("localhost", backEndServerPort, logger, false)
+	v2Client := testing_utils.NewV2RestClientForTest("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(),

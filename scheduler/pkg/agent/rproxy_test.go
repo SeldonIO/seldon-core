@@ -29,9 +29,9 @@ import (
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
@@ -151,7 +151,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 }
 
 func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
-	v2Client := oip.NewV2Client("localhost", serverPort, logger, false)
+	v2Client := testing_utils.NewV2RestClientForTest("localhost", serverPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		modelscaling.NewModelReplicaLagsKeeper(),
@@ -213,7 +213,7 @@ func TestReverseProxySmoke(t *testing.T) {
 				modelsNotFound: make(map[string]bool),
 				mu:             &sync.Mutex{},
 			}
-			serverPort, err := testing_utils.GetFreePortForTest()
+			serverPort, err := testing_utils2.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -222,7 +222,7 @@ func TestReverseProxySmoke(t *testing.T) {
 				_ = mlserver.ListenAndServe()
 			}()
 
-			rpPort, err := testing_utils.GetFreePortForTest()
+			rpPort, err := testing_utils2.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -387,7 +387,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 				modelsNotFound: make(map[string]bool),
 				mu:             &sync.Mutex{},
 			}
-			serverPort, err := testing_utils.GetFreePortForTest()
+			serverPort, err := testing_utils2.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}

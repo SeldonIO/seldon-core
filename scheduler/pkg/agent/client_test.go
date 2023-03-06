@@ -177,7 +177,7 @@ func (m *mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server 
 }
 
 func createTestV2Client(models []string, status int) interfaces.V2Client {
-	v2, _ := createTestV2ClientwithState(models, status)
+	v2, _ := testing_utils.CreateTestV2ClientwithState(models, status)
 	return v2
 }
 
@@ -202,7 +202,7 @@ func TestClientCreate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -339,7 +339,7 @@ func TestLoadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -491,7 +491,7 @@ parameters:
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -619,7 +619,7 @@ func TestUnloadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
-			httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
@@ -690,7 +690,7 @@ func TestClientClose(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	v2Client := createTestV2Client(nil, 200)
-	httpmock.ActivateNonDefault(v2Client.(*oip.V2Client).HttpClient)
+	httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	defer httpmock.DeactivateAndReset()
 	modelRepository := FakeModelRepository{}
 	rpHTTP := FakeDependencyService{err: nil}
@@ -783,7 +783,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 
 			time.Sleep(50 * time.Millisecond)
 
-			v2Client := oip.NewV2Client("", backEndGRPCPort, log.New(), true)
+			v2Client := oip.NewV2Client("", backEndGRPCPort, log.New())
 
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}
