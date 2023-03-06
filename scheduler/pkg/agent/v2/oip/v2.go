@@ -43,7 +43,7 @@ import (
 
 type V2Client struct {
 	HttpClient *http.Client
-	GrpcClient v2.GRPCInferenceServiceClient
+	grpcClient v2.GRPCInferenceServiceClient
 	host       string
 	httpPort   int
 	grpcPort   int
@@ -95,7 +95,7 @@ func NewV2Client(host string, port int, logger log.FieldLogger, isGrpc bool) *V2
 		return &V2Client{
 			host:       host,
 			grpcPort:   port,
-			GrpcClient: grpcClient,
+			grpcClient: grpcClient,
 			logger:     logger.WithField("Source", "V2InferenceServerClientGrpc"),
 			isGrpc:     isGrpc,
 		}
@@ -213,7 +213,7 @@ func (v *V2Client) loadModelGrpc(name string) *interfaces.V2Err {
 		ModelName: name,
 	}
 
-	_, err := v.GrpcClient.RepositoryModelLoad(ctx, req)
+	_, err := v.grpcClient.RepositoryModelLoad(ctx, req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
@@ -254,7 +254,7 @@ func (v *V2Client) unloadModelGrpc(name string) *interfaces.V2Err {
 		ModelName: name,
 	}
 
-	_, err := v.GrpcClient.RepositoryModelUnload(ctx, req)
+	_, err := v.grpcClient.RepositoryModelUnload(ctx, req)
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			errCode := e.Code()
@@ -308,7 +308,7 @@ func (v *V2Client) liveGrpc() (bool, error) {
 	ctx := context.Background()
 	req := &v2.ServerLiveRequest{}
 
-	res, err := v.GrpcClient.ServerLive(ctx, req)
+	res, err := v.grpcClient.ServerLive(ctx, req)
 	if err != nil {
 		return false, err
 	}
@@ -329,7 +329,7 @@ func (v *V2Client) getModelsGrpc() ([]interfaces.ServerModelInfo, error) {
 	ctx := context.Background()
 	req := &v2.RepositoryIndexRequest{}
 
-	res, err := v.GrpcClient.RepositoryIndex(ctx, req)
+	res, err := v.grpcClient.RepositoryIndex(ctx, req)
 	if err != nil {
 		return nil, err
 	}
