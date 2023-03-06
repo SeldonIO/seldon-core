@@ -185,7 +185,7 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 	return manager.LoadModelVersion(modifiedModelVersionRequest)
 }
 
-// this mimics UnoadModel in client.go with regards to locking
+// this mimics UnloadModel in client.go with regards to locking
 func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
