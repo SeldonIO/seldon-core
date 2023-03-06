@@ -28,7 +28,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 
