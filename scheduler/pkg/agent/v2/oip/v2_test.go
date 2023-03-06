@@ -66,7 +66,7 @@ func TestGrpcV2(t *testing.T) {
 	g.Expect(v2Err.IsNotFound()).To(BeTrue())
 
 	mockMLServer.SetModels([]interfaces.ServerModelInfo{
-		{Name: dummModel, State: interfaces.ServerModelState_READY}, 
+		{Name: dummModel, State: interfaces.ServerModelState_READY},
 		{Name: "", State: interfaces.ServerModelState_UNAVAILABLE}})
 	models, err := v2Client.GetModels()
 	g.Expect(err).To(BeNil())
