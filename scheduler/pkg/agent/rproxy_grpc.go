@@ -28,7 +28,7 @@ import (
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/v2/oip"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
