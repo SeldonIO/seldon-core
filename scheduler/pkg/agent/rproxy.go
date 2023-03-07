@@ -48,7 +48,7 @@ const (
 	disableKeepAlivesHTTP       = false
 	maxConnsPerHostHTTP         = 20
 	defaultTimeoutSeconds       = 5
-	idleConnTimeoutSeconds      = 60
+	idleConnTimeoutSeconds      = 60 * 30
 )
 
 type reverseHTTPProxy struct {
