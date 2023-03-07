@@ -208,6 +208,9 @@ func main() {
 			Port:   cli.InferenceGrpcPort,
 			Logger: logger},
 	)
+	if err != nil {
+		logger.WithError(err).Fatal("Can't create model server control plane client")
+	}
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
