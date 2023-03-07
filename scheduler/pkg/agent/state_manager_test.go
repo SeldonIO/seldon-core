@@ -106,7 +106,7 @@ func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersio
 }
 
 func setupLocalTestManagerWithState(
-	numModels int, modelPrefix string, v2Client interfaces.V2Client,
+	numModels int, modelPrefix string, v2Client interfaces.ModelServerControlPlaneClient,
 	capacity int, numVersions int, overCommitPercentage uint32,
 ) (*LocalStateManager, *testing_utils.V2State) {
 
@@ -137,7 +137,7 @@ func setupLocalTestManagerWithState(
 	return manager, v2ClientState
 }
 
-func setupLocalTestManager(numModels int, modelPrefix string, v2Client interfaces.V2Client, capacity int, numVersions int) *LocalStateManager {
+func setupLocalTestManager(numModels int, modelPrefix string, v2Client interfaces.ModelServerControlPlaneClient, capacity int, numVersions int) *LocalStateManager {
 	manager, _ := setupLocalTestManagerWithState(numModels, modelPrefix, v2Client, capacity, numVersions, 0)
 
 	return manager

@@ -33,7 +33,7 @@ const (
 
 // manages the state associated with models on local agent
 type LocalStateManager struct {
-	v2Client             interfaces.V2Client
+	v2Client             interfaces.ModelServerControlPlaneClient
 	logger               log.FieldLogger
 	modelVersions        *ModelState
 	cache                *cache.CacheTransactionManager
@@ -374,7 +374,7 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 func NewLocalStateManager(
 	modelVersions *ModelState,
 	logger log.FieldLogger,
-	v2Client interfaces.V2Client,
+	v2Client interfaces.ModelServerControlPlaneClient,
 	totalMainMemoryBytes uint64,
 	overCommitPercentage uint32,
 	metrics metrics.AgentMetricsHandler,

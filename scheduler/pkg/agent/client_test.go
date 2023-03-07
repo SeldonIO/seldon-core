@@ -176,7 +176,7 @@ func (m *mockAgentV2Server) Subscribe(request *pb.AgentSubscribeRequest, server 
 	return nil
 }
 
-func createTestV2Client(models []string, status int) interfaces.V2Client {
+func createTestV2Client(models []string, status int) interfaces.ModelServerControlPlaneClient {
 	v2, _ := testing_utils.CreateTestV2ClientwithState(models, status)
 	return v2
 }

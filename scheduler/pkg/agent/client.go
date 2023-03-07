@@ -139,7 +139,7 @@ func NewClient(
 	settings *ClientSettings,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
-	v2Client interfaces.V2Client,
+	v2Client interfaces.ModelServerControlPlaneClient,
 	replicaConfig *agent.ReplicaConfig,
 	namespace string,
 	reverseProxyHTTP interfaces.DependencyServiceInterface,

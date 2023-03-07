@@ -20,6 +20,7 @@ import (
 	"errors"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 )
 
@@ -76,10 +77,16 @@ type V2ServerError struct {
 	Error string `json:"error"`
 }
 
+type ModelServerConfig struct {
+	Host   string
+	Port   int
+	Logger log.FieldLogger
+}
+
 var ErrControlPlaneBadRequest = errors.New("ControlPlane Bad Request")
 var ErrServerNotReady = errors.New("Server not ready")
 
-type V2Client interface {
+type ModelServerControlPlaneClient interface {
 	LoadModel(name string) *ControlPlaneErr
 	UnloadModel(name string) *ControlPlaneErr
 	Live() error

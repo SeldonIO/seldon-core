@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright 2023 Seldon Technologies Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceC
 }
 
 func NewV2Client(host string, port int, logger log.FieldLogger) *V2Client {
-	logger.Infof("V2 Inference Server %s:%d", host, port)
+	logger.Infof("V2 (OIP) Inference Server %s:%d", host, port)
 
 	grpcClient, err := createV2ControlPlaneClient(host, port)
 	if err != nil {
