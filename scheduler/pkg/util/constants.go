@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright 2023 Seldon Technologies Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ const (
 	DisableKeepAlivesHTTP       = false
 	MaxConnsPerHostHTTP         = 20
 	DefaultTimeoutSeconds       = 5
-	IdleConnTimeoutSeconds      = 60
+	IdleConnTimeoutSeconds      = 60 * 30
 )
 
 const (
