@@ -4,7 +4,7 @@
 
 You need kubebuilder envtest assets for tests to run see [here](https://book.kubebuilder.io/reference/envtest.html).
 
-Note if you update k8s version APIs and don't update kubebuilder assets you will get test failures as tests run `kube-apiserver` and `etcd` from these assets which need to include the correct version of kubernetes.
+Note if you update K8s version APIs and don't update kubebuilder assets you will get test failures as tests run `kube-apiserver` and `etcd` from these assets which need to include the correct version of kubernetes.
 
 ### Prerequisites
 
