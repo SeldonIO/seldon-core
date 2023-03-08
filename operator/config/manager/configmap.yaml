@@ -37,7 +37,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.3-sklearn"
+              "defaultImageVersion": "1.2.4-sklearn"
               }
             }
         },
@@ -49,7 +49,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.3-xgboost"
+              "defaultImageVersion": "1.2.4-xgboost"
               }
             }
         },
@@ -61,7 +61,7 @@ data:
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.3-mlflow"
+              "defaultImageVersion": "1.2.4-mlflow"
               }
             }
         },
@@ -77,7 +77,7 @@ data:
           "protocols" : {
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.3-huggingface"
+              "defaultImageVersion": "1.2.4-huggingface"
               }
             }
         },
@@ -85,7 +85,7 @@ data:
           "protocols" : {
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.2.3-slim"
+              "defaultImageVersion": "1.2.4-slim"
               }
             }
         }
@@ -101,5 +101,5 @@ data:
   explainer: |-
     {
         "image" : "seldonio/alibiexplainer:1.16.0-dev",
-        "image_v2" : "seldonio/mlserver:1.2.3-alibi-explain"
+        "image_v2" : "seldonio/mlserver:1.2.4-alibi-explain"
     }
