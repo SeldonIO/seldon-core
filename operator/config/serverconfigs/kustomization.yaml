@@ -13,7 +13,7 @@ images:
   newTag: latest
 - name: mlserver
   newName: seldonio/mlserver
-  newTag: 1.2.3
+  newTag: 1.2.4
 - name: rclone
   newName: seldonio/seldon-rclone
   newTag: latest
