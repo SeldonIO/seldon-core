@@ -26,6 +26,7 @@ import (
 
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/constants"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	autoscalingv2beta1 "k8s.io/api/autoscaling/v2beta1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -508,6 +509,7 @@ type SeldonHpaSpec struct {
 	MinReplicas *int32                          `json:"minReplicas,omitempty" protobuf:"int,1,opt,name=minReplicas"`
 	MaxReplicas int32                           `json:"maxReplicas" protobuf:"int,2,opt,name=maxReplicas"`
 	Metrics     []autoscalingv2beta1.MetricSpec `json:"metrics,omitempty" protobuf:"bytes,3,opt,name=metrics"`
+	Metricsv2   []autoscalingv2.MetricSpec      `json:"metricsv2,omitempty" protobuf:"bytes,4,opt,name=metricsv2"`
 }
 
 type SeldonPdbSpec struct {

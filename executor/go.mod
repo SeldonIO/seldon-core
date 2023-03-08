@@ -96,7 +96,7 @@ replace github.com/tensorflow/tensorflow/tensorflow/go/core => ./proto/tensorflo
 
 replace github.com/seldonio/seldon-core/operator => ./_operator
 
-replace k8s.io/client-go => k8s.io/client-go v0.24.1
+replace k8s.io/client-go => k8s.io/client-go v0.24.2
 
 replace github.com/codahale/hdrhistogram => github.com/HdrHistogram/hdrhistogram-go v1.1.2
 
