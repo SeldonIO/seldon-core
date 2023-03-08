@@ -34,6 +34,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	controlplane_factory "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/factory"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
 
@@ -199,8 +200,17 @@ func main() {
 		cli.EnvoyPort,
 	)
 
-	// Create V2 Protocol Handler
-	v2Client := agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
+	// Create moddel server control plane client
+	modelServerControlPlaneClient, err := controlplane_factory.CreateModelServerControlPlane(
+		cli.ServerType,
+		interfaces.ModelServerConfig{
+			Host:   cli.InferenceHost,
+			Port:   cli.InferenceGrpcPort,
+			Logger: logger},
+	)
+	if err != nil {
+		logger.WithError(err).Fatal("Can't create model server control plane client")
+	}
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
@@ -282,7 +292,7 @@ func main() {
 		),
 		logger,
 		modelRepository,
-		v2Client,
+		modelServerControlPlaneClient,
 		createReplicaConfig(),
 		cli.Namespace,
 		rpHTTP,

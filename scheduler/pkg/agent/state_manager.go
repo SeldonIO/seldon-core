@@ -22,6 +22,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	cache "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/cache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,7 +33,7 @@ const (
 
 // manages the state associated with models on local agent
 type LocalStateManager struct {
-	v2Client             *V2Client
+	v2Client             interfaces.ModelServerControlPlaneClient
 	logger               log.FieldLogger
 	modelVersions        *ModelState
 	cache                *cache.CacheTransactionManager
@@ -101,13 +102,13 @@ func (manager *LocalStateManager) LoadModelVersion(modelVersionDetails *agent.Mo
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
 			manager.logger.WithError(err).Warnf("Could not update memory for model %s", modelId)
 		}
-		return err.err
+		return err.Err
 	}
 
 	if err := manager.cache.AddDefault(modelId); err != nil {
 		manager.logger.WithError(err).Infof("Cannot load model %s, aborting", modelId)
 		if err := manager.v2Client.UnloadModel(modelId); err != nil {
-			manager.logger.WithError(err.err).Warnf("Model unload failed %s", modelId)
+			manager.logger.WithError(err.Err).Warnf("Model unload failed %s", modelId)
 		}
 		if err := manager.updateAvailableMemory(memBytesToLoad, false); err != nil {
 			manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
@@ -145,8 +146,8 @@ func (manager *LocalStateManager) UnloadModelVersion(modelVersionDetails *agent.
 			if err.IsNotFound() {
 				manager.logger.Warnf("Model is not found on server %s", modelId)
 			} else {
-				manager.logger.WithError(err.err).Errorf("Cannot unload model %s from server", modelId)
-				return err.err
+				manager.logger.WithError(err.Err).Errorf("Cannot unload model %s from server", modelId)
+				return err.Err
 			}
 		}
 
@@ -209,11 +210,11 @@ func (manager *LocalStateManager) EnsureLoadModel(modelId string) error {
 		}
 
 		if err := manager.v2Client.LoadModel(modelId); err != nil {
-			manager.logger.WithError(err.err).Errorf("Cannot reload %s", modelId)
+			manager.logger.WithError(err.Err).Errorf("Cannot reload %s", modelId)
 			if err := manager.updateAvailableMemory(modelMemoryBytes, false); err != nil {
 				manager.logger.WithError(err).Warnf("Could not update memory %s", modelId)
 			}
-			return err.err
+			return err.Err
 		}
 
 		if err := manager.cache.AddDefault(modelId); err != nil {
@@ -345,13 +346,13 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 
 			if !err.IsNotFound() {
 				errStr := fmt.Sprintf("Cannot unload model %s (for reload model %s)", evictedModelId, modelId)
-				manager.logger.WithError(err.err).Error(errStr)
+				manager.logger.WithError(err.Err).Error(errStr)
 				endEvictFn()
 				// add the model back to cache
 				if err := manager.cache.Add(evictedModelId, evictedModelVal); err != nil {
 					manager.logger.Warn(err)
 				}
-				return err.err
+				return err.Err
 			} else {
 				manager.logger.Warnf("Server does not have model %s", evictedModelId)
 			}
@@ -373,7 +374,7 @@ func (manager *LocalStateManager) makeRoomIfNeeded(modelId string, modelMemoryBy
 func NewLocalStateManager(
 	modelVersions *ModelState,
 	logger log.FieldLogger,
-	v2Client *V2Client,
+	v2Client interfaces.ModelServerControlPlaneClient,
 	totalMainMemoryBytes uint64,
 	overCommitPercentage uint32,
 	metrics metrics.AgentMetricsHandler,

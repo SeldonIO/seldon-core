@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -109,7 +110,7 @@ func TestGrpcServer(t *testing.T) {
 	}
 
 	testRequestId := "test-id"
-	port, err := getFreePort()
+	port, err := testing_utils.GetFreePortForTest()
 	g.Expect(err).To(BeNil())
 	mockInferer := &fakePipelineInferer{
 		err:  nil,

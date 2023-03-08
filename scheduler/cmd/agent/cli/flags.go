@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,7 +37,7 @@ func makeArgs() {
 	flag.StringVar(&InferenceHost, "inference-host", "0.0.0.0", "Inference server host")
 	flag.IntVar(&InferenceHttpPort, flagInferenceHttpPort, defaultInferenceHttpPort, "Inference server http port")
 	flag.IntVar(&InferenceGrpcPort, flagInferenceGrpcPort, defaultInferenceGrpcPort, "Inference server grpc port")
-	flag.IntVar(&ReverseProxyHttpPort, flagReverseProxyHttpPort, agent.DefaultReverseProxyHTTPPort, "Reverse proxy http port")
+	flag.IntVar(&ReverseProxyHttpPort, flagReverseProxyHttpPort, util.DefaultReverseProxyHTTPPort, "Reverse proxy http port")
 	flag.IntVar(&ReverseProxyGrpcPort, flagReverseProxyGrpcPort, agent.ReverseGRPCProxyPort, "Reverse proxy grpc port")
 	flag.IntVar(&DebugGrpcPort, flagDebugGrpcPort, agent.GRPCDebugServicePort, "Debug grpc port")
 	flag.IntVar(&MetricsPort, flagMetricsPort, defaultMetricsPort, "Metrics port")

@@ -14,24 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package controlplane_factory
 
-import "time"
-
-const (
-	// REST constants
-	DefaultReverseProxyHTTPPort = 9999
-	MaxIdleConnsHTTP            = 10
-	MaxIdleConnsPerHostHTTP     = 10
-	DisableKeepAlivesHTTP       = false
-	MaxConnsPerHostHTTP         = 20
-	DefaultTimeoutSeconds       = 5
-	IdleConnTimeoutSeconds      = 60 * 30
+import (
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
 )
 
-const (
-	GrpcRetryBackoffMillisecs         = 100
-	GrpcRetryMaxCount                 = 5 // around 3.2s in total wait duration
-	GrpcMaxMsgSizeBytes               = 1000 * 1024 * 1024
-	EnvoyUpdateDefaultBatchWaitMillis = 250 * time.Millisecond
-)
+func CreateModelServerControlPlane(
+	modelServerType string,
+	config interfaces.ModelServerConfig,
+) (interfaces.ModelServerControlPlaneClient, error) {
+	// we only support v2 for now
+	return oip.NewV2Client(config.Host, config.Port, config.Logger), nil
+}

@@ -17,7 +17,6 @@ limitations under the License.
 package drainservice
 
 import (
-	"net"
 	"net/http"
 	"strconv"
 	"sync"
@@ -25,30 +24,16 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	log "github.com/sirupsen/logrus"
 )
-
-// TODO: refactor as this is a copy from another test
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
-}
 
 func TestDrainerServiceSmoke(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	serverPort, err := getFreePort()
+	serverPort, err := testing_utils.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +78,7 @@ func TestDrainerServiceSmokeNoDraining(t *testing.T) {
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	serverPort, err := getFreePort()
+	serverPort, err := testing_utils.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +109,7 @@ func TestDrainerServiceEarlyStop(t *testing.T) {
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	serverPort, err := getFreePort()
+	serverPort, err := testing_utils.GetFreePortForTest()
 	if err != nil {
 		t.Fatal(err)
 	}
