@@ -108,7 +108,7 @@ To autoscale your Seldon Deployment resources you can add Horizontal Pod Templat
   1. Ensure you have a resource request for the metric you want to scale on if it is a standard metric such as cpu or memory. This has to be done for every container in the seldondeployment, except for the seldon-container-image and the storage initializer. Some combinations of protocol and server type may spawn additional support containers; resource requests have to be added to those containers as well.
   2. Add a HPA Spec referring to this Deployment.
 
-We presently support the `v2beta1` definition in the exisitng `metrics` field as well as the `v2` definition in the `metricsv2` field of the SeldonDeployment `hpaSpec`. In both cases they will create a k8s `v2` HPA which means you will need to be running a Kubernetes cluster of >= 1.23.
+We presently support the `autoscaling/v2beta1` definition in the existing `metrics` field as well as the `autoscaling/v2` definition in the `metricsv2` field of the SeldonDeployment `hpaSpec`. In both cases they will create a K8s `autoscaling/v2` HPA which means you will need to be running a [Kubernetes cluster of >= 1.23](https://kubernetes.io/docs/reference/using-api/deprecation-guide/#horizontalpodautoscaler-v125).
 
 To illustrate this we have an example Seldon Deployment below with the `v2` definition:
 
