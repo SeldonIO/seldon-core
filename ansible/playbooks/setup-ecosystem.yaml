@@ -1,22 +1,24 @@
 ---
-- name: Setup SCV2 Ecosystem
+- name: Setup Seldon Core v2 Ecosystem
   hosts: localhost
   roles:
-    - ecosystem
+  - ecosystem
   vars:
-    vars_file: vars/default.yaml
     full_install: yes
 
     install_prometheus: "{{ full_install }}"
-    install_kafka: "{{ full_install }}"
+    install_strimzi: "{{ full_install }}"
     install_certmanager: "{{ full_install }}"
     install_jaeger: "{{ full_install }}"
     install_opentelemetry: "{{ full_install }}"
 
-    ecosystem_configure_prometheus: "{{ install_prometheus }}"
-    ecosystem_configure_kafka: "{{ install_kafka }}"
-    ecosystem_configure_jaeger: "{{ install_jaeger }}"
-    ecosystem_configure_opentelemetry: "{{ install_opentelemetry }}"
+    configure_prometheus: "{{ install_prometheus }}"
+    configure_kafka: "{{ install_strimzi }}"
+    configure_jaeger: "{{ install_jaeger }}"
+    configure_opentelemetry: "{{ install_opentelemetry }}"
+
+    # Overwrite this variable if you want to DO NOT want to include any variable from defaults
+    vars_file: vars/default.yaml
 
   pre_tasks:
   - name: "Load vars from {{ vars_file }}"

@@ -1,0 +1,24 @@
+---
+- name: Check if Kind {{ kind_version }} already downloaded
+  stat:
+    path: "{{ seldon_cache_directory }}/kind-{{ kind_version }}"
+  register: kind_binary
+
+- name: "Create resources directory if does not exist: {{ seldon_cache_directory }}/"
+  ansible.builtin.file:
+    path: "{{ seldon_cache_directory }}/"
+    state: directory
+    mode: '0755'
+
+- name: Download Kind {{ kind_version }} binary
+  shell: "curl -Lo kind-{{ kind_version }} {{ kind_url }}"
+  args:
+    chdir: "{{ seldon_cache_directory }}"
+    warn: false
+  when: kind_binary.stat.exists == false
+
+- name: Make Kind {{ kind_version }} binary executable
+  ansible.builtin.file:
+    path: "{{ seldon_cache_directory }}/kind-{{ kind_version }}"
+    state: file
+    mode: '0755'

@@ -1,0 +1,7 @@
+---
+opentelemetry_namespace: opentelemetry-operator-system
+
+opentelemetry_version: v0.49.0
+opentelemetry_yaml: "https://github.com/open-telemetry/opentelemetry-operator/releases/download/{{ opentelemetry_version }}/opentelemetry-operator.yaml"
+
+opentelemetry_wait_for_deployments: true

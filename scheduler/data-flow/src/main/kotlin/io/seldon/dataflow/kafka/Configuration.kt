@@ -99,6 +99,8 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
+        this[StreamsConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
 
         // Security
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
@@ -139,10 +141,13 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
         this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
         this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ConsumerConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ConsumerConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
         this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60000
 
         this[ProducerConfig.LINGER_MS_CONFIG] = 0
         this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ProducerConfig.BUFFER_MEMORY_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
     }
 }
 

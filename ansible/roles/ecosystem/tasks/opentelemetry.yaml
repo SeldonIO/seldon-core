@@ -1,5 +1,5 @@
 - include_role:
-    name: seldonio.k8s.opentelemetry
+    name: opentelemetry
   when: install_opentelemetry | bool
 
 - name: Configure OpenTelemetry
@@ -9,4 +9,4 @@
     template: "{{ repo_root_dir }}/{{ item }}"
   with_items:
     - tracing/k8s/otel-collector.yaml
-  when: ecosystem_configure_opentelemetry | bool
+  when: configure_opentelemetry | bool

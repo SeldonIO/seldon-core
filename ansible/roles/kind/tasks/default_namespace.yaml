@@ -1,0 +1,18 @@
+---
+- name: "Create a k8s namespace: {{ kind_kubectl_default_namespace }}"
+  kubernetes.core.k8s:
+    name: "{{ kind_kubectl_default_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+  when: kind_kubectl_default_namespace is not none
+
+- name: "Set default for kubectl namespace: {{ kind_kubectl_default_namespace }}"
+  command:
+    argv:
+      - kubectl
+      - config
+      - set-context
+      - --current
+      - --namespace={{ kind_kubectl_default_namespace }}
+  when: kind_kubectl_default_namespace is not none

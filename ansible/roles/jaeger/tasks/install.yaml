@@ -1,0 +1,25 @@
+---
+- name: Install Jaeger Operator
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ jaeger_namespace }}"
+    definition: "{{ lookup('url', item, split_lines=False) }}"
+  with_items:
+  - "{{ jaeger_yaml }}"
+
+- name: Sleep for 1s before waiting for CRDs
+  wait_for:
+    timeout: 1
+  when: jaeger_wait_for_deployments | bool
+
+- name: "Wait for Jaeger CRDs"
+  shell: "kubectl wait --for condition=established --timeout 60s {{ item }}"
+  with_items:
+  - crd/jaegers.jaegertracing.io
+  when: jaeger_wait_for_deployments | bool
+
+- name: "Wait for Jaeger Deployment"
+  shell: "kubectl rollout status -n {{ jaeger_namespace }} deploy/{{ item }}"
+  with_items:
+  - jaeger-operator
+  when: jaeger_wait_for_deployments | bool

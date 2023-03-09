@@ -10,7 +10,7 @@ PROMETHEUS_IMG ?= prom/prometheus:latest
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
 KAFKA_IMG ?= docker.io/bitnami/kafka:3.3
 ZOOKEEPER_IMG ?= docker.io/bitnami/zookeeper:3.8
-MLSERVER_IMG ?= seldonio/mlserver:1.2.3
+MLSERVER_IMG ?= seldonio/mlserver:1.2.4
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
 PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
@@ -68,7 +68,7 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_VERSION := v1.51.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint: 

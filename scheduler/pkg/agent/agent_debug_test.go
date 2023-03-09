@@ -26,6 +26,7 @@ import (
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -52,7 +53,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 	g.Expect(response.GetAvailableMemoryBytes()).To(Equal(uint64(10)))
 
 	mem := uint64(1)
-	httpmock.ActivateNonDefault(service.stateManager.v2Client.httpClient)
+	httpmock.ActivateNonDefault(service.stateManager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	err = service.stateManager.LoadModelVersion(
 		&pba.ModelVersion{
 			Model: &pbs.Model{

@@ -150,14 +150,7 @@ func (kc *InferKafkaHandler) setup() error {
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
 	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
-		adminConfig := kafka.ConfigMap{
-			config.KafkaBootstrapServers: kc.consumerConfig.KafkaConfig.BootstrapServers,
-		}
-		err = config.AddKafkaSSLOptions(adminConfig)
-		if err != nil {
-			return err
-		}
-		kc.adminClient, err = kafka.NewAdminClient(&adminConfig)
+		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
 		if err != nil {
 			return err
 		}

@@ -1,17 +1,13 @@
 ---
 - include_role:
-    name: seldonio.k8s.strimzi_kafka
-  when: install_kafka | bool
+    name: strimzi
+  when: install_strimzi | bool
 
 - name: "Create Kafka Cluster"
   kubernetes.core.helm:
     state: present
-    force: yes
     namespace: "{{ seldon_kafka_namespace }}"
     name: "seldon-core-v2-kafka"
     chart_ref: "{{ repo_root_dir }}/kafka/strimzi"
-    values: "{{ kafka_cluster_values }}"
-    values_files: "{{ kafka_cluster_values_files }}"
-    wait: yes
-    wait_timeout: "{{ kafka_wait_timeout }}"
-  when: ecosystem_configure_kafka | bool
+    values: "{{ seldon_kafka_cluster_values }}"
+  when: configure_kafka | bool

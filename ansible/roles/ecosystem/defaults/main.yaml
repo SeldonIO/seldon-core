@@ -1,23 +1,21 @@
 repo_root_dir: "{{ inventory_dir }}/.."
 
 seldon_mesh_namespace: seldon-mesh
-strimzi_kafka_namespace: seldon-mesh
-seldon_kafka_namespace: seldon-mesh
-
-kafka_wait_timeout: "300s"
-kafka_cluster_values: {}
-kafka_cluster_values_files: []
 
 # Installation on/off flags
 install_prometheus: true
-install_kafka: true
+install_strimzi: true
 install_certmanager: true
 install_jaeger: true
 install_opentelemetry: true
 
 # Configuration on/off flags
-ecosystem_configure_prometheus: "{{ install_prometheus }}"
-ecosystem_enable_kraft: "{{ install_kafka }}"
-ecosystem_configure_kafka: "{{ install_kafka }}"
-ecosystem_configure_jaeger: "{{ install_jaeger }}"
-ecosystem_configure_opentelemetry: "{{ install_opentelemetry }}"
+configure_prometheus: "{{ install_prometheus }}"
+enable_kraft: "{{ install_strimzi }}"
+configure_kafka: "{{ install_strimzi }}"
+configure_jaeger: "{{ install_jaeger }}"
+configure_opentelemetry: "{{ install_opentelemetry }}"
+
+# Seldon Kafka Cluster Configuration
+seldon_kafka_namespace: "{{ seldon_mesh_namespace }}"
+seldon_kafka_cluster_values: {}

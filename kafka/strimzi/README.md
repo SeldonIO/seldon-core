@@ -1,30 +1,37 @@
 # Kafka Integration
 
-## Install Kafka
+Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
+To install Kafka for testing purposed in your k8s cluster, we highlight different options:
+## Helm
 
-Clone https://github.com/SeldonIO/ansible-k8s-collection
+The installation of a Kafka cluster requires the Strimzi Kafka operator installed in the same namespace.
 
-Create a kafka operator install in kafka namespace
+One option to install the Strimzi operator is via [Helm](https://strimzi.io/docs/operators/in-development/full/deploying.html#deploying-cluster-operator-helm-chart-str)
 
-create playbooks/kafka_scv2.yaml
+Note that we recommend using KRaft instead of Zookeeper for Kafka. To enable KRaft set `featureGates` during installation via `helm`.
 
-```
-- name: Install Kafka
-  hosts: localhost
-  roles:
-    - strimzi_kafka
-  vars:
-    strimzi_kafka_create_cluster: false
-    strimzi_kafka_create_metrics: false
-```
-
-```
-ansible-playbook playbooks/kafka_scv2.yaml
+```bash
+helm upgrade --install strimzi-kafka-operator \
+  strimzi/strimzi-kafka-operator \
+  --namespace seldon-mesh --create-namespace \
+  --set featureGates='+UseKRaft\,+UseStrimziPodSets'
 ```
 
-Create our Kafka cluster
+Create Kafka cluster in `seldon-mesh` namespace
 
-```
-kubectl create -f cluster.yaml -n kafka
+```bash
+helm upgrade seldon-core-v2-kafka kafka/strimzi -n seldon-mesh --install
 ```
 
+Note that a specific strimzi operator version is assciated with a subset of supported Kafka versions.
+
+## Ansible
+
+We provide automation around the installation of a Kafka cluster for Seldon Core v2 to help with development and testing usecases.
+
+You can follow the steps defined [here](../../ansible/README.md) to install kafka via ansible.
+
+# Notes
+- You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
+- As we recommned using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.3 or above.
+- For security settings check [here](../../docs/source/contents/getting-started/kubernetes-installation/security/index.md#kafka).

@@ -1,0 +1,18 @@
+---
+- name: Get Kind Binary
+  import_tasks: download_kind.yaml
+  when: kind_download_cli | bool
+
+- name: Create Kind Cluster
+  import_tasks: create_cluster.yaml
+
+- name: Create and set default namespace
+  import_tasks: default_namespace.yaml
+
+- name: Install Kubernetes Metrics Server
+  import_tasks: metrics_server.yaml
+  when: kind_metrics_server_enable | bool
+
+- name: Install MetalLB
+  import_tasks: metallb.yaml
+  when: kind_metallb_enable | bool
