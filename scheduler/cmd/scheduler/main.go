@@ -208,7 +208,10 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
-	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap)
+	cs, err := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to start data engine chainer server")
+	}
 	go func() {
 		err := cs.StartGrpcServer(chainerPort)
 		if err != nil {

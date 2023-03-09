@@ -52,7 +52,7 @@ message PipelineTensorMapping {
 message PipelineTopic {
   string pipelineName = 1;
   string topicName = 2;
-  bool tensor = 3;
+  optional string tensor = 3;
 }
 
 message Batch {

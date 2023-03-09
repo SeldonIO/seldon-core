@@ -18,6 +18,7 @@ package kafka
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
@@ -34,6 +35,7 @@ const (
 	outputsSuffix            = "outputs"
 	errorsSuffix             = "errors"
 	TopicErrorHeader         = "seldon-pipeline-errors"
+	TopicSeparator           = "."
 )
 
 type TopicNamer struct {
@@ -41,21 +43,29 @@ type TopicNamer struct {
 	topicPrefix string
 }
 
-func NewTopicNamer(namespace string, topicPrefix string) *TopicNamer {
+var (
+	isValidPrefix = regexp.MustCompile(`^[A-Za-z._-]+$`).MatchString
+)
+
+// Topics can only have a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash)
+func NewTopicNamer(namespace string, topicPrefix string) (*TopicNamer, error) {
 	if namespace == "" {
 		namespace = "default"
 	}
 	if topicPrefix == "" {
 		topicPrefix = defaultSeldonTopicPrefix
 	}
+	if !isValidPrefix(topicPrefix) {
+		return nil, fmt.Errorf("The kafka prefix %s is invalid must only contain a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash) ", topicPrefix)
+	}
 	return &TopicNamer{
 		namespace:   namespace,
-		topicPrefix: fmt.Sprintf("%s.", topicPrefix),
-	}
+		topicPrefix: topicPrefix,
+	}, nil
 }
 
 func (tn *TopicNamer) GetModelErrorTopic() string {
-	return fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, errorsTopic, errorsSuffix)
+	return strings.Join([]string{tn.topicPrefix, tn.namespace, errorsTopic, errorsSuffix}, TopicSeparator)
 }
 
 func (tn *TopicNamer) GetKafkaModelTopicRegex() string {
@@ -64,9 +74,9 @@ func (tn *TopicNamer) GetKafkaModelTopicRegex() string {
 
 func (tn *TopicNamer) GetModelNameFromModelInputTopic(topic string) (string, error) {
 	if !strings.HasPrefix(topic, tn.topicPrefix) {
-		return "", fmt.Errorf("Topic does not have expected prefix %s. Topic = %s", tn.topicPrefix, topic)
+		return "", fmt.Errorf("Topic does not have expectedTopic prefix %s. Topic = %s", tn.topicPrefix, topic)
 	}
-	parts := strings.Split(strings.TrimPrefix(topic, tn.topicPrefix), ".")
+	parts := strings.Split(strings.TrimPrefix(topic, fmt.Sprintf("%s%s", tn.topicPrefix, TopicSeparator)), ".")
 	if len(parts) < 4 {
 		return "", fmt.Errorf("Wrong number of sections in topic %s. Was expecting 5 with separator '.'", topic)
 	}
@@ -77,27 +87,28 @@ func (tn *TopicNamer) GetModelNameFromModelInputTopic(topic string) (string, err
 }
 
 func (tn *TopicNamer) GetModelTopicInputs(modelName string) string {
-	return fmt.Sprintf("%s%s.%s.%s.%s", tn.topicPrefix, tn.namespace, modelTopic, modelName, inputsSuffix)
+	return strings.Join([]string{tn.topicPrefix, tn.namespace, modelTopic, modelName, inputsSuffix}, TopicSeparator)
 }
 
 func (tn *TopicNamer) GetModelTopicOutputs(modelName string) string {
-	return fmt.Sprintf("%s%s.%s.%s.%s", tn.topicPrefix, tn.namespace, modelTopic, modelName, outputsSuffix)
+	return strings.Join([]string{tn.topicPrefix, tn.namespace, modelTopic, modelName, outputsSuffix}, TopicSeparator)
 }
 
 func (tn *TopicNamer) GetPipelineTopicInputs(pipelineName string) string {
-	return fmt.Sprintf("%s%s.%s.%s.%s", tn.topicPrefix, tn.namespace, pipelineTopic, pipelineName, inputsSuffix)
+	return strings.Join([]string{tn.topicPrefix, tn.namespace, pipelineTopic, pipelineName, inputsSuffix}, TopicSeparator)
 }
 
 func (tn *TopicNamer) GetPipelineTopicOutputs(pipelineName string) string {
-	return fmt.Sprintf("%s%s.%s.%s.%s", tn.topicPrefix, tn.namespace, pipelineTopic, pipelineName, outputsSuffix)
+	return strings.Join([]string{tn.topicPrefix, tn.namespace, pipelineTopic, pipelineName, outputsSuffix}, TopicSeparator)
 }
 
-func (tn *TopicNamer) GetModelOrPipelineTopic(pipelineName string, stepReference string) string {
+func (tn *TopicNamer) GetModelOrPipelineTopicAndTensor(pipelineName string, stepReference string) (string, *string) {
 	stepName := strings.Split(stepReference, pipeline.StepNameSeperator)[0]
+	stepReference, tensor := tn.getTopicReferenceAndTensor(stepReference)
 	if stepName == pipelineName {
-		return fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, pipelineTopic, stepReference)
+		return strings.Join([]string{tn.topicPrefix, tn.namespace, pipelineTopic, stepReference}, TopicSeparator), tensor
 	} else {
-		return fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, modelTopic, stepReference)
+		return strings.Join([]string{tn.topicPrefix, tn.namespace, modelTopic, stepReference}, TopicSeparator), tensor
 	}
 
 }
@@ -108,9 +119,9 @@ func (tn *TopicNamer) GetFullyQualifiedTensorMap(pipelineName string, userTensor
 		stepName := strings.Split(k, pipeline.StepNameSeperator)[0]
 		var topicAndTensor string
 		if stepName == pipelineName {
-			topicAndTensor = fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, pipelineTopic, k)
+			topicAndTensor = strings.Join([]string{tn.topicPrefix, tn.namespace, pipelineTopic, k}, TopicSeparator)
 		} else {
-			topicAndTensor = fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, modelTopic, k)
+			topicAndTensor = strings.Join([]string{tn.topicPrefix, tn.namespace, modelTopic, k}, TopicSeparator)
 		}
 		mappings = append(mappings, &chainer.PipelineTensorMapping{
 			PipelineName:   pipelineName,
@@ -128,10 +139,10 @@ func (tn *TopicNamer) GetFullyQualifiedPipelineTensorMap(tin map[string]string) 
 		var topicAndTensor string
 		switch len(parts) {
 		case 3: // A pipeline reference <pipelineName>.<inputs|outputs>.<tensorName>
-			topicAndTensor = fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, pipelineTopic, k)
+			topicAndTensor = strings.Join([]string{tn.topicPrefix, tn.namespace, pipelineTopic, k}, TopicSeparator)
 		case 5: // A fully qualified pipeline step tensor  <pipelineName>.step.<stepName>.<inputs|outputs>.<tensorName>
 			// take value after <pipelineName>.step
-			topicAndTensor = fmt.Sprintf("%s%s.%s.%s", tn.topicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], pipeline.StepNameSeperator))
+			topicAndTensor = strings.Join([]string{tn.topicPrefix, tn.namespace, modelTopic, strings.Join(parts[2:], TopicSeparator)}, TopicSeparator)
 		}
 		mappings = append(mappings, &chainer.PipelineTensorMapping{
 			PipelineName:   parts[0],
@@ -164,6 +175,15 @@ func (tn *TopicNamer) CreateStepReferenceFromPipelineInput(pipelineInputs string
 // 1. step
 // 2. step.(inputs|outputs)
 // 3. step.(inputs|outputs).tensor
-func (tn *TopicNamer) IsReferenceTensor(reference string) bool {
-	return len(strings.Split(reference, ".")) > 2
+// Return the repference with tensor if there is one else just return reference
+func (tn *TopicNamer) getTopicReferenceAndTensor(reference string) (string, *string) {
+	parts := strings.Split(reference, TopicSeparator)
+	numParts := len(parts)
+	if numParts > 2 {
+		tensor := parts[numParts-1]
+		suffix := fmt.Sprintf("%s%s", TopicSeparator, tensor)
+		return strings.TrimSuffix(reference, suffix), &tensor
+	} else {
+		return reference, nil
+	}
 }

@@ -38,12 +38,18 @@ func TestCreateTopicSources(t *testing.T) {
 		sources      []*chainer.PipelineTopic
 	}
 
+	getPtrStr := func(val string) *string { return &val }
+	createTopicNamer := func(namespace string, topicPrefix string) *kafka.TopicNamer {
+		tn, err := kafka.NewTopicNamer(namespace, topicPrefix)
+		g.Expect(err).To(BeNil())
+		return tn
+	}
 	tests := []test{
 		{
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("default", "seldon"),
+				topicNamer: createTopicNamer("default", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs: []string{
@@ -52,21 +58,21 @@ func TestCreateTopicSources(t *testing.T) {
 				"c.inputs.t1",
 			},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: false},
-				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: false},
-				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1", Tensor: true},
+				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: nil},
+				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: nil},
+				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs", Tensor: getPtrStr("t1")},
 			},
 		},
 		{
 			name: "default inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("ns1", "seldon"),
+				topicNamer: createTopicNamer("ns1", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs:       []string{},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "p1", TopicName: "seldon.ns1.pipeline.p1.inputs", Tensor: false},
+				{PipelineName: "p1", TopicName: "seldon.ns1.pipeline.p1.inputs", Tensor: nil},
 			},
 		},
 	}
@@ -89,12 +95,18 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 		sources      []*chainer.PipelineTopic
 	}
 
+	getPtrStr := func(val string) *string { return &val }
+	createTopicNamer := func(namespace string, topicPrefix string) *kafka.TopicNamer {
+		tn, err := kafka.NewTopicNamer(namespace, topicPrefix)
+		g.Expect(err).To(BeNil())
+		return tn
+	}
 	tests := []test{
 		{
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("default", "seldon"),
+				topicNamer: createTopicNamer("default", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs: []string{
@@ -105,11 +117,11 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 				"foo.step.bar.inputs.tensora",
 			},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.inputs", Tensor: false},
-				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.outputs", Tensor: false},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs", Tensor: false},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.outputs", Tensor: false},
-				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs.tensora", Tensor: true},
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.inputs", Tensor: nil},
+				{PipelineName: "foo", TopicName: "seldon.default.pipeline.foo.outputs", Tensor: nil},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs", Tensor: nil},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.outputs", Tensor: nil},
+				{PipelineName: "foo", TopicName: "seldon.default.model.bar.inputs", Tensor: getPtrStr("tensora")},
 			},
 		},
 	}
@@ -132,12 +144,18 @@ func TestCreateTriggerSources(t *testing.T) {
 		sources      []*chainer.PipelineTopic
 	}
 
+	createTopicNamer := func(namespace string, topicPrefix string) *kafka.TopicNamer {
+		tn, err := kafka.NewTopicNamer(namespace, topicPrefix)
+		g.Expect(err).To(BeNil())
+		return tn
+	}
+	getPtrStr := func(val string) *string { return &val }
 	tests := []test{
 		{
 			name: "misc inputs",
 			server: &ChainerServer{
 				logger:     log.New(),
-				topicNamer: kafka.NewTopicNamer("default", "seldon"),
+				topicNamer: createTopicNamer("default", "seldon"),
 			},
 			pipelineName: "p1",
 			inputs: []string{
@@ -146,9 +164,9 @@ func TestCreateTriggerSources(t *testing.T) {
 				"c.inputs.t1",
 			},
 			sources: []*chainer.PipelineTopic{
-				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: false},
-				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: false},
-				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs.t1", Tensor: true},
+				{PipelineName: "p1", TopicName: "seldon.default.model.a", Tensor: nil},
+				{PipelineName: "p1", TopicName: "seldon.default.model.b.inputs", Tensor: nil},
+				{PipelineName: "p1", TopicName: "seldon.default.model.c.inputs", Tensor: getPtrStr("t1")},
 			},
 		},
 	}

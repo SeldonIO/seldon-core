@@ -18,6 +18,7 @@ The top level keys are:
  * `producer` : producer settings
  * `streams` : KStreams settings
 
+For `topicPrefix` you can use any acceptable kafka topic characters which are `a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash)`. We use `.` (dot) internally as topic naming separator so we would suggest you don't end your topic prefix with a dot for clarity. For illustration, an example topic could be `seldon.default.model.mymodel.inputs` where `seldon` is the topic prefix.
 
 ### Kubernetes
 

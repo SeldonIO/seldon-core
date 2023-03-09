@@ -81,11 +81,15 @@ func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig
 	if err != nil {
 		return nil, err
 	}
+	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix)
+	if err != nil {
+		return nil, err
+	}
 	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
 		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:        kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix),
+		topicNamer:        topicNamer,
 		loadedModels:      make(map[string]bool),
 		subscribedTopics:  make(map[string]bool),
 		consumerConfig:    consumerConfig,
