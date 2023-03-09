@@ -19,10 +19,7 @@ jobs:
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        skip-pkg-cache: true
       run: |
-        # make -C operator fmt
         snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-scheduler:
@@ -33,10 +30,7 @@ jobs:
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        skip-pkg-cache: true
       run: |
-        # make -C scheduler lint
         snyk test --file=scheduler/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-image-operator:
