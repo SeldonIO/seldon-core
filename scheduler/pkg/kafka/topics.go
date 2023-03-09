@@ -175,7 +175,7 @@ func (tn *TopicNamer) CreateStepReferenceFromPipelineInput(pipelineInputs string
 // 1. step
 // 2. step.(inputs|outputs)
 // 3. step.(inputs|outputs).tensor
-// Return the repference with tensor if there is one else just return reference
+// Return the reference with tensor if there is one else just return reference
 func (tn *TopicNamer) getTopicReferenceAndTensor(reference string) (string, *string) {
 	parts := strings.Split(reference, TopicSeparator)
 	numParts := len(parts)
