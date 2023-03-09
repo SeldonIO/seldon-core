@@ -96,7 +96,7 @@ services:
       - "local_metrics"
 
   jaeger-all-in-one:
-    image: jaegertracing/all-in-one:latest
+    image: ${JAEGER_IMG}
     ports:
       - "16686:16686"
       - "14268"
