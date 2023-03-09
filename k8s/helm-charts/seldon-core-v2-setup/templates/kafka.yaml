@@ -7,6 +7,7 @@ data:
    {
       "bootstrap.servers": "{{ .Values.kafka.bootstrap }}",
       "debug": "{{ .Values.kafka.debug }}",
+      "topicPrefix": "{{ .Values.kafka.topicPrefix }}",
       "consumer":{
          "session.timeout.ms": {{ .Values.kafka.consumer.sessionTimeoutMs }},
          "auto.offset.reset": "{{ .Values.kafka.consumer.autoOffsetReset }}",

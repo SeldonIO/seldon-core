@@ -76,17 +76,22 @@ type Request struct {
 	errorModel string
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig,
+	traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
+	if err != nil {
+		return nil, err
+	}
 	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
 		kafkaConfig:     kafkaConfig,
 		logger:          logger.WithField("source", "KafkaManager"),
-		topicNamer:      kafka2.NewTopicNamer(namespace),
+		topicNamer:      topicNamer,
 		tracer:          tracer,
 		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},
 	}
-	err := km.createProducer()
+	err = km.createProducer()
 	if err != nil {
 		return nil, err
 	}

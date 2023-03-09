@@ -71,6 +71,30 @@ public object PipelineTopicKt {
     public fun clearTopicName() {
       _builder.clearTopicName()
     }
+
+    /**
+     * <code>optional string tensor = 3;</code>
+     */
+    public var tensor: kotlin.String
+      @JvmName("getTensor")
+      get() = _builder.getTensor()
+      @JvmName("setTensor")
+      set(value) {
+        _builder.setTensor(value)
+      }
+    /**
+     * <code>optional string tensor = 3;</code>
+     */
+    public fun clearTensor() {
+      _builder.clearTensor()
+    }
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return Whether the tensor field is set.
+     */
+    public fun hasTensor(): kotlin.Boolean {
+      return _builder.hasTensor()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

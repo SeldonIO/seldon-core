@@ -30,6 +30,7 @@ type KafkaConfig struct {
 	Consumer         kafka.ConfigMap `json:"consumer,omitempty"`
 	Producer         kafka.ConfigMap `json:"producer,omitempty"`
 	Streams          kafka.ConfigMap `json:"streams,omitempty"`
+	TopicPrefix      string          `json:"topicPrefix,omitempty"`
 }
 
 const (

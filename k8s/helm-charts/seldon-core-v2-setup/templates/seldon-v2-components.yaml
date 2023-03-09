@@ -1115,6 +1115,7 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
+        - --kafka-config-path=/mnt/kafka/kafka.json
         command:
         - /bin/scheduler
         env:
@@ -1191,6 +1192,8 @@ spec:
             cpu: '{{ .Values.scheduler.resources.cpu }}'
             memory: '{{ .Values.scheduler.resources.memory }}'
         volumeMounts:
+        - mountPath: /mnt/kafka
+          name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
@@ -1200,6 +1203,9 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
+      - configMap:
+          name: seldon-kafka
+        name: kafka-config-volume
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume

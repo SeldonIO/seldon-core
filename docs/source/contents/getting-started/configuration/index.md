@@ -12,11 +12,13 @@ We allow configuration of the Kafka integration. In general this configuration l
 
 The top level keys are:
 
+ * `topicPrefix` : the prefix to add to kafka topics created by Seldon
  * `bootstrap.servers` : the global bootstrap kafka servers to use
  * `consumer` : consumer settings
  * `producer` : producer settings
  * `streams` : KStreams settings
 
+For `topicPrefix` you can use any acceptable kafka topic characters which are `a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash)`. We use `.` (dot) internally as topic naming separator so we would suggest you don't end your topic prefix with a dot for clarity. For illustration, an example topic could be `seldon.default.model.mymodel.inputs` where `seldon` is the topic prefix.
 
 ### Kubernetes
 

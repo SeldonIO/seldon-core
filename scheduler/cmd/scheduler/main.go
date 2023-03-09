@@ -23,6 +23,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
@@ -66,6 +68,7 @@ var (
 	nodeID                  string
 	allowPlaintxt           bool //scheduler server
 	autoscalingDisabled     bool
+	kafkaConfigPath         string
 )
 
 func init() {
@@ -107,6 +110,12 @@ func init() {
 
 	// Whether to enable autoscaling, default is true
 	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
+	flag.StringVar(
+		&kafkaConfigPath,
+		"kafka-config-path",
+		"/mnt/config/kafka.json",
+		"Path to kafka configuration file",
+	)
 }
 
 func getNamespace() string {
@@ -195,7 +204,14 @@ func main() {
 	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
-	cs := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer)
+	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to load Kafka config")
+	}
+	cs, err := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to start data engine chainer server")
+	}
 	go func() {
 		err := cs.StartGrpcServer(chainerPort)
 		if err != nil {

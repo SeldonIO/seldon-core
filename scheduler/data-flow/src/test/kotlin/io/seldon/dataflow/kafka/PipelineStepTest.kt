@@ -76,10 +76,10 @@ internal class PipelineStepTest {
                 arguments(
                     "single source, no tensors",
                     makeChainerFor(
-                        inputTopic = TopicForPipeline(topicName = "seldon.namespace.model.model1.outputs", pipelineName = defaultPipelineName),
+                        inputTopic = TopicForPipeline(topicName = "seldon.namespace.model.model11.outputs", pipelineName = defaultPipelineName),
                         tensors = null,
                     ),
-                    listOf(PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs").setPipelineName(defaultPipelineName).build()),
+                    listOf(PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model11.outputs").setPipelineName(defaultPipelineName).build()),
                 ),
                 arguments(
                     "single source, one tensor",
@@ -87,7 +87,7 @@ internal class PipelineStepTest {
                         inputTopic = TopicForPipeline(topicName = "seldon.namespace.model.model1.outputs", pipelineName = defaultPipelineName),
                         tensors = setOf("tensorA")
                     ),
-                    listOf(PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs.tensorA").setPipelineName(defaultPipelineName).build()),
+                    listOf(PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs").setPipelineName(defaultPipelineName).setTensor("tensorA").build()),
                 ),
                 arguments(
                     "single source, multiple tensors",
@@ -96,10 +96,10 @@ internal class PipelineStepTest {
                         tensors = setOf("tensorA", "tensorB")
                     ),
                     listOf(
-                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs.tensorA").setPipelineName(
-                            defaultPipelineName).build(),
-                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs.tensorB").setPipelineName(
-                            defaultPipelineName).build(),
+                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs").setPipelineName(
+                            defaultPipelineName).setTensor("tensorA").build(),
+                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.model1.outputs").setPipelineName(
+                            defaultPipelineName).setTensor("tensorB").build(),
                     ),
                 ),
                 arguments(
@@ -129,10 +129,10 @@ internal class PipelineStepTest {
                         ),
                     ),
                     listOf(
-                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelA.outputs.tensor1").setPipelineName(
-                            defaultPipelineName).build(),
-                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelB.outputs.tensor2").setPipelineName(
-                            defaultPipelineName).build(),
+                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelA.outputs").setPipelineName(
+                            defaultPipelineName).setTensor("tensor1").build(),
+                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelB.outputs").setPipelineName(
+                            defaultPipelineName).setTensor("tensor2").build(),
                     ),
                 ),
                 arguments(
@@ -142,8 +142,8 @@ internal class PipelineStepTest {
                         tensors = setOf("tensorA"),
                     ),
                     listOf(
-                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelA.outputs.tensorA").setPipelineName(
-                            defaultPipelineName).build(),
+                        PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelA.outputs").setPipelineName(
+                            defaultPipelineName).setTensor("tensorA").build(),
                         PipelineTopic.newBuilder().setTopicName("seldon.namespace.model.modelA.outputs").setPipelineName(
                             defaultPipelineName).build(),
                     ),

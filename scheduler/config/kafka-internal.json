@@ -1,4 +1,5 @@
 {
+    "topicPrefix": "seldon",
     "bootstrap.servers":"kafka:9093",
     "consumer":{
 	"session.timeout.ms":6000,

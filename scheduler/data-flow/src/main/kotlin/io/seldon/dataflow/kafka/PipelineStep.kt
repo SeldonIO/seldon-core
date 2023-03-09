@@ -148,9 +148,9 @@ fun parseSources(sources: List<PipelineTopic>): SourceProjection {
 }
 
 fun parseSource(source: PipelineTopic): Triple<TopicName, TensorName?, String> {
-    return if (source.topicName.split(".").size > 5 ){
-        Triple(source.topicName.substringBeforeLast("."), source.topicName.substringAfterLast(".", ""), source.pipelineName)
-    } else {
-        Triple(source.topicName, null, source.pipelineName)
-    }
+    return Triple(
+        source.topicName,
+        if (source.tensor == "") null else source.tensor,
+        source.pipelineName,
+    )
 }
