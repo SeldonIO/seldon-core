@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: mnist-onnx
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/mnist-onnx"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-onnx"
   requirements:
   - onnx
