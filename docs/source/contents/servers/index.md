@@ -23,14 +23,14 @@ There is a default capabilities for each server as follows:
   ```
 
 ## Extra Capabilities
-Servers can be annotated with the `extraCapabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
+Servers can be set up with the `extraCapabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
 
 ```{literalinclude} ../../../../samples/servers/mlserver-extra-capabilities.yaml
 :language: yaml
 ```
+Note that `serverConfig: mlserver` will provide default capabilities for MLServer as shown above, and the values specified in `extraCapabilities` are appended to them to create a single list under the `SELDON_SERVER_CAPABILITIES` key in the environment variables.
 
-This can be matched from the model side as a requirement as follows.
-
+Models can then specify requirements to select a server that satisfies those requirements as follows.
 ```{literalinclude} ../../../../samples/models/extra-capabilities.yaml
 :language: yaml
 ```
