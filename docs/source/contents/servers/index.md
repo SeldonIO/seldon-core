@@ -31,7 +31,7 @@ Servers can be set up with the `extraCapabilities` field to indicate custom conf
 Note that `serverConfig: mlserver` will provide default capabilities for MLServer as shown above, and the values specified in `extraCapabilities` are appended to them to create a single list under the `SELDON_SERVER_CAPABILITIES` key in the environment variables.
 
 Models can then specify requirements to select a server that satisfies those requirements as follows.
-```{literalinclude} ../../../../samples/models/extra-capabilities.yaml
+```{literalinclude} ../../../../samples/models/extra-model-requirements.yaml
 :language: yaml
 ```
 

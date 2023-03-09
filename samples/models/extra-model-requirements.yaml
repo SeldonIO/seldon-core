@@ -1,7 +1,7 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
-  name: custom-model
+  name: extra-model-requirements
 spec:
   storageUri: "gs://seldon-models/mlserver/iris"
   requirements:
