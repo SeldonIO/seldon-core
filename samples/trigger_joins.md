@@ -72,7 +72,7 @@ seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
     {
       "pipeline": {
         "name": "triggers_join_inputs",
-        "uid": "cdqjkdhqa12c739ab3t0",
+        "uid": "cg5g8ak6dpcs73c4qhpg",
         "version": 1,
         "steps": [
           {
@@ -99,7 +99,8 @@ seldon pipeline status triggers_join_inputs -w PipelineReady | jq .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:29:58.778539435Z"
+        "lastChangeTimestamp": "2023-03-10T10:19:22.997419447Z",
+        "modelsReady": true
       }
     }
   ]
@@ -139,7 +140,7 @@ seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_strin
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 
@@ -150,7 +151,7 @@ seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_strin
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 
@@ -161,7 +162,7 @@ seldon pipeline infer triggers_join_inputs --inference-mode grpc '{request_strin
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 
@@ -194,7 +195,7 @@ seldon pipeline status triggers_join_internal -w PipelineReady | jq .
     {
       "pipeline": {
         "name": "triggers_join_internal",
-        "uid": "cdqjkqpqa12c739ab3tg",
+        "uid": "cg5g8fs6dpcs73c4qhq0",
         "version": 1,
         "steps": [
           {
@@ -239,7 +240,8 @@ seldon pipeline status triggers_join_internal -w PipelineReady | jq .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:30:51.996346140Z"
+        "lastChangeTimestamp": "2023-03-10T10:19:43.307156600Z",
+        "modelsReady": true
       }
     }
   ]
@@ -289,7 +291,7 @@ seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_str
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 
@@ -300,7 +302,7 @@ seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_str
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 
@@ -311,7 +313,7 @@ seldon pipeline infer triggers_join_internal --inference-mode grpc '{request_str
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT1", "datatype":"INT64", "shape":["1"], "contents":{"int64Contents":["2"]}}]}
+{"outputs":[{"name":"OUTPUT1","datatype":"INT64","shape":["1"],"contents":{"int64Contents":["2"]}}]}
 
 ```
 

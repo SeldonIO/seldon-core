@@ -93,7 +93,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "cdqjic9qa12c739ab3og",
+        "uid": "cg5fn9s6dpcs73c4qheg",
         "version": 1,
         "steps": [
           {
@@ -121,7 +121,8 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:25:37.908093300Z"
+        "lastChangeTimestamp": "2023-03-10T09:43:03.270822655Z",
+        "modelsReady": true
       }
     }
   ]
@@ -201,7 +202,7 @@ seldon pipeline infer tfsimples \
 ```
 
 ```
-Error: V2 server error: 400 tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
+Error: V2 server error: 400 tfsimple1 : rpc error: code = InvalidArgument desc = [request id: <id_unknown>] unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
 
 ```
 
@@ -280,7 +281,7 @@ seldon pipeline infer tfsimples --inference-mode grpc \
 ```
 
 ```
-Error: rpc error: code = Unknown desc = tfsimple1 : rpc error: code = InvalidArgument desc = unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
+Error: rpc error: code = Unknown desc = tfsimple1 : rpc error: code = InvalidArgument desc = [request id: <id_unknown>] unexpected shape for input 'INPUT0' for model 'tfsimple1_1'. Expected [-1,16], got [1,20]
 
 ```
 

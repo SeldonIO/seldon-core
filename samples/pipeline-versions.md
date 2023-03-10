@@ -1,14 +1,5 @@
 ## Seldon V2 Non Kubernetes Pipeline Version Updates
 
-```bash
-which seldon
-```
-
-```
-/home/clive/seldon/scv2/seldon-core-v2/operator/bin/seldon
-
-```
-
 ### Model Join
 
 Join two flows of data from two models as input to a third model.
@@ -73,7 +64,7 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "version-test",
-        "uid": "cdqjjkpqa12c739ab3rg",
+        "uid": "cg5g7ck6dpcs73c4qho0",
         "version": 1,
         "steps": [
           {
@@ -91,7 +82,8 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:28:19.459332175Z"
+        "lastChangeTimestamp": "2023-03-10T10:17:22.883632333Z",
+        "modelsReady": true
       }
     }
   ]
@@ -165,7 +157,7 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "version-test",
-        "uid": "cdqjjmpqa12c739ab3s0",
+        "uid": "cg5g7ek6dpcs73c4qhog",
         "version": 2,
         "steps": [
           {
@@ -183,7 +175,8 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         "pipelineVersion": 2,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:28:27.768169880Z"
+        "lastChangeTimestamp": "2023-03-10T10:17:30.576466739Z",
+        "modelsReady": true
       }
     }
   ]
@@ -239,7 +232,7 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "version-test",
-        "uid": "cdqjjo9qa12c739ab3sg",
+        "uid": "cg5g7g46dpcs73c4qhp0",
         "version": 3,
         "steps": [
           {
@@ -257,7 +250,8 @@ seldon pipeline status version-test -w PipelineReady | jq -M .
         "pipelineVersion": 3,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-11-16T19:28:33.139405433Z"
+        "lastChangeTimestamp": "2023-03-10T10:17:36.568170759Z",
+        "modelsReady": true
       }
     }
   ]
