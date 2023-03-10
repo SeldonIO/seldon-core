@@ -231,8 +231,6 @@ github.com/onsi/gomega
 github.com/opentracing/opentracing-go
 github.com/openzipkin/zipkin-go
 github.com/otiai10/copy
-github.com/otiai10/curr
-github.com/otiai10/mint
 github.com/pascaldekloe/goe
 github.com/pelletier/go-toml
 github.com/peterbourgon/diskv

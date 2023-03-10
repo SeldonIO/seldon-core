@@ -87,14 +87,12 @@ github.com/go-openapi/jsonpointer
 github.com/go-openapi/jsonreference
 github.com/go-openapi/swag
 github.com/go-stack/stack
-github.com/go-task/slim-sprig
 github.com/godbus/dbus/v5
 github.com/gogo/protobuf
 github.com/golang/glog
 github.com/golang/groupcache
 github.com/golang/mock
 github.com/golang/protobuf
-github.com/golang/snappy
 github.com/google/btree
 github.com/google/cel-go
 github.com/google/cel-spec
@@ -179,12 +177,9 @@ github.com/niemeyer/pretty
 github.com/nxadm/tail
 github.com/oklog/ulid
 github.com/onsi/ginkgo
-github.com/onsi/ginkgo/v2
 github.com/onsi/gomega
 github.com/opentracing/opentracing-go
 github.com/otiai10/copy
-github.com/otiai10/curr
-github.com/otiai10/mint
 github.com/pascaldekloe/goe
 github.com/pelletier/go-toml
 github.com/peterbourgon/diskv

@@ -5,12 +5,12 @@
       4 Bouncy Castle Licence
      45 BSD 2-Clause Simplified License
       2 BSD-3-Clause
-    183 BSD 3-Clause New or Revised License
+    181 BSD 3-Clause New or Revised License
       1 CDDL + GPLv2 with classpath exception
       4 Creative Commons Zero v1.0 Universal
       1 GNU General Public License, version 2 (GPL2), with the classpath exception
       7 ISC License
-    448 MIT License
+    443 MIT License
      68 Mozilla Public License 2.0
       8 The Apache License, Version 2.0
      19 The Apache Software License, Version 2.0

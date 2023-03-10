@@ -71,14 +71,12 @@ go-openapi/jsonpointer
 go-openapi/jsonreference
 go-openapi/swag
 go-stack/stack
-go-task/slim-sprig
 godbus/dbus
 gogo/protobuf
 golang/glog
 golang/groupcache
 golang/mock
 golang/protobuf
-golang/snappy
 google/btree
 google/cel-go
 google/cel-spec
@@ -164,8 +162,6 @@ onsi/ginkgo
 onsi/gomega
 opentracing/opentracing-go
 otiai10/copy
-otiai10/curr
-otiai10/mint
 pascaldekloe/goe
 pelletier/go-toml
 peterbourgon/diskv

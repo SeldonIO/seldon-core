@@ -209,8 +209,6 @@ onsi/gomega
 opentracing/opentracing-go
 openzipkin/zipkin-go
 otiai10/copy
-otiai10/curr
-otiai10/mint
 pascaldekloe/goe
 pelletier/go-toml
 peterbourgon/diskv
