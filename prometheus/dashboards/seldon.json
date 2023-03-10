@@ -1033,10 +1033,12 @@
             "type": "prometheus",
             "uid": "JJdVHHa4z"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(container_memory_working_set_bytes{container=\"mlserver\"}) ",
+          "expr": "sum(container_memory_working_set_bytes{container=\"mlserver\", namespace=~\"^$namespace$\"}) ",
           "interval": "10s",
           "legendFormat": "mlserver",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1044,11 +1046,13 @@
             "type": "prometheus",
             "uid": "JJdVHHa4z"
           },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(container_memory_working_set_bytes{container=\"triton\"})",
+          "expr": "sum(container_memory_working_set_bytes{container=\"triton\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "10s",
           "legendFormat": "triton",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -1304,6 +1308,6 @@
   "timezone": "",
   "title": "Seldon Core Model Mesh Monitoring",
   "uid": "y5MkDIkVz",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
