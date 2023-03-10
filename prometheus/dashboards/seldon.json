@@ -1,51 +1,12 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_DS_PROMETHEUS",
-      "label": "DS_PROMETHEUS",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "gauge",
-      "name": "Gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "8.0.5"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -61,13 +22,17 @@
     ]
   },
   "editable": true,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 1,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -110,24 +75,34 @@
         "text": {},
         "textMode": "value_and_name"
       },
-      "pluginVersion": "8.0.5",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "count (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'} > 0 )",
+          "expr": "count (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"} > 0 )",
           "hide": false,
           "interval": "",
           "legendFormat": "In-memory",
+          "range": true,
           "refId": "B"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum (seldon_loaded_model_gauge{namespace='seldon-mesh'})",
+          "expr": "sum (seldon_loaded_model_gauge{namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Registered",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -136,7 +111,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -178,12 +156,16 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.5",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(server) (seldon_loaded_model_gauge{namespace='seldon-mesh'})",
+          "expr": "sum by(server) (seldon_loaded_model_gauge{namespace=~\"^$namespace$\"})",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -219,7 +201,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -261,12 +246,16 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.5",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "count by(server) (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'} > 0)",
+          "expr": "count by(server) (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"} > 0)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -302,7 +291,10 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -354,12 +346,16 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "8.0.5",
+      "pluginVersion": "9.3.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by(server) (seldon_loaded_model_memory_bytes_gauge{namespace='seldon-mesh'}) / sum by(server) (seldon_server_replica_memory_capacity_overcommit_bytes_gauge{namespace='seldon-mesh'})",
+          "expr": "sum by(server) (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"}) / sum by(server) (seldon_server_replica_memory_capacity_overcommit_bytes_gauge{namespace=~\"^$namespace$\"})",
           "format": "table",
           "hide": false,
           "instant": false,
@@ -449,13 +445,18 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -510,8 +511,9 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
           "mode": "single",
@@ -520,9 +522,13 @@
       },
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(seldon_cache_evict_count{namespace='seldon-mesh'}[1m]))",
+          "expr": "sum(rate(seldon_cache_evict_count{namespace=~\"^$namespace$\"}[1m]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -531,12 +537,17 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(rate(seldon_cache_miss_count{namespace='seldon-mesh'}[1m]))",
+          "expr": "sum(rate(seldon_cache_miss_count{namespace=~\"^$namespace$\"}[1m]))",
           "hide": false,
           "interval": "",
           "legendFormat": "Miss Rate",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -544,13 +555,18 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -605,8 +621,9 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "bottom"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
         "tooltip": {
           "mode": "single",
@@ -615,9 +632,13 @@
       },
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (server) (rate(seldon_load_model_counter{namespace='seldon-mesh'}[1m]))",
+          "expr": "sum by (server) (rate(seldon_load_model_counter{namespace=~\"^$namespace$\"}[1m]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -626,9 +647,13 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum by (server) (rate(seldon_unload_model_counter{namespace='seldon-mesh'}[1m]))",
+          "expr": "sum by (server) (rate(seldon_unload_model_counter{namespace=~\"^$namespace$\"}[1m]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -642,7 +667,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -650,6 +678,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -707,7 +737,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -717,39 +748,59 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity",
+          "range": true,
           "refId": "B"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used",
+          "range": true,
           "refId": "C"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity with Over-commit",
+          "range": true,
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"triton\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton\", namespace=~\"^$namespace$\"}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"triton\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used with Over-commit",
+          "range": true,
           "refId": "D"
         }
       ],
@@ -758,7 +809,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -766,6 +820,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -823,7 +879,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -833,39 +890,59 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity",
+          "range": true,
           "refId": "B"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used",
+          "range": true,
           "refId": "C"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Capacity with Over-commit",
+          "range": true,
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\", namespace='seldon-mesh'})",
+          "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
           "hide": false,
           "interval": "",
           "legendFormat": "Used with Over-commit",
+          "range": true,
           "refId": "D"
         }
       ],
@@ -874,13 +951,18 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -937,7 +1019,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "multi",
@@ -946,7 +1029,10 @@
       },
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
           "exemplar": true,
           "expr": "sum(container_memory_working_set_bytes{container=\"mlserver\"}) ",
           "interval": "10s",
@@ -954,7 +1040,10 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
           "exemplar": true,
           "expr": "sum(container_memory_working_set_bytes{container=\"triton\"})",
           "hide": false,
@@ -967,7 +1056,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -975,6 +1067,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1034,7 +1128,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -1044,12 +1139,17 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total{container=\"agent\", namespace='seldon-mesh'}[1m]) / rate(seldon_model_aggregate_infer_total{container=\"agent\", namespace='seldon-mesh'}[1m])) > 0 ) by (server, method_type)",
+          "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total{container=\"agent\", namespace=~\"^$namespace$\"}[1m]) / rate(seldon_model_aggregate_infer_total{container=\"agent\", namespace=~\"^$namespace$\"}[1m])) > 0 ) by (server, method_type)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{server}}_{{method_type}}_avg",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1058,13 +1158,18 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_DS_PROMETHEUS}",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "JJdVHHa4z"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "cores",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1120,7 +1225,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -1129,20 +1235,30 @@
       },
       "targets": [
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "rate (container_cpu_usage_seconds_total{container=\"mlserver\"}[1m])",
+          "expr": "rate (container_cpu_usage_seconds_total{container=\"mlserver\", namespace=~\"^$namespace$\"}[1m])",
           "interval": "10s",
           "legendFormat": "{{pod}}",
+          "range": true,
           "refId": "A"
         },
         {
-          "datasource": "${DS_DS_PROMETHEUS}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "JJdVHHa4z"
+          },
+          "editorMode": "code",
           "exemplar": true,
-          "expr": "rate (container_cpu_usage_seconds_total{container=\"triton\"}[1m])",
+          "expr": "rate (container_cpu_usage_seconds_total{container=\"triton\", namespace=~\"^$namespace$\"}[1m])",
           "hide": false,
           "interval": "",
           "legendFormat": "{{pod}}",
+          "range": true,
           "refId": "B"
         }
       ],
@@ -1151,11 +1267,34 @@
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 30,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "seldon-mesh",
+          "value": "seldon-mesh"
+        },
+        "definition": "label_values(namespace)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-10m",
@@ -1165,5 +1304,6 @@
   "timezone": "",
   "title": "Seldon Core Model Mesh Monitoring",
   "uid": "y5MkDIkVz",
-  "version": 1
+  "version": 2,
+  "weekStart": ""
 }
