@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/components/tls/v2
 
-go 1.16
+go 1.19
 
 require (
 	github.com/otiai10/copy v1.7.0 // indirect
