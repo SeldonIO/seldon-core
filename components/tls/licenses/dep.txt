@@ -92,7 +92,6 @@ github.com/golang/glog
 github.com/golang/groupcache
 github.com/golang/mock
 github.com/golang/protobuf
-github.com/golang/snappy
 github.com/google/btree
 github.com/google/cel-go
 github.com/google/cel-spec
@@ -263,7 +262,6 @@ google.golang.org/api
 google.golang.org/appengine
 google.golang.org/genproto
 google.golang.org/grpc
-google.golang.org/grpc/cmd/protoc-gen-go-grpc
 google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
 gopkg.in/check.v1

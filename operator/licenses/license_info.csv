@@ -199,8 +199,6 @@ onsi/gomega,https://github.com/onsi/gomega/blob/master/LICENSE,MIT License,https
 opentracing/opentracing-go,https://github.com/opentracing/opentracing-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/opentracing/opentracing-go/master/LICENSE
 openzipkin/zipkin-go,https://github.com/openzipkin/zipkin-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/openzipkin/zipkin-go/master/LICENSE
 otiai10/copy,https://github.com/otiai10/copy/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/copy/main/LICENSE
-otiai10/curr,https://github.com/otiai10/curr/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/curr/main/LICENSE
-otiai10/mint,https://github.com/otiai10/mint/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/mint/main/LICENSE
 pascaldekloe/goe,https://github.com/pascaldekloe/goe/blob/master/LICENSE,Creative Commons Zero v1.0 Universal,https://raw.githubusercontent.com/pascaldekloe/goe/master/LICENSE
 pelletier/go-toml,https://github.com/pelletier/go-toml/blob/v2/LICENSE,MIT License,https://raw.githubusercontent.com/pelletier/go-toml/v2/LICENSE
 peterbourgon/diskv,https://github.com/peterbourgon/diskv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/peterbourgon/diskv/master/LICENSE
@@ -300,7 +298,7 @@ rsc/binaryregexp,https://github.com/rsc/binaryregexp/blob/master/LICENSE,BSD 3-C
 rsc/quote,https://github.com/rsc/quote/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rsc/quote/master/LICENSE
 rsc/sampler,https://github.com/rsc/sampler/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rsc/sampler/master/LICENSE
 kubernetes-sigs/apiserver-network-proxy,https://github.com/kubernetes-sigs/apiserver-network-proxy/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/apiserver-network-proxy/master/LICENSE
-kubernetes-sigs/controller-runtime,https://github.com/kubernetes-sigs/controller-runtime/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/master/LICENSE
+kubernetes-sigs/controller-runtime,https://github.com/kubernetes-sigs/controller-runtime/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/main/LICENSE
 kubernetes-sigs/json,https://github.com/kubernetes-sigs/json/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/json/main/LICENSE
 kubernetes-sigs/structured-merge-diff,https://github.com/kubernetes-sigs/structured-merge-diff/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/structured-merge-diff/master/LICENSE
 kubernetes-sigs/yaml,https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/kubernetes-sigs/yaml/master/LICENSE

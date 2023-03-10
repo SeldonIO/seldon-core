@@ -111,7 +111,7 @@ golang/snappy,https://github.com/golang/snappy/blob/master/LICENSE,BSD 3-Clause 
 google/btree,https://github.com/google/btree/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/btree/master/LICENSE
 google/cel-go,https://github.com/google/cel-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/cel-go/master/LICENSE
 google/cel-spec,https://github.com/google/cel-spec/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/cel-spec/master/LICENSE
-google/flatbuffers,https://github.com/google/flatbuffers/blob/master/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/google/flatbuffers/master/LICENSE.txt
+google/flatbuffers,https://github.com/google/flatbuffers/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/flatbuffers/master/LICENSE
 google/go-cmp,https://github.com/google/go-cmp/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/go-cmp/master/LICENSE
 google/go-github,https://github.com/google/go-github/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/go-github/master/LICENSE
 google/go-querystring,https://github.com/google/go-querystring/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/google/go-querystring/master/LICENSE
@@ -339,7 +339,7 @@ rsc/binaryregexp,https://github.com/rsc/binaryregexp/blob/master/LICENSE,BSD 3-C
 rsc/quote,https://github.com/rsc/quote/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rsc/quote/master/LICENSE
 rsc/sampler,https://github.com/rsc/sampler/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rsc/sampler/master/LICENSE
 kubernetes-sigs/apiserver-network-proxy,https://github.com/kubernetes-sigs/apiserver-network-proxy/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/apiserver-network-proxy/master/LICENSE
-kubernetes-sigs/controller-runtime,https://github.com/kubernetes-sigs/controller-runtime/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/master/LICENSE
+kubernetes-sigs/controller-runtime,https://github.com/kubernetes-sigs/controller-runtime/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/main/LICENSE
 kubernetes-sigs/json,https://github.com/kubernetes-sigs/json/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/json/main/LICENSE
 kubernetes-sigs/structured-merge-diff,https://github.com/kubernetes-sigs/structured-merge-diff/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/kubernetes-sigs/structured-merge-diff/master/LICENSE
 kubernetes-sigs/yaml,https://github.com/kubernetes-sigs/yaml/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/kubernetes-sigs/yaml/master/LICENSE

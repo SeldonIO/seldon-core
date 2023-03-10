@@ -10543,7 +10543,7 @@ google/cel-spec  Apache License 2.0  https://github.com/google/cel-spec/blob/mas
    limitations under the License.
 
 --------------------------------------------------------------------------------
-google/flatbuffers  Apache License 2.0  https://github.com/google/flatbuffers/blob/master/LICENSE.txt
+google/flatbuffers  Apache License 2.0  https://github.com/google/flatbuffers/blob/master/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -13155,6 +13155,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/errwrap  Mozilla Public License 2.0  https://github.com/hashicorp/errwrap/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2014 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -13513,6 +13515,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/go-cleanhttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2015 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -14275,6 +14279,8 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2014 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -14632,6 +14638,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/go-rootcerts  Mozilla Public License 2.0  https://github.com/hashicorp/go-rootcerts/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2016 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -16527,6 +16535,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/logutils  Mozilla Public License 2.0  https://github.com/hashicorp/logutils/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -16907,6 +16917,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
 hashicorp/memberlist  Mozilla Public License 2.0  https://github.com/hashicorp/memberlist/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -17265,6 +17277,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/serf  Mozilla Public License 2.0  https://github.com/hashicorp/serf/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -36251,7 +36265,7 @@ kubernetes-sigs/apiserver-network-proxy  Apache License 2.0  https://github.com/
    limitations under the License.
 
 --------------------------------------------------------------------------------
-kubernetes-sigs/controller-runtime  Apache License 2.0  https://github.com/kubernetes-sigs/controller-runtime/blob/master/LICENSE
+kubernetes-sigs/controller-runtime  Apache License 2.0  https://github.com/kubernetes-sigs/controller-runtime/blob/main/LICENSE
 --------------------------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
