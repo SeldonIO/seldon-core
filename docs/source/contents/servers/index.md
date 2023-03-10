@@ -22,6 +22,22 @@ There is a default capabilities for each server as follows:
   :end-before: SELDON_OVERCOMMIT_PERCENTAGE
   ```
 
+## Extra Capabilities
+Servers can be set up with the `extraCapabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
+
+```{literalinclude} ../../../../samples/servers/mlserver-extra-capabilities.yaml
+:language: yaml
+```
+This server, `mlserver-extra`, inherits a default set of capabilities via `serverConfig: mlserver`.
+These defaults are discussed above.
+The `extraCapabilities` are appended to these to create a single list of capabilities for this server.
+
+Models can then specify requirements to select a server that satisfies those requirements as follows.
+```{literalinclude} ../../../../samples/models/extra-model-requirements.yaml
+:language: yaml
+```
+
+
 ## Autoscaling of Servers
 
 Within docker we don't support this but for Kubernetes see [here](../kubernetes/autoscaling/index.md)
