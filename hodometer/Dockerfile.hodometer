@@ -1,6 +1,4 @@
-FROM golang:1.18-alpine as builder
-
-RUN apk add --upgrade make
+FROM golang:1.19.4-buster as builder
 
 WORKDIR /build
 # Copy the Go Modules manifests
@@ -19,6 +17,7 @@ ARG GIT_COMMIT
 ARG RELEASE_TYPE
 ARG BUILD_VERSION
 
+RUN apt-get install make
 RUN make build-hodometer
 
 ################################################################################
