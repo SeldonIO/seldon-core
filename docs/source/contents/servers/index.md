@@ -28,7 +28,7 @@ Servers can be set up with the `extraCapabilities` field to indicate custom conf
 ```{literalinclude} ../../../../samples/servers/mlserver-extra-capabilities.yaml
 :language: yaml
 ```
-Note that `serverConfig: mlserver` will provide default capabilities for MLServer as shown above, and the values specified in `extraCapabilities` are appended to them to create a single list of capabilities.
+Note that `serverConfig: mlserver` will provide default capabilities for MLServer as shown above, and the values specified in `extraCapabilities` are appended to them to create a single list of capabilities for this `Server`.
 
 Models can then specify requirements to select a server that satisfies those requirements as follows.
 ```{literalinclude} ../../../../samples/models/extra-model-requirements.yaml
