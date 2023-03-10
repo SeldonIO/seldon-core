@@ -1,1 +1,1 @@
-alibi-detect==0.9.1
+alibi-detect==0.11.1

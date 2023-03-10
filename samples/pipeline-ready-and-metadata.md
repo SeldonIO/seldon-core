@@ -82,7 +82,7 @@ seldon pipeline status tfsimples -w PipelineReady
 
 ```json
 {}
-{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cdsa5mv20gbc73a16810","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-19T09:33:16.449568356Z"}}]}
+{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cg5g53s6dpcs73c4qhf0","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2023-03-10T10:12:31.298579659Z"}}]}
 
 ```
 
@@ -249,7 +249,7 @@ seldon pipeline status tfsimples -w PipelineReady
 
 ```json
 {}
-{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cdsa5uv20gbc73a1681g","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-19T09:33:47.581203463Z","modelsReady":true}}]}
+{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cg5g5bc6dpcs73c4qhfg","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2023-03-10T10:13:02.109711244Z","modelsReady":true}}]}
 
 ```
 

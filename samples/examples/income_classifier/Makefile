@@ -18,9 +18,9 @@ train: env
 
 .PHONY: upload_artifacts
 upload_artifacts:
-	gsutil cp -R preprocessor gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-	gsutil cp -R classifier gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-	gsutil cp -R explainer gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-	gsutil cp -R drift-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-	gsutil cp -R outlier-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
-	gsutil cp -R infer-data gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income
+	gsutil cp -R preprocessor gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/preprocessor
+	gsutil cp -R classifier gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/classifier
+	gsutil cp -R explainer gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/explainer
+	gsutil cp -R drift-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/drift-detector
+	gsutil cp -R outlier-detector gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/outlier-detector
+	gsutil cp -R infer-data gs://seldon-models/scv2/examples/${MLSERVER_FOLDER}/income/infer-data

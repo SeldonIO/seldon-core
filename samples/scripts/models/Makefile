@@ -88,7 +88,7 @@ download-mnist-onnx:
 
 .PHONY: upload-mnist-onnx
 upload-mnist-onnx:
-	gsutil cp mnist-onnx/model.onnx gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/mnist-onnx/model.onnx
+	gsutil cp mnist-onnx/model.onnx gs://seldon-models/scv2/samples/${TRITON_FOLDER}/mnist-onnx/model.onnx
 
 #
 # CIFAR10 Tensorflow

@@ -120,7 +120,7 @@ seldon model infer iris -i 100 \
 ```
 
 ```
-Success: map[:iris2_1::58 :iris_1::42]
+Success: map[:iris2_1::48 :iris_1::52]
 
 ```
 
@@ -178,7 +178,7 @@ seldon model infer iris -i 100 \
 ```
 
 ```
-Success: map[:iris3_1::44 :iris_1::56]
+Success: map[:iris3_1::42 :iris_1::58]
 
 ```
 
@@ -420,7 +420,7 @@ seldon model infer iris3 -i 50 \
 ```
 
 ```
-Success: map[:iris2_1::24 :iris3_1::26]
+Success: map[:iris2_1::25 :iris3_1::25]
 
 ```
 

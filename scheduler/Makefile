@@ -20,7 +20,7 @@ SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.11-py3
 GPU_ENABLED ?= 0
 
-KIND_NAME=ansible
+KIND_NAME=seldon
 
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 

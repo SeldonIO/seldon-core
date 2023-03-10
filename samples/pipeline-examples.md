@@ -108,7 +108,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "ceb1joj3gshc73fmvpu0",
+        "uid": "cg4617kqieos73a7nuj0",
         "version": 1,
         "steps": [
           {
@@ -136,7 +136,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:56:51.471467841Z",
+        "lastChangeTimestamp": "2023-03-08T10:17:03.193598898Z",
         "modelsReady": true
       }
     }
@@ -287,12 +287,12 @@ seldon pipeline inspect tfsimples
 ```
 
 ```
-seldon.default.model.tfsimple1.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
-seldon.default.model.tfsimple1.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
-seldon.default.model.tfsimple2.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-seldon.default.model.tfsimple2.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple2_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
-seldon.default.pipeline.tfsimples.inputs	cdqjilab951s73aqg830	{"modelName":"tfsimples", "inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
-seldon.default.pipeline.tfsimples.outputs	cdqjilab951s73aqg830	{"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
+seldon.customer.default.model.tfsimple1.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+seldon.customer.default.model.tfsimple1.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
+seldon.customer.default.model.tfsimple2.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+seldon.customer.default.model.tfsimple2.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
+seldon.customer.default.pipeline.tfsimples.inputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+seldon.customer.default.pipeline.tfsimples.outputs	cg46198fh5ss73e09pm0	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
 
 ```
 
@@ -505,7 +505,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "join",
-        "uid": "ceb1k1r3gshc73fmvpug",
+        "uid": "cg3o00od8mqs73fqhh4g",
         "version": 1,
         "steps": [
           {
@@ -537,7 +537,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:57:27.599682702Z",
+        "lastChangeTimestamp": "2023-03-07T18:18:43.910647312Z",
         "modelsReady": true
       }
     }
@@ -762,7 +762,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "tfsimple-conditional",
-        "uid": "cfajkd95jl3s73dcqflg",
+        "uid": "cg3o05od8mqs73fqhh50",
         "version": 1,
         "steps": [
           {
@@ -800,7 +800,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-01-28T15:07:33.574747475Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:04.254724839Z",
         "modelsReady": true
       }
     }
@@ -906,7 +906,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -916,7 +916,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -995,7 +995,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "pipeline-inputs",
-        "uid": "ceb1kcj3gshc73fmvpvg",
+        "uid": "cg3o0agd8mqs73fqhh5g",
         "version": 1,
         "steps": [
           {
@@ -1029,7 +1029,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:58:11.137492043Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:22.326945896Z",
         "modelsReady": true
       }
     }
@@ -1116,7 +1116,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -1125,7 +1125,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -1207,7 +1207,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "trigger-joins",
-        "uid": "ceb1khb3gshc73fmvq00",
+        "uid": "cg3o0f0d8mqs73fqhh60",
         "version": 1,
         "steps": [
           {
@@ -1244,7 +1244,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:58:30.105358917Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:40.673234267Z",
         "modelsReady": true
       }
     }
