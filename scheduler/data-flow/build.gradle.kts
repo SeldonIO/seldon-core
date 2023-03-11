@@ -22,7 +22,7 @@ dependencies {
     implementation("io.klogging:klogging-jvm:0.4.4")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:3.2.2")
+    implementation("org.apache.kafka:kafka-streams:3.4.0")
     implementation("io.klogging:slf4j-klogging:0.2.5")
 
     // gRPC
@@ -36,7 +36,7 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
-    implementation("io.kubernetes:client-java:17.0.1")
+    implementation("io.kubernetes:client-java:18.0.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
