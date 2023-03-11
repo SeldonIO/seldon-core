@@ -36,7 +36,7 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
-    implementation("io.kubernetes:client-java:15.0.1")
+    implementation("io.kubernetes:client-java:17.0.1")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
