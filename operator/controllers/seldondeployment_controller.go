@@ -866,6 +866,39 @@ func createContainerService(deploy *appsv1.Deployment,
 	return svc
 }
 
+// compareServices ignores those fields set by k8s by default.
+// Specifically, the fields to be compared are:
+//   - Annotations
+//   - Labels
+//   - Spec.Ports
+//   - Spec.Type
+//   - Spec.Selector
+//   - Spec.SessionAffinity
+func compareServices(desiredSvc, found *corev1.Service) bool {
+	return equality.Semantic.DeepEqual(desiredSvc.Annotations, found.Annotations) &&
+		equality.Semantic.DeepEqual(desiredSvc.Labels, found.Labels) &&
+		equality.Semantic.DeepEqual(desiredSvc.Spec.Ports, found.Spec.Ports) &&
+		equality.Semantic.DeepEqual(desiredSvc.Spec.Selector, found.Spec.Selector) &&
+		equality.Semantic.DeepEqual(desiredSvc.Spec.Type, found.Spec.Type) &&
+		equality.Semantic.DeepEqual(desiredSvc.Spec.SessionAffinity, found.Spec.SessionAffinity)
+}
+
+// updateService ignores those immutable fields and fields set by k8s by default.
+// Specifically, the updated fields are:
+//   - Annotations
+//   - Labels
+//   - Spec.Ports
+//   - Spec.Type
+//   - Spec.SessionAffinity
+func updateService(foundSvc, desiredSvc *corev1.Service) *corev1.Service {
+	foundSvc.Annotations = desiredSvc.Annotations
+	foundSvc.Labels = desiredSvc.Labels
+	foundSvc.Spec.Ports = desiredSvc.Spec.Ports
+	foundSvc.Spec.Type = desiredSvc.Spec.Type
+	foundSvc.Spec.SessionAffinity = desiredSvc.Spec.SessionAffinity
+	return foundSvc
+}
+
 func addModelEnvs(pu *machinelearningv1.PredictiveUnit, con *corev1.Container) {
 	if len(pu.Parameters) > 0 {
 		// Set V1 env vars
@@ -1258,11 +1291,11 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 		} else if err != nil {
 			return ready, err
 		} else {
-			svc.Spec.ClusterIP = found.Spec.ClusterIP
 			// Configure addressable status so it can be reached through duck-typing
 			instance.Status.Address = components.addressable
+			// Check if the found one modulo the defaults applied by k8s has changed
 			// Update the found object and write the result back if there are any changes
-			if !equality.Semantic.DeepEqual(svc.Spec, found.Spec) || !equality.Semantic.DeepEqual(svc.Annotations, found.Annotations) {
+			if !compareServices(svc, found) {
 				// Check if svc selectors have changed - if so then we need to recreate svc
 				if !equality.Semantic.DeepEqual(svc.Spec.Selector, found.Spec.Selector) {
 					ready = false
@@ -1279,10 +1312,10 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 					}
 					r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsCreateService, "Recreated Service %q", svc.GetName())
 				} else {
+					// Just update those required and mutable fields of the found one and leave other defaults applied by k8s unchanged
+					updateService(found, svc)
+					// desiredSvc is a temporary deep copy of found object just before it is re updated by the result back from the api server
 					desiredSvc := found.DeepCopy()
-					desiredSvc.Annotations = svc.Annotations
-					found.Spec = svc.Spec
-					found.Annotations = svc.Annotations
 					log.Info("Updating Service", "all", all, "namespace", svc.Namespace, "name", svc.Name)
 					err = r.Update(context.TODO(), found)
 					if err != nil {
@@ -1290,7 +1323,7 @@ func (r *SeldonDeploymentReconciler) createServices(components *components, inst
 					}
 
 					// Check if what came back from server modulo the defaults applied by k8s is the same or not
-					if !equality.Semantic.DeepEqual(desiredSvc.Spec, found.Spec) {
+					if !compareServices(desiredSvc, found) {
 						ready = false
 						r.Recorder.Eventf(instance, corev1.EventTypeNormal, constants.EventsUpdateService, "Updated Service %q", svc.GetName())
 						//For debugging we will show the difference
