@@ -197,10 +197,9 @@ if [[ ${KIND_EXIT_VALUE} -eq 0 ]]; then
             make test_notebooks
             TEST_EXIT_VALUE=$?
         elif [ "$TESTS_TO_RUN" == "base" ]; then
-            # make test_parallel
-            pytest test_alibi_detect_server.py::TestADServer::test_alibi_detect_cifar10 -s
+            make test_parallel
             TEST_PARALLEL_EXIT_VALUE=$?
-            # make test_sequential
+            make test_sequential
             TEST_SEQUENTIAL_EXIT_VALUE=$?
             TEST_EXIT_VALUE=$(($TEST_PARALLEL_EXIT_VALUE + $TEST_SEQUENTIAL_EXIT_VALUE))
         elif [ "$TESTS_TO_RUN" == "parallel" ]; then
