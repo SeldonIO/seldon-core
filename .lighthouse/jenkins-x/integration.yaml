@@ -17,6 +17,8 @@ spec:
         - name: integration-step
           image: seldonio/core-builder:0.29
           env:
+          - name: DOCKER_BUILDKIT
+            value: "0"
           - name: SELDON_E2E_TESTS_TO_RUN
             value: base
           - name: SELDON_E2E_TESTS_POD_INFORMATION

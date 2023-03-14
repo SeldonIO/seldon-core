@@ -17,6 +17,8 @@ spec:
         - name: release-step
           image: seldonio/core-builder:0.29
           env:
+          - name: DOCKER_BUILDKIT
+            value: "0"
           - name: GOMAXPROCS
             value: "1"
           command:
