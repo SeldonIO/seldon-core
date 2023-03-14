@@ -4,12 +4,16 @@ sphinx:
   builder: html
   configuration: doc/source/conf.py
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.8"
+
 formats:
   - pdf
   - epub
 
 python:
-  version: 3.8
   install:
     - method: pip
       path: python
