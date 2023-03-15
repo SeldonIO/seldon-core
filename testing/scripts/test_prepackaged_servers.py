@@ -56,7 +56,7 @@ class TestPrepack(object):
         deploy_model(
             "sklearn",
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="SKLEARN_SERVER",
             model_uri="gs://seldon-models/sklearn/iris-0.23.2/lr_model",
         )
@@ -134,9 +134,9 @@ class TestPrepack(object):
         deploy_model(
             "xgboost",
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="XGBOOST_SERVER",
-            model_uri="gs://seldon-models/xgboost/iris",
+            model_uri="gs://seldon-models/v1.15.0/xgboost/iris",
         )
         wait_for_status("xgboost", namespace)
         wait_for_rollout("xgboost", namespace)
@@ -199,13 +199,13 @@ class TestPrepack(object):
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
-    # test mlflow with kfserving (v2) protocol
+    # test mlflow with v2 protocol
     def test_mlflow_v2(self, namespace):
         tag = "mlflow"
         deploy_model(
             tag,
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="MLFLOW_SERVER",
             model_uri="gs://seldon-models/v1.12.0-dev/mlflow/elasticnet_wine",
         )
