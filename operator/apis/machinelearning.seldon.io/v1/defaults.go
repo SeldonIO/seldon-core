@@ -134,7 +134,7 @@ func (r *SeldonDeploymentSpec) setContainerPredictiveUnitDefaults(compSpecIdx in
 
 	// Set ports and hostname in predictive unit so engine can read it from SDep
 	// if this is the first componentSpec then it's the one to put the engine in - note using outer loop counter here
-	if _, hasSeparateEnginePod := r.Annotations[ANNOTATION_SEPARATE_ENGINE]; compSpecIdx == 0 && !hasSeparateEnginePod {
+	if compSpecIdx == 0 && !HasSeparateEnginePod(*r) {
 		pu.Endpoint.ServiceHost = constants.DNSLocalHost
 	} else {
 		containerServiceValue := GetContainerServiceName(mldepName, *p, con)

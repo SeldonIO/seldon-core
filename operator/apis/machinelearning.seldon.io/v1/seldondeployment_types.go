@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"os"
 	"strconv"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/types"
 
@@ -83,6 +84,10 @@ const (
 var (
 	envDeploymentNameAsPrefix = os.Getenv(ENV_DEPLOYMENT_NAME_AS_PREFIX)
 )
+
+func HasSeparateEnginePod(spec SeldonDeploymentSpec) bool {
+	return strings.ToLower(spec.Annotations[ANNOTATION_SEPARATE_ENGINE]) == "true"
+}
 
 func hash(text string) string {
 	hasher := md5.New()
