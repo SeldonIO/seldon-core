@@ -1014,8 +1014,10 @@ func createDeploymentWithoutEngine(depName string, seldonId string, seldonPodSpe
 		}
 	}
 
-	// Add Pod Security Context
-	deploy.Spec.Template.Spec.SecurityContext = podSecurityContext
+	if deploy.Spec.Template.Spec.SecurityContext == nil {
+		// Add Pod Security Context
+		deploy.Spec.Template.Spec.SecurityContext = podSecurityContext
+	}
 
 	// add predictor labels
 	for k, v := range p.Labels {
