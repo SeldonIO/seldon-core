@@ -46,10 +46,6 @@ RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master
 RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
 RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
-# Copy OpenAPI folder and change the permissions
-COPY api/rest/openapi/ /openapi/
-RUN chmod -R 660 /openapi/
-
 FROM registry.access.redhat.com/ubi8/ubi
 LABEL name="Seldon Executor" \
       vendor="Seldon Technologies" \
@@ -65,8 +61,9 @@ COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 
 RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical
 
-# Copy openapi spec and swagger UI files
-COPY --from=builder /openapi/ /openapi/
+# Copy OpenAPI folder and change the permissions
+COPY api/rest/openapi/ /openapi/
+RUN chmod -R 660 /openapi/
 
 # Run update to pickup any necessary security updates
 RUN dnf update -y

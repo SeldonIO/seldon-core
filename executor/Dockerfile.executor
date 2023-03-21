@@ -46,10 +46,6 @@ RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master
 RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
 RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
-# Copy OpenAPI folder and change the permissions
-COPY api/rest/openapi/ /openapi/
-RUN chmod -R 660 /openapi/
-
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/base-debian11:latest
@@ -59,6 +55,7 @@ COPY licenses/license.txt licenses/license.txt
 COPY --from=builder /workspace/*.tar.gz licenses/mpl_source/
 
 # Copy openapi spec and swagger UI files
-COPY --from=builder /openapi/ /openapi/
+COPY api/rest/openapi/ /openapi/
+RUN chmod -R 660 /openapi/
 
 ENTRYPOINT ["/executor"]

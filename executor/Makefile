@@ -85,9 +85,12 @@ test: copy_operator fmt vet
 	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
-	mkdir -p api/rest/openapi/
-	cp ../openapi/swagger-ui/* api/rest/openapi/
+	mkdir -p api/rest/openapi
+	cp ../openapi/swagger-ui/* api/rest/openapi
 	cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+	mkdir -p api/rest/openapi/open-inference
+	cp ../openapi/v2/swagger-ui/* api/rest/openapi/open-inference
+	cp ../openapi/v2/dataplane.yaml api/rest/openapi/open-inference/dataplane.yaml
 
 # Build the docker image
 docker-build: test copy_openapi_resources
