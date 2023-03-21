@@ -1,7 +1,9 @@
-from typing import Optional
-
 import grpc
 import requests
+import yaml
+
+from typing import Optional
+
 from google.protobuf.json_format import MessageToDict, ParseDict
 from mlserver.grpc.dataplane_pb2 import ModelInferRequest
 from mlserver.grpc.dataplane_pb2_grpc import GRPCInferenceServiceStub
@@ -62,3 +64,47 @@ def inference_request_grpc(
         metadata = [("seldon", deployment_name), ("namespace", namespace)]
         response = stub.ModelInfer(request=request, metadata=metadata)
         return MessageToDict(response)
+
+
+@retry(
+    wait=wait_exponential(multiplier=1),
+    stop=stop_after_attempt(3),
+    retry=retry_if_exception_type(
+        (requests.exceptions.ConnectionError, requests.exceptions.HTTPError)
+    ),
+)
+def openapi_ui(
+    deployment_name: str,
+    namespace: str,
+    host: str = API_AMBASSADOR,
+) -> requests.Response:
+    root_endpoint = f"http://{host}/seldon/{namespace}/{deployment_name}"
+
+    endpoint = f"{root_endpoint}/v2/docs/"
+
+    response = requests.get(endpoint)
+    response.raise_for_status()
+
+    return response
+
+
+@retry(
+    wait=wait_exponential(multiplier=1),
+    stop=stop_after_attempt(3),
+    retry=retry_if_exception_type(
+        (requests.exceptions.ConnectionError, requests.exceptions.HTTPError)
+    ),
+)
+def openapi_schema(
+    deployment_name: str,
+    namespace: str,
+    host: str = API_AMBASSADOR,
+) -> dict:
+    root_endpoint = f"http://{host}/seldon/{namespace}/{deployment_name}"
+
+    endpoint = f"{root_endpoint}/v2/docs/dataplane.yaml"
+
+    response = requests.get(endpoint)
+    response.raise_for_status()
+
+    return yaml.safe_loads(response.text())
