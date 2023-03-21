@@ -19,4 +19,4 @@ Jinja2==3.0.0
 coverage==4.5.4
 
 # Required to build mock test images
-mlserver==1.0.0.rc1
+mlserver==1.2.4
