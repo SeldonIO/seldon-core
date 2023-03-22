@@ -1,8 +1,8 @@
 # seldon-core-operator
 
-![Version: 1.15.0](https://img.shields.io/static/v1?label=Version&message=1.15.0&color=informational&style=flat-square)
+![Version: 1.15.1](https://img.shields.io/static/v1?label=Version&message=1.15.1&color=informational&style=flat-square)
 
-Seldon Core CRD and controller helm chart for Kubernetes.
+Seldon Core v1 CRD and controller Helm chart for Kubernetes.
 
 ## Usage
 
@@ -13,7 +13,7 @@ helm repo add seldonio https://storage.googleapis.com/seldon-charts
 helm repo update
 ```
 
-Once that's done, you should then be able to deploy the chart as:
+Onca that's done, you should then be able to deploy the chart as:
 
 ```bash
 kubectl create namespace seldon-system
@@ -47,7 +47,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | executor.image.registry | string | `"docker.io"` |  |
 | executor.image.repository | string | `"seldonio/seldon-core-executor"` |  |
-| executor.image.tag | string | `"1.15.0"` |  |
+| executor.image.tag | string | `"1.15.1"` |  |
 | executor.metricsPortName | string | `"metrics"` |  |
 | executor.port | int | `8000` |  |
 | executor.prometheus.path | string | `"/prometheus"` |  |
@@ -60,13 +60,13 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | executor.resources.memoryRequest | string | `"512Mi"` |  |
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
-| explainer.image | string | `"seldonio/alibiexplainer:1.15.0"` |  |
+| explainer.image | string | `"seldonio/alibiexplainer:1.15.1"` |  |
 | explainer.image_v2 | string | `"seldonio/mlserver:1.2.0-alibi-explain"` |  |
 | hostNetwork | bool | `false` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"seldonio/seldon-core-operator"` |  |
-| image.tag | string | `"1.15.0"` |  |
+| image.tag | string | `"1.15.1"` |  |
 | istio.enabled | bool | `false` |  |
 | istio.gateway | string | `"istio-system/seldon-gateway"` |  |
 | istio.tlsMode | string | `""` |  |
@@ -96,23 +96,23 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
 | predictor_servers.HUGGINGFACE_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0-huggingface"` |  |
 | predictor_servers.HUGGINGFACE_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0"` |  |
+| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.1"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.image | string | `"seldonio/mlflowserver"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0-mlflow"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.1"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.image | string | `"seldonio/sklearnserver"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0-sklearn"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0-slim"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0"` |  |
+| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.1"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.defaultImageVersion | string | `"2.1.0"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.image | string | `"tensorflow/serving"` |  |
 | predictor_servers.TRITON_SERVER.protocols.v2.defaultImageVersion | string | `"21.08-py3"` |  |
 | predictor_servers.TRITON_SERVER.protocols.v2.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
-| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.0"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.15.1"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.image | string | `"seldonio/xgboostserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.v2.defaultImageVersion | string | `"1.2.0-xgboost"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
@@ -123,7 +123,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | singleNamespace | bool | `false` |  |
 | storageInitializer.cpuLimit | string | `"1"` |  |
 | storageInitializer.cpuRequest | string | `"100m"` |  |
-| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.15.0"` |  |
+| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.15.1"` |  |
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |
