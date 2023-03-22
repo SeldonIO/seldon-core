@@ -1,9 +1,8 @@
+from typing import Optional
+
 import grpc
 import requests
 import yaml
-
-from typing import Optional
-
 from google.protobuf.json_format import MessageToDict, ParseDict
 from mlserver.grpc.dataplane_pb2 import ModelInferRequest
 from mlserver.grpc.dataplane_pb2_grpc import GRPCInferenceServiceStub
