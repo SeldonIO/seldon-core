@@ -5,7 +5,6 @@ Archived Docs for Review
 .. toctree::
     :maxdepth: 1
 
-    R Wrapping Docker </R/r_wrapping_docker.md>
     Seldon OpenVino </charts/seldon-openvino.rst>
     Ambassador Circuit Breakers </examples/ambassador_circuit_breakers.nblink>
     Custom Init Containers </examples/custom_init_container.nblink>
