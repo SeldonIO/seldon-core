@@ -107,4 +107,4 @@ def openapi_schema(
     response = requests.get(endpoint)
     response.raise_for_status()
 
-    return yaml.safe_loads(response.text())
+    return yaml.safe_load(response.text)
