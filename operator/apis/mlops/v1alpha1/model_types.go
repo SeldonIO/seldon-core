@@ -154,9 +154,10 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 			},
 		},
 		ModelSpec: &scheduler.ModelSpec{
-			Uri:          m.Spec.StorageURI,
-			Requirements: m.Spec.Requirements,
-			Server:       m.Spec.Server,
+			Uri:             m.Spec.StorageURI,
+			ArtifactVersion: m.Spec.ArtifactVersion,
+			Requirements:    m.Spec.Requirements,
+			Server:          m.Spec.Server,
 		},
 		DeploymentSpec: &scheduler.DeploymentSpec{
 			LogPayloads: m.Spec.Logger != nil, // Simple boolean switch at present
