@@ -82,7 +82,7 @@ When receiving a Cloudevent, SeldonDeployments will return a Cloudevent-enabled 
 
 What this means is that you can create further triggers that could perform other actions with the resulting data.
 
-THe triggers will have to match the cloudevent headers, which are standardised by the SeldonDEployment, and are of the following format:
+The triggers will have to match the cloudevent headers, which are standardised by the SeldonDeployment, and are of the following format:
 
 ```text
 Ce-Id: SeldonDeployment unique request ID
