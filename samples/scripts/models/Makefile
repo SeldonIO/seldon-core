@@ -52,7 +52,9 @@ income: env
 
 .PHONY: upload-income
 upload-income:
-	gsutil cp income/model.joblib gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-sklearn/model.joblib
+	gsutil cp income/classifier/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-sklearn/classifier/*
+	gsutil cp income/explainers/anchor-explainer/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-sklearn/anchor-explainer/*
+	gsutil cp income/explainers/kernel-shap-explainer/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-sklearn/kernel-shap-explainer/*
 
 #
 # Income XGBoost model
