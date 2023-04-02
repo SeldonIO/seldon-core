@@ -6,13 +6,35 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.16
+
+### Kubernetes version upgrade
+
+Seldon Core 1.16 bump minimum Kubernetes version to 1.23.
+This is because as part of making Seldon Core compatible with Kubernetes 1.25 we moved from `autoscaling/v2beta1` apiVersion of `HorizontalPodAutoscaler` to `autoscaling/v2` (see this [PR](https://github.com/SeldonIO/seldon-core/pull/4172) for further details).
+
+Following table summarize Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
+
+| Core Version \ K8s Version  | 1.21 | 1.22 | 1.23 | 1.24 | 1.25 | 1.26 |
+|-----------------------------|-----:|-----:|-----:|-----:|-----:|-----:|
+|                        1.11 | ✓    |      |      |      |      |      |
+|                        1.12 | ✓    | ✓    | ✓    | ✓    |      |      |
+|                        1.13 | ✓    | ✓    | ✓    | ✓    |      |      |
+|                        1.14 | ✓    | ✓    | ✓    | ✓    |      |      |
+|                        1.15 | ✓    | ✓    | ✓    | ✓    |      |      |
+|                        1.16 |      |      | ✓    | ✓    | ✓    | ✓    |
+
+It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
+
+For example, if you using Seldon Core 1.15 on Kubernetes 1.24, it is recommended to **first upgrade Seldon Core to version 1.16** before upgrading your cluster to Kubernetes 1.25 and further.
+
 ## Upgrading to 1.15
 
 ### Flask upgrade
 
 With this release of Seldon Core we upgrade Flask dependency to 2.x line. This includes Python wrapper and most pre-packaged model servers. In an unlikely scenario that this causes issues one can fallback to `1.14.1` images.
 
-## Services and Deployments Update
+### Services and Deployments Update
 
 The label on services pointing to containers for each node in your inference graph has been changed to stop clashes in key-values for label selectors when you have multiple nodes in your inference graph. This will cause all your existing seldon deployments to be recreated as their service and deployment specs will have changed in the upgrade. **This will cause some downtime in availability**.
 
