@@ -29,25 +29,25 @@ func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration
 		return nil
 	}
 
-	var rcloneNamesAdded []string
+	var addedFromSecrets []string
 	var err error
 
 	// Load any secrets that have Rclone config
-	rcloneNamesAdded, err = r.loadRcloneSecretsConfiguration(config)
+	addedFromSecrets, err = r.loadRcloneSecretsConfiguration(config)
 	if err != nil {
 		return err
 	}
 
 	// Load any raw Rclone configs
-	rcloneNamesAddedSecrets, err := r.loadRcloneRawConfiguration(config)
+	addedFromRawConfig, err := r.loadRcloneRawConfiguration(config)
 	if err != nil {
 		return err
 	}
 
-	rcloneNamesAdded = append(rcloneNamesAdded, rcloneNamesAddedSecrets...)
+	addedFromSecrets = append(addedFromSecrets, addedFromRawConfig...)
 
 	// Delete any existing remotes not in defaults
-	err = r.deleteUnusedRcloneConfiguration(config, rcloneNamesAdded)
+	err = r.deleteUnusedRcloneConfiguration(config, addedFromSecrets)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to delete unused Rclone configuration")
 	}
