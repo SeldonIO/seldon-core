@@ -29,11 +29,8 @@ func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration
 		return nil
 	}
 
-	var addedFromSecrets []string
-	var err error
-
 	// Load any secrets that have Rclone config
-	addedFromSecrets, err = r.loadRcloneSecretsConfiguration(config)
+	addedFromSecrets, err := r.loadRcloneSecretsConfiguration(config)
 	if err != nil {
 		return err
 	}
