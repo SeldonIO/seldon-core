@@ -353,13 +353,16 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 
 func (c *Client) UnloadAllModels() error {
 	logger := c.logger.WithField("func", "UnloadAllModels")
+
 	models, err := c.stateManager.v2Client.GetModels()
 	if err != nil {
 		return err
 	}
+
 	for _, model := range models {
 		if model.State == interfaces.ServerModelState_READY || model.State == interfaces.ServerModelState_LOADING {
 			logger.Infof("Unloading existing model %s", model)
+
 			v2Err := c.stateManager.v2Client.UnloadModel(model.Name)
 			if v2Err != nil {
 				if !v2Err.IsNotFound() {
@@ -369,16 +372,19 @@ func (c *Client) UnloadAllModels() error {
 				}
 			}
 		}
+
 		err := c.ModelRepository.RemoveModelVersion(model.Name)
 		if err != nil {
 			c.logger.WithError(err).Errorf("Model %s could not be removed from repository", model)
 		}
 	}
+
 	return nil
 }
 
 func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	logger := c.logger.WithField("func", "getConnection")
+
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
@@ -388,6 +394,7 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 			return nil, err
 		}
 	}
+
 	var transCreds credentials.TransportCredentials
 	var port int
 	if c.certificateStore == nil {
@@ -399,21 +406,25 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 		transCreds = c.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+
+	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
+
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 	}
-	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}
+
 	return conn, nil
 }
 
 func (c *Client) StartService() error {
 	logger := c.logger.WithField("func", "StartService")
 	logger.Info("Call subscribe to scheduler")
+
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 
 	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
@@ -427,6 +438,7 @@ func (c *Client) StartService() error {
 	if err != nil {
 		return err
 	}
+
 	logger.Info("Subscribed to scheduler")
 
 	// start model scaling events consumer
@@ -434,6 +446,7 @@ func (c *Client) StartService() error {
 	if err != nil {
 		return err
 	}
+
 	c.modelScalingClientStream = clientStream
 	defer func() {
 		_, _ = clientStream.CloseAndRecv()
@@ -445,15 +458,19 @@ func (c *Client) StartService() error {
 			logger.Info("Stopping")
 			break
 		}
+
 		operation, err := stream.Recv()
 		if err != nil {
 			logger.WithError(err).Error("event recv failed")
 			break
 		}
+
 		c.logger.Infof("Received operation")
+
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
+
 			go func() {
 				err := c.LoadModel(operation)
 				if err != nil {
@@ -484,8 +501,10 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	if request.GetModelVersion().GetModel().GetModelSpec().StorageConfig == nil {
 		return nil, nil
 	}
+
 	logger := c.logger.WithField("func", "getArtifactConfig")
 	logger.Infof("Getting Rclone configuration")
+
 	switch x := request.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 	case *pbs.StorageConfig_StorageRcloneConfig:
 		return []byte(x.StorageRcloneConfig), nil
@@ -495,6 +514,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 			if err != nil {
 				return nil, err
 			}
+
 			if request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta() != nil {
 				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(secretClientSet, request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta().GetNamespace())
 			} else {
@@ -502,20 +522,25 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 			}
 
 		}
+
 		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
 		if err != nil {
 			return nil, err
 		}
+
 		return config, nil
 	}
+
 	return nil, nil
 }
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
-	logger := c.logger.WithField("func", "LoadModel")
 	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("Empty request received for load model")
 	}
+
+	logger := c.logger.WithField("func", "LoadModel")
+
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
@@ -532,6 +557,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
+
 	// Copy model artifact
 	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
 		modelWithVersion, pinnedModelVersion, request.GetModelVersion().GetModel().GetModelSpec(), config)
@@ -566,10 +592,12 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 }
 
 func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
-	logger := c.logger.WithField("func", "UnloadModel")
 	if request == nil || request.GetModelVersion() == nil {
 		return fmt.Errorf("Empty request received for unload model")
 	}
+
+	logger := c.logger.WithField("func", "UnloadModel")
+
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
@@ -649,10 +677,12 @@ func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event age
 func (c *Client) drainOnRequest(drainer *drainservice.DrainerService) error {
 	drainer.WaitOnTrigger()
 	c.isDraining.Store(true)
+
 	err := c.sendAgentDrainEvent()
 	if err != nil {
 		c.logger.WithError(err).Warn("Could not drain agent / server")
 	}
+
 	drainer.SetSchedulerDone()
 	return err
 }
@@ -675,6 +705,7 @@ func (c *Client) sendModelScalingTriggerEvent(
 	if scalingType == modelscaling.ScaleDownEvent {
 		triggerType = agent.ModelScalingTriggerMessage_SCALE_DOWN
 	}
+
 	err := c.modelScalingClientStream.Send(&agent.ModelScalingTriggerMessage{
 		ServerName:   c.serverName,
 		ReplicaIdx:   c.replicaIdx,
