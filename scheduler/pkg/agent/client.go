@@ -512,14 +512,16 @@ func (c *Client) StartService() error {
 }
 
 func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte, error) {
-	if request.GetModelVersion().GetModel().GetModelSpec().StorageConfig == nil {
+	model := request.GetModelVersion().GetModel()
+
+	if model.GetModelSpec().StorageConfig == nil {
 		return nil, nil
 	}
 
 	logger := c.logger.WithField("func", "getArtifactConfig")
 	logger.Infof("Getting Rclone configuration")
 
-	switch x := request.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
+	switch x := model.GetModelSpec().GetStorageConfig().GetConfig().(type) {
 	case *pbs.StorageConfig_StorageRcloneConfig:
 		return []byte(x.StorageRcloneConfig), nil
 	case *pbs.StorageConfig_StorageSecretName:
@@ -529,15 +531,15 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 				return nil, err
 			}
 
-			if request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta() != nil {
+			if model.GetMeta().GetKubernetesMeta() != nil {
 				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(
 					secretClientSet,
-					request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta().GetNamespace(),
+					model.GetMeta().GetKubernetesMeta().GetNamespace(),
 				)
 			} else {
 				return nil, fmt.Errorf(
 					"Can't load model %s:%dwith k8s secret %s when namespace not set",
-					request.GetModelVersion().GetModel().GetMeta().GetName(),
+					model.GetMeta().GetName(),
 					request.GetModelVersion().GetVersion(),
 					x.StorageSecretName,
 				)
