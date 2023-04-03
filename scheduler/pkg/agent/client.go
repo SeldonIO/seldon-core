@@ -584,7 +584,11 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 
 	// Copy model artifact
 	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
-		modelWithVersion, pinnedModelVersion, request.GetModelVersion().GetModel().GetModelSpec(), config)
+		modelWithVersion,
+		pinnedModelVersion,
+		request.GetModelVersion().GetModel().GetModelSpec(),
+		config,
+	)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
@@ -592,7 +596,11 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
 	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
+	modifiedModelVersionRequest := getModifiedModelVersion(
+		modelWithVersion,
+		pinnedModelVersion,
+		request.GetModelVersion(),
+	)
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
