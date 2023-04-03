@@ -10,10 +10,10 @@ Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed fe
 
 ### Kubernetes version upgrade
 
-Seldon Core 1.16 bump minimum Kubernetes version to 1.23.
+Seldon Core 1.16 bumps minimum Kubernetes version to 1.23.
 This is because as part of making Seldon Core compatible with Kubernetes 1.25 we moved from `autoscaling/v2beta1` apiVersion of `HorizontalPodAutoscaler` to `autoscaling/v2` (see this [PR](https://github.com/SeldonIO/seldon-core/pull/4172) for further details).
 
-Following table summarize Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
+Following table provides a summary of Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
 
 | Core Version \ K8s Version  | 1.21 | 1.22 | 1.23 | 1.24 | 1.25 | 1.26 |
 |-----------------------------|-----:|-----:|-----:|-----:|-----:|-----:|
