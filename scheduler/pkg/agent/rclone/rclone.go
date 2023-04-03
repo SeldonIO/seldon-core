@@ -228,10 +228,12 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 	if err != nil {
 		return "", err
 	}
+
 	parsed, err := r.parseRcloneConfig(config)
 	if err != nil {
 		return "", err
 	}
+
 	var sb strings.Builder
 	sb.WriteString(":")
 	sb.WriteString(remote)
@@ -239,15 +241,18 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 		sb.WriteString(",")
 		sb.WriteString(k)
 		sb.WriteString("=")
+
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
 			v = strings.Replace(v, `"`, `""`, -1)
 		}
+
 		sb.WriteString(v)
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
 		}
 	}
+
 	return strings.Replace(uri, remote, sb.String(), 1), nil
 }
 
