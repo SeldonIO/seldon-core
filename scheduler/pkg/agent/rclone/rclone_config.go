@@ -24,38 +24,40 @@ import (
 func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration) error {
 	logger := r.logger.WithField("func", "loadRcloneConfiguration")
 
+	if config == nil {
+		logger.Warn("nil config passed")
+		return nil
+	}
+
 	var rcloneNamesAdded []string
 	var err error
-	if config != nil {
-		// Load any secrets that have Rclone config
-		rcloneNamesAdded, err = r.loadRcloneSecretsConfiguration(config)
-		if err != nil {
-			return err
-		}
 
-		// Load any raw Rclone configs
-		rcloneNamesAddedSecrets, err := r.loadRcloneRawConfiguration(config)
-		if err != nil {
-			return err
-		}
-
-		rcloneNamesAdded = append(rcloneNamesAdded, rcloneNamesAddedSecrets...)
-
-		// Delete any existing remotes not in defaults
-		err = r.deleteUnusedRcloneConfiguration(config, rcloneNamesAdded)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to delete unused Rclone configuration")
-		}
-
-		existingRemotes, err := r.ListRemotes()
-		if err != nil {
-			return err
-		}
-
-		logger.Infof("After update current set of remotes is %v", existingRemotes)
-	} else {
-		logger.Warn("nil config passed")
+	// Load any secrets that have Rclone config
+	rcloneNamesAdded, err = r.loadRcloneSecretsConfiguration(config)
+	if err != nil {
+		return err
 	}
+
+	// Load any raw Rclone configs
+	rcloneNamesAddedSecrets, err := r.loadRcloneRawConfiguration(config)
+	if err != nil {
+		return err
+	}
+
+	rcloneNamesAdded = append(rcloneNamesAdded, rcloneNamesAddedSecrets...)
+
+	// Delete any existing remotes not in defaults
+	err = r.deleteUnusedRcloneConfiguration(config, rcloneNamesAdded)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to delete unused Rclone configuration")
+	}
+
+	existingRemotes, err := r.ListRemotes()
+	if err != nil {
+		return err
+	}
+
+	logger.Infof("After update current set of remotes is %v", existingRemotes)
 
 	return nil
 }
