@@ -388,8 +388,10 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		c.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
+		c.certificateStore, err = seldontls.NewCertificateStore(
+			seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -427,14 +429,18 @@ func (c *Client) StartService() error {
 
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 
-	stream, err := grpcClient.Subscribe(context.Background(), &agent.AgentSubscribeRequest{
-		ServerName:           c.serverName,
-		ReplicaIdx:           c.replicaIdx,
-		ReplicaConfig:        c.replicaConfig,
-		LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
-		Shared:               true,
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
-	}, grpc_retry.WithMax(1)) //TODO make configurable
+	stream, err := grpcClient.Subscribe(
+		context.Background(),
+		&agent.AgentSubscribeRequest{
+			ServerName:           c.serverName,
+			ReplicaIdx:           c.replicaIdx,
+			ReplicaConfig:        c.replicaConfig,
+			LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
+			Shared:               true,
+			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+		},
+		grpc_retry.WithMax(1),
+	) //TODO make configurable
 	if err != nil {
 		return err
 	}
@@ -474,7 +480,11 @@ func (c *Client) StartService() error {
 			go func() {
 				err := c.LoadModel(operation)
 				if err != nil {
-					c.logger.WithError(err).Errorf("Failed to handle load model %s:%d", operation.GetModelVersion().GetModel().GetMeta().GetName(), operation.GetModelVersion().GetVersion())
+					c.logger.WithError(err).Errorf(
+						"Failed to handle load model %s:%d",
+						operation.GetModelVersion().GetModel().GetMeta().GetName(),
+						operation.GetModelVersion().GetVersion(),
+					)
 				}
 			}()
 
@@ -483,7 +493,11 @@ func (c *Client) StartService() error {
 			go func() {
 				err := c.UnloadModel(operation)
 				if err != nil {
-					c.logger.WithError(err).Errorf("Failed to handle unload model %s:%d", operation.GetModelVersion().GetModel().GetMeta().GetName(), operation.GetModelVersion().GetVersion())
+					c.logger.WithError(err).Errorf(
+						"Failed to handle unload model %s:%d",
+						operation.GetModelVersion().GetModel().GetMeta().GetName(),
+						operation.GetModelVersion().GetVersion(),
+					)
 				}
 			}()
 		}
@@ -516,9 +530,17 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 			}
 
 			if request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta() != nil {
-				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(secretClientSet, request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta().GetNamespace())
+				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(
+					secretClientSet,
+					request.GetModelVersion().GetModel().GetMeta().GetKubernetesMeta().GetNamespace(),
+				)
 			} else {
-				return nil, fmt.Errorf("Can't load model %s:%dwith k8s secret %s when namespace not set", request.GetModelVersion().GetModel().GetMeta().GetName(), request.GetModelVersion().GetVersion(), x.StorageSecretName)
+				return nil, fmt.Errorf(
+					"Can't load model %s:%dwith k8s secret %s when namespace not set",
+					request.GetModelVersion().GetModel().GetMeta().GetName(),
+					request.GetModelVersion().GetVersion(),
+					x.StorageSecretName,
+				)
 			}
 
 		}
@@ -578,8 +600,8 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	// if scheduler ask for autoscaling, add pointers in model scaling stats
-	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Add on
-	// each one of them
+	// we have done it via the scaling service as not to expose here all the model scaling stats
+	// that we have and then call Add on each one of them
 	if request.AutoscalingEnabled {
 		logger.Debugf("Enabling autoscaling checks for model %s", modelWithVersion)
 		if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
@@ -624,7 +646,10 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	// each one of them
 	// note that we do not check if the model is already enabled for autoscaling, should we?
 	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
-		logger.WithError(err).Warnf("Cannot delete model %s from scaling service, likely that it was not enabled in the first place", modelWithVersion)
+		logger.WithError(err).Warnf(
+			"Cannot delete model %s from scaling service, likely that it was not enabled in the first place",
+			modelWithVersion,
+		)
 	}
 
 	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
@@ -637,7 +662,12 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
 }
 
-func (c *Client) sendModelEventError(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event, err error) {
+func (c *Client) sendModelEventError(
+	modelName string,
+	modelVersion uint32,
+	event agent.ModelEventMessage_Event,
+	err error,
+) {
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
@@ -653,11 +683,20 @@ func (c *Client) sendModelEventError(modelName string, modelVersion uint32, even
 	}
 }
 
-func (c *Client) sendAgentEvent(modelName string, modelVersion uint32, event agent.ModelEventMessage_Event) error {
+func (c *Client) sendAgentEvent(
+	modelName string,
+	modelVersion uint32,
+	event agent.ModelEventMessage_Event,
+) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
 	if c.isDraining.Load() {
 		if event == agent.ModelEventMessage_LOADED {
-			c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, fmt.Errorf("server replica is draining"))
+			c.sendModelEventError(
+				modelName,
+				modelVersion,
+				agent.ModelEventMessage_LOAD_FAILED,
+				fmt.Errorf("server replica is draining"),
+			)
 			return nil
 		}
 	}
@@ -700,7 +739,12 @@ func (c *Client) sendAgentDrainEvent() error {
 }
 
 func (c *Client) sendModelScalingTriggerEvent(
-	modelName string, modelVersion uint32, scalingType modelscaling.ModelScalingEventType, amount uint32, data map[string]uint32) error {
+	modelName string,
+	modelVersion uint32,
+	scalingType modelscaling.ModelScalingEventType,
+	amount uint32,
+	data map[string]uint32,
+) error {
 	triggerType := agent.ModelScalingTriggerMessage_SCALE_UP
 	if scalingType == modelscaling.ScaleDownEvent {
 		triggerType = agent.ModelScalingTriggerMessage_SCALE_DOWN
@@ -726,19 +770,29 @@ func (c *Client) modelScalingEventsConsumer() {
 		if err != nil {
 			c.logger.WithError(err).Warnf(
 				"Trigger model scaling event %d for model %s failed",
-				e.EventType, e.StatsData.ModelName)
+				e.EventType,
+				e.StatsData.ModelName,
+			)
 			continue
-		} else {
-			c.logger.Debugf("Trigger model scaling event %d for model %s:%d with value %d",
-				e.EventType, modelName, modelVersion, e.StatsData.Value)
 		}
+
+		c.logger.Debugf(
+			"Trigger model scaling event %d for model %s:%d with value %d",
+			e.EventType,
+			modelName,
+			modelVersion,
+			e.StatsData.Value,
+		)
+
 		err = c.sendModelScalingTriggerEvent(
 			modelName, modelVersion, e.EventType, e.StatsData.Value, nil,
 		)
 		if err != nil {
 			c.logger.WithError(err).Warnf(
 				"Sending model scaling event %d for model %s failed",
-				e.EventType, e.StatsData.ModelName)
+				e.EventType,
+				e.StatsData.ModelName,
+			)
 			continue
 		}
 	}
