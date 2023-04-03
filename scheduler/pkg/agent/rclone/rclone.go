@@ -110,7 +110,13 @@ func createConfigUpdateFromCreate(create *RcloneConfigCreate) *RcloneConfigUpdat
 	return &update
 }
 
-func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger, namespace string) *RCloneClient {
+func NewRCloneClient(
+	host string,
+	port int,
+	localPath string,
+	logger log.FieldLogger,
+	namespace string,
+) *RCloneClient {
 	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
 		host:       host,
