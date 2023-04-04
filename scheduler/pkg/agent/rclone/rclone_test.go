@@ -88,8 +88,6 @@ func TestRcloneReady(t *testing.T) {
 }
 
 func TestRcloneCopy(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
 	type test struct {
 		name              string
 		modelName         string
@@ -99,17 +97,47 @@ func TestRcloneCopy(t *testing.T) {
 		expectError       bool
 		body              string
 	}
+
 	tests := []test{
-		{name: "ok", modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 200, body: "{}", createLocalFolder: true},
-		{name: "badResponse", modelName: "iris", uri: "gs://seldon-models/sklearn/iris-0.23.2/lr_model", status: 400, body: "{}", createLocalFolder: true, expectError: true},
-		{name: "noFiles", modelName: "iris", uri: "gs://seldon-models/scv2/xyz", status: 200, body: "{}", createLocalFolder: false, expectError: true},
+		{
+			name:              "ok",
+			modelName:         "iris",
+			uri:               "gs://seldon-models/sklearn/iris-0.23.2/lr_model",
+			status:            200,
+			body:              "{}",
+			createLocalFolder: true,
+		},
+		{
+			name:              "badResponse",
+			modelName:         "iris",
+			uri:               "gs://seldon-models/sklearn/iris-0.23.2/lr_model",
+			status:            400,
+			body:              "{}",
+			createLocalFolder: true,
+			expectError:       true,
+		},
+		{
+			name:              "noFiles",
+			modelName:         "iris",
+			uri:               "gs://seldon-models/scv2/xyz",
+			status:            200,
+			body:              "{}",
+			createLocalFolder: false,
+			expectError:       true,
+		},
 	}
+
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
+
 			r := createFakeRcloneClientForCopy(t, test.status, test.body, test.createLocalFolder)
 			_, err := r.Copy(test.modelName, test.uri, []byte{})
+
 			if !test.expectError {
 				g.Expect(err).To(BeNil())
 			} else {
@@ -121,8 +149,6 @@ func TestRcloneCopy(t *testing.T) {
 }
 
 func TestRcloneConfig(t *testing.T) {
-	t.Logf("Started")
-	g := NewGomegaWithT(t)
 	type test struct {
 		name               string
 		config             []byte
@@ -132,6 +158,7 @@ func TestRcloneConfig(t *testing.T) {
 		expectedName       string
 		err                bool
 	}
+
 	tests := []test{
 		{
 			name:               "CreateOK",
@@ -176,20 +203,34 @@ func TestRcloneConfig(t *testing.T) {
 			err:                true,
 		},
 	}
+
+	t.Logf("Started")
+	g := NewGomegaWithT(t)
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
+
 			logger := log.New()
 			log.SetLevel(log.DebugLevel)
 			host := "rclone-server"
 			port := 5572
 			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
-			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d%s", host, port, test.expectedPath),
-				httpmock.NewStringResponder(test.createUpdateStatus, "{}"))
-			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d/config/get", host, port),
-				httpmock.NewStringResponder(200, string(test.existsBody)))
+
+			httpmock.RegisterResponder(
+				"POST",
+				fmt.Sprintf("=~http://%s:%d%s", host, port, test.expectedPath),
+				httpmock.NewStringResponder(test.createUpdateStatus, "{}"),
+			)
+			httpmock.RegisterResponder(
+				"POST",
+				fmt.Sprintf("=~http://%s:%d/config/get", host, port),
+				httpmock.NewStringResponder(200, string(test.existsBody)),
+			)
+
 			name, err := r.Config(test.config)
+
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(name).To(Equal(test.expectedName))
