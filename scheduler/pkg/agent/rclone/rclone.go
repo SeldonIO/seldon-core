@@ -230,7 +230,7 @@ func (r *RCloneClient) parseRcloneConfig(config []byte) (*RcloneConfigCreate, er
 
 // Creating a connection string with https://rclone.org/docs/#connection-strings
 func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, error) {
-	remote, err := getRemoteName(uri)
+	remoteName, err := getRemoteName(uri)
 	if err != nil {
 		return "", err
 	}
@@ -242,7 +242,7 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 
 	var sb strings.Builder
 	sb.WriteString(":")
-	sb.WriteString(remote)
+	sb.WriteString(remoteName)
 	for k, v := range parsed.Parameters {
 		sb.WriteString(",")
 		sb.WriteString(k)
@@ -259,7 +259,7 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 		}
 	}
 
-	return strings.Replace(uri, remote, sb.String(), 1), nil
+	return strings.Replace(uri, remoteName, sb.String(), 1), nil
 }
 
 func (r *RCloneClient) Config(config []byte) (string, error) {
