@@ -33,7 +33,7 @@ setup(
         "opentracing >= 2.2.0, < 2.5.0",
         "jaeger-client >= 4.1.0, < 4.5.0",
         "grpcio-opentracing >= 1.1.4, < 1.2.0",
-        "grpcio-reflection < 1.35.0",
+        "grpcio-reflection < 2.0.0",
         "gunicorn >= 19.9.0, < 20.2.0",
         "setuptools >= 65.5.1",
         "prometheus_client >= 0.7.1, < 0.9.0",
