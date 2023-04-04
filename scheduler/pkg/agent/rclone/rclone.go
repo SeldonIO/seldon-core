@@ -229,29 +229,29 @@ func (r *RCloneClient) parseRcloneConfig(config []byte) (*RcloneConfigCreate, er
 }
 
 // Creating a connection string with https://rclone.org/docs/#connection-strings
-func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, error) {
+func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string, error) {
 	remoteName, err := getRemoteName(uri)
 	if err != nil {
 		return "", err
 	}
 
-	parsed, err := r.parseRcloneConfig(config)
+	config, err := r.parseRcloneConfig(rawConfig)
 	if err != nil {
 		return "", err
 	}
 
-	if parsed.Name != remoteName {
+	if config.Name != remoteName {
 		return "", fmt.Errorf(
 			"storage provider name from URI (%s) does not match secret (%s); are you using the right secret?",
 			remoteName,
-			parsed.Name,
+			config.Name,
 		)
 	}
 
 	var sb strings.Builder
 	sb.WriteString(":")
 	sb.WriteString(remoteName)
-	for k, v := range parsed.Parameters {
+	for k, v := range config.Parameters {
 		sb.WriteString(",")
 		sb.WriteString(k)
 		sb.WriteString("=")
