@@ -234,11 +234,11 @@ if __name__ == "__main__":
                 ):
                     if (
                         res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
-                        == "--metrics-addr=8080"
+                        == "--metrics-addr=:8080"
                     ):
                         res["spec"]["template"]["spec"]["containers"][0]["args"][
                             argIdx
-                        ] = "--metrics-addr=" + helm_value("metrics.port")
+                        ] = "--metrics-addr=:" + helm_value("metrics.port")
 
                 # Networking
                 res["spec"]["template"]["spec"]["hostNetwork"] = helm_value("hostNetwork")
