@@ -250,7 +250,7 @@ func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string
 
 	var sb strings.Builder
 	sb.WriteString(":")
-	sb.WriteString(remoteName)
+	sb.WriteString(config.Type)
 	for k, v := range config.Parameters {
 		sb.WriteString(",")
 		sb.WriteString(k)
