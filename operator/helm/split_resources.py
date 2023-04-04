@@ -221,12 +221,24 @@ if __name__ == "__main__":
                 )
 
                 # Update metrics port
-                res["spec"]["template"]["metadata"]["annotations"]["prometheus.io/port"] = helm_value('metrics.port')
+                res["spec"]["template"]["metadata"]["annotations"]["prometheus.io/port"] = helm_value("metrics.port")
                 for portSpec in res["spec"]["template"]["spec"]["containers"][0][
                     "ports"
                 ]:
                     if portSpec["name"] == "metrics":
                         portSpec["containerPort"] = helm_value("metrics.port")
+
+                for argIdx in range(
+                    0, len(res["spec"]["template"]["spec"]
+                           ["containers"][0]["args"])
+                ):
+                    if (
+                        res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
+                        == "--metrics-addr=8080"
+                    ):
+                        res["spec"]["template"]["spec"]["containers"][0]["args"][
+                            argIdx
+                        ] = "--metrics-addr=" + helm_value("metrics.port")
 
                 # Networking
                 res["spec"]["template"]["spec"]["hostNetwork"] = helm_value("hostNetwork")

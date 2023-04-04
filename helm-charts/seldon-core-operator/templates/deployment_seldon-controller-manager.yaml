@@ -38,6 +38,7 @@ spec:
       - args:
         - --enable-leader-election
         - --webhook-port={{ .Values.webhook.port }}
+        - --metrics-addr={{ .Values.metrics.port }}
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - --log-level=$(MANAGER_LOG_LEVEL)
         - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
