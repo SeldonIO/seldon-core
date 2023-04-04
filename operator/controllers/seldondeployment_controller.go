@@ -459,7 +459,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 			certSecretRefName = predictorCertConfig.CertSecretName
 		}
 		// Add engine deployment if separate
-		hasSeparateEnginePod := strings.ToLower(mlDep.Spec.Annotations[machinelearningv1.ANNOTATION_SEPARATE_ENGINE]) == "true"
+		hasSeparateEnginePod := machinelearningv1.HasSeparateEnginePod(mlDep.Spec)
 		if hasSeparateEnginePod && !noEngine {
 			deploy, err := createEngineDeployment(mlDep, &p, pSvcName, engine_http_port, engine_grpc_port)
 			if err != nil {
