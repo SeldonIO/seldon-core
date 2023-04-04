@@ -16,7 +16,6 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka
 
-import com.google.protobuf.kotlin.toByteString
 import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
 import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
@@ -94,7 +93,7 @@ fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KS
 }
 
 /**
- * Convert the output from one model (a response) to the input for another model (a request).
+ * Convert the output from one model (a response) to the input of another model (a request).
  */
 private fun convertToRequest(
     response: ModelInferResponse,
@@ -308,7 +307,7 @@ fun <T> KStream<T, ModelInferRequest>.convertToResponse(
 }
 
 /**
- * Convert the inout from one model (a request) to the output for another model (a response).
+ * Convert the input from one model (a request) to the output for another model (a response).
  */
 private fun convertToResponse(
     request: ModelInferRequest,
