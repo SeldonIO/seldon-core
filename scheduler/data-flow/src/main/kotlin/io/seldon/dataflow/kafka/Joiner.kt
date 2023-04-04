@@ -171,6 +171,8 @@ class Joiner(
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0 }
             .marshallInferenceV2Request()
     }
 
