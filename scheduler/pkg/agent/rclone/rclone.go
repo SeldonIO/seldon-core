@@ -242,7 +242,7 @@ func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string
 
 	if config.Name != remoteName {
 		return "", fmt.Errorf(
-			"storage provider name from URI (%s) does not match secret (%s); are you using the right secret?",
+			"name from URI (%s) does not match secret (%s); are you using the right storage config?",
 			remoteName,
 			config.Name,
 		)
