@@ -258,12 +258,12 @@ func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string
 
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
-			v = strings.Replace(v, `"`, `""`, -1)
-		}
-
-		sb.WriteString(v)
-		if strings.ContainsAny(v, ":,") {
+			sb.WriteString(
+				strings.Replace(v, `"`, `""`, -1),
+			)
 			sb.WriteString(`"`)
+		} else {
+			sb.WriteString(v)
 		}
 	}
 
