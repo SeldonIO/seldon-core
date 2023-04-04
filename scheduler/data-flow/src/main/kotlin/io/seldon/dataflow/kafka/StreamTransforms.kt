@@ -16,6 +16,7 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka
 
+import com.google.protobuf.kotlin.toByteString
 import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
 import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
@@ -23,7 +24,6 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
-import jdk.incubator.vector.VectorOperators.Test
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier
 
@@ -308,7 +308,7 @@ fun <T> KStream<T, ModelInferRequest>.convertToResponse(
 }
 
 /**
- * Convert the output from one model (a response) to the input for another model (a request).
+ * Convert the inout from one model (a request) to the output for another model (a response).
  */
 private fun convertToResponse(
     request: ModelInferRequest,
