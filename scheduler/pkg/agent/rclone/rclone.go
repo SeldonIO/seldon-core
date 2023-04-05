@@ -229,37 +229,45 @@ func (r *RCloneClient) parseRcloneConfig(config []byte) (*RcloneConfigCreate, er
 }
 
 // Creating a connection string with https://rclone.org/docs/#connection-strings
-func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, error) {
-	remote, err := getRemoteName(uri)
+func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string, error) {
+	remoteName, err := getRemoteName(uri)
 	if err != nil {
 		return "", err
 	}
 
-	parsed, err := r.parseRcloneConfig(config)
+	config, err := r.parseRcloneConfig(rawConfig)
 	if err != nil {
 		return "", err
+	}
+
+	if config.Name != remoteName {
+		return "", fmt.Errorf(
+			"name from URI (%s) does not match secret (%s); are you using the right storage config?",
+			remoteName,
+			config.Name,
+		)
 	}
 
 	var sb strings.Builder
 	sb.WriteString(":")
-	sb.WriteString(remote)
-	for k, v := range parsed.Parameters {
+	sb.WriteString(config.Type)
+	for k, v := range config.Parameters {
 		sb.WriteString(",")
 		sb.WriteString(k)
 		sb.WriteString("=")
 
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
-			v = strings.Replace(v, `"`, `""`, -1)
-		}
-
-		sb.WriteString(v)
-		if strings.ContainsAny(v, ":,") {
+			sb.WriteString(
+				strings.Replace(v, `"`, `""`, -1),
+			)
 			sb.WriteString(`"`)
+		} else {
+			sb.WriteString(v)
 		}
 	}
 
-	return strings.Replace(uri, remote, sb.String(), 1), nil
+	return strings.Replace(uri, remoteName, sb.String(), 1), nil
 }
 
 func (r *RCloneClient) Config(config []byte) (string, error) {
