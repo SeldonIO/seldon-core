@@ -26,6 +26,58 @@ enum class DataType {
     BOOL, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FP16, FP32, FP64, BYTES
 }
 
+fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2Dataplane.ModelInferRequest {
+    val builder = request.toBuilder()
+    request.inputsList.forEachIndexed { idx, input ->
+        val v = when (DataType.valueOf(input.datatype)) {
+            DataType.UINT8 -> input.contents.toUint8Bytes()
+            DataType.UINT16 -> input.contents.toUint16Bytes()
+            DataType.UINT32 -> input.contents.toUint32Bytes()
+            DataType.UINT64 -> input.contents.toUint64Bytes()
+            DataType.INT8 -> input.contents.toInt8Bytes()
+            DataType.INT16 -> input.contents.toInt16Bytes()
+            DataType.INT32 -> input.contents.toInt32Bytes()
+            DataType.INT64 -> input.contents.toInt64Bytes()
+            DataType.BOOL -> input.contents.toBoolBytes()
+            DataType.FP16, // may need to handle this separately in future
+            DataType.FP32 -> input.contents.toFp32Bytes()
+            DataType.FP64 -> input.contents.toFp64Bytes()
+            DataType.BYTES -> input.contents.toRawBytes()
+        }
+        // Add raw contents
+        builder.addRawInputContents(v.toByteString())
+        // Clear the contents now we have added the raw inputs
+        builder.getInputsBuilder(idx).clearContents()
+    }
+    return builder.build()
+}
+
+fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse): V2Dataplane.ModelInferResponse {
+    val builder = request.toBuilder()
+    request.outputsList.forEachIndexed { idx, output ->
+        val v = when (DataType.valueOf(output.datatype)) {
+            DataType.UINT8 -> output.contents.toUint8Bytes()
+            DataType.UINT16 -> output.contents.toUint16Bytes()
+            DataType.UINT32 -> output.contents.toUint32Bytes()
+            DataType.UINT64 -> output.contents.toUint64Bytes()
+            DataType.INT8 -> output.contents.toInt8Bytes()
+            DataType.INT16 -> output.contents.toInt16Bytes()
+            DataType.INT32 -> output.contents.toInt32Bytes()
+            DataType.INT64 -> output.contents.toInt64Bytes()
+            DataType.BOOL -> output.contents.toBoolBytes()
+            DataType.FP16, // may need to handle this separately in future
+            DataType.FP32 -> output.contents.toFp32Bytes()
+            DataType.FP64 -> output.contents.toFp64Bytes()
+            DataType.BYTES -> output.contents.toRawBytes()
+        }
+        // Add raw contents
+        builder.addRawOutputContents(v.toByteString())
+        // Clear the contents now we have added the raw outputs
+        builder.getOutputsBuilder(idx).clearContents()
+    }
+    return builder.build()
+}
+
 fun InferTensorContents.toUint8Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
@@ -154,56 +206,3 @@ fun InferTensorContents.toRawBytes(): ByteArray = this.bytesContentsList
             .toList()
     }
     .toByteArray()
-
-fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2Dataplane.ModelInferRequest {
-    val builder = request.toBuilder()
-    request.inputsList.forEachIndexed { idx, input ->
-        val v = when (DataType.valueOf(input.datatype)) {
-            DataType.UINT8 -> input.contents.toUint8Bytes()
-            DataType.UINT16 -> input.contents.toUint16Bytes()
-            DataType.UINT32 -> input.contents.toUint32Bytes()
-            DataType.UINT64 -> input.contents.toUint64Bytes()
-            DataType.INT8 -> input.contents.toInt8Bytes()
-            DataType.INT16 -> input.contents.toInt16Bytes()
-            DataType.INT32 -> input.contents.toInt32Bytes()
-            DataType.INT64 -> input.contents.toInt64Bytes()
-            DataType.BOOL -> input.contents.toBoolBytes()
-            DataType.FP16, // may need to handle this separately in future
-            DataType.FP32 -> input.contents.toFp32Bytes()
-            DataType.FP64 -> input.contents.toFp64Bytes()
-            DataType.BYTES -> input.contents.toRawBytes()
-        }
-        // Add raw contents
-        builder.addRawInputContents(v.toByteString())
-        // Clear the contents now we have added the raw inputs
-        builder.getInputsBuilder(idx).clearContents()
-    }
-    return builder.build()
-}
-
-fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse): V2Dataplane.ModelInferResponse {
-    val builder = request.toBuilder()
-    request.outputsList.forEachIndexed { idx, output ->
-        val v = when (DataType.valueOf(output.datatype)) {
-            DataType.UINT8 -> output.contents.toUint8Bytes()
-            DataType.UINT16 -> output.contents.toUint16Bytes()
-            DataType.UINT32 -> output.contents.toUint32Bytes()
-            DataType.UINT64 -> output.contents.toUint64Bytes()
-            DataType.INT8 -> output.contents.toInt8Bytes()
-            DataType.INT16 -> output.contents.toInt16Bytes()
-            DataType.INT32 -> output.contents.toInt32Bytes()
-            DataType.INT64 -> output.contents.toInt64Bytes()
-            DataType.BOOL -> output.contents.toBoolBytes()
-            DataType.FP16, // may need to handle this separately in future
-            DataType.FP32 -> output.contents.toFp32Bytes()
-            DataType.FP64 -> output.contents.toFp64Bytes()
-            DataType.BYTES -> output.contents.toRawBytes()
-        }
-        // Add raw contents
-        builder.addRawOutputContents(v.toByteString())
-        // Clear the contents now we have added the raw outputs
-        builder.getOutputsBuilder(idx).clearContents()
-    }
-    return builder.build()
-}
-
