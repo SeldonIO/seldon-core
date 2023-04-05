@@ -110,7 +110,13 @@ func createConfigUpdateFromCreate(create *RcloneConfigCreate) *RcloneConfigUpdat
 	return &update
 }
 
-func NewRCloneClient(host string, port int, localPath string, logger log.FieldLogger, namespace string) *RCloneClient {
+func NewRCloneClient(
+	host string,
+	port int,
+	localPath string,
+	logger log.FieldLogger,
+	namespace string,
+) *RCloneClient {
 	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
 		host:       host,
@@ -228,10 +234,12 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 	if err != nil {
 		return "", err
 	}
+
 	parsed, err := r.parseRcloneConfig(config)
 	if err != nil {
 		return "", err
 	}
+
 	var sb strings.Builder
 	sb.WriteString(":")
 	sb.WriteString(remote)
@@ -239,15 +247,18 @@ func (r *RCloneClient) createUriWithConfig(uri string, config []byte) (string, e
 		sb.WriteString(",")
 		sb.WriteString(k)
 		sb.WriteString("=")
+
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
 			v = strings.Replace(v, `"`, `""`, -1)
 		}
+
 		sb.WriteString(v)
 		if strings.ContainsAny(v, ":,") {
 			sb.WriteString(`"`)
 		}
 	}
+
 	return strings.Replace(uri, remote, sb.String(), 1), nil
 }
 
@@ -305,21 +316,26 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	if err != nil {
 		return "", err
 	}
+
 	dst := fmt.Sprintf("%s/%d", r.localPath, hash)
 	copy := RcloneCopy{
 		SrcFs:              srcUpdated,
 		DstFs:              dst,
 		CreateEmptySrcDirs: true,
 	}
+
 	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, srcUri, dst)
+
 	b, err := json.Marshal(copy)
 	if err != nil {
 		return "", err
 	}
+
 	_, err = r.call(b, RcloneSyncCopyPath)
 	if err != nil {
 		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
 	}
+
 	// Even if we had success from rclone the src may be empty so need to check
 	pathExists, err := pathExists(dst)
 	if err != nil {
@@ -328,6 +344,7 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	if !pathExists {
 		return "", fmt.Errorf("Failed to download from %s any files", srcUri)
 	}
+
 	return dst, nil
 }
 

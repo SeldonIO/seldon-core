@@ -68,7 +68,8 @@ func NewModelRepository(logger log.FieldLogger,
 	}
 }
 
-func (r *V2ModelRepository) DownloadModelVersion(modelName string,
+func (r *V2ModelRepository) DownloadModelVersion(
+	modelName string,
 	version uint32,
 	modelSpec *scheduler.ModelSpec,
 	config []byte,
@@ -80,6 +81,7 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	srcUri := modelSpec.Uri
 	explainerSpec := modelSpec.GetExplainer()
 	parameters := modelSpec.GetParameters()
+
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
 	// Run rclone copy sync
@@ -89,11 +91,23 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Find the version folder we want
-	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(modelName, artifactVersion, rclonePath)
+	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(
+		modelName,
+		artifactVersion,
+		rclonePath,
+	)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("Found model %s:%d artifactVersion %d for %s at %s ", modelName, version, artifactVersion, srcUri, modelVersionFolder)
+
+	logger.Debugf(
+		"Found model %s:%d artifactVersion %d for %s at %s ",
+		modelName,
+		version,
+		artifactVersion,
+		srcUri,
+		modelVersionFolder,
+	)
 
 	// Create model directory if needed in model repo
 	modelPathInRepo := filepath.Join(r.repoPath, modelName)
@@ -117,14 +131,24 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Update model version in repo
-	err = r.modelrepositoryHandler.UpdateModelVersion(modelName, version, modelVersionPathInRepo, modelSpec)
+	err = r.modelrepositoryHandler.UpdateModelVersion(
+		modelName,
+		version,
+		modelVersionPathInRepo,
+		modelSpec,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update details for blackbox explainer
 	if explainerSpec != nil {
-		err = r.modelrepositoryHandler.SetExplainer(modelVersionPathInRepo, explainerSpec, r.envoyHost, r.envoyPort)
+		err = r.modelrepositoryHandler.SetExplainer(
+			modelVersionPathInRepo,
+			explainerSpec,
+			r.envoyHost,
+			r.envoyPort,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +161,12 @@ func (r *V2ModelRepository) DownloadModelVersion(modelName string,
 	}
 
 	// Update global model configuration
-	err = r.modelrepositoryHandler.UpdateModelRepository(modelName, modelVersionFolder, foundVersionFolder, modelPathInRepo)
+	err = r.modelrepositoryHandler.UpdateModelRepository(
+		modelName,
+		modelVersionFolder,
+		foundVersionFolder,
+		modelPathInRepo,
+	)
 	if err != nil {
 		return nil, err
 	}

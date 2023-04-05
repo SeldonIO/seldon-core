@@ -41,16 +41,19 @@ func (s *SecretHandler) GetSecretConfig(secretName string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if len(secret.Data) == 1 {
 		for _, val := range secret.Data {
 			return val, nil
 		}
 	}
+
 	if len(secret.StringData) == 1 {
 		for _, val := range secret.StringData {
 			return []byte(val), nil
 		}
 	}
+
 	//TODO allow more than 1 key in secret
 	return nil, fmt.Errorf("Secret does not have 1 key %s", secretName)
 }
