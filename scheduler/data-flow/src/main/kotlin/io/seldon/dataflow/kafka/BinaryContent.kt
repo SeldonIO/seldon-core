@@ -23,6 +23,7 @@ import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
+// FP16 is only supported for binary contents, as Protobuf has no corresponding type.
 enum class DataType {
     BOOL,
     BYTES,
