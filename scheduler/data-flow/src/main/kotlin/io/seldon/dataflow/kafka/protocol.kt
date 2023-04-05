@@ -18,7 +18,6 @@ package io.seldon.dataflow.kafka
 
 import com.google.protobuf.kotlin.toByteString
 import io.seldon.mlops.inference.v2.V2Dataplane
-import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
