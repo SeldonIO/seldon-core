@@ -90,7 +90,7 @@ fun ModelInferResponse.withBinaryContents(): ModelInferResponse {
     }
 }
 
-fun InferTensorContents.toUint8Bytes(): ByteArray = this.uintContentsList
+private fun InferTensorContents.toUint8Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
             .allocate(1)
@@ -100,7 +100,7 @@ fun InferTensorContents.toUint8Bytes(): ByteArray = this.uintContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toUint16Bytes(): ByteArray = this.uintContentsList
+private fun InferTensorContents.toUint16Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
             .allocate(UShort.SIZE_BYTES)
@@ -110,7 +110,7 @@ fun InferTensorContents.toUint16Bytes(): ByteArray = this.uintContentsList
             .toList()
     }.toByteArray()
 
-fun InferTensorContents.toUint32Bytes(): ByteArray = this.uintContentsList
+private fun InferTensorContents.toUint32Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
             .allocate(UInt.SIZE_BYTES)
@@ -121,7 +121,7 @@ fun InferTensorContents.toUint32Bytes(): ByteArray = this.uintContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toUint64Bytes(): ByteArray = this.uint64ContentsList
+private fun InferTensorContents.toUint64Bytes(): ByteArray = this.uint64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(ULong.SIZE_BYTES)
@@ -132,7 +132,7 @@ fun InferTensorContents.toUint64Bytes(): ByteArray = this.uint64ContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toInt8Bytes(): ByteArray = this.intContentsList
+private fun InferTensorContents.toInt8Bytes(): ByteArray = this.intContentsList
     .flatMap {
         ByteBuffer
             .allocate(1)
@@ -142,7 +142,7 @@ fun InferTensorContents.toInt8Bytes(): ByteArray = this.intContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toInt16Bytes(): ByteArray = this.intContentsList
+private fun InferTensorContents.toInt16Bytes(): ByteArray = this.intContentsList
     .flatMap {
         ByteBuffer
             .allocate(Short.SIZE_BYTES)
@@ -153,7 +153,7 @@ fun InferTensorContents.toInt16Bytes(): ByteArray = this.intContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toInt32Bytes(): ByteArray = this.intContentsList
+private fun InferTensorContents.toInt32Bytes(): ByteArray = this.intContentsList
     .flatMap {
         ByteBuffer
             .allocate(Int.SIZE_BYTES)
@@ -164,7 +164,7 @@ fun InferTensorContents.toInt32Bytes(): ByteArray = this.intContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toInt64Bytes(): ByteArray = this.int64ContentsList
+private fun InferTensorContents.toInt64Bytes(): ByteArray = this.int64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Long.SIZE_BYTES)
@@ -175,7 +175,7 @@ fun InferTensorContents.toInt64Bytes(): ByteArray = this.int64ContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toFp32Bytes(): ByteArray = this.fp32ContentsList
+private fun InferTensorContents.toFp32Bytes(): ByteArray = this.fp32ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Float.SIZE_BYTES)
@@ -186,7 +186,7 @@ fun InferTensorContents.toFp32Bytes(): ByteArray = this.fp32ContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toFp64Bytes(): ByteArray = this.fp64ContentsList
+private fun InferTensorContents.toFp64Bytes(): ByteArray = this.fp64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Double.SIZE_BYTES)
@@ -197,7 +197,7 @@ fun InferTensorContents.toFp64Bytes(): ByteArray = this.fp64ContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toBoolBytes(): ByteArray = this.boolContentsList
+private fun InferTensorContents.toBoolBytes(): ByteArray = this.boolContentsList
     .flatMap {
         ByteBuffer
             .allocate(1)
@@ -207,7 +207,7 @@ fun InferTensorContents.toBoolBytes(): ByteArray = this.boolContentsList
     }
     .toByteArray()
 
-fun InferTensorContents.toRawBytes(): ByteArray = this.bytesContentsList
+private fun InferTensorContents.toRawBytes(): ByteArray = this.bytesContentsList
     .flatMap {
         ByteBuffer
             .allocate(it.size() + Int.SIZE_BYTES)
