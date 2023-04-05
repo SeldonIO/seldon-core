@@ -192,8 +192,13 @@ class Joiner(
         if (right == null) {
             return left
         }
-        val leftRequest = V2Dataplane.ModelInferRequest.parseFrom(left)
-        val rightRequest = V2Dataplane.ModelInferRequest.parseFrom(right)
+        var leftRequest = V2Dataplane.ModelInferRequest.parseFrom(left)
+        var rightRequest = V2Dataplane.ModelInferRequest.parseFrom(right)
+        if (leftRequest.rawInputContentsCount > 0 && rightRequest.rawInputContentsCount == 0) {
+            rightRequest = convertRequestToRawInputContents(rightRequest)
+        } else if (rightRequest.rawInputContentsCount > 0 && leftRequest.rawInputContentsCount == 0) {
+            leftRequest = convertRequestToRawInputContents(leftRequest)
+        }
         val request = V2Dataplane.ModelInferRequest
             .newBuilder()
             .setId(leftRequest.id)
@@ -213,8 +218,13 @@ class Joiner(
         if (right == null) {
             return left
         }
-        val leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
-        val rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
+        var leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
+        var rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
+        if (leftResponse.rawOutputContentsCount > 0 && rightResponse.rawOutputContentsCount == 0) {
+            rightResponse = convertResponseToRawOutputContents(rightResponse)
+        } else if (rightResponse.rawOutputContentsCount > 0 && leftResponse.rawOutputContentsCount == 0) {
+            leftResponse = convertResponseToRawOutputContents(leftResponse)
+        }
         val response = V2Dataplane.ModelInferResponse
             .newBuilder()
             .setId(leftResponse.id)

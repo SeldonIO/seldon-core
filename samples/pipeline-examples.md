@@ -108,7 +108,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "cg4617kqieos73a7nuj0",
+        "uid": "cgm2pdosogbs73emfvm0",
         "version": 1,
         "steps": [
           {
@@ -136,7 +136,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-03-08T10:17:03.193598898Z",
+        "lastChangeTimestamp": "2023-04-04T13:57:11.631385497Z",
         "modelsReady": true
       }
     }
@@ -368,6 +368,295 @@ seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 
 ```bash
 seldon pipeline unload tfsimples
+```
+
+```json
+{}
+
+```
+
+```bash
+seldon model unload tfsimple1
+seldon model unload tfsimple2
+```
+
+```json
+{}
+{}
+
+```
+
+### Model Chaining from inputs
+
+Chain the output of one model into the next. Shows using the input and outputs and combining.
+
+```bash
+cat ./models/tfsimple1.yaml
+cat ./models/tfsimple2.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: tfsimple1
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  requirements:
+  - tensorflow
+  memory: 100Ki
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: tfsimple2
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  requirements:
+  - tensorflow
+  memory: 100Ki
+
+```
+
+```bash
+seldon model load -f ./models/tfsimple1.yaml
+seldon model load -f ./models/tfsimple2.yaml
+```
+
+```json
+{}
+{}
+
+```
+
+```bash
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple2 -w ModelAvailable | jq -M .
+```
+
+```json
+{}
+{}
+
+```
+
+```bash
+cat ./pipelines/tfsimples-input.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimples-input
+spec:
+  steps:
+    - name: tfsimple1
+    - name: tfsimple2
+      inputs:
+      - tfsimple1.inputs.INPUT0
+      - tfsimple1.outputs.OUTPUT1
+      tensorMap:
+        tfsimple1.outputs.OUTPUT1: INPUT1
+  output:
+    steps:
+    - tfsimple2
+
+```
+
+```bash
+seldon pipeline load -f ./pipelines/tfsimples-input.yaml
+```
+
+```json
+{}
+
+```
+
+```bash
+seldon pipeline status tfsimples-input -w PipelineReady| jq -M .
+```
+
+```json
+{
+  "pipelineName": "tfsimples-input",
+  "versions": [
+    {
+      "pipeline": {
+        "name": "tfsimples-input",
+        "uid": "cgm33165u83c73dgvr00",
+        "version": 1,
+        "steps": [
+          {
+            "name": "tfsimple1"
+          },
+          {
+            "name": "tfsimple2",
+            "inputs": [
+              "tfsimple1.inputs.INPUT0",
+              "tfsimple1.outputs.OUTPUT1"
+            ],
+            "tensorMap": {
+              "tfsimple1.outputs.OUTPUT1": "INPUT1"
+            }
+          }
+        ],
+        "output": {
+          "steps": [
+            "tfsimple2.outputs"
+          ]
+        },
+        "kubernetesMeta": {}
+      },
+      "state": {
+        "pipelineVersion": 1,
+        "status": "PipelineReady",
+        "reason": "created pipeline",
+        "lastChangeTimestamp": "2023-04-04T14:17:41.667004853Z",
+        "modelsReady": true
+      }
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline infer tfsimples-input \
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
+
+```json
+{
+  "model_name": "",
+  "outputs": [
+    {
+      "data": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline infer tfsimples-input --inference-mode grpc \
+    '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
+
+```json
+{
+  "outputs": [
+    {
+      "name": "OUTPUT0",
+      "datatype": "INT32",
+      "shape": [
+        "1",
+        "16"
+      ],
+      "contents": {
+        "intContents": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "name": "OUTPUT1",
+      "datatype": "INT32",
+      "shape": [
+        "1",
+        "16"
+      ],
+      "contents": {
+        "intContents": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      }
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline unload tfsimples-input
 ```
 
 ```json
