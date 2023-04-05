@@ -45,9 +45,9 @@ fun ModelInferRequest.withBinaryContents(): ModelInferRequest {
                 DataType.FP64 -> input.contents.toFp64Bytes()
                 DataType.BYTES -> input.contents.toRawBytes()
             }
-            // Add raw contents
+
+            // Add binary data and clear corresponding contents.
             addRawInputContents(v.toByteString())
-            // Clear the contents now we have added the raw inputs
             getInputsBuilder(idx).clearContents()
         }
 
@@ -73,9 +73,9 @@ fun ModelInferResponse.withBinaryContents(): ModelInferResponse {
                 DataType.FP64 -> output.contents.toFp64Bytes()
                 DataType.BYTES -> output.contents.toRawBytes()
             }
-            // Add raw contents
+
+            // Add binary data and clear corresponding contents.
             addRawOutputContents(v.toByteString())
-            // Clear the contents now we have added the raw outputs
             getOutputsBuilder(idx).clearContents()
         }
 
