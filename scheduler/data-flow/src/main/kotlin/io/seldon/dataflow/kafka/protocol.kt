@@ -2,6 +2,7 @@ package io.seldon.dataflow.kafka
 
 import com.google.protobuf.kotlin.toByteString
 import io.seldon.mlops.inference.v2.V2Dataplane
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -100,7 +101,9 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
                         .toList()
                 }.toByteArray()
             }
-            DataType.FP16, // as data is stored as FP32 we treat the same. Its unclear if Triton would handdle this correctly though
+            DataType.FP16 -> {  // as data is stored as FP32 we treat the same. Its unclear if Triton would handle this correctly though
+                throw UnsupportedOperationException("FP16 is not presently supported in Pipeline joins")
+            }
             DataType.FP32 -> {
                 input.contents.fp32ContentsList.flatMap {
                     ByteBuffer
@@ -136,7 +139,7 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
         // Add raw contents
         builder.addRawInputContents(v.toByteString())
         // Clear the contents now we have added the raw inputs
-        builder.setInputs(idx, input.toBuilder().clearContents())
+        builder.getInputsBuilder(idx).clearContents()
     }
     return builder.build()
 }
@@ -230,7 +233,9 @@ fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse):
                         .array().toList()
                 }.toByteArray()
             }
-            DataType.FP16, // Unclear if this is correct as will be stored as 4 byte floats so Triton may not handle this
+            DataType.FP16 -> {  // as data is stored as FP32 we treat the same. Its unclear if Triton would handle this correctly though
+                throw UnsupportedOperationException("FP16 is not presently supported in Pipeline joins")
+            }
             DataType.FP32 -> {
                 output.contents.fp32ContentsList.flatMap {
                     ByteBuffer
@@ -266,7 +271,7 @@ fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse):
         // Add raw contents
         builder.addRawOutputContents(v.toByteString())
         // Clear the contents now we have added the raw outputs
-        builder.setOutputs(idx, output.toBuilder().clearContents())
+        builder.getOutputsBuilder(idx).clearContents()
     }
     return builder.build()
 }
