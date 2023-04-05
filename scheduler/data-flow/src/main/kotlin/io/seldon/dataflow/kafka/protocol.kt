@@ -39,14 +39,14 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
                 }.toByteArray()
             }
             DataType.UINT16 -> {
-               input.contents.uintContentsList.flatMap {
-                   ByteBuffer
-                       .allocate(UShort.SIZE_BYTES)
-                       .order(ByteOrder.LITTLE_ENDIAN)
-                       .putShort(it.toShort())
-                       .array()
-                       .toList()
-               }.toByteArray()
+                input.contents.uintContentsList.flatMap {
+                    ByteBuffer
+                        .allocate(UShort.SIZE_BYTES)
+                        .order(ByteOrder.LITTLE_ENDIAN)
+                        .putShort(it.toShort())
+                        .array()
+                        .toList()
+                }.toByteArray()
             }
             DataType.UINT32 -> {
                 input.contents.uintContentsList.flatMap {
