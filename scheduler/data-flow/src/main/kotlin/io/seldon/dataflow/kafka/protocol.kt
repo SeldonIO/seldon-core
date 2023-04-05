@@ -111,7 +111,7 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
                 input.contents.boolContentsList.flatMap {
                     ByteBuffer
                         .allocate(1)
-                        .put(if (it) {1} else {0})
+                        .put(if (it) 1 else 0)
                         .array()
                         .toList()
                 }.toByteArray()
@@ -242,7 +242,7 @@ fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse):
             DataType.BOOL -> {
                 output.contents.boolContentsList.flatMap {
                     ByteBuffer.allocate(1)
-                        .put(if (it) {1} else {0})
+                        .put(if (it) 1 else 0)
                         .array().toList()
                 }.toByteArray()
             }
