@@ -32,6 +32,8 @@ enum class DataType {
     FP16, FP32, FP64,
 }
 
+private val binaryContentsByteOrder = ByteOrder.LITTLE_ENDIAN
+
 fun ModelInferRequest.withBinaryContents(): ModelInferRequest {
     return this.toBuilder().run {
         inputsList.forEachIndexed { idx, input ->
@@ -102,7 +104,7 @@ fun InferTensorContents.toUint16Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
             .allocate(UShort.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putShort(it.toShort())
             .array()
             .toList()
@@ -112,7 +114,7 @@ fun InferTensorContents.toUint32Bytes(): ByteArray = this.uintContentsList
     .flatMap {
         ByteBuffer
             .allocate(UInt.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putInt(it)
             .array()
             .toList()
@@ -123,7 +125,7 @@ fun InferTensorContents.toUint64Bytes(): ByteArray = this.uint64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(ULong.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putLong(it)
             .array()
             .toList()
@@ -144,7 +146,7 @@ fun InferTensorContents.toInt16Bytes(): ByteArray = this.intContentsList
     .flatMap {
         ByteBuffer
             .allocate(Short.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putShort(it.toShort())
             .array()
             .toList()
@@ -155,7 +157,7 @@ fun InferTensorContents.toInt32Bytes(): ByteArray = this.intContentsList
     .flatMap {
         ByteBuffer
             .allocate(Int.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putInt(it)
             .array()
             .toList()
@@ -166,7 +168,7 @@ fun InferTensorContents.toInt64Bytes(): ByteArray = this.int64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Long.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putLong(it)
             .array()
             .toList()
@@ -177,7 +179,7 @@ fun InferTensorContents.toFp32Bytes(): ByteArray = this.fp32ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Float.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putFloat(it)
             .array()
             .toList()
@@ -188,7 +190,7 @@ fun InferTensorContents.toFp64Bytes(): ByteArray = this.fp64ContentsList
     .flatMap {
         ByteBuffer
             .allocate(Double.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putDouble(it)
             .array()
             .toList()
@@ -209,7 +211,7 @@ fun InferTensorContents.toRawBytes(): ByteArray = this.bytesContentsList
     .flatMap {
         ByteBuffer
             .allocate(it.size() + Int.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
+            .order(binaryContentsByteOrder)
             .putInt(it.size())
             .put(it.toByteArray())
             .array()
