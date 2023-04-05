@@ -1,18 +1,21 @@
 # Cloud Storage
 
-Inference artifacts referenced in Models can be stored in local mounted folders or on any of the cloud storage technologies supported by [Rclone](https://rclone.org/). Public Google buckets work by default which allows us to use examples such as below:
+Inference artifacts referenced in Models can be stored in local mounted folders or on any of the cloud storage technologies supported by [Rclone](https://rclone.org/).
+Public Google buckets work by default which allows us to use examples such as below:
 
 ```{literalinclude} ../../../../../samples/models/sklearn-iris-gs.yaml 
 :language: yaml
 ```
 
-The format for defining your Rclone storage credentials is described [here](https://rclone.org/rc/#config-create). The main requirements will be to choose a particular `type` and `name` to use in storage urls and set the parameters as described in the Rclone docs where the parameters follow the given options described in the docs where for example `--gcs-client-secret` can be added as a paramater `client_secret`, i.e. without the type prefix and with underscores.
+The format for defining your Rclone storage credentials is described [here](https://rclone.org/rc/#config-create).
+The main requirements will be to choose a particular `type` and `name` to use in storage urls and set the parameters as described in the Rclone docs where the parameters follow the given options described in the docs where for example `--gcs-client-secret` can be added as a paramater `client_secret`, i.e. without the type prefix and with underscores.
 
 To add authorization for cloud storage you need to define an Rclone provider as discussed below in a Kubernetes Secret.
 
 ## Kubernetes Secret
 
-You can provide the provider credentials in a Kubernetes secret. We show some examples in the following sections.
+You can provide the provider credentials in a Kubernetes secret.
+We show some examples in the following sections.
 
 ### S3 Minio Example
 
