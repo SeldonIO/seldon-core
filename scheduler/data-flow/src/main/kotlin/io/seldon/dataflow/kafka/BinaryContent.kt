@@ -24,7 +24,11 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 enum class DataType {
-    BOOL, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FP16, FP32, FP64, BYTES
+    BOOL,
+    BYTES,
+    UINT8, UINT16, UINT32, UINT64,
+    INT8, INT16, INT32, INT64,
+    FP16, FP32, FP64,
 }
 
 fun ModelInferRequest.withBinaryContents(): ModelInferRequest {
