@@ -101,9 +101,7 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
                         .toList()
                 }.toByteArray()
             }
-            DataType.FP16 -> {  // as data is stored as FP32 we treat the same. Its unclear if Triton would handle this correctly though
-                throw UnsupportedOperationException("FP16 is not presently supported in Pipeline joins")
-            }
+            DataType.FP16, // may need to handle this separately in future
             DataType.FP32 -> {
                 input.contents.fp32ContentsList.flatMap {
                     ByteBuffer
@@ -233,9 +231,7 @@ fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse):
                         .array().toList()
                 }.toByteArray()
             }
-            DataType.FP16 -> {  // as data is stored as FP32 we treat the same. Its unclear if Triton would handle this correctly though
-                throw UnsupportedOperationException("FP16 is not presently supported in Pipeline joins")
-            }
+            DataType.FP16, // may need to handle this separately in future
             DataType.FP32 -> {
                 output.contents.fp32ContentsList.flatMap {
                     ByteBuffer
