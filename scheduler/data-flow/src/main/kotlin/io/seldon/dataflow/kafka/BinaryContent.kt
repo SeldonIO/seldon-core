@@ -17,8 +17,9 @@ limitations under the License.
 package io.seldon.dataflow.kafka
 
 import com.google.protobuf.kotlin.toByteString
-import io.seldon.mlops.inference.v2.V2Dataplane
 import io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents
+import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
+import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -26,9 +27,9 @@ enum class DataType {
     BOOL, UINT8, UINT16, UINT32, UINT64, INT8, INT16, INT32, INT64, FP16, FP32, FP64, BYTES
 }
 
-fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2Dataplane.ModelInferRequest {
-    val builder = request.toBuilder()
-    request.inputsList.forEachIndexed { idx, input ->
+fun ModelInferRequest.withBinaryContents(): ModelInferRequest {
+    val builder = this.toBuilder()
+    this.inputsList.forEachIndexed { idx, input ->
         val v = when (DataType.valueOf(input.datatype)) {
             DataType.UINT8 -> input.contents.toUint8Bytes()
             DataType.UINT16 -> input.contents.toUint16Bytes()
@@ -52,9 +53,9 @@ fun convertRequestToRawInputContents(request: V2Dataplane.ModelInferRequest): V2
     return builder.build()
 }
 
-fun convertResponseToRawOutputContents(request: V2Dataplane.ModelInferResponse): V2Dataplane.ModelInferResponse {
-    val builder = request.toBuilder()
-    request.outputsList.forEachIndexed { idx, output ->
+fun ModelInferResponse.withBinaryContents(): ModelInferResponse {
+    val builder = this.toBuilder()
+    this.outputsList.forEachIndexed { idx, output ->
         val v = when (DataType.valueOf(output.datatype)) {
             DataType.UINT8 -> output.contents.toUint8Bytes()
             DataType.UINT16 -> output.contents.toUint16Bytes()
