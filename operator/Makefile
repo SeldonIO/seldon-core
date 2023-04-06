@@ -1,13 +1,13 @@
 CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 # Image URL to use all building/pushing image targets
-G ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
-ENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
-LONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-SERVER_IMG ?= seldonio/mlserver:1.3.0.rc2
-ITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
-ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-VTEST_K8S_VERSION = 1.22
+IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
+RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
+MLSERVER_IMG ?= seldonio/mlserver:1.3.0.rc2
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
+# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
+ENVTEST_K8S_VERSION = 1.22
 KIND_NAME=seldon
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
