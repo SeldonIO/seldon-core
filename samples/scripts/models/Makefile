@@ -1,7 +1,7 @@
 VERSION := $(shell grep seldonio/mlserver ../../../scheduler/Makefile | cut -d':' -f2)
 MLSERVER_VERSION ?= ${VERSION}
 MLSERVER_FOLDER = mlserver_${MLSERVER_VERSION}
-TRITON_VERSION=22-11
+TRITON_VERSION=23-03
 TRITON_FOLDER=triton_${TRITON_VERSION}
 
 .PHONY: env
