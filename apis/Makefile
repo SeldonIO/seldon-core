@@ -41,15 +41,19 @@ clean-go:
 ################################################################################
 
 ### START PYTHON ###
+# required pip install grpcio-tools
 
 PROTOC_PYTHON_OUT := --python_out=./python
 PROTOC_PYTHON_OPTIONS = $(PROTOC_PYTHON_OUT)
 
 .PHONY: build-v2-python
 build-v2-python:
-	protoc \
+	mkdir -p python
+	python -m grpc_tools.protoc \
 		$(PROTOC_IMPORT_PATH) \
 		$(PROTOC_PYTHON_OPTIONS) \
+		--grpc_python_out=./python \
+		--pyi_out=./python \
 		./mlops/v2_dataplane/v2_dataplane.proto
 
 ################################################################################
