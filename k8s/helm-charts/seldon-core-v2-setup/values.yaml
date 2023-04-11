@@ -256,7 +256,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: nvcr.io
       repository: nvidia/tritonserver
-      tag: 22.11-py3
+      tag: 23.03-py3
     serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
     modelVolumeStorage: 1Gi
     resources:

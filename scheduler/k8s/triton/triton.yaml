@@ -137,7 +137,7 @@ spec:
           name: triton-models
         - name: config-volume
           mountPath: /mnt/config
-      - image: nvcr.io/nvidia/tritonserver:22.11-py3
+      - image: nvcr.io/nvidia/tritonserver:23.03-py3
         command:
         - /opt/tritonserver/bin/tritonserver
         args:

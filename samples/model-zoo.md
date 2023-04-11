@@ -315,12 +315,6 @@ training_data = MNIST(
 
 ```
 
-```
-/home/clive/miniconda3/envs/scv2/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
-  warn(f"Failed to load image Python extension: {e}")
-
-```
-
 ```python
 reqJson = json.loads('{"inputs":[{"name":"Input3","data":[],"datatype":"FP32","shape":[]}]}')
 url = "http://0.0.0.0:9000/v2/models/model/infer"
@@ -355,7 +349,7 @@ kind: Model
 metadata:
   name: mnist-onnx
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-onnx"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-onnx"
   requirements:
   - onnx
 
@@ -665,7 +659,7 @@ kind: Model
 metadata:
   name: mnist-pytorch
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-pytorch"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-pytorch"
   requirements:
   - pytorch
 
