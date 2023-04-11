@@ -1,1 +1,3 @@
-model.joblib
+# Ignore generated artifacts
+classifier/model.joblib
+explainers/**/data/

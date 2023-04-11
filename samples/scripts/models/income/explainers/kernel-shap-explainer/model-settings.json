@@ -1,0 +1,14 @@
+{
+  "name": "kernel-shap-income",
+  "implementation": "mlserver_alibi_explain.AlibiExplainRuntime",
+  "parameters": {
+    "uri": "./data",
+    "version": "v0.1.0",
+    "extra": {
+      "infer_uri": "http://localhost:8080/v2/models/income/infer",
+      "explainer_type": "kernel_shap",
+      "explainer_batch": true,
+      "infer_output": "predict_proba"
+    }
+  }
+}
