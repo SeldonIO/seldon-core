@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Standard renovate config",
+
+  "extends": [
+    "github>cerebrotech/renovate-config:docker-minimal"
+  ], 
+ 
+  "dryRun": true,
+  "detectHostRulesFromEnv": true,
+  "hashedBranchLength": 35,
+  "prHourlyLimit": 15,
+  "prHeader": "**NOTE: Please do not merge this pull request unless you are following the [third-party service update process](https://dominodatalab.atlassian.net/wiki/spaces/ENG/pages/2286354575/Upgrading+a+third-party+service+for+Domino) and will be updating all other image consumers**",
+  "timezone": "America/Los_Angeles",
+
+
+  "schedule": [],
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackagePatterns": [
+        "quay.io/domino/*"
+      ]
+    }
+  ]
+}
