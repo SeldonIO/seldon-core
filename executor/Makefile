@@ -10,6 +10,15 @@ EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
 KIND_NAME ?= kind
 
+# For labeling the operator Docker image(s)
+GITHUB_TEAM := "dominodatalab/seldon-core-maintainers"
+BUILD_DATE := $(shell date -uIseconds)
+IMAGE_BASE_DOCKERFILE := "https://github.com/dominodatalab/seldon-core/blob/rabbitmq/executor/Dockerfile.executor"
+
+# These should be set in CI, but in case we are running locally, let's set some default values
+CIRCLE_SHA1 ?= $(shell git rev-parse HEAD)
+CIRCLE_BUILD_URL ?= "local"
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -90,7 +99,14 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: test copy_openapi_resources
-	docker build -f Dockerfile.executor -t ${IMG} .
+	docker build . \
+		-f Dockerfile.executor \
+		-t ${IMG} \
+		--label "org.opencontainers.image.authors=github_team:${GITHUB_TEAM}" \
+		--label "org.opencontainers.image.revision=${CIRCLE_SHA1}" \
+		--label "com.dominodatalab.image.osrp.datetime=${BUILD_DATE}" \
+		--label "com.dominodatalab.image.dockerfile=${IMAGE_BASE_DOCKERFILE}" \
+		--label "com.dominodatalab.ci.build-url=${CIRCLE_BUILD_URL}"
 
 # Build the docker image for Redhat
 docker-build-redhat: test copy_openapi_resources
