@@ -165,7 +165,7 @@ paths:
         in: path
         required: true
     post:
-      summary: Inference
+      summary: Model Inference
       operationId: model-version-inference
       responses:
         '200':
@@ -209,7 +209,7 @@ paths:
         in: path
         required: true
     post:
-      summary: Inference
+      summary: Model Inference
       operationId: model-inference
       responses:
         '200':
