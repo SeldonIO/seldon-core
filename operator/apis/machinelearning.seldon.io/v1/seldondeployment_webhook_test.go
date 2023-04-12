@@ -1475,3 +1475,87 @@ func TestValidateTwoPrepackTwoPods(t *testing.T) {
 	dnsName := containerServiceValue + "." + namespace + constants.DNSClusterLocalSuffix
 	g.Expect(spec.Predictors[0].Graph.Children[0].Endpoint.ServiceHost).To(Equal(dnsName))
 }
+
+func TestSvcNameAnnotationDuplicate(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Annotations: map[string]string{
+					ANNOTATION_CUSTOM_SVC_NAME: "svc1",
+				},
+				Traffic: 50,
+			},
+			{
+				Name: "p2",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Annotations: map[string]string{
+					ANNOTATION_CUSTOM_SVC_NAME: "svc1",
+				},
+				Traffic: 50,
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).ToNot(BeNil())
+}
+
+func TestSvcNameAnnotationNotDuplicate(t *testing.T) {
+	g := NewGomegaWithT(t)
+	scheme := runtime.NewScheme()
+	C = fake.NewFakeClientWithScheme(scheme)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
+	spec := &SeldonDeploymentSpec{
+		Transport: TransportGrpc,
+		Predictors: []PredictorSpec{
+			{
+				Name: "p1",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Annotations: map[string]string{
+					ANNOTATION_CUSTOM_SVC_NAME: "svc1",
+				},
+				Traffic: 50,
+			},
+			{
+				Name: "p2",
+				Graph: PredictiveUnit{
+					Name:           "classifier",
+					Implementation: &impl,
+					ModelURI:       "s3://mybucket/model",
+				},
+				Annotations: map[string]string{
+					ANNOTATION_CUSTOM_SVC_NAME: "svc2",
+				},
+				Traffic: 50,
+			},
+		},
+	}
+
+	spec.DefaultSeldonDeployment("mydep", "default")
+	err = spec.ValidateSeldonDeployment()
+	g.Expect(err).To(BeNil())
+}

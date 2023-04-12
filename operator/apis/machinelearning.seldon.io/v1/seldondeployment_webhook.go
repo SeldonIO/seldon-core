@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/seldonio/seldon-core/operator/constants"
@@ -190,6 +191,20 @@ const (
 	ENV_KAFKA_OUTPUT_TOPIC = "KAFKA_OUTPUT_TOPIC"
 )
 
+func (r *SeldonDeploymentSpec) validateSvcNameAnnotations(allErrs field.ErrorList) field.ErrorList {
+	keys := make(map[string]bool)
+	for i, p := range r.Predictors {
+		if annotation, hasAnnotation := p.Annotations[ANNOTATION_CUSTOM_SVC_NAME]; hasAnnotation {
+			if _, found := keys[annotation]; found {
+				fldPath := field.NewPath("spec").Child("predictors").Index(i)
+				allErrs = append(allErrs, field.Invalid(fldPath, p.Name, fmt.Sprintf("Found duplicate service name in %s with value %s", ANNOTATION_CUSTOM_SVC_NAME, annotation)))
+			}
+			keys[annotation] = true
+		}
+	}
+	return allErrs
+}
+
 func (r *SeldonDeploymentSpec) validateKafka(allErrs field.ErrorList) field.ErrorList {
 	if r.ServerType == ServerKafka {
 		for i, p := range r.Predictors {
@@ -242,6 +257,7 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 
 	allErrs = r.validateKafka(allErrs)
 	allErrs = r.validateShadow(allErrs)
+	allErrs = r.validateSvcNameAnnotations(allErrs)
 
 	transports := make(map[EndpointType]bool)
 
