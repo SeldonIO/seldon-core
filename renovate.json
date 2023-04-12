@@ -2,10 +2,50 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Standard renovate config",
 
-  "extends": [
-    "github>cerebrotech/renovate-config:docker-minimal"
-  ], 
  
+  "detectHostRulesFromEnv": true,
+  "hashedBranchLength": 35,
+  "prHourlyLimit": 15,
+  "prHeader": "**NOTE: Please do not merge this pull request unless you are following the [third-party service update process](https://dominodatalab.atlassian.net/wiki/spaces/ENG/pages/2286354575/Upgrading+a+third-party+service+for+Domino) and will be updating all other image consumers**",
+  "timezone": "America/Los_Angeles",
+  "schedule": ["before 7am on monday"],
+
+  "enabledManagers": ["circleci", "dockerfile"],
+
+  "circleci": {
+    "enabled": true,
+    "automerge": true,
+    "automergeType": "branch",
+    "pinDigests": true,
+    "packageRules": [
+      {
+        "matchDatasources": ["docker"],
+        "matchPackagePatterns": ["*"]
+      }
+    ]
+  },
+
+  "docker": {
+    "description": "Default docker datasource configuration",
+    "enabled": true
+  },
+
+  "hostRules": [
+    {
+      "hostType": "docker",
+      "matchHost": "quay.io",
+      "encrypted": {"token": "wcFMA/xDdHCJBTolAQ/9FMIKEULgJMffTDQ9/jnOWP2+mZgCrFroNLww2202qx1uONpn9A319WrLXqhik881HSo1iGFRc0RiP+rZu4ABLQ4gZJNGjysmWhqZ1wcOYHSm12aT92K+wkwoYaY34KeJT7P/RcCvIjnXLVfMYgdS5j33PEsAKwt9mnup+eNvEkMUPYwr90H0MLspvt+v0lOhMrBOdCin6pBwluvezkfzCZLo1FJ/IHihyB+mcCQ9MAgzvksTIicr+6VGxKtogG12+fi4m+Ww68XyyAIjwMSvIGWeRpzyUaTo7B+x7tkFFbSDir4OLtD7Ygk6+KPyBebddAuClfFN95DfXXhaTn2FKYGRXu709p6vchGmSmmS4QyBefNJ2RFkOwL8ryJjpfttY7zm/nVzuVrCHaLE0uMH2ressL2P/Ju8ds1gdTRgZXv6sFDhdFCpE9cbjIcU1lajs9JKLYjaOGR/tVRUzm7Pt+yC1iSLigNh1QJUnqeUP2VJ93e3li/QtSrPw/0zZRKJt4q329fkn+OfUdQixlbnVHI4f8IHOg5+M+AG1AtyJamcXiCYCL4NQqYqlS8kLbw6ldTx7CwygYrCUK4D6U/Gg+VJ/ut3SJfO6H0uIBvvCMcJh4Mm0jkPFOaxqrdOcTDhY0EDK9XoxD5h1TUxxGT32mQJO7NARRHpBndPJjV1l8/SegG/MvDmx1JO9/XI3X0zSdIA3FxHH7w2/GsWH620NBIgGluxbwUGCd8dwL0R3OQdY2XMd9T8RYVEGvMqe/bnh8uXExzZiOESmnVrTE2IlfTJRLSNlDanJ9rLybJ4efFgsCcubxlaowX/l7VJM5it3qo8nPnler2Xnsp8"}
+    },
+    {
+      "hostType": "orb",
+      "matchHost": "circleci.com",
+      "authType": "Token-Only",
+      "encrypted": {
+        "token": "wcFMA/xDdHCJBTolAQ/9FlrFWDpfRiS9lu2F3/NcWBKTb1MK0YHU7+Z/Tzws30uF6n57fHiGf0cjVMVh24uYMYyNhBbi6MyqplzOPfgE9FSUpmcucDkippkg2TcgAuksODoFT2MRVHvewoyk+EHWEvTIH35A4ZS8az5wnPYaJk6N26UAO9YLcQXZayjSSdqLqStp6dbHYt/IZggGrNK7c3kM/ZWizsEfazhtJHq06CezGfAuAiD5pohRIqV47d10oAyxx3X2C4l2QOWb1Mp0Z39HjaMrABZEVSX+xqdOxpeCdIYuqZUZklcEe2YIoWk2MekpDlQmdqBq4Qq2K6cj7IqB3yMhFSsj1EbvumnCX4E0EWDbvKoK5meypIoBLCKCi1x9kT8A9Pd9ecq8E1jLzTI75UIFtOxORcMgwilhBxgrl1mpY10kD9dIDPg8lY3NbdCJjTiGKl+1Obm5qqaD7Spz6wkIrc3IFuIi9j25v7DAPQPs9T6qT5VCUqgh/gFxMoZI1jcRz9y68yLIOp4tL72ll8xSu+VA/osrhruogNR/OhJc9WtjgBjv36QrYoojh6+xBq7Uz+RZBzLLgkP0xFEkDUF5AzOn+IMfpI3EzvHYqt1jozmNZFc0fVf31oZhYPokunvOZQUzQgNMZCoBtWFqpw2VsZY/6Vrkm5SQzw9GzVreMxgC06g48dUvhB3SegFwOwiPVfIWN0UQVjlcigQ5Vg1lGNAg8uh/JxfueROD3XWuZX265OrZwVdqLiC0NFktkpwNn0s7ZPox3MChkrr9x1gGwLJeIxwvhXVvAmhYVf9nFctXyf4CHw4rRiv3uPNXUGAk6a/HT2SOuCYm1xM8+d3PIh2XsHL7"
+      }
+    }
+  ],
+
   "packageRules": [
     {
       "matchDatasources": [
@@ -18,4 +58,6 @@
       "versioning": "docker"
     }
   ]
+
+
 }
