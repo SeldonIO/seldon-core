@@ -35,6 +35,7 @@ spec:
         args:
         - --enable-leader-election
         - --webhook-port=4443
+        - --metrics-addr=:8080
         - --create-resources=$(MANAGER_CREATE_RESOURCES)
         - --log-level=$(MANAGER_LOG_LEVEL)
         - --leader-election-id=$(MANAGER_LEADER_ELECTION_ID)
@@ -116,7 +117,7 @@ spec:
         - name: USE_EXECUTOR
           value: "true"
         - name: EXECUTOR_CONTAINER_IMAGE_AND_VERSION
-          value: seldonio/seldon-core-executor:1.15.0
+          value: seldonio/seldon-core-executor:1.16.0-dev
         - name: EXECUTOR_CONTAINER_IMAGE_PULL_POLICY
           value: IfNotPresent
         - name: EXECUTOR_PROMETHEUS_PATH

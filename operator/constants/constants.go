@@ -20,7 +20,7 @@ const (
 	FirstHttpPortNumber   = int32(9000)
 	FirstGrpcPortNumber   = int32(9500)
 	DNSLocalHost          = "localhost"
-	DNSClusterLocalSuffix = ".svc.cluster.local."
+	DNSClusterLocalSuffix = ".svc.cluster.local"
 	GrpcPortName          = "grpc"
 	HttpPortName          = "http"
 

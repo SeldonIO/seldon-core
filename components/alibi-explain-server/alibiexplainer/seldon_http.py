@@ -28,10 +28,10 @@ def _extract_list(body: Dict) -> List:
         for dim in data_def["tftensor"]["tensor_shape"]["dim"]:
             shape.append(dim["size"])
         arr = arr.reshape(shape)
-        return arr
+        return arr  # type: ignore
 
 
-def _create_seldon_data_def(array: np.array, ty: SeldonPayload):
+def _create_seldon_data_def(array: np.ndarray, ty: SeldonPayload):
     datadef = {}
     if ty == SeldonPayload.TENSOR:
         datadef["tensor"] = {"shape": array.shape, "values": array.ravel().tolist()}
@@ -90,7 +90,7 @@ class SeldonRequestHandler:
         return {"data": seldon_datadef}
 
     @staticmethod
-    def predict(inputs: Union[np.array, List], predictor_url: str) -> List:
+    def predict(inputs: Union[np.ndarray, List], predictor_url: str) -> List:
         if isinstance(inputs, list):
             inputs = np.array(inputs)
         payload = create_request(inputs, SeldonPayload.NDARRAY)

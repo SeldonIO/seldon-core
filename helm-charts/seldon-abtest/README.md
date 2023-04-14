@@ -2,7 +2,7 @@
 
 ![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
-Chart to deploy an AB test in Seldon Core. Allows you to split traffic between two models.
+Chart to deploy an AB test in Seldon Core v1. Allows you to split traffic between two models.
 
 ## Usage
 

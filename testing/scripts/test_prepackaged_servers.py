@@ -56,7 +56,7 @@ class TestPrepack(object):
         deploy_model(
             "sklearn",
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="SKLEARN_SERVER",
             model_uri="gs://seldon-models/sklearn/iris-0.23.2/lr_model",
         )
@@ -134,9 +134,9 @@ class TestPrepack(object):
         deploy_model(
             "xgboost",
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="XGBOOST_SERVER",
-            model_uri="gs://seldon-models/xgboost/iris",
+            model_uri="gs://seldon-models/v1.15.0/xgboost/iris",
         )
         wait_for_status("xgboost", namespace)
         wait_for_rollout("xgboost", namespace)
@@ -199,13 +199,13 @@ class TestPrepack(object):
 
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
 
-    # test mlflow with kfserving (v2) protocol
+    # test mlflow with v2 protocol
     def test_mlflow_v2(self, namespace):
         tag = "mlflow"
         deploy_model(
             tag,
             namespace=namespace,
-            protocol="kfserving",
+            protocol="v2",
             model_implementation="MLFLOW_SERVER",
             model_uri="gs://seldon-models/v1.12.0-dev/mlflow/elasticnet_wine",
         )
@@ -367,3 +367,30 @@ class TestPrepack(object):
 
         logging.warning("Success for test_openapi_sklearn")
         run(f"kubectl delete -f {spec} -n {namespace}", shell=True)
+
+    # Test openAPI endpoints for documentation
+    def test_openapi_sklearn_v2(self, namespace):
+        deploy_model(
+            "sklearn",
+            namespace=namespace,
+            protocol="v2",
+            model_implementation="SKLEARN_SERVER",
+            model_uri="gs://seldon-models/sklearn/iris-0.23.2/lr_model",
+        )
+        wait_for_status("sklearn", namespace)
+        wait_for_rollout("sklearn", namespace)
+        time.sleep(1)
+        logging.warning("Initial request")
+
+        r = v2_protocol.openapi_ui(
+            deployment_name="sklearn",
+            namespace=namespace,
+        )
+        content_type_header = r.headers.get("content-type")
+        assert "text/html" in content_type_header
+
+        openapi_schema = v2_protocol.openapi_schema(
+            deployment_name="sklearn",
+            namespace=namespace,
+        )
+        assert "openapi" in openapi_schema

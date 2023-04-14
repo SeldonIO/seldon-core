@@ -130,30 +130,8 @@ Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <h
 
 .. tabbed:: Ambassador
 
-    .. warning:: Ambassador is currently not supported on Kubernetes 1.22+, the following instructions will only work on Kubernetes v1.21 or older.
+    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration.  Install Ambassador following their docs.
 
-    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. 
-
-    **Install Ambassador**
-
-    .. note::
-        Seldon Core currently only supports the Ambassador V1 APIs. The installation instructions below will install the latest v1 version of emissary ingress.
-
-    First add the datawire helm repository:
-
-    .. code-block:: bash
-
-        helm repo add datawire https://www.getambassador.io
-        helm repo update
-
-    Run the following `helm` command to install Ambassador on your GKE cluster:
-
-    .. code-block:: bash
-
-        helm install ambassador datawire/ambassador --set enableAES=false --namespace ambassador --create-namespace
-        kubectl rollout status -n ambassador deployment/ambassador -w
-        
-    Ambassador is now ready to use. For custom configuration and more details on installing seldon core with Ambassador please see the `Ambassador Ingress <../ingress/ambassador.md>`_ page.
 
 Install Seldon Core
 ----------------------------
@@ -177,8 +155,6 @@ We're now ready to install Seldon Core in our cluster. Run the following command
             --namespace seldon-system
 
 .. tabbed:: Ambassador
-
-    .. warning:: Ambassador is currently not supported on Kubernetes 1.22+, the following instructions will only work on Kubernetes v1.21 or older.
 
     .. code:: bash
 

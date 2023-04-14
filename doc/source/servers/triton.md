@@ -2,7 +2,7 @@
 
 If you have a model that can be run on [NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server) you can use Seldon's Prepacked Triton Server.
 
-Triton has multiple supported backends including support for TensorRT, Tensorflow, PyTorch and ONNX models. For further details see the [Triton supported backends documentation](https://docs.nvidia.com/deeplearning/triton-inference-server/master-user-guide/docs/model_repository.html#section-framework-model-definition).
+Triton has multiple supported backends including support for TensorRT, Tensorflow, PyTorch and ONNX models. For further details see the [Triton supported backends documentation](https://github.com/triton-inference-server/backend#where-can-i-find-all-the-backends-that-are-available-for-triton).
 
 ## Example
 

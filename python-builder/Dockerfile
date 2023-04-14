@@ -21,10 +21,6 @@ RUN INSTALL_DIR=/tmp/flatc-install && \
     rm -rf $INSTALL_DIR
 
 
-# Install python dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install grpcio grpcio-tools flatbuffers twine mypy-protobuf
-
 # Install latest git
 RUN apt-get upgrade -y && \
     apt-get update -y && \
@@ -40,6 +36,10 @@ RUN apt-get upgrade -y && \
 ENV PYTHON_VERSION "3.7.10"
 ENV CONDA_VERSION "4.7.12"
 RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION
+
+# Install python dependencies
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install grpcio grpcio-tools flatbuffers twine mypy-protobuf
 
 # Installs required
 RUN apt-get install -y curl

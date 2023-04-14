@@ -5,7 +5,6 @@ Archived Docs for Review
 .. toctree::
     :maxdepth: 1
 
-    R Wrapping Docker </R/r_wrapping_docker.md>
     Seldon OpenVino </charts/seldon-openvino.rst>
     Ambassador Circuit Breakers </examples/ambassador_circuit_breakers.nblink>
     Custom Init Containers </examples/custom_init_container.nblink>
@@ -29,7 +28,6 @@ Archived Docs for Review
     Java JNI</java-jni/README.md>
     APIs readme </reference/apis/readme.md>
     Concepts </reference/concepts.md>
-    Nvidia Integration </reference/integration_nvidia_link.rst>
     Sagemaker Integration </reference/integration_sagemaker_link.rst>
     Blogs </tutorials/blogs.rst>
     Podcasts </tutorials/podcasts.rst>

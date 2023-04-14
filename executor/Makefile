@@ -94,9 +94,12 @@ test: copy_operator fmt vet
 	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
 
 copy_openapi_resources:
-	mkdir -p api/rest/openapi/
-	cp ../openapi/swagger-ui/* api/rest/openapi/
+	mkdir -p api/rest/openapi
+	cp ../openapi/swagger-ui/* api/rest/openapi
 	cp ../openapi/engine.oas3.json api/rest/openapi/seldon.json
+	mkdir -p api/rest/openapi/open-inference
+	cp ../openapi/v2/swagger-ui/* api/rest/openapi/open-inference
+	cp ../openapi/v2/dataplane.yaml api/rest/openapi/open-inference/dataplane.yaml
 
 # Build the docker image
 docker-build: test copy_openapi_resources
@@ -149,7 +152,7 @@ clean:
 install-dev:
 	# Tool to generate license info
 	pip install \
-		'git+https://github.com/kubeflow/testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+		'git+https://github.com/seldonio/kubeflow-testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 
 .PHONY: licenses/dep.txt
@@ -162,12 +165,12 @@ licenses: licenses/dep.txt
 	# NOTE: You need to create a file in ~/.github_api_token with a GitHub token.
 	get-github-repo \
 		-o licenses/repo.txt \
-		--manual-dep-repo-mapping licenses/dep_repo.manual.csv \
+		--manual-dep-repo-mapping ../licenses/dep_repo.manual.csv \
 		licenses/dep.txt
 	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
 	python -m 'patch_additional_license_info' \
 		licenses/license_info.csv \
-		licenses/additional_license_info.csv
+		../licenses/additional_license_info.csv
 	concatenate-license -o licenses/license.txt licenses/license_info.csv
 
 

@@ -1,0 +1,20 @@
+name: V2 Build docker images
+
+on:
+  push:
+    branches: [ v2 ]
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: 'Docker tag for scan'
+        default: 'latest'
+        required: false
+
+jobs:
+  placeholder:
+    name: placeholder
+    runs-on: ubuntu-latest
+    if: github.repository == 'seldonio/seldon-core' # Do not run this on forks.
+    steps:
+    - name: Echo Message
+      run: echo "This is to make workflow available for V2 releases"

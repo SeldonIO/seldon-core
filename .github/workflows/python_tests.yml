@@ -1,4 +1,4 @@
-name: Python Tests
+name: V1 Python Tests
 
 on:
   push:
@@ -9,12 +9,11 @@ on:
 jobs:
   python-tests:
 
-    runs-on: ubuntu-18.04
-    container: seldonio/python-builder:0.5
+    runs-on: ubuntu-latest
+    container: seldonio/python-builder:0.8
 
     steps:
     - uses: actions/checkout@v2
     - name: test-python
       run: |
         make -C python update_package install_dev test
-

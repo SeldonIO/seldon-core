@@ -39,7 +39,7 @@ The [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) st
 kubectl create namespace seldon-monitoring
 
 helm upgrade --install seldon-monitoring kube-prometheus \
-    --version 6.9.5 \
+    --version 8.3.2 \
 	--set fullnameOverride=seldon-monitoring \
     --namespace seldon-monitoring \
     --repo https://charts.bitnami.com/bitnami

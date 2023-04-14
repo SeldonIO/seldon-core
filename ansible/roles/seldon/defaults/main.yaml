@@ -1,0 +1,11 @@
+---
+seldon_cache_directory: "{{ ansible_env.HOME }}/.cache/seldon"
+
+seldon_system_namespace: seldon-system
+seldon_core_version: master
+
+# Source repository with Seldon Core code, useful if one would like to install from a fork
+seldon_core_repo: https://github.com/SeldonIO/seldon-core.git
+seldon_namespaces: [ seldon ]
+
+seldon_core_values: {}

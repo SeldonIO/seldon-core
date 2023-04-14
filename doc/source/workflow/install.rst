@@ -4,21 +4,19 @@ Install Seldon-Core
 Pre-requisites:
 ---------------
 
--  Kubernetes cluster version equal or higher than 1.18 and < 1.25
+-  Kubernetes cluster >= 1.23
 
-   -  For Openshift it requires version >= 4.8 and < 4.12
+   -  For Openshift it requires version >= 4.10
 
 -  Installer method
 
-   -  Helm version equal or higher than 3.0
-   -  Kustomize version equal or higher than 0.1.0
+   -  Helm version >= 3.0
+   -  Kustomize version >= 0.1.0
 
 -  Ingress
 
-   -  Istio ( sample installation using Istio 1.5 can be found at
-      https://github.com/SeldonIO/seldon-core/tree/master/examples/auth
-      )
-   -  Ambassador v1 (v2 not currently supported)
+   -  Istio : we recommend >= 1.16
+   -  Ambassador v1 and v2
 
 Running older versions of Seldon Core?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

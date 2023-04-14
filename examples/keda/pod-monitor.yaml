@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: seldon-podmonitor
+  namespace: seldon-monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: seldon-core
+  podMetricsEndpoints:
+    - port: metrics
+      path: /prometheus
+  namespaceSelector:
+    any: true

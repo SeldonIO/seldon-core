@@ -4,11 +4,12 @@ import logging
 import numpy as np
 import os
 from .numpy_encoder import NumpyEncoder
-from adserver.base import AlibiDetectModel, ModelResponse
-from alibi_detect.utils.saving import load_detector, Data
+from adserver.base import AlibiDetectModel, ModelResponse, Data
+from alibi_detect.utils.saving import load_detector
 from adserver.constants import ENV_DRIFT_TYPE_FEATURE
 
 DRIFT_TYPE_FEATURE = os.environ.get(ENV_DRIFT_TYPE_FEATURE, "").upper() == "TRUE"
+
 
 def _append_drift_metrcs(metrics, drift, name):
     metric_found = drift.get(name)
@@ -58,7 +59,9 @@ class AlibiDetectConceptDriftModel(
         self.batch: Optional[np.ndarray] = None
         self.model: Data = model
 
-    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
+    def process_event(
+        self, inputs: Union[List, Dict], headers: Dict
+    ) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 
@@ -98,7 +101,7 @@ class AlibiDetectConceptDriftModel(
                 self.drift_batch_size,
             )
             if DRIFT_TYPE_FEATURE:
-                cd_preds = self.model.predict(self.batch, drift_type='feature')
+                cd_preds = self.model.predict(self.batch, drift_type="feature")
             else:
                 cd_preds = self.model.predict(self.batch)
 

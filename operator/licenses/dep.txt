@@ -12,6 +12,7 @@ contrib.go.opencensus.io/exporter/ocagent
 contrib.go.opencensus.io/exporter/prometheus
 contrib.go.opencensus.io/exporter/zipkin
 dmitri.shuralyov.com/gpu/mtl
+emperror.dev/errors
 github.com/Azure/azure-amqp-common-go/v3
 github.com/Azure/azure-event-hubs-go/v3
 github.com/Azure/azure-kusto-go
@@ -55,8 +56,10 @@ github.com/argoproj/argo-rollouts
 github.com/armon/circbuf
 github.com/armon/go-metrics
 github.com/armon/go-radix
+github.com/armon/go-socks5
 github.com/asaskevich/govalidator
 github.com/aws/aws-sdk-go
+github.com/banzaicloud/k8s-objectmatcher
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/bgentry/speakeasy
@@ -162,6 +165,7 @@ github.com/golang/snappy
 github.com/google/btree
 github.com/google/cel-go
 github.com/google/cel-spec
+github.com/google/gnostic
 github.com/google/go-cmp
 github.com/google/go-github/v27
 github.com/google/go-querystring
@@ -417,7 +421,6 @@ gotest.tools/v3
 honnef.co/go/tools
 istio.io/api
 istio.io/client-go
-istio.io/gogo-genproto
 k8s.io/api
 k8s.io/apiextensions-apiserver
 k8s.io/apimachinery
@@ -427,7 +430,6 @@ k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
 k8s.io/gengo
-k8s.io/klog
 k8s.io/klog/v2
 k8s.io/kube-openapi
 k8s.io/kubectl
@@ -448,6 +450,5 @@ sigs.k8s.io/gateway-api
 sigs.k8s.io/json
 sigs.k8s.io/kustomize/api
 sigs.k8s.io/kustomize/kyaml
-sigs.k8s.io/structured-merge-diff
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml

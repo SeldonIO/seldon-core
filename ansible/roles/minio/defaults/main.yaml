@@ -1,0 +1,17 @@
+---
+minio_namespace: minio-system
+minio_chart_version: 8.0.10
+
+minio_access_key: minioadmin
+minio_secret_key: minioadmin
+
+minio_secret_namespaces: []
+minio_rclone_secret_name: minio-bucket
+minio_rclone_remote_name: MINIO
+minio_kfserving_secret_name: null
+
+minio_service_type: ClusterIP
+
+minio_create_virtualservice: true
+minio_virtualservice_gateway: "istio-system/seldon-gateway"
+minio_virtualservice_prefix: "/minio/"

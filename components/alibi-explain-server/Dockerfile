@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}:${VERSION} as base
 ARG VERSION
 LABEL name="Seldon Alibi Wrapper" \
       vendor="Seldon Technologies" \
-      version="1.15.0" \
+      version="1.16.0-dev" \
       release="1" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
@@ -33,7 +33,11 @@ ENV POETRY_VIRTUALENVS_CREATE false
 
 # Install the server
 COPY poetry.lock pyproject.toml ./
-RUN poetry install && rm ~/.cache/pip -rf
+## Disable Poetry's new installer to avoid JSONDecodeError
+## https://github.com/python-poetry/poetry/issues/4210
+RUN poetry config experimental.new-installer false && \
+    poetry install && \
+    rm ~/.cache/pip -rf
 
 
 # Add licences

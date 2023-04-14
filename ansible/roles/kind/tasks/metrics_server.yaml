@@ -1,0 +1,12 @@
+---
+- name: "Install Metrics Server"
+  kubernetes.core.helm:
+    state: "present"
+    name: "metrics-server"
+    namespace: "kube-system"
+    chart_ref: "metrics-server"
+    chart_version: "{{ kind_metrics_server_chart_version }}"
+    chart_repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
+    values:
+      args:
+      - --kubelet-insecure-tls

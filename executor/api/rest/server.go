@@ -186,6 +186,7 @@ func (r *SeldonRestApi) Initialise() {
 			r.Router.NewRoute().Path("/v2/models/infer").Methods("OPTIONS", "POST").HandlerFunc(r.wrapMetrics(metric.PredictionHttpServiceName, r.predictions)) // Nonstandard path - Seldon extension
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}/ready").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.status))
 			r.Router.NewRoute().Path("/v2/models/{"+ModelHttpPathVariable+"}").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.MetadataHttpServiceName, r.metadata))
+			r.Router.NewRoute().PathPrefix("/v2/docs/").Handler(http.StripPrefix("/v2/docs/", http.FileServer(http.Dir("./openapi/open-inference/"))))
 			// Health
 			r.Router.NewRoute().Path("/v2/health/ready").Methods("GET", "OPTIONS").HandlerFunc(r.wrapMetrics(metric.StatusHttpServiceName, r.checkReady))
 

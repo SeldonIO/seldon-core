@@ -5,8 +5,8 @@ import logging
 import numpy as np
 from .numpy_encoder import NumpyEncoder
 from adserver.protocols.util import read_inputs_as_numpy
-from adserver.base import CEModel, ModelResponse
-from alibi_detect.utils.saving import load_detector, Data
+from adserver.base import CEModel, ModelResponse, Data
+from alibi_detect.utils.saving import load_detector
 from adserver.base.storage import download_model
 from adserver.constants import (
     HEADER_RETURN_INSTANCE_SCORE,
@@ -66,7 +66,9 @@ class AlibiDetectOutlierModel(CEModel):  # pylint:disable=c-extension-no-member
         self.model: Data = load_detector(model_folder)
         self.ready = True
 
-    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
+    def process_event(
+        self, inputs: Union[List, Dict], headers: Dict
+    ) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 

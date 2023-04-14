@@ -1,4 +1,4 @@
-name: Executor Tests
+name: V1 Executor Tests
 
 on:
   push:
@@ -9,11 +9,13 @@ on:
 jobs:
   executor-tests:
 
-    runs-on: ubuntu-18.04
-    container: seldonio/core-builder:0.27
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-go@v3      
+      with:
+        go-version: '^1.17.0'
     - name: test-executor
       run: |
         make -C executor test

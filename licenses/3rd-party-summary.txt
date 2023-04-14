@@ -1,0 +1,16 @@
+      1 3-Clause BSD License
+      2 Apache 2.0
+    270 Apache License 2.0
+     22 Apache Software License
+      2 Apache Software License; BSD License
+     22 BSD 2-Clause Simplified License
+    112 BSD 3-Clause New or Revised License
+     19 BSD License
+      1 Creative Commons Attribution 4.0 International Public License
+      2 Creative Commons Zero v1.0 Universal
+      4 ISC License
+      1 MIT
+    325 MIT License
+     46 Mozilla Public License 2.0
+      1 Mozilla Public License 2.0 (MPL 2.0)
+      1 Python Software Foundation License

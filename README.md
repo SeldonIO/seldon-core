@@ -1,6 +1,14 @@
 # Seldon Core: Blazing Fast, Industry-Ready ML
 An open source platform to deploy your machine learning models on Kubernetes at massive scale.
 
+## Seldon Core V2 Now Available
+
+[![scv2_image](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/_static/scv2_banner.png)](https://docs.seldon.io/projects/seldon-core/en/v2/index.html)
+
+[Seldon Core V2](https://docs.seldon.io/projects/seldon-core/en/v2/index.html) **is now available** (in alpha). Its codebase can be found [in this branch](https://github.com/SeldonIO/seldon-core/tree/v2). Check out the [docs here](https://docs.seldon.io/projects/seldon-core/en/v2/index.html) and make sure to leave feedback on [our slack community](https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg) and [submit bugs or feature requests on the repo](https://github.com/SeldonIO/seldon-core/issues/new/choose).
+
+Continue reading for info on Seldon Core V1...
+
 [![video_play_icon](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/core-play-logo.png)](https://www.youtube.com/watch?v=5Q-03We8aDE)
 
 ## Overview
@@ -60,7 +68,7 @@ We provide optimized model servers for some of the most popular Deep Learning an
 You only have to upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
 
 ```console
-gs://seldon-models/v1.15.0/sklearn/iris/model.joblib
+gs://seldon-models/v1.16.0-dev/sklearn/iris/model.joblib
 ```
 
 Create a namespace to run your model in:
@@ -83,7 +91,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1

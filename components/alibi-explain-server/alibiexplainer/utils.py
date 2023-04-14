@@ -77,30 +77,34 @@ def construct_predict_fn(
     protocol: Protocol = Protocol.seldon_grpc,
     tf_data_type: str = None,
 ) -> Callable:
-    def _predict_fn(arr: Union[np.ndarray, List]) -> np.ndarray:
+    def _predict_fn(arr: Union[np.ndarray, List]) -> np.ndarray:  # type: ignore
         if type(arr) == list:
             arr = np.array(arr)
+
         if protocol == Protocol.seldon_grpc:
             return _grpc(
-                arr=arr, predictor_host=predictor_host, tf_data_type=tf_data_type
+                arr=arr, predictor_host=predictor_host, tf_data_type=tf_data_type  # type: ignore
             )
-        elif protocol == Protocol.seldon_http:
-            payload = seldon.create_request(arr, seldon.SeldonPayload.NDARRAY)
+
+        if protocol == Protocol.seldon_http:
+            payload = seldon.create_request(arr, seldon.SeldonPayload.NDARRAY)  # type: ignore
             response_raw = requests.post(
                 SELDON_PREDICTOR_URL_FORMAT.format(predictor_host),
                 json=payload,
                 headers={SELDON_SKIP_LOGGING_HEADER: "true"},
             )
-            if response_raw.status_code == 200:
-                rh = seldon.SeldonRequestHandler(response_raw.json())
-                response_list = rh.extract_request()
-                return np.array(response_list)
-            else:
+
+            if response_raw.status_code != 200:
                 raise Exception(
                     "Failed to get response from model return_code"
                     ":%d" % response_raw.status_code
                 )
-        elif protocol == Protocol.tensorflow_http:
+
+            rh = seldon.SeldonRequestHandler(response_raw.json())
+            response_list = rh.extract_request()
+            return np.array(response_list)
+
+        if protocol == Protocol.tensorflow_http:
             instances = []
             for req_data in arr:
                 if isinstance(req_data, np.ndarray):
@@ -113,17 +117,21 @@ def construct_predict_fn(
                 json.dumps(request),
                 headers={SELDON_SKIP_LOGGING_HEADER: "true"},
             )
+
             if response.status_code != 200:
                 raise Exception(
                     "Failed to get response from model return_code"
                     ":%d" % response.status_code
                 )
+
             return np.array(response.json()["predictions"])
 
     return _predict_fn
 
 
-def _grpc(arr: np.array, predictor_host: str, tf_data_type: Optional[str]) -> np.array:
+def _grpc(
+    arr: np.ndarray, predictor_host: str, tf_data_type: Optional[str]
+) -> np.ndarray:
     options = [
         ("grpc.max_send_message_length", GRPC_MAX_MSG_LEN),
         ("grpc.max_receive_message_length", GRPC_MAX_MSG_LEN),

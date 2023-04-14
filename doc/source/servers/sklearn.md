@@ -40,7 +40,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -68,7 +68,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -84,8 +84,7 @@ Acceptable values for the `method` parameter are `predict`, `predict_proba`,
 
 ## V2 protocol
 
-The SKLearn server can also be used to expose an API compatible with the [V2
-V2 Protocol](../graph/protocols.md#v2-protocol).
+The SKLearn server can also be used to expose an API compatible with the [V2 Protocol](../graph/protocols.md#v2-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
@@ -105,7 +104,7 @@ spec:
   - graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
       name: classifier
       parameters:
         - name: method
@@ -153,7 +152,7 @@ spec:
     graph:
       children: []
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.16.0-dev/sklearn/iris
       name: classifier
     name: default
     replicas: 1
