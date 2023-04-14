@@ -302,6 +302,7 @@ github.com/prometheus/common
 github.com/prometheus/procfs
 github.com/prometheus/statsd_exporter
 github.com/prometheus/tsdb
+github.com/rabbitmq/amqp091-go
 github.com/rcrowley/go-metrics
 github.com/robfig/cron/v3
 github.com/rogpeppe/fastuuid

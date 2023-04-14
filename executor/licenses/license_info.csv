@@ -272,6 +272,7 @@ prometheus/common,https://github.com/prometheus/common/blob/main/LICENSE,Apache 
 prometheus/procfs,https://github.com/prometheus/procfs/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/procfs/master/LICENSE
 prometheus/statsd_exporter,https://github.com/prometheus/statsd_exporter/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/statsd_exporter/master/LICENSE
 prometheus/tsdb,https://github.com/prometheus-junkyard/tsdb/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus-junkyard/tsdb/master/LICENSE
+rabbitmq/amqp091-go,https://github.com/rabbitmq/amqp091-go/blob/main/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/rabbitmq/amqp091-go/main/LICENSE
 rcrowley/go-metrics,https://github.com/rcrowley/go-metrics/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/rcrowley/go-metrics/master/LICENSE
 robfig/cron,https://github.com/robfig/cron/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/robfig/cron/master/LICENSE
 rogpeppe/fastuuid,https://github.com/rogpeppe/fastuuid/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rogpeppe/fastuuid/master/LICENSE

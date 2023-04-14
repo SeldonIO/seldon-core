@@ -273,6 +273,7 @@ prometheus/common
 prometheus/procfs
 prometheus/statsd_exporter
 prometheus/tsdb
+rabbitmq/amqp091-go
 rcrowley/go-metrics
 robfig/cron
 rogpeppe/fastuuid
