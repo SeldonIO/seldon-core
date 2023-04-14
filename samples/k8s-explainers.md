@@ -30,7 +30,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
   requirements:
   - sklearn
 
@@ -115,7 +115,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
@@ -218,7 +218,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
   requirements:
   - sklearn
 
@@ -364,7 +364,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
   explainer:
     type: anchor_tabular
     pipelineRef: income-prod

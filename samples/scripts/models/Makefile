@@ -66,7 +66,7 @@ income-xgb: env
 
 .PHONY: upload-income-xgb
 upload-income-xgb:
-	gsutil cp income-xgb/model.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-xgb/model.json
+	gsutil cp income-xgb/model.bst gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/income-xgb/model.bst
 
 #
 # Income lightgbm model

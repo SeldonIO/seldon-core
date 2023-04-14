@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
   requirements:
   - sklearn

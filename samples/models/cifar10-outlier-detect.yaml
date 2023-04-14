@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: cifar10-outlier
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.4/cifar10/outlier-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/cifar10/outlier-detector"
   requirements:
     - mlserver
     - alibi-detect
