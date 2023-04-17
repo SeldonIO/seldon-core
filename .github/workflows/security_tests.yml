@@ -28,9 +28,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: security-operator
       uses: snyk/actions/golang@master
-      args: --fail-on=upgradable
-        --severity-threshold=high
-        --file=operator/go.mod
+      with:
+        args: --fail-on=upgradable
+          --severity-threshold=high
+          --file=operator/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -42,9 +43,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: security-executor
       uses: snyk/actions/golang@master
-      args: --fail-on=upgradable
-        --severity-threshold=high
-        --file=executor/go.mod
+      with:
+        args: --fail-on=upgradable
+          --severity-threshold=high
+          --file=executor/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
