@@ -23,30 +23,30 @@ jobs:
   security-operator:
 
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
 
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
+      uses: snyk/actions/golang@master
+      args: --fail-on=upgradable
+        --severity-threshold=high
+        --file=operator/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        make -C operator/ fmt
-        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-executor:
 
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
 
     steps:
     - uses: actions/checkout@v2
     - name: security-executor
+      uses: snyk/actions/golang@master
+      args: --fail-on=upgradable
+        --severity-threshold=high
+        --file=executor/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        make -C executor/ executor
-        snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-image-executor:
 
