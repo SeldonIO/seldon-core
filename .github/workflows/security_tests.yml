@@ -41,12 +41,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: security-executor
-      uses: snyk/actions/golang@master
+    - uses: snyk/actions/setup@master
+    - uses: actions/setup-go@v3      
       with:
-        args: --fail-on=upgradable
-          --severity-threshold=high
-          --file=executor/go.mod
+        go-version: '^1.17.0'
+    - name: Set up executor's environmnet
+      # NOTE: The executor needs a couple extra steps before we can build it,
+      # like copying the operator's package into the executor's folder so that
+      # it's accessible.
+      run: make -C executor/ executor
+    - name: security-executor
+      run: snyk test \
+        --fail-on=upgradable
+        --severity-threshold=high
+        --file=executor/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
