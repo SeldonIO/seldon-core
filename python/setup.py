@@ -38,7 +38,7 @@ setup(
         "setuptools >= 65.5.1",
         "prometheus_client >= 0.7.1, < 0.9.0",
         "werkzeug >= 2.1.1, < 2.3",
-        "cryptography >= 3.4, < 38.1",
+        "cryptography >= 3.4, < 40.1",
         # Addresses CVE SNYK-PYTHON-PYYAML-590151
         "PyYAML >= 5.4, < 5.5",
         # Addresses CVE PRISMA-2021-0020
