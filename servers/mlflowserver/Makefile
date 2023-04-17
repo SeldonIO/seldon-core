@@ -8,7 +8,7 @@ build:
 	s2i build \
 		-E environment \
 		./mlflowserver \
-		seldonio/seldon-core-s2i-python37-ubi8:${VERSION} \
+		seldonio/seldon-core-s2i-python38-ubi8:${VERSION} \
 		${IMAGE_NAME}:${VERSION}
 
 push:
