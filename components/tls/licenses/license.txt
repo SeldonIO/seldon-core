@@ -8834,7 +8834,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
-grpc-ecosystem/go-grpc-middleware  Apache License 2.0  https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/LICENSE
+grpc-ecosystem/go-grpc-middleware  Apache License 2.0  https://github.com/grpc-ecosystem/go-grpc-middleware/blob/main/LICENSE
 --------------------------------------------------------------------------------
                  Apache License
                            Version 2.0, January 2004
@@ -10757,7 +10757,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/master/LICENSE
+hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2014 HashiCorp, Inc.
 
@@ -19736,7 +19736,7 @@ smartystreets/assertions  MIT License  https://github.com/smartystreets/assertio
 --------------------------------------------------------------------------------
 MIT License
 
-Copyright (c) 2022 Smarty
+Copyright (c) 2023 Smarty
 
 Permission is hereby granted, free of charge, to any person obtaining a copy 
 of this software and associated documentation files (the "Software"), to deal 
@@ -23021,7 +23021,7 @@ go-resty/resty  MIT License  https://github.com/go-resty/resty/blob/master/LICEN
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
-Copyright (c) 2015-2021 Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
+Copyright (c) 2015-2023 Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
