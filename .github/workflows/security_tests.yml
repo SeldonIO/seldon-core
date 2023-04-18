@@ -27,6 +27,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
+      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
+      # it respects the Go version we use.
       uses: snyk/actions/golang@master
       with:
         args: --fail-on=upgradable
