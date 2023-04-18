@@ -2,7 +2,7 @@
       3 Apache-2.0
     395 Apache License 2.0
       7 Apache License, Version 2.0
-      4 Bouncy Castle Licence
+      3 Bouncy Castle Licence
      45 BSD 2-Clause Simplified License
       2 BSD-3-Clause
     181 BSD 3-Clause New or Revised License

@@ -92,7 +92,7 @@ gopherjs/gopherjs,https://github.com/gopherjs/gopherjs/blob/master/LICENSE,BSD 2
 gorilla/mux,https://github.com/gorilla/mux/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/mux/master/LICENSE
 gorilla/websocket,https://github.com/gorilla/websocket/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gorilla/websocket/master/LICENSE
 gregjones/httpcache,https://github.com/gregjones/httpcache/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/gregjones/httpcache/master/LICENSE.txt
-grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-middleware/master/LICENSE
+grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-middleware/main/LICENSE
 grpc-ecosystem/go-grpc-prometheus,https://github.com/grpc-ecosystem/go-grpc-prometheus/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-prometheus/master/LICENSE
 grpc-ecosystem/grpc-gateway,https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE.txt,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/main/LICENSE.txt
 hashicorp/consul,https://github.com/hashicorp/consul/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/consul/main/LICENSE
@@ -101,8 +101,8 @@ hashicorp/go-cleanhttp,https://github.com/hashicorp/go-cleanhttp/blob/master/LIC
 hashicorp/go-hclog,https://github.com/hashicorp/go-hclog/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/go-hclog/main/LICENSE
 hashicorp/go-immutable-radix,https://github.com/hashicorp/go-immutable-radix/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-immutable-radix/master/LICENSE
 hashicorp/go-msgpack,https://github.com/hashicorp/go-msgpack/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/go-msgpack/main/LICENSE
-hashicorp/go-multierror,https://github.com/hashicorp/go-multierror/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-multierror/master/LICENSE
-hashicorp/go-retryablehttp,https://github.com/hashicorp/go-retryablehttp/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-retryablehttp/master/LICENSE
+hashicorp/go-multierror,https://github.com/hashicorp/go-multierror/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-multierror/main/LICENSE
+hashicorp/go-retryablehttp,https://github.com/hashicorp/go-retryablehttp/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-retryablehttp/main/LICENSE
 hashicorp/go-rootcerts,https://github.com/hashicorp/go-rootcerts/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-rootcerts/master/LICENSE
 hashicorp/go-sockaddr,https://github.com/hashicorp/go-sockaddr/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-sockaddr/master/LICENSE
 hashicorp/go-syslog,https://github.com/hashicorp/go-syslog/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/go-syslog/master/LICENSE

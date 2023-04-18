@@ -1,26 +1,26 @@
 <licenses>
   <license name='GNU General Public License, version 2' url='http://www.gnu.org/licenses/gpl-2.0.html'>
-    <dependency>rocksdbjni-6.29.4.1.jar</dependency>
+    <dependency>rocksdbjni-7.1.2.jar</dependency>
   </license>
   <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
     <dependency>annotations-13.0.jar</dependency>
-    <dependency>client-java-proto-15.0.1.jar</dependency>
+    <dependency>client-java-proto-18.0.0.jar</dependency>
     <dependency>simpleclient_common-0.15.0.jar</dependency>
     <dependency>simpleclient-0.15.0.jar</dependency>
+    <dependency>client-java-api-18.0.0.jar</dependency>
+    <dependency>logging-interceptor-4.10.0.jar</dependency>
     <dependency>listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar</dependency>
     <dependency>simpleclient_tracer_otel-0.15.0.jar</dependency>
-    <dependency>client-java-api-15.0.1.jar</dependency>
     <dependency>simpleclient_tracer_common-0.15.0.jar</dependency>
-    <dependency>client-java-15.0.1.jar</dependency>
     <dependency>simpleclient_httpserver-0.15.0.jar</dependency>
+    <dependency>client-java-18.0.0.jar</dependency>
+    <dependency>okio-jvm-3.0.0.jar</dependency>
+    <dependency>okhttp-4.10.0.jar</dependency>
     <dependency>failureaccess-1.0.1.jar</dependency>
+    <dependency>jose4j-0.9.3.jar</dependency>
     <dependency>jsr305-3.0.2.jar</dependency>
     <dependency>simpleclient_tracer_otel_agent-0.15.0.jar</dependency>
-    <dependency>logging-interceptor-4.9.2.jar</dependency>
     <dependency>j2objc-annotations-1.3.jar</dependency>
-    <dependency>okio-jvm-2.8.0.jar</dependency>
-    <dependency>okhttp-4.9.2.jar</dependency>
-    <dependency>jose4j-0.7.11.jar</dependency>
   </license>
   <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0'>
     <dependency>grpc-context-1.45.0.jar</dependency>
@@ -37,43 +37,42 @@
     <dependency>checker-compat-qual-2.5.5.jar</dependency>
   </license>
   <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html'>
-    <dependency>rocksdbjni-6.29.4.1.jar</dependency>
-    <dependency>swagger-annotations-1.6.5.jar</dependency>
+    <dependency>swagger-annotations-1.6.9.jar</dependency>
+    <dependency>rocksdbjni-7.1.2.jar</dependency>
   </license>
   <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
-    <dependency>snakeyaml-1.30.jar</dependency>
     <dependency>guava-31.0.1-android.jar</dependency>
+    <dependency>snakeyaml-2.0.jar</dependency>
   </license>
   <license name='ISC License' url='https://opensource.org/licenses/isc-license.txt'>
     <dependency>kotlin-retry-1.0.9.jar</dependency>
   </license>
   <license name='MIT License' url='http://www.opensource.org/licenses/mit-license.php'>
-    <dependency>slf4j-api-1.7.36.jar</dependency>
+    <dependency>slf4j-api-2.0.6.jar</dependency>
   </license>
   <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
-    <dependency>kafka-streams-3.2.2.jar</dependency>
+    <dependency>kafka-streams-3.4.0.jar</dependency>
     <dependency>kotlin-stdlib-common-1.6.21.jar</dependency>
     <dependency>kotlin-stdlib-1.6.21.jar</dependency>
     <dependency>kotlin-stdlib-jdk7-1.6.21.jar</dependency>
     <dependency>kotlin-stdlib-jdk8-1.6.21.jar</dependency>
-    <dependency>kafka-clients-3.2.2.jar</dependency>
+    <dependency>kafka-clients-3.4.0.jar</dependency>
   </license>
   <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt'>
-    <dependency>gson-2.9.0.jar</dependency>
     <dependency>proto-google-common-protos-2.0.1.jar</dependency>
     <dependency>gson-fire-1.8.5.jar</dependency>
+    <dependency>gson-2.10.1.jar</dependency>
   </license>
   <license name='Apache 2.0' url='http://opensource.org/licenses/Apache-2.0'>
     <dependency>konfig-1.6.10.0.jar</dependency>
   </license>
-  <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html'>
-    <dependency>bcutil-jdk15on-1.70.jar</dependency>
-    <dependency>bcpkix-jdk15on-1.70.jar</dependency>
-    <dependency>bcprov-jdk15on-1.70.jar</dependency>
-    <dependency>bcprov-ext-jdk15on-1.70.jar</dependency>
-  </license>
   <license name='Apache 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
     <dependency>error_prone_annotations-2.10.0.jar</dependency>
+  </license>
+  <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html'>
+    <dependency>bcpkix-jdk18on-1.72.jar</dependency>
+    <dependency>bcutil-jdk18on-1.72.jar</dependency>
+    <dependency>bcprov-jdk18on-1.72.jar</dependency>
   </license>
   <license name='The MIT License' url='http://opensource.org/licenses/MIT'>
     <dependency>checker-qual-3.12.0.jar</dependency>
@@ -87,14 +86,14 @@
     <dependency>javax.annotation-api-1.3.2.jar</dependency>
   </license>
   <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt'>
-    <dependency>commons-compress-1.21.jar</dependency>
     <dependency>commons-io-2.11.0.jar</dependency>
     <dependency>commons-codec-1.15.jar</dependency>
+    <dependency>commons-compress-1.22.jar</dependency>
     <dependency>commons-lang3-3.12.0.jar</dependency>
     <dependency>commons-collections4-4.4.jar</dependency>
   </license>
   <license name='BSD-3-Clause' url='https://opensource.org/licenses/BSD-3-Clause'>
     <dependency>protobuf-kotlin-3.21.7.jar</dependency>
-    <dependency>protobuf-java-3.21.7.jar</dependency>
+    <dependency>protobuf-java-3.22.0.jar</dependency>
   </license>
 </licenses>
