@@ -9,7 +9,6 @@ Blog articles featuring different use cases of Seldon:
 
    Stream-Based Model Serving with Cloudflow and Seldon <https://www.lightbend.com/blog/stream-based-model-serving-with-cloudflow-and-seldon>
    Seldon Inference Graph: Serving your Models in a Pipeline <https://medium.com/@shirish.ph/seldon-inference-graph-pipelined-model-serving-211c6b095f62>
-   Open Source Model Management Roundup <https://www.anaconda.com/blog/developer-blog/open-source-model-management-roundup-polyaxon-argo-and-seldon/>
    Polyaxon, Argo and Seldon for model training <https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/>
    Manage ML Deployments Like A Boss <https://medium.com/analytics-vidhya/manage-ml-deployments-like-a-boss-deploy-your-first-ab-test-with-sklearn-kubernetes-and-b10ae0819dfe>
    Using PyTorch 1.0 and ONNX with Fabric for Deep Learning <https://developer.ibm.com/blogs/2018/10/01/announcing-pytorch-1-support-in-fabric-for-deep-learning/>
