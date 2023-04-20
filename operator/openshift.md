@@ -57,6 +57,15 @@ opm version
 Version: version.Version{OpmVersion:"1.12.3", GitCommit:"", BuildDate:"2020-09-18T09:16:12Z", GoOs:"linux", GoArch:"amd64"}
 ```
 
+### Preflight
+
+Install [preflight](https://github.com/redhat-openshift-ecosystem/openshift-preflight).
+
+```
+preflight --version
+preflight version 1.4.2 <commit: f9cff772837132149df69f8ae251d3caf81c49ac>
+```
+
 ### Quay
 
 Login to quay.io as seldon. Password in 1password.
