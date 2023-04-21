@@ -19,3 +19,5 @@ services:
     ulimits:
       memlock: -1
       stack: 67108864
+    environment:
+      - LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
