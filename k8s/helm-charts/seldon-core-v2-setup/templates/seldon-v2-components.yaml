@@ -1625,6 +1625,8 @@ spec:
         value: "9500"
       - name: SERVER_MODELS_DIR
         value: /mnt/agent/models
+      - name: LD_PRELOAD
+        value: /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
       image: '{{ .Values.serverConfig.triton.image.registry }}/{{ .Values.serverConfig.triton.image.repository
         }}:{{ .Values.serverConfig.triton.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.triton.image.pullPolicy }}'
