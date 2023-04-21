@@ -14,7 +14,6 @@
   shell: "curl -Lo kind-{{ kind_version }} {{ kind_url }}"
   args:
     chdir: "{{ seldon_cache_directory }}"
-    warn: false
   when: kind_binary.stat.exists == false
 
 - name: Make Kind {{ kind_version }} binary executable
