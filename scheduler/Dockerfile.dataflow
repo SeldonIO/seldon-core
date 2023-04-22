@@ -31,4 +31,4 @@ ADD --chmod=0664 https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus
 RUN echo -e 'rules:\n- pattern: ".*"\n' > config.yaml
 
 # TODO - inject JAR name & version from build pipeline
-ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-javaagent:./prometheus-jmx-javaagent.jar=8081", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-javaagent:./prometheus-jmx-javaagent.jar=8081:config.yaml", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
