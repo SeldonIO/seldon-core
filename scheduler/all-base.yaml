@@ -58,6 +58,8 @@ services:
     depends_on:
       - kafka
       - otel-collector
+    ports:
+      - 5000:8081
 
   envoy:
     build:
