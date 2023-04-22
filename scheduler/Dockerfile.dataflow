@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=builder /build/src/data-flow/build/libs/*.jar .
 COPY scheduler/data-flow/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
-ADD https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.18.0/jmx_prometheus_javaagent-0.18.0.jar prometheus-jmx-javaagent.jar
+ADD --chmod=0664 https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.18.0/jmx_prometheus_javaagent-0.18.0.jar prometheus-jmx-javaagent.jar
 
 # TODO - inject JAR name & version from build pipeline
 ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-javaagent:./prometheus-jmx-javaagent.jar=8081", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
