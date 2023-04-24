@@ -1,7 +1,7 @@
 VERSION := $(shell grep seldonio/mlserver ../scheduler/Makefile | cut -d':' -f2)
 MLSERVER_VERSION ?= ${VERSION}
 MLSERVER_FOLDER = mlserver_${MLSERVER_VERSION}
-TRITON_VERSION=23-03
+TRITON_VERSION=$(shell grep 'nvidia/tritonserver' ../scheduler/Makefile | cut -d':' -f2 | cut -d'-' -f1 | tr '.' '-')
 TRITON_FOLDER=triton_${TRITON_VERSION}
 EXAMPLES := $(wildcard *.ipynb) $(wildcard examples/*/*.ipynb)
 EXAMPLES_MD := $(EXAMPLES:.ipynb=.md)
