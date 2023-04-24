@@ -4,6 +4,12 @@ MLSERVER_FOLDER = mlserver_${MLSERVER_VERSION}
 TRITON_VERSION=23-03
 TRITON_FOLDER=triton_${TRITON_VERSION}
 
+.PHONY: train-all
+train-all: iris moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
+
+.PHONY: all
+upload-all: upload-iris upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
+
 .PHONY: env
 env:
 	python3 -m venv .env
