@@ -5,6 +5,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       containers:
       - env:
           - name: OTEL_EXPORTER_OTLP_ENDPOINT

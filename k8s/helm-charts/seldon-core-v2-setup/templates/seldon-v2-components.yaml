@@ -604,6 +604,8 @@ spec:
             memory: '{{ .Values.controller.resources.memory }}'
         securityContext:
           allowPrivilegeEscalation: false
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.controller.securityContext
         | nindent 8 }}
       serviceAccountName: seldon-controller-manager
@@ -687,6 +689,8 @@ spec:
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'
             memory: '{{ .Values.dataflow.resources.memory }}'
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.dataflow.securityContext |
         nindent 8 }}
       serviceAccountName: seldon-scheduler
@@ -750,6 +754,8 @@ spec:
           requests:
             cpu: '{{ .Values.envoy.resources.cpu }}'
             memory: '{{ .Values.envoy.resources.memory }}'
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.envoy.securityContext | nindent
         8 }}
       terminationGracePeriodSeconds: 5
@@ -817,6 +823,8 @@ spec:
           requests:
             cpu: '{{ .Values.hodometer.resources.cpu }}'
             memory: '{{ .Values.hodometer.resources.memory }}'
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.hodometer.securityContext
         | nindent 8 }}
       serviceAccountName: hodometer
@@ -937,6 +945,8 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.modelgateway.securityContext
         | nindent 8 }}
       serviceAccountName: seldon-scheduler
@@ -1079,6 +1089,8 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.pipelinegateway.securityContext
         | nindent 8 }}
       serviceAccountName: seldon-scheduler
@@ -1198,6 +1210,8 @@ spec:
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
           name: scheduler-state
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       securityContext: {{- toYaml .Values.scheduler.securityContext
         | nindent 8 }}
       serviceAccountName: seldon-scheduler
@@ -1433,6 +1447,8 @@ spec:
       - mountPath: /mnt/certs
         name: downstream-ca-certs
         readOnly: true
+    imagePullSecrets:
+    - name: '{{ .Values.imagePullSecret }}'
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server
@@ -1674,6 +1690,8 @@ spec:
       - mountPath: /dev/shm
         name: dshm
         readOnly: false
+    imagePullSecrets:
+    - name: '{{ .Values.imagePullSecret }}'
     securityContext: {{- toYaml .Values.serverConfig.securityContext
       | nindent 6 }}
     serviceAccountName: seldon-server

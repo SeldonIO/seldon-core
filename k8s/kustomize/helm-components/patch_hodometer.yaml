@@ -5,6 +5,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       containers:
       - name: hodometer
         image: '{{ .Values.hodometer.image.registry }}/{{ .Values.hodometer.image.repository }}:{{.Values.hodometer.image.tag }}'

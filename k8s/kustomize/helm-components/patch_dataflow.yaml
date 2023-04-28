@@ -5,6 +5,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       containers:
       - image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository }}:{{ .Values.dataflow.image.tag }}'
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
