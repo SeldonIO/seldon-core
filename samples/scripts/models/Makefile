@@ -1,8 +1,14 @@
 VERSION := $(shell grep seldonio/mlserver ../../../scheduler/Makefile | cut -d':' -f2)
 MLSERVER_VERSION ?= ${VERSION}
 MLSERVER_FOLDER = mlserver_${MLSERVER_VERSION}
-TRITON_VERSION=23-03
+TRITON_VERSION=$(shell grep 'nvidia/tritonserver' ../../../scheduler/Makefile | cut -d':' -f2 | cut -d'-' -f1 | tr '.' '-')
 TRITON_FOLDER=triton_${TRITON_VERSION}
+
+.PHONY: train-all
+train-all: iris moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
+
+.PHONY: upload-all
+upload-all: upload-iris upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
 
 .PHONY: env
 env:

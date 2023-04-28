@@ -10,6 +10,12 @@ define generate_file
 	REPLACE_ME=${1} envsubst < model-settings.json.template > ${OUTPUT_DIR}/${1}/model-settings.json
 endef
 
+.PHONY: train-all
+train-all: kernel_shap anchor_text_moviesentiment
+
+.PHONY: upload-all
+upload-all: upload_kernel_shap upload_anchor_text_moviesentiment
+
 .PHONY: env
 env:
 	python3 -m venv .env
