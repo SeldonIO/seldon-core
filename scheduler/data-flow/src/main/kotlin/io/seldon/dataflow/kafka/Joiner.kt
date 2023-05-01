@@ -197,9 +197,9 @@ class Joiner(
         var leftRequest = V2Dataplane.ModelInferRequest.parseFrom(left)
         var rightRequest = V2Dataplane.ModelInferRequest.parseFrom(right)
         if (leftRequest.rawInputContentsCount > 0 && rightRequest.rawInputContentsCount == 0) {
-            rightRequest = convertRequestToRawInputContents(rightRequest)
+            rightRequest = rightRequest.withBinaryContents()
         } else if (rightRequest.rawInputContentsCount > 0 && leftRequest.rawInputContentsCount == 0) {
-            leftRequest = convertRequestToRawInputContents(leftRequest)
+            leftRequest = leftRequest.withBinaryContents()
         }
         val request = V2Dataplane.ModelInferRequest
             .newBuilder()
@@ -223,9 +223,9 @@ class Joiner(
         var leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
         var rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
         if (leftResponse.rawOutputContentsCount > 0 && rightResponse.rawOutputContentsCount == 0) {
-            rightResponse = convertResponseToRawOutputContents(rightResponse)
+            rightResponse = rightResponse.withBinaryContents()
         } else if (rightResponse.rawOutputContentsCount > 0 && leftResponse.rawOutputContentsCount == 0) {
-            leftResponse = convertResponseToRawOutputContents(leftResponse)
+            leftResponse = leftResponse.withBinaryContents()
         }
         val response = V2Dataplane.ModelInferResponse
             .newBuilder()
