@@ -327,6 +327,24 @@ stringData:
 Note: remote name is `gcs` here so urls would take form similar to `gcs:<your bucket>`.
 Tip: using `cat gcloud-application-credentials.json | jq -c .` can help to easily collapse credentials.json into one line.
 
+### Example Azure Blob with Account Key
+
+Reference: [rclone documentation](https://rclone.org/azureblob/)
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-secret
+type: Opaque
+stringData:
+  RCLONE_CONFIG_AZUREBLOB_TYPE: azureblob
+  RCLONE_CONFIG_AZUREBLOB_ACCOUNT: ""
+  RCLONE_CONFIG_AZUREBLOB_ENV_AUTH: "false"
+  RCLONE_CONFIG_AZUREBLOB_KEY: ""
+```
+Note: remote name is `azureblob` here so urls would take form similar to `azureblob:<container>/path/to/dir`.
+
 ### Directly from PVC
 
 You are able to make models available directly from PVCs instead of object stores. This may be desirable if you have a lot of very large files and you want to avoid uploading/downloading, for example through NFS drives.

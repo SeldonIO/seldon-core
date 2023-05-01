@@ -25,30 +25,42 @@ jobs:
   security-operator:
 
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
 
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
+      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
+      # it respects the Go version we use.
+      uses: snyk/actions/golang@master
+      with:
+        args: --fail-on=upgradable
+          --severity-threshold=high
+          --file=operator/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        make -C operator/ fmt
-        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-executor:
 
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
 
     steps:
     - uses: actions/checkout@v2
+    - uses: snyk/actions/setup@master
+    - uses: actions/setup-go@v3      
+      with:
+        go-version: '^1.17.0'
+    - name: Set up executor's environmnet
+      # NOTE: The executor needs a couple extra steps before we can build it,
+      # like copying the operator's package into the executor's folder so that
+      # it's accessible.
+      run: make -C executor/ executor
     - name: security-executor
+      run: snyk test \
+        --fail-on=upgradable
+        --severity-threshold=high
+        --file=executor/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        make -C executor/ executor
-        snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-image-executor:
 
