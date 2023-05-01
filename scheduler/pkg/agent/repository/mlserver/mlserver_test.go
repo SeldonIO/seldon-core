@@ -160,6 +160,19 @@ func TestLoadFromBytes(t *testing.T) {
 			expected: &ModelSettings{},
 			error:    true,
 		},
+		{
+			name: "environment tarball",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
+"parameters": {"version": "1", "environment_tarball":"file.tar.gz"}}`),
+			expected: &ModelSettings{
+				Name:           "iris",
+				Implementation: "mlserver_sklearn.SKLearnModel",
+				Parameters: &ModelParameters{
+					Version:            "1",
+					EnvironmentTarball: "file.tar.gz",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
