@@ -1,3 +1,4 @@
+---
 kafka:
   bootstrap: seldon-kafka-bootstrap.seldon-mesh.svc.cluster.local:9093
 
@@ -11,5 +12,5 @@ security:
         passwordPath: /tmp/sasl/kafka/client/password
     ssl:
       client:
-        brokerValidationSecret: seldon-cluster-ca-cert        
-        brokerCa: /tmp/certs/kafka/broker/ca.crt
+        brokerValidationSecret: seldon-cluster-ca-cert
+        brokerCaPath: /tmp/certs/kafka/broker/ca.crt
