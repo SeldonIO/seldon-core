@@ -170,6 +170,12 @@ git checkout -b 1.12.0
 make update_upstream
 ```
 
+Add to `manifests/seldon-operator.clusterserviceversion.yaml`
+```
+  replaces: seldon-operator.v1.13.1
+```
+line with previous version of operator (see previous releases for example)
+
 Follow [instructions](https://operator-framework.github.io/community-operators/). At present the test instructions fail to work.
 
 Add new folder and changed package yaml to a PR. Ensure you sign the commit.
