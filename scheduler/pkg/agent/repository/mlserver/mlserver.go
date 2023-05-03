@@ -84,9 +84,10 @@ type ModelParameters struct {
 	//Version of the model
 	Version string `json:"version,omitempty"`
 	//Format of the model (only available on certain runtimes).
-	Format      string                 `json:"format,omitempty"`
-	ContentType string                 `json:"content_type,omitempty"`
-	Extra       map[string]interface{} `json:"extra,omitempty"`
+	Format             string                 `json:"format,omitempty"`
+	ContentType        string                 `json:"content_type,omitempty"`
+	Extra              map[string]interface{} `json:"extra,omitempty"`
+	EnvironmentTarball string                 `json:"environment_tarball,omitempty"`
 }
 
 // No need to update anything at top level for mlserver
