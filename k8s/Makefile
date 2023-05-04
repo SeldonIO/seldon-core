@@ -12,7 +12,7 @@ PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMA
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
 
-MLSERVER_IMG ?= seldonio/mlserver:1.3.2.rc1
+MLSERVER_IMG ?= seldonio/mlserver:1.3.2.rc3
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 
 .PHONY: create
