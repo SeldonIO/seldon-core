@@ -1,0 +1,27 @@
+# permissions for end users to view seldonruntimes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: seldonruntime-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator/v2
+    app.kubernetes.io/part-of: operator/v2
+    app.kubernetes.io/managed-by: kustomize
+  name: seldonruntime-viewer-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes/status
+  verbs:
+  - get

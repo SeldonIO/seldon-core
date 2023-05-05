@@ -19,6 +19,7 @@ package scheduler
 import (
 	"fmt"
 	"math"
+	"sync"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -43,6 +44,7 @@ type SchedulerClient struct {
 	callOptions      []grpc.CallOption
 	recorder         record.EventRecorder
 	certificateStore *tls.CertificateStore
+	seldonRuntimes   sync.Map
 }
 
 func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) *SchedulerClient {

@@ -6,6 +6,39 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
   - ""
   resources:
   - events
