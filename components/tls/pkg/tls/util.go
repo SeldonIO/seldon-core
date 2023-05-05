@@ -27,6 +27,10 @@ const (
 	SecurityProtocolPlaintxt  = "PLAINTEXT"
 	SecurityProtocolSASLSSL   = "SASL_SSL"
 
+	EnvSASLMechanismSuffix   = "_SASL_MECHANISM"
+	SASLMechanismSCRAMSHA512 = "SCRAM-SHA-512"
+	SASLMechanismPlain       = "PLAIN"
+
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
 	EnvSecurityPrefixControlPlaneServer = "CONTROL_PLANE_SERVER"
 	EnvSecurityPrefixControlPlaneClient = "CONTROL_PLANE_CLIENT"
@@ -47,6 +51,14 @@ func GetSecurityProtocolFromEnv(prefix string) string {
 	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvSecurityProtocolSuffix))
 	if !ok {
 		val = SecurityProtocolPlaintxt
+	}
+	return val
+}
+
+func GetSASLMechanismFromEnv(prefix string) string {
+	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvSASLMechanismSuffix))
+	if !ok {
+		val = SASLMechanismPlain
 	}
 	return val
 }

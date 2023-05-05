@@ -646,6 +646,8 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.crtPath }}'
         - name: SELDON_TLS_CLIENT_CA_PATH
           value: '{{ .Values.security.kafka.ssl.client.caPath }}'
+        - name: SELDON_SASL_MECHANISM
+          value: '{{ .Values.security.kafka.sasl.mechanism }}'
         - name: SELDON_SASL_USERNAME
           value: '{{ .Values.security.kafka.sasl.client.username }}'
         - name: SELDON_SASL_SECRET
@@ -877,6 +879,8 @@ spec:
           value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
         - name: KAFKA_SECURITY_PROTOCOL
           value: '{{ .Values.security.kafka.protocol }}'
+        - name: KAFKA_SASL_MECHANISM
+          value: '{{ .Values.security.kafka.sasl.mechanism }}'
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
           value: '{{ .Values.security.kafka.ssl.client.secret }}'
         - name: KAFKA_CLIENT_TLS_KEY_LOCATION
@@ -983,6 +987,8 @@ spec:
         env:
         - name: KAFKA_SECURITY_PROTOCOL
           value: '{{ .Values.security.kafka.protocol }}'
+        - name: KAFKA_SASL_MECHANISM
+          value: '{{ .Values.security.kafka.sasl.mechanism }}'
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
           value: '{{ .Values.security.kafka.ssl.client.secret }}'
         - name: KAFKA_CLIENT_TLS_KEY_LOCATION

@@ -29,6 +29,8 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.crtPath }}'
         - name: SELDON_TLS_CLIENT_CA_PATH
           value: '{{ .Values.security.kafka.ssl.client.caPath }}'
+        - name: SELDON_SASL_MECHANISM
+          value: '{{ .Values.security.kafka.sasl.mechanism }}'
         - name: SELDON_SASL_USERNAME
           value: '{{ .Values.security.kafka.sasl.client.username }}'
         - name: SELDON_SASL_SECRET
