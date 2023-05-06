@@ -45,7 +45,6 @@ type ModelReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-	Namespace string
 }
 
 func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, model *mlopsv1alpha1.Model) (bool, error) {

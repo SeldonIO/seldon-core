@@ -42,7 +42,6 @@ type PipelineReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-	Namespace string
 }
 
 func (r *PipelineReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline) (bool, error) {

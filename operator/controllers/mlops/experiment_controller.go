@@ -43,7 +43,6 @@ type ExperimentReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-	Namespace string
 }
 
 func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, experiment *mlopsv1alpha1.Experiment) (bool, error) {

@@ -134,7 +134,6 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
 		Recorder:  mgr.GetEventRecorderFor("model-controller"),
-		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Model")
 		os.Exit(1)
@@ -144,7 +143,6 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
 		Recorder:  mgr.GetEventRecorderFor("server-controller"),
-		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Server")
 		os.Exit(1)
@@ -154,7 +152,6 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
 		Recorder:  mgr.GetEventRecorderFor("pipeline-controller"),
-		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Pipeline")
 		os.Exit(1)
@@ -171,7 +168,6 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
 		Recorder:  mgr.GetEventRecorderFor("pipeline-controller"),
-		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Experiment")
 		os.Exit(1)
@@ -181,7 +177,6 @@ func main() {
 		Scheme:    mgr.GetScheme(),
 		Scheduler: schedulerClient,
 		Recorder:  mgr.GetEventRecorderFor("seldonruntime-controller"),
-		Namespace: namespace,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SeldonRuntime")
 		os.Exit(1)

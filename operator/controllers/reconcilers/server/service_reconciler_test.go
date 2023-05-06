@@ -86,7 +86,7 @@ func TestToServices(t *testing.T) {
 	}
 }
 
-func TestReconcile(t *testing.T) {
+func TestServiceReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := logrtest.New(t)
 	type test struct {

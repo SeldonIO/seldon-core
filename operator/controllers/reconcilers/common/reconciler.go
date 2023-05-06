@@ -40,8 +40,7 @@ type LabelHandler interface {
 }
 
 type ReconcilerConfig struct {
-	Ctx       context.Context
-	Logger    logr.Logger
-	Client    client.Client
-	Namespace string
+	Ctx    context.Context
+	Logger logr.Logger
+	Client client.Client
 }

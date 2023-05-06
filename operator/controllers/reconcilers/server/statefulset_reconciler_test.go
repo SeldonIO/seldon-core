@@ -37,7 +37,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestReconcile(t *testing.T) {
+func TestStatefulSetReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {

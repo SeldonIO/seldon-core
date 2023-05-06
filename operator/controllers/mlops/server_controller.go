@@ -48,7 +48,6 @@ type ServerReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-	Namespace string
 }
 
 func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1alpha1.Server) (bool, error) {
@@ -127,10 +126,9 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
-		Ctx:       ctx,
-		Logger:    logger,
-		Client:    r.Client,
-		Namespace: r.Namespace,
+		Ctx:    ctx,
+		Logger: logger,
+		Client: r.Client,
 	})
 	if err != nil {
 		return reconcile.Result{}, err

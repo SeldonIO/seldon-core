@@ -37,127 +37,37 @@ type SeldonRuntimeSpec struct {
 	ModelGateway    *ModelGatewaySpec    `json:"modelGateway,omitempty"`
 	PipelineGateway *PipelineGatewaySpec `json:"pipelineGateway,omitempty"`
 	Hodometer       *HodometerSpec       `json:"hodometer,omitempty"`
-	Security        SecuritySettings     `json:"security,omitempty"`
-}
-
-type DeploymentSpec struct {
-	Replicas         *int32                    `json:"replicas,omitempty"`
-	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
 type SchedulerSpec struct {
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type EnvoySpec struct {
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type DataFlowSpec struct {
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type ModelGatewaySpec struct {
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type PipelineGatewaySpec struct {
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type HodometerSpec struct {
-	Active         bool            `json:"active,omitempty"`
-	Container      *v1.Container   `json:"container,omitempty"`
-	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
-}
-
-type SecuritySettings struct {
-	Controlplane ControlAuth `json:"controlplane,omitempty"`
-	Envoy        EnvoyAuth   `json:"envoy,omitempty"`
-	Kafka        KafkaAuth   `json:"kafka,omitempty"`
-}
-
-type ControlAuth struct {
-	// +kubebuilder:default=PLAINTEXT
-	Protocol ProtocolType `json:"protocol,omitempty"`
-	SSL      SSLAuth      `json:"ssl,omitempty"`
-}
-
-type KafkaAuth struct {
-	// +kubebuilder:default=PLAINTEXT
-	Protocol ProtocolType `json:"protocol,omitempty"`
-	SASL     SASLAuth     `json:"sasl,omitempty"`
-	SSL      KafkaSSLAuth `json:"ssl,omitempty"`
-}
-
-type EnvoyAuth struct {
-	// +kubebuilder:default=PLAINTEXT
-	Protocol ProtocolType `json:"protocol,omitempty"`
-	SSL      EnvoySSLAuth `json:"ssl,omitempty"`
-}
-
-type EnvoySSLAuth struct {
-	Upstream   EnvoyUpstreamSSLAuth   `json:"upstream,omitempty"`
-	Downstream EnvoyDownstreamSSLAuth `json:"downstream,omitempty"`
-}
-
-type EnvoyUpstreamSSLAuth struct {
-	Server ServerSSLAuth `json:"server,omitempty"`
-	Client ClientSSLAuth `json:"client,omitempty"`
-}
-
-type EnvoyDownstreamSSLAuth struct {
-	Server ServerSSLAuth `json:"server,omitempty"`
-	Client ClientSSLAuth `json:"client,omitempty"`
-}
-
-type KafkaSSLAuth struct {
-	Secret                          string `json:"secret,omitempty"`
-	BrokerValidationSecret          string `json:"brokerValidationSecret,omitempty"`
-	KeyPath                         string `json:"keyPath,omitempty"`
-	CrtPath                         string `json:"crtPath,omitempty"`
-	CaPath                          string `json:"caPath,omitempty"`
-	BrokerCaPath                    string `json:"brokerCaPath,omitempty"`
-	EndpointIdentificationAlgorithm string `json:"endpointIdentificationAlgorithm,omitempty"`
-}
-
-type SASLAuth struct {
-	Client *SASLClientAuth `json:"client,omitempty"`
-}
-
-type SASLClientAuth struct {
-	Username     string `json:"username,omitempty"`
-	Secret       string `json:"secret,omitempty"`
-	PasswordPath string `json:"passwordPath,omitempty"`
-}
-
-type SSLAuth struct {
-	Server ServerSSLAuth `json:"server,omitempty"`
-	Client ClientSSLAuth `json:"client,omitempty"`
-}
-
-type ClientSSLAuth struct {
-	Secret                 string `json:"secret,omitempty"`
-	ServerValidationSecret string `json:"serverValidationSecret,omitempty"`
-	KeyPath                string `json:"keyPath,omitempty"`
-	CrtPath                string `json:"crtPath,omitempty"`
-	CaPath                 string `json:"caPath,omitempty"`
-	ServerCaPath           string `json:"serverCaPath,omitempty"`
-	MTLS                   bool   `json:"MTLS,omitempty"`
-}
-
-type ServerSSLAuth struct {
-	Secret                 string `json:"secret,omitempty"`
-	ClientValidationSecret string `json:"clientValidationSecret,omitempty"`
-	KeyPath                string `json:"keyPath,omitempty"`
-	CrtPath                string `json:"crtPath,omitempty"`
-	CaPath                 string `json:"caPath,omitempty"`
-	ClientCaPath           string `json:"clientCaPath,omitempty"`
+	Active    bool                    `json:"active,omitempty"`
+	Replicas  *int32                  `json:"replicas,omitempty"`
+	Resources v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // SeldonRuntimeStatus defines the observed state of SeldonRuntime

@@ -35,7 +35,6 @@ type SeldonRuntimeReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-	Namespace string
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes,verbs=get;list;watch;create;update;patch;delete
