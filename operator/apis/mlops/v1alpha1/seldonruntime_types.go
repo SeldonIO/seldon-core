@@ -37,72 +37,83 @@ type SeldonRuntimeSpec struct {
 	ModelGateway    *ModelGatewaySpec    `json:"modelGateway,omitempty"`
 	PipelineGateway *PipelineGatewaySpec `json:"pipelineGateway,omitempty"`
 	Hodometer       *HodometerSpec       `json:"hodometer,omitempty"`
-	Security        *SecuritySettings    `json:"security,omitempty"`
+	Security        SecuritySettings     `json:"security,omitempty"`
+}
+
+type DeploymentSpec struct {
+	Replicas         *int32                    `json:"replicas,omitempty"`
+	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }
 
 type SchedulerSpec struct {
-	Container *v1.Container `json:"container,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type EnvoySpec struct {
-	Container *v1.Container `json:"container,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type DataFlowSpec struct {
-	Container *v1.Container `json:"container,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type ModelGatewaySpec struct {
-	Container *v1.Container `json:"container,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type PipelineGatewaySpec struct {
-	Container *v1.Container `json:"container,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type HodometerSpec struct {
-	Active    bool          `json:"active,omitempty"`
-	Container *v1.Container `json:"container,omitempty"`
+	Active         bool            `json:"active,omitempty"`
+	Container      *v1.Container   `json:"container,omitempty"`
+	DeploymentSpec *DeploymentSpec `json:"deploymentSpec,omitempty"`
 }
 
 type SecuritySettings struct {
-	Controlplane *ControlAuth `json:"controlplane,omitempty"`
-	Envoy        *EnvoyAuth   `json:"envoy,omitempty"`
-	Kafka        *KafkaAuth   `json:"kafka,omitempty"`
+	Controlplane ControlAuth `json:"controlplane,omitempty"`
+	Envoy        EnvoyAuth   `json:"envoy,omitempty"`
+	Kafka        KafkaAuth   `json:"kafka,omitempty"`
 }
 
 type ControlAuth struct {
 	// +kubebuilder:default=PLAINTEXT
 	Protocol ProtocolType `json:"protocol,omitempty"`
-	SSLAuth  *SSLAuth     `json:"sslAuth,omitempty"`
+	SSL      SSLAuth      `json:"ssl,omitempty"`
 }
 
 type KafkaAuth struct {
 	// +kubebuilder:default=PLAINTEXT
-	Protocol ProtocolType  `json:"protocol,omitempty"`
-	SASL     *SASLAuth     `json:"sasl,omitempty"`
-	SSLAuth  *KafkaSSLAuth `json:"SSLAuth,omitempty"`
+	Protocol ProtocolType `json:"protocol,omitempty"`
+	SASL     SASLAuth     `json:"sasl,omitempty"`
+	SSL      KafkaSSLAuth `json:"ssl,omitempty"`
 }
 
 type EnvoyAuth struct {
 	// +kubebuilder:default=PLAINTEXT
-	Protocol ProtocolType  `json:"protocol,omitempty"`
-	SSL      *EnvoySSLAuth `json:"SSL,omitempty"`
+	Protocol ProtocolType `json:"protocol,omitempty"`
+	SSL      EnvoySSLAuth `json:"ssl,omitempty"`
 }
 
 type EnvoySSLAuth struct {
-	Upstream   *EnvoyUpstreamSSLAuth   `json:"upstream,omitempty"`
-	Downstream *EnvoyDownstreamSSLAuth `json:"downstream,omitempty"`
+	Upstream   EnvoyUpstreamSSLAuth   `json:"upstream,omitempty"`
+	Downstream EnvoyDownstreamSSLAuth `json:"downstream,omitempty"`
 }
 
 type EnvoyUpstreamSSLAuth struct {
-	ServerSSLAuth *ServerSSLAuth `json:"serverSSLAuth,omitempty"`
-	ClientSSLAuth *ClientSSLAuth `json:"clientSSLAuth,omitempty"`
+	Server ServerSSLAuth `json:"server,omitempty"`
+	Client ClientSSLAuth `json:"client,omitempty"`
 }
 
 type EnvoyDownstreamSSLAuth struct {
-	ServerSSLAuth *ServerSSLAuth `json:"serverSSLAuth,omitempty"`
-	ClientSSLAuth *ClientSSLAuth `json:"clientSSLAuth,omitempty"`
+	Server ServerSSLAuth `json:"server,omitempty"`
+	Client ClientSSLAuth `json:"client,omitempty"`
 }
 
 type KafkaSSLAuth struct {
@@ -126,8 +137,8 @@ type SASLClientAuth struct {
 }
 
 type SSLAuth struct {
-	ServerSSLAuth *ServerSSLAuth `json:"serverSSLAuth,omitempty"`
-	ClientSSLAuth *ClientSSLAuth `json:"clientSSLAuth,omitempty"`
+	Server ServerSSLAuth `json:"server,omitempty"`
+	Client ClientSSLAuth `json:"client,omitempty"`
 }
 
 type ClientSSLAuth struct {
@@ -142,11 +153,11 @@ type ClientSSLAuth struct {
 
 type ServerSSLAuth struct {
 	Secret                 string `json:"secret,omitempty"`
-	ServerValidationSecret string `json:"serverValidationSecret,omitempty"`
+	ClientValidationSecret string `json:"clientValidationSecret,omitempty"`
 	KeyPath                string `json:"keyPath,omitempty"`
 	CrtPath                string `json:"crtPath,omitempty"`
 	CaPath                 string `json:"caPath,omitempty"`
-	ServerCaPath           string `json:"serverCaPath,omitempty"`
+	ClientCaPath           string `json:"clientCaPath,omitempty"`
 }
 
 // SeldonRuntimeStatus defines the observed state of SeldonRuntime

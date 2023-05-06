@@ -19,9 +19,8 @@ package mlops
 import (
 	"context"
 	"fmt"
-
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
@@ -49,6 +48,7 @@ type ServerReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
+	Namespace string
 }
 
 func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1alpha1.Server) (bool, error) {
@@ -126,10 +126,11 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, err
 	}
 
-	sr, err := reconcilers.NewServerReconciler(server, common.ReconcilerConfig{
-		Ctx:    ctx,
-		Logger: logger,
-		Client: r.Client,
+	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
+		Ctx:       ctx,
+		Logger:    logger,
+		Client:    r.Client,
+		Namespace: r.Namespace,
 	})
 	if err != nil {
 		return reconcile.Result{}, err

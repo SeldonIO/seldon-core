@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package reconcilers
+package server
 
 import (
 	"fmt"
@@ -23,8 +23,6 @@ import (
 	"github.com/imdario/mergo"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/service"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/statefulset"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -55,7 +53,7 @@ func NewServerReconciler(server *mlopsv1alpha1.Server,
 		return nil, err
 	}
 
-	sr.ServiceReconciler = service.NewServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
+	sr.ServiceReconciler = NewServerServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
 	return sr, nil
 }
 
@@ -108,7 +106,7 @@ func updateCapabilities(extraCapabilities []string, podSpec *v1.PodSpec) {
 	}
 }
 
-func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server) (*statefulset.StatefulSetReconciler, error) {
+func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server) (*ServerStatefulSetReconciler, error) {
 	//Get ServerConfig
 	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
 	if err != nil {
@@ -125,7 +123,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	updateCapabilities(server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
-	statefulSetReconciler := statefulset.NewStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec, serverConfig.ObjectMeta)
+	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec, serverConfig.ObjectMeta)
 	return statefulSetReconciler, nil
 }
 

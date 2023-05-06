@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package server
 
 import (
 	"context"
@@ -44,24 +44,24 @@ const (
 	DefaultAgentPort     = int32(9005)
 )
 
-type ServiceReconciler struct {
+type ServerServiceReconciler struct {
 	common.ReconcilerConfig
 	meta     metav1.ObjectMeta
 	Services []*v1.Service
 }
 
-func NewServiceReconciler(
+func NewServerServiceReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
-	scaling *mlopsv1alpha1.ScalingSpec) *ServiceReconciler {
-	return &ServiceReconciler{
+	scaling *mlopsv1alpha1.ScalingSpec) *ServerServiceReconciler {
+	return &ServerServiceReconciler{
 		ReconcilerConfig: common,
 		meta:             meta,
 		Services:         toServices(meta, int(*scaling.Replicas)),
 	}
 }
 
-func (s *ServiceReconciler) GetResources() []metav1.Object {
+func (s *ServerServiceReconciler) GetResources() []metav1.Object {
 	var objs []metav1.Object
 	for _, svc := range s.Services {
 		objs = append(objs, svc)
@@ -112,7 +112,7 @@ func toServices(meta metav1.ObjectMeta, replicas int) []*v1.Service {
 	return svcs
 }
 
-func (s *ServiceReconciler) getReconcileOperation(idx int, svc *v1.Service) (constants.ReconcileOperation, error) {
+func (s *ServerServiceReconciler) getReconcileOperation(idx int, svc *v1.Service) (constants.ReconcileOperation, error) {
 	found := &v1.Service{}
 	err := s.Client.Get(context.TODO(), types.NamespacedName{
 		Name:      svc.GetName(),
@@ -136,7 +136,7 @@ func (s *ServiceReconciler) getReconcileOperation(idx int, svc *v1.Service) (con
 
 // Get the expected number of replicas of server specific services that currently should exist
 // This is found by extracting the annotation added to the main svc
-func (s *ServiceReconciler) getCurrentSvcReplicas() (int, error) {
+func (s *ServerServiceReconciler) getCurrentSvcReplicas() (int, error) {
 	founds := &v1.ServiceList{}
 	matchingLabel := client.MatchingLabels{constants.ServerReplicaLabelKey: s.meta.Name}
 	err := s.Client.List(s.Ctx, founds, matchingLabel)
@@ -150,7 +150,7 @@ func (s *ServiceReconciler) getCurrentSvcReplicas() (int, error) {
 }
 
 // Delete svc replicas not needed
-func (s *ServiceReconciler) removeExtraSvcReplicas() error {
+func (s *ServerServiceReconciler) removeExtraSvcReplicas() error {
 	existingReplicas, err := s.getCurrentSvcReplicas()
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func (s *ServiceReconciler) removeExtraSvcReplicas() error {
 	return nil
 }
 
-func (s *ServiceReconciler) Reconcile() error {
+func (s *ServerServiceReconciler) Reconcile() error {
 	logger := s.Logger.WithName("ServiceReconcile")
 	err := s.removeExtraSvcReplicas()
 	if err != nil {
@@ -201,6 +201,6 @@ func (s *ServiceReconciler) Reconcile() error {
 	return nil
 }
 
-func (s *ServiceReconciler) GetConditions() []*apis.Condition {
+func (s *ServerServiceReconciler) GetConditions() []*apis.Condition {
 	return nil
 }

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package statefulset
+package server
 
 import (
 	"context"
@@ -34,28 +34,28 @@ import (
 	"knative.dev/pkg/apis"
 )
 
-type StatefulSetReconciler struct {
+type ServerStatefulSetReconciler struct {
 	common.ReconcilerConfig
 	StatefulSet *appsv1.StatefulSet
 }
 
-func NewStatefulSetReconciler(
+func NewServerStatefulSetReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	serverConfigMeta metav1.ObjectMeta,
-) *StatefulSetReconciler {
+) *ServerStatefulSetReconciler {
 	labels := utils.MergeMaps(meta.Labels, serverConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
-	return &StatefulSetReconciler{
+	return &ServerStatefulSetReconciler{
 		ReconcilerConfig: common,
 		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, labels, annotations),
 	}
 }
 
-func (s *StatefulSetReconciler) GetResources() []metav1.Object {
+func (s *ServerStatefulSetReconciler) GetResources() []metav1.Object {
 	return []metav1.Object{s.StatefulSet}
 }
 
@@ -106,11 +106,11 @@ func toStatefulSet(meta metav1.ObjectMeta,
 	return ss
 }
 
-func (s *StatefulSetReconciler) GetLabelSelector() string {
+func (s *ServerStatefulSetReconciler) GetLabelSelector() string {
 	return fmt.Sprintf("%s=%s", constants.ServerLabelNameKey, s.StatefulSet.GetName())
 }
 
-func (s *StatefulSetReconciler) GetReplicas() (int32, error) {
+func (s *ServerStatefulSetReconciler) GetReplicas() (int32, error) {
 	found := &appsv1.StatefulSet{}
 	err := s.Client.Get(context.TODO(), types.NamespacedName{
 		Name:      s.StatefulSet.GetName(),
@@ -125,7 +125,7 @@ func (s *StatefulSetReconciler) GetReplicas() (int32, error) {
 	return found.Status.Replicas, nil
 }
 
-func (s *StatefulSetReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ServerStatefulSetReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
 	found := &appsv1.StatefulSet{}
 	err := s.Client.Get(context.TODO(), types.NamespacedName{
 		Name:      s.StatefulSet.GetName(),
@@ -150,7 +150,7 @@ func (s *StatefulSetReconciler) getReconcileOperation() (constants.ReconcileOper
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *StatefulSetReconciler) Reconcile() error {
+func (s *ServerStatefulSetReconciler) Reconcile() error {
 	logger := s.Logger.WithName("StatefulSetReconcile")
 	op, err := s.getReconcileOperation()
 	switch op {
@@ -186,7 +186,7 @@ const (
 	StatefulSetNotReadyReason = "StatefulSet replicas does not match desired replicas"
 )
 
-func (s *StatefulSetReconciler) GetConditions() []*apis.Condition {
+func (s *ServerStatefulSetReconciler) GetConditions() []*apis.Condition {
 	ready := s.StatefulSet.Status.ReadyReplicas >= s.StatefulSet.Status.Replicas
 	s.Logger.Info("Checking conditions for stateful set", "ready", ready, "replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
 	if ready {

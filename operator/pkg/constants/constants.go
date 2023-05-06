@@ -43,6 +43,7 @@ const (
 	ServerLabelNameKey        = "seldon-server-name"
 	ServerReplicaLabelKey     = "seldon-server-replica"
 	ServerReplicaNameLabelKey = "seldon-server-replica-name"
+	ControlPlaneLabelKey      = "control-plane"
 )
 
 // Reconcilliation operations

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package server
 
 import (
 	"context"
@@ -91,8 +91,8 @@ func TestReconcile(t *testing.T) {
 	logger := logrtest.New(t)
 	type test struct {
 		name            string
-		reconcilerTime1 *ServiceReconciler
-		reconcilerTime2 *ServiceReconciler
+		reconcilerTime1 *ServerServiceReconciler
+		reconcilerTime2 *ServerServiceReconciler
 	}
 
 	getIntPtr := func(i int32) *int32 {
@@ -101,7 +101,7 @@ func TestReconcile(t *testing.T) {
 	tests := []test{
 		{
 			name: "Create",
-			reconcilerTime2: NewServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -112,7 +112,7 @@ func TestReconcile(t *testing.T) {
 		},
 		{
 			name: "Existing svcs from previous reconcile",
-			reconcilerTime1: NewServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -120,7 +120,7 @@ func TestReconcile(t *testing.T) {
 				&mlopsv1alpha1.ScalingSpec{
 					Replicas: getIntPtr(1),
 				}),
-			reconcilerTime2: NewServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -131,7 +131,7 @@ func TestReconcile(t *testing.T) {
 		},
 		{
 			name: "decrease in number of replicas",
-			reconcilerTime1: NewServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -139,7 +139,7 @@ func TestReconcile(t *testing.T) {
 				&mlopsv1alpha1.ScalingSpec{
 					Replicas: getIntPtr(3),
 				}),
-			reconcilerTime2: NewServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",

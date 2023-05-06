@@ -18,6 +18,7 @@ package mlops
 
 import (
 	"context"
+	"k8s.io/client-go/tools/record"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -25,12 +26,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // SeldonRuntimeReconciler reconciles a SeldonRuntime object
 type SeldonRuntimeReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme    *runtime.Scheme
+	Scheduler *scheduler.SchedulerClient
+	Recorder  record.EventRecorder
+	Namespace string
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes,verbs=get;list;watch;create;update;patch;delete

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package statefulset
+package server
 
 import (
 	"context"
@@ -239,7 +239,7 @@ func TestReconcile(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			r := NewStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, test.podSpec, test.volumeClaimTemplates, test.scaling, test.metaServerConfig)
+			r := NewServerStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, test.podSpec, test.volumeClaimTemplates, test.scaling, test.metaServerConfig)
 			rop, err := r.getReconcileOperation()
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
@@ -417,7 +417,7 @@ func TestLabelsAnnotations(t *testing.T) {
 			err := appsv1.AddToScheme(scheme)
 			g.Expect(err).To(BeNil())
 			client = testing2.NewFakeClient(scheme)
-			r := NewStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, &v1.PodSpec{}, []mlopsv1alpha1.PersistentVolumeClaim{}, &mlopsv1alpha1.ScalingSpec{}, test.metaServerConfig)
+			r := NewServerStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, &v1.PodSpec{}, []mlopsv1alpha1.PersistentVolumeClaim{}, &mlopsv1alpha1.ScalingSpec{}, test.metaServerConfig)
 			for k, v := range test.expectedLabels {
 				g.Expect(r.StatefulSet.Labels[k]).To(Equal(v))
 			}
