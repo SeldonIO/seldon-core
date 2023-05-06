@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: seldon-rclone-gs-public
+  namespace: '{{ .Release.Namespace }}'
 type: Opaque
 stringData:
   gs: |
