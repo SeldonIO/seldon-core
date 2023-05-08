@@ -23,6 +23,7 @@ const (
 	ServerFinalizerName     = "seldon.server.finalizer"
 	PipelineFinalizerName   = "seldon.pipeline.finalizer"
 	ExperimentFinalizerName = "seldon.experiment.finalizer"
+	RuntimeFinalizerName    = "seldon.runtime.finalizer"
 )
 
 func getEnvOrDefault(key string, fallback string) string {

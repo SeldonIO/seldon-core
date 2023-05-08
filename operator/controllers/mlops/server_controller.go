@@ -62,10 +62,15 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 				return true, err
 			}
 		}
-	} else { // model is being deleted
+	} else { // server is being deleted
 		if utils.ContainsStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName) {
 			// Handle unload in scheduler
 			if err := r.Scheduler.ServerNotify(ctx, server); err != nil {
+				// Remove finalizer as we can't reach scheduler
+				server.ObjectMeta.Finalizers = utils.RemoveStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName)
+				if err2 := r.Update(ctx, server); err != nil {
+					return true, err2
+				}
 				return true, err
 			}
 			if server.Status.LoadedModelReplicas == 0 { // Remove finalizer if no models loaded otherwise we wait

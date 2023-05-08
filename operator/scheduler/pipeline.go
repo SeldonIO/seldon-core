@@ -32,23 +32,31 @@ import (
 
 func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
 	logger := s.logger.WithName("LoadPipeline")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(pipeline.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.LoadPipelineRequest{
 		Pipeline: pipeline.AsSchedulerPipeline(),
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
-	_, err := grcpClient.LoadPipeline(ctx, &req, grpc_retry.WithMax(2))
+	_, err = grcpClient.LoadPipeline(ctx, &req, grpc_retry.WithMax(2))
 	return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 }
 
 func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
 	logger := s.logger.WithName("UnloadPipeline")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(pipeline.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.UnloadPipelineRequest{
 		Name: pipeline.Name,
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
-	_, err := grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(2))
+	_, err = grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(2))
 	if err != nil {
 		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 	}
@@ -62,9 +70,13 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(namespace)
+	if err != nil {
+		return err
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribePipelineStatus(ctx, &scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {

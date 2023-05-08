@@ -46,8 +46,9 @@ const (
 
 type ServerServiceReconciler struct {
 	common.ReconcilerConfig
-	meta     metav1.ObjectMeta
-	Services []*v1.Service
+	meta      metav1.ObjectMeta
+	Services  []*v1.Service
+	Namespace string
 }
 
 func NewServerServiceReconciler(
@@ -58,6 +59,7 @@ func NewServerServiceReconciler(
 		ReconcilerConfig: common,
 		meta:             meta,
 		Services:         toServices(meta, int(*scaling.Replicas)),
+		Namespace:        meta.Namespace,
 	}
 }
 
@@ -139,7 +141,8 @@ func (s *ServerServiceReconciler) getReconcileOperation(idx int, svc *v1.Service
 func (s *ServerServiceReconciler) getCurrentSvcReplicas() (int, error) {
 	founds := &v1.ServiceList{}
 	matchingLabel := client.MatchingLabels{constants.ServerReplicaLabelKey: s.meta.Name}
-	err := s.Client.List(s.Ctx, founds, matchingLabel)
+	namespace := client.InNamespace(s.Namespace)
+	err := s.Client.List(s.Ctx, founds, matchingLabel, namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return 0, nil

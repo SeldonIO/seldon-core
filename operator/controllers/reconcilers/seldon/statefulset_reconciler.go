@@ -76,7 +76,6 @@ func toStatefulSet(
 	} else {
 		replicas = 1
 	}
-	labels[constants.AppKey] = constants.ServerLabelValue
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	ss := &appsv1.StatefulSet{
@@ -90,7 +89,7 @@ func toStatefulSet(
 			ServiceName: name,
 			Replicas:    &replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{constants.ServerLabelNameKey: meta.Name},
+				MatchLabels: map[string]string{constants.KubernetesNameLabelKey: name},
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{

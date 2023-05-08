@@ -19,8 +19,11 @@ package mlops
 import (
 	"context"
 	"fmt"
+	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
@@ -29,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -49,6 +53,49 @@ type SeldonRuntimeReconciler struct {
 	Recorder  record.EventRecorder
 }
 
+func (r *SeldonRuntimeReconciler) getNumberOfServers(namespace string) (int, error) {
+	servers := mlopsv1alpha1.ServerList{}
+	inNamespace := client.InNamespace(namespace)
+	err := r.List(context.TODO(), &servers, inNamespace)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return len(servers.Items), nil
+}
+
+func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, runtime *mlopsv1alpha1.SeldonRuntime) (bool, error) {
+	// Check if we are being deleted or not
+	if runtime.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
+		// Add our finalizer
+		if !utils.ContainsStr(runtime.ObjectMeta.Finalizers, constants.RuntimeFinalizerName) {
+			runtime.ObjectMeta.Finalizers = append(runtime.ObjectMeta.Finalizers, constants.RuntimeFinalizerName)
+			if err := r.Update(context.Background(), runtime); err != nil {
+				return true, err
+			}
+		}
+	} else { // runtime is being deleted
+		numServers, err := r.getNumberOfServers(runtime.Namespace)
+		logger.Info("Runtime being deleted", "namespace", runtime.Namespace, "numServers", numServers)
+		if err != nil {
+			return true, err
+		}
+		if numServers == 0 {
+			logger.Info("Removing finalizer for runtime", "namespace", runtime.Namespace)
+			runtime.ObjectMeta.Finalizers = utils.RemoveStr(runtime.ObjectMeta.Finalizers, constants.RuntimeFinalizerName)
+			if err := r.Update(ctx, runtime); err != nil {
+				return true, err
+			}
+			r.Scheduler.RemoveConnection(runtime.Namespace)
+			// Stop reconciliation as the item is being deleted
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes/finalizers,verbs=update
@@ -63,6 +110,7 @@ type SeldonRuntimeReconciler struct {
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=v1,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -85,6 +133,11 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 			return reconcile.Result{}, nil
 		}
 		logger.Error(err, "unable to fetch SeldonRuntime", "name", req.Name, "namespace", req.Namespace)
+		return reconcile.Result{}, err
+	}
+
+	stop, err := r.handleFinalizer(ctx, logger, seldonRuntime)
+	if stop {
 		return reconcile.Result{}, err
 	}
 
@@ -161,8 +214,10 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	pred := predicate.GenerationChangedPredicate{}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.SeldonRuntime{}).
+		WithEventFilter(pred).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&v1.Service{}).

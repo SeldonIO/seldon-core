@@ -74,7 +74,6 @@ func toDeployment(
 	} else {
 		replicas = 1
 	}
-	labels[constants.AppKey] = constants.ServerLabelValue
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	d := &appsv1.Deployment{

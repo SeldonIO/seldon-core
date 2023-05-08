@@ -37,6 +37,7 @@ func NewComponentRBACReconciler(
 		ReconcilerConfig: common,
 		Roles:            getRoles(meta),
 		RoleBindings:     getRoleBindings(meta),
+		ServiceAccounts:  getServiceAccounts(meta),
 	}
 }
 

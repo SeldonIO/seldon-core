@@ -75,6 +75,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -374,26 +386,25 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: seldon-manager-rolebinding
-  namespace: '{{ .Release.Namespace }}'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: manager-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
-  namespace: '{{ .Release.Namespace }}'
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
   name: seldon-manager-tls-rolebinding
   namespace: '{{ .Release.Namespace }}'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: seldon-manager-tls-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
+  namespace: '{{ .Release.Namespace }}'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seldon-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-manager-role
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
@@ -441,9 +452,6 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
-        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
-        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
         - --namespace=$(POD_NAMESPACE)
         command:
         - /manager
@@ -463,12 +471,6 @@ spec:
           value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
-        - name: SELDON_SCHEDULER_SVC
-          value: seldon-scheduler
-        - name: SELDON_SCHEDULER_PLAINTXT_PORT
-          value: "9004"
-        - name: SELDON_SCHEDULER_TLS_PORT
-          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

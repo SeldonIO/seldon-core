@@ -46,6 +46,10 @@ const (
 	DefaultDataflowPort          = int32(9008)
 )
 
+const (
+	SeldonMeshSVCName = "seldon-mesh"
+)
+
 type ComponentServiceReconciler struct {
 	common.ReconcilerConfig
 	meta     metav1.ObjectMeta
@@ -87,15 +91,15 @@ func getSeldonMeshService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.Overr
 	}
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      overrides.Name,
+			Name:      SeldonMeshSVCName,
 			Namespace: meta.GetNamespace(),
 			Labels: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.EnvoyName,
 			},
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.EnvoyName,
 			},
 			Type: serviceType,
 			Ports: []v1.ServicePort{
@@ -120,16 +124,16 @@ func getSeldonMeshService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.Overr
 func getPipelinegatewayService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      overrides.Name,
+			Name:      mlopsv1alpha1.PipelineGatewayName,
 			Namespace: meta.GetNamespace(),
 			Labels: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.PipelineGatewayName,
 			},
 		},
 		Spec: v1.ServiceSpec{
 			ClusterIP: v1.ClusterIPNone,
 			Selector: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.PipelineGatewayName,
 			},
 			Ports: []v1.ServicePort{
 				{
@@ -157,15 +161,15 @@ func getSchedulerService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.Overri
 	}
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      overrides.Name,
+			Name:      mlopsv1alpha1.SchedulerName,
 			Namespace: meta.GetNamespace(),
 			Labels: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.SchedulerName,
 			},
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
-				constants.KubernetesNameLabelKey: overrides.Name,
+				constants.KubernetesNameLabelKey: mlopsv1alpha1.SchedulerName,
 			},
 			Type: serviceType,
 			Ports: []v1.ServicePort{

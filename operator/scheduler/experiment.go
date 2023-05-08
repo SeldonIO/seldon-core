@@ -32,29 +32,41 @@ import (
 
 func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StartExperiment")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(experiment.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StartExperimentRequest{
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err := grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(2))
+	_, err = grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(2))
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
 func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StopExperiment")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(experiment.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StopExperimentRequest{
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err := grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(2))
+	_, err = grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(2))
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
-func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(namespace)
+	if err != nil {
+		return err
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {

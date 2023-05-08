@@ -37,7 +37,11 @@ import (
 
 func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("LoadModel")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(model.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	md, err := model.AsSchedulerModel()
 	if err != nil {
@@ -57,7 +61,11 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 
 func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(model.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	modelRef := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
@@ -69,16 +77,20 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		},
 	}
 	logger.Info("Unload", "model name", model.Name)
-	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
+	_, err = grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(namespace)
+	if err != nil {
+		return err
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {

@@ -1,3 +1,27 @@
+# TODO create from operator
+kafka:
+  debug:
+  bootstrap: seldon-kafka-bootstrap.seldon-mesh:9092
+  topicPrefix: seldon
+  consumer:
+    sessionTimeoutMs: 6000
+    autoOffsetReset: earliest
+    topicMetadataRefreshIntervalMs: 1000
+    topicMetadataPropagationMaxMs: 300000
+    messageMaxBytes: 1000000000
+  producer:
+    lingerMs: 0
+    messageMaxBytes: 1000000000
+  topics:
+    replicationFactor: 1
+    numPartitions: 1
+
+opentelemetry:
+  endpoint: seldon-collector.seldon-mesh:4317
+  enable: true
+  ratio: 1
+
+    
 mlserver:
   replicas: 1
 

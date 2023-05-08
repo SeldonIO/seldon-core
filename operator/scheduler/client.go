@@ -17,6 +17,7 @@ limitations under the License.
 package scheduler
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"sync"
@@ -40,11 +41,11 @@ import (
 type SchedulerClient struct {
 	client.Client
 	logger           logr.Logger
-	conn             *grpc.ClientConn
 	callOptions      []grpc.CallOption
 	recorder         record.EventRecorder
 	certificateStore *tls.CertificateStore
-	seldonRuntimes   sync.Map // From namespace to scheduler connection
+	seldonRuntimes   map[string]*grpc.ClientConn
+	mu               sync.Mutex
 }
 
 //  connect on demand by add getConnection(namespace) which if not existing calls connect to sheduler.
@@ -58,21 +59,86 @@ func NewSchedulerClient(logger logr.Logger, client client.Client, recorder recor
 	}
 
 	return &SchedulerClient{
-		Client:      client,
-		logger:      logger.WithName("schedulerClient"),
-		callOptions: opts,
-		recorder:    recorder,
+		Client:         client,
+		logger:         logger.WithName("schedulerClient"),
+		callOptions:    opts,
+		recorder:       recorder,
+		seldonRuntimes: make(map[string]*grpc.ClientConn),
 	}
 }
 
-func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int) error {
+func getSchedulerHost(namespace string) string {
+	return fmt.Sprintf("seldon-scheduler.%s", namespace)
+}
+
+func (s *SchedulerClient) startEventHanders(namespace string) {
+	// Subscribe the event streams from scheduler
+	go func() {
+		err := s.SubscribeModelEvents(context.Background(), namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to subscribe to scheduler model events", "namespace", namespace)
+			s.RemoveConnection(namespace)
+		}
+	}()
+	go func() {
+		err := s.SubscribeServerEvents(context.Background(), namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to subscribe to scheduler server events")
+			s.RemoveConnection(namespace)
+		}
+	}()
+	go func() {
+		err := s.SubscribePipelineEvents(context.Background(), namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to subscribe to scheduler pipeline events")
+			s.RemoveConnection(namespace)
+		}
+	}()
+	go func() {
+		err := s.SubscribeExperimentEvents(context.Background(), namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to subscribe to scheduler experiment events")
+			s.RemoveConnection(namespace)
+		}
+	}()
+}
+
+func (s *SchedulerClient) RemoveConnection(namespace string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if conn, ok := s.seldonRuntimes[namespace]; ok {
+		delete(s.seldonRuntimes, namespace)
+		err := conn.Close()
+		if err != nil {
+			s.logger.Error(err, "Failed to close grpc connection to scheduler", "namespace", namespace)
+		}
+	}
+}
+
+func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if conn, ok := s.seldonRuntimes[namespace]; !ok {
+		conn, err := s.connectToScheduler(getSchedulerHost(namespace), 9004, 9044)
+		if err != nil {
+			return nil, err
+		}
+		s.startEventHanders(namespace)
+		s.seldonRuntimes[namespace] = conn
+		return conn, nil
+	} else {
+		return conn, nil
+	}
+}
+
+func (s *SchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	var err error
 	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
 	if protocol == tls.SecurityProtocolSSL {
 		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
 			tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 	retryOpts := []grpc_retry.CallOption{
@@ -95,11 +161,10 @@ func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsP
 
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s.conn = conn
 	s.logger.Info("Connected to scheduler", "host", host, "port", port)
-	return nil
+	return conn, nil
 }
 
 func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName string, err error) bool {

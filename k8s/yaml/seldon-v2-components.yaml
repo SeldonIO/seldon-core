@@ -117,6 +117,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -426,18 +438,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: seldon-manager-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: manager-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
   name: seldon-manager-tls-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -458,6 +458,18 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seldon-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seldon-manager-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-controller-manager
 ---
 apiVersion: v1
 data:
@@ -630,19 +642,10 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
-        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
-        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
         - --namespace=$(POD_NAMESPACE)
         command:
         - /manager
         env:
-        - name: SELDON_SCHEDULER_SVC
-          value: seldon-scheduler
-        - name: SELDON_SCHEDULER_PLAINTXT_PORT
-          value: "9004"
-        - name: SELDON_SCHEDULER_TLS_PORT
-          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -17,8 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
-
 	"github.com/seldonio/seldon-core/operator/v2/scheduler"
 
 	"flag"
@@ -53,9 +51,6 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
-	var schedulerHost string
-	var schedulerPlaintxtPort int
-	var schedulerTLSPort int
 	var namespace string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
@@ -63,9 +58,6 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.StringVar(&schedulerHost, "scheduler-host", "0.0.0.0", "Scheduler host")
-	flag.IntVar(&schedulerPlaintxtPort, "scheduler-plaintxt-port", 9004, "Scheduler port")
-	flag.IntVar(&schedulerTLSPort, "scheduler-tls-port", 9044, "Scheduler port")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -89,45 +81,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create and connect to scheduler
+	// Create scheduler client
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"))
-	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTLSPort)
-	if err != nil {
-		setupLog.Error(err, "unable to connect to scheduler")
-		os.Exit(1)
-	}
-
-	// Subscribe the event streams from scheduler
-	go func() {
-		err := schedulerClient.SubscribeModelEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler model events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribeServerEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler server events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribePipelineEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler pipeline events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribeExperimentEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler experiment events")
-		}
-		os.Exit(1)
-	}()
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),
