@@ -511,6 +511,10 @@ metadata:
   name: default
   namespace: '{{ .Release.Namespace }}'
 spec:
+  agentConfig:
+    rclone:
+      config_secrets:
+      - seldon-rclone-gs-public
   components:
   - name: seldon-scheduler
     podSpec:
@@ -1031,6 +1035,23 @@ spec:
       terminationGracePeriodSeconds: 5
     replicas: 1
     stateful: false
+  kafkaConfig:
+    bootstrap.servers: '{{ .Values.kafka.bootstrap }}'
+    consumer:
+      auto.offset.reset: '{{ .Values.kafka.consumer.autoOffsetReset }}'
+      message.max.bytes: '{{ int .Values.kafka.consumer.messageMaxBytes }}'
+      session.timeout.ms: '{{ .Values.kafka.consumer.sessionTimeoutMs }}'
+      topic.metadata.propagation.max.ms: '{{ .Values.kafka.consumer.topicMetadataPropagationMaxMs
+        }}'
+    debug: '{{ .Values.kafka.debug }}'
+    producer:
+      linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
+      message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
+    topicPrefix: '{{ .Values.kafka.topicPrefix }}'
+  tracingConfig:
+    enable: '{{ .Values.opentelemetry.enable }}'
+    otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+    ratio: '{{ .Values.opentelemetry.ratio }}'
 {{ end }}
 ---
 apiVersion: mlops.seldon.io/v1alpha1

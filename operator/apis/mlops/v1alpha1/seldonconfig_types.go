@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -40,7 +41,40 @@ const (
 
 // SeldonConfigSpec defines the desired state of SeldonConfig
 type SeldonConfigSpec struct {
-	Components []*ComponentDefn `json:"components,omitempty"`
+	Components    []*ComponentDefn   `json:"components,omitempty"`
+	TracingConfig TracingConfig      `json:"tracingConfig,omitempty"`
+	KafkaConfig   KafkaConfig        `json:"kafkaConfig,omitempty"`
+	AgentConfig   AgentConfiguration `json:"agentConfig,omitempty"`
+}
+
+type KafkaConfig struct {
+	BootstrapServers string                        `json:"bootstrap.servers,omitempty"`
+	Debug            string                        `json:"debug,omitempty"`
+	Consumer         map[string]intstr.IntOrString `json:"consumer,omitempty"`
+	Producer         map[string]intstr.IntOrString `json:"producer,omitempty"`
+	Streams          map[string]intstr.IntOrString `json:"streams,omitempty"`
+	TopicPrefix      string                        `json:"topicPrefix,omitempty"`
+}
+
+type AgentConfiguration struct {
+	Rclone *RcloneConfiguration `json:"rclone,omitempty" yaml:"rclone,omitempty"`
+	Kafka  *KafkaConfiguration  `json:"kafka,omitempty" yaml:"kafka,omitempty"`
+}
+
+type RcloneConfiguration struct {
+	ConfigSecrets []string `json:"config_secrets,omitempty" yaml:"config_secrets,omitempty"`
+	Config        []string `json:"config,omitempty" yaml:"config,omitempty"`
+}
+
+type KafkaConfiguration struct {
+	Active bool   `json:"active,omitempty" yaml:"active,omitempty"`
+	Broker string `json:"broker,omitempty" yaml:"broker,omitempty"`
+}
+
+type TracingConfig struct {
+	Enable               bool   `json:"enable,omitempty"`
+	OtelExporterEndpoint string `json:"otelExporterEndpoint,omitempty"`
+	Ratio                int    `json:"ratio,omitempty"`
 }
 
 type ComponentDefn struct {

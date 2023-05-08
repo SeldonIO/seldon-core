@@ -1,0 +1,17 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  kafkaConfig:
+    bootstrap.servers: '{{ .Values.kafka.bootstrap }}'
+    debug: '{{ .Values.kafka.debug }}'
+    topicPrefix: '{{ .Values.kafka.topicPrefix }}'
+    consumer:
+      "session.timeout.ms": '{{ .Values.kafka.consumer.sessionTimeoutMs }}'
+      "auto.offset.reset": '{{ .Values.kafka.consumer.autoOffsetReset }}'
+      "topic.metadata.propagation.max.ms": '{{ .Values.kafka.consumer.topicMetadataPropagationMaxMs }}'
+      "message.max.bytes": '{{ int .Values.kafka.consumer.messageMaxBytes }}'
+    producer:
+      linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
+      message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'

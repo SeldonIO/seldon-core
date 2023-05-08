@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  tracingConfig:
+    enable: '{{ .Values.opentelemetry.enable }}'
+    otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+    ratio: '{{ .Values.opentelemetry.ratio }}'

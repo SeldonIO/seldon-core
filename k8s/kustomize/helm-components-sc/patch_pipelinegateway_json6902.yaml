@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/components/1/podSpec/securityContext  
+  value: HACK_REMOVE_ME{{- toYaml .Values.pipelinegateway.securityContext | nindent 8 }}

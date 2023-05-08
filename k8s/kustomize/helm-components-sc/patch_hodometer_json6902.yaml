@@ -1,0 +1,3 @@
+- op: replace
+  path: /spec/components/3/podSpec/securityContext  
+  value: HACK_REMOVE_ME{{- toYaml .Values.hodometer.securityContext | nindent 8 }}

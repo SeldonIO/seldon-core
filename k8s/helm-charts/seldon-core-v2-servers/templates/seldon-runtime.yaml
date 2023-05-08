@@ -1,0 +1,8 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonRuntime
+metadata:
+  name: seldon
+  namespace: '{{ .Release.Namespace }}'  
+spec:
+  seldonConfig: default
+  overrides: []

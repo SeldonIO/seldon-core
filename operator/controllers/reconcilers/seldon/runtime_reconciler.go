@@ -12,6 +12,7 @@ type SeldonRuntimeReconciler struct {
 	componentReconcilers []common.Reconciler
 	rbacReconciler       common.Reconciler
 	serviceReconciler    common.Reconciler
+	configMapReconciler  common.Reconciler
 }
 
 func NewSeldonRuntimeReconciler(
@@ -54,11 +55,17 @@ func NewSeldonRuntimeReconciler(
 		}
 	}
 
+	configMapReconciler, err := NewConfigMapReconciler(commonConfig, seldonConfig, runtime.ObjectMeta)
+	if err != nil {
+		return nil, err
+	}
+
 	return &SeldonRuntimeReconciler{
 		ReconcilerConfig:     commonConfig,
 		componentReconcilers: componentReconcilers,
 		rbacReconciler:       NewComponentRBACReconciler(commonConfig, runtime.ObjectMeta),
 		serviceReconciler:    NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, overrides),
+		configMapReconciler:  configMapReconciler,
 	}, nil
 }
 
@@ -69,6 +76,7 @@ func (s *SeldonRuntimeReconciler) GetResources() []metav1.Object {
 	}
 	objs = append(objs, s.rbacReconciler.GetResources()...)
 	objs = append(objs, s.serviceReconciler.GetResources()...)
+	objs = append(objs, s.configMapReconciler.GetResources()...)
 	return objs
 }
 
@@ -79,11 +87,16 @@ func (s *SeldonRuntimeReconciler) GetConditions() []*apis.Condition {
 	}
 	conditions = append(conditions, s.rbacReconciler.GetConditions()...)
 	conditions = append(conditions, s.serviceReconciler.GetConditions()...)
+	conditions = append(conditions, s.configMapReconciler.GetConditions()...)
 	return conditions
 }
 
 func (s *SeldonRuntimeReconciler) Reconcile() error {
 	err := s.rbacReconciler.Reconcile()
+	if err != nil {
+		return err
+	}
+	err = s.configMapReconciler.Reconcile()
 	if err != nil {
 		return err
 	}
