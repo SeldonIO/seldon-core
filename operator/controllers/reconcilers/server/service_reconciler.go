@@ -192,7 +192,7 @@ func (s *ServerServiceReconciler) Reconcile() error {
 				return err
 			}
 		case constants.ReconcileNoChange:
-			logger.V(1).Info("StatefulSet No Change", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
+			logger.V(1).Info("Service No Change", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 		case constants.ReconcileUnknown:
 			logger.Error(err, "Failed to get reconcile operation for service", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 			return err

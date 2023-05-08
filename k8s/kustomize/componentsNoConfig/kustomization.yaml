@@ -1,5 +1,6 @@
 bases:
-- ../../../scheduler/k8s/defaultNoConfig
+#- ../../../scheduler/k8s/defaultNoConfig
 - ../../../operator/config/default
 - ../../../operator/config/serverconfigs
-- ../../../hodometer/k8s
+- ../../../operator/config/seldonconfigs
+#- ../../../hodometer/k8s

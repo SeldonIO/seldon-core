@@ -1,0 +1,31 @@
+# permissions for end users to edit seldonconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: seldonconfig-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: operator/v2
+    app.kubernetes.io/part-of: operator/v2
+    app.kubernetes.io/managed-by: kustomize
+  name: seldonconfig-editor-role
+rules:
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonconfigs/status
+  verbs:
+  - get

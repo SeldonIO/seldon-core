@@ -18,8 +18,20 @@ package mlops
 
 import (
 	"context"
+	"fmt"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	auth "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	apimachinary_errors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,6 +52,17 @@ type SeldonRuntimeReconciler struct {
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=seldonruntimes/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=v1,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=v1,resources=services/status,verbs=get
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=v1,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -51,16 +74,100 @@ type SeldonRuntimeReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx).WithName("Reconcile")
 
-	// TODO(user): your logic here
+	seldonRuntime := &mlopsv1alpha1.SeldonRuntime{}
+	if err := r.Get(ctx, req.NamespacedName, seldonRuntime); err != nil {
+		if errors.IsNotFound(err) {
+			// we'll ignore not-found errors, since they can't be fixed by an immediate
+			// requeue (we'll need to wait for a new notification), and we can get them
+			// on deleted requests.
+			return reconcile.Result{}, nil
+		}
+		logger.Error(err, "unable to fetch SeldonRuntime", "name", req.Name, "namespace", req.Namespace)
+		return reconcile.Result{}, err
+	}
+
+	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(seldonRuntime, common.ReconcilerConfig{
+		Ctx:    ctx,
+		Logger: logger,
+		Client: r.Client,
+	})
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Set Controller References
+	err = setControllerReferences(seldonRuntime, sr.GetResources(), r.Scheme)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	err = sr.Reconcile()
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	conditions := sr.GetConditions()
+	for _, condition := range conditions {
+		seldonRuntime.Status.SetCondition(condition)
+	}
+
+	err = r.updateStatus(seldonRuntime)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func seldoneRuntimeReady(status mlopsv1alpha1.SeldonRuntimeStatus) bool {
+	return status.Conditions != nil &&
+		status.GetCondition(apis.ConditionReady) != nil &&
+		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
+}
+
+func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.SeldonRuntime) error {
+	existingRuntime := &mlopsv1alpha1.SeldonRuntime{}
+	namespacedName := types.NamespacedName{Name: seldonRuntime.Name, Namespace: seldonRuntime.Namespace}
+	if err := r.Get(context.TODO(), namespacedName, existingRuntime); err != nil {
+		if apimachinary_errors.IsNotFound(err) { //Ignore NotFound errors
+			return nil
+		}
+		return err
+	}
+
+	if equality.Semantic.DeepEqual(existingRuntime.Status, seldonRuntime.Status) {
+		// Not updating as no difference
+	} else {
+		if err := r.Status().Update(context.TODO(), seldonRuntime); err != nil {
+			r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "UpdateFailed",
+				"Failed to update status for SeldonRuntime %q: %v", seldonRuntime.Name, err)
+			return err
+		} else {
+			prevWasReady := seldoneRuntimeReady(existingRuntime.Status)
+			currentIsReady := seldoneRuntimeReady(seldonRuntime.Status)
+			if prevWasReady && !currentIsReady {
+				r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "SeldonRuntimeNotReady",
+					fmt.Sprintf("SeldonRuntime %v is no longer Ready", seldonRuntime.GetName()))
+			} else if !prevWasReady && currentIsReady {
+				r.Recorder.Eventf(seldonRuntime, v1.EventTypeNormal, "ServerReady",
+					fmt.Sprintf("SeldonRuntime %v is Ready", seldonRuntime.GetName()))
+			}
+		}
+	}
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.SeldonRuntime{}).
+		Owns(&appsv1.StatefulSet{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&v1.Service{}).
+		Owns(&auth.Role{}).
+		Owns(&auth.RoleBinding{}).
+		Owns(&v1.ServiceAccount{}).
 		Complete(r)
 }

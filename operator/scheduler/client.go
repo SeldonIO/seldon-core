@@ -44,8 +44,12 @@ type SchedulerClient struct {
 	callOptions      []grpc.CallOption
 	recorder         record.EventRecorder
 	certificateStore *tls.CertificateStore
-	seldonRuntimes   sync.Map
+	seldonRuntimes   sync.Map // From namespace to scheduler connection
 }
+
+//  connect on demand by add getConnection(namespace) which if not existing calls connect to sheduler.
+// For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
+// the same for all schedulers
 
 func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) *SchedulerClient {
 	opts := []grpc.CallOption{

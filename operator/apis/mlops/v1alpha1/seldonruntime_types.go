@@ -19,61 +19,28 @@ package v1alpha1
 import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-type ProtocolType string
-
-const (
-	SecurityProtocolPlaintxt ProtocolType = "PLAINTXT"
-	SecurityProtocolSSL      ProtocolType = "SSL"
-	SecurityProtocolSASLSSL  ProtocolType = "SASL_SSL"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // SeldonRuntimeSpec defines the desired state of SeldonRuntime
 type SeldonRuntimeSpec struct {
-	Scheduler       *SchedulerSpec       `json:"scheduler,omitempty"`
-	Envoy           *EnvoySpec           `json:"envoy,omitempty"`
-	DataflowEngine  *DataFlowSpec        `json:"dataflowEngine,omitempty"`
-	ModelGateway    *ModelGatewaySpec    `json:"modelGateway,omitempty"`
-	PipelineGateway *PipelineGatewaySpec `json:"pipelineGateway,omitempty"`
-	Hodometer       *HodometerSpec       `json:"hodometer,omitempty"`
+	SeldonConfig string          `json:"seldonConfig"`
+	Overrides    []*OverrideSpec `json:"overrides,omitempty"`
 }
 
-type SchedulerSpec struct {
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type EnvoySpec struct {
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type DataFlowSpec struct {
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type ModelGatewaySpec struct {
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type PipelineGatewaySpec struct {
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type HodometerSpec struct {
-	Active    bool                    `json:"active,omitempty"`
-	Replicas  *int32                  `json:"replicas,omitempty"`
-	Resources v1.ResourceRequirements `json:"resources,omitempty"`
+type OverrideSpec struct {
+	Name        string         `json:"name"`
+	Active      bool           `json:"active,omitempty"`
+	Replicas    *int32         `json:"replicas,omitempty"`
+	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
 }
 
 // SeldonRuntimeStatus defines the observed state of SeldonRuntime
 type SeldonRuntimeStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	duckv1.Status `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
@@ -99,4 +66,62 @@ type SeldonRuntimeList struct {
 
 func init() {
 	SchemeBuilder.Register(&SeldonRuntime{}, &SeldonRuntimeList{})
+}
+
+var ConditionNameMap = map[string]apis.ConditionType{
+	SchedulerName:       SchedulerReady,
+	EnvoyName:           EnvoyReady,
+	DataflowEngineName:  DataflowEngineReady,
+	ModelGatewayName:    ModelGatewayReady,
+	PipelineGatewayName: PipelineGatewayReady,
+	HodometerName:       HodometerReady,
+}
+
+const (
+	SchedulerReady       apis.ConditionType = "SchedulerReady"
+	DataflowEngineReady  apis.ConditionType = "DataflowEngineReady"
+	ModelGatewayReady    apis.ConditionType = "ModelGatewayReady"
+	PipelineGatewayReady apis.ConditionType = "PipelineGatewayReady"
+	EnvoyReady           apis.ConditionType = "EnvoyReady"
+	HodometerReady       apis.ConditionType = "HodometerReady"
+)
+
+var seldonRuntimeConditionSet = apis.NewLivingConditionSet(
+	SchedulerReady,
+	DataflowEngineReady,
+	ModelGatewayReady,
+	PipelineGatewayReady,
+	EnvoyReady,
+)
+
+var _ apis.ConditionsAccessor = (*ServerStatus)(nil)
+
+func (ss *SeldonRuntimeStatus) InitializeConditions() {
+	seldonRuntimeConditionSet.Manage(ss).InitializeConditions()
+}
+
+func (ss *SeldonRuntimeStatus) IsReady() bool {
+	return seldonRuntimeConditionSet.Manage(ss).IsHappy()
+}
+
+func (ss *SeldonRuntimeStatus) GetCondition(t apis.ConditionType) *apis.Condition {
+	return seldonRuntimeConditionSet.Manage(ss).GetCondition(t)
+}
+
+func (ss *SeldonRuntimeStatus) IsConditionReady(t apis.ConditionType) bool {
+	c := seldonRuntimeConditionSet.Manage(ss).GetCondition(t)
+	return c != nil && c.Status == v1.ConditionTrue
+}
+
+func (ss *SeldonRuntimeStatus) SetCondition(condition *apis.Condition) {
+	switch {
+	case condition == nil:
+		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+	case condition.Status == v1.ConditionUnknown:
+		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionTrue:
+		serverConditionSet.Manage(ss).MarkTrueWithReason(condition.Type, condition.Reason, condition.Message)
+	case condition.Status == v1.ConditionFalse:
+		serverConditionSet.Manage(ss).MarkFalse(condition.Type, condition.Reason, condition.Message)
+	}
 }
