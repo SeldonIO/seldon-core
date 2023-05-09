@@ -196,14 +196,24 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 					"name", event.ModelName,
 					"state", latestVersionStatus.State.State.String(),
 				)
-				latestModel.Status.CreateAndSetCondition(v1alpha1.ModelReady, true, latestVersionStatus.State.Reason)
+				latestModel.Status.CreateAndSetCondition(
+					v1alpha1.ModelReady,
+					true,
+					latestVersionStatus.GetState().GetState().String(),
+					latestVersionStatus.State.Reason,
+				)
 			default:
 				logger.Info(
 					"Setting model to not ready",
 					"name", event.ModelName,
 					"state", latestVersionStatus.State.State.String(),
 				)
-				latestModel.Status.CreateAndSetCondition(v1alpha1.ModelReady, false, latestVersionStatus.State.Reason)
+				latestModel.Status.CreateAndSetCondition(
+					v1alpha1.ModelReady,
+					false,
+					latestVersionStatus.GetState().GetState().String(),
+					latestVersionStatus.State.Reason,
+				)
 			}
 
 			// Set the total number of replicas targeted by this model
