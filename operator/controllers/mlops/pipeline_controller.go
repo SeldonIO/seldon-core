@@ -44,8 +44,11 @@ type PipelineReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-func (r *PipelineReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline) (bool, error) {
-
+func (r *PipelineReconciler) handleFinalizer(
+	ctx context.Context,
+	logger logr.Logger,
+	pipeline *mlopsv1alpha1.Pipeline,
+) (bool, error) {
 	// Check if we are being deleted or not
 	if pipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
 
@@ -64,7 +67,10 @@ func (r *PipelineReconciler) handleFinalizer(ctx context.Context, logger logr.Lo
 					return true, err
 				} else {
 					// Remove pipeline anyway on error as we assume errors from scheduler are fatal here
-					pipeline.ObjectMeta.Finalizers = utils.RemoveStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
+					pipeline.ObjectMeta.Finalizers = utils.RemoveStr(
+						pipeline.ObjectMeta.Finalizers,
+						constants.PipelineFinalizerName,
+					)
 					if errUpdate := r.Update(ctx, pipeline); errUpdate != nil {
 						logger.Error(err, "Failed to remove finalizer", "pipeline", pipeline.Name)
 						return true, err
@@ -124,10 +130,25 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
-func (r *PipelineReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline, err error) {
-	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, schedulerAPI.PipelineVersionState_PipelineFailed.String(), err.Error())
+func (r *PipelineReconciler) updateStatusFromError(
+	ctx context.Context,
+	logger logr.Logger,
+	pipeline *mlopsv1alpha1.Pipeline,
+	err error,
+) {
+	pipeline.Status.CreateAndSetCondition(
+		mlopsv1alpha1.PipelineReady,
+		false,
+		schedulerAPI.PipelineVersionState_PipelineFailed.String(),
+		err.Error(),
+	)
 	if errSet := r.Status().Update(ctx, pipeline); errSet != nil {
-		logger.Error(errSet, "Failed to set status on pipeline on error", "pipeline", pipeline.Name, "error", err.Error())
+		logger.Error(
+			errSet,
+			"Failed to set status on pipeline on error",
+			"pipeline", pipeline.Name,
+			"error", err.Error(),
+		)
 	}
 }
 
