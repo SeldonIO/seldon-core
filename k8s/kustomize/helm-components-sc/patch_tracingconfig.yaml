@@ -4,6 +4,6 @@ metadata:
   name: default
 spec:
   tracingConfig:
-    enable: '{{ .Values.opentelemetry.enable }}'
+    enable: HACK_REMOVE_ME{{ .Values.opentelemetry.enable }}
     otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
     ratio: '{{ .Values.opentelemetry.ratio }}'

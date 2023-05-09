@@ -7611,7 +7611,7 @@ spec:
                   otelExporterEndpoint:
                     type: string
                   ratio:
-                    type: integer
+                    type: string
                 type: object
             type: object
           status:

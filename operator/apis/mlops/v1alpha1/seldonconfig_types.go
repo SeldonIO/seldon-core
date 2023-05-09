@@ -74,7 +74,7 @@ type KafkaConfiguration struct {
 type TracingConfig struct {
 	Enable               bool   `json:"enable,omitempty"`
 	OtelExporterEndpoint string `json:"otelExporterEndpoint,omitempty"`
-	Ratio                int    `json:"ratio,omitempty"`
+	Ratio                string `json:"ratio,omitempty"`
 }
 
 type ComponentDefn struct {

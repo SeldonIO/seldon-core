@@ -104,7 +104,7 @@ func getTracingConfigMap(tracingConfig mlopsv1alpha1.TracingConfig, namespace st
 	}
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "tracing-config",
+			Name:      "seldon-tracing",
 			Namespace: namespace,
 		},
 		Data: map[string]string{

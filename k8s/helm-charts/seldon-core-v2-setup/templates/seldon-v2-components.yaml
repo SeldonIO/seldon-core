@@ -1049,7 +1049,7 @@ spec:
       message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
     topicPrefix: '{{ .Values.kafka.topicPrefix }}'
   tracingConfig:
-    enable: '{{ .Values.opentelemetry.enable }}'
+    enable: {{ .Values.opentelemetry.enable }}
     otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
     ratio: '{{ .Values.opentelemetry.ratio }}'
 {{ end }}

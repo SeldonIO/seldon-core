@@ -69,7 +69,7 @@ security:
           serverCaPath: /tmp/certs/dds/ca.crt
 
 opentelemetry:
-  endpoint: seldon-collector:4317
+  endpoint: seldon-collector.seldon-mesh:4317
   enable: true
   ratio: 1
 

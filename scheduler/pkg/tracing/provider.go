@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -46,9 +47,9 @@ type TracerProvider struct {
 }
 
 type TracingConfig struct {
-	Enable               bool    `json:"enable"`
-	OtelExporterEndpoint string  `json:"otelExporterEndpoint"`
-	Ratio                float64 `json:"Ratio"`
+	Enable               bool   `json:"enable"`
+	OtelExporterEndpoint string `json:"otelExporterEndpoint"`
+	Ratio                string `json:"Ratio"`
 }
 
 func NewTraceProvider(serviceName string, configPath *string, logger logrus.FieldLogger) (*TracerProvider, error) {
@@ -113,9 +114,6 @@ func (t *TracerProvider) recreateTracerProvider(config *TracingConfig) error {
 	logger := t.logger.WithField("func", "recreateTracerProvider")
 	// add further check for config semantic validity
 	if config.Enable {
-		if config.Ratio == 0 {
-			return fmt.Errorf("Trace enabled but ratio set to zero")
-		}
 		if config.OtelExporterEndpoint == "" {
 			return fmt.Errorf("Trace enabled but Otel endpoint empty")
 		}
@@ -135,8 +133,18 @@ func (t *TracerProvider) recreateTracerProvider(config *TracingConfig) error {
 		}
 		bsp := trace.NewBatchSpanProcessor(traceExp)
 
+		ratio := 1.0
+		if t.config.Ratio != "" {
+			ratioParsed, err := strconv.ParseFloat(t.config.Ratio, 64)
+			if err != nil {
+				logger.WithError(err).Error("Failed to parse tracing ratio %s", t.config.Ratio)
+			} else {
+				ratio = ratioParsed
+			}
+		}
+
 		tp := trace.NewTracerProvider(
-			trace.WithSampler(trace.ParentBased(trace.TraceIDRatioBased(t.config.Ratio))),
+			trace.WithSampler(trace.ParentBased(trace.TraceIDRatioBased(ratio))),
 			trace.WithResource(resource.NewWithAttributes(semconv.SchemaURL, semconv.ServiceNameKey.String(t.serviceName))),
 			trace.WithSpanProcessor(bsp),
 		)
