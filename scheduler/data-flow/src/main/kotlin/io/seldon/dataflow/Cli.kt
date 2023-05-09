@@ -17,9 +17,9 @@ limitations under the License.
 package io.seldon.dataflow
 
 import com.natpryce.konfig.*
-import io.klogging.noCoLogger
 import io.klogging.Level
-import org.apache.kafka.common.security.auth.SecurityProtocol
+import io.klogging.noCoLogger
+import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
 
 object Cli {
     private const val envVarPrefix = "SELDON_"
@@ -34,13 +34,8 @@ object Cli {
     val upstreamPort = Key("upstream.port", intType)
 
     // Kafka
-    private val supportedKafkaProtocols = arrayOf(
-        SecurityProtocol.PLAINTEXT,
-        SecurityProtocol.SSL,
-        SecurityProtocol.SASL_SSL,
-    ) // TODO - move to Kafka package
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
-    val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*supportedKafkaProtocols))
+    val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*KafkaSecurityProtocols))
     val kafkaPartitions = Key("kafka.partitions.default", intType)
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
     val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
