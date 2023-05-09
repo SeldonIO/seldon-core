@@ -1413,3 +1413,64 @@ var _ = Describe("Create a Seldon Deployment with KEDA", func() {
 
 	})
 })
+
+func TestCreateDeploymentWithPodSecurityContext(t *testing.T) {
+	g := NewGomegaWithT(t)
+	depName := "dep"
+	modelType := machinelearningv1.MODEL
+	user1 := int64(5555)
+	user2 := int64(5556)
+	instance := &machinelearningv1.SeldonDeployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      depName,
+			Namespace: "default",
+		},
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Name: "mydep",
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Metadata: machinelearningv1.ObjectMeta{},
+							Spec: v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Image: "seldonio/mock_classifier:1.0",
+										Name:  "classifier",
+									},
+								},
+							},
+						},
+					},
+					Graph: machinelearningv1.PredictiveUnit{
+						Name: "classifier",
+						Type: &modelType,
+					},
+				},
+			},
+		},
+	}
+
+	// Set security contect in sdep
+	instance.Spec.Predictors[0].ComponentSpecs[0].Spec.SecurityContext = &v1.PodSecurityContext{
+		RunAsUser: &user1,
+	}
+	dep := createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, nil, true)
+	g.Expect(*dep.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(user1))
+
+	// Pass in security context
+	instance.Spec.Predictors[0].ComponentSpecs[0].Spec.SecurityContext = nil
+	securityContext := &v1.PodSecurityContext{
+		RunAsUser: &user2,
+	}
+	dep = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, securityContext, true)
+	g.Expect(*dep.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(user2))
+
+	// Pass in security context and in spec
+	instance.Spec.Predictors[0].ComponentSpecs[0].Spec.SecurityContext = &v1.PodSecurityContext{
+		RunAsUser: &user1,
+	}
+	dep = createDeploymentWithoutEngine(depName, "a", instance.Spec.Predictors[0].ComponentSpecs[0], &instance.Spec.Predictors[0], instance, securityContext, true)
+	g.Expect(*dep.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(user1))
+}
