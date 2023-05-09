@@ -192,36 +192,39 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 			}
 
 			// Handle status update
-			switch latestVersionStatus.State.State {
+			modelStatus := latestVersionStatus.GetState()
+			switch modelStatus.GetState() {
 			case scheduler.ModelStatus_ModelAvailable:
 				logger.Info(
 					"Setting model to ready",
 					"name", event.ModelName,
-					"state", latestVersionStatus.State.State.String(),
+					"state", modelStatus.GetState().String(),
 				)
 				latestModel.Status.CreateAndSetCondition(
 					v1alpha1.ModelReady,
 					true,
-					latestVersionStatus.GetState().GetState().String(),
-					latestVersionStatus.State.Reason,
+					modelStatus.GetState().String(),
+					modelStatus.GetReason(),
 				)
 			default:
 				logger.Info(
 					"Setting model to not ready",
 					"name", event.ModelName,
-					"state", latestVersionStatus.State.State.String(),
+					"state", modelStatus.GetState().String(),
 				)
 				latestModel.Status.CreateAndSetCondition(
 					v1alpha1.ModelReady,
 					false,
-					latestVersionStatus.GetState().GetState().String(),
-					latestVersionStatus.State.Reason,
+					modelStatus.GetState().String(),
+					modelStatus.GetReason(),
 				)
 			}
 
 			// Set the total number of replicas targeted by this model
-			lastState := latestVersionStatus.State
-			latestModel.Status.Replicas = int32(lastState.GetAvailableReplicas() + lastState.GetUnavailableReplicas())
+			latestModel.Status.Replicas = int32(
+				modelStatus.GetAvailableReplicas() +
+					modelStatus.GetUnavailableReplicas(),
+			)
 			return s.updateModelStatus(latestModel)
 		})
 		if retryErr != nil {
