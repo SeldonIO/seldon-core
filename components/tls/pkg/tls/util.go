@@ -29,6 +29,7 @@ const (
 
 	EnvSASLMechanismSuffix   = "_SASL_MECHANISM"
 	SASLMechanismSCRAMSHA512 = "SCRAM-SHA-512"
+	SASLMechanismSCRAMSHA256 = "SCRAM-SHA-256"
 	SASLMechanismPlain       = "PLAIN"
 
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
