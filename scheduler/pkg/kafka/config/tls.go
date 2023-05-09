@@ -47,13 +47,15 @@ func AddKafkaSSLOptions(config kafka.ConfigMap) error {
 }
 
 func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
-	// Set security protocol and SASL mechanism, username and password
+	// Set the SASL mechanism
 	mechanism := tls.GetSASLMechanismFromEnv(tls.EnvSecurityPrefixKafka)
 	if (mechanism != tls.SASLMechanismPlain) && (mechanism != tls.SASLMechanismSCRAMSHA256) && (mechanism != tls.SASLMechanismSCRAMSHA512) {
 		return fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
 	}
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = mechanism
+
+	// Set the SASL username and password
 	ps, err := password.NewPasswordStore(password.Prefix(EnvKafkaClientPrefix),
 		password.LocationSuffix(EnvPasswordLocationSuffix))
 	if err != nil {
@@ -74,6 +76,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	caCert := cs.GetValidationCertificate()
 	// issue is that ca.pem does not work with multiple certificates defined
 	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and testing in our code)
+
 	config["ssl.ca.location"] = caCert.CaPath
 	return nil
 }
