@@ -276,8 +276,8 @@ func (ps *PipelineStatus) SetCondition(conditionType apis.ConditionType, conditi
 func (ps *PipelineStatus) CreateAndSetCondition(
 	conditionType apis.ConditionType,
 	isTrue bool,
+	message string,
 	reason string,
-	description string,
 ) {
 	condition := apis.Condition{}
 	if isTrue {
@@ -286,8 +286,8 @@ func (ps *PipelineStatus) CreateAndSetCondition(
 		condition.Status = v1.ConditionFalse
 	}
 	condition.Type = conditionType
+	condition.Message = message
 	condition.Reason = reason
-	condition.Message = description
 	condition.LastTransitionTime = apis.VolatileTime{
 		Inner: metav1.Now(),
 	}
