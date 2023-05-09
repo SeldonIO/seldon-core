@@ -52,9 +52,9 @@ object Cli {
     val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
 
     // SASL
-    val saslUsername = Key("sasl.username", stringType)
-    val saslSecret = Key("sasl.secret", stringType)
-    val saslPasswordPath = Key("sasl.password.path", stringType)
+    val saslUsername = Key("kafka.sasl.username", stringType)
+    val saslSecret = Key("kafka.sasl.secret", stringType)
+    val saslPasswordPath = Key("kafka.sasl.password.path", stringType)
     val saslMechanism = Key("kafka.sasl.mechanism", enumType(*KafkaSaslMechanisms.values()))
 
     fun args(): List<Key<Any>> {
