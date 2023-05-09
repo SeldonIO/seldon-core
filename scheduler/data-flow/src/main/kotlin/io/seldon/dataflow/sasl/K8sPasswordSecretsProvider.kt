@@ -22,6 +22,8 @@ import io.kubernetes.client.openapi.apis.CoreV1Api
 import io.kubernetes.client.openapi.models.V1Secret
 import io.kubernetes.client.util.ClientBuilder
 import io.kubernetes.client.util.KubeConfig
+import io.seldon.dataflow.kafka.security.FilePath
+import io.seldon.dataflow.kafka.security.SaslConfig
 import java.io.File
 import java.io.FileReader
 
