@@ -120,7 +120,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	err, retry := r.Scheduler.LoadPipeline(ctx, pipeline)
 	if err != nil {
-		r.updateStatusFromError(ctx, logger, pipeline, err)
+		r.updateStatusFromError(ctx, logger, pipeline, retry, err)
 		if retry {
 			return ctrl.Result{}, err
 		} else {
@@ -134,12 +134,18 @@ func (r *PipelineReconciler) updateStatusFromError(
 	ctx context.Context,
 	logger logr.Logger,
 	pipeline *mlopsv1alpha1.Pipeline,
+	canRetry bool,
 	err error,
 ) {
+	pipelineStatus := schedulerAPI.PipelineVersionState_PipelineFailed.String()
+	if canRetry {
+		pipelineStatus = schedulerAPI.PipelineVersionState_PipelineCreating.String()
+	}
+
 	pipeline.Status.CreateAndSetCondition(
 		mlopsv1alpha1.PipelineReady,
 		false,
-		schedulerAPI.PipelineVersionState_PipelineFailed.String(),
+		pipelineStatus,
 		err.Error(),
 	)
 	if errSet := r.Status().Update(ctx, pipeline); errSet != nil {
