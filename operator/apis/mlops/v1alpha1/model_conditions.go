@@ -61,7 +61,12 @@ func (ms *ModelStatus) SetCondition(conditionType apis.ConditionType, condition 
 	}
 }
 
-func (ms *ModelStatus) CreateAndSetCondition(conditionType apis.ConditionType, isTrue bool, reason string) {
+func (ms *ModelStatus) CreateAndSetCondition(
+	conditionType apis.ConditionType,
+	isTrue bool,
+	message string,
+	reason string,
+) {
 	condition := apis.Condition{}
 	if isTrue {
 		condition.Status = v1.ConditionTrue
@@ -69,6 +74,7 @@ func (ms *ModelStatus) CreateAndSetCondition(conditionType apis.ConditionType, i
 		condition.Status = v1.ConditionFalse
 	}
 	condition.Type = conditionType
+	condition.Message = message
 	condition.Reason = reason
 	condition.LastTransitionTime = apis.VolatileTime{
 		Inner: metav1.Now(),
