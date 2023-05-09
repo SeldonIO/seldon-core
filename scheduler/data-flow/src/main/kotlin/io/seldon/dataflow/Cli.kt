@@ -42,16 +42,16 @@ object Cli {
     val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
     val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
 
-    // Mutual TLS
-    val tlsCACertPath = Key("tls.client.ca.path", stringType)
-    val tlsKeyPath = Key("tls.client.key.path", stringType)
-    val tlsCertPath = Key("tls.client.cert.path", stringType)
-    val brokerCACertPath = Key("tls.broker.ca.path", stringType)
-    val clientSecret = Key("tls.client.secret", stringType)
-    val brokerSecret = Key("tls.broker.secret", stringType)
-    val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
+    // Kafka (m)TLS
+    val tlsCACertPath = Key("kafka.tls.client.ca.path", stringType)
+    val tlsKeyPath = Key("kafka.tls.client.key.path", stringType)
+    val tlsCertPath = Key("kafka.tls.client.cert.path", stringType)
+    val brokerCACertPath = Key("kafka.tls.broker.ca.path", stringType)
+    val clientSecret = Key("kafka.tls.client.secret", stringType)
+    val brokerSecret = Key("kafka.tls.broker.secret", stringType)
+    val endpointIdentificationAlgorithm = Key("kafka.tls.endpoint.identification.algorithm", stringType)
 
-    // SASL
+    // Kafka SASL
     val saslUsername = Key("kafka.sasl.username", stringType)
     val saslSecret = Key("kafka.sasl.secret", stringType)
     val saslPasswordPath = Key("kafka.sasl.password.path", stringType)
