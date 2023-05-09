@@ -126,9 +126,9 @@ func (r *ModelReconciler) updateStatusFromError(
 	canRetry bool,
 	err error,
 ) {
-	modelStatus := schedulerAPI.ModelStatus_ModelFailed
+	modelStatus := schedulerAPI.ModelStatus_ModelFailed.String()
 	if canRetry {
-		modelStatus = schedulerAPI.ModelStatus_ModelProgressing
+		modelStatus = schedulerAPI.ModelStatus_ModelProgressing.String()
 	}
 
 	model.Status.CreateAndSetCondition(mlopsv1alpha1.ModelReady, false, modelStatus, err.Error())
