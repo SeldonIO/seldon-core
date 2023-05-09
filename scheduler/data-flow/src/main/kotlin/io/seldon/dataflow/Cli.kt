@@ -19,6 +19,7 @@ package io.seldon.dataflow
 import com.natpryce.konfig.*
 import io.klogging.Level
 import io.klogging.noCoLogger
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
 
 object Cli {
@@ -54,6 +55,7 @@ object Cli {
     val saslUsername = Key("sasl.username", stringType)
     val saslSecret = Key("sasl.secret", stringType)
     val saslPasswordPath = Key("sasl.password.path", stringType)
+    val saslMechanism = Key("kafka.sasl.mechanism", enumType(*KafkaSaslMechanisms.values()))
 
     fun args(): List<Key<Any>> {
         return listOf(
@@ -76,7 +78,8 @@ object Cli {
             endpointIdentificationAlgorithm,
             saslUsername,
             saslSecret,
-            saslPasswordPath
+            saslPasswordPath,
+            saslMechanism,
         )
     }
 
