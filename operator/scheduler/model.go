@@ -37,8 +37,9 @@ import (
 
 func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("LoadModel")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	logger.Info("Load", "model name", model.Name)
 
+	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	md, err := model.AsSchedulerModel()
 	if err != nil {
 		return err, false
@@ -47,18 +48,19 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 		Model: md,
 	}
 
-	logger.Info("Load", "model name", model.Name)
 	_, err = grcpClient.LoadModel(ctx, &loadModelRequest, grpc_retry.WithMax(2))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
+
 	return nil, false
 }
 
 func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	logger.Info("Unload", "model name", model.Name)
 
+	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	modelRef := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
 			Name: model.Name,
@@ -68,11 +70,12 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 			Generation: model.Generation,
 		},
 	}
-	logger.Info("Unload", "model name", model.Name)
+
 	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
+
 	return nil, false
 }
 
@@ -88,6 +91,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	for {
 		event, err := stream.Recv()
 		if err != nil {
@@ -97,6 +101,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 			logger.Error(err, "event recv failed")
 			return err
 		}
+
 		// The expected contract is just the latest version will be sent to us
 		if len(event.Versions) < 1 {
 			logger.Info(
@@ -111,6 +116,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 			logger.Info("Ignoring event with no Kubernetes metadata.", "model", event.ModelName)
 			continue
 		}
+
 		logger.Info(
 			"Received event",
 			"name", event.ModelName,
@@ -124,6 +130,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 		if canRemoveFinalizer(latestVersionStatus.State.State) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				latestModel := &v1alpha1.Model{}
+
 				err = s.Get(
 					ctx,
 					client.ObjectKey{
@@ -135,6 +142,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
+
 				if !latestModel.ObjectMeta.DeletionTimestamp.IsZero() { // Model is being deleted
 					// remove finalizer now we have completed successfully
 					latestModel.ObjectMeta.Finalizers = utils.RemoveStr(latestModel.ObjectMeta.Finalizers, constants.ModelFinalizerName)
@@ -143,6 +151,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 						return err
 					}
 				}
+
 				return nil
 			})
 			if retryErr != nil {
@@ -153,6 +162,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 		// Try to update status
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			latestModel := &v1alpha1.Model{}
+
 			err = s.Get(
 				ctx,
 				client.ObjectKey{
@@ -164,6 +174,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
+
 			if latestVersionStatus.GetKubernetesMeta().Generation != latestModel.Generation {
 				logger.Info(
 					"Ignoring event for old generation",
@@ -176,6 +187,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 			if !latestModel.ObjectMeta.DeletionTimestamp.IsZero() { // Model is being deleted
 				return nil
 			}
+
 			// Handle status update
 			switch latestVersionStatus.State.State {
 			case scheduler.ModelStatus_ModelAvailable:
@@ -193,6 +205,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 				)
 				latestModel.Status.CreateAndSetCondition(v1alpha1.ModelReady, false, latestVersionStatus.State.Reason)
 			}
+
 			// Set the total number of replicas targeted by this model
 			lastState := latestVersionStatus.State
 			latestModel.Status.Replicas = int32(lastState.GetAvailableReplicas() + lastState.GetUnavailableReplicas())
@@ -228,12 +241,14 @@ func modelReady(status v1alpha1.ModelStatus) bool {
 func (s *SchedulerClient) updateModelStatus(model *v1alpha1.Model) error {
 	existingModel := &v1alpha1.Model{}
 	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
+
 	if err := s.Get(context.TODO(), namespacedName, existingModel); err != nil {
 		if errors.IsNotFound(err) { //Ignore NotFound errors
 			return nil
 		}
 		return err
 	}
+
 	prevWasReady := modelReady(existingModel.Status)
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
 		// Not updating as no difference
