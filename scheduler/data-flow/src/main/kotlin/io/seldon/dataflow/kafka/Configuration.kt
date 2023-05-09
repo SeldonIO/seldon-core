@@ -34,6 +34,7 @@ data class KafkaStreamsParams(
     val bootstrapServers: String,
     val numPartitions: Int,
     val replicationFactor: Int,
+    val maxMessageSizeBytes: Long,
     val security: KafkaSecurityParams,
 )
 
@@ -48,11 +49,11 @@ data class KafkaDomainParams(
     val joinWindowMillis: Long,
 )
 
-const val KAFKA_MAX_MESSAGE_BYTES = 1_000_000_000
-
-val kafkaTopicConfig = mapOf(
-    TopicConfig.MAX_MESSAGE_BYTES_CONFIG to KAFKA_MAX_MESSAGE_BYTES.toString()
-)
+val kafkaTopicConfig = { maxMessageSizeBytes: Long ->
+    mapOf(
+        TopicConfig.MAX_MESSAGE_BYTES_CONFIG to maxMessageSizeBytes.toString(),
+    )
+}
 
 fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
     return Properties().apply {
@@ -98,8 +99,8 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
         this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
-        this[StreamsConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[StreamsConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
 
         // Security
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
@@ -135,18 +136,18 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = params.replicationFactor
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
-        this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1
+        this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 10_000
 
         this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
-        this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60000
+        this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60_000
 
         this[ProducerConfig.LINGER_MS_CONFIG] = 0
-        this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ProducerConfig.BUFFER_MEMORY_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = params.maxMessageSizeBytes
+        this[ProducerConfig.BUFFER_MEMORY_CONFIG] = params.maxMessageSizeBytes
     }
 }
 

@@ -64,6 +64,7 @@ object Main {
             bootstrapServers = config[Cli.kafkaBootstrapServers],
             numPartitions = config[Cli.kafkaPartitions],
             replicationFactor = config[Cli.kafkaReplicationFactor],
+            maxMessageSizeBytes = config[Cli.kafkaMaxMessageSizeBytes],
             security = kafkaSecurityParams,
         )
         val kafkaProperties = getKafkaProperties(kafkaStreamsParams)
