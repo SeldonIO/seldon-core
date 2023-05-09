@@ -145,7 +145,10 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
 
 				if !latestModel.ObjectMeta.DeletionTimestamp.IsZero() { // Model is being deleted
 					// remove finalizer now we have completed successfully
-					latestModel.ObjectMeta.Finalizers = utils.RemoveStr(latestModel.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+					latestModel.ObjectMeta.Finalizers = utils.RemoveStr(
+						latestModel.ObjectMeta.Finalizers,
+						constants.ModelFinalizerName,
+					)
 					if err := s.Update(ctx, latestModel); err != nil {
 						logger.Error(err, "Failed to remove finalizer", "model", latestModel.GetName())
 						return err
