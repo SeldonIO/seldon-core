@@ -20,7 +20,7 @@ import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
 import io.seldon.dataflow.sasl.K8sPasswordSecretsProvider
-import io.seldon.dataflow.sasl.SaslConfig
+import io.seldon.dataflow.kafka.security.SaslConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -80,7 +80,7 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
             this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
             val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = "SCRAM-SHA-512"
+            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism
             val jaasTemplate =
                 "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
             val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
@@ -91,7 +91,6 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
 
 fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
     // See https://docs.confluent.io/platform/current/streams/developer-guide/config-streams.html
-
 
     return Properties().apply {
         // TODO - add version to app ID?  (From env var.)
@@ -126,7 +125,7 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
             this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
             val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = "SCRAM-SHA-512"
+            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism
             val jaasTemplate =
                 "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
             val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
