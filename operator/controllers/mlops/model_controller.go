@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	schedulerAPI "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
@@ -107,7 +108,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	err, retry := r.Scheduler.LoadModel(ctx, model)
 	if err != nil {
-		r.updateStatusFromError(ctx, logger, model, err)
+		r.updateStatusFromError(ctx, logger, model, retry, err)
 		if retry {
 			return ctrl.Result{}, err
 		} else {
@@ -118,8 +119,19 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
-func (r *ModelReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, model *mlopsv1alpha1.Model, err error) {
-	model.Status.CreateAndSetCondition(mlopsv1alpha1.ModelReady, false, err.Error())
+func (r *ModelReconciler) updateStatusFromError(
+	ctx context.Context,
+	logger logr.Logger,
+	model *mlopsv1alpha1.Model,
+	canRetry bool,
+	err error,
+) {
+	modelStatus := schedulerAPI.ModelStatus_ModelFailed
+	if canRetry {
+		modelStatus = schedulerAPI.ModelStatus_ModelProgressing
+	}
+
+	model.Status.CreateAndSetCondition(mlopsv1alpha1.ModelReady, false, modelStatus, err.Error())
 	if errSet := r.Status().Update(ctx, model); errSet != nil {
 		logger.Error(errSet, "Failed to set status for model on error", "model", model.Name, "error", err.Error())
 	}
