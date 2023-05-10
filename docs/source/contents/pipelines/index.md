@@ -201,7 +201,7 @@ Sometimes you want to run a step if an output is received from a previous step b
 ```
 
 ```{mermaid}
-  :caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs if the model **check** returns a tensor named `OUTPUT`. The green edge signifies this trigger condition as is not an additional input to **tfsimple3**. The dashed lines signify model outputs that are not captured in the output of the pipeline*"
+  :caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs if the model **check** returns a tensor named `OUTPUT`. The green edge signifies that this is a trigger and not an additional input to **tfsimple3**. The dashed lines signify model outputs that are not captured in the output of the pipeline*"
   :align: center
 
   flowchart LR
