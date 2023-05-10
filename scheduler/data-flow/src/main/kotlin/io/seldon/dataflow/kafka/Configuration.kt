@@ -34,7 +34,7 @@ data class KafkaStreamsParams(
     val bootstrapServers: String,
     val numPartitions: Int,
     val replicationFactor: Int,
-    val maxMessageSizeBytes: Long,
+    val maxMessageSizeBytes: Int,
     val security: KafkaSecurityParams,
 )
 
@@ -49,7 +49,7 @@ data class KafkaDomainParams(
     val joinWindowMillis: Long,
 )
 
-val kafkaTopicConfig = { maxMessageSizeBytes: Long ->
+val kafkaTopicConfig = { maxMessageSizeBytes: Int ->
     mapOf(
         TopicConfig.MAX_MESSAGE_BYTES_CONFIG to maxMessageSizeBytes.toString(),
     )
