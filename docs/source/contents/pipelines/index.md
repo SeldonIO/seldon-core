@@ -80,7 +80,7 @@ The simplest Pipeline chains models together: the output of one model goes into 
       TF2 --> OUTPUT1
 ```
 
-In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT11. This allows these models to be chained together. The shape and data-type of the tensors needs to match as well.
+In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT1`. This allows these models to be chained together. The shape and data-type of the tensors needs to match as well.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-chaining).
 
@@ -250,6 +250,7 @@ You can also define multiple triggers which need to happen based on a particulr 
 ```{mermaid}
   :caption: "*A pipeline with multiple triggers and a trigger join of type `any`. The pipeline has four inputs, but three of these are optional (signified by the dashed borders).*"
   :align: center
+
   flowchart LR
       classDef pipeIO fill:#F6E083
       classDef pipeIOopt fill:#F6E083,stroke-dasharray: 5 5;
@@ -257,14 +258,14 @@ You can also define multiple triggers which need to happen based on a particulr 
       classDef hidden fill:#ffffff,stroke:#ffffff
 
       subgraph input
-          OK1:::pipeIOopt
-          OK2:::pipeIOopt
+          ok1:::pipeIOopt
+          ok2:::pipeIOopt
           INPUT:::pipeIO
-          OK3:::pipeIOopt
+          ok3:::pipeIOopt
       end
 
-      OK1 --o any
-      OK2 --o any
+      ok1 --o any
+      ok2 --o any
       any((any)):::trigger --o mul10
       linkStyle 0 stroke:#CEE741,color:green;
       linkStyle 1 stroke:#CEE741,color:green;
@@ -273,7 +274,7 @@ You can also define multiple triggers which need to happen based on a particulr 
       INPUT --> mul10
       INPUT --> add10
 
-      OK3 --o add10
+      ok3 --o add10
       linkStyle 4 stroke:#CEE741,color:green;
 
       subgraph output
