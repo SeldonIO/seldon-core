@@ -176,7 +176,7 @@ The simplest way is to create a model that outputs different named tensors based
 ```
 In the above we have a step `conditional` that either outputs a tensor named `OUTPUT0` or a tensor named `OUTPUT1`. The `mul10` step depends on an output in `OUTPUT0` while the add10 step depends on an output from `OUTPUT1`.
 
-Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.`
+Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#conditional).
 
@@ -201,7 +201,7 @@ Sometimes you want to run a step if an output is received from a previous step b
 ```
 
 ```{mermaid}
-  :caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs if the model **check** returns a tensor named `OUTPUT`. The green edge signifies that this is a trigger and not an additional input to **tfsimple3**. The dashed lines signify model outputs that are not captured in the output of the pipeline*"
+  :caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs if the model **check** returns a tensor named `OUTPUT`. The green edge signifies that this is a trigger and not an additional input to **tfsimple3**. The dashed lines signify model outputs that are not captured in the output of the pipeline.*"
   :align: center
 
   flowchart LR
@@ -275,7 +275,7 @@ You can also define multiple triggers which need to happen based on a particulr 
       INPUT --> add10
 
       ok3 --o add10
-      linkStyle 4 stroke:#CEE741,color:green;
+      linkStyle 5 stroke:#CEE741,color:green;
 
       subgraph output
         OUTPUT:::pipeIO
