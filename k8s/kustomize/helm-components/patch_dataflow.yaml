@@ -47,6 +47,8 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm }}'
+        - name: SELDON_CORES_COUNT
+          value: '{{ .Values.dataflow.cores }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'

@@ -664,12 +664,12 @@ spec:
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'
+        - name: SELDON_CORES_COUNT
+          value: '{{ .Values.dataflow.cores }}'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
           value: "9008"
-        - name: SELDON_CORES_COUNT
-          value: "4"
         - name: OTEL_JAVAAGENT_ENABLED
           valueFrom:
             configMapKeyRef:
