@@ -16,11 +16,12 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka
 
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
+import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
 import io.seldon.dataflow.sasl.K8sPasswordSecretsProvider
-import io.seldon.dataflow.kafka.security.SaslConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -82,10 +83,20 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
             val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
             this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism
-            val jaasTemplate =
-                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
-            val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
-            this[SaslConfigs.SASL_JAAS_CONFIG]= jaasCfg
+
+            this[SaslConfigs.SASL_JAAS_CONFIG] = when (KafkaSaslMechanisms.valueOf(params.security.saslConfig.mechanism)) {
+                KafkaSaslMechanisms.PLAIN ->
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+                KafkaSaslMechanisms.SCRAM_SHA_256,
+                KafkaSaslMechanisms.SCRAM_SHA_512 ->
+                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+            }
+
+
         }
     }
 }
