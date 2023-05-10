@@ -41,7 +41,7 @@ object Cli {
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
     val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
     val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
-    val kafkaMaxMessageSizeBytes = Key("kafka.max.message.size.bytes", longType)
+    val kafkaMaxMessageSizeBytes = Key("kafka.max.message.size.bytes", intType)
 
     // Kafka (m)TLS
     val tlsCACertPath = Key("kafka.tls.client.ca.path", stringType)
