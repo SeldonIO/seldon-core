@@ -65,7 +65,7 @@ vet: ## Run go vet against code.
 .GOLANGCILINT_VERSION := v1.51.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
-${.GOLANGCILINT_PATH}/golangci-lint: 
+${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
@@ -92,6 +92,9 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 build-seldon: generate fmt vet
 	go build -o bin/seldon -v ./cmd/seldon
+
+build-seldon-arm: generate fmt vet
+	GOOS=darwin GOARCH=arm64 go build -tags dynamic -o bin/seldon -v ./cmd/seldon
 
 build-seldon-docgen:
 	go build -o bin/seldon-gendocs -v ./cmd/seldon/docs
