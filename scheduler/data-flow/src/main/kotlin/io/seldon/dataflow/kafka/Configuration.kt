@@ -97,7 +97,7 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         // TODO - add version to app ID?  (From env var.)
         this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow"
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
-        this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
+        this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = StreamsConfig.AT_LEAST_ONCE
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
         this[StreamsConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
         this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
