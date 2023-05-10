@@ -23,7 +23,7 @@ jobs:
 
   python-tests:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -34,7 +34,7 @@ jobs:
         uses: snok/install-poetry@v1
         with:
           version: 1.1.15
-          virtualenvs-create: true
+          virtualenvs-create: false
       - name: test-python
         run: |
           pip install --upgrade pip setuptools
