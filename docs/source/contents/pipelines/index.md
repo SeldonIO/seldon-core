@@ -221,7 +221,7 @@ Sometimes you want to run a step if an output is received from a previous step b
 
     TF1 --> |OUTPUT0: INPUT| check
     TF1 --> |OUTPUT0: INPUT0| TF3(tfsimple3)
-    TF2 --> |OUTPUT1: INPUT| TF3
+    TF2 --> |OUTPUT1: INPUT1| TF3
     TF2 -.-> |OUTPUT0| tf2( ):::hidden
 
     check --o |OUTPUT| TF3
