@@ -2,12 +2,12 @@ FROM rclone/rclone:1.62.2 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.1.0-1793
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.2-484
 
 # Run update to pickup any necessary security updates
 RUN microdnf update -y
 # Remove some unneeded packages that might contain CVEs
-RUN microdnf remove -y microdnf libdnf rpm-libs rpm  libsolv librpmio libmodulemd curl-minimal
+RUN microdnf remove -y microdnf libdnf rpm-libs rpm libsolv libmodulemd curl-minimal
 
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 COPY --from=builder /licenses/ /licenses/
