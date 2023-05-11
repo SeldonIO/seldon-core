@@ -1,0 +1,25 @@
+security:
+  controlplane:
+    protocol: SSL
+    ssl:
+      server:
+        secret: seldon-controlplane-server
+        clientValidationSecret: seldon-controlplane-client
+      client:
+        secret: seldon-controlplane-client
+        serverValidationSecret: seldon-controlplane-server
+  envoy:
+    protocol: SSL
+    ssl:
+      upstream:
+        server:
+          secret: seldon-upstream-server
+          clientValidationSecret: seldon-upstream-client
+        client:
+          secret: seldon-upstream-client
+          serverValidationSecret: seldon-upstream-server
+      downstream:
+        client:
+          serverValidationSecret: seldon-downstream-server
+        server: 
+          secret: seldon-downstream-server

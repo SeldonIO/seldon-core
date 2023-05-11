@@ -77,28 +77,24 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	go func() {
 		err := s.SubscribeModelEvents(context.Background(), namespace, conn)
 		if err != nil {
-			s.logger.Error(err, "Failed to subscribe to scheduler model events", "namespace", namespace)
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
 		err := s.SubscribeServerEvents(context.Background(), namespace, conn)
 		if err != nil {
-			s.logger.Error(err, "Failed to subscribe to scheduler server events")
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
 		err := s.SubscribePipelineEvents(context.Background(), namespace, conn)
 		if err != nil {
-			s.logger.Error(err, "Failed to subscribe to scheduler pipeline events")
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
 		err := s.SubscribeExperimentEvents(context.Background(), namespace, conn)
 		if err != nil {
-			s.logger.Error(err, "Failed to subscribe to scheduler experiment events")
 			s.RemoveConnection(namespace)
 		}
 	}()
@@ -135,8 +131,13 @@ func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, err
 	defer s.mu.Unlock()
 	if conn, ok := s.seldonRuntimes[namespace]; !ok {
 		var err error
-		conn, err = s.connectToScheduler(getSchedulerHost(namespace), 9004, 9044)
+		conn, err = s.connectToScheduler(getSchedulerHost(namespace), namespace, 9004, 9044)
 		if err != nil {
+			return nil, err
+		}
+		err = s.smokeTestConnection(conn)
+		if err != nil {
+			s.logger.Info("Failed smoke test on scheduler", "namespace", namespace)
 			return nil, err
 		}
 		s.startEventHanders(namespace, conn)
@@ -147,12 +148,14 @@ func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, err
 	}
 }
 
-func (s *SchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
+func (s *SchedulerClient) connectToScheduler(host string, namespace string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	var err error
 	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
+	s.logger.Info("connect to scheduler", "protocol", protocol)
 	if protocol == tls.SecurityProtocolSSL {
 		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
-			tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
+			tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer),
+			tls.Namespace(namespace))
 		if err != nil {
 			return nil, err
 		}
@@ -174,9 +177,13 @@ func (s *SchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsP
 	}
 	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
-	opts = append(opts, grpc.WithBlock())
+	s.logger.Info("Dialing scheduler", "host", host, "port", port)
+	// Not using DialContext with context timeout and withBlocking as this seems to ignore errors such as TLS certificate
+	// issues and not return any error resulting in uninformative context timeouts only.
+	// See https://github.com/grpc/grpc-go/issues/622
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
+		s.logger.Error(err, "Failed to connect to scheduler")
 		return nil, err
 	}
 	s.logger.Info("Connected to scheduler", "host", host, "port", port)

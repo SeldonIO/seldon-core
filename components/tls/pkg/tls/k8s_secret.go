@@ -81,10 +81,14 @@ func (s *TlsSecretHandler) Stop() {
 }
 
 func (s *TlsSecretHandler) getTlsCertificate(secretName string) (*CertificateWrapper, error) {
+	logger := s.logger.WithField("func", "getTlsCertificate")
+	logger.Infof("Get certificate secret %s from namespace %s", secretName, s.namespace)
 	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
+		logger.WithError(err).Errorf("Failed to get certificate secret %s from namespace %s", secretName, s.namespace)
 		return nil, err
 	}
+	logger.Infof("Got certificate secret %s from namespace %s", secret.Name, secret.Namespace)
 	return s.saveCertificateFromSecret(secret)
 }
 

@@ -1,5 +1,4 @@
 #!/bin/sh
-set -eo pipefail
 
 # <namespace> <secret> [<folder>]
 # If folder not provided the secret contents will be stored in a folder with same name as secret.

@@ -108,6 +108,8 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
 
+	logger.Info("Received reconcile for Server", "name", req.Name, "namespace", req.NamespacedName.Namespace)
+
 	server := &mlopsv1alpha1.Server{}
 	if err := r.Get(ctx, req.NamespacedName, server); err != nil {
 		if errors.IsNotFound(err) {
@@ -119,6 +121,8 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "unable to fetch Server", "name", req.Name, "namespace", req.Namespace)
 		return reconcile.Result{}, err
 	}
+
+	logger.Info("Found server", "name", server.Name, "namespace", server.Namespace)
 
 	stop, err := r.handleFinalizer(ctx, server)
 	if stop {
