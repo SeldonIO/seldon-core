@@ -25,10 +25,13 @@ spec:
         - --health-probe-bind-address=:8081
         - --leader-elect
         - --namespace=$(POD_NAMESPACE)
+        - --clusterwide=$(CLUSTERWIDE)
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
         env:
+          - name: CLUSTERWIDE
+            value: "false"
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

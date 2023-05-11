@@ -16,6 +16,8 @@ spec:
           limits:
             memory: '{{ .Values.controller.resources.memory }}'
         env:
+          - name: CLUSTERWIDE
+            value: '{{ .Values.controller.clusterwide }}'
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'            
           - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME

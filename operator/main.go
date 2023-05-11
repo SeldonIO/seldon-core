@@ -52,12 +52,14 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var namespace string
+	var clusterwide bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.BoolVar(&clusterwide, "clusterwide", false, "Allow clusterwide operations")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -67,10 +69,15 @@ func main() {
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
 
+	watchNamespace := namespace
+	if clusterwide {
+		watchNamespace = ""
+	}
+	setupLog.Info("Starting manager", "clusterwide", clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
-		Namespace:              namespace,
+		Namespace:              watchNamespace,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,

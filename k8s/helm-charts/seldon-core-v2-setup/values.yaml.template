@@ -157,6 +157,7 @@ dataflow:
     runAsNonRoot: true
 
 controller:
+  clusterwide: false
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
@@ -263,7 +264,9 @@ serverConfig:
       cpu: 100m
       memory: 1Gi
 
+services:
 # For use with service meshes like Istio, which require specific prefixes for
 # the names of ports handling gRPC/HTTP2 traffic.
 # For Istio, use 'grpc-' or 'http2-', noting the trailing '-'.
-serviceGRPCPrefix: ""
+  serviceGRPCPrefix: ""
+  defaultServiceType: LoadBalancer

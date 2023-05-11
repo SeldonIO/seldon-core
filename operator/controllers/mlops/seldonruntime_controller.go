@@ -91,6 +91,8 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 			r.Scheduler.RemoveConnection(runtime.Namespace)
 			// Stop reconciliation as the item is being deleted
 			return true, nil
+		} else {
+			return true, fmt.Errorf("Runtime is being deleted but servers still running in namespace %s", runtime.Namespace)
 		}
 	}
 	return false, nil
@@ -111,6 +113,8 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=v1,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -174,7 +178,7 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return ctrl.Result{}, nil
 }
 
-func seldoneRuntimeReady(status mlopsv1alpha1.SeldonRuntimeStatus) bool {
+func seldonRuntimeReady(status mlopsv1alpha1.SeldonRuntimeStatus) bool {
 	return status.Conditions != nil &&
 		status.GetCondition(apis.ConditionReady) != nil &&
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
@@ -198,8 +202,8 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 				"Failed to update status for SeldonRuntime %q: %v", seldonRuntime.Name, err)
 			return err
 		} else {
-			prevWasReady := seldoneRuntimeReady(existingRuntime.Status)
-			currentIsReady := seldoneRuntimeReady(seldonRuntime.Status)
+			prevWasReady := seldonRuntimeReady(existingRuntime.Status)
+			currentIsReady := seldonRuntimeReady(seldonRuntime.Status)
 			if prevWasReady && !currentIsReady {
 				r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "SeldonRuntimeNotReady",
 					fmt.Sprintf("SeldonRuntime %v is no longer Ready", seldonRuntime.GetName()))

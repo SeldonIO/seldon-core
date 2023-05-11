@@ -19,6 +19,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc"
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -84,12 +85,8 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, namespace string) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, namespace string, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
-	conn, err := s.getConnection(namespace)
-	if err != nil {
-		return err
-	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))

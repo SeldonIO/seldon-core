@@ -19,6 +19,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"math"
 	"sync"
 	"time"
@@ -71,31 +72,31 @@ func getSchedulerHost(namespace string) string {
 	return fmt.Sprintf("seldon-scheduler.%s", namespace)
 }
 
-func (s *SchedulerClient) startEventHanders(namespace string) {
+func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
 	// Subscribe the event streams from scheduler
 	go func() {
-		err := s.SubscribeModelEvents(context.Background(), namespace)
+		err := s.SubscribeModelEvents(context.Background(), namespace, conn)
 		if err != nil {
 			s.logger.Error(err, "Failed to subscribe to scheduler model events", "namespace", namespace)
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribeServerEvents(context.Background(), namespace)
+		err := s.SubscribeServerEvents(context.Background(), namespace, conn)
 		if err != nil {
 			s.logger.Error(err, "Failed to subscribe to scheduler server events")
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribePipelineEvents(context.Background(), namespace)
+		err := s.SubscribePipelineEvents(context.Background(), namespace, conn)
 		if err != nil {
 			s.logger.Error(err, "Failed to subscribe to scheduler pipeline events")
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribeExperimentEvents(context.Background(), namespace)
+		err := s.SubscribeExperimentEvents(context.Background(), namespace, conn)
 		if err != nil {
 			s.logger.Error(err, "Failed to subscribe to scheduler experiment events")
 			s.RemoveConnection(namespace)
@@ -115,15 +116,30 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 	}
 }
 
+func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
+	grcpClient := scheduler.NewSchedulerClient(conn)
+
+	stream, err := grcpClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	if err != nil {
+		return err
+	}
+	err = stream.CloseSend()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if conn, ok := s.seldonRuntimes[namespace]; !ok {
-		conn, err := s.connectToScheduler(getSchedulerHost(namespace), 9004, 9044)
+		var err error
+		conn, err = s.connectToScheduler(getSchedulerHost(namespace), 9004, 9044)
 		if err != nil {
 			return nil, err
 		}
-		s.startEventHanders(namespace)
+		s.startEventHanders(namespace, conn)
 		s.seldonRuntimes[namespace] = conn
 		return conn, nil
 	} else {
@@ -158,7 +174,7 @@ func (s *SchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsP
 	}
 	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
-
+	opts = append(opts, grpc.WithBlock())
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err

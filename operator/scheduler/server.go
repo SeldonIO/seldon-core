@@ -18,6 +18,7 @@ package scheduler
 
 import (
 	"context"
+	"google.golang.org/grpc"
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -61,12 +62,8 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 	return nil
 }
 
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, namespace string) error {
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, namespace string, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
-	conn, err := s.getConnection(namespace)
-	if err != nil {
-		return err
-	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))

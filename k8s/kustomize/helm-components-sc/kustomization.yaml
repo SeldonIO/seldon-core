@@ -21,6 +21,7 @@ patchesStrategicMerge:
 - patch_kafkaconfig.yaml
 - patch_tracingconfig.yaml
 - patch_agentconfig.yaml
+- patch_serviceconfig.yaml
 
 patches:
 - path: patch_scheduler_service.yaml

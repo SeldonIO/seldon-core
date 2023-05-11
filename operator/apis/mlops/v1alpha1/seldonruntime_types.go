@@ -31,7 +31,7 @@ type SeldonRuntimeSpec struct {
 
 type OverrideSpec struct {
 	Name        string         `json:"name"`
-	Active      bool           `json:"active,omitempty"`
+	Disable     bool           `json:"disable,omitempty"`
 	Replicas    *int32         `json:"replicas,omitempty"`
 	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
 }
@@ -116,12 +116,12 @@ func (ss *SeldonRuntimeStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ss *SeldonRuntimeStatus) SetCondition(condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+		seldonRuntimeConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
 	case condition.Status == v1.ConditionUnknown:
-		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
+		seldonRuntimeConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:
-		serverConditionSet.Manage(ss).MarkTrueWithReason(condition.Type, condition.Reason, condition.Message)
+		seldonRuntimeConditionSet.Manage(ss).MarkTrueWithReason(condition.Type, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionFalse:
-		serverConditionSet.Manage(ss).MarkFalse(condition.Type, condition.Reason, condition.Message)
+		seldonRuntimeConditionSet.Manage(ss).MarkFalse(condition.Type, condition.Reason, condition.Message)
 	}
 }

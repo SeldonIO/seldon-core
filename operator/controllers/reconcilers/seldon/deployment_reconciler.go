@@ -61,6 +61,13 @@ func (s *ComponentDeploymentReconciler) GetResources() []metav1.Object {
 	return []metav1.Object{s.Deployment}
 }
 
+func addEnvoyAnnotations(annotations map[string]string) map[string]string {
+	annotations["prometheus.io/path"] = "/stats/prometheus"
+	annotations["prometheus.io/scrape"] = "true"
+	annotations["prometheus.io/port"] = "9003"
+	return annotations
+}
+
 func toDeployment(
 	name string,
 	meta metav1.ObjectMeta,
@@ -73,6 +80,10 @@ func toDeployment(
 		replicas = *override.Replicas
 	} else {
 		replicas = 1
+	}
+	// Envoy annotations
+	if name == mlopsv1alpha1.EnvoyName {
+		annotations = addEnvoyAnnotations(annotations)
 	}
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)

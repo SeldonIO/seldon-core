@@ -18,6 +18,7 @@ package scheduler
 
 import (
 	"context"
+	"google.golang.org/grpc"
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -70,12 +71,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, namespace string) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, namespace string, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
-	conn, err := s.getConnection(namespace)
-	if err != nil {
-		return err
-	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribePipelineStatus(ctx, &scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))

@@ -18,6 +18,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -59,12 +60,13 @@ type ComponentServiceReconciler struct {
 func NewComponentServiceReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
+	serviceConfig mlopsv1alpha1.ServiceConfig,
 	overrides map[string]*mlopsv1alpha1.OverrideSpec,
 ) *ComponentServiceReconciler {
 	return &ComponentServiceReconciler{
 		ReconcilerConfig: common,
 		meta:             meta,
-		Services:         toServices(meta, overrides),
+		Services:         toServices(meta, serviceConfig, overrides),
 	}
 }
 
@@ -76,19 +78,27 @@ func (s *ComponentServiceReconciler) GetResources() []metav1.Object {
 	return objs
 }
 
-func toServices(meta metav1.ObjectMeta, overrides map[string]*mlopsv1alpha1.OverrideSpec) []*v1.Service {
+func toServices(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.ServiceConfig, overrides map[string]*mlopsv1alpha1.OverrideSpec) []*v1.Service {
 	var svcs []*v1.Service
-	svcs = append(svcs, getSchedulerService(meta, overrides[mlopsv1alpha1.SchedulerName]))
-	svcs = append(svcs, getSeldonMeshService(meta, overrides[mlopsv1alpha1.EnvoyName]))
+	svcs = append(svcs, getSchedulerService(meta, serviceConfig, overrides[mlopsv1alpha1.SchedulerName]))
+	svcs = append(svcs, getSeldonMeshService(meta, serviceConfig, overrides[mlopsv1alpha1.EnvoyName]))
 	svcs = append(svcs, getPipelinegatewayService(meta, overrides[mlopsv1alpha1.PipelineGatewayName]))
 	return svcs
 }
 
-func getSeldonMeshService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
+func getServiceType(serviceConfig mlopsv1alpha1.ServiceConfig, overrides *mlopsv1alpha1.OverrideSpec) v1.ServiceType {
 	serviceType := v1.ServiceTypeLoadBalancer
+	if serviceConfig.ServiceType != "" {
+		serviceType = serviceConfig.ServiceType
+	}
 	if overrides != nil {
 		serviceType = overrides.ServiceType
 	}
+	return serviceType
+}
+
+func getSeldonMeshService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.ServiceConfig, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
+	serviceType := getServiceType(serviceConfig, overrides)
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      SeldonMeshSVCName,
@@ -106,7 +116,7 @@ func getSeldonMeshService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.Overr
 				{
 					Port:       80,
 					TargetPort: intstr.FromString("http"),
-					Name:       "http",
+					Name:       fmt.Sprintf("%sdata", serviceConfig.GrpcServicePrefix),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
@@ -154,11 +164,8 @@ func getPipelinegatewayService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.
 	return svc
 }
 
-func getSchedulerService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
-	serviceType := v1.ServiceTypeLoadBalancer
-	if overrides != nil {
-		serviceType = overrides.ServiceType
-	}
+func getSchedulerService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.ServiceConfig, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
+	serviceType := getServiceType(serviceConfig, overrides)
 	svc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      mlopsv1alpha1.SchedulerName,
@@ -176,37 +183,37 @@ func getSchedulerService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.Overri
 				{
 					Port:       DefaultXdsPort,
 					TargetPort: intstr.FromString(DefaultXdsPortName),
-					Name:       DefaultXdsPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultXdsPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
 					Port:       DefaultSchedulerPort,
 					TargetPort: intstr.FromString(DefaultSchedulerPortName),
-					Name:       DefaultSchedulerPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultSchedulerPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
 					Port:       DefaultSchedulerMtlsPort,
 					TargetPort: intstr.FromString(DefaultSchedulerMtlsPortName),
-					Name:       DefaultSchedulerMtlsPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultSchedulerMtlsPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
 					Port:       DefaultAgentPort,
 					TargetPort: intstr.FromString(DefaultAgentPortName),
-					Name:       DefaultAgentPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultAgentPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
 					Port:       DefaultAgentMtlsPort,
 					TargetPort: intstr.FromString(DefaultAgentMtlsPortName),
-					Name:       DefaultAgentMtlsPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultAgentMtlsPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 				{
 					Port:       DefaultDataflowPort,
 					TargetPort: intstr.FromString(DefaultDataflowPortName),
-					Name:       DefaultDataflowPortName,
+					Name:       fmt.Sprintf("%s%s", serviceConfig.GrpcServicePrefix, DefaultDataflowPortName),
 					Protocol:   v1.ProtocolTCP,
 				},
 			},

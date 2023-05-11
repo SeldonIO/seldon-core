@@ -26,32 +26,37 @@ func NewSeldonRuntimeReconciler(
 		return nil, err
 	}
 
-	var overrides map[string]*mlopsv1alpha1.OverrideSpec
+	overrides := make(map[string]*mlopsv1alpha1.OverrideSpec)
 	for _, o := range runtime.Spec.Overrides {
 		overrides[o.Name] = o
 	}
 
 	var componentReconcilers []common.Reconciler
 	for _, c := range seldonConfig.Spec.Components {
-		if c.Stateful {
-			componentReconcilers = append(componentReconcilers,
-				NewComponentStatefulSetReconciler(
-					c.Name,
-					commonConfig,
-					runtime.ObjectMeta,
-					c.PodSpec,
-					c.VolumeClaimTemplates,
-					overrides[c.Name],
-					seldonConfig.ObjectMeta))
+		override := overrides[c.Name]
+		if override == nil || !override.Disable {
+			if c.Stateful {
+				componentReconcilers = append(componentReconcilers,
+					NewComponentStatefulSetReconciler(
+						c.Name,
+						commonConfig,
+						runtime.ObjectMeta,
+						c.PodSpec,
+						c.VolumeClaimTemplates,
+						overrides[c.Name],
+						seldonConfig.ObjectMeta))
+			} else {
+				componentReconcilers = append(componentReconcilers,
+					NewComponentDeploymentReconciler(
+						c.Name,
+						commonConfig,
+						runtime.ObjectMeta,
+						c.PodSpec,
+						overrides[c.Name],
+						seldonConfig.ObjectMeta))
+			}
 		} else {
-			componentReconcilers = append(componentReconcilers,
-				NewComponentDeploymentReconciler(
-					c.Name,
-					commonConfig,
-					runtime.ObjectMeta,
-					c.PodSpec,
-					overrides[c.Name],
-					seldonConfig.ObjectMeta))
+			commonConfig.Logger.Info("Disabling component", "name", c.Name)
 		}
 	}
 
@@ -64,7 +69,7 @@ func NewSeldonRuntimeReconciler(
 		ReconcilerConfig:     commonConfig,
 		componentReconcilers: componentReconcilers,
 		rbacReconciler:       NewComponentRBACReconciler(commonConfig, runtime.ObjectMeta),
-		serviceReconciler:    NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, overrides),
+		serviceReconciler:    NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.ServiceConfig, overrides),
 		configMapReconciler:  configMapReconciler,
 	}, nil
 }

@@ -110,10 +110,34 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - events
   verbs:
   - create
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -643,9 +667,12 @@ spec:
         - --health-probe-bind-address=:8081
         - --leader-elect
         - --namespace=$(POD_NAMESPACE)
+        - --clusterwide=$(CLUSTERWIDE)
         command:
         - /manager
         env:
+        - name: CLUSTERWIDE
+          value: "false"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -5,4 +5,23 @@ metadata:
   namespace: '{{ .Release.Namespace }}'  
 spec:
   seldonConfig: default
-  overrides: []
+  overrides:
+  - name: hodometer
+    disable: {{ .Values.hodometer.disable }}
+    replicas: {{ .Values.hodometer.replicas }}
+  - name: seldon-scheduler
+    disable: {{ .Values.scheduler.disable }}
+    serviceType: {{ .Values.scheduler.serviceType }}    
+  - name: seldon-envoy
+    disable: {{ .Values.envoy.disable }}
+    replicas: {{ .Values.envoy.replicas }}
+    serviceType: {{ .Values.envoy.serviceType }}    
+  - name: seldon-dataflow-engine
+    disable: {{ .Values.dataflow.disable }}
+    replicas: {{ .Values.dataflow.replicas }}    
+  - name: seldon-modelgateway
+    disable: {{ .Values.modelgateway.disable }}
+    replicas: {{ .Values.modelgateway.replicas }}    
+  - name: seldon-pipelinegateway
+    disable: {{ .Values.pipelinegateway.disable }}    
+    replicas: {{ .Values.pipelinegateway.replicas }}

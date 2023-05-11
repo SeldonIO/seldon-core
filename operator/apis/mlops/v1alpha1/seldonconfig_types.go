@@ -45,6 +45,12 @@ type SeldonConfigSpec struct {
 	TracingConfig TracingConfig      `json:"tracingConfig,omitempty"`
 	KafkaConfig   KafkaConfig        `json:"kafkaConfig,omitempty"`
 	AgentConfig   AgentConfiguration `json:"agentConfig,omitempty"`
+	ServiceConfig ServiceConfig      `json:"serviceConfig,omitempty"`
+}
+
+type ServiceConfig struct {
+	GrpcServicePrefix string         `json:"grpcServicePrefix,omitempty"`
+	ServiceType       v1.ServiceType `json:"serviceType,omitempty"`
 }
 
 type KafkaConfig struct {

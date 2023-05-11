@@ -7604,6 +7604,15 @@ spec:
                   topicPrefix:
                     type: string
                 type: object
+              serviceConfig:
+                properties:
+                  grpcServicePrefix:
+                    type: string
+                  serviceType:
+                    description: Service Type string describes ingress methods for
+                      a service
+                    type: string
+                type: object
               tracingConfig:
                 properties:
                   enable:
