@@ -44,7 +44,7 @@ export function setupBase(config ) {
             for (let j = 0; j < config.maxNumModels.length; j++) { 
                 const n = config.maxNumModels[j] - 1
                 const modelName = config.modelNamePrefix[j] + n.toString()
-                const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
+                const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
                 while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
                     sleep(1)
                 }
@@ -63,7 +63,7 @@ export function setupBase(config ) {
                 for (let i = 0; i < config.maxNumModels[j]; i++) {
                     const modelName = config.modelNamePrefix[j] + i.toString()
 
-                    const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
+                    const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
                     
                     const model = generateModel(config.modelType[j], modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes[j])
 
