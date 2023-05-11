@@ -40,7 +40,7 @@ create-yaml:
 
 HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
 HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
-HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
+HELM_SERVERS_BASE := helm-charts/seldon-core-v2-runtime/templates
 
 .PHONY: create-helm-charts
 create-helm-charts:
@@ -63,5 +63,5 @@ set-chart-version:
 	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-crds/Chart.yaml
 	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-setup/Chart.yaml
 	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-setup/Chart.yaml
-	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-servers/Chart.yaml
-	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-servers/Chart.yaml
+	sed -i "s/version: .*/version: ${NEW_VERSION}/" helm-charts/seldon-core-v2-runtime/Chart.yaml
+	sed -i "s/appVersion: .*/appVersion: ${NEW_VERSION}/" helm-charts/seldon-core-v2-runtime/Chart.yaml

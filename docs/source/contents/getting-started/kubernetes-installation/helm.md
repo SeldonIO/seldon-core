@@ -4,7 +4,7 @@ We provide several Helm charts.
 
  * `seldon-core-v2-crds` : cluster wide install of custom resources
  * `seldon-core-v2-setup` : installation of core components
- * `seldon-core-v2-servers` : a default set of servers
+ * `seldon-core-v2-runtime` : install a seldon runtime with default machine learning servers
  * `seldon-core-v2-certs` : a default set of certificates for TLS
 
 The Helm charts can be found within the `k8s/helm-charts` folder and they are published [here](https://github.com/SeldonIO/helm-charts)
@@ -39,20 +39,20 @@ kubectl create namespace seldon-mesh
 helm install seldon-core-v2  seldon-charts/seldon-core-v2-setup --namespace seldon-mesh
 ```
 
-## Install the Default Seldon Core V2 Servers
+## Install the Default Seldon Core V2 Runtime
 
 ```bash
-helm install seldon-v2-servers seldon-charts/seldon-core-v2-servers --namespace seldon-mesh
+helm install seldon-v2-servers seldon-charts/seldon-core-v2-runtime --namespace seldon-mesh
 ```
 
 ## Uninstall
 
 Remove any models, pipelines that are running. 
 
-Remove the servers:
+Remove the runtime:
 
 ```bash
-helm uninstall seldon-core-v2-servers  --namespace seldon-mesh
+helm uninstall seldon-core-v2-runtime  --namespace seldon-mesh
 ```
 Remove the core components:
 
