@@ -13,5 +13,6 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal as certs
 # Kafka dependencies necessitate leaving CGo enabled and using a base image with C dependencies
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.1.0-15
 COPY --from=certs /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt
+RUN chmod 666 /tmp/certs/kafka/broker/ca.crt
 COPY --from=builder /build/scheduler/bin/pipelinegateway /bin/pipelinegateway
 ENTRYPOINT ["/bin/pipelinegateway"]
