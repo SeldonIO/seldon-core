@@ -635,7 +635,7 @@ spec:
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT
           value: '{{ .Values.kafka.topics.numPartitions }}'
         - name: SELDON_KAFKA_MAX_MESSAGE_SIZE_BYTES
-          value: '{{ .Values.kafka.consumer.messageMaxBytes }}'
+          value: '{{ int .Values.kafka.consumer.messageMaxBytes }}'
         - name: SELDON_KAFKA_SECURITY_PROTOCOL
           value: '{{ .Values.security.kafka.protocol }}'
         - name: SELDON_KAFKA_TLS_CLIENT_SECRET
