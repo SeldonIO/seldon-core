@@ -137,12 +137,20 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
             val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
             this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
             this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+
             val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism
-            val jaasTemplate =
-                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
-            val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
-            this[SaslConfigs.SASL_JAAS_CONFIG]= jaasCfg
+            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
+            this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
+                KafkaSaslMechanisms.PLAIN ->
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+                KafkaSaslMechanisms.SCRAM_SHA_256,
+                KafkaSaslMechanisms.SCRAM_SHA_512 ->
+                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+            }
         }
 
         // Testing
