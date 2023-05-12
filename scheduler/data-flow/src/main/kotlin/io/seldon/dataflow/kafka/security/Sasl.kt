@@ -3,7 +3,7 @@ package io.seldon.dataflow.kafka.security
 typealias FilePath = String
 
 data class SaslConfig(
-    val mechanism: String,
+    val mechanism: KafkaSaslMechanisms,
     val username: String,
     val secret: String,
     val passwordPath: FilePath

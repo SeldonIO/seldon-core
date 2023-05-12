@@ -86,8 +86,8 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
                 params.security.certConfig.endpointIdentificationAlgorithm
 
             val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism
-            this[SaslConfigs.SASL_JAAS_CONFIG] = when (KafkaSaslMechanisms.valueOf(params.security.saslConfig.mechanism)) {
+            this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
+            this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
                 KafkaSaslMechanisms.PLAIN ->
                     "org.apache.kafka.common.security.plain.PlainLoginModule required" +
                             """ username="${params.security.saslConfig.username}"""" +

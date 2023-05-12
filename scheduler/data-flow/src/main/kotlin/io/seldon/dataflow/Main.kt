@@ -18,6 +18,7 @@ package io.seldon.dataflow
 
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.*
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.kafka.security.SaslConfig
 import kotlinx.coroutines.runBlocking
@@ -49,7 +50,7 @@ object Main {
         )
 
         val saslConfig = SaslConfig(
-            mechanism = config[Cli.saslMechanism].mechanism,
+            mechanism = config[Cli.saslMechanism],
             username = config[Cli.saslUsername],
             secret = config[Cli.saslSecret],
             passwordPath = config[Cli.saslPasswordPath],
