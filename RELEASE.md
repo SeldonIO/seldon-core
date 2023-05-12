@@ -103,7 +103,7 @@ At the time of writing, this comprises:
 To add the appropriate tags:
 * Check out the relevant tag, e.g.
   ```
-  git checkout v2.0.0
+  git checkout v2.4.0
   ```
 * Find all relevant Go modules and identify their subdirectory paths, e.g. with
   ```
@@ -111,16 +111,33 @@ To add the appropriate tags:
   ```
 * Add corresponding tags for each module, e.g.
   ```
-  git tag apis/go/v2.0.0 v2.0.0
+  git tag apis/go/v2.4.0 v2.4.0
   ```
 * Confirm that all tags point to the same place, e.g. with
   ```
-  git tag --contains v2.0.0
+  git tag --contains v2.4.0
   ```
 * Push the tags to the upstream repository, e.g.
   ```
-  git push <upstream name> apis/go/v2.0.0 components/tls/v2.0.0 ...
+  git push <upstream name> apis/go/v2.4.0 components/tls/v2.4.0 ...
   ```
 
 If you are feeling confident in the process, you can chain these together into a longer pipeline.
 In any case, it is best to confirm that the tags appear as expected both via the git CLI and also in the GitHub UI.
+
+
+A short list of commands to cover all above in single go is:
+```bash
+VERSION=v2.4.0
+git tag apis/go/${VERSION} ${VERSION}
+git tag components/tls/${VERSION} ${VERSION}
+git tag hodometer/${VERSION} ${VERSION}
+git tag operator/${VERSION} ${VERSION}
+git tag scheduler/${VERSION} ${VERSION}
+
+git push origin apis/go/${VERSION}
+git push origin components/tls/${VERSION}
+git push origin hodometer/${VERSION}
+git push origin operator/${VERSION}
+git push origin scheduler/${VERSION}
+```
