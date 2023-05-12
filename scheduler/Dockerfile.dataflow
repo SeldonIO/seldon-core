@@ -25,6 +25,7 @@ RUN mkdir -p /tmp/certs/kafka/broker/ && \
 RUN microdnf update -y
 # Remove some unneeded packages that might contain CVEs
 RUN microdnf remove -y microdnf libdnf rpm-libs rpm libsolv libmodulemd curl-minimal
+
 USER default
 
 WORKDIR /app
