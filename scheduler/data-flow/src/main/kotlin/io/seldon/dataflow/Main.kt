@@ -19,7 +19,7 @@ package io.seldon.dataflow
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.*
 import io.seldon.dataflow.mtls.CertificateConfig
-import io.seldon.dataflow.sasl.SaslConfig
+import io.seldon.dataflow.kafka.security.SaslConfig
 import kotlinx.coroutines.runBlocking
 
 object Main {
@@ -49,6 +49,7 @@ object Main {
         )
 
         val saslConfig = SaslConfig(
+            mechanism = config[Cli.saslMechanism].mechanism,
             username = config[Cli.saslUsername],
             secret = config[Cli.saslSecret],
             passwordPath = config[Cli.saslPasswordPath],
@@ -63,6 +64,7 @@ object Main {
             bootstrapServers = config[Cli.kafkaBootstrapServers],
             numPartitions = config[Cli.kafkaPartitions],
             replicationFactor = config[Cli.kafkaReplicationFactor],
+            maxMessageSizeBytes = config[Cli.kafkaMaxMessageSizeBytes],
             security = kafkaSecurityParams,
         )
         val kafkaProperties = getKafkaProperties(kafkaStreamsParams)

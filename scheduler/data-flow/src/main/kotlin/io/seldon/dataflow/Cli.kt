@@ -17,9 +17,10 @@ limitations under the License.
 package io.seldon.dataflow
 
 import com.natpryce.konfig.*
-import io.klogging.noCoLogger
 import io.klogging.Level
-import org.apache.kafka.common.security.auth.SecurityProtocol
+import io.klogging.noCoLogger
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
+import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
 
 object Cli {
     private const val envVarPrefix = "SELDON_"
@@ -34,31 +35,28 @@ object Cli {
     val upstreamPort = Key("upstream.port", intType)
 
     // Kafka
-    private val supportedKafkaProtocols = arrayOf(
-        SecurityProtocol.PLAINTEXT,
-        SecurityProtocol.SSL,
-        SecurityProtocol.SASL_SSL,
-    ) // TODO - move to Kafka package
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
-    val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*supportedKafkaProtocols))
+    val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*KafkaSecurityProtocols))
     val kafkaPartitions = Key("kafka.partitions.default", intType)
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
     val kafkaUseCleanState = Key("kafka.state.clean", booleanType)
     val kafkaJoinWindowMillis = Key("kafka.join.window.millis", longType)
+    val kafkaMaxMessageSizeBytes = Key("kafka.max.message.size.bytes", intType)
 
-    // Mutual TLS
-    val tlsCACertPath = Key("tls.client.ca.path", stringType)
-    val tlsKeyPath = Key("tls.client.key.path", stringType)
-    val tlsCertPath = Key("tls.client.cert.path", stringType)
-    val brokerCACertPath = Key("tls.broker.ca.path", stringType)
-    val clientSecret = Key("tls.client.secret", stringType)
-    val brokerSecret = Key("tls.broker.secret", stringType)
-    val endpointIdentificationAlgorithm = Key("tls.endpoint.identification.algorithm", stringType)
+    // Kafka (m)TLS
+    val tlsCACertPath = Key("kafka.tls.client.ca.path", stringType)
+    val tlsKeyPath = Key("kafka.tls.client.key.path", stringType)
+    val tlsCertPath = Key("kafka.tls.client.cert.path", stringType)
+    val brokerCACertPath = Key("kafka.tls.broker.ca.path", stringType)
+    val clientSecret = Key("kafka.tls.client.secret", stringType)
+    val brokerSecret = Key("kafka.tls.broker.secret", stringType)
+    val endpointIdentificationAlgorithm = Key("kafka.tls.endpoint.identification.algorithm", stringType)
 
-    // SASL
-    val saslUsername = Key("sasl.username", stringType)
-    val saslSecret = Key("sasl.secret", stringType)
-    val saslPasswordPath = Key("sasl.password.path", stringType)
+    // Kafka SASL
+    val saslUsername = Key("kafka.sasl.username", stringType)
+    val saslSecret = Key("kafka.sasl.secret", stringType)
+    val saslPasswordPath = Key("kafka.sasl.password.path", stringType)
+    val saslMechanism = Key("kafka.sasl.mechanism", enumType(*KafkaSaslMechanisms.values()))
 
     fun args(): List<Key<Any>> {
         return listOf(
@@ -72,6 +70,7 @@ object Cli {
             kafkaReplicationFactor,
             kafkaUseCleanState,
             kafkaJoinWindowMillis,
+            kafkaMaxMessageSizeBytes,
             tlsCACertPath,
             tlsKeyPath,
             tlsCertPath,
@@ -81,7 +80,8 @@ object Cli {
             endpointIdentificationAlgorithm,
             saslUsername,
             saslSecret,
-            saslPasswordPath
+            saslPasswordPath,
+            saslMechanism,
         )
     }
 
