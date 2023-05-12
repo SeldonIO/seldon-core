@@ -63,55 +63,61 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
 }
 
 private fun getSecurityProperties(params: KafkaStreamsParams): Properties {
-    return Properties().apply {
+    val authProperties = when (params.security.securityProtocol) {
+        SecurityProtocol.SSL -> getSslProperties(params)
+        SecurityProtocol.SASL_SSL -> getSaslProperties(params)
+        else -> Properties() // No authentication, so nothing to configure
+    }
+
+    return authProperties.apply {
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
+    }
+}
 
-        when (params.security.securityProtocol) {
-            SecurityProtocol.SSL -> {
-                with(params.security.certConfig) {
-                    if (clientSecret != "" && brokerSecret != "") {
-                        K8sCertSecretsProvider.downloadCertsFromSecrets(this)
-                    }
-                }
-
-                val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
-                this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
-                this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-                this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-                this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
-                this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
-                this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
-                    params.security.certConfig.endpointIdentificationAlgorithm
+private fun getSslProperties(params: KafkaStreamsParams): Properties {
+    return Properties().apply {
+        with(params.security.certConfig) {
+            if (clientSecret != "" && brokerSecret != "") {
+                K8sCertSecretsProvider.downloadCertsFromSecrets(this)
             }
-            SecurityProtocol.SASL_SSL -> {
-                if (params.security.certConfig.brokerSecret != "") {
-                    K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
-                }
+        }
 
-                this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
-                    params.security.certConfig.endpointIdentificationAlgorithm
+        val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
+        this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+        this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+        this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+        this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
+        this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
+            params.security.certConfig.endpointIdentificationAlgorithm
+    }
+}
 
-                val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
-                this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
-                this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+private fun getSaslProperties(params: KafkaStreamsParams): Properties {
+    return Properties().apply {
+        if (params.security.certConfig.brokerSecret != "") {
+            K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
+        }
 
-                val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-                this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
-                this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
-                    KafkaSaslMechanisms.PLAIN ->
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required" +
-                                """ username="${params.security.saslConfig.username}"""" +
-                                """ password="$password";"""
-                    KafkaSaslMechanisms.SCRAM_SHA_256,
-                    KafkaSaslMechanisms.SCRAM_SHA_512 ->
-                        "org.apache.kafka.common.security.scram.ScramLoginModule required" +
-                                """ username="${params.security.saslConfig.username}"""" +
-                                """ password="$password";"""
-                }
-            }
-            else -> {
-                // No authentication, so nothing to configure
-            }
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
+            params.security.certConfig.endpointIdentificationAlgorithm
+
+        val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
+        this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
+        this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+
+        val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
+        this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
+        this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
+            KafkaSaslMechanisms.PLAIN ->
+                "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                        """ username="${params.security.saslConfig.username}"""" +
+                        """ password="$password";"""
+            KafkaSaslMechanisms.SCRAM_SHA_256,
+            KafkaSaslMechanisms.SCRAM_SHA_512 ->
+                "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                        """ username="${params.security.saslConfig.username}"""" +
+                        """ password="$password";"""
         }
     }
 }
