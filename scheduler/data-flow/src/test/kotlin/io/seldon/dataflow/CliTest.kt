@@ -2,8 +2,9 @@ package io.seldon.dataflow
 
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
+import strikt.api.expectCatching
+import strikt.assertions.isEqualTo
+import strikt.assertions.isSuccess
 
 internal class CliTest {
 
@@ -13,7 +14,10 @@ internal class CliTest {
         val args = arrayOf("--kafka-sasl-mechanism", "SCRAM-SHA-512")
         val cli = Cli.configWith(args)
 
-        val actualMechanism = cli[Cli.saslMechanism]
+        expectCatching { cli[Cli.saslMechanism] }
+            .isSuccess()
+            .isEqualTo(expectedMechanism)
+    }
 
         assertEquals(expectedMechanism, actualMechanism)
     }
