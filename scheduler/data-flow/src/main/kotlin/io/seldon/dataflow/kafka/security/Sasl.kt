@@ -17,5 +17,9 @@ enum class KafkaSaslMechanisms(val mechanism: String) {
     override fun toString(): String {
         return this.mechanism
     }
+
+    companion object {
+        fun byName(): Map<String, KafkaSaslMechanisms> = values().associateBy { it.toString() }
+    }
 }
 
