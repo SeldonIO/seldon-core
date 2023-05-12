@@ -19,7 +19,7 @@ enum class KafkaSaslMechanisms(val mechanism: String) {
     }
 
     companion object {
-        fun byName(): Map<String, KafkaSaslMechanisms> = values().associateBy { it.toString() }
+        val byName: Map<String, KafkaSaslMechanisms> = values().associateBy { it.toString() }
     }
 }
 
