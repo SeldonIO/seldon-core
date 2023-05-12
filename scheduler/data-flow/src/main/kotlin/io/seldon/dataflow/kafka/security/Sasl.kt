@@ -22,4 +22,3 @@ enum class KafkaSaslMechanisms(private val mechanism: String) {
         val byName: Map<String, KafkaSaslMechanisms> = values().associateBy { it.toString() }
     }
 }
-
