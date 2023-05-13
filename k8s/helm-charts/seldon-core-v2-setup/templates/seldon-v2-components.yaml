@@ -1017,7 +1017,7 @@ spec:
         - name: SELDON_TLS_BROKER_SECRET
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_BROKER_CA_PATH
-          value: '{{ .Values.security.kafka.ssl.client.brokerCa }}'
+          value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'

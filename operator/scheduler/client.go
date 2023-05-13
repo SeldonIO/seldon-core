@@ -193,18 +193,39 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName string, err error) bool {
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
-			s.logger.Info("Got grpc status code", "err", err.Error(), "code", st.Code(), "resource", resource, "resourceName", resourceName)
+			s.logger.Info(
+				"Got grpc status code",
+				"err", err.Error(),
+				"code", st.Code(),
+				"resource", resource,
+				"resourceName", resourceName,
+			)
 			switch st.Code() {
 			case codes.FailedPrecondition,
 				codes.Unimplemented:
-				s.logger.Info("Non retryable error", "code", st.Code(), "resource", resource, "resourceName", resourceName)
+				s.logger.Info(
+					"Non retryable error",
+					"code", st.Code(),
+					"resource", resource,
+					"resourceName", resourceName,
+				)
 				return false
 			default:
-				s.logger.Info("retryable error", "code", st.Code(), "resource", resource, "resourceName", resourceName)
+				s.logger.Info(
+					"retryable error",
+					"code", st.Code(),
+					"resource", resource,
+					"resourceName", resourceName,
+				)
 				return true
 			}
 		} else {
-			s.logger.Info("Got non grpc error", "error", err.Error(), "resource", resource, "resourceName", resourceName)
+			s.logger.Info(
+				"Got non grpc error",
+				"error", err.Error(),
+				"resource", resource,
+				"resourceName", resourceName,
+			)
 			return true
 		}
 	} else {

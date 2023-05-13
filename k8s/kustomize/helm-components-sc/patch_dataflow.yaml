@@ -15,13 +15,13 @@ spec:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
           value: '{{ .Values.kafka.bootstrap }}'
         - name: SELDON_KAFKA_REPLICATION_FACTOR
-          value: '{{ .Values.kafka.topics.replicationFactor }}'        
+          value: '{{ .Values.kafka.topics.replicationFactor }}'
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT
-          value: '{{ .Values.kafka.topics.numPartitions }}'        
+          value: '{{ .Values.kafka.topics.numPartitions }}'
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
         - name: SELDON_KAFKA_SECURITY_PROTOCOL
-          value: '{{ .Values.security.kafka.protocol }}'            
+          value: '{{ .Values.security.kafka.protocol }}'
         - name: SELDON_TLS_CLIENT_SECRET
           value: '{{ .Values.security.kafka.ssl.client.secret }}'
         - name: SELDON_TLS_CLIENT_KEY_PATH
@@ -39,7 +39,7 @@ spec:
         - name: SELDON_TLS_BROKER_SECRET
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_BROKER_CA_PATH
-          value: '{{ .Values.security.kafka.ssl.client.brokerCa }}'
+          value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm }}'
         resources:

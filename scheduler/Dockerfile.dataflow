@@ -20,7 +20,7 @@ FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.14-2.1681917142
 USER root
 RUN microdnf update -y
 # Remove some unneeded packages that might contain CVEs
-RUN microdnf remove -y microdnf libdnf rpm-libs rpm  libsolv librpmio libmodulemd curl-minimal
+RUN microdnf remove -y microdnf libdnf rpm-libs rpm  libsolv libmodulemd curl-minimal
 USER default
 
 WORKDIR /app

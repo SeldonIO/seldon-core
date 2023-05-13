@@ -25,7 +25,7 @@ export default function (config) {
     for (let i = 0; i < config.maxNumModels[idx]; i++) {
         var modelName = config.modelNamePrefix[idx] + i.toString()
 
-        var modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
+        var modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
         doInfer(modelName, modelNameWithVersion, config, false, idx)
     }
 }
