@@ -7373,8 +7373,6 @@ spec:
                     replicas:
                       format: int32
                       type: integer
-                    stateful:
-                      type: boolean
                     volumeClaimTemplates:
                       items:
                         description: We use our own type rather than v1.PersistentVolumeClaim

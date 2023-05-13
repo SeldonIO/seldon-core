@@ -19,6 +19,8 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 
@@ -27,7 +29,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -38,6 +39,7 @@ type ComponentStatefulSetReconciler struct {
 	common.ReconcilerConfig
 	Name        string
 	StatefulSet *appsv1.StatefulSet
+	Annotator   *patch.Annotator
 }
 
 func NewComponentStatefulSetReconciler(
@@ -48,6 +50,7 @@ func NewComponentStatefulSetReconciler(
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
+	annotator *patch.Annotator,
 ) *ComponentStatefulSetReconciler {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
@@ -55,11 +58,12 @@ func NewComponentStatefulSetReconciler(
 		ReconcilerConfig: common,
 		Name:             name,
 		StatefulSet:      toStatefulSet(name, meta, podSpec, volumeClaimTemplates, override, labels, annotations),
+		Annotator:        annotator,
 	}
 }
 
-func (s *ComponentStatefulSetReconciler) GetResources() []metav1.Object {
-	return []metav1.Object{s.StatefulSet}
+func (s *ComponentStatefulSetReconciler) GetResources() []client.Object {
+	return []client.Object{s.StatefulSet}
 }
 
 func toStatefulSet(
@@ -69,7 +73,8 @@ func toStatefulSet(
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
-	annotations map[string]string) *appsv1.StatefulSet {
+	annotations map[string]string,
+) *appsv1.StatefulSet {
 	var replicas int32
 	if override != nil && override.Replicas != nil {
 		replicas = *override.Replicas
@@ -94,7 +99,7 @@ func toStatefulSet(
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      templateLabels,
-					Annotations: annotations,
+					Annotations: common.CopyMap(annotations),
 					Name:        name,
 					Namespace:   meta.Namespace,
 				},
@@ -147,15 +152,35 @@ func (s *ComponentStatefulSetReconciler) getReconcileOperation() (constants.Reco
 		}
 		return constants.ReconcileUnknown, err
 	}
+	opts := []patch.CalculateOption{
+		patch.IgnoreStatusFields(),
+		patch.IgnoreField("kind"),
+		patch.IgnoreField("apiVersion"),
+		patch.IgnoreField("metadata"),
+		patch.IgnoreVolumeClaimTemplateTypeMetaAndStatus(),
+		common.IgnoreVolumeClaimTemplateVolumeModel(),
+	}
+	patcherMaker := patch.NewPatchMaker(s.Annotator,
+		&patch.K8sStrategicMergePatcher{},
+		&patch.BaseJSONMergePatcher{},
+	)
+	patchResult, err := patcherMaker.Calculate(found, s.StatefulSet, opts...)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
 	s.StatefulSet.Status = found.Status
-	if equality.Semantic.DeepEqual(s.StatefulSet.Spec, found.Spec) &&
-		utils.HasMappings(s.StatefulSet.Labels, found.Labels) &&
-		utils.HasMappings(s.StatefulSet.Annotations, found.Annotations) {
+	if patchResult.IsEmpty() {
 		// Update our version so we have Status which can be used
 		s.StatefulSet = found
 		return constants.ReconcileNoChange, nil
 	}
+	s.Logger.Info("stateful set difference", "diff", patchResult.String())
+	err = s.Annotator.SetLastAppliedAnnotation(s.StatefulSet)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
 	// Update resource version so we can do a client Update successfully
+	// This needs to be done after we annotate to also avoid false differences
 	s.StatefulSet.SetResourceVersion(found.ResourceVersion)
 	return constants.ReconcileUpdateNeeded, nil
 }

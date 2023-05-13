@@ -29,11 +29,6 @@ patches:
     version: v1
     kind: Service
     name: scheduler
-#- path: patch_envoy_service.yaml
-#  target:
-#    version: v1
-#    kind: Service
-#    name: mesh
 - path: patch_controller_json6902.yaml
   target:
     version: v1

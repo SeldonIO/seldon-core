@@ -644,7 +644,6 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-    stateful: true
     volumeClaimTemplates:
     - name: scheduler-state
       spec:
@@ -780,7 +779,6 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-    stateful: false
   - name: seldon-modelgateway
     podSpec:
       containers:
@@ -892,7 +890,6 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-    stateful: false
   - name: hodometer
     podSpec:
       containers:
@@ -945,7 +942,6 @@ spec:
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
     replicas: 1
-    stateful: false
   - name: seldon-envoy
     podSpec:
       containers:
@@ -990,7 +986,6 @@ spec:
         8 }}
       terminationGracePeriodSeconds: 5
     replicas: 1
-    stateful: false
   - name: dataflow-engine
     podSpec:
       containers:
@@ -1059,7 +1054,6 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
     replicas: 1
-    stateful: false
   kafkaConfig:
     bootstrap.servers: '{{ .Values.kafka.bootstrap }}'
     consumer:

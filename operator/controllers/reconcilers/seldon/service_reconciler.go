@@ -19,13 +19,14 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -53,8 +54,9 @@ const (
 
 type ComponentServiceReconciler struct {
 	common.ReconcilerConfig
-	meta     metav1.ObjectMeta
-	Services []*v1.Service
+	meta      metav1.ObjectMeta
+	Services  []*v1.Service
+	Annotator *patch.Annotator
 }
 
 func NewComponentServiceReconciler(
@@ -62,16 +64,18 @@ func NewComponentServiceReconciler(
 	meta metav1.ObjectMeta,
 	serviceConfig mlopsv1alpha1.ServiceConfig,
 	overrides map[string]*mlopsv1alpha1.OverrideSpec,
+	annotator *patch.Annotator,
 ) *ComponentServiceReconciler {
 	return &ComponentServiceReconciler{
 		ReconcilerConfig: common,
 		meta:             meta,
 		Services:         toServices(meta, serviceConfig, overrides),
+		Annotator:        annotator,
 	}
 }
 
-func (s *ComponentServiceReconciler) GetResources() []metav1.Object {
-	var objs []metav1.Object
+func (s *ComponentServiceReconciler) GetResources() []client.Object {
+	var objs []client.Object
 	for _, svc := range s.Services {
 		objs = append(objs, svc)
 	}
@@ -234,12 +238,28 @@ func (s *ComponentServiceReconciler) getReconcileOperation(idx int, svc *v1.Serv
 		}
 		return constants.ReconcileUnknown, err
 	}
-	if equality.Semantic.DeepEqual(svc.Spec, found.Spec) {
+	opts := []patch.CalculateOption{
+		patch.IgnoreStatusFields(),
+		patch.IgnoreField("kind"),
+		patch.IgnoreField("apiVersion"),
+		patch.IgnoreField("metadata"),
+	}
+	patcherMaker := patch.NewPatchMaker(s.Annotator, &patch.K8sStrategicMergePatcher{}, &patch.BaseJSONMergePatcher{})
+	patchResult, err := patcherMaker.Calculate(found, svc, opts...)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
+	if patchResult.IsEmpty() {
 		// Update our version so we have Status if needed
 		s.Services[idx] = found
 		return constants.ReconcileNoChange, nil
 	}
-	// Update resource vesion so the client Update will succeed
+	err = s.Annotator.SetLastAppliedAnnotation(svc)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
+	// Update resource version so we can do a client Update successfully
+	// This needs to be done after we annotate to also avoid false differences
 	s.Services[idx].SetResourceVersion(found.ResourceVersion)
 	return constants.ReconcileUpdateNeeded, nil
 }

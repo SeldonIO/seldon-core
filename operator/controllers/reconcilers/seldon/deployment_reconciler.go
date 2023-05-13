@@ -19,6 +19,8 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 
@@ -27,7 +29,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -38,6 +39,7 @@ type ComponentDeploymentReconciler struct {
 	common.ReconcilerConfig
 	Name       string
 	Deployment *appsv1.Deployment
+	Annotator  *patch.Annotator
 }
 
 func NewComponentDeploymentReconciler(
@@ -47,18 +49,21 @@ func NewComponentDeploymentReconciler(
 	podSpec *v1.PodSpec,
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
+	annotator *patch.Annotator,
 ) *ComponentDeploymentReconciler {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
+
 	return &ComponentDeploymentReconciler{
 		ReconcilerConfig: common,
 		Name:             name,
 		Deployment:       toDeployment(name, meta, podSpec, override, labels, annotations),
+		Annotator:        annotator,
 	}
 }
 
-func (s *ComponentDeploymentReconciler) GetResources() []metav1.Object {
-	return []metav1.Object{s.Deployment}
+func (s *ComponentDeploymentReconciler) GetResources() []client.Object {
+	return []client.Object{s.Deployment}
 }
 
 func addEnvoyAnnotations(annotations map[string]string) map[string]string {
@@ -102,7 +107,7 @@ func toDeployment(
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      templateLabels,
-					Annotations: annotations,
+					Annotations: common.CopyMap(annotations),
 					Name:        name,
 					Namespace:   meta.Namespace,
 				},
@@ -130,21 +135,35 @@ func (s *ComponentDeploymentReconciler) getReconcileOperation() (constants.Recon
 		}
 		return constants.ReconcileUnknown, err
 	}
+	opts := []patch.CalculateOption{
+		patch.IgnoreStatusFields(),
+		patch.IgnoreField("kind"),
+		patch.IgnoreField("apiVersion"),
+		patch.IgnoreField("metadata"),
+	}
+	patcherMaker := patch.NewPatchMaker(s.Annotator, &patch.K8sStrategicMergePatcher{}, &patch.BaseJSONMergePatcher{})
+	patchResult, err := patcherMaker.Calculate(found, s.Deployment, opts...)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
 	s.Deployment.Status = found.Status
-	if equality.Semantic.DeepEqual(s.Deployment.Spec, found.Spec) &&
-		utils.HasMappings(s.Deployment.Labels, found.Labels) &&
-		utils.HasMappings(s.Deployment.Annotations, found.Annotations) {
+	if patchResult.IsEmpty() {
 		// Update our version so we have Status which can be used
 		s.Deployment = found
 		return constants.ReconcileNoChange, nil
 	}
+	err = s.Annotator.SetLastAppliedAnnotation(s.Deployment)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
 	// Update resource version so we can do a client Update successfully
+	// This needs to be done after we annotate to also avoid false differences
 	s.Deployment.SetResourceVersion(found.ResourceVersion)
 	return constants.ReconcileUpdateNeeded, nil
 }
 
 func (s *ComponentDeploymentReconciler) Reconcile() error {
-	logger := s.Logger.WithName("StatefulSetReconcile")
+	logger := s.Logger.WithName("DeploymentReconcile")
 	op, err := s.getReconcileOperation()
 	switch op {
 	case constants.ReconcileCreateNeeded:
@@ -181,7 +200,12 @@ const (
 
 func (s *ComponentDeploymentReconciler) GetConditions() []*apis.Condition {
 	ready := s.Deployment.Status.ReadyReplicas >= s.Deployment.Status.Replicas
-	s.Logger.Info("Checking conditions for Deployment", "ready", ready, "replicas", s.Deployment.Status.Replicas, "availableReplicas", s.Deployment.Status.AvailableReplicas)
+	s.Logger.Info("Checking conditions for Deployment",
+		"name", s.Name,
+		"ready", ready,
+		"namespace", s.Deployment.Namespace,
+		"readyReplicas", s.Deployment.Status.ReadyReplicas,
+		"replicas", s.Deployment.Status.Replicas)
 	if conditionType, ok := mlopsv1alpha1.ConditionNameMap[s.Name]; ok {
 		if ready {
 			return []*apis.Condition{mlopsv1alpha1.CreateCondition(conditionType, ready, DeloymentReadyReason)}

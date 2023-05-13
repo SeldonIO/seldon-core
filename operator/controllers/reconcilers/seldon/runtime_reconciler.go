@@ -1,10 +1,12 @@
 package server
 
 import (
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type SeldonRuntimeReconciler struct {
@@ -31,11 +33,13 @@ func NewSeldonRuntimeReconciler(
 		overrides[o.Name] = o
 	}
 
+	annotator := patch.NewAnnotator(constants.LastAppliedConfig)
+
 	var componentReconcilers []common.Reconciler
 	for _, c := range seldonConfig.Spec.Components {
 		override := overrides[c.Name]
 		if override == nil || !override.Disable {
-			if c.Stateful {
+			if len(c.VolumeClaimTemplates) > 0 {
 				componentReconcilers = append(componentReconcilers,
 					NewComponentStatefulSetReconciler(
 						c.Name,
@@ -44,7 +48,8 @@ func NewSeldonRuntimeReconciler(
 						c.PodSpec,
 						c.VolumeClaimTemplates,
 						overrides[c.Name],
-						seldonConfig.ObjectMeta))
+						seldonConfig.ObjectMeta,
+						annotator))
 			} else {
 				componentReconcilers = append(componentReconcilers,
 					NewComponentDeploymentReconciler(
@@ -53,10 +58,19 @@ func NewSeldonRuntimeReconciler(
 						runtime.ObjectMeta,
 						c.PodSpec,
 						overrides[c.Name],
-						seldonConfig.ObjectMeta))
+						seldonConfig.ObjectMeta,
+						annotator))
 			}
 		} else {
 			commonConfig.Logger.Info("Disabling component", "name", c.Name)
+		}
+	}
+	// Set last applied annotation for update
+	for _, cr := range componentReconcilers {
+		for _, res := range cr.GetResources() {
+			if err := annotator.SetLastAppliedAnnotation(res); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -65,17 +79,24 @@ func NewSeldonRuntimeReconciler(
 		return nil, err
 	}
 
+	svcReconciler := NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.ServiceConfig, overrides, annotator)
+	for _, res := range svcReconciler.GetResources() {
+		if err := annotator.SetLastAppliedAnnotation(res); err != nil {
+			return nil, err
+		}
+	}
+
 	return &SeldonRuntimeReconciler{
 		ReconcilerConfig:     commonConfig,
 		componentReconcilers: componentReconcilers,
 		rbacReconciler:       NewComponentRBACReconciler(commonConfig, runtime.ObjectMeta),
-		serviceReconciler:    NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.ServiceConfig, overrides),
+		serviceReconciler:    svcReconciler,
 		configMapReconciler:  configMapReconciler,
 	}, nil
 }
 
-func (s *SeldonRuntimeReconciler) GetResources() []metav1.Object {
-	var objs []metav1.Object
+func (s *SeldonRuntimeReconciler) GetResources() []client.Object {
+	var objs []client.Object
 	for _, c := range s.componentReconcilers {
 		objs = append(objs, c.GetResources()...)
 	}

@@ -144,7 +144,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Set Controller References
-	err = setControllerReferences(server, sr.GetResources(), r.Scheme)
+	err = setControllerReferences(server, common.ToMetaObjects(sr.GetResources()), r.Scheme)
 	if err != nil {
 		return reconcile.Result{}, err
 	}

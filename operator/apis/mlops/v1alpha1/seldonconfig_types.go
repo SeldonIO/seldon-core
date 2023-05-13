@@ -30,7 +30,7 @@ import (
 const (
 	SchedulerName       = "seldon-scheduler"
 	EnvoyName           = "seldon-envoy"
-	DataflowEngineName  = "seldon-dataflow-engine"
+	DataflowEngineName  = "dataflow-engine"
 	HodometerName       = "hodometer"
 	ModelGatewayName    = "seldon-modelgateway"
 	PipelineGatewayName = "seldon-pipelinegateway"
@@ -86,7 +86,6 @@ type TracingConfig struct {
 type ComponentDefn struct {
 	// +kubebuilder:validation:Required
 	Name                 string                  `json:"name"`
-	Stateful             bool                    `json:"stateful,omitempty"`
 	Replicas             *int32                  `json:"replicas,omitempty"`
 	PodSpec              *v1.PodSpec             `json:"podSpec,omitempty"`
 	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`

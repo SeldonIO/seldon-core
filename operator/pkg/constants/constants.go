@@ -46,6 +46,7 @@ const (
 	ServerReplicaLabelKey     = "seldon-server-replica"
 	ServerReplicaNameLabelKey = "seldon-server-replica-name"
 	ControlPlaneLabelKey      = "control-plane"
+	LastAppliedConfig         = "seldon.io/last-applied"
 )
 
 // Reconcilliation operations

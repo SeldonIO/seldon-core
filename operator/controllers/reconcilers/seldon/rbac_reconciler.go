@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -41,8 +42,8 @@ func NewComponentRBACReconciler(
 	}
 }
 
-func (s *ComponentRBACReconciler) GetResources() []metav1.Object {
-	var objs []metav1.Object
+func (s *ComponentRBACReconciler) GetResources() []client.Object {
+	var objs []client.Object
 	for _, role := range s.Roles {
 		objs = append(objs, role)
 	}

@@ -18,13 +18,15 @@ package server
 
 import (
 	"fmt"
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	"github.com/imdario/mergo"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 )
 
@@ -48,7 +50,9 @@ func NewServerReconciler(server *mlopsv1alpha1.Server,
 		ReconcilerConfig: common,
 	}
 
-	sr.StatefulSetReconciler, err = sr.createStatefulSetReconciler(server)
+	annotator := patch.NewAnnotator(constants.LastAppliedConfig)
+
+	sr.StatefulSetReconciler, err = sr.createStatefulSetReconciler(server, annotator)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +69,7 @@ func (s *ServerReconciler) GetReplicas() (int32, error) {
 	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas()
 }
 
-func (s *ServerReconciler) GetResources() []metav1.Object {
+func (s *ServerReconciler) GetResources() []client.Object {
 	objs := s.StatefulSetReconciler.GetResources()
 	objs = append(objs, s.ServiceReconciler.GetResources()...)
 	return objs
@@ -106,7 +110,7 @@ func updateCapabilities(extraCapabilities []string, podSpec *v1.PodSpec) {
 	}
 }
 
-func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server) (*ServerStatefulSetReconciler, error) {
+func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerStatefulSetReconciler, error) {
 	//Get ServerConfig
 	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
 	if err != nil {
@@ -123,7 +127,13 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	updateCapabilities(server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
-	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig, server.ObjectMeta, podSpec, serverConfig.Spec.VolumeClaimTemplates, &server.Spec.ScalingSpec, serverConfig.ObjectMeta)
+	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig,
+		server.ObjectMeta,
+		podSpec,
+		serverConfig.Spec.VolumeClaimTemplates,
+		&server.Spec.ScalingSpec,
+		serverConfig.ObjectMeta,
+		annotator)
 	return statefulSetReconciler, nil
 }
 

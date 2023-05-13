@@ -92,9 +92,10 @@ var seldonRuntimeConditionSet = apis.NewLivingConditionSet(
 	ModelGatewayReady,
 	PipelineGatewayReady,
 	EnvoyReady,
+	HodometerReady,
 )
 
-var _ apis.ConditionsAccessor = (*ServerStatus)(nil)
+var _ apis.ConditionsAccessor = (*SeldonRuntimeStatus)(nil)
 
 func (ss *SeldonRuntimeStatus) InitializeConditions() {
 	seldonRuntimeConditionSet.Manage(ss).InitializeConditions()

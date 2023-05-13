@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/apis"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -155,7 +154,7 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Set Controller References
-	err = setControllerReferences(seldonRuntime, sr.GetResources(), r.Scheme)
+	err = setControllerReferences(seldonRuntime, common.ToMetaObjects(sr.GetResources()), r.Scheme)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -170,7 +169,7 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		seldonRuntime.Status.SetCondition(condition)
 	}
 
-	err = r.updateStatus(seldonRuntime)
+	err = r.updateStatus(seldonRuntime, logger)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -184,7 +183,7 @@ func seldonRuntimeReady(status mlopsv1alpha1.SeldonRuntimeStatus) bool {
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
 }
 
-func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.SeldonRuntime) error {
+func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.SeldonRuntime, logger logr.Logger) error {
 	existingRuntime := &mlopsv1alpha1.SeldonRuntime{}
 	namespacedName := types.NamespacedName{Name: seldonRuntime.Name, Namespace: seldonRuntime.Namespace}
 	if err := r.Get(context.TODO(), namespacedName, existingRuntime); err != nil {
@@ -198,17 +197,19 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 		// Not updating as no difference
 	} else {
 		if err := r.Status().Update(context.TODO(), seldonRuntime); err != nil {
+			logger.Info("Failed to update status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
 			r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "UpdateFailed",
 				"Failed to update status for SeldonRuntime %q: %v", seldonRuntime.Name, err)
 			return err
 		} else {
+			logger.Info("Successfully updated status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
 			prevWasReady := seldonRuntimeReady(existingRuntime.Status)
 			currentIsReady := seldonRuntimeReady(seldonRuntime.Status)
 			if prevWasReady && !currentIsReady {
 				r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "SeldonRuntimeNotReady",
 					fmt.Sprintf("SeldonRuntime %v is no longer Ready", seldonRuntime.GetName()))
 			} else if !prevWasReady && currentIsReady {
-				r.Recorder.Eventf(seldonRuntime, v1.EventTypeNormal, "ServerReady",
+				r.Recorder.Eventf(seldonRuntime, v1.EventTypeNormal, "RuntimeReady",
 					fmt.Sprintf("SeldonRuntime %v is Ready", seldonRuntime.GetName()))
 			}
 		}
@@ -218,10 +219,10 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	pred := predicate.GenerationChangedPredicate{}
+	//pred := predicate.GenerationChangedPredicate{}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.SeldonRuntime{}).
-		WithEventFilter(pred).
+		//WithEventFilter(pred).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&v1.Service{}).

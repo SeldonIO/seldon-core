@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
 )
 
@@ -37,8 +38,8 @@ func NewConfigMapReconciler(
 	}, nil
 }
 
-func (s *ConfigMapReconciler) GetResources() []metav1.Object {
-	var objs []metav1.Object
+func (s *ConfigMapReconciler) GetResources() []client.Object {
+	var objs []client.Object
 	for _, svc := range s.configMaps {
 		objs = append(objs, svc)
 	}

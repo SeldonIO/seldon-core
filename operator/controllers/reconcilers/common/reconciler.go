@@ -18,17 +18,33 @@ package common
 
 import (
 	"context"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-logr/logr"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Reconciler interface {
 	Reconcile() error
-	GetResources() []metav1.Object
+	GetResources() []client.Object
 	GetConditions() []*apis.Condition
+}
+
+func ToMetaObjects(objs []client.Object) []metav1.Object {
+	var metaObjs []metav1.Object
+	for _, res := range objs {
+		metaObjs = append(metaObjs, res)
+	}
+	return metaObjs
+}
+
+func CopyMap[K, V comparable](m map[K]V) map[K]V {
+	result := make(map[K]V)
+	for k, v := range m {
+		result[k] = v
+	}
+	return result
 }
 
 type ReplicaHandler interface {

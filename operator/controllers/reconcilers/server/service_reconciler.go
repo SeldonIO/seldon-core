@@ -18,7 +18,6 @@ package server
 
 import (
 	"context"
-
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -63,8 +62,8 @@ func NewServerServiceReconciler(
 	}
 }
 
-func (s *ServerServiceReconciler) GetResources() []metav1.Object {
-	var objs []metav1.Object
+func (s *ServerServiceReconciler) GetResources() []client.Object {
+	var objs []client.Object
 	for _, svc := range s.Services {
 		objs = append(objs, svc)
 	}

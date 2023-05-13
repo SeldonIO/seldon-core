@@ -5,7 +5,6 @@ metadata:
 spec:
   components:
   - name: dataflow-engine
-    stateful: false
     replicas: 1
     podSpec:
       containers:
@@ -40,7 +39,6 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy
-    stateful: false
     replicas: 1
     podSpec:      
       containers:
@@ -60,7 +58,6 @@ spec:
             memory: 128Mi
       terminationGracePeriodSeconds: 5
   - name: hodometer
-    stateful: false
     replicas: 1
     podSpec:
       containers:
@@ -89,7 +86,6 @@ spec:
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
   - name: seldon-modelgateway
-    stateful: false
     replicas: 1
     podSpec:
       containers:
@@ -138,7 +134,6 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
   - name: seldon-pipelinegateway
-    stateful: false
     replicas: 1
     podSpec:
       containers:
@@ -198,7 +193,6 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
   - name: seldon-scheduler
-    stateful: true
     replicas: 1
     podSpec:
       containers:
