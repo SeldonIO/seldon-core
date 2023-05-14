@@ -1,19 +1,12 @@
 CUSTOM_IMAGE_TAG ?= latest
 NEW_VERSION ?= 0.0.0
 
-.PHONY: create
-create: create-helm-charts create-yaml
-
-.PHONY: create-yaml
-create-yaml:
-	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs > yaml/certs.yaml
-	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
-	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup > yaml/components.yaml
-	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers > yaml/servers.yaml
-
 HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
 HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
 HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
+
+.PHONY: create
+create: create-helm-charts create-yaml
 
 .PHONY: create-helm-charts
 create-helm-charts:
@@ -29,6 +22,13 @@ create-helm-charts:
 	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
 		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
+
+.PHONY: create-yaml
+create-yaml:
+	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs > yaml/certs.yaml
+	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
+	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup > yaml/components.yaml
+	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers > yaml/servers.yaml
 
 .PHONY: set-chart-version
 set-chart-version:
