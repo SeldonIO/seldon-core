@@ -25,10 +25,10 @@ type ConfigMapReconciler struct {
 
 func NewConfigMapReconciler(
 	common common.ReconcilerConfig,
-	seldonConfig *mlopsv1alpha1.SeldonConfig,
+	config *mlopsv1alpha1.SeldonConfiguration,
 	meta metav1.ObjectMeta) (*ConfigMapReconciler, error) {
 
-	configMaps, err := toConfigMaps(seldonConfig, meta)
+	configMaps, err := toConfigMaps(config, meta)
 	if err != nil {
 		return nil, err
 	}
@@ -46,16 +46,16 @@ func (s *ConfigMapReconciler) GetResources() []client.Object {
 	return objs
 }
 
-func toConfigMaps(seldonConfig *mlopsv1alpha1.SeldonConfig, meta metav1.ObjectMeta) ([]*v1.ConfigMap, error) {
-	agentConfigMap, err := getAgentConfigMap(seldonConfig.Spec.Config.AgentConfig, meta.Namespace)
+func toConfigMaps(config *mlopsv1alpha1.SeldonConfiguration, meta metav1.ObjectMeta) ([]*v1.ConfigMap, error) {
+	agentConfigMap, err := getAgentConfigMap(config.AgentConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}
-	kafkaConfigMap, err := getKafkaConfigMap(seldonConfig.Spec.Config.KafkaConfig, meta.Namespace)
+	kafkaConfigMap, err := getKafkaConfigMap(config.KafkaConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}
-	tracingConfigMap, err := getTracingConfigMap(seldonConfig.Spec.Config.TracingConfig, meta.Namespace)
+	tracingConfigMap, err := getTracingConfigMap(config.TracingConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}

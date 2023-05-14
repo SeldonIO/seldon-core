@@ -25,3 +25,33 @@ spec:
   - name: seldon-pipelinegateway
     disable: {{ .Values.pipelinegateway.disable }}    
     replicas: {{ .Values.pipelinegateway.replicas }}
+  config:
+    agentConfig:
+      rclone:
+        config_secrets:
+          {{- with .Values.config.agentConfig.rclone.configSecrets }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+    kafkaConfig:
+      bootstrap.servers: {{ .Values.config.kafkaConfig.bootstrap }}
+      consumer:
+        {{- with .Values.config.kafkaConfig.consumer }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      debug: {{ .Values.config.kafkaConfig.debug }}
+      producer:
+        {{- with .Values.config.kafkaConfig.producer }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      streams:
+        {{- with .Values.config.kafkaConfig.streams }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      topicPrefix: {{ .Values.config.kafkaConfig.topicPrefix }}
+    serviceConfig:
+      grpcServicePrefix: {{ .Values.config.serviceConfig.serviceGRPCPrefix }}
+      serviceType: {{ .Values.config.serviceConfig.serviceType }}
+    tracingConfig:
+      enable: {{ .Values.config.tracingConfig.enable }}
+      otelExporterEndpoint: {{ .Values.config.tracingConfig.otelExporterEndpoint }}
+      ratio: {{ .Values.config.tracingConfig.ratio }}

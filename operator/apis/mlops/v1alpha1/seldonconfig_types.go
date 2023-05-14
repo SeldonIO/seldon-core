@@ -67,18 +67,12 @@ type KafkaConfig struct {
 }
 
 type AgentConfiguration struct {
-	Rclone *RcloneConfiguration `json:"rclone,omitempty" yaml:"rclone,omitempty"`
-	Kafka  *KafkaConfiguration  `json:"kafka,omitempty" yaml:"kafka,omitempty"`
+	Rclone RcloneConfiguration `json:"rclone,omitempty" yaml:"rclone,omitempty"`
 }
 
 type RcloneConfiguration struct {
 	ConfigSecrets []string `json:"config_secrets,omitempty" yaml:"config_secrets,omitempty"`
 	Config        []string `json:"config,omitempty" yaml:"config,omitempty"`
-}
-
-type KafkaConfiguration struct {
-	Active bool   `json:"active,omitempty" yaml:"active,omitempty"`
-	Broker string `json:"broker,omitempty" yaml:"broker,omitempty"`
 }
 
 type TracingConfig struct {
@@ -133,4 +127,75 @@ func GetSeldonConfigForSeldonRuntime(seldonConfigName string, client client.Clie
 	sc := SeldonConfig{}
 	err := client.Get(context.TODO(), types.NamespacedName{Name: seldonConfigName, Namespace: constants.SeldonNamespace}, &sc)
 	return &sc, err
+}
+
+func (s *SeldonConfiguration) AddDefaults(defaults SeldonConfiguration) {
+	s.TracingConfig.addDefaults(defaults.TracingConfig)
+	s.KafkaConfig.addDefaults(defaults.KafkaConfig)
+	s.AgentConfig.addDefaults(defaults.AgentConfig)
+	s.ServiceConfig.addDefaults(defaults.ServiceConfig)
+}
+
+func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
+	if k.BootstrapServers == "" {
+		k.BootstrapServers = defaults.BootstrapServers
+	}
+	if k.Consumer == nil {
+		k.Consumer = make(map[string]intstr.IntOrString)
+	}
+	for key, val := range defaults.Consumer {
+		if _, ok := k.Consumer[key]; !ok {
+			k.Consumer[key] = val
+		}
+	}
+	if k.Producer == nil {
+		k.Producer = make(map[string]intstr.IntOrString)
+	}
+	for key, val := range defaults.Producer {
+		if _, ok := k.Producer[key]; !ok {
+			k.Producer[key] = val
+		}
+	}
+	if k.Streams == nil {
+		k.Streams = make(map[string]intstr.IntOrString)
+	}
+	for key, val := range defaults.Streams {
+		if _, ok := k.Streams[key]; !ok {
+			k.Streams[key] = val
+		}
+	}
+	if k.Debug == "" {
+		k.Debug = defaults.Debug
+	}
+	if k.TopicPrefix == "" {
+		k.TopicPrefix = defaults.TopicPrefix
+	}
+}
+
+func (a *AgentConfiguration) addDefaults(defaults AgentConfiguration) {
+	a.Rclone.addDefaults(defaults.Rclone)
+}
+
+// Not presently checking for duplicates
+func (r *RcloneConfiguration) addDefaults(defaults RcloneConfiguration) {
+	r.Config = append(r.Config, defaults.Config...)
+	r.ConfigSecrets = append(r.ConfigSecrets, defaults.ConfigSecrets...)
+}
+
+func (t *TracingConfig) addDefaults(defaults TracingConfig) {
+	if t.Ratio == "" {
+		t.Ratio = defaults.Ratio
+	}
+	if t.OtelExporterEndpoint == "" {
+		t.OtelExporterEndpoint = defaults.OtelExporterEndpoint
+	}
+}
+
+func (sc *ServiceConfig) addDefaults(defaults ServiceConfig) {
+	if sc.GrpcServicePrefix == "" {
+		sc.GrpcServicePrefix = defaults.GrpcServicePrefix
+	}
+	if sc.ServiceType == "" {
+		sc.ServiceType = defaults.ServiceType
+	}
 }

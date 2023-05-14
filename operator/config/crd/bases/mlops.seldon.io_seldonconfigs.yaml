@@ -7555,13 +7555,6 @@ spec:
                 properties:
                   agentConfig:
                     properties:
-                      kafka:
-                        properties:
-                          active:
-                            type: boolean
-                          broker:
-                            type: string
-                        type: object
                       rclone:
                         properties:
                           config:

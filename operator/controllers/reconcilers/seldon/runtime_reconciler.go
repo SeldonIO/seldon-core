@@ -74,12 +74,13 @@ func NewSeldonRuntimeReconciler(
 		}
 	}
 
-	configMapReconciler, err := NewConfigMapReconciler(commonConfig, seldonConfig, runtime.ObjectMeta)
+	runtime.Spec.Config.AddDefaults(seldonConfig.Spec.Config)
+	configMapReconciler, err := NewConfigMapReconciler(commonConfig, &runtime.Spec.Config, runtime.ObjectMeta)
 	if err != nil {
 		return nil, err
 	}
 
-	svcReconciler := NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.Config.ServiceConfig, overrides, annotator)
+	svcReconciler := NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, runtime.Spec.Config.ServiceConfig, overrides, annotator)
 	for _, res := range svcReconciler.GetResources() {
 		if err := annotator.SetLastAppliedAnnotation(res); err != nil {
 			return nil, err

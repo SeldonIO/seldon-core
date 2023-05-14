@@ -25,8 +25,9 @@ import (
 
 // SeldonRuntimeSpec defines the desired state of SeldonRuntime
 type SeldonRuntimeSpec struct {
-	SeldonConfig string          `json:"seldonConfig"`
-	Overrides    []*OverrideSpec `json:"overrides,omitempty"`
+	SeldonConfig string              `json:"seldonConfig"`
+	Overrides    []*OverrideSpec     `json:"overrides,omitempty"`
+	Config       SeldonConfiguration `json:"config,omitempty"`
 }
 
 type OverrideSpec struct {
