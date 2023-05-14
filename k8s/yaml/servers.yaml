@@ -1,15 +1,20 @@
+---
+# Source: seldon-core-v2-servers/templates/seldon-v2-servers.yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: mlserver
+  namespace: 'default'
 spec:
   replicas: 1
   serverConfig: mlserver
 ---
+# Source: seldon-core-v2-servers/templates/seldon-v2-servers.yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: triton
+  namespace: 'default'
 spec:
   replicas: 1
   serverConfig: triton
