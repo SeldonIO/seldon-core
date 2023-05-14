@@ -20,6 +20,10 @@ create: create-yaml create-helm-charts
 
 .PHONY: create-yaml
 create-yaml:
+	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs > yaml/certs.yaml
+	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
+	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup > yaml/components.yaml
+	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers > yaml/servers.yaml
 
 HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
 HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
