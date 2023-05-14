@@ -20,23 +20,6 @@ create: create-yaml create-helm-charts
 
 .PHONY: create-yaml
 create-yaml:
-	cd ../scheduler/k8s/scheduler && kustomize edit set image scheduler=${SCHEDULER_IMG}
-	cd ../scheduler/k8s/envoy && kustomize edit set image envoy=${ENVOY_IMG}
-	cd ../scheduler/k8s/modelgateway && kustomize edit set image modelgateway=${MODELGATEWAY_IMG}
-	cd ../scheduler/k8s/pipelinegateway && kustomize edit set image pipelinegateway=${PIPELINEGATEWAY_IMG}
-	cd ../scheduler/k8s/dataflow-engine && kustomize edit set image dataflow-engine=${DATAFLOW_IMG}
-
-	cd ../hodometer/k8s && kustomize edit set image hodometer=${HODOMETER_IMG}
-
-	cd ../operator/config/manager && kustomize edit set image controller=${CONTROLLER_IMG}
-	cd ../operator/config/serverconfigs && kustomize edit set image agent=${AGENT_IMG}
-	cd ../operator/config/serverconfigs && kustomize edit set image rclone=${RCLONE_IMG}
-	cd ../operator/config/serverconfigs && kustomize edit set image mlserver=${MLSERVER_IMG}
-	cd ../operator/config/serverconfigs && kustomize edit set image triton=${TRITON_IMG}
-
-	kustomize build kustomize/crds/ > yaml/seldon-v2-crds.yaml
-	kustomize build kustomize/components/ > yaml/seldon-v2-components.yaml
-	kustomize build kustomize/servers/ > yaml/seldon-v2-servers.yaml
 
 HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
 HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
