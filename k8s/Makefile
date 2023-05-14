@@ -16,7 +16,7 @@ MLSERVER_IMG ?= seldonio/mlserver:1.3.2
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 
 .PHONY: create
-create: create-yaml create-helm-charts
+create: create-helm-charts create-yaml
 
 .PHONY: create-yaml
 create-yaml:
