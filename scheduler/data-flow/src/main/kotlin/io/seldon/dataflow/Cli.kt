@@ -56,7 +56,7 @@ object Cli {
     val saslUsername = Key("kafka.sasl.username", stringType)
     val saslSecret = Key("kafka.sasl.secret", stringType)
     val saslPasswordPath = Key("kafka.sasl.password.path", stringType)
-    val saslMechanism = Key("kafka.sasl.mechanism", enumType(*KafkaSaslMechanisms.values()))
+    val saslMechanism = Key("kafka.sasl.mechanism", enumType(KafkaSaslMechanisms.byName))
 
     fun args(): List<Key<Any>> {
         return listOf(

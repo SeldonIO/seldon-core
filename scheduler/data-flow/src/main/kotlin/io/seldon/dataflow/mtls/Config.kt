@@ -32,8 +32,6 @@ data class CertificateConfig(
 data class KeystoreConfig(
     val keyStorePassword: KeystorePassword,
     val keyStoreLocation: FilePath,
-    val trustStorePassword: KeystorePassword,
-    val trustStoreLocation: FilePath,
 )
 
 data class TruststoreConfig(
