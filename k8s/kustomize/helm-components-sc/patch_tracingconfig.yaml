@@ -3,7 +3,8 @@ kind: SeldonConfig
 metadata:
   name: default
 spec:
-  tracingConfig:
-    enable: HACK_REMOVE_ME{{ .Values.opentelemetry.enable }}
-    otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
-    ratio: '{{ .Values.opentelemetry.ratio }}'
+  config:
+    tracingConfig:
+      enable: HACK_REMOVE_ME{{ .Values.opentelemetry.enable }}
+      otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+      ratio: '{{ .Values.opentelemetry.ratio }}'

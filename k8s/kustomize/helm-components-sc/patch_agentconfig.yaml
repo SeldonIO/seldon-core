@@ -3,6 +3,7 @@ kind: SeldonConfig
 metadata:
   name: default
 spec:
-  agentConfig:
-    rclone: 
-      config_secrets: ["seldon-rclone-gs-public"]
+  config:
+    agentConfig:
+      rclone: 
+        config_secrets: ["seldon-rclone-gs-public"]

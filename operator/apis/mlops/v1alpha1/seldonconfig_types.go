@@ -41,7 +41,11 @@ const (
 
 // SeldonConfigSpec defines the desired state of SeldonConfig
 type SeldonConfigSpec struct {
-	Components    []*ComponentDefn   `json:"components,omitempty"`
+	Components []*ComponentDefn    `json:"components,omitempty"`
+	Config     SeldonConfiguration `json:"config,omitempty"`
+}
+
+type SeldonConfiguration struct {
 	TracingConfig TracingConfig      `json:"tracingConfig,omitempty"`
 	KafkaConfig   KafkaConfig        `json:"kafkaConfig,omitempty"`
 	AgentConfig   AgentConfiguration `json:"agentConfig,omitempty"`

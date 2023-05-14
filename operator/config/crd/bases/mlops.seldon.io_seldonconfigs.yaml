@@ -35,27 +35,6 @@ spec:
           spec:
             description: SeldonConfigSpec defines the desired state of SeldonConfig
             properties:
-              agentConfig:
-                properties:
-                  kafka:
-                    properties:
-                      active:
-                        type: boolean
-                      broker:
-                        type: string
-                    type: object
-                  rclone:
-                    properties:
-                      config:
-                        items:
-                          type: string
-                        type: array
-                      config_secrets:
-                        items:
-                          type: string
-                        type: array
-                    type: object
-                type: object
               components:
                 items:
                   properties:
@@ -7572,53 +7551,77 @@ spec:
                   - name
                   type: object
                 type: array
-              kafkaConfig:
+              config:
                 properties:
-                  bootstrap.servers:
-                    type: string
-                  consumer:
-                    additionalProperties:
-                      anyOf:
-                      - type: integer
-                      - type: string
-                      x-kubernetes-int-or-string: true
+                  agentConfig:
+                    properties:
+                      kafka:
+                        properties:
+                          active:
+                            type: boolean
+                          broker:
+                            type: string
+                        type: object
+                      rclone:
+                        properties:
+                          config:
+                            items:
+                              type: string
+                            type: array
+                          config_secrets:
+                            items:
+                              type: string
+                            type: array
+                        type: object
                     type: object
-                  debug:
-                    type: string
-                  producer:
-                    additionalProperties:
-                      anyOf:
-                      - type: integer
-                      - type: string
-                      x-kubernetes-int-or-string: true
+                  kafkaConfig:
+                    properties:
+                      bootstrap.servers:
+                        type: string
+                      consumer:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      debug:
+                        type: string
+                      producer:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      streams:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      topicPrefix:
+                        type: string
                     type: object
-                  streams:
-                    additionalProperties:
-                      anyOf:
-                      - type: integer
-                      - type: string
-                      x-kubernetes-int-or-string: true
+                  serviceConfig:
+                    properties:
+                      grpcServicePrefix:
+                        type: string
+                      serviceType:
+                        description: Service Type string describes ingress methods
+                          for a service
+                        type: string
                     type: object
-                  topicPrefix:
-                    type: string
-                type: object
-              serviceConfig:
-                properties:
-                  grpcServicePrefix:
-                    type: string
-                  serviceType:
-                    description: Service Type string describes ingress methods for
-                      a service
-                    type: string
-                type: object
-              tracingConfig:
-                properties:
-                  enable:
-                    type: boolean
-                  otelExporterEndpoint:
-                    type: string
-                  ratio:
-                    type: string
+                  tracingConfig:
+                    properties:
+                      enable:
+                        type: boolean
+                      otelExporterEndpoint:
+                        type: string
+                      ratio:
+                        type: string
+                    type: object
                 type: object
             type: object
           status:

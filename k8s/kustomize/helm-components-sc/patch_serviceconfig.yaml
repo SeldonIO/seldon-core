@@ -3,6 +3,7 @@ kind: SeldonConfig
 metadata:
   name: default
 spec:
-  serviceConfig:
-    grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
-    serviceType: '{{ .Values.services.defaultServiceType }}'
+  config:
+    serviceConfig:
+      grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
+      serviceType: '{{ .Values.services.defaultServiceType }}'

@@ -47,15 +47,15 @@ func (s *ConfigMapReconciler) GetResources() []client.Object {
 }
 
 func toConfigMaps(seldonConfig *mlopsv1alpha1.SeldonConfig, meta metav1.ObjectMeta) ([]*v1.ConfigMap, error) {
-	agentConfigMap, err := getAgentConfigMap(seldonConfig.Spec.AgentConfig, meta.Namespace)
+	agentConfigMap, err := getAgentConfigMap(seldonConfig.Spec.Config.AgentConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}
-	kafkaConfigMap, err := getKafkaConfigMap(seldonConfig.Spec.KafkaConfig, meta.Namespace)
+	kafkaConfigMap, err := getKafkaConfigMap(seldonConfig.Spec.Config.KafkaConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}
-	tracingConfigMap, err := getTracingConfigMap(seldonConfig.Spec.TracingConfig, meta.Namespace)
+	tracingConfigMap, err := getTracingConfigMap(seldonConfig.Spec.Config.TracingConfig, meta.Namespace)
 	if err != nil {
 		return nil, err
 	}

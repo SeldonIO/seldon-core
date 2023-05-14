@@ -79,7 +79,7 @@ func NewSeldonRuntimeReconciler(
 		return nil, err
 	}
 
-	svcReconciler := NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.ServiceConfig, overrides, annotator)
+	svcReconciler := NewComponentServiceReconciler(commonConfig, runtime.ObjectMeta, seldonConfig.Spec.Config.ServiceConfig, overrides, annotator)
 	for _, res := range svcReconciler.GetResources() {
 		if err := annotator.SetLastAppliedAnnotation(res); err != nil {
 			return nil, err
