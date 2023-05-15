@@ -80,7 +80,7 @@ hodometer:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-hodometer
-    tag: latest
+    tag: 2.5.0
   logLevel: info
   metricsLevel: feature
   extraPublishUrls: ""
@@ -115,7 +115,7 @@ modelgateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-modelgateway
-    tag: latest
+    tag: 2.5.0
   workers: 8
   resources:
     cpu: 100m
@@ -131,7 +131,7 @@ pipelinegateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-pipelinegateway
-    tag: latest
+    tag: 2.5.0
   resources:
     cpu: 100m
     memory: 1G
@@ -146,7 +146,7 @@ dataflow:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-dataflow-engine
-    tag: latest
+    tag: 2.5.0
   cores: 4
   resources:
     cpu: 100m
@@ -162,7 +162,7 @@ controller:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldonv2-controller
-    tag: latest
+    tag: 2.5.0
   resources:
     cpu: 10m
     memory: 64Mi
@@ -177,7 +177,7 @@ envoy:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-envoy
-    tag: latest
+    tag: 2.5.0
   resources:
     cpu: 100m
     memory: 128Mi
@@ -194,7 +194,7 @@ scheduler:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-scheduler
-    tag: latest
+    tag: 2.5.0
   resources:
     cpu: 100m
     memory: 1Gi
@@ -221,7 +221,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-rclone
-      tag: latest
+      tag: 2.5.0
     resources:
       cpu: 50m
       memory: 128Mi
@@ -231,7 +231,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-agent
-      tag: latest
+      tag: 2.5.0
     overcommitPercentage: "10"
     scalingStatsPeriodSeconds: "20"
     modelInferenceLagThreshold: "30"
