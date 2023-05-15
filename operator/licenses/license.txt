@@ -1784,7 +1784,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-Shopify/toxiproxy  MIT License  https://github.com/Shopify/toxiproxy/blob/master/LICENSE
+Shopify/toxiproxy  MIT License  https://github.com/Shopify/toxiproxy/blob/main/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -15583,7 +15583,7 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 
 --------------------------------------------------------------------------------
-hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/master/LICENSE
+hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2014 HashiCorp, Inc.
 
@@ -20368,7 +20368,7 @@ moby/spdystream  Apache License 2.0  https://github.com/moby/spdystream/blob/mas
    limitations under the License.
 
 --------------------------------------------------------------------------------
-moby/term  Apache License 2.0  https://github.com/moby/term/blob/master/LICENSE
+moby/term  Apache License 2.0  https://github.com/moby/term/blob/main/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License

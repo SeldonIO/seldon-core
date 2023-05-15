@@ -12,7 +12,7 @@ OneOfOne/xxhash,https://github.com/OneOfOne/xxhash/blob/master/LICENSE,Apache Li
 PuerkitoBio/purell,https://github.com/PuerkitoBio/purell/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/PuerkitoBio/purell/master/LICENSE
 PuerkitoBio/urlesc,https://github.com/PuerkitoBio/urlesc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/PuerkitoBio/urlesc/master/LICENSE
 Shopify/sarama,https://github.com/Shopify/sarama/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/Shopify/sarama/main/LICENSE
-Shopify/toxiproxy,https://github.com/Shopify/toxiproxy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Shopify/toxiproxy/master/LICENSE
+Shopify/toxiproxy,https://github.com/Shopify/toxiproxy/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/Shopify/toxiproxy/main/LICENSE
 actgardner/gogen-avro,https://github.com/actgardner/gogen-avro/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/actgardner/gogen-avro/master/LICENSE
 alecthomas/jsonschema,https://github.com/alecthomas/jsonschema/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/jsonschema/master/COPYING
 alecthomas/template,https://github.com/alecthomas/template/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/alecthomas/template/master/LICENSE
@@ -148,7 +148,7 @@ hashicorp/go.net,https://github.com/hashicorp/go.net/blob/master/LICENSE,BSD 3-C
 hashicorp/golang-lru,https://github.com/hashicorp/golang-lru/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/golang-lru/master/LICENSE
 hashicorp/hcl,https://github.com/hashicorp/hcl/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/hcl/main/LICENSE
 hashicorp/logutils,https://github.com/hashicorp/logutils/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/logutils/master/LICENSE
-hashicorp/mdns,https://github.com/hashicorp/mdns/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/mdns/master/LICENSE
+hashicorp/mdns,https://github.com/hashicorp/mdns/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/hashicorp/mdns/main/LICENSE
 hashicorp/memberlist,https://github.com/hashicorp/memberlist/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/memberlist/master/LICENSE
 hashicorp/serf,https://github.com/hashicorp/serf/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/serf/master/LICENSE
 heetch/avro,https://github.com/heetch/avro/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/heetch/avro/master/LICENSE
@@ -207,7 +207,7 @@ mitchellh/iochan,https://github.com/mitchellh/iochan/blob/master/LICENSE.md,MIT 
 mitchellh/mapstructure,https://github.com/mitchellh/mapstructure/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/mitchellh/mapstructure/main/LICENSE
 mitchellh/reflectwalk,https://github.com/mitchellh/reflectwalk/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/mitchellh/reflectwalk/main/LICENSE
 moby/spdystream,https://github.com/moby/spdystream/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/spdystream/master/LICENSE
-moby/term,https://github.com/moby/term/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/term/master/LICENSE
+moby/term,https://github.com/moby/term/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/term/main/LICENSE
 modern-go/concurrent,https://github.com/modern-go/concurrent/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/modern-go/concurrent/master/LICENSE
 modern-go/reflect2,https://github.com/modern-go/reflect2/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/modern-go/reflect2/master/LICENSE
 munnerz/goautoneg,https://github.com/munnerz/goautoneg/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/munnerz/goautoneg/master/LICENSE
