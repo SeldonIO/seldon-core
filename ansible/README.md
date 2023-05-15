@@ -54,20 +54,20 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 ```
 will only install Kafka when setting up the ecosystem.
 
-|                         | type   | default                     | comment                                                  |
-|-------------------------|--------|-----------------------------|----------------------------------------------------------|
-| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon Core v2                      |
-| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka Cluster for Core v2           |
-| full_install            | bool   | yes                         | enables full ecosystem installation                      |
-| install_kafka           | bool   | {{ full_install }}          | installs Strimzi Kafka Operator                          |
-| install_prometheus      | bool   | {{ full_install }}          | installs Prometheus Operator                             |
-| install_certmanager     | bool   | {{ full_install }}          | installs Cert Manager                                    |
-| install_jaeger          | bool   | {{ full_install }}          | installs Jaeger                                          |
-| install_opentelemetry   | bool   | {{ full_install }}          | installs OpenTelemetry                                   |
-| configure_kafka         | bool   | {{ install_kafka }}         | configures Kafka Cluster for Core v2                     |
-| configure_prometheus    | bool   | {{ install_prometheus }}    | configure Prometheus using Core v2 specific resources    |
-| configure_jaeger        | bool   | {{ install_jaeger }}        | configure Jaeger using Core v2 specific resources        |
-| configure_opentelemetry | bool   | {{ install_opentelemetry }} | configure OpenTelemetry using Core v2 specific resources |
+|                         | type   | default                       | comment                                                  |
+|-------------------------|--------|-------------------------------|----------------------------------------------------------|
+| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core v2                      |
+| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka Cluster for Core v2           |
+| full_install            | bool   | yes                           | enables full ecosystem installation                      |
+| install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                          |
+| install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                             |
+| install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                    |
+| install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                          |
+| install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                   |
+| configure_kafka         | bool   | `{{ install_kafka }}`         | configures Kafka Cluster for Core v2                     |
+| configure_prometheus    | bool   | `{{ install_prometheus }}`    | configure Prometheus using Core v2 specific resources    |
+| configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Core v2 specific resources        |
+| configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Core v2 specific resources |
 
 The most common change will be to install in another namespace with:
 
@@ -89,12 +89,12 @@ If you have changed the namespace you wish to use you will need to run with:
 ansible-playbook playbooks/setup-seldon.yaml -e seldon_mesh_namespace=<mynamespace>
 ```
 
-|                         | type   | default                     | comment                                                 |
-|-------------------------|--------|-----------------------------|---------------------------------------------------------|
-| seldon_kafka_namespace  | string | seldon-mesh                 | namespace to install Kafka                              |
-| seldon_mesh_namespace   | string | seldon-mesh                 | namespace to install Seldon                             |
-| seldon_crds_namespace   | string | default                     | namespace to install Seldon CRDs                        |
-| full_install            | bool   | yes                         | enables full ecosystem installation                     |
-| install_crds            | bool   | {{ full_install }}          | installs Seldon CRDs                                    |
-| install_components      | bool   | {{ full_install }}          | install Seldon components                               |
-| install_servers         | bool   | {{ full_install }}          | install Seldon servers                                  |
+|                         | type   | default                       | comment                                                 |
+|-------------------------|--------|-------------------------------|---------------------------------------------------------|
+| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka                              |
+| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon                             |
+| seldon_crds_namespace   | string | default                       | namespace to install Seldon CRDs                        |`
+| full_install            | bool   | yes                           | enables full ecosystem installation                     |
+| install_crds            | bool   | `{{ full_install }}`          | installs Seldon CRDs                                    |
+| install_components      | bool   | `{{ full_install }}`          | install Seldon components                               |
+| install_servers         | bool   | `{{ full_install }}`          | install Seldon servers                                  |
