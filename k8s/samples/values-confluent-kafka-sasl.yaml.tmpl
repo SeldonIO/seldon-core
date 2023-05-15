@@ -1,0 +1,22 @@
+kafka:
+  bootstrap: <broker id and region>.gcp.confluent.cloud:9092
+  topics:
+    replicationFactor: 3
+    numPartitions: 4
+  consumer:
+    messageMaxBytes: 8388608
+  producer:
+    messageMaxBytes: 8388608
+
+security:
+  kafka:
+    protocol: SASL_SSL
+    sasl:
+      mechanism: "PLAIN"
+      client:
+        username: < username >
+        secret: < secret with password >
+    ssl:
+      client:
+        secret:
+        brokerValidationSecret:
