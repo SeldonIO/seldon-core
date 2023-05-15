@@ -20,6 +20,7 @@ security:
   kafka:
     protocol: PLAINTEXT
     sasl:
+      mechanism: SCRAM-SHA-512
       client:
         username: seldon
         secret:

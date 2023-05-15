@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package io.seldon.dataflow.sasl
+package io.seldon.dataflow.kafka.security
 
-typealias FilePath = String
+import org.apache.kafka.common.security.auth.SecurityProtocol
 
-data class SaslConfig(
-    val username: String,
-    val secret: String,
-    val passwordPath: FilePath
+val KafkaSecurityProtocols = arrayOf(
+    SecurityProtocol.PLAINTEXT,
+    SecurityProtocol.SSL,
+    SecurityProtocol.SASL_SSL,
 )

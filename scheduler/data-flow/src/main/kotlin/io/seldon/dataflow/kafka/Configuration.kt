@@ -16,11 +16,12 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka
 
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
+import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
 import io.seldon.dataflow.sasl.K8sPasswordSecretsProvider
-import io.seldon.dataflow.sasl.SaslConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -34,6 +35,7 @@ data class KafkaStreamsParams(
     val bootstrapServers: String,
     val numPartitions: Int,
     val replicationFactor: Int,
+    val maxMessageSizeBytes: Int,
     val security: KafkaSecurityParams,
 )
 
@@ -48,43 +50,74 @@ data class KafkaDomainParams(
     val joinWindowMillis: Long,
 )
 
-const val KAFKA_MAX_MESSAGE_BYTES = 1_000_000_000
-
-val kafkaTopicConfig = mapOf(
-    TopicConfig.MAX_MESSAGE_BYTES_CONFIG to KAFKA_MAX_MESSAGE_BYTES.toString()
-)
+val kafkaTopicConfig = { maxMessageSizeBytes: Int ->
+    mapOf(
+        TopicConfig.MAX_MESSAGE_BYTES_CONFIG to maxMessageSizeBytes.toString(),
+    )
+}
 
 fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
-    return Properties().apply {
+    return getSecurityProperties(params).apply {
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
-        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
-        if (params.security.securityProtocol == SecurityProtocol.SSL) {
-            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.clientSecret != "" &&
-                    params.security.certConfig.brokerSecret != "") {
-                K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
-            }
-            val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
+    }
+}
 
-            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
-            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
-            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
-        } else if (params.security.securityProtocol == SecurityProtocol.SASL_SSL) {
-            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.brokerSecret != "") {
-                K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
+private fun getSecurityProperties(params: KafkaStreamsParams): Properties {
+    val authProperties = when (params.security.securityProtocol) {
+        SecurityProtocol.SSL -> getSslProperties(params)
+        SecurityProtocol.SASL_SSL -> getSaslProperties(params)
+        else -> Properties() // No authentication, so nothing to configure
+    }
+
+    return authProperties.apply {
+        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
+    }
+}
+
+private fun getSslProperties(params: KafkaStreamsParams): Properties {
+    return Properties().apply {
+        with(params.security.certConfig) {
+            if (clientSecret != "" && brokerSecret != "") {
+                K8sCertSecretsProvider.downloadCertsFromSecrets(this)
             }
-            val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
-            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
-            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
-            val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = "SCRAM-SHA-512"
-            val jaasTemplate =
-                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
-            val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
-            this[SaslConfigs.SASL_JAAS_CONFIG]= jaasCfg
+        }
+
+        val (keyStoreConfig, trustStoreConfig) = Provider.keyStoresFromCertificates(params.security.certConfig)
+        this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+        this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+        this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+        this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
+        this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
+            params.security.certConfig.endpointIdentificationAlgorithm
+    }
+}
+
+private fun getSaslProperties(params: KafkaStreamsParams): Properties {
+    return Properties().apply {
+        if (params.security.certConfig.brokerSecret != "") {
+            K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
+        }
+
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
+            params.security.certConfig.endpointIdentificationAlgorithm
+
+        val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
+        this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
+        this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+
+        val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
+        this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
+        this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
+            KafkaSaslMechanisms.PLAIN ->
+                "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                        """ username="${params.security.saslConfig.username}"""" +
+                        """ password="$password";"""
+            KafkaSaslMechanisms.SCRAM_SHA_256,
+            KafkaSaslMechanisms.SCRAM_SHA_512 ->
+                "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                        """ username="${params.security.saslConfig.username}"""" +
+                        """ password="$password";"""
         }
     }
 }
@@ -92,62 +125,30 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
 fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
     // See https://docs.confluent.io/platform/current/streams/developer-guide/config-streams.html
 
-
-    return Properties().apply {
+    return getSecurityProperties(params).apply {
         // TODO - add version to app ID?  (From env var.)
         this[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow"
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = params.bootstrapServers
-        this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = "at_least_once"
+        this[StreamsConfig.PROCESSING_GUARANTEE_CONFIG] = StreamsConfig.AT_LEAST_ONCE
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
-        this[StreamsConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-
-        // Security
-        this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
-        if (params.security.securityProtocol == SecurityProtocol.SSL) {
-            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.clientSecret != "" &&
-                params.security.certConfig.brokerSecret != "") {
-                K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
-            }
-            val keyStoreConfig = Provider.keyStoresFromCertificates(params.security.certConfig)
-
-            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
-            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = keyStoreConfig.trustStoreLocation
-            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = keyStoreConfig.trustStorePassword
-        } else if (params.security.securityProtocol == SecurityProtocol.SASL_SSL) {
-            this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = params.security.certConfig.endpointIdentificationAlgorithm
-            if (params.security.certConfig.brokerSecret != "") {
-                K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
-            }
-            val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
-            this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
-            this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
-            val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
-            this[SaslConfigs.SASL_MECHANISM] = "SCRAM-SHA-512"
-            val jaasTemplate =
-                "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"%s\" password=\"%s\";"
-            val jaasCfg = java.lang.String.format(jaasTemplate, params.security.saslConfig.username, password)
-            this[SaslConfigs.SASL_JAAS_CONFIG]= jaasCfg
-        }
+        this[StreamsConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
 
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = params.replicationFactor
         this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
-        this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 1
+        this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 10_000
 
         this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
-        this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.SEND_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.RECEIVE_BUFFER_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60000
+        this[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.FETCH_MAX_BYTES_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        this[ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG] = 60_000
 
         this[ProducerConfig.LINGER_MS_CONFIG] = 0
-        this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
-        this[ProducerConfig.BUFFER_MEMORY_CONFIG] = KAFKA_MAX_MESSAGE_BYTES
+        this[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = params.maxMessageSizeBytes
+        this[ProducerConfig.BUFFER_MEMORY_CONFIG] = params.maxMessageSizeBytes
     }
 }
 
