@@ -307,6 +307,48 @@ We can create another pipeline which takes its input from this pipeline, as show
 ```{literalinclude} ../../../../samples/pipelines/tfsimple-extended.yaml
 :language: yaml
 ```
+```{mermaid}
+  :caption: "*A pipeline taking as input the output of another pipeline.*"
+  :align: center
+
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+
+      subgraph tfsimple.inputs
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+      
+      INPUT0 --> TF1(tfsimple1)
+      INPUT1 --> TF1
+      
+      subgraph tfsimple.outputs
+          OUTPUT0:::pipeIO
+          OUTPUT1:::pipeIO
+      end
+      
+      TF1 --> OUTPUT0
+      TF1 --> OUTPUT1
+
+      subgraph tfsimple-extended.inputs
+        INPUT10(INPUT0):::pipeIO
+        INPUT11(INPUT1):::pipeIO
+      end
+
+    OUTPUT0 --> INPUT10
+    OUTPUT1 --> INPUT11
+
+    INPUT10 --> TF2(tfsimple2)
+    INPUT11 --> TF2
+
+      subgraph tfsimple-extended.outputs
+          OUTPUT10(OUTPUT0):::pipeIO
+          OUTPUT11(OUTPUT1):::pipeIO
+      end
+      
+      TF2 --> OUTPUT10
+      TF2 --> OUTPUT11
+```
 
 In this way pipelines can be built to extend existing running pipelines to allow extensibility and sharing of data flows.
 
