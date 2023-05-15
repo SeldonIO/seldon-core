@@ -80,7 +80,7 @@ def train_anchor_explainer(model_pipeline, X_train, feature_names, category_map)
 def train_kernel_shap_explainer(model_pipeline, X_train, feature_names, category_map) -> KernelShap:
     explainer = KernelShap(
         model_pipeline.predict_proba,
-        "logit",
+        "identity",
         feature_names,
         categorical_names=category_map,
         seed=1
