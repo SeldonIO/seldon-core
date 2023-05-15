@@ -147,6 +147,7 @@ The simplest way is to create a model that outputs different named tensors based
 
   flowchart LR
       classDef pipeIO fill:#F6E083
+      classDef join fill:#CEE741;
 
       subgraph input
       INPUT0:::pipeIO
@@ -162,12 +163,14 @@ The simplest way is to create a model that outputs different named tensors based
       conditional --> |OUTPUT0: INPUT| add10
       conditional --> |OUTPUT1: INPUT| mul10
 
+      add10 --> |OUTPUT| any(any):::join
+      mul10 --> |OUTPUT| any
+
       subgraph output
           OUTPUT(OUTPUT):::pipeIO
       end
 
-      add10 --> OUTPUT
-      mul10 --> OUTPUT
+      any --> OUTPUT
 
       linkStyle 3 stroke:blue,color:blue;
       linkStyle 5 stroke:blue,color:blue;
@@ -256,6 +259,7 @@ You can also define multiple triggers which need to happen based on a particulr 
       classDef pipeIOopt fill:#F6E083,stroke-dasharray: 5 5;
       classDef trigger fill:#CEE741;
       classDef hidden fill:#ffffff,stroke:#ffffff
+      classDef join fill:#CEE741;
 
       subgraph input
           ok1:::pipeIOopt
@@ -281,8 +285,9 @@ You can also define multiple triggers which need to happen based on a particulr 
         OUTPUT:::pipeIO
       end
 
-      mul10 --> OUTPUT
-      add10 --> OUTPUT
+      mul10 -->|OUTPUT| anyOut(any):::join
+      add10 --> |OUTPUT| anyOut
+      anyOut --> OUTPUT
 ```
 
 Here the `mul10` step is run if data is seen on the pipeline inputs in the `ok1` or `ok2` tensors based on the `any` join type. If data is seen on `ok3` then the `add10` step is run.
