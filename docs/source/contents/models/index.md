@@ -52,7 +52,7 @@ Multi-model serving is an architecture pattern where one ML inference server hos
 
 Seldon Core v2 leverages multi-model serving by design and it is the default option for deploying models. The system will find an appropriate server to load the model onto based on requirements that the user defines in the `Model` deployment definition.
 
-Moreover, in many cases demand patterns allow for further Overcommit of resources. eldon Core v2 is able to register more models than what can be served by the provisioned (memory) infrastructure and will swap models dynamically according to least used without adding significant latency overheads to inference workload.
+Moreover, in many cases demand patterns allow for further Overcommit of resources. Seldon Core v2 is able to register more models than what can be served by the provisioned (memory) infrastructure and will swap models dynamically according to least used without adding significant latency overheads to inference workload.
 
 See [Multi-model serving](mms/mms.md) for more information. 
 
