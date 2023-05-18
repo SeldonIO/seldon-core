@@ -47,35 +47,26 @@ type TlsFolderHandler struct {
 	mu           sync.RWMutex
 }
 
-func getDefaultPath(prefix string, suffix string) string {
-	var filename string
-	switch suffix {
-	case EnvKeyLocationSuffix:
-		filename = "tls.key"
-	case EnvCrtLocationSuffix:
-		filename = "tls.crt"
-	default:
-		filename = "ca.crt"
-	}
-	return fmt.Sprintf("/tmp/certs/%s%s/%s", prefix, suffix, filename)
-}
-
 func NewTlsFolderHandler(prefix string, validation bool, logger log.FieldLogger) (*TlsFolderHandler, error) {
 	var certFilePath, keyFilePath string
 	var ok bool
 	if !validation {
 		certFilePath, ok = util.GetEnv(prefix, EnvCrtLocationSuffix)
 		if !ok {
-			certFilePath = getDefaultPath(prefix, EnvCrtLocationSuffix)
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCrtLocationSuffix)
 		}
 		keyFilePath, ok = util.GetEnv(prefix, EnvKeyLocationSuffix)
 		if !ok {
-			keyFilePath = getDefaultPath(prefix, EnvKeyLocationSuffix)
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvKeyLocationSuffix)
 		}
 	}
 	caFilePath, ok := util.GetEnv(prefix, EnvCaLocationSuffix)
 	if !ok {
-		caFilePath = getDefaultPath(prefix, EnvCaLocationSuffix)
+		if validation {
+			return nil, nil // Allow ca only to be optional and return nil
+		} else {
+			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCaLocationSuffix)
+		}
 	}
 
 	return &TlsFolderHandler{

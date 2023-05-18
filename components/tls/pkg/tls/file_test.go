@@ -26,91 +26,64 @@ func TestNewTlsFolderHandler(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name     string
-		envs     map[string]string
-		caOnly   bool
-		expected *TlsFolderHandler
+		name   string
+		envs   map[string]string
+		caOnly bool
+		err    bool
 	}
 
-	prefix := "SCHEDULER"
+	prefix := "x"
 	tests := []test{
 		{
 			name: "ok",
 			envs: map[string]string{
-				prefix + EnvCrtLocationSuffix: "/tls.key",
-				prefix + EnvKeyLocationSuffix: "/tls.crt",
-				prefix + EnvCaLocationSuffix:  "/ca.crt",
+				prefix + EnvCrtLocationSuffix: "/abc",
+				prefix + EnvKeyLocationSuffix: "/abc",
+				prefix + EnvCaLocationSuffix:  "/abc",
 			},
 			caOnly: false,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: "/tls.key",
-				keyFilePath:  "/tls.crt",
-				caFilePath:   "/ca.crt",
-			},
+			err:    false,
 		},
 		{
 			name: "crt missing",
 			envs: map[string]string{
-				prefix + EnvKeyLocationSuffix: "/tls.key",
-				prefix + EnvCaLocationSuffix:  "/ca.crt",
+				prefix + EnvKeyLocationSuffix: "/abc",
+				prefix + EnvCaLocationSuffix:  "/abc",
 			},
 			caOnly: false,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: getDefaultPath(prefix, EnvCrtLocationSuffix),
-				keyFilePath:  "/tls.key",
-				caFilePath:   "/ca.crt",
-			},
+			err:    true,
 		},
 		{
 			name: "key missing",
 			envs: map[string]string{
-				prefix + EnvCrtLocationSuffix: "/tls.crt",
-				prefix + EnvCaLocationSuffix:  "/ca.crt",
+				prefix + EnvCrtLocationSuffix: "/abc",
+				prefix + EnvCaLocationSuffix:  "/abc",
 			},
 			caOnly: false,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: "/tls.crt",
-				keyFilePath:  getDefaultPath(prefix, EnvKeyLocationSuffix),
-				caFilePath:   "/ca.crt",
+			err:    true,
+		},
+		{
+			name: "ca missing",
+			envs: map[string]string{
+				prefix + EnvCrtLocationSuffix: "/abc",
+				prefix + EnvKeyLocationSuffix: "/abc",
 			},
+			caOnly: false,
+			err:    true,
 		},
 		{
 			name: "caonly",
 			envs: map[string]string{
-				prefix + EnvCaLocationSuffix: "/ca.crt",
+				prefix + EnvCaLocationSuffix: "/abc",
 			},
 			caOnly: true,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: "",
-				keyFilePath:  "",
-				caFilePath:   "/ca.crt",
-			},
+			err:    false,
 		},
 		{
-			name:   "ca missing",
+			name:   "ca missing but optional",
 			envs:   map[string]string{},
 			caOnly: true,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: "",
-				keyFilePath:  "",
-				caFilePath:   getDefaultPath(prefix, EnvCaLocationSuffix),
-			},
-		},
-		{
-			name:   "all missing",
-			envs:   map[string]string{},
-			caOnly: false,
-			expected: &TlsFolderHandler{
-				prefix:       prefix,
-				certFilePath: getDefaultPath(prefix, EnvCrtLocationSuffix),
-				keyFilePath:  getDefaultPath(prefix, EnvKeyLocationSuffix),
-				caFilePath:   getDefaultPath(prefix, EnvCaLocationSuffix),
-			},
+			err:    false,
 		},
 	}
 	for _, test := range tests {
@@ -119,11 +92,12 @@ func TestNewTlsFolderHandler(t *testing.T) {
 			for k, v := range test.envs {
 				t.Setenv(k, v)
 			}
-			tls, err := NewTlsFolderHandler(prefix, test.caOnly, logger)
-			g.Expect(err).To(BeNil())
-			g.Expect(tls.certFilePath).To(Equal(test.expected.certFilePath))
-			g.Expect(tls.keyFilePath).To(Equal(test.expected.keyFilePath))
-			g.Expect(tls.caFilePath).To(Equal(test.expected.caFilePath))
+			_, err := NewTlsFolderHandler(prefix, test.caOnly, logger)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+			}
 		})
 
 	}
