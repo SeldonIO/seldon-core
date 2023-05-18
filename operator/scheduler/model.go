@@ -19,8 +19,9 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"io"
+
+	"google.golang.org/grpc"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"

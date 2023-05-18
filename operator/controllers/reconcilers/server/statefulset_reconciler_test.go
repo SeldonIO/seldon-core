@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/banzaicloud/k8s-objectmatcher/patch"
+
 	logrtest "github.com/go-logr/logr/testr"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -239,7 +241,18 @@ func TestStatefulSetReconcile(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			r := NewServerStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, test.podSpec, test.volumeClaimTemplates, test.scaling, test.metaServerConfig)
+			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
+			r := NewServerStatefulSetReconciler(
+				common.ReconcilerConfig{
+					Ctx:    context.TODO(),
+					Logger: logger,
+					Client: client},
+				test.metaServer,
+				test.podSpec,
+				test.volumeClaimTemplates,
+				test.scaling,
+				test.metaServerConfig,
+				annotator)
 			rop, err := r.getReconcileOperation()
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
@@ -417,7 +430,18 @@ func TestLabelsAnnotations(t *testing.T) {
 			err := appsv1.AddToScheme(scheme)
 			g.Expect(err).To(BeNil())
 			client = testing2.NewFakeClient(scheme)
-			r := NewServerStatefulSetReconciler(common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, test.metaServer, &v1.PodSpec{}, []mlopsv1alpha1.PersistentVolumeClaim{}, &mlopsv1alpha1.ScalingSpec{}, test.metaServerConfig)
+			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
+			r := NewServerStatefulSetReconciler(
+				common.ReconcilerConfig{
+					Ctx:    context.TODO(),
+					Logger: logger,
+					Client: client},
+				test.metaServer,
+				&v1.PodSpec{},
+				[]mlopsv1alpha1.PersistentVolumeClaim{},
+				&mlopsv1alpha1.ScalingSpec{},
+				test.metaServerConfig,
+				annotator)
 			for k, v := range test.expectedLabels {
 				g.Expect(r.StatefulSet.Labels[k]).To(Equal(v))
 			}

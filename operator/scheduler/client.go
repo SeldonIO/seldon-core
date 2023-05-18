@@ -19,10 +19,11 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"math"
 	"sync"
 	"time"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -19,6 +19,7 @@ package server
 import (
 	"context"
 	"fmt"
+
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

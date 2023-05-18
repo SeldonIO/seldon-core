@@ -137,7 +137,7 @@ func (t *TracerProvider) recreateTracerProvider(config *TracingConfig) error {
 		if t.config.Ratio != "" {
 			ratioParsed, err := strconv.ParseFloat(t.config.Ratio, 64)
 			if err != nil {
-				logger.WithError(err).Error("Failed to parse tracing ratio %s", t.config.Ratio)
+				logger.WithError(err).Errorf("Failed to parse tracing ratio %s", t.config.Ratio)
 			} else {
 				ratio = ratioParsed
 			}

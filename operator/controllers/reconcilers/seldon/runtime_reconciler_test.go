@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
+	"testing"
+
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 
 	logrtest "github.com/go-logr/logr/testr"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"

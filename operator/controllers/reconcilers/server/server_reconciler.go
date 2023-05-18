@@ -18,10 +18,11 @@ package server
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 
 	"github.com/imdario/mergo"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"

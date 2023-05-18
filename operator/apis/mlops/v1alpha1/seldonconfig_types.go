@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"context"
 	"fmt"
+
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,7 +141,7 @@ func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 	if k.BootstrapServers == "" {
 		k.BootstrapServers = defaults.BootstrapServers
 	}
-	if k.Consumer == nil {
+	if k.Consumer == nil && defaults.Consumer != nil {
 		k.Consumer = make(map[string]intstr.IntOrString)
 	}
 	for key, val := range defaults.Consumer {
@@ -148,7 +149,7 @@ func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 			k.Consumer[key] = val
 		}
 	}
-	if k.Producer == nil {
+	if k.Producer == nil && defaults.Producer != nil {
 		k.Producer = make(map[string]intstr.IntOrString)
 	}
 	for key, val := range defaults.Producer {
@@ -156,7 +157,7 @@ func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 			k.Producer[key] = val
 		}
 	}
-	if k.Streams == nil {
+	if k.Streams == nil && defaults.Streams != nil {
 		k.Streams = make(map[string]intstr.IntOrString)
 	}
 	for key, val := range defaults.Streams {

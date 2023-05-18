@@ -42,7 +42,7 @@ func TestRecreateTracerProvider(t *testing.T) {
 			config: &TracingConfig{
 				Enable:               true,
 				OtelExporterEndpoint: "0.0.0.0:1234",
-				Ratio:                1,
+				Ratio:                "1",
 			},
 		},
 		{
@@ -62,7 +62,7 @@ func TestRecreateTracerProvider(t *testing.T) {
 			name: "invalid no otel endpoint",
 			config: &TracingConfig{
 				Enable: true,
-				Ratio:  10,
+				Ratio:  "10",
 			},
 			err: true,
 		},
@@ -107,11 +107,11 @@ func TestLoadConfig(t *testing.T) {
 		},
 		{
 			name:   "enabled",
-			config: `{"enable":true, "otelExporterEndpoint":"0.0.0.0:1234","ratio":0.5}`,
+			config: `{"enable":true, "otelExporterEndpoint":"0.0.0.0:1234","ratio":"0.5"}`,
 			expectedConfig: &TracingConfig{
 				Enable:               true,
 				OtelExporterEndpoint: "0.0.0.0:1234",
-				Ratio:                0.5,
+				Ratio:                "0.5",
 			},
 		},
 		{
