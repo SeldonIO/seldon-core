@@ -1,7 +1,3 @@
-
-#- role.yaml
-#- role_binding.yaml
-#- serviceaccount.yaml
 resources:
 - mlserver.yaml
 - triton.yaml

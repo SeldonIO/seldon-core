@@ -46,7 +46,7 @@ type SchedulerClient struct {
 	callOptions      []grpc.CallOption
 	recorder         record.EventRecorder
 	certificateStore *tls.CertificateStore
-	seldonRuntimes   map[string]*grpc.ClientConn
+	seldonRuntimes   map[string]*grpc.ClientConn // map of namespace to grpc connection
 	mu               sync.Mutex
 }
 

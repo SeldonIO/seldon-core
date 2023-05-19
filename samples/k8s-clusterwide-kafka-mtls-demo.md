@@ -19,7 +19,7 @@ helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-cr
 ```
 Release "seldon-core-v2-crds" does not exist. Installing it now.
 NAME: seldon-core-v2-crds
-LAST DEPLOYED: Sun May 14 14:01:58 2023
+LAST DEPLOYED: Sun May 14 16:08:17 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -74,7 +74,7 @@ helm install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh -
 
 ```yaml
 NAME: seldon-v2
-LAST DEPLOYED: Sun May 14 14:02:33 2023
+LAST DEPLOYED: Sun May 14 16:13:24 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -134,7 +134,7 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Sun May 14 14:03:14 2023
+LAST DEPLOYED: Sun May 14 16:13:43 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -148,7 +148,7 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Sun May 14 14:04:39 2023
+LAST DEPLOYED: Sun May 14 16:16:05 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
