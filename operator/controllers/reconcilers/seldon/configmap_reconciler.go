@@ -19,6 +19,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	agentConfigMapName = "seldon-agent"
+	kafkaConfigMapName = "seldon-kafka"
+	traceConfigMapName = "seldon-tracing"
+)
+
 type ConfigMapReconciler struct {
 	common.ReconcilerConfig
 	configMaps []*v1.ConfigMap
@@ -74,7 +80,7 @@ func getAgentConfigMap(agentConfig mlopsv1alpha1.AgentConfiguration, namespace s
 	}
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "seldon-agent",
+			Name:      agentConfigMapName,
 			Namespace: namespace,
 		},
 		Data: map[string]string{
@@ -90,7 +96,7 @@ func getKafkaConfigMap(kafkaConfig mlopsv1alpha1.KafkaConfig, namespace string) 
 	}
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "seldon-kafka",
+			Name:      kafkaConfigMapName,
 			Namespace: namespace,
 		},
 		Data: map[string]string{
@@ -106,7 +112,7 @@ func getTracingConfigMap(tracingConfig mlopsv1alpha1.TracingConfig, namespace st
 	}
 	return &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "seldon-tracing",
+			Name:      traceConfigMapName,
 			Namespace: namespace,
 		},
 		Data: map[string]string{

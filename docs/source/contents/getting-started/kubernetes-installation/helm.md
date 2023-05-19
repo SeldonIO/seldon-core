@@ -29,7 +29,7 @@ helm install seldon-core-v2-crds  seldon-charts/seldon-core-v2-crds
 
 ## Install the Seldon Core V2 Components
 
-You can install into any namespace. For illustration we will use `seldon-mesh`. By default Seldon runs in namespaced mode and needs only namespaced Roles. Model, Pipeline, Experiment Resources will need to be created in the chosen namespace.
+You can install into any namespace. For illustration we will use `seldon-mesh`. This will install the core manager which will handle the key [resources](../../kubernetes/resources/index.md)  used by Seldon including installation into individual namespaces via the SeldonRuntime.
 
 ```bash
 kubectl create namespace seldon-mesh

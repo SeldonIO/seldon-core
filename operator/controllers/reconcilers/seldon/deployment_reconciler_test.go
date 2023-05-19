@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"testing"
-
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	logrtest "github.com/go-logr/logr/testr"
 	. "github.com/onsi/gomega"
@@ -18,44 +16,42 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
-func TestServiceReconcile(t *testing.T) {
+func TestDeploymentReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
 		name             string
-		serviceConfig    mlopsv1alpha1.ServiceConfig
-		runtime          *mlopsv1alpha1.OverrideSpec
-		overrides        map[string]*mlopsv1alpha1.OverrideSpec
+		deploymentName   string
+		podSpec          *v1.PodSpec
+		override         *mlopsv1alpha1.OverrideSpec
+		seldonConfigMeta metav1.ObjectMeta
 		error            bool
-		expectedSvcNames []string
-		expectedSvcType  map[string]v1.ServiceType
 	}
+
 	tests := []test{
 		{
-			name: "normal services",
-			serviceConfig: mlopsv1alpha1.ServiceConfig{
-				GrpcServicePrefix: "",
-			},
-			overrides:        map[string]*mlopsv1alpha1.OverrideSpec{},
-			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
-			expectedSvcType: map[string]v1.ServiceType{
-				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
-				mlopsv1alpha1.PipelineGatewayName: "",
-			},
+			name:             "modelgateway",
+			deploymentName:   mlopsv1alpha1.ModelGatewayName,
+			podSpec:          &v1.PodSpec{},
+			override:         &mlopsv1alpha1.OverrideSpec{},
+			seldonConfigMeta: metav1.ObjectMeta{},
 		},
 		{
-			name: "prefix services",
-			serviceConfig: mlopsv1alpha1.ServiceConfig{
-				GrpcServicePrefix: "grpc-",
-			},
-			overrides:        map[string]*mlopsv1alpha1.OverrideSpec{},
-			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
-			expectedSvcType: map[string]v1.ServiceType{
-				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
-				mlopsv1alpha1.PipelineGatewayName: "",
-			},
+			name:             "pipelinegateway",
+			deploymentName:   mlopsv1alpha1.PipelineGatewayName,
+			podSpec:          &v1.PodSpec{},
+			override:         &mlopsv1alpha1.OverrideSpec{},
+			seldonConfigMeta: metav1.ObjectMeta{},
+		},
+		{
+			name:             "envoy",
+			deploymentName:   mlopsv1alpha1.EnvoyName,
+			podSpec:          &v1.PodSpec{},
+			override:         &mlopsv1alpha1.OverrideSpec{},
+			seldonConfigMeta: metav1.ObjectMeta{},
 		},
 	}
 	for _, test := range tests {
@@ -71,18 +67,19 @@ func TestServiceReconcile(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			err = appsv1.AddToScheme(scheme)
 			g.Expect(err).To(BeNil())
-			g.Expect(err).To(BeNil())
 			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
 			meta := metav1.ObjectMeta{
 				Name:      "test",
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
-			sr := NewComponentServiceReconciler(
+			sr := NewComponentDeploymentReconciler(
+				test.deploymentName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
-				test.serviceConfig,
-				test.overrides,
+				test.podSpec,
+				test.override,
+				test.seldonConfigMeta,
 				annotator)
 			g.Expect(err).To(BeNil())
 			err = sr.Reconcile()
@@ -90,19 +87,12 @@ func TestServiceReconcile(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
-				for _, svcName := range test.expectedSvcNames {
-					svc := &v1.Service{}
-					err := client.Get(context.TODO(), types.NamespacedName{
-						Name:      svcName,
-						Namespace: meta.GetNamespace(),
-					}, svc)
-					g.Expect(err).To(BeNil())
-					if test.expectedSvcType != nil {
-						if svcType, ok := test.expectedSvcType[svcName]; ok {
-							g.Expect(svc.Spec.Type).To(Equal(svcType))
-						}
-					}
-				}
+				dep := &appsv1.Deployment{}
+				err := client.Get(context.TODO(), types.NamespacedName{
+					Name:      test.deploymentName,
+					Namespace: meta.Namespace,
+				}, dep)
+				g.Expect(err).To(BeNil())
 			}
 		})
 	}

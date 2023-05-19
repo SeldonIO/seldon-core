@@ -22,6 +22,9 @@ const (
 	SchedulerServiceAccountName = "seldon-scheduler"
 	SchedulerRoleName           = "seldon-scheduler-role"
 	ServerServiceAccountName    = "seldon-server"
+	AgentRoleBindingName        = "agent-rolebinding"
+	HodometerRoleBindingName    = "hodometer-rolebinding"
+	SchedulerRoleBindingName    = "seldon-scheduler-rolebinding"
 )
 
 type ComponentRBACReconciler struct {
@@ -84,7 +87,7 @@ func getRoleBindings(meta metav1.ObjectMeta) []*auth.RoleBinding {
 	return []*auth.RoleBinding{
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "agent-role-binding",
+				Name:      AgentRoleBindingName,
 				Namespace: meta.Namespace,
 			},
 			Subjects: []auth.Subject{
@@ -102,7 +105,7 @@ func getRoleBindings(meta metav1.ObjectMeta) []*auth.RoleBinding {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "hodometer-role-binding",
+				Name:      HodometerRoleBindingName,
 				Namespace: meta.Namespace,
 			},
 			Subjects: []auth.Subject{
@@ -120,7 +123,7 @@ func getRoleBindings(meta metav1.ObjectMeta) []*auth.RoleBinding {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "seldon-scheduler-role-binding",
+				Name:      SchedulerRoleBindingName,
 				Namespace: meta.Namespace,
 			},
 			Subjects: []auth.Subject{
