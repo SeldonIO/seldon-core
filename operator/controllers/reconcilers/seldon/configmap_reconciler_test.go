@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"testing"
+
 	logrtest "github.com/go-logr/logr/testr"
 	. "github.com/onsi/gomega"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -14,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 func TestConfigMapReconcile(t *testing.T) {

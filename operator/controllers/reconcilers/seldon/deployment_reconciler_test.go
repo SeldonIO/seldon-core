@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"testing"
+
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	logrtest "github.com/go-logr/logr/testr"
 	. "github.com/onsi/gomega"
@@ -16,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 func TestDeploymentReconcile(t *testing.T) {
