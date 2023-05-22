@@ -1,8 +1,11 @@
-## Ansible Setup for Seldon Core v2
+# Ansible Installation
 
-> :warning: **NOTE:** Ansible way of installing Seldon Core and associated ecosystem is meant for dev/testing purposes. For production use cases follow [Helm installation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html).
+```{warning}
+The Ansible installation of a Seldon Core and associated ecosystem is meant for **dev/testing** purposes.
+For production use cases follow [Helm installation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html).
+```
 
-### Installing Ansible
+## Installing Ansible
 
 Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
 Check Ansible [documentation] for further information.
@@ -28,7 +31,10 @@ and `kubernetes.core` collection in version `2.4.0`.
 
 Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core V2 repository.
 
-You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/).
+You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) CLI.
+
+
+## Installing Seldon Core v2 using Ansible
 
 ### Create Kind Cluster
 
@@ -43,6 +49,28 @@ Seldon runs by default in `seldon-mesh` namespace and a Jaeger pod and  and Open
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml
 ```
+
+The most common change will be to install in another namespace with:
+
+```bash
+ansible-playbook playbooks/setup-ecosystem.yaml -e seldon_mesh_namespace=<mynamespace>
+```
+
+### Install Seldon Core v2
+
+Run the following from the `ansible/` folder:
+
+```bash
+ansible-playbook playbooks/setup-seldon.yaml
+```
+
+If you have changed the namespace you wish to use you will need to run with:
+
+```bash
+ansible-playbook playbooks/setup-seldon.yaml -e seldon_mesh_namespace=<mynamespace>
+```
+
+## Customizing Ansible Installation
 
 ### Ecosystem configuration options
 
@@ -69,25 +97,9 @@ will only install Kafka when setting up the ecosystem.
 | configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Core v2 specific resources        |
 | configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Core v2 specific resources |
 
-The most common change will be to install in another namespace with:
 
-```bash
-ansible-playbook playbooks/setup-ecosystem.yaml -e seldon_mesh_namespace=<mynamespace>
-```
 
-### Install Seldon Core V2
-
-Run the following from the `ansible/` folder:
-
-```bash
-ansible-playbook playbooks/setup-seldon.yaml
-```
-
-If you have changed the namespace you wish to use you will need to run with:
-
-```bash
-ansible-playbook playbooks/setup-seldon.yaml -e seldon_mesh_namespace=<mynamespace>
-```
+### Seldon Core v2 configuration options
 
 |                         | type   | default                       | comment                                                 |
 |-------------------------|--------|-------------------------------|---------------------------------------------------------|
