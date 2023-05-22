@@ -24,7 +24,7 @@ deploy-k8s:
 .PHONY: undeploy-k8s
 undeploy-k8s:
 	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-servers.yaml --wait=true -n ${SELDON_NAMESPACE}
-	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-components.yaml -n ${SELDON_NAMESPACE} 
+	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-components.yaml -n ${SELDON_NAMESPACE}
 	kubectl delete --ignore-not-found=true -f k8s/yaml/seldon-v2-crds.yaml
 # End raw undeploy
 
@@ -42,16 +42,13 @@ docs_serve_html: docs_clean docs_build_html
 		python -m http.server 8000
 
 docs_clean:
-	cd docs && \
-		make clean
+	cd docs && make clean
 
 docs_install_requirements:
-	cd docs && \
-		pip install -r requirements-docs.txt
+	cd docs && pip install -r requirements-docs.txt
 
 docs_dev_server: docs_clean
-	cd docs && \
-		sphinx-autobuild --host 0.0.0.0 source build/html
+	make -C docs dev_server
 
 # can be installed here: https://github.com/client9/misspell#install
 docs_spellcheck:
