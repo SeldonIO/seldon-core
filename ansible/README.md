@@ -38,6 +38,9 @@ You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools
 
 ### Create Kind Cluster
 
+It is recommended to first install Seldon Core v2 inside Kind cluster.
+This allow to test and trial the installation in isolated environment that is easy to remove.
+
 ```bash
 ansible-playbook playbooks/kind-cluster.yaml
 ```
@@ -110,3 +113,23 @@ will only install Kafka when setting up the ecosystem.
 | install_crds            | bool   | `{{ full_install }}`          | installs Seldon CRDs                                    |
 | install_components      | bool   | `{{ full_install }}`          | install Seldon components                               |
 | install_servers         | bool   | `{{ full_install }}`          | install Seldon servers                                  |
+
+## Uninstall
+
+To fully remove the Ansible installation delete the created Kind cluster
+
+```bash
+kind delete cluster --name seldon
+```
+
+This will stop and delete the `Kind` cluster freeing all of the resources taken by the dev/trial installation.
+You may want to also remove cache resources used for the installation with
+
+```bash
+rm -rf ~/.cache/seldon/
+```
+
+```{note}
+If you used Ansible to install Seldon Core v2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
+Notes on how to remove Seldon Core v2 Helm installation itself you can find [here](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html#uninstall).
+```
