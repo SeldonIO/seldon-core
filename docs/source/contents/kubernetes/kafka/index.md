@@ -1,21 +1,34 @@
 # Kafka
 
-To take advantage of Pipelines and the full dataflow architecture you need to have a Kafka cluster installed that Seldon can use.
-
-We list alternatives below:
-
-## Strimzi
-
-[Strimzi](https://strimzi.io/)  provides a simple Kubernetes operator installation of Kafka. To install via Ansible:
-
-  * Clone https://github.com/SeldonIO/ansible-k8s-collection
-  * Create a kafka operator install in kafka namespace
-  ```bash
-  ansible-playbook playbooks/kafka.yaml
-  ```
-  * Create our Kafka cluster by installing `kafka/strimzi/cluster.yaml`
-  ```
-  kubectl create -f cluster.yaml -n kafka
-  ```
+Seldon Core v2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.
+See our [architecture](../../architecture/index.md) documentation to learn more on how Seldon Core v2 uses Kafka.
 
 
+```{note}
+Kafka integration is required to enable data-centric inference pipelines feature.
+It is highly advice to configure Kafka integration to take full advantage of Seldon Core v2 features.
+```
+
+We list alternatives below.
+
+## Managed Kafka
+
+We recommend to use managed Kafka solution for production installation.
+This allow to take away all the complexity on running secure and scalable Kafka cluster away.
+
+We currently have tested and documented integration with following managed solutions:
+- Confluent Cloud (security: SASL/PLAIN)
+- Amazon MSK (security: mTLS)
+
+Coming soon:
+- Azure Event Hub (security: SASL/SCRAM)
+- Amazon MSK (security: SASL/PLAIN)
+
+See our [Kafka security](../../getting-started/kubernetes-installation/security/index.html#kafka) section for configuration examples.
+
+## Self Hosted Kafka
+
+```{include} ../../../../../kafka/strimzi/README.md
+:heading-offset: 1
+:relative-docs: ..
+```

@@ -28,6 +28,8 @@ For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose de
 :language: yaml
 ```
 
+Note, this ConfigMap is created via our Helm charts and there is usually no need to modify it manually.
+
 ## Tracing Configuration
 
 We allow configuration of tracing. This file looks like:
@@ -39,7 +41,7 @@ We allow configuration of tracing. This file looks like:
 The top level keys are:
 
  * `enable` : whether to enable tracing
- * `otelExporterEndpoint` : The host and port for the OTEL exporter 
+ * `otelExporterEndpoint` : The host and port for the OTEL exporter
  * `ratio` : The ratio of requests to trace. Takes values between 0 and 1 inclusive.
 
 
@@ -51,5 +53,7 @@ For Kubernetes this is controlled via a ConfigMap call `seldon-tracing` whose de
 ```{literalinclude} ../../../../../scheduler/k8s/config/tracing.yaml
 :language: yaml
 ```
+
+Note, this ConfigMap is created via our Helm charts and there is usually no need to modify it manually.
 
 At present Java instrumentation (for the dataflow engine) is duplicated via separate keys.

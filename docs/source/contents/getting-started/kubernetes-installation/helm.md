@@ -1,4 +1,4 @@
-# Helm Install
+# Helm Installation
 
 We provide several Helm charts.
 
@@ -12,7 +12,7 @@ The Helm charts can be found within the `k8s/helm-charts` folder and they are pu
 Assuming you have installed any ecosystem components: Jaeger, Prometheus, Kafka as discussed [here](./index.md) you can follow the
 following steps.
 
-Note that for Kafka follow the steps discussed [here](kafka.md) 
+Note that for Kafka follow the steps discussed [here](kafka.md)
 
 ## Add Seldon Core v2 Charts
 
@@ -47,7 +47,7 @@ helm install seldon-v2-servers seldon-charts/seldon-core-v2-servers --namespace 
 
 ## Uninstall
 
-Remove any models, pipelines that are running. 
+Remove any models, pipelines that are running.
 
 Remove the servers:
 
