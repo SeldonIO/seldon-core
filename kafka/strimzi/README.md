@@ -1,6 +1,4 @@
-## Strimzi Kafka
-
-<!-- Starting from heading 2 as this is embedded in another page -->
+# Strimzi Kafka
 
 Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we recommend to use [Strimzi Operator](https://github.com/strimzi/strimzi-kafka-operator).
@@ -12,7 +10,7 @@ For production grade installation consult [Strimzi documentation](https://strimz
 
 You can install and configure Strimzi using either Helm charts or our Ansible playbooks, both documented below.
 
-### Helm
+## Helm
 
 The installation of a Kafka cluster requires the Strimzi Kafka operator installed in the same namespace.
 This allows to directly use the mTLS certificates created by Strimzi Operator.
@@ -43,7 +41,7 @@ helm upgrade seldon-core-v2-kafka kafka/strimzi -n seldon-mesh --install
 Note that a specific strimzi operator version is associated with a subset of supported Kafka versions.
 
 
-### Ansible
+## Ansible
 
 We provide automation around the installation of a Kafka cluster for Seldon Core v2 to help with development and testing use cases.
 You can follow the steps defined [here](../../docs/source/contents/getting-started/kubernetes-installation/ansible.md) to install Kafka via ansible.
@@ -54,7 +52,7 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 ```
 
 
-### Notes
+## Notes
 - You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
 - As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.3 or above.
 - For security settings check [here](../../docs/source/contents/getting-started/kubernetes-installation/security/index.md#kafka).

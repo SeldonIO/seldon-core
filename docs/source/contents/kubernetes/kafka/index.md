@@ -29,6 +29,6 @@ See our [Kafka security](../../getting-started/kubernetes-installation/security/
 ## Self Hosted Kafka
 
 ```{include} ../../../../../kafka/strimzi/README.md
-:heading-offset: 1
+:heading-offset: 2
 :relative-docs: ..
 ```
