@@ -1,5 +1,5 @@
 kafka:
-  bootstrap: <broker id and region>.gcp.confluent.cloud:9092
+  bootstrap: < Confluent Cloud Broker Endpoints >
   topics:
     replicationFactor: 3
     numPartitions: 4
@@ -15,7 +15,7 @@ security:
       mechanism: "PLAIN"
       client:
         username: < username >
-        secret: < secret with password >
+        secret: confluent-kafka-secret
     ssl:
       client:
         secret:
