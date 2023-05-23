@@ -69,6 +69,8 @@ security:
           caPath: /tmp/certs/ddc/ca.crt
           serverCaPath: /tmp/certs/dds/ca.crt
 
+imagePullSecret:
+
 opentelemetry:
   endpoint: seldon-collector:4317
   enable: true

@@ -5,6 +5,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       containers:
       - image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}'
         imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
