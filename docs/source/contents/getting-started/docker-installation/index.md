@@ -52,7 +52,7 @@ This folder will be mounted at `/mnt/models`. You can then specify models as sho
 :language: yaml
 ```
 
-If you have set the local model folder as above then this would be looking at `/home/seldon/models/mlserver/iris`.
+If you have set the local model folder as above then this would be looking at `/home/seldon/models/iris`.
 
 ## Tracing
 
