@@ -4,15 +4,15 @@ seldon_mesh_namespace: seldon-mesh
 
 # Installation on/off flags
 install_prometheus: true
-install_strimzi: true
+install_kafka: true
 install_certmanager: true
 install_jaeger: true
 install_opentelemetry: true
 
 # Configuration on/off flags
 configure_prometheus: "{{ install_prometheus }}"
-enable_kraft: "{{ install_strimzi }}"
-configure_kafka: "{{ install_strimzi }}"
+enable_kraft: "{{ install_kafka }}"
+configure_kafka: "{{ install_kafka }}"
 configure_jaeger: "{{ install_jaeger }}"
 configure_opentelemetry: "{{ install_opentelemetry }}"
 
