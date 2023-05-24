@@ -9,5 +9,6 @@ This page show organisations that are using Seldon Core in production or providi
 | JobCase | https://www.jobcase.com/ |
 | OpenDataHub | https://opendatahub.io/ |
 | Pachyderm | https://pachyderm.io/ |
+| PITS Global Data Recovery Services| https://www.pitsdatarecovery.net/ |
 | PostMates | https://postmates.com/ |
 | Iter8 | https://iter8.tools/ |
