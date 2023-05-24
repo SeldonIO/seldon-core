@@ -18,6 +18,33 @@ Pre-requisites:
    -  Istio : we recommend >= 1.16
    -  Ambassador v1 and v2
 
+
+Kubernetes Compatibility Matrix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Seldon Core 1.16 bumps minimum Kubernetes version to 1.23.
+This is because as part of making Seldon Core compatible with Kubernetes 1.25 we moved from autoscaling/v2beta1 apiVersion of HorizontalPodAutoscaler to autoscaling/v2 (see this [PR](https://github.com/SeldonIO/seldon-core/pull/4172) for further details).
+
+Following table provides a summary of Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
+
++----------------------------+------+------+------+------+------+------+
+| Core Version \ K8s Version | 1.21 | 1.22 | 1.23 | 1.24 | 1.25 | 1.26 |
++============================+======+======+======+======+======+======+
+| 1.11                       | ✓    |      |      |      |      |      |
++----------------------------+------+------+------+------+------+------+
+| 1.12                       | ✓    | ✓    | ✓    | ✓    |      |      |
++----------------------------+------+------+------+------+------+------+
+| 1.13                       | ✓    | ✓    | ✓    | ✓    |      |      |
++----------------------------+------+------+------+------+------+------+
+| 1.14                       | ✓    | ✓    | ✓    | ✓    |      |      |
++----------------------------+------+------+------+------+------+------+
+| 1.15                       | ✓    | ✓    | ✓    | ✓    |      |      |
++----------------------------+------+------+------+------+------+------+
+| 1.16                       |      |      | ✓    | ✓    | ✓    | ✓    |
++----------------------------+------+------+------+------+------+------+
+
+It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
+
 Running older versions of Seldon Core?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -77,7 +104,7 @@ Now we can install Seldon Core in the ``seldon-system`` namespace.
 For full instructions on installation with Istio and Ambassador read the
 following pages:
 
-* `Ingress with Istio <../ingress/istio.md>`__ 
+* `Ingress with Istio <../ingress/istio.md>`__
 * `Ingress with Ambassador <../ingress/ambassador.md>`__
 
 Install a specific version
