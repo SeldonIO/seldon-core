@@ -231,3 +231,5 @@ examples/models/autoscaling/autoscaling_example.py
 
 # python venv
 venv/
+go.work
+go.work.sum
