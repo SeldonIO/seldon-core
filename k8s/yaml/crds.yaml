@@ -1,3 +1,5 @@
+---
+# Source: seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -125,6 +127,7 @@ spec:
     subresources:
       status: {}
 ---
+# Source: seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -317,6 +320,7 @@ spec:
         statusReplicasPath: .status.replicas
       status: {}
 ---
+# Source: seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -530,6 +534,7 @@ spec:
     subresources:
       status: {}
 ---
+# Source: seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -7614,6 +7619,7 @@ spec:
     subresources:
       status: {}
 ---
+# Source: seldon-core-v2-crds/templates/seldon-v2-crds.yaml
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
