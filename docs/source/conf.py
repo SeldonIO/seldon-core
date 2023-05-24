@@ -27,6 +27,7 @@ author = "Seldon Technologies Ltd"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinxcontrib.mermaid',
     'myst_parser',
     'sphinx_panels',
     'sphinx_tabs.tabs',

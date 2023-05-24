@@ -10,7 +10,7 @@ Internally in both cases Pipelines are created via our [Scheduler API](../apis/s
 
 An example that chains two models together is shown below:
 
-```
+```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
 metadata:
@@ -54,8 +54,33 @@ The simplest Pipeline chains models together: the output of one model goes into 
 ```{literalinclude} ../../../../samples/pipelines/tfsimples.yaml
 :language: yaml
 ```
+```{mermaid}
+  :caption: "*A simple chain of two models.*"
+  :align: center
 
-In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT11. This allows these models to be chained together. The shape and data-type of the tensors needs to match as well.
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+
+      subgraph input
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+
+      INPUT0 --> TF1(tfsimple1)
+      INPUT1 --> TF1
+      TF1 --->|OUTPUT0: INPUT0| TF2(tfsimple2)
+      TF1 --->|OUTPUT1: INPUT1| TF2
+
+      subgraph output
+          OUTPUT0:::pipeIO
+          OUTPUT1:::pipeIO
+      end
+
+      TF2 --> OUTPUT0
+      TF2 --> OUTPUT1
+```
+
+In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT1`. This allows these models to be chained together. The shape and data-type of the tensors needs to match as well.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-chaining).
 
@@ -66,7 +91,35 @@ Joining allows us to combine outputs from multiple steps as input to a new step.
 ```{literalinclude} ../../../../samples/pipelines/tfsimples-join.yaml
 :language: yaml
 ```
+```{mermaid}
+  :caption: "*Joining the outputs of two models into a third model. The dashed lines signify model outputs that are not captured in the output of the pipeline.*"
+  :align: center
 
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+      classDef hidden fill:#ffffff,stroke:#ffffff
+
+      subgraph input
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+
+      INPUT0 --> TF1(tfsimple1)
+      INPUT1 --> TF1
+      INPUT0 --> TF2(tfsimple2)
+      INPUT1 --> TF2
+      TF1 -.-> |OUTPUT1| tf1( ):::hidden
+      TF1 --> |OUTPUT0: INPUT0| TF3(tfsimple3)
+      TF2 -.-> |OUTPUT0| tf2( ):::hidden
+      TF2 --> |OUTPUT1: INPUT1| TF3
+
+      subgraph output
+          OUTPUT0:::pipeIO
+          OUTPUT1:::pipeIO
+      end
+      TF3 --> OUTPUT0
+      TF3 --> OUTPUT1
+```
 Here we pass the pipeline inputs to two models and then take one output tensor from each and pass to the final model. We use the same `tensorMap` technique to rename tensors as disucssed in the previous section.
 
 Joins can have a join type which can be specified with `inputsJoinType` and can take the values:
@@ -82,15 +135,51 @@ Pipelines can create conditional flows via various methods. We will discuss each
 
 ### Model routing via tensors
 
-The simplest way is create a model that outputs different named tensors based on its decision. This way downstream steps can be dependant on different expected tensors. An example is shhow below:
+The simplest way is to create a model that outputs different named tensors based on its decision. This way downstream steps can be dependant on different expected tensors. An example is shown below:
 
 ```{literalinclude} ../../../../samples/pipelines/conditional.yaml
 :language: yaml
 ```
 
+```{mermaid}
+  :caption: "*Pipeline with a conditional output model. The model **conditional** only outputs one of the two tensors, so only one path through the graph (red or blue) is taken by a single request*"
+  :align: center
+
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+      classDef join fill:#CEE741;
+
+      subgraph input
+      INPUT0:::pipeIO
+          CHOICE:::pipeIO
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+
+      CHOICE --> conditional
+      INPUT0 --> conditional
+      INPUT1 --> conditional
+
+      conditional --> |OUTPUT0: INPUT| add10
+      conditional --> |OUTPUT1: INPUT| mul10
+
+      add10 --> |OUTPUT| any(any):::join
+      mul10 --> |OUTPUT| any
+
+      subgraph output
+          OUTPUT(OUTPUT):::pipeIO
+      end
+
+      any --> OUTPUT
+
+      linkStyle 3 stroke:blue,color:blue;
+      linkStyle 5 stroke:blue,color:blue;
+      linkStyle 4 stroke:red,color:red;
+      linkStyle 6 stroke:red,color:red;
+```
 In the above we have a step `conditional` that either outputs a tensor named `OUTPUT0` or a tensor named `OUTPUT1`. The `mul10` step depends on an output in `OUTPUT0` while the add10 step depends on an output from `OUTPUT1`.
 
-Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.`
+Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#conditional).
 
@@ -114,6 +203,42 @@ Sometimes you want to run a step if an output is received from a previous step b
 :language: yaml
 ```
 
+```{mermaid}
+  :caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs if the model **check** returns a tensor named `OUTPUT`. The green edge signifies that this is a trigger and not an additional input to **tfsimple3**. The dashed lines signify model outputs that are not captured in the output of the pipeline.*"
+  :align: center
+
+  flowchart LR
+    classDef pipeIO fill:#F6E083
+    classDef hidden fill:#ffffff,stroke:#ffffff
+
+    subgraph input
+        INPUT0:::pipeIO
+        INPUT1:::pipeIO
+    end
+
+    INPUT0 --> TF1(tfsimple1)
+    INPUT1 --> TF1
+    INPUT0 --> TF2(tfsimple2)
+    INPUT1 --> TF2
+    TF1 -.-> |OUTPUT1| tf1( ):::hidden
+
+    TF1 --> |OUTPUT0: INPUT| check
+    TF1 --> |OUTPUT0: INPUT0| TF3(tfsimple3)
+    TF2 --> |OUTPUT1: INPUT1| TF3
+    TF2 -.-> |OUTPUT0| tf2( ):::hidden
+
+    check --o |OUTPUT| TF3
+    linkStyle 9 stroke:#CEE741,color:black;
+
+    subgraph output
+      OUTPUT0:::pipeIO
+      OUTPUT1:::pipeIO
+    end
+
+    TF3 --> OUTPUT0
+    TF3 --> OUTPUT1
+```
+
 In this example the last step `tfsimple3` runs only if there are outputs from `tfsimple1` and `tfsimple2` but also data from the `check` step. However, if the step `tfsimple3` is run it only receives the join of data from `tfsimple1` and `tfsimple2`.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-join-with-trigger).
@@ -124,6 +249,45 @@ You can also define multiple triggers which need to happen based on a particulr 
 
 ```{literalinclude} ../../../../samples/pipelines/trigger-joins.yaml
 :language: yaml
+```
+```{mermaid}
+  :caption: "*A pipeline with multiple triggers and a trigger join of type `any`. The pipeline has four inputs, but three of these are optional (signified by the dashed borders).*"
+  :align: center
+
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+      classDef pipeIOopt fill:#F6E083,stroke-dasharray: 5 5;
+      classDef trigger fill:#CEE741;
+      classDef hidden fill:#ffffff,stroke:#ffffff
+      classDef join fill:#CEE741;
+
+      subgraph input
+          ok1:::pipeIOopt
+          ok2:::pipeIOopt
+          INPUT:::pipeIO
+          ok3:::pipeIOopt
+      end
+
+      ok1 --o any
+      ok2 --o any
+      any((any)):::trigger --o mul10
+      linkStyle 0 stroke:#CEE741,color:green;
+      linkStyle 1 stroke:#CEE741,color:green;
+      linkStyle 2 stroke:#CEE741,color:green;
+
+      INPUT --> mul10
+      INPUT --> add10
+
+      ok3 --o add10
+      linkStyle 5 stroke:#CEE741,color:green;
+
+      subgraph output
+        OUTPUT:::pipeIO
+      end
+
+      mul10 -->|OUTPUT| anyOut(any):::join
+      add10 --> |OUTPUT| anyOut
+      anyOut --> OUTPUT
 ```
 
 Here the `mul10` step is run if data is seen on the pipeline inputs in the `ok1` or `ok2` tensors based on the `any` join type. If data is seen on `ok3` then the `add10` step is run.
@@ -142,6 +306,48 @@ We can create another pipeline which takes its input from this pipeline, as show
 
 ```{literalinclude} ../../../../samples/pipelines/tfsimple-extended.yaml
 :language: yaml
+```
+```{mermaid}
+  :caption: "*A pipeline taking as input the output of another pipeline.*"
+  :align: center
+
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+
+      subgraph tfsimple.inputs
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+      
+      INPUT0 --> TF1(tfsimple1)
+      INPUT1 --> TF1
+      
+      subgraph tfsimple.outputs
+          OUTPUT0:::pipeIO
+          OUTPUT1:::pipeIO
+      end
+      
+      TF1 --> OUTPUT0
+      TF1 --> OUTPUT1
+
+      subgraph tfsimple-extended.inputs
+        INPUT10(INPUT0):::pipeIO
+        INPUT11(INPUT1):::pipeIO
+      end
+
+    OUTPUT0 --> INPUT10
+    OUTPUT1 --> INPUT11
+
+    INPUT10 --> TF2(tfsimple2)
+    INPUT11 --> TF2
+
+      subgraph tfsimple-extended.outputs
+          OUTPUT10(OUTPUT0):::pipeIO
+          OUTPUT11(OUTPUT1):::pipeIO
+      end
+      
+      TF2 --> OUTPUT10
+      TF2 --> OUTPUT11
 ```
 
 In this way pipelines can be built to extend existing running pipelines to allow extensibility and sharing of data flows.
