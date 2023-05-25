@@ -7,7 +7,7 @@ Seldon Core
    :target: https://docs.seldon.io/projects/seldon-core/en/v2/index.html
 
 .. important::
-   `Seldon Core V2 <https://docs.seldon.io/projects/seldon-core/en/v2/index.html>`_ **is now available** (in alpha). Check out the `docs here <https://docs.seldon.io/projects/seldon-core/en/v2/index.html>`_ and make sure to leave feedback on `our slack community <https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg>`_ and `submit bugs or feature requests on the repo <https://github.com/SeldonIO/seldon-core/issues/new/choose>`_.
+   `Seldon Core V2 <https://docs.seldon.io/projects/seldon-core/en/v2/index.html>`_ **is now available**. If you're new to Seldon Core we recommend you `start here <https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/index.html>`_. Check out the `full docs here <https://docs.seldon.io/projects/seldon-core/en/v2/index.html>`_ and make sure to leave feedback on `our slack community <https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg>`_ and `submit bugs or feature requests on the repo <https://github.com/SeldonIO/seldon-core/issues/new/choose>`_.
 
 
 .. These are hidden links, which are not linked anywhere but may still be
