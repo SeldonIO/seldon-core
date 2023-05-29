@@ -24,7 +24,7 @@ Coming soon:
 - Azure Event Hub (security: SASL/SCRAM)
 - Amazon MSK (security: SASL/PLAIN)
 
-See our [Kafka security](../../getting-started/kubernetes-installation/security/index.html#kafka) section for configuration examples.
+See our [Kafka security](../../getting-started/kubernetes-installation/security/index.md#kafka) section for configuration examples.
 
 ## Self Hosted Kafka
 
