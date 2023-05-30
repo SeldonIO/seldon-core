@@ -6,7 +6,7 @@ The two projects are able to be run side by side. Existing users of Seldon Core 
 
 ## Should I choose V1 APIs or V2 APIs
 
-This depends on your use case. V2 APIs are presently alpha so not yet at GA so might contain breaking changes in future releases.
+This depends on your use case. V2 APIs are not yet at GA so might contain breaking changes in future releases.
 
  Use V1 for:
 
