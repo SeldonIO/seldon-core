@@ -10,6 +10,12 @@ This means that total number of topics will be `2 x (#models + #pipelines) + 1` 
 See quota information [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas#basic-vs-standard-vs-premium-vs-dedicated-tiers).
 ```
 
+## Prerequisites
+
+To start you will need to have an Azure Event Hub Namespace.
+You can create one following Azure quickstart [docs](https://learn.microsoft.com/en-gb/azure/event-hubs/event-hubs-create).
+Note that you do not need to create an Event Hub (topics) as Core v2 will require all the topics it needs automatically.
+
 ## Create API Keys
 
 To connect to Azure Event Hub provided Kafka API you need to obtain:
@@ -33,7 +39,6 @@ Seldon Core v2 expects password to be in form of K8s secret
 ```bash
 kubectl create secret generic azure-kafka-secret -n seldon-mesh --from-literal password="Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;SharedAccessKey=XXXXXX"
 ```
-
 
 ## Configure Seldon Core v2
 
