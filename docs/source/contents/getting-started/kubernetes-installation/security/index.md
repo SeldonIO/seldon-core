@@ -34,6 +34,7 @@ Examples are shown below:
  * [mTLS Strimzi example](strimzi-mtls.md)
  * [mTLS AWS MSK example](msk.md)
  * [SASL PLAIN with Confluent Cloud example](confluent-sasl.md)
+ * [SASL PLAIN with Azure Event Hub](azure-event-hub-sasl.md)
  * [SASL SCRAM with Strimzi example](strimzi-sasl.md)
 
 ## Data Plane
@@ -93,6 +94,7 @@ helm install seldon-v2-certs k8s/helm-charts/seldon-core-v2-certs/ -n seldon-mes
 strimzi-mtls.md
 strimzi-sasl.md
 confluent-sasl.md
+azure-event-hub-sasl.md
 msk.md
 reference.md
 ```

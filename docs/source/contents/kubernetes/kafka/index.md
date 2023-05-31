@@ -19,9 +19,9 @@ This allow to take away all the complexity on running secure and scalable Kafka 
 We currently have tested and documented integration with following managed solutions:
 - Confluent Cloud (security: SASL/PLAIN)
 - Amazon MSK (security: mTLS)
+- Azure Event Hub (security: SASL/PLAIN)
 
 Coming soon:
-- Azure Event Hub (security: SASL/SCRAM)
 - Amazon MSK (security: SASL/PLAIN)
 
 See our [Kafka security](../../getting-started/kubernetes-installation/security/index.md#kafka) section for configuration examples.
