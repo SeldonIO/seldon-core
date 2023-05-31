@@ -142,3 +142,18 @@ func (ss *ServerStatus) SetCondition(condition *apis.Condition) {
 		serverConditionSet.Manage(ss).MarkFalse(condition.Type, condition.Reason, condition.Message)
 	}
 }
+
+func (ss *ServerStatus) CreateAndSetCondition(conditionType apis.ConditionType, isTrue bool, reason string) {
+	condition := apis.Condition{}
+	if isTrue {
+		condition.Status = v1.ConditionTrue
+	} else {
+		condition.Status = v1.ConditionFalse
+	}
+	condition.Type = conditionType
+	condition.Reason = reason
+	condition.LastTransitionTime = apis.VolatileTime{
+		Inner: metav1.Now(),
+	}
+	ss.SetCondition(&condition)
+}

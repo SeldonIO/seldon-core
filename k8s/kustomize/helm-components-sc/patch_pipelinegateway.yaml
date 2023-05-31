@@ -7,6 +7,7 @@ spec:
   - name: seldon-pipelinegateway
     replicas: 1
     podSpec:
+      imagePullSecrets: []
       containers:
       - image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository }}:{{ .Values.pipelinegateway.image.tag }}'
         imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'

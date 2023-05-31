@@ -31,7 +31,7 @@ Your model is exposed via our internal Envoy gateway. If you wish to expose your
 
 ## Inference Metrics
 
-Metrics are exposed for scrapping by Prometheus. For Kubernetes we provide example instructions for using kube-prometheus.
+Metrics are exposed for scraping by Prometheus. For Kubernetes we provide example instructions for using kube-prometheus.
 
 ## Pipeline requirements
 

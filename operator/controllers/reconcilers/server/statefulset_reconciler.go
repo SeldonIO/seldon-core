@@ -18,6 +18,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
@@ -142,6 +143,11 @@ func (s *ServerStatefulSetReconciler) getReconcileOperation() (constants.Reconci
 		}
 		return constants.ReconcileUnknown, err
 	}
+	stsJson, err := json.Marshal(s.StatefulSet)
+	if err != nil {
+		return constants.ReconcileUnknown, err
+	}
+	s.Logger.Info("Found StatefulSet", "StatefulSet", string(stsJson))
 	opts := []patch.CalculateOption{
 		patch.IgnoreStatusFields(),
 		patch.IgnoreField("kind"),

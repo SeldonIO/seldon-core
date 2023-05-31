@@ -18,6 +18,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
@@ -41,6 +42,11 @@ import (
 
 func TestStatefulSetReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
+
+	stsJson := `{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm"},"ownerReferences":[{"apiVersion":"mlops.seldon.io/v1alpha1","kind":"Server","name":"mlserver","uid":"7a9dc74b-552c-49da-8e45-09a6af752319","controller":true,"blockOwnerDeletion":true}]},"spec":{"replicas":1,"selector":{"matchLabels":{"seldon-server-name":"mlserver"}},"template":{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm","seldon-server-name":"mlserver"}},"spec":{"volumes":[{"name":"downstream-ca-certs","secret":{"secretName":"seldon-downstream-server","optional":true}},{"name":"config-volume","configMap":{"name":"seldon-agent"}},{"name":"tracing-config-volume","configMap":{"name":"seldon-tracing"}}],"containers":[{"name":"rclone","image":"docker.io/seldonio/seldon-rclone:latest","ports":[{"name":"rclone","containerPort":5572,"protocol":"TCP"}],"resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"50m","memory":"128Mi"}},"volumeMounts":[{"name":"mlserver-models","mountPath":"/mnt/agent"}],"readinessProbe":{"tcpSocket":{"port":5572},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":5,"successThreshold":1,"failureThreshold":3},"lifecycle":{"preStop":{"httpGet":{"path":"terminate","port":9007}}},"imagePullPolicy":"IfNotPresent"}],"terminationGracePeriodSeconds":120,"serviceAccountName":"seldon-server","securityContext":{"runAsUser":1000,"runAsGroup":1000,"runAsNonRoot":true,"fsGroup":1000}}},"volumeClaimTemplates":[{"metadata":{"name":"mlserver-models","creationTimestamp":null},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"status":{}}],"serviceName":"mlserver","podManagementPolicy":"Parallel","updateStrategy":{}},"status":{"replicas":0,"availableReplicas":0}}`
+	sts := appsv1.StatefulSet{}
+	err := json.Unmarshal([]byte(stsJson), &sts)
+	g.Expect(err).To(BeNil())
 
 	type test struct {
 		name                 string
@@ -100,6 +106,36 @@ func TestStatefulSetReconcile(t *testing.T) {
 		{
 			name: "Update",
 			metaServer: metav1.ObjectMeta{
+				Name:      "mlserver",
+				Namespace: "ns1",
+			},
+			metaServerConfig: metav1.ObjectMeta{
+				Name:      "mlserver",
+				Namespace: "ns1",
+			},
+			podSpec: sts.Spec.Template.Spec.DeepCopy(),
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
+			scaling: &mlopsv1alpha1.ScalingSpec{
+				Replicas: getIntPtr(2),
+			},
+			existing:            &sts,
+			expectedReconcileOp: constants.ReconcileUpdateNeeded,
+		},
+		{
+			name: "Update",
+			metaServer: metav1.ObjectMeta{
 				Name:      "foo",
 				Namespace: "default",
 			},
@@ -113,6 +149,23 @@ func TestStatefulSetReconcile(t *testing.T) {
 						Name:    "c1",
 						Image:   "myimagec1:1",
 						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  "env1",
+								Value: "val1",
+							},
+						},
+					},
+					{
+						Name:    "c2",
+						Image:   "myimagec2:1",
+						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  "env1",
+								Value: "val1",
+							},
+						},
 					},
 				},
 				NodeName: "node",
@@ -137,6 +190,44 @@ func TestStatefulSetReconcile(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
+					Labels: map[string]string{
+						"l1": "label1",
+					},
+				},
+				Spec: appsv1.StatefulSetSpec{
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"a": "b",
+						},
+					},
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Name:    "c1",
+									Image:   "myimagec1:1",
+									Command: []string{"cmd"},
+									Env: []v1.EnvVar{
+										{
+											Name:  "env1",
+											Value: "val1",
+										},
+									},
+								},
+								{
+									Name:    "c2",
+									Image:   "myimagec2:1",
+									Command: []string{"cmd"},
+									Env: []v1.EnvVar{
+										{
+											Name:  "env1",
+											Value: "val1",
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 			expectedReconcileOp: constants.ReconcileUpdateNeeded,
@@ -450,5 +541,4 @@ func TestLabelsAnnotations(t *testing.T) {
 			}
 		})
 	}
-
 }

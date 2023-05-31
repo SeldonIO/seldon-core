@@ -1,0 +1,81 @@
+---
+# Source: seldon-core-v2-runtime/templates/rclone-gs-public.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-gs-public
+  namespace: 'seldon-mesh'
+type: Opaque
+stringData:
+  gs: |
+    type: "google cloud storage"
+    name: gs
+    parameters:
+      anonymous: true
+---
+# Source: seldon-core-v2-runtime/templates/seldon-runtime.yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonRuntime
+metadata:
+  name: seldon
+  namespace: 'seldon-mesh'  
+spec:
+  seldonConfig: default
+  overrides:
+  - name: hodometer
+    disable: false
+    replicas: 1
+  - name: seldon-scheduler
+    disable: false
+    serviceType: LoadBalancer    
+  - name: seldon-envoy
+    disable: false
+    replicas: 1
+    serviceType: LoadBalancer    
+  - name: seldon-dataflow-engine
+    disable: false
+    replicas: 1    
+  - name: seldon-modelgateway
+    disable: false
+    replicas: 1    
+  - name: seldon-pipelinegateway
+    disable: false    
+    replicas: 1
+  config:
+    agentConfig:
+      rclone:
+        config_secrets:
+    kafkaConfig:
+      bootstrap.servers: 
+      consumer:
+      debug: 
+      producer:
+      streams:
+      topicPrefix: 
+    serviceConfig:
+      grpcServicePrefix: 
+      serviceType: 
+    tracingConfig:
+      enable: 
+      otelExporterEndpoint: 
+      ratio:
+---
+# Source: seldon-core-v2-runtime/templates/seldon-v2-servers.yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver
+  namespace: 'seldon-mesh'
+spec:
+  replicas: 1
+  serverConfig: mlserver
+---
+# Source: seldon-core-v2-runtime/templates/seldon-v2-servers.yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: triton
+  namespace: 'seldon-mesh'
+spec:
+  replicas: 1
+  serverConfig: triton

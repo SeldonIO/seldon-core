@@ -7,13 +7,13 @@
     full_install: yes
 
     install_prometheus: "{{ full_install }}"
-    install_strimzi: "{{ full_install }}"
+    install_kafka: "{{ full_install }}"
     install_certmanager: "{{ full_install }}"
     install_jaeger: "{{ full_install }}"
     install_opentelemetry: "{{ full_install }}"
 
     configure_prometheus: "{{ install_prometheus }}"
-    configure_kafka: "{{ install_strimzi }}"
+    configure_kafka: "{{ install_kafka }}"
     configure_jaeger: "{{ install_jaeger }}"
     configure_opentelemetry: "{{ install_opentelemetry }}"
 

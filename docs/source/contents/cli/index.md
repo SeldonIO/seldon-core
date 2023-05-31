@@ -5,7 +5,8 @@ Seldon provides a CLI to allow easy management and testing of Model, Experiment,
 At present this needs to be built by hand from the operator folder.
 
 ```
-make build-seldon
+make build-seldon     # for linux/macOS amd64
+make build-seldon-arm # for macOS ARM
 ```
 
 Then place the `bin/seldon` executable in your path.
@@ -109,15 +110,15 @@ $ seldon config deactivate kind-sasl
 $ seldon config list
 config		path						active
 ------		----						------
-kind-sasl	/home/work/seldon/cli/config-sasl.json	
+kind-sasl	/home/work/seldon/cli/config-sasl.json
 
 $ seldon config add gcp-scv2 ~/seldon/cli/gcp.json
 
 $ seldon config list
 config		path						active
 ------		----						------
-gcp-scv2	/home/work/seldon/cli/gcp.json		
-kind-sasl	/home/work/seldon/cli/config-sasl.json	
+gcp-scv2	/home/work/seldon/cli/gcp.json
+kind-sasl	/home/work/seldon/cli/config-sasl.json
 
 $ seldon config activate gcp-scv2
 

@@ -1,10 +1,5 @@
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: seldon-issuer
-spec:
-  selfSigned: {}
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -13,6 +8,7 @@ spec:
   isCA: true
   commonName: seldon-ca
   dnsNames:
+  - "*.seldon-mesh"
   - "*.seldon-mesh.svc"
   - localhost
   secretName: cacert
@@ -24,14 +20,7 @@ spec:
     kind: Issuer
     group: cert-manager.io
 ---
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: seldon-ca-issuer
-spec:
-  ca:
-    secretName: cacert
----
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -42,7 +31,9 @@ spec:
   renewBefore: 360h
   commonName: "seldon-mesh.svc"
   dnsNames:
-  - "seldon-scheduler"    
+  - "seldon-scheduler"
+  - "seldon-scheduler.seldon-mesh"
+  - "seldon-scheduler.seldon-mesh.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -52,6 +43,7 @@ spec:
     name: seldon-ca-issuer
     kind: Issuer
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -62,7 +54,9 @@ spec:
   renewBefore: 360h
   commonName: "seldon-mesh.svc"
   dnsNames:
-  - "seldon-scheduler"    
+  - "seldon-scheduler"
+  - "seldon-scheduler.seldon-mesh"  
+  - "seldon-scheduler.seldon-mesh.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -72,6 +66,7 @@ spec:
     name: seldon-ca-issuer
     kind: Issuer
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -82,7 +77,7 @@ spec:
   renewBefore: 360h
   commonName: "*.seldon-mesh.svc"
   dnsNames:
-  - "seldon-mesh"    
+  - "seldon-mesh"
   - "*.seldon-mesh"    
   - "*.seldon-mesh.svc"
   - localhost
@@ -93,6 +88,7 @@ spec:
     name: seldon-ca-issuer
     kind: Issuer
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -114,6 +110,7 @@ spec:
     name: seldon-ca-issuer
     kind: Issuer
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -134,6 +131,7 @@ spec:
     name: seldon-ca-issuer
     kind: Issuer
 ---
+# Source: seldon-core-v2-certs/templates/certs.yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -154,3 +152,20 @@ spec:
   issuerRef:
     name: seldon-ca-issuer
     kind: Issuer
+---
+# Source: seldon-core-v2-certs/templates/certs.yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seldon-issuer
+spec:
+  selfSigned: {}
+---
+# Source: seldon-core-v2-certs/templates/certs.yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seldon-ca-issuer
+spec:
+  ca:
+    secretName: cacert

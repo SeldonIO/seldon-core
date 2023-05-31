@@ -58,6 +58,13 @@ func NewServerReconciler(server *mlopsv1alpha1.Server,
 		return nil, err
 	}
 
+	// Add last applied annotation to all resources
+	for _, res := range sr.StatefulSetReconciler.GetResources() {
+		if err := annotator.SetLastAppliedAnnotation(res); err != nil {
+			return nil, err
+		}
+	}
+
 	sr.ServiceReconciler = NewServerServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
 	return sr, nil
 }

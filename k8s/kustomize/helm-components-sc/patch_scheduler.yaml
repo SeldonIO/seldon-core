@@ -7,6 +7,7 @@ spec:
   - name: seldon-scheduler
     replicas: 1
     podSpec:
+      imagePullSecrets: []
       containers:
       - image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'

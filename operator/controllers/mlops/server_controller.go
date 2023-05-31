@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-logr/logr"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
@@ -127,11 +128,15 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	stop, err := r.handleFinalizer(ctx, server)
 	if stop {
+		if err != nil {
+			r.updateStatusFromError(ctx, logger, server, err)
+		}
 		return reconcile.Result{}, err
 	}
 
 	err = r.Scheduler.ServerNotify(ctx, server)
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
@@ -141,17 +146,20 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		Client: r.Client,
 	})
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
 	// Set Controller References
 	err = setControllerReferences(server, common.ToMetaObjects(sr.GetResources()), r.Scheme)
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
 	err = sr.Reconcile()
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
@@ -178,6 +186,13 @@ func serverReady(status mlopsv1alpha1.ServerStatus) bool {
 	return status.Conditions != nil &&
 		status.GetCondition(apis.ConditionReady) != nil &&
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
+}
+
+func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, server *mlopsv1alpha1.Server, err error) {
+	server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetReady, false, err.Error())
+	if errSet := r.Status().Update(ctx, server); errSet != nil {
+		logger.Error(errSet, "Failed to set status for server on error", "server", server.Name, "error", err.Error())
+	}
 }
 
 func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {

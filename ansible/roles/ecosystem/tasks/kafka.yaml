@@ -1,7 +1,7 @@
 ---
 - include_role:
     name: strimzi
-  when: install_strimzi | bool
+  when: install_kafka | bool
 
 - name: "Create Kafka Cluster"
   kubernetes.core.helm:

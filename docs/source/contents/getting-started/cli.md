@@ -25,6 +25,21 @@ make build-seldon
 
 Add `<project-root>/operator/bin` to your PATH.
 
+## Local macOS ARM build (requires Go and librdkafka)
+
+```bash
+# install dependencies
+brew install go librdkafka
+```
+
+```bash
+git clone https://github.com/SeldonIO/seldon-core --branch=v2
+cd seldon-core/operator
+make build-seldon-arm
+```
+
+Add `<project-root>/operator/bin` to your PATH.
+
 
 
 

@@ -7,6 +7,7 @@ spec:
   - name: dataflow-engine
     replicas: 1
     podSpec:
+      imagePullSecrets: []
       containers:
       - image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository }}:{{ .Values.dataflow.image.tag }}'
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'

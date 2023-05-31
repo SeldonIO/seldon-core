@@ -30,12 +30,14 @@ You will also need to install our ecosystem components. For this we provide dire
 
 ### Install
 
-To install Seldon Core V2 itself you can choose from the following. At presdent, all require a clone of the source repository.
+To install Seldon Core V2 itself you can choose from the following. At present, all require a clone of the source repository.
 
- * [Helm chart](helm.md)
- * [Ansible](ansible.md)
- 
+ * [Helm Installation](helm.md) (recommended for production systems)
+ * [Ansible](ansible.md) (recommended for test / dev / trial purposes)
+
 The Kubernetes operator that is installed runs in namespaced mode so any resources you create need to be in the same namespace as you installed into.
+
+
 
 ### Kustomize
 
