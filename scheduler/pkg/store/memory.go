@@ -511,7 +511,7 @@ func (m *MemoryStore) updateModelStateImpl(
 			modelKey, version, serverKey, replicaIdx, desiredState.String(),
 		)
 
-		// Update models loaded onto replica if loaded or unloaded is state
+		// Update models loaded onto replica for relevant state
 		if desiredState == Loaded || desiredState == Loading || desiredState == Unloaded || desiredState == LoadFailed {
 			server, ok := m.store.servers[serverKey]
 			if ok {
