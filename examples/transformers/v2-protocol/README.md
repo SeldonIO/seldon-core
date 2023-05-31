@@ -121,8 +121,10 @@ In our case, we will use this file to tell MLServer that it should always use ou
 
 
 Since we're leveraging MLServer to write our custom pre-processor, it should be **easy to test it locally**.
-For this, we will start MLServer using the [`mlserver start` subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-start).
-Note that this command has to be carried out on a separate terminal:
+For this, we will start MLServer using the [mlserver start subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-start).
+Note that this command has to be carried out on a separate terminal.
+
+> **NOTE**: If you are using the `protobuf` Python package 3.20.1 or newer, you will need to set `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python` in your environment variable.
 
 ```bash
 mlserver start ./tokeniser
