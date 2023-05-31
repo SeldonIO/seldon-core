@@ -35,6 +35,7 @@ Examples are shown below:
  * [mTLS AWS MSK example](msk.md)
  * [SASL PLAIN with Confluent Cloud example](confluent-sasl.md)
  * [SASL PLAIN with Azure Event Hub](azure-event-hub-sasl.md)
+ * [SASL SCRAM with AWS MSK](aws-msk-sasl.md)
  * [SASL SCRAM with Strimzi example](strimzi-sasl.md)
 
 ## Data Plane
@@ -95,6 +96,7 @@ strimzi-mtls.md
 strimzi-sasl.md
 confluent-sasl.md
 azure-event-hub-sasl.md
+aws-msk-sasl.md
 msk.md
 reference.md
 ```
