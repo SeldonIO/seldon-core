@@ -14,7 +14,7 @@ create-helm-charts:
 	kustomize build kustomize/helm-crds/ > ${HELM_CRD_BASE}/seldon-v2-crds.yaml
 	kustomize build kustomize/helm-components-ns/ > ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	kustomize build kustomize/helm-servers/ > ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
-	sed -i 's/\(.*\)\(imagePullSecrets:.*\)/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	sed -i 's/\(.*\)\(imagePullSecrets:\).*/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed -n --file=add-helm-toggle-hodometer.sed ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml \
 		> ${HELM_COMPONENTS_BASE}/.components.yaml
 	sed 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/.components.yaml \
