@@ -118,7 +118,8 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 		AvailableReplicas:   modelVersion.state.AvailableReplicas,
 		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - modelVersion.state.AvailableReplicas,
 	}
-
+	// make sure we reset server
+	modelVersion.server = ""
 	m.eventHub.PublishModelEvent(
 		modelFailureEventSource,
 		coordinator.ModelEventMsg{

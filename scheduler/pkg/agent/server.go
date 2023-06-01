@@ -465,6 +465,14 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, serverName, serverReplicaIdx)
 		}
 	}
+	// retry failed models
+	// this is perhaps counterintuitive, but we want to retry failed models on other servers
+	// specifically in the case of model state `LoadFailed` and the server replica disconnects, we want to reconcile
+	// the model state with th new set of active servers
+	// note that this will also retry `ScheduleFailed`, which is a side effect of calling `ScheduleFailedModels`
+	if _, err := s.scheduler.ScheduleFailedModels(); err != nil {
+		s.logger.WithError(err).Errorf("Failed to reschedule failed models when server %s replica %d disconnected", serverName, serverReplicaIdx)
+	}
 }
 
 func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int) {
