@@ -345,7 +345,6 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 				if err != nil {
 					return nil, err
 				}
-				fmt.Printf("Pipeline name is: %s", pipelineName)
 				if pipelineName == pipeline && ((string(e.Key) == key) || key == "") {
 					kitm, err := createKafkaMsg(e, topic, tensor, verbose, truncateData)
 					if err != nil {
