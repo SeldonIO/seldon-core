@@ -84,7 +84,7 @@ We will be using the following seldon deployment:
 ```python
 %%writefile ./assets/seldon-knative-trigger.yaml
 
-apiVersion: eventing.knative.dev/v1beta1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: seldon-eventing-sklearn-trigger
@@ -257,7 +257,7 @@ We now can create a trigger that sends all the requests of the type and source c
 %%writefile ./assets/event-display-trigger.yaml
 
 # Trigger to send events to service above
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: event-display
