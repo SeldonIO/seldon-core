@@ -15,7 +15,7 @@ Seldon Core implements the Knative Eventing Duck Typing requirements which allow
 An example of a trigger for a SeldonDeployment named "iris-deployment" can be created with the following format:
 
 ```yaml
-apiVersion: eventing.knative.dev/v1beta1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
 
@@ -43,7 +43,7 @@ In the case of every Seldon Deployment, the `status.addressable.url` is always t
 In the case of multiple predictors, or in the case that you want to send the Cloudevent through your ingress, you can actually create a trigger that overrides the URI. An example of this would be the following:
 
 ```yaml
-apiVersion: eventing.knative.dev/v1beta1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
 
@@ -96,7 +96,7 @@ This means that you could create a trigger for a seldon deployment of name `iris
 ```yaml
 ---
 # Trigger to send events to service above
-apiVersion: eventing.knative.dev/v1alpha1
+apiVersion: eventing.knative.dev/v1
 kind: Trigger
 metadata:
   name: event-display
