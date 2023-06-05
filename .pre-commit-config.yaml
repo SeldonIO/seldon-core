@@ -2,11 +2,11 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/maltzj/google-style-precommit-hook
-    rev: 9d0e0fe8f89e40928b99ff2e1c9d35abbb743640
+    rev: 95c2f5632710e095220e22cc1a4e1a1451abf75f
     hooks:
       - id: google-style-java
   - repo: https://github.com/psf/black
-    rev: stable
+    rev: 23.3.0
     hooks:
       - id: black
         args: ['python/', 'testing/', 'components/alibi-detect-server', '--exclude', '(testing/scripts/proto|seldon_core/proto/|.eggs)']
