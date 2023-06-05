@@ -258,7 +258,7 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 
 func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
 	for _, header := range headers {
-		if header.Key == "pipeline" {
+		if header.Key == PipelineSpecifier {
 			return string(header.Value), nil
 		}
 	}
