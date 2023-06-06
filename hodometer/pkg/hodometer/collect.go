@@ -23,17 +23,17 @@ import (
 	"reflect"
 	"time"
 
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
-
 	"github.com/google/uuid"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (
