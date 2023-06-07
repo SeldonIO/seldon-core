@@ -72,6 +72,7 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | istio.tlsMode | string | `""` |  |
 | keda.enabled | bool | `false` |  |
 | kubeflow | bool | `false` |  |
+| manager.affinity | object | `{}` | Affinity rules for scheduling the manager pod. |
 | manager.annotations | object | `{}` |  |
 | manager.containerSecurityContext | object | `{}` |  |
 | manager.cpuLimit | string | `"500m"` |  |
@@ -85,7 +86,9 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | manager.logLevel | string | `"INFO"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
 | manager.memoryRequest | string | `"200Mi"` |  |
+| manager.nodeSelector | object | `{}` | Node selectors to schedule the manager pod to nodes with labels. |
 | manager.priorityClassName | string | `nil` |  |
+| manager.tolerations | list | `[]` | Tolerations to allow the pod to be scheduled to nodes with taints. |
 | managerCreateResources | bool | `false` |  |
 | managerUserID | int | `8888` |  |
 | metrics.port | int | `8080` |  |

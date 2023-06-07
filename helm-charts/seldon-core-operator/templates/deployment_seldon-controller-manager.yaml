@@ -34,6 +34,10 @@ spec:
         app.kubernetes.io/version: v0.5
         control-plane: seldon-controller-manager
     spec:
+      {{- with .Values.manager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - args:
         - --enable-leader-election
@@ -183,11 +187,19 @@ spec:
           readOnly: true
 {{- end }}
       hostNetwork: {{ .Values.hostNetwork }}
+      {{- with .Values.manager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}   
+      {{- end }}
       priorityClassName: '{{ .Values.manager.priorityClassName }}'
       securityContext:
         runAsUser: {{ .Values.managerUserID }}
       serviceAccountName: '{{ .Values.serviceAccount.name }}'
       terminationGracePeriodSeconds: 10
+      {{- with .Values.manager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- if not .Values.managerCreateResources }}
       volumes:
       - name: cert
