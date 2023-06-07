@@ -22,16 +22,13 @@ import (
 	"path"
 	"sync"
 
-	"k8s.io/client-go/kubernetes"
-
+	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/configmap/informer"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/fsnotify/fsnotify"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (

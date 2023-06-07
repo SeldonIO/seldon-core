@@ -26,10 +26,11 @@ import (
 	"sync"
 	"time"
 
-	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
 )
 
 const (

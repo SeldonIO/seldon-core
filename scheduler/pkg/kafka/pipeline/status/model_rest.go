@@ -24,9 +24,10 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	"github.com/sirupsen/logrus"
 )
 
 type ModelRestCaller struct {

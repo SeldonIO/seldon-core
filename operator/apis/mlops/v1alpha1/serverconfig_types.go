@@ -20,11 +20,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!

@@ -23,13 +23,11 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
-
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
 const (

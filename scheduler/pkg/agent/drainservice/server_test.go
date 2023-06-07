@@ -24,8 +24,9 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 )
 
 func TestDrainerServiceSmoke(t *testing.T) {

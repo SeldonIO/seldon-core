@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 

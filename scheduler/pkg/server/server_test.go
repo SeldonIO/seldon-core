@@ -20,21 +20,20 @@ import (
 	"context"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-
 	. "github.com/onsi/gomega"
-	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 func stringPtr(s string) *string {

@@ -21,12 +21,13 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-
 	"github.com/mitchellh/copystructure"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 const (

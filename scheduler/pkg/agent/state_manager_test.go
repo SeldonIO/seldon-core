@@ -26,15 +26,15 @@ import (
 	"time"
 
 	"github.com/jarcoal/httpmock"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	log "github.com/sirupsen/logrus"
-
-	. "github.com/onsi/gomega"
 )
 
 func checkModelsStateIsSame(manager *LocalStateManager, v2State *testing_utils.V2State) (bool, []string) {

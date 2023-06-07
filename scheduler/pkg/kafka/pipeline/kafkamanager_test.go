@@ -20,12 +20,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
 func TestGetPipelineKey(t *testing.T) {

@@ -29,30 +29,27 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/grpc/credentials"
-
-	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-	"go.opentelemetry.io/otel/attribute"
-
-	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc/credentials/insecure"
-
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-	"google.golang.org/grpc/metadata"
-
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 type InferWorker struct {

@@ -25,8 +25,9 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestCreateSettingsFile(t *testing.T) {

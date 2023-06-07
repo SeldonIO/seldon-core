@@ -22,17 +22,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/require"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/require"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 func addServer(

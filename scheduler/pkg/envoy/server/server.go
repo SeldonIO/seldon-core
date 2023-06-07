@@ -20,11 +20,6 @@ import (
 	"fmt"
 	"net"
 
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-	log "github.com/sirupsen/logrus"
-
-	"google.golang.org/grpc"
-
 	clusterservice "github.com/envoyproxy/go-control-plane/envoy/service/cluster/v3"
 	discoverygrpc "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	listenerservice "github.com/envoyproxy/go-control-plane/envoy/service/listener/v3"
@@ -32,6 +27,10 @@ import (
 	runtimeservice "github.com/envoyproxy/go-control-plane/envoy/service/runtime/v3"
 	secretservice "github.com/envoyproxy/go-control-plane/envoy/service/secret/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (

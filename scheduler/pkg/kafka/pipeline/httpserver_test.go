@@ -28,16 +28,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type fakePipelineInferer struct {

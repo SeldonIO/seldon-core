@@ -21,8 +21,9 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 )
 
 func TestGrpcChain(t *testing.T) {

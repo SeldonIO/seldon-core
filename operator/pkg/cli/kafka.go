@@ -24,12 +24,12 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/encoding/protojson"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -256,6 +256,15 @@ func (kc *KafkaClient) getPipelineStatus(pipelineSpec string) (*scheduler.Pipeli
 	return res, nil
 }
 
+func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
+	for _, header := range headers {
+		if header.Key == PipelineSpecifier {
+			return string(header.Value), nil
+		}
+	}
+	return "", fmt.Errorf("No pipeline found in headers.")
+}
+
 func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
 	if namespace == "" {
 		namespace = kc.namespace
@@ -271,7 +280,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 
 	ki := KafkaInspect{}
 	for _, topic := range pipelineTopics.topics {
-		kit, err := kc.createInspectTopic(topic, pipelineTopics.tensor, offset, key, verbose, truncateData)
+		kit, err := kc.createInspectTopic(topic, pipelineTopics.pipeline, pipelineTopics.tensor, offset, key, verbose, truncateData)
 		if err != nil {
 			return err
 		}
@@ -305,7 +314,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 	return nil
 }
 
-func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset int64, key string, verbose bool, truncateData bool) (*KafkaInspectTopic, error) {
+func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor string, offset int64, key string, verbose bool, truncateData bool) (*KafkaInspectTopic, error) {
 	kit := KafkaInspectTopic{
 		Name: topic,
 	}
@@ -332,7 +341,11 @@ func (kc *KafkaClient) createInspectTopic(topic string, tensor string, offset in
 			switch e := ev.(type) {
 			case *kafka.Message:
 				seen = seen + 1
-				if (string(e.Key) == key) || key == "" {
+				pipelineName, err := getPipelineNameFromHeaders(e.Headers)
+				if err != nil {
+					return nil, err
+				}
+				if pipelineName == pipeline && ((string(e.Key) == key) || key == "") {
 					kitm, err := createKafkaMsg(e, topic, tensor, verbose, truncateData)
 					if err != nil {
 						return nil, err

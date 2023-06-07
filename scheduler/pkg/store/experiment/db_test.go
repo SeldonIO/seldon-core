@@ -21,9 +21,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	log "github.com/sirupsen/logrus"
-
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestSaveAndRestore(t *testing.T) {

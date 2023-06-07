@@ -30,6 +30,7 @@ linters:
     # Sorted alphabetically.
     - errcheck
     - exportloopref
+    - gci
     - goimports # Also includes gofmt style formatting
     - gosimple
     - govet
@@ -42,5 +43,11 @@ linters:
 linters-settings:
   errcheck:
     exclude: ./.errcheck_excludes.txt
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/seldonio/seldon-core)
+      - prefix(github.com/seldonio/seldon-core/hodometer)
   goconst:
     min-occurrences: 5

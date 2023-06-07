@@ -20,9 +20,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAddRemoveModel(t *testing.T) {

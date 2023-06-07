@@ -18,12 +18,10 @@ package main
 
 import (
 	"context"
-
-	"github.com/seldonio/seldon-core/operator/v2/scheduler"
-
 	"flag"
 	"os"
 
+	//+kubebuilder:scaffold:imports
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,7 +32,7 @@ import (
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
-	//+kubebuilder:scaffold:imports
+	"github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 var (

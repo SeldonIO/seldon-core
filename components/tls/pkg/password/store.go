@@ -18,10 +18,12 @@ package password
 
 import (
 	"fmt"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
-	"os"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 )
 
 const (

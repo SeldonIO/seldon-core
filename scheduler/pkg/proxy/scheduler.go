@@ -17,8 +17,9 @@ limitations under the License.
 package proxy
 
 import (
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 )
 
 type ModelEvent struct {
