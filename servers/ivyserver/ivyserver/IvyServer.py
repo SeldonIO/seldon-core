@@ -33,7 +33,6 @@ class IvyServer(SeldonComponent):
     def predict(
             self,
             X,
-            feature_names: List[str] = [],
             meta: Dict = None
     ) -> Union[ivy.array, List, Dict, str, bytes]:
         

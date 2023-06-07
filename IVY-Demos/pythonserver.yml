@@ -1,0 +1,27 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: gunicorn
+spec:
+  name: worker
+  predictors:
+  - componentSpecs:
+    - spec:
+        containers:
+        - image: ivy/mlp
+          name: mlp
+          imagePullPolicy: Never
+          env:
+          - name: GRPC_WORKERS
+            value: '0'
+        terminationGracePeriodSeconds: 1
+    graph:
+      children: []
+      endpoint:
+        type: REST
+      name: mlp
+      type: MODEL
+    labels:
+      version: v1
+    name: example
+    replicas: 1

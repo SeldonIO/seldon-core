@@ -1,4 +1,5 @@
 import ivy
+from MLP import MLP
 
 #seldon wrapper class
 class IvyDemoModel():

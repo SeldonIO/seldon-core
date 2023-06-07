@@ -1,0 +1,14 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: ivy
+spec:
+  name: ivy-MLP
+  predictors:
+  - graph:
+      children: []
+      implementation: IVY_SERVER
+      modelUri: gs://seldon-ivy-demo/MLP
+      name: mlp
+    name: mlp
+    replicas: 1
