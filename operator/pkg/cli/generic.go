@@ -24,7 +24,6 @@ import (
 	"os"
 
 	"google.golang.org/protobuf/proto"
-
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
