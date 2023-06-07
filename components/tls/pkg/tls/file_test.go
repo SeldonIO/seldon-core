@@ -17,9 +17,10 @@ limitations under the License.
 package tls
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	"testing"
 )
 
 func TestNewTlsFolderHandler(t *testing.T) {
