@@ -23,8 +23,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 )
 
 const (

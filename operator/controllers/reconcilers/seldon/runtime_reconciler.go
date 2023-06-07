@@ -2,11 +2,12 @@ package server
 
 import (
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
+	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"knative.dev/pkg/apis"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type SeldonRuntimeReconciler struct {

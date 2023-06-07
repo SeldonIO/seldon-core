@@ -24,11 +24,13 @@ import (
 	"sync"
 
 	"github.com/jarcoal/httpmock"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 const (

@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"testing"
 
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
+
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 )
 
 // Checks a cluster remains until all routes are removed

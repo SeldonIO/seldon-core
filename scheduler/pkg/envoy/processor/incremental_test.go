@@ -20,18 +20,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	log "github.com/sirupsen/logrus"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestGetTrafficShare(t *testing.T) {

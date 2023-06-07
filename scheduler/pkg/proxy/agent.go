@@ -23,9 +23,10 @@ import (
 	"net"
 	"sync"
 
-	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 )
 
 type AgentServer struct {

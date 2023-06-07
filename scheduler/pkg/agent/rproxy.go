@@ -31,15 +31,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
+	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
-	log "github.com/sirupsen/logrus"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type reverseHTTPProxy struct {

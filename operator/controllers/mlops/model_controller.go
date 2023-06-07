@@ -20,24 +20,21 @@ import (
 	"context"
 
 	"github.com/go-logr/logr"
-
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
-
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	schedulerAPI "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
+	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // ModelReconciler reconciles a Model object

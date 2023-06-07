@@ -17,8 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"github.com/seldonio/seldon-core/hodometer/v2/pkg/receiver"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/hodometer/v2/pkg/receiver"
 )
 
 func main() {

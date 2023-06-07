@@ -20,12 +20,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	. "github.com/onsi/gomega"
 	"google.golang.org/grpc/metadata"
 
-	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestCreateResourceNameFromHeader(t *testing.T) {

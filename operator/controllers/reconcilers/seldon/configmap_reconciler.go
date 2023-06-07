@@ -7,9 +7,6 @@ import (
 	"strconv"
 
 	"github.com/ghodss/yaml"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -17,6 +14,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 const (

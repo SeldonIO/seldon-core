@@ -20,12 +20,10 @@ import (
 	"strconv"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
+	. "github.com/onsi/gomega"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
-
-	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 const (

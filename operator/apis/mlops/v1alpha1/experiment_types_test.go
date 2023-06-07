@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestAsSchedulerExperimentRequest(t *testing.T) {

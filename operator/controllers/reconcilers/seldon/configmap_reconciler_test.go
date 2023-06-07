@@ -6,9 +6,6 @@ import (
 
 	logrtest "github.com/go-logr/logr/testr"
 	. "github.com/onsi/gomega"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
@@ -16,6 +13,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
 func TestConfigMapReconcile(t *testing.T) {

@@ -3,10 +3,9 @@ package v1alpha1
 import (
 	"testing"
 
+	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-
-	. "github.com/onsi/gomega"
 )
 
 func TestSeldonConfigurationAddDefaults(t *testing.T) {

@@ -20,20 +20,18 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"sync/atomic"
-
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (

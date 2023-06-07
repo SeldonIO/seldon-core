@@ -21,9 +21,10 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 )
 
 const (

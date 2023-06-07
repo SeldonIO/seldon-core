@@ -19,14 +19,14 @@ package experiment
 import (
 	"testing"
 
+	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-
-	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 func TestAddReference(t *testing.T) {

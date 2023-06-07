@@ -23,32 +23,25 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
-	server2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/server"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
+	server2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/server"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 var (

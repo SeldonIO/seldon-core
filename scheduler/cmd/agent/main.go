@@ -26,30 +26,25 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
 
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	controlplane_factory "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/factory"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
-	"k8s.io/client-go/kubernetes"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	log "github.com/sirupsen/logrus"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
 const (

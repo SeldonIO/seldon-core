@@ -22,7 +22,7 @@ See Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/clie
 
 Seldon Core v2 expects password to be in form of K8s secret
 ```bash
-kubectl create secret generic confluent-kafka-secret -n seldon-mesh --from-literal password=<Confluent Cloud API Secret>
+kubectl create secret generic confluent-kafka-secret -n seldon-mesh --from-literal password="<Confluent Cloud API Secret>"
 ```
 
 ## Configure Seldon Core v2

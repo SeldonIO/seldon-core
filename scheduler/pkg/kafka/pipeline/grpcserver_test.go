@@ -22,18 +22,18 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"google.golang.org/grpc/credentials/insecure"
-
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type fakePipelineMetricsHandler struct{}

@@ -21,14 +21,14 @@ import (
 	"strings"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/imdario/mergo"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 const (
