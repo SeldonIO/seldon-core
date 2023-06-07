@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 

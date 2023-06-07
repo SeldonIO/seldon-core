@@ -19,9 +19,9 @@ package store
 import (
 	"testing"
 
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
 	. "github.com/onsi/gomega"
+
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestReplicaStateToString(t *testing.T) {

@@ -17,9 +17,10 @@ limitations under the License.
 package password
 
 import (
+	"testing"
+
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
-	"testing"
 )
 
 func TestNewPasswordFolderHandler(t *testing.T) {

@@ -21,12 +21,12 @@ import (
 	"os"
 	"path/filepath"
 
+	copy2 "github.com/otiai10/copy"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-	copy2 "github.com/otiai10/copy"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
-	log "github.com/sirupsen/logrus"
 )
 
 type ModelRepositoryHandler interface {

@@ -1,0 +1,2 @@
+fmt.Fprintln
+fmt.Fprint

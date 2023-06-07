@@ -22,8 +22,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 )
 
 //$inference_request =

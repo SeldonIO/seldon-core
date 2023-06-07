@@ -22,13 +22,14 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	log "github.com/sirupsen/logrus"
 )
 
 type mockStore struct {

@@ -21,9 +21,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/rs/xid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/rs/xid"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 

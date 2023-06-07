@@ -22,6 +22,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 

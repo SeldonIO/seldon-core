@@ -21,8 +21,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 )
 
 var (

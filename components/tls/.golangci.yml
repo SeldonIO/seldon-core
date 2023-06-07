@@ -48,6 +48,6 @@ linters-settings:
       - standard
       - default
       - prefix(github.com/seldonio/seldon-core)
-      - prefix(github.com/seldonio/seldon-core/operator)
+      - prefix(github.com/seldonio/seldon-core/components/tls)
   goconst:
     min-occurrences: 5

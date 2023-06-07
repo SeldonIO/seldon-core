@@ -23,29 +23,25 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	"google.golang.org/grpc/metadata"
-
-	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
-	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
-	"google.golang.org/grpc/credentials/insecure"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func createTestV2ClientMockResponders(host string, port int, modelName string) {

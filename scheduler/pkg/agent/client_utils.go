@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"time"
 
+	backoff "github.com/cenkalti/backoff/v4"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
-
-	backoff "github.com/cenkalti/backoff/v4"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 func startSubService(

@@ -19,15 +19,17 @@ package password
 import (
 	"context"
 	"fmt"
-	. "github.com/onsi/gomega"
-	"github.com/otiai10/copy"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
 	"os"
 	"testing"
 	"time"
+
+	. "github.com/onsi/gomega"
+	"github.com/otiai10/copy"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 func TestNewPasswordStoreWithSecret(t *testing.T) {

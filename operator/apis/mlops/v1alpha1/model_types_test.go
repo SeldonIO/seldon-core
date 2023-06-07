@@ -20,9 +20,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestAsModelDetails(t *testing.T) {

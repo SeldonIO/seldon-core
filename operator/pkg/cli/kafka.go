@@ -24,12 +24,12 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/encoding/protojson"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"google.golang.org/protobuf/proto"
 )
 
 const (

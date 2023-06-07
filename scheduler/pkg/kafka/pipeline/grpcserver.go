@@ -23,21 +23,20 @@ import (
 	"net"
 	"time"
 
-	status2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"google.golang.org/grpc/metadata"
-
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	status2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type GatewayGrpcServer struct {

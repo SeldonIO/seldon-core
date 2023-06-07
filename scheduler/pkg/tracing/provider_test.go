@@ -22,9 +22,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sirupsen/logrus"
-
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestRecreateTracerProvider(t *testing.T) {

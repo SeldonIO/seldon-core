@@ -19,9 +19,9 @@ package kafka
 import (
 	"testing"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
-
 	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 )
 
 func TestGetModelTopic(t *testing.T) {

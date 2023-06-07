@@ -23,9 +23,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"google.golang.org/protobuf/proto"
+
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"google.golang.org/protobuf/proto"
 )
 
 type LocalSchedulerStore struct {
