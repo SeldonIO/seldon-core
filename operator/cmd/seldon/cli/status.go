@@ -41,11 +41,7 @@ func createStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			showRequest, err := flags.GetBool(flagShowRequest)
-			if err != nil {
-				return err
-			}
-			showResponse, err := flags.GetBool(flagShowResponse)
+			verbose, err := flags.GetBool(flagVerbose)
 			if err != nil {
 				return err
 			}
@@ -54,6 +50,10 @@ func createStatus() *cobra.Command {
 				return err
 			}
 			filename, err := flags.GetString(flagFile)
+			if err != nil {
+				return err
+			}
+			timeout, err := flags.GetInt64(flagTimeout)
 			if err != nil {
 				return err
 			}
@@ -66,14 +66,19 @@ func createStatus() *cobra.Command {
 				return err
 			}
 
-			err = schedulerClient.Status(dataFile, showRequest, showResponse, waitCondition)
+			responses, err := schedulerClient.Status(dataFile, waitCondition, timeout)
+			if err == nil && verbose {
+				for _, res := range responses {
+					cli.PrintProto(res)
+				}
+			}
 			return err
 		},
 	}
 
 	flags := cmd.Flags()
-	flags.BoolP(flagShowRequest, "r", false, "show request")
-	flags.BoolP(flagShowResponse, "o", false, "show response")
+	flags.Int64P(flagTimeout, "t", flagTimeoutDefault, "timeout seconds")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.BoolP(flagWaitCondition, "w", false, "wait for resources to be ready")

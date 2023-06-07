@@ -30,8 +30,11 @@ const (
 	flagRequestId    = "request-id"
 	flagOutputFormat = "format"
 	flagVerbose      = "verbose"
+	flagTimeout      = "timeout-secs"
 	flagTruncate     = "truncate"
 	flagNamespace    = "namespace"
+
+	flagTimeoutDefault = int64(60)
 )
 
 func createPipelineInspect() *cobra.Command {

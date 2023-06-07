@@ -74,6 +74,14 @@ const (
 	InferExplainer
 )
 
+type InferProtocol uint32
+
+const (
+	InferUnknown InferProtocol = iota
+	InferRest
+	InferGrpc
+)
+
 type InferenceClient struct {
 	host        string
 	callOptions []grpc.CallOption
@@ -115,7 +123,7 @@ type LogOptions struct {
 }
 
 type CallOptions struct {
-	InferProtocol string // REST or gRPC
+	InferProtocol InferProtocol
 	InferType     InferType
 	StickySession bool
 	Iterations    int
@@ -506,7 +514,7 @@ func canContinueInfer(callOptions *CallOptions, i int, timeStart int64) bool {
 		(callOptions.Seconds > 0 && time.Now().Unix()-timeStart < callOptions.Seconds)
 }
 
-func (ic *InferenceClient) InferRest(
+func (ic *InferenceClient) inferRest(
 	resourceName string,
 	data []byte,
 	headers []string,
@@ -683,7 +691,7 @@ func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferGrpc(
+func (ic *InferenceClient) inferGrpc(
 	resourceName string,
 	data []byte,
 	headers []string,
@@ -828,10 +836,10 @@ func (ic *InferenceClient) Infer(
 		}
 	}
 	switch callOptions.InferProtocol {
-	case "rest":
-		return ic.InferRest(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
-	case "grpc":
-		return ic.InferGrpc(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
+	case InferRest:
+		return ic.inferRest(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
+	case InferGrpc:
+		return ic.inferGrpc(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
 	default:
 		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}
