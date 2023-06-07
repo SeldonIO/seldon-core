@@ -26,8 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	trace2 "go.opentelemetry.io/otel/trace"
-
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -35,6 +33,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	trace2 "go.opentelemetry.io/otel/trace"
 )
 
 type TracerProvider struct {

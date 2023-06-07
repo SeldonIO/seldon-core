@@ -23,11 +23,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
+	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	log "github.com/sirupsen/logrus"
 )
 
 type SimpleScheduler struct {

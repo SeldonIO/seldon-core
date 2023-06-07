@@ -28,19 +28,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/mux"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-	"google.golang.org/grpc"
-
-	"github.com/gorilla/mux"
-
-	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 type mockMLServerState struct {

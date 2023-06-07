@@ -22,9 +22,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 )
 
 // TODO - support these via gRPC call/CLI args

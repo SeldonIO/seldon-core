@@ -19,12 +19,12 @@ package dataflow
 import (
 	"testing"
 
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-
-	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestCreateTopicSources(t *testing.T) {

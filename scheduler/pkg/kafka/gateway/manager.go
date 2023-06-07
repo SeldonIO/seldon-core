@@ -19,10 +19,11 @@ package gateway
 import (
 	"sync"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	log "github.com/sirupsen/logrus"
 )
 
 const (

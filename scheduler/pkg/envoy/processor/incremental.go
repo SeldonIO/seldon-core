@@ -25,23 +25,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	rsrc "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (

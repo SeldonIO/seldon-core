@@ -19,10 +19,11 @@ package xdscache
 import (
 	"fmt"
 
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/sirupsen/logrus"
 
-	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 )
 

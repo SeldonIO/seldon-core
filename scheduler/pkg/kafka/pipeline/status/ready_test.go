@@ -21,9 +21,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
 	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 type fakePipelineStatusProvider struct {

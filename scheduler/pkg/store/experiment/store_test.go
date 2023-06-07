@@ -20,13 +20,14 @@ import (
 	"errors"
 	"testing"
 
+	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 
-	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/sirupsen/logrus"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestStartExperiment(t *testing.T) {

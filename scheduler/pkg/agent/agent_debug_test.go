@@ -23,11 +23,13 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func setupService(numModels int, modelPrefix string, capacity int) *agentDebug {

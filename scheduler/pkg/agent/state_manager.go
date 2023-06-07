@@ -20,11 +20,13 @@ import (
 	"fmt"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+
 	cache "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/cache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
-	log "github.com/sirupsen/logrus"
 )
 
 const (

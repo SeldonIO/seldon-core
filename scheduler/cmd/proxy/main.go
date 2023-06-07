@@ -21,8 +21,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	proxy "github.com/seldonio/seldon-core/scheduler/v2/pkg/proxy"
 	"github.com/sirupsen/logrus"
+
+	proxy "github.com/seldonio/seldon-core/scheduler/v2/pkg/proxy"
 )
 
 func main() {

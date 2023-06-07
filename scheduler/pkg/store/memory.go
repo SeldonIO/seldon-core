@@ -21,11 +21,12 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 type MemoryStore struct {

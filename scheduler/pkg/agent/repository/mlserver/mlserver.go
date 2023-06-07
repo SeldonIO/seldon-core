@@ -25,10 +25,10 @@ import (
 	"path/filepath"
 	"strconv"
 
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	log "github.com/sirupsen/logrus"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (

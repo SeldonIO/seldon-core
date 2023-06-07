@@ -21,10 +21,11 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestCommunicationErrors(t *testing.T) {

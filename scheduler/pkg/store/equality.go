@@ -17,8 +17,9 @@ limitations under the License.
 package store
 
 import (
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"google.golang.org/protobuf/proto"
+
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 type ModelEquality struct {

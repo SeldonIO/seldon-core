@@ -27,9 +27,10 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	log "github.com/sirupsen/logrus"
 )
 
 type V2RestClientForTest struct {

@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 )
 
