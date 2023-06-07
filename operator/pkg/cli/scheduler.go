@@ -29,19 +29,17 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"google.golang.org/grpc/credentials/insecure"
-
+	"github.com/ghodss/yaml"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-
-	"github.com/ghodss/yaml"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"google.golang.org/grpc"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
 const subscriberName = "seldon CLI"

@@ -17,8 +17,9 @@ limitations under the License.
 package cli
 
 import (
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"github.com/spf13/cobra"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 func createConfigRemove() *cobra.Command {

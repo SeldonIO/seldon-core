@@ -21,13 +21,14 @@ import (
 	"strings"
 
 	"github.com/imdario/mergo"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/service"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/statefulset"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/apis"
 )
 
 const (

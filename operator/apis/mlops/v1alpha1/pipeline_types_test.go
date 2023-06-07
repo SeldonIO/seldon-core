@@ -19,9 +19,9 @@ package v1alpha1
 import (
 	"testing"
 
+	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/onsi/gomega"
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
