@@ -130,4 +130,8 @@ helm install seldon-core-operator seldonio/seldon-core-operator --namespace seld
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |
+| usageMetrics.spartakus.affinity | object | `{}` | Affinity rules for scheduling the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.nodeSelector | object | `{}` | Node selectors to schedule the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.resources | object | `{}` | Resources for the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.tolerations | list | `[]` | Tolerations to allow the spartakus pod to be scheduled to nodes with taints, if usageMetrics is enabled. |
 | webhook.port | int | `4443` |  |

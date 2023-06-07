@@ -14,6 +14,10 @@ spec:
       labels:
         app: seldon-spartakus-volunteer
     spec:
+      {{- with .Values.usageMetrics.spartakus.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - args:
         - -c
@@ -22,10 +26,22 @@ spec:
         - /bin/sh
         image: gcr.io/google_containers/spartakus-amd64:v1.1.0
         name: seldon-spartakus-volunteer
+        {{- with .Values.usageMetrics.spartakus.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - mountPath: /etc/config
           name: seldon-spartakus-config-volume
+      {{- with .Values.usageMetrics.spartakus.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}   
+      {{- end }}
       serviceAccountName: seldon-spartakus-volunteer
+      {{- with .Values.usageMetrics.spartakus.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumes:
       - configMap:
           name: seldon-spartakus-config

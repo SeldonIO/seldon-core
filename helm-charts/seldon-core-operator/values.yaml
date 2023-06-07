@@ -117,6 +117,15 @@ storageInitializer:
   memoryRequest: 100Mi
 usageMetrics:
   enabled: false
+  spartakus:
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+    # Ref: https://kubernetes.io/docs/user-guide/node-selection/
+    nodeSelector: {}
+    resources: {}
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
 # In scenarios like EKS with non-standard CNI plugin like calico, the control plane cannot reach the webhook
 # hence it is needed to set hostNetwork: true
 hostNetwork: false
