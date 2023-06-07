@@ -1,0 +1,23 @@
+name: lint-pr-title
+
+on:
+  pull_request:
+    branches:
+      - v2
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+jobs:
+  conventional-commit:
+    if: github.repository == 'SeldonIO/seldon-core' # Do not run this on forks.
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Check PR title matches Conventional Commit format
+        uses: matthiashermsen/lint-pull-request-title@v1.0.0
+        with:
+          allowed-pull-request-types: build,ci,docs,feat,fix,refactor,revert,test
