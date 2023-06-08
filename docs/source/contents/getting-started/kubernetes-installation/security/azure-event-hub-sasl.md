@@ -52,6 +52,6 @@ Note you may need to tweak `replicationFactor` and `numPartitions` to your clust
 
 - First check Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/overview.html).
 
-- Set the kafka config map debug setting to “all”. For Helm install you can set `kafka.debug=all`.
+- Set the kafka config map debug setting to `all`. For Helm install you can set `kafka.debug=all`.
 
 - Verify that you did not hit quotas for topics or partitions in your Event Hub namespace

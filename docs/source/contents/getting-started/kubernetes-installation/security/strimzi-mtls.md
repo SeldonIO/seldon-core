@@ -20,7 +20,7 @@ If you don't have this user you can install it with:
 kubectl create -f k8s/samples/strimzi-example-tls-user.yaml -n seldon-mesh
 ```
 
-Install seldon with the Strimzi certificate secrets using a custom values file. This sets the secret created by Strimzi for the user created above (`seldon`) and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster (`seldon-cluster-ca-cert`). 
+Install seldon with the Strimzi certificate secrets using a custom values file. This sets the secret created by Strimzi for the user created above (`seldon`) and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster (`seldon-cluster-ca-cert`).
 
 ```{literalinclude} ../../../../../../k8s/samples/values-strimzi-kafka-mtls.yaml
 :language: yaml
