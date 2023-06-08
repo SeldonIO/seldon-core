@@ -52,6 +52,6 @@ Note you may need to tweak `replicationFactor` and `numPartitions` to your clust
 
 - First check Azure Event Hub [troubleshooting guide](https://learn.microsoft.com/en-us/azure/event-hubs/troubleshooting-guide).
 
-- Set the kafka config map debug setting to “all”. For Helm install you can set `kafka.debug=all`.
+- Set the kafka config map debug setting to `all`. For Helm install you can set `kafka.debug=all`.
 
 - Verify that you did not hit quotas for topics or partitions in your Event Hub namespace.
