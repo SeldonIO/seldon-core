@@ -1,4 +1,4 @@
-# AWS mTLS MSK
+# AWS MSK mTLS
 
 Seldon will run with [AWS MSK](https://aws.amazon.com/msk/).
 

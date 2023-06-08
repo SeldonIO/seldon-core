@@ -6,13 +6,13 @@ kind: Kustomization
 images:
 - name: agent
   newName: seldonio/seldon-agent
-newTag: latest
-name: mlserver
-newName: seldonio/mlserver
-newTag: 1.3.3
-name: rclone
-newName: seldonio/seldon-rclone
-newTag: latest
+  newTag: latest
+- name: mlserver
+  newName: seldonio/mlserver
+  newTag: 1.3.2
+- name: rclone
+  newName: seldonio/seldon-rclone
+  newTag: latest
 - name: triton
   newName: nvcr.io/nvidia/tritonserver
   newTag: 23.03-py3

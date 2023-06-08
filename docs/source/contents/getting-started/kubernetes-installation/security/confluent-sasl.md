@@ -34,9 +34,8 @@ kubectl create secret generic confluent-kafka-secret -n seldon-mesh --from-liter
 Note you may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.
 
 
-
 ## Troubleshooting
 
 - First check Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/overview.html).
 
-- Set the kafka config map debug setting to “all”. For Helm install you can set `kafka.debug=all`.
+- Set the kafka config map debug setting to `all`. For Helm install you can set `kafka.debug=all`.
