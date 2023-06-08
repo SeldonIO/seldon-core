@@ -1,0 +1,19 @@
+kafka:
+  bootstrap: <msk-bootstrap-server-endpoints>
+  topics:
+    replicationFactor: 3
+    numPartitions: 4
+
+security:
+    kafka:
+      protocol: SASL_SSL
+      sasl:
+        mechanism: SCRAM-SHA-512
+        client:
+          username: < username >
+          secret: aws-msk-kafka-secret
+          passwordPath: password
+      ssl:
+        client:
+          secret:
+          brokerValidationSecret:
