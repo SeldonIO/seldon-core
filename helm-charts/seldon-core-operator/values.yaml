@@ -97,7 +97,6 @@ manager:
   # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
   # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-  # Ref: https://kubernetes.io/docs/user-guide/node-selection/
   nodeSelector: {}
   # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
@@ -121,7 +120,6 @@ usageMetrics:
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
     affinity: {}
     # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-    # Ref: https://kubernetes.io/docs/user-guide/node-selection/
     nodeSelector: {}
     resources: {}
     # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
