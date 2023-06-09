@@ -94,6 +94,6 @@ func (k *SeldonK8sAPI) IsLoaded(filename string) (bool, error) {
 	}
 }
 
-func (s *SeldonK8sAPI) Infer(filename string, request string) error {
+func (s *SeldonK8sAPI) Infer(filename string, request string) ([]byte, error) {
 	return s.inferClient.Infer(filename, request)
 }

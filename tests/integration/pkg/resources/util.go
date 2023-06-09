@@ -19,6 +19,7 @@ const (
 	resourcePipelineKind   = "Pipeline"
 	resourceExperimentKind = "Experiment"
 	resourceServerKind     = "Server"
+	InferResponseIDField   = "id"
 )
 
 type SeldonResourceMeta struct {
@@ -71,9 +72,9 @@ func getResource(filename string) (*SeldonResourceMeta, error) {
 	}, nil
 }
 
-func getInferRequestProtocol(request string) (cli.InferProtocol, error) {
+func getInferRequestProtocol(request []byte) (cli.InferProtocol, error) {
 	var data map[string]interface{}
-	err := json.Unmarshal([]byte(request), &data)
+	err := json.Unmarshal(request, &data)
 	if err != nil {
 		return cli.InferUnknown, err
 	}
@@ -89,4 +90,25 @@ func getInferRequestProtocol(request string) (cli.InferProtocol, error) {
 		}
 	}
 	return cli.InferUnknown, fmt.Errorf("cannot decode infer request payload as rest or grpc json proto")
+}
+
+func removeIdFromResponse(response []byte, err error) ([]byte, error) {
+	if err != nil {
+		return nil, err
+	}
+	var data map[string]interface{}
+	err = json.Unmarshal(response, &data)
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := data[InferResponseIDField]; ok {
+		delete(data, InferResponseIDField)
+		responseUpdated, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+		return responseUpdated, nil
+	} else {
+		return response, nil
+	}
 }

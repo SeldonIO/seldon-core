@@ -10,7 +10,7 @@ type SeldonBackendAPI interface {
 	Load(filename string) error
 	UnLoad(filename string) error
 	IsLoaded(filename string) (bool, error)
-	Infer(filename string, request string) error
+	Infer(filename string, request string) ([]byte, error)
 }
 
 func checkSeldonRunningLocally() (bool, error) {

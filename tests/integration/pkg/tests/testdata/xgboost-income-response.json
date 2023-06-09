@@ -1,0 +1,18 @@
+{
+  "model_name": "income-xgb_1",
+  "model_version": "1",
+  "parameters": {},
+  "outputs": [
+    {
+      "name": "predict",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "FP32",
+      "data": [
+        -1.8380107879638672
+      ]
+    }
+  ]
+}

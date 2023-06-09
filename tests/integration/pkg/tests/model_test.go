@@ -3,6 +3,7 @@ package tests
 import (
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/tests/integration/v2/pkg/resources"
+	"os"
 	"testing"
 	"time"
 )
@@ -10,25 +11,29 @@ import (
 func TestSingleModelLoadInferUnload(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name         string
-		modelPath    string
-		inferRequest string
+		name              string
+		modelPath         string
+		inferRequestPath  string
+		inferResponsePath string
 	}
 	tests := []test{
 		{
-			name:         "sklearn - iris",
-			modelPath:    "testdata/sklearn-iris.yaml",
-			inferRequest: `{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}`,
+			name:              "sklearn - iris",
+			modelPath:         "testdata/sklearn-iris.yaml",
+			inferRequestPath:  `testdata/sklearn-iris-request.json`,
+			inferResponsePath: `testdata/sklearn-iris-response.json`,
 		},
 		{
-			name:         "tensorflow - tfsimple",
-			modelPath:    "testdata/tensorflow-tfsimple.yaml",
-			inferRequest: `{"model_name":"tfsimple1","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}`,
+			name:              "tensorflow - tfsimple",
+			modelPath:         "testdata/tensorflow-tfsimple.yaml",
+			inferRequestPath:  `testdata/tensorflow-tfsimple-request.json`,
+			inferResponsePath: `testdata/tensorflow-tfsimple-response.json`,
 		},
 		{
-			name:         "xgboost - income",
-			modelPath:    "testdata/xgboost-income.yaml",
-			inferRequest: `{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}`,
+			name:              "xgboost - income",
+			modelPath:         "testdata/xgboost-income.yaml",
+			inferRequestPath:  `testdata/xgboost-income-request.json`,
+			inferResponsePath: `testdata/xgboost-income-response.json`,
 		},
 	}
 
@@ -48,8 +53,11 @@ func TestSingleModelLoadInferUnload(t *testing.T) {
 			}
 			g.Eventually(await).WithTimeout(time.Second * 60).WithPolling(time.Second).Should(BeTrue())
 			// Infer grpc
-			err = sapi.Infer(test.modelPath, test.inferRequest)
+			res, err := sapi.Infer(test.modelPath, test.inferRequestPath)
 			g.Expect(err).To(BeNil())
+			resDat, err := os.ReadFile(test.inferResponsePath)
+			g.Expect(err).To(BeNil())
+			g.Expect(resDat).To(MatchJSON(res))
 			// Unload
 			err = sapi.UnLoad(test.modelPath)
 			g.Expect(err).To(BeNil())

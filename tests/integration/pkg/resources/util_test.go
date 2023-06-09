@@ -37,7 +37,7 @@ func TestSingleModelLoadInferUnload(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ty, err := getInferRequestProtocol(test.request)
+			ty, err := getInferRequestProtocol([]byte(test.request))
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

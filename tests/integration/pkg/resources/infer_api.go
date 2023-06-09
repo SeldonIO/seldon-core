@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
+	"os"
 )
 
 type SeldonInferAPI struct {
@@ -26,14 +27,14 @@ func NewSeldonInferAPI(host string) (*SeldonInferAPI, error) {
 	}, nil
 }
 
-func (s *SeldonInferAPI) Infer(filename string, request string) error {
+func (s *SeldonInferAPI) Infer(filename string, requestPath string) ([]byte, error) {
 	callOpts := s.defaultCallOpts
 	logOpts := &cli.LogOptions{}
 
 	// Get infer type
 	resourceMeta, err := getResource(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	switch resourceMeta.gvk.Kind {
 	case resourceModelKind:
@@ -41,22 +42,27 @@ func (s *SeldonInferAPI) Infer(filename string, request string) error {
 	case resourcePipelineKind:
 		callOpts.InferType = cli.InferPipeline
 	default:
-		return fmt.Errorf("Unknown resource type in %s found %s", filename, resourceMeta.gvk.String())
+		return nil, fmt.Errorf("Unknown resource type in %s found %s", filename, resourceMeta.gvk.String())
 	}
 
+	// Get request
+	request, err := os.ReadFile(requestPath)
+	if err != nil {
+		return nil, err
+	}
 	// Get infer protocol
 	protocol, err := getInferRequestProtocol(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	callOpts.InferProtocol = protocol
 
-	return s.inferenceClient.Infer(
+	return removeIdFromResponse(s.inferenceClient.Infer(
 		resourceMeta.name,
-		[]byte(request),
+		request,
 		[]string{},
 		"",
 		callOpts,
 		logOpts,
-	)
+	))
 }

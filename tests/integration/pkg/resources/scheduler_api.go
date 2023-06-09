@@ -58,6 +58,6 @@ func (s *SeldonAPI) IsLoaded(filename string) (bool, error) {
 	return true, nil
 }
 
-func (s *SeldonAPI) Infer(filename string, request string) error {
+func (s *SeldonAPI) Infer(filename string, request string) ([]byte, error) {
 	return s.inferClient.Infer(filename, request)
 }

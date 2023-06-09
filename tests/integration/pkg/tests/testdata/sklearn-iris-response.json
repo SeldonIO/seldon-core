@@ -1,0 +1,19 @@
+{
+  "modelName": "iris_1",
+  "modelVersion": "1",
+  "outputs": [
+    {
+      "name": "predict",
+      "datatype": "INT64",
+      "shape": [
+        "1",
+        "1"
+      ],
+      "contents": {
+        "int64Contents": [
+          "2"
+        ]
+      }
+    }
+  ]
+}

@@ -114,7 +114,7 @@ func createPipelineInfer() *cobra.Command {
 				ShowResponse: showResponse,
 			}
 
-			err = inferenceClient.Infer(pipelineName, data, headers, authority, callOpts, logOpts)
+			_, err = inferenceClient.Infer(pipelineName, data, headers, authority, callOpts, logOpts)
 			return err
 		},
 	}

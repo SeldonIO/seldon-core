@@ -114,7 +114,7 @@ func createModelInfer() *cobra.Command {
 				ShowResponse: showResponse,
 			}
 
-			err = inferenceClient.Infer(
+			_, err = inferenceClient.Infer(
 				modelName,
 				data,
 				headers,
