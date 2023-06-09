@@ -1008,7 +1008,7 @@ tests = ["codecov", "coverage (<4.4)", "flake8", "flake8-quotes", "mock (==1.0.1
 
 [[package]]
 name = "jax"
-version = "0.4.11"
+version = "0.4.12"
 description = "Differentiate, compile, and transform Numpy code."
 category = "main"
 optional = false
@@ -1023,17 +1023,17 @@ scipy = ">=1.7"
 
 [package.extras]
 australis = ["protobuf (>=3.13,<4)"]
-ci = ["jaxlib (==0.4.10)"]
-cpu = ["jaxlib (==0.4.11)"]
-cuda = ["jaxlib (==0.4.11+cuda11.cudnn86)"]
-cuda11_cudnn82 = ["jaxlib (==0.4.11+cuda11.cudnn82)"]
-cuda11_cudnn86 = ["jaxlib (==0.4.11+cuda11.cudnn86)"]
-cuda11_local = ["jaxlib (==0.4.11+cuda11.cudnn86)"]
-cuda11_pip = ["jaxlib (==0.4.11+cuda11.cudnn86)", "nvidia-cublas-cu11 (>=11.11)", "nvidia-cuda-cupti-cu11 (>=11.8)", "nvidia-cuda-nvcc-cu11 (>=11.8)", "nvidia-cuda-runtime-cu11 (>=11.8)", "nvidia-cudnn-cu11 (>=8.8)", "nvidia-cufft-cu11 (>=10.9)", "nvidia-cusolver-cu11 (>=11.4)", "nvidia-cusparse-cu11 (>=11.7)"]
-cuda12_local = ["jaxlib (==0.4.11+cuda12.cudnn88)"]
-cuda12_pip = ["jaxlib (==0.4.11+cuda12.cudnn88)", "nvidia-cublas-cu12", "nvidia-cuda-cupti-cu12", "nvidia-cuda-nvcc-cu12", "nvidia-cuda-runtime-cu12", "nvidia-cudnn-cu12 (>=8.9)", "nvidia-cufft-cu12", "nvidia-cusolver-cu12", "nvidia-cusparse-cu12"]
-minimum-jaxlib = ["jaxlib (==0.4.7)"]
-tpu = ["jaxlib (==0.4.11)", "libtpu-nightly (==0.1.dev20230531)"]
+ci = ["jaxlib (==0.4.11)"]
+cpu = ["jaxlib (==0.4.12)"]
+cuda = ["jaxlib (==0.4.12+cuda11.cudnn86)"]
+cuda11_cudnn82 = ["jaxlib (==0.4.12+cuda11.cudnn82)"]
+cuda11_cudnn86 = ["jaxlib (==0.4.12+cuda11.cudnn86)"]
+cuda11_local = ["jaxlib (==0.4.12+cuda11.cudnn86)"]
+cuda11_pip = ["jaxlib (==0.4.12+cuda11.cudnn86)", "nvidia-cublas-cu11 (>=11.11)", "nvidia-cuda-cupti-cu11 (>=11.8)", "nvidia-cuda-nvcc-cu11 (>=11.8)", "nvidia-cuda-runtime-cu11 (>=11.8)", "nvidia-cudnn-cu11 (>=8.8)", "nvidia-cufft-cu11 (>=10.9)", "nvidia-cusolver-cu11 (>=11.4)", "nvidia-cusparse-cu11 (>=11.7)"]
+cuda12_local = ["jaxlib (==0.4.12+cuda12.cudnn88)"]
+cuda12_pip = ["jaxlib (==0.4.12+cuda12.cudnn88)", "nvidia-cublas-cu12", "nvidia-cuda-cupti-cu12", "nvidia-cuda-nvcc-cu12", "nvidia-cuda-runtime-cu12", "nvidia-cudnn-cu12 (>=8.9)", "nvidia-cufft-cu12", "nvidia-cusolver-cu12", "nvidia-cusparse-cu12"]
+minimum-jaxlib = ["jaxlib (==0.4.11)"]
+tpu = ["jaxlib (==0.4.12)", "libtpu-nightly (==0.1.dev20230608)"]
 
 [[package]]
 name = "jinja2"
@@ -2423,7 +2423,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "websocket-client"
-version = "1.5.2"
+version = "1.5.3"
 description = "WebSocket client for Python with low level API options"
 category = "main"
 optional = false
@@ -3256,7 +3256,7 @@ jaeger-client = [
     {file = "jaeger-client-4.4.0.tar.gz", hash = "sha256:ab3ca12c0816446798363ad7a2784f0ec3694234406cc58c2a3c1a7d0d8a52aa"},
 ]
 jax = [
-    {file = "jax-0.4.11.tar.gz", hash = "sha256:8b1cd443b698339df8d8807578ee141e5b67e36125b3945b146f600177d60d79"},
+    {file = "jax-0.4.12.tar.gz", hash = "sha256:d2de9a2388ffe002f16506d3ad1cc6e34d7536b98948e49c7e05bbcfe8e57998"},
 ]
 jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
@@ -4471,8 +4471,8 @@ urllib3 = [
     {file = "urllib3-1.26.16.tar.gz", hash = "sha256:8f135f6502756bde6b2a9b28989df5fbe87c9970cecaa69041edcce7f0589b14"},
 ]
 websocket-client = [
-    {file = "websocket-client-1.5.2.tar.gz", hash = "sha256:c7d67c13b928645f259d9b847ab5b57fd2d127213ca41ebd880de1f553b7c23b"},
-    {file = "websocket_client-1.5.2-py3-none-any.whl", hash = "sha256:f8c64e28cd700e7ba1f04350d66422b6833b82a796b525a51e740b8cc8dab4b1"},
+    {file = "websocket-client-1.5.3.tar.gz", hash = "sha256:b96f3bce3e54e3486ebe6504bc22bd4c140392bd2eb71764db29be8f2639aa65"},
+    {file = "websocket_client-1.5.3-py3-none-any.whl", hash = "sha256:3566f8467cd350874c4913816355642a4942f6c1ed1e9406e3d42fae6d6c072a"},
 ]
 werkzeug = [
     {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},
