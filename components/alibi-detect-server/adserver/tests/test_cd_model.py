@@ -60,7 +60,7 @@ class TestTextDriftModel(TestCase):
         model = DummyCDModel()
         ad_model = AlibiDetectConceptDriftModel(
             "imdb_text_drift",
-            "gs://seldon-models/alibi-detect/cd/ks/imdb-0_10_4",
+            "gs://seldon-models/alibi-detect/cd/ks/imdb-0_11_2",
             drift_batch_size=2,
         )
         req = [
