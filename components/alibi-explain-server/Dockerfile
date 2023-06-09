@@ -11,12 +11,9 @@ LABEL name="Seldon Alibi Wrapper" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
 
 FROM base as builder
-ARG PYTHON_VERSION
-ARG CONDA_VERSION
 
 # Install Python / Conda
 RUN microdnf update -y && \
-    conda install --yes -c conda-forge python=${PYTHON_VERSION} conda=${CONDA_VERSION} && \
     pip install --upgrade pip setuptools wheel && \
     microdnf install -y git make automake gcc gcc-c++
 
