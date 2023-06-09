@@ -26,7 +26,7 @@ spec:
         - --event_type
         - org.kubeflow.serving.inference.outlier
         - --storage_uri
-        - gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10
+        - gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10-0_11_2
         - --event_source
         - http://localhost:8080
         - OutlierDetector
