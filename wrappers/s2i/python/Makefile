@@ -3,10 +3,8 @@ SHELL:=/bin/bash
 
 PYTHON_VERSION=3.8.10
 
-CONDA_DOWNLOAD_VERSION=py38_4.12.0
-# Downgrading Conda to < 4.14 until this issue gets fixed
-# https://github.com/conda/conda/issues/11847
-CONDA_VERSION=4.13.0
+CONDA_DOWNLOAD_VERSION=py38_23.3.1-0
+CONDA_VERSION=23.5.0
 
 IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g'`
 DEFAULT_IMAGE_PYTHON_VERSION=`echo -n $(PYTHON_VERSION) | cut -d. -f1`
