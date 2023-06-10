@@ -26,14 +26,11 @@ import (
 )
 
 const (
-	flagOffset       = "offset"
-	flagRequestId    = "request-id"
-	flagOutputFormat = "format"
-	flagVerbose      = "verbose"
-	flagTimeout      = "timeout-secs"
-	flagTruncate     = "truncate"
-	flagNamespace    = "namespace"
-
+	flagOffset         = "offset"
+	flagRequestId      = "request-id"
+	flagOutputFormat   = "format"
+	flagTruncate       = "truncate"
+	flagNamespace      = "namespace"
 	flagTimeoutDefault = int64(60)
 )
 

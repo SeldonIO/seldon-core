@@ -55,9 +55,9 @@ func TestSingleModelLoadInferUnload(t *testing.T) {
 			// Infer grpc
 			res, err := sapi.Infer(test.modelPath, test.inferRequestPath)
 			g.Expect(err).To(BeNil())
-			resDat, err := os.ReadFile(test.inferResponsePath)
+			expectedResponse, err := os.ReadFile(test.inferResponsePath)
 			g.Expect(err).To(BeNil())
-			g.Expect(resDat).To(MatchJSON(res))
+			g.Expect(expectedResponse).To(MatchJSON(res))
 			// Unload
 			err = sapi.UnLoad(test.modelPath)
 			g.Expect(err).To(BeNil())

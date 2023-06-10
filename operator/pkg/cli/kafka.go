@@ -124,7 +124,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		return nil, err
 	}
 
-	scheduler, err := NewSchedulerClient(schedulerHost, schedulerHostIsSet, "")
+	scheduler, err := NewSchedulerClient(schedulerHost, schedulerHostIsSet, "", false)
 	if err != nil {
 		return nil, err
 	}

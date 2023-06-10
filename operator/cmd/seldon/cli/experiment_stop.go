@@ -45,7 +45,7 @@ func createExperimentStop() *cobra.Command {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}

@@ -11,7 +11,7 @@ type SeldonAPI struct {
 }
 
 func NewSeldonAPI() (*SeldonAPI, error) {
-	sc, err := cli.NewSchedulerClient("", false, "")
+	sc, err := cli.NewSchedulerClient("", false, "", false)
 	if err != nil {
 		return nil, err
 	}

@@ -53,7 +53,7 @@ func createUnload() *cobra.Command {
 				dataFile = loadFile(filename)
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}

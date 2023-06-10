@@ -126,11 +126,11 @@ func (sc *SchedulerClient) Unload(data []byte) ([]proto.Message, error) {
 		var res proto.Message
 		switch resource.kind {
 		case model:
-			res, err = sc.UnloadModel("", resource.data)
+			res, err = sc.UnloadModel(resource.name, resource.data)
 		case pipeline:
-			res, err = sc.UnloadPipeline("", resource.data)
+			res, err = sc.UnloadPipeline(resource.name, resource.data)
 		case experiment:
-			res, err = sc.StopExperiment("", resource.data)
+			res, err = sc.StopExperiment(resource.name, resource.data)
 		}
 		if err != nil {
 			return nil, err

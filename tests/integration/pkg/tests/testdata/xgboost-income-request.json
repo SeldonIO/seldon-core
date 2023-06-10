@@ -1,1 +1,139 @@
-{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}
+{
+  "parameters": {
+    "content_type": "pd"
+  },
+  "inputs": [
+    {
+      "name": "Age",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        47
+      ]
+    },
+    {
+      "name": "Workclass",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        4
+      ]
+    },
+    {
+      "name": "Education",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        1
+      ]
+    },
+    {
+      "name": "Marital Status",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        1
+      ]
+    },
+    {
+      "name": "Occupation",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        1
+      ]
+    },
+    {
+      "name": "Relationship",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        3
+      ]
+    },
+    {
+      "name": "Race",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        4
+      ]
+    },
+    {
+      "name": "Sex",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        1
+      ]
+    },
+    {
+      "name": "Capital Gain",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        0
+      ]
+    },
+    {
+      "name": "Capital Loss",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        0
+      ]
+    },
+    {
+      "name": "Hours per week",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        40
+      ]
+    },
+    {
+      "name": "Country",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT64",
+      "data": [
+        9
+      ]
+    }
+  ]
+}

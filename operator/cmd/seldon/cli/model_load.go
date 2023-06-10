@@ -52,13 +52,13 @@ func createModelLoad() *cobra.Command {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
 			res, err := schedulerClient.LoadModel(loadFile(filename))
-			if err == nil && verbose {
+			if err == nil {
 				cli.PrintProto(res)
 			}
 			return err

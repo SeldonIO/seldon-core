@@ -50,7 +50,7 @@ func createLoad() *cobra.Command {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
@@ -60,7 +60,7 @@ func createLoad() *cobra.Command {
 				dataFile = loadFile(filename)
 			}
 			responses, err := schedulerClient.Load(dataFile)
-			if err == nil && verbose {
+			if err == nil {
 				for _, res := range responses {
 					cli.PrintProto(res)
 				}

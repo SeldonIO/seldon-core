@@ -6,3 +6,4 @@ spec:
   storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/income-xgb"
   requirements:
   - xgboost
+  memory: 100Ki

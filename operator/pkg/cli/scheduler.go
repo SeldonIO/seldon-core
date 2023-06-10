@@ -49,9 +49,10 @@ type SchedulerClient struct {
 	authority     string
 	callOptions   []grpc.CallOption
 	config        *SeldonCLIConfig
+	verbose       bool
 }
 
-func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority string) (*SchedulerClient, error) {
+func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority string, verbose bool) (*SchedulerClient, error) {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -71,6 +72,7 @@ func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority
 		authority:     authority,
 		callOptions:   opts,
 		config:        config,
+		verbose:       verbose,
 	}, nil
 }
 

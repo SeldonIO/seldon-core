@@ -61,13 +61,13 @@ func createStatus() *cobra.Command {
 			if filename != "" {
 				dataFile = loadFile(filename)
 			}
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
 			responses, err := schedulerClient.Status(dataFile, waitCondition, timeout)
-			if err == nil && verbose {
+			if err == nil {
 				for _, res := range responses {
 					cli.PrintProto(res)
 				}

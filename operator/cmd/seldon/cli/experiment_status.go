@@ -59,13 +59,13 @@ func createExperimentStatus() *cobra.Command {
 			}
 			experimentName := args[0]
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
 			res, err := schedulerClient.ExperimentStatus(experimentName, wait, timeout)
-			if err == nil && verbose {
+			if err == nil {
 				cli.PrintProto(res)
 			}
 			return err
@@ -74,7 +74,7 @@ func createExperimentStatus() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.Int64P(flagTimeout, "t", flagTimeoutDefault, "timeout seconds")
-	flags.BoolP(flagVerbose, "v", true, "verbose output")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.BoolP(flagExperimentWait, "w", false, "wait for experiment to be active")

@@ -55,13 +55,13 @@ func createPipelineStatus() *cobra.Command {
 			}
 			pipelineName := args[0]
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
 			res, err := schedulerClient.PipelineStatus(pipelineName, waitCondition, timeout)
-			if err == nil && verbose {
+			if err == nil {
 				cli.PrintProto(res)
 			}
 			return err
@@ -70,7 +70,7 @@ func createPipelineStatus() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.Int64P(flagTimeout, "t", flagTimeoutDefault, "timeout seconds")
-	flags.BoolP(flagVerbose, "v", true, "verbose output")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagWaitCondition, "w", "", "pipeline wait condition")

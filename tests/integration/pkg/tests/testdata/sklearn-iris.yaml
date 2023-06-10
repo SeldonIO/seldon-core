@@ -6,3 +6,4 @@ spec:
   storageUri: "gs://seldon-models/scv2/samples/rolling/iris/v1"
   requirements:
   - sklearn
+  memory: 100Ki
