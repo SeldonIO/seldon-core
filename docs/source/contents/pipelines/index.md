@@ -363,8 +363,48 @@ There is also an `externalTriggers` section which allows triggers from other pip
 Further examples can be found in the [pipeline-to-pipeline examples](../examples/pipeline-to-pipeline.md).
 
 Present caveats:
- * Circular dependencies are not presently detected.
  * Pipeline status is local to each pipeline.
+
+## Filter requests
+
+If some paths through the pipeline do not need all requests you can use the step `filterPercent` to filter a percentage of requests. The random filtering is done after all joins have been processed.An example is shown below:
+
+```{literalinclude} ../../../../samples/pipelines/sampling-example.yaml
+:language: yaml
+```
+```{mermaid}
+  :caption: "*Filter requests at a step.*"
+  :align: center
+
+  flowchart LR
+      classDef pipeIO fill:#F6E083
+      classDef hidden fill:#ffffff,stroke:#ffffff
+      classDef trigger fill:#CEE741;
+      
+      subgraph input
+          INPUT0:::pipeIO
+          INPUT1:::pipeIO
+      end
+
+
+      INPUT0 --> TF1(tfsimple1)
+      INPUT1 --> TF1
+
+      INPUT0 --> any
+      INPUT1 --> any
+      any((join)):::trigger -.-> |50%| TF2(tfsimple2)
+
+      TF2 -.-> |OUTPUT0| tf2( ):::hidden
+      TF2 -.-> |OUTPUT1| tf2( ):::hidden
+
+      subgraph output
+          OUTPUT0:::pipeIO
+          OUTPUT1:::pipeIO
+      end
+      TF1 --> OUTPUT0
+      TF1 --> OUTPUT1
+```
+
 
 ## Data Centric Implementation
 

@@ -61,6 +61,18 @@ func validate(pv *PipelineVersion) error {
 	if err := checkPipelineInput(pv); err != nil {
 		return err
 	}
+	if err := checkStepFilterPercent(pv); err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkStepFilterPercent(pv *PipelineVersion) error {
+	for _, v := range pv.Steps {
+		if v.FilterPercent < 0 || v.FilterPercent > 100 {
+			return &PipelineStepFilterErr{pipeline: pv.Name, step: v.Name, filterPercent: v.FilterPercent}
+		}
+	}
 	return nil
 }
 

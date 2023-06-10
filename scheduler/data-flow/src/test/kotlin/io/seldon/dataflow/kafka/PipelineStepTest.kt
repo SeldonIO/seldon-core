@@ -49,6 +49,7 @@ internal class PipelineStepTest {
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 ChainerOuterClass.Batch.getDefaultInstance(),
                 kafkaDomainParams,
+                100,
             )
 
         expect {
@@ -162,6 +163,7 @@ internal class PipelineStepTest {
                 triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 triggerTensorsByTopic = emptyMap(),
                 batchProperties = ChainerOuterClass.Batch.getDefaultInstance(),
+                filterPercent = 0,
             )
 
         private fun makeJoinerFor(
@@ -180,6 +182,7 @@ internal class PipelineStepTest {
                 inputTriggerTopics = emptySet(),
                 triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 triggerTensorsByTopic = emptyMap(),
+                filterPercent = 0,
             )
     }
 }

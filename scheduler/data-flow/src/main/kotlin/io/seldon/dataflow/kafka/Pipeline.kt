@@ -110,6 +110,7 @@ class Pipeline(
                         it.triggersJoinTy,
                         it.batch,
                         kafkaDomainParams,
+                        it.filterPercent,
                     )
                 }
             val topology = builder.build()

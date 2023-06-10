@@ -39,11 +39,12 @@ func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {
 	for _, stepName := range keys {
 		step := pv.Steps[stepName]
 		protoStep := &scheduler.PipelineStep{
-			Name:         step.Name,
-			Inputs:       step.Inputs,
-			TensorMap:    step.TensorMap,
-			JoinWindowMs: step.JoinWindowMs,
-			Triggers:     step.Triggers,
+			Name:          step.Name,
+			Inputs:        step.Inputs,
+			TensorMap:     step.TensorMap,
+			JoinWindowMs:  step.JoinWindowMs,
+			Triggers:      step.Triggers,
+			FilterPercent: step.FilterPercent,
 		}
 		switch step.InputsJoinType {
 		case JoinInner:
@@ -130,11 +131,12 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 	steps := make(map[string]*PipelineStep)
 	for _, stepProto := range pipelineProto.Steps {
 		step := &PipelineStep{
-			Name:         stepProto.GetName(),
-			Inputs:       updateInternalInputSteps(pipelineProto.Name, stepProto.Inputs),
-			TensorMap:    stepProto.TensorMap,
-			JoinWindowMs: stepProto.JoinWindowMs,
-			Triggers:     updateInternalInputSteps(pipelineProto.Name, stepProto.Triggers),
+			Name:          stepProto.GetName(),
+			Inputs:        updateInternalInputSteps(pipelineProto.Name, stepProto.Inputs),
+			TensorMap:     stepProto.TensorMap,
+			JoinWindowMs:  stepProto.JoinWindowMs,
+			Triggers:      updateInternalInputSteps(pipelineProto.Name, stepProto.Triggers),
+			FilterPercent: stepProto.FilterPercent,
 		}
 		switch stepProto.InputsJoin {
 		case scheduler.PipelineStep_INNER:

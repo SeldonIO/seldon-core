@@ -70,8 +70,9 @@ func TestCreatePipelineFromProto(t *testing.T) {
 						Inputs: []string{},
 					},
 					{
-						Name:   "b",
-						Inputs: []string{"a"},
+						Name:          "b",
+						Inputs:        []string{"a"},
+						FilterPercent: 55,
 					},
 				},
 				Output: &scheduler.PipelineOutput{
@@ -87,8 +88,9 @@ func TestCreatePipelineFromProto(t *testing.T) {
 						Inputs: []string{},
 					},
 					"b": {
-						Name:   "b",
-						Inputs: []string{"a.outputs"},
+						Name:          "b",
+						Inputs:        []string{"a.outputs"},
+						FilterPercent: 55,
 					},
 				},
 				Output: &PipelineOutput{

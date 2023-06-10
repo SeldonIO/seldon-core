@@ -112,6 +112,11 @@ spec:
                           format: int32
                           type: integer
                       type: object
+                    filterPercent:
+                      description: percent of requests to filter after any join or
+                        triggers Defaults to 0% if not provided
+                      format: int32
+                      type: integer
                     inputs:
                       description: Previous step to receive data from
                       items:

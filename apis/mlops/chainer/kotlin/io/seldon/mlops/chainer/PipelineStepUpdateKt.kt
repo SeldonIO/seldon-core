@@ -478,6 +478,31 @@ public object PipelineStepUpdateKt {
     public fun hasBatch(): kotlin.Boolean {
       return _builder.hasBatch()
     }
+
+    /**
+     * <pre>
+     * Sample percentage
+     * </pre>
+     *
+     * <code>int32 FilterPercent = 10;</code>
+     */
+    public var filterPercent: kotlin.Int
+      @JvmName("getFilterPercent")
+      get() = _builder.getFilterPercent()
+      @JvmName("setFilterPercent")
+      set(value) {
+        _builder.setFilterPercent(value)
+      }
+    /**
+     * <pre>
+     * Sample percentage
+     * </pre>
+     *
+     * <code>int32 FilterPercent = 10;</code>
+     */
+    public fun clearFilterPercent() {
+      _builder.clearFilterPercent()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

@@ -40,6 +40,7 @@ class Joiner(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
+    internal val filterPercent: Int,
 ) : PipelineStep {
     init {
         val dataStream = buildTopology(builder, inputTopics)
@@ -52,6 +53,7 @@ class Joiner(
             dataStream,
             null
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)

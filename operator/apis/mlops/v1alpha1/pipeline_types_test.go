@@ -34,6 +34,7 @@ func TestAsPipelineDetails(t *testing.T) {
 	}
 
 	getUintPtr := func(val uint32) *uint32 { return &val }
+	getIntPtr := func(val int32) *int32 { return &val }
 	getJoinPtr := func(val JoinType) *JoinType { return &val }
 	tests := []test{
 		{
@@ -50,8 +51,9 @@ func TestAsPipelineDetails(t *testing.T) {
 							Name: "a",
 						},
 						{
-							Name:   "b",
-							Inputs: []string{"a"},
+							Name:          "b",
+							Inputs:        []string{"a"},
+							FilterPercent: getIntPtr(20),
 						},
 						{
 							Name:           "c",
@@ -79,8 +81,9 @@ func TestAsPipelineDetails(t *testing.T) {
 						Name: "a",
 					},
 					{
-						Name:   "b",
-						Inputs: []string{"a"},
+						Name:          "b",
+						Inputs:        []string{"a"},
+						FilterPercent: 20,
 					},
 					{
 						Name:         "c",

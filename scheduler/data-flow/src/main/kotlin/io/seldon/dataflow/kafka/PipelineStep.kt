@@ -45,6 +45,7 @@ fun stepFor(
     triggerJoinType: PipelineJoinType,
     batchProperties: Batch,
     kafkaDomainParams: KafkaDomainParams,
+    filterPercent: Int,
 ): PipelineStep? {
     val triggerTopicsToTensors = parseTriggers(triggerSources)
     return when (val result = parseSources(sources)) {
@@ -60,7 +61,8 @@ fun stepFor(
             kafkaDomainParams,
             triggerTopicsToTensors.keys,
             triggerJoinType,
-            triggerTopicsToTensors
+            triggerTopicsToTensors,
+            filterPercent
         )
         is SourceProjection.SingleSubset -> Chainer(
             builder,
@@ -73,7 +75,8 @@ fun stepFor(
             kafkaDomainParams,
             triggerTopicsToTensors.keys,
             triggerJoinType,
-            triggerTopicsToTensors
+            triggerTopicsToTensors,
+            filterPercent
         )
         is SourceProjection.Many -> Joiner(
             builder,
@@ -86,7 +89,8 @@ fun stepFor(
             joinType,
             triggerTopicsToTensors.keys,
             triggerJoinType,
-            triggerTopicsToTensors
+            triggerTopicsToTensors,
+            filterPercent,
         )
         is SourceProjection.ManySubsets -> Joiner(
             builder,
@@ -99,7 +103,8 @@ fun stepFor(
             joinType,
             triggerTopicsToTensors.keys,
             triggerJoinType,
-            triggerTopicsToTensors
+            triggerTopicsToTensors,
+            filterPercent,
         )
     }
 }

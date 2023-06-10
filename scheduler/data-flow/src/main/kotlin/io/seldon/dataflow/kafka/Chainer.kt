@@ -36,6 +36,7 @@ class Chainer(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
+    internal val filterPercent: Int,
 ) : PipelineStep {
     init {
         builder.apply {
@@ -69,6 +70,7 @@ class Chainer(
             s1,
             null,
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)
@@ -92,6 +94,7 @@ class Chainer(
             s1,
             null,
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)
@@ -115,6 +118,7 @@ class Chainer(
             s1,
             null,
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)
@@ -139,6 +143,7 @@ class Chainer(
             s1,
             null,
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)
@@ -163,6 +168,7 @@ class Chainer(
             s1,
             null,
         )
+            .samplingFilter(filterPercent)
             .headerRemover()
             .headerSetter(pipelineName)
             .to(outputTopic.topicName, producerSerde)

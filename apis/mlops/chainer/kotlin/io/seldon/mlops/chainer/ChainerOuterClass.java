@@ -2162,6 +2162,16 @@ public final class ChainerOuterClass {
      * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
      */
     io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder();
+
+    /**
+     * <pre>
+     * Sample percentage
+     * </pre>
+     *
+     * <code>int32 FilterPercent = 10;</code>
+     * @return The filterPercent.
+     */
+    int getFilterPercent();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineStepUpdate}
@@ -2650,6 +2660,21 @@ public final class ChainerOuterClass {
       return batch_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.Batch.getDefaultInstance() : batch_;
     }
 
+    public static final int FILTERPERCENT_FIELD_NUMBER = 10;
+    private int filterPercent_ = 0;
+    /**
+     * <pre>
+     * Sample percentage
+     * </pre>
+     *
+     * <code>int32 FilterPercent = 10;</code>
+     * @return The filterPercent.
+     */
+    @java.lang.Override
+    public int getFilterPercent() {
+      return filterPercent_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2690,6 +2715,9 @@ public final class ChainerOuterClass {
       }
       if (batch_ != null) {
         output.writeMessage(9, getBatch());
+      }
+      if (filterPercent_ != 0) {
+        output.writeInt32(10, filterPercent_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2736,6 +2764,10 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, getBatch());
       }
+      if (filterPercent_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(10, filterPercent_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2776,6 +2808,8 @@ public final class ChainerOuterClass {
         if (!getBatch()
             .equals(other.getBatch())) return false;
       }
+      if (getFilterPercent()
+          != other.getFilterPercent()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -2818,6 +2852,8 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + BATCH_FIELD_NUMBER;
         hash = (53 * hash) + getBatch().hashCode();
       }
+      hash = (37 * hash) + FILTERPERCENT_FIELD_NUMBER;
+      hash = (53 * hash) + getFilterPercent();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2982,6 +3018,7 @@ public final class ChainerOuterClass {
           batchBuilder_.dispose();
           batchBuilder_ = null;
         }
+        filterPercent_ = 0;
         return this;
       }
 
@@ -3069,6 +3106,9 @@ public final class ChainerOuterClass {
           result.batch_ = batchBuilder_ == null
               ? batch_
               : batchBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          result.filterPercent_ = filterPercent_;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -3213,6 +3253,9 @@ public final class ChainerOuterClass {
         if (other.hasBatch()) {
           mergeBatch(other.getBatch());
         }
+        if (other.getFilterPercent() != 0) {
+          setFilterPercent(other.getFilterPercent());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -3312,6 +3355,11 @@ public final class ChainerOuterClass {
                 bitField0_ |= 0x00000100;
                 break;
               } // case 74
+              case 80: {
+                filterPercent_ = input.readInt32();
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 80
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -4707,6 +4755,50 @@ public final class ChainerOuterClass {
           batch_ = null;
         }
         return batchBuilder_;
+      }
+
+      private int filterPercent_ ;
+      /**
+       * <pre>
+       * Sample percentage
+       * </pre>
+       *
+       * <code>int32 FilterPercent = 10;</code>
+       * @return The filterPercent.
+       */
+      @java.lang.Override
+      public int getFilterPercent() {
+        return filterPercent_;
+      }
+      /**
+       * <pre>
+       * Sample percentage
+       * </pre>
+       *
+       * <code>int32 FilterPercent = 10;</code>
+       * @param value The filterPercent to set.
+       * @return This builder for chaining.
+       */
+      public Builder setFilterPercent(int value) {
+        
+        filterPercent_ = value;
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Sample percentage
+       * </pre>
+       *
+       * <code>int32 FilterPercent = 10;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearFilterPercent() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        filterPercent_ = 0;
+        onChanged();
+        return this;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -8525,7 +8617,7 @@ public final class ChainerOuterClass {
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
       "StepUpdate\"8\n\021PipelineOperation\022\013\n\007Unkno" +
-      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\313\004\n\022Pipelin" +
+      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\342\004\n\022Pipelin" +
       "eStepUpdate\0224\n\007sources\030\001 \003(\0132#.seldon.ml" +
       "ops.chainer.PipelineTopic\0225\n\010triggers\030\002 " +
       "\003(\0132#.seldon.mlops.chainer.PipelineTopic" +
@@ -8538,29 +8630,29 @@ public final class ChainerOuterClass {
       "(\010\022\031\n\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorM" +
       "ap\030\010 \003(\0132+.seldon.mlops.chainer.Pipeline" +
       "TensorMapping\022*\n\005batch\030\t \001(\0132\033.seldon.ml" +
-      "ops.chainer.Batch\">\n\020PipelineJoinType\022\013\n" +
-      "\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020" +
-      "\003B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMapp" +
-      "ing\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTen" +
-      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelin" +
-      "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicNam" +
-      "e\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"" +
-      "X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030" +
-      "\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t" +
-      "_windowMs\"{\n\033PipelineUpdateStatusMessage" +
-      "\022;\n\006update\030\001 \001(\0132+.seldon.mlops.chainer." +
-      "PipelineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016" +
-      "\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRe" +
-      "sponse2\211\002\n\007Chainer\022~\n\030SubscribePipelineU" +
-      "pdates\0221.seldon.mlops.chainer.PipelineSu" +
-      "bscriptionRequest\032+.seldon.mlops.chainer" +
-      ".PipelineUpdateMessage\"\0000\001\022~\n\023PipelineUp" +
-      "dateEvent\0221.seldon.mlops.chainer.Pipelin" +
-      "eUpdateStatusMessage\0322.seldon.mlops.chai" +
-      "ner.PipelineUpdateStatusResponse\"\000BS\n\027io" +
-      ".seldon.mlops.chainerZ8github.com/seldon" +
-      "io/seldon-core/apis/go/v2/mlops/chainerb" +
-      "\006proto3"
+      "ops.chainer.Batch\022\025\n\rFilterPercent\030\n \001(\005" +
+      "\">\n\020PipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inn" +
+      "er\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowM" +
+      "s\"Y\n\025PipelineTensorMapping\022\024\n\014pipelineNa" +
+      "me\030\001 \001(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntens" +
+      "orName\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelin" +
+      "eName\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor" +
+      "\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030" +
+      "\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rol" +
+      "ling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pipe" +
+      "lineUpdateStatusMessage\022;\n\006update\030\001 \001(\0132" +
+      "+.seldon.mlops.chainer.PipelineUpdateMes" +
+      "sage\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n" +
+      "\034PipelineUpdateStatusResponse2\211\002\n\007Chaine" +
+      "r\022~\n\030SubscribePipelineUpdates\0221.seldon.m" +
+      "lops.chainer.PipelineSubscriptionRequest" +
+      "\032+.seldon.mlops.chainer.PipelineUpdateMe" +
+      "ssage\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldo" +
+      "n.mlops.chainer.PipelineUpdateStatusMess" +
+      "age\0322.seldon.mlops.chainer.PipelineUpdat" +
+      "eStatusResponse\"\000BS\n\027io.seldon.mlops.cha" +
+      "inerZ8github.com/seldonio/seldon-core/ap" +
+      "is/go/v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8583,7 +8675,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor,
-        new java.lang.String[] { "Sources", "Triggers", "Sink", "InputJoinTy", "TriggersJoinTy", "PassEmptyResponses", "JoinWindowMs", "TensorMap", "Batch", "JoinWindowMs", });
+        new java.lang.String[] { "Sources", "Triggers", "Sink", "InputJoinTy", "TriggersJoinTy", "PassEmptyResponses", "JoinWindowMs", "TensorMap", "Batch", "FilterPercent", "JoinWindowMs", });
     internal_static_seldon_mlops_chainer_PipelineTensorMapping_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_seldon_mlops_chainer_PipelineTensorMapping_fieldAccessorTable = new

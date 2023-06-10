@@ -25,11 +25,23 @@ import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier
+import java.util.Random
+
+val random = Random()
 
 fun <T> KStream<T, TRecord>.filterForPipeline(pipelineName: String): KStream<T, TRecord> {
     return this
         .transformValues(ValueTransformerSupplier { PipelineNameFilter(pipelineName) })
         .filterNot { _, value -> value == null }
+}
+
+fun <T> KStream<T, TRecord>.samplingFilter(filterPercent: Int): KStream<T, TRecord> {
+    if (filterPercent <= 0) {
+        return this
+    } else {
+        return this
+            .filter { _, value -> random.nextInt(0, 100) > filterPercent }
+    }
 }
 
 fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {

@@ -202,3 +202,13 @@ type PipelineInputErr struct {
 func (pie *PipelineInputErr) Error() string {
 	return fmt.Sprintf("pipeline %s input %s is invalid. %s", pie.pipeline, pie.input, pie.reason)
 }
+
+type PipelineStepFilterErr struct {
+	pipeline      string
+	step          string
+	filterPercent int32
+}
+
+func (pss *PipelineStepFilterErr) Error() string {
+	return fmt.Sprintf("pipeline %s step %s has invalid filterPercent . %d", pss.pipeline, pss.step, pss.filterPercent)
+}
