@@ -238,7 +238,7 @@ func (sc *SchedulerClient) ListModels() error {
 	return nil
 }
 
-func (sc *SchedulerClient) ModelStatus(modelName string, waitCondition string, timeoutSec int64) (*scheduler.ModelStatusResponse, error) {
+func (sc *SchedulerClient) ModelStatus(modelName string, waitCondition string, timeout time.Duration) (*scheduler.ModelStatusResponse, error) {
 	req := &scheduler.ModelStatusRequest{
 		SubscriberName: subscriberName,
 		Model: &scheduler.ModelReference{
@@ -268,7 +268,7 @@ func (sc *SchedulerClient) ModelStatus(modelName string, waitCondition string, t
 				}
 			}
 			time.Sleep(1 * time.Second)
-			if time.Now().Unix()-secsStart > timeoutSec {
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
 				return nil, fmt.Errorf("Model wait status timeout")
 			}
 		}
@@ -472,7 +472,7 @@ func (sc *SchedulerClient) StopExperiment(experimentName string, experimentBytes
 	return res, nil
 }
 
-func (sc *SchedulerClient) ExperimentStatus(experimentName string, wait bool, timeoutSec int64) (*scheduler.ExperimentStatusResponse, error) {
+func (sc *SchedulerClient) ExperimentStatus(experimentName string, wait bool, timeout time.Duration) (*scheduler.ExperimentStatusResponse, error) {
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           &experimentName,
@@ -496,7 +496,7 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, wait bool, ti
 				break
 			}
 			time.Sleep(1 * time.Second)
-			if time.Now().Unix()-secsStart > timeoutSec {
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
 				return nil, fmt.Errorf("Experiment wait status timeout")
 			}
 		}
@@ -629,7 +629,7 @@ func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []b
 	return res, nil
 }
 
-func (sc *SchedulerClient) PipelineStatus(pipelineName string, waitCondition string, timeoutSec int64) (*scheduler.PipelineStatusResponse, error) {
+func (sc *SchedulerClient) PipelineStatus(pipelineName string, waitCondition string, timeout time.Duration) (*scheduler.PipelineStatusResponse, error) {
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           &pipelineName,
@@ -656,7 +656,7 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, waitCondition str
 				}
 			}
 			time.Sleep(1 * time.Second)
-			if time.Now().Unix()-secsStart > timeoutSec {
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
 				return nil, fmt.Errorf("Pipeline wait status timeout")
 			}
 		}

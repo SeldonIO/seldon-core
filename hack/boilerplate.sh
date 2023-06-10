@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Add Golang Copyright headers
-for i in $(find ./apis ./components ./hodometer ./operator ./scheduler ./samples/examples -name '*.go')  # or whatever other pattern...
+for i in $(find ./apis ./components ./hodometer ./operator ./scheduler ./samples/examples ./tests/integration -name '*.go')  # or whatever other pattern...
 do
   if ! grep -q Copyright $i
   then

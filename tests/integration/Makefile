@@ -16,10 +16,6 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 	gofmt -w pkg
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
-.PHONY: build
-build: test
-	go build ./pkg/...
-
 .PHONY: licenses/dep.txt
 licenses/dep.txt:
 	go list -m all | cut -d ' ' -f 1 > licenses/dep.txt

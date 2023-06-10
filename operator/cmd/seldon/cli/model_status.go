@@ -17,6 +17,8 @@ limitations under the License.
 package cli
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
 
@@ -60,7 +62,7 @@ func createModelStatus() *cobra.Command {
 				return err
 			}
 
-			res, err := schedulerClient.ModelStatus(modelName, modelWaitCondition, timeout)
+			res, err := schedulerClient.ModelStatus(modelName, modelWaitCondition, time.Duration(timeout*int64(time.Second)))
 			if err == nil {
 				cli.PrintProto(res)
 			}

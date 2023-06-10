@@ -1,3 +1,19 @@
+/*
+Copyright 2023 Seldon Technologies Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package resources
 
 import (
@@ -23,10 +39,9 @@ const (
 )
 
 type SeldonResourceMeta struct {
-	name         string
-	gvk          schema.GroupVersionKind
-	unstructured *unstructured.Unstructured
-	obj          client.Object
+	name string
+	gvk  schema.GroupVersionKind
+	obj  client.Object
 }
 
 func getResourceFromKind(kind string) (client.Object, error) {
@@ -65,23 +80,22 @@ func getResource(filename string) (*SeldonResourceMeta, error) {
 	}
 
 	return &SeldonResourceMeta{
-		name:         unstructuredObject.GetName(),
-		gvk:          unstructuredObject.GroupVersionKind(),
-		unstructured: unstructuredObject,
-		obj:          obj,
+		name: unstructuredObject.GetName(),
+		gvk:  unstructuredObject.GroupVersionKind(),
+		obj:  obj,
 	}, nil
 }
 
 func getInferRequestProtocol(request []byte) (cli.InferProtocol, error) {
-	var data map[string]interface{}
+	var data map[string]any
 	err := json.Unmarshal(request, &data)
 	if err != nil {
 		return cli.InferUnknown, err
 	}
 	if inputs, ok := data["inputs"]; ok {
-		inputList := inputs.([]interface{})
+		inputList := inputs.([]any)
 		if len(inputList) >= 1 {
-			input := inputList[0].(map[string]interface{})
+			input := inputList[0].(map[string]any)
 			if _, ok := input["data"]; ok {
 				return cli.InferRest, nil
 			} else if _, ok := input["contents"]; ok {
@@ -96,19 +110,19 @@ func removeIdFromResponse(response []byte, err error) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data map[string]interface{}
+	var data map[string]any
 	err = json.Unmarshal(response, &data)
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := data[InferResponseIDField]; ok {
-		delete(data, InferResponseIDField)
-		responseUpdated, err := json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
-		return responseUpdated, nil
-	} else {
+	_, ok := data[InferResponseIDField]
+	if !ok {
 		return response, nil
 	}
+	delete(data, InferResponseIDField)
+	responseUpdated, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	return responseUpdated, nil
 }

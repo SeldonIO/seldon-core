@@ -17,6 +17,8 @@ limitations under the License.
 package cli
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
 
@@ -66,7 +68,7 @@ func createStatus() *cobra.Command {
 				return err
 			}
 
-			responses, err := schedulerClient.Status(dataFile, waitCondition, timeout)
+			responses, err := schedulerClient.Status(dataFile, waitCondition, time.Duration(timeout*int64(time.Second)))
 			if err == nil {
 				for _, res := range responses {
 					cli.PrintProto(res)

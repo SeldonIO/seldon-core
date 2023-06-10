@@ -1,17 +1,17 @@
       8 Apache 2.0
       3 Apache-2.0
-    395 Apache License 2.0
+    501 Apache License 2.0
       7 Apache License, Version 2.0
       3 Bouncy Castle Licence
-     45 BSD 2-Clause Simplified License
+     57 BSD 2-Clause Simplified License
       2 BSD-3-Clause
-    181 BSD 3-Clause New or Revised License
+    228 BSD 3-Clause New or Revised License
       1 CDDL + GPLv2 with classpath exception
-      4 Creative Commons Zero v1.0 Universal
+      5 Creative Commons Zero v1.0 Universal
       1 GNU General Public License, version 2 (GPL2), with the classpath exception
-      7 ISC License
-    443 MIT License
-     68 Mozilla Public License 2.0
+      9 ISC License
+    555 MIT License
+     84 Mozilla Public License 2.0
       8 The Apache License, Version 2.0
      19 The Apache Software License, Version 2.0
       4 The GNU lesser General Public License Version 3.0 with exceptions for static and dynamic linking

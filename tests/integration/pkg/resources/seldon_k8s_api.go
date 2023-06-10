@@ -1,3 +1,19 @@
+/*
+Copyright 2023 Seldon Technologies Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package resources
 
 import (
@@ -15,7 +31,7 @@ import (
 
 type SeldonK8sAPI struct {
 	namespace   string
-	client      client.Client
+	k8sClient   client.Client
 	inferClient *SeldonInferAPI
 }
 
@@ -38,7 +54,7 @@ func NewSeldonK8sAPI() (*SeldonK8sAPI, error) {
 	}
 	return &SeldonK8sAPI{
 		namespace:   namespace,
-		client:      cl,
+		k8sClient:   cl,
 		inferClient: ic,
 	}, nil
 }
@@ -58,16 +74,16 @@ func (k *SeldonK8sAPI) Load(filename string) error {
 		return err
 	}
 	resource.obj.SetNamespace(k.namespace)
-	return k.client.Create(context.Background(), resource.obj)
+	return k.k8sClient.Create(context.Background(), resource.obj)
 }
 
-func (k *SeldonK8sAPI) UnLoad(filename string) error {
+func (k *SeldonK8sAPI) Unload(filename string) error {
 	resource, err := getResource(filename)
 	if err != nil {
 		return err
 	}
 	resource.obj.SetNamespace(k.namespace)
-	return k.client.Delete(context.Background(), resource.obj)
+	return k.k8sClient.Delete(context.Background(), resource.obj)
 }
 
 func (k *SeldonK8sAPI) IsLoaded(filename string) (bool, error) {
@@ -76,7 +92,7 @@ func (k *SeldonK8sAPI) IsLoaded(filename string) (bool, error) {
 		return false, err
 	}
 	resource.obj.SetNamespace(k.namespace)
-	err = k.client.Get(context.Background(), types.NamespacedName{Name: resource.name, Namespace: k.namespace}, resource.obj)
+	err = k.k8sClient.Get(context.Background(), types.NamespacedName{Name: resource.name, Namespace: k.namespace}, resource.obj)
 	if err != nil {
 		return false, err
 	}

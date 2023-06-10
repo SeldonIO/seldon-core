@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"google.golang.org/protobuf/proto"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -139,7 +140,7 @@ func (sc *SchedulerClient) Unload(data []byte) ([]proto.Message, error) {
 	}
 }
 
-func (sc *SchedulerClient) Status(data []byte, wait bool, timeout int64) ([]proto.Message, error) {
+func (sc *SchedulerClient) Status(data []byte, wait bool, timeout time.Duration) ([]proto.Message, error) {
 	var protos []proto.Message
 	dec := createDecoder(data)
 	for {
