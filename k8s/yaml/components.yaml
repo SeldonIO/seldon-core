@@ -4,35 +4,30 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: hodometer
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-scheduler
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-server
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/rclone-gs-public.yaml
 apiVersion: v1
 kind: Secret
 metadata:
   name: seldon-rclone-gs-public
-  namespace: 'default'
 type: Opaque
 stringData:
   gs: |
@@ -46,7 +41,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: seldon-agent
-  namespace: 'default'
 data:
   agent.yaml: |-
     rclone:
@@ -57,7 +51,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: seldon-kafka
-  namespace: 'default'
 data:
   kafka.json: |-
    {
@@ -96,14 +89,12 @@ data:
 kind: ConfigMap
 metadata:
   name: seldon-manager-config
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/tracing.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: seldon-tracing
-  namespace: 'default'
 data:
   tracing.json: |-
    {
@@ -119,7 +110,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: agent-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -149,7 +139,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: hodometer-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -165,7 +154,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-leader-election-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -205,7 +193,6 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -399,7 +386,6 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-tls-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -415,7 +401,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-scheduler-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -439,7 +424,6 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: agent-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -447,14 +431,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-server
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: hodometer-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -462,14 +444,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: hodometer
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-leader-election-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -477,14 +457,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -492,14 +470,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-tls-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -507,14 +483,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-scheduler-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -522,7 +496,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
@@ -531,7 +504,6 @@ metadata:
   labels:
     app: seldon-mesh
   name: seldon-mesh
-  namespace: 'default'
 spec:
   ports:
   - name: 'data'
@@ -553,7 +525,6 @@ metadata:
   labels:
     app: seldon-mesh
   name: seldon-pipelinegateway
-  namespace: 'default'
 spec:
   clusterIP: None
   ports:
@@ -575,7 +546,6 @@ metadata:
   labels:
     app: seldon-scheduler
   name: seldon-scheduler
-  namespace: 'default'
 spec:
   ports:
   - name: 'xds'
@@ -613,7 +583,6 @@ metadata:
   labels:
     control-plane: controller-manager
   name: seldon-controller-manager
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -684,6 +653,8 @@ spec:
             memory: '64Mi'
         securityContext:
           allowPrivilegeEscalation: false
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -699,7 +670,6 @@ metadata:
   labels:
     control-plane: seldon-dataflow-engine
   name: seldon-dataflow-engine
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -718,30 +688,36 @@ spec:
           value: '1'
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT
           value: '1'
-        - name: SELDON_CORES_COUNT
-          value: '4'
+        - name: SELDON_KAFKA_MAX_MESSAGE_SIZE_BYTES
+          value: '1000000000'
         - name: SELDON_KAFKA_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
-        - name: SELDON_TLS_CLIENT_SECRET
+        - name: SELDON_KAFKA_TLS_CLIENT_SECRET
           value: ''
-        - name: SELDON_TLS_CLIENT_KEY_PATH
+        - name: SELDON_KAFKA_TLS_CLIENT_KEY_PATH
           value: '/tmp/certs/kafka/client/tls.key'
-        - name: SELDON_TLS_CLIENT_CERT_PATH
+        - name: SELDON_KAFKA_TLS_CLIENT_CERT_PATH
           value: '/tmp/certs/kafka/client/tls.crt'
-        - name: SELDON_TLS_CLIENT_CA_PATH
+        - name: SELDON_KAFKA_TLS_CLIENT_CA_PATH
           value: '/tmp/certs/kafka/client/ca.crt'
-        - name: SELDON_SASL_USERNAME
-          value: 'seldon'
-        - name: SELDON_SASL_SECRET
+        - name: SELDON_KAFKA_TLS_BROKER_SECRET
           value: ''
-        - name: SELDON_SASL_PASSWORD_PATH
-          value: '/tmp/sasl/kafka/client/password'
-        - name: SELDON_TLS_BROKER_SECRET
-          value: ''
-        - name: SELDON_TLS_BROKER_CA_PATH
+        - name: SELDON_KAFKA_TLS_BROKER_CA_PATH
           value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: SELDON_KAFKA_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: ''
+        - name: SELDON_KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
+        - name: SELDON_KAFKA_SASL_USERNAME
+          value: 'seldon'
+        - name: SELDON_KAFKA_SASL_SECRET
+          value: ''
+        - name: SELDON_KAFKA_SASL_PASSWORD_PATH
+          value: '/tmp/sasl/kafka/client/password'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
+        - name: SELDON_CORES_COUNT
+          value: '4'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -769,6 +745,8 @@ spec:
           requests:
             cpu: '100m'
             memory: '1G'
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -784,7 +762,6 @@ metadata:
   labels:
     app: seldon-envoy
   name: seldon-envoy
-  namespace: 'default'
 spec:
   selector:
     matchLabels:
@@ -834,6 +811,8 @@ spec:
           requests:
             cpu: '100m'
             memory: '128Mi'
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -848,7 +827,6 @@ metadata:
   labels:
     app.kubernetes.io/name: hodometer
   name: seldon-hodometer
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -902,6 +880,8 @@ spec:
           requests:
             cpu: '1m'
             memory: '32Mi'
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -917,7 +897,6 @@ metadata:
   labels:
     control-plane: seldon-modelgateway
   name: seldon-modelgateway
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -964,6 +943,8 @@ spec:
           value: '/tmp/certs/cps/ca.crt'
         - name: KAFKA_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
+        - name: KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
           value: ''
         - name: KAFKA_CLIENT_TLS_KEY_LOCATION
@@ -1022,6 +1003,8 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1044,7 +1027,6 @@ metadata:
   labels:
     app: pipelinegateway
   name: seldon-pipelinegateway
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -1072,6 +1054,8 @@ spec:
         env:
         - name: KAFKA_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
+        - name: KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
           value: ''
         - name: KAFKA_CLIENT_TLS_KEY_LOCATION
@@ -1164,6 +1148,8 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1186,7 +1172,6 @@ metadata:
   labels:
     control-plane: seldon-scheduler
   name: seldon-scheduler
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -1283,6 +1268,8 @@ spec:
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
           name: scheduler-state
+      imagePullSecrets:
+      - name: ''
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1312,7 +1299,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: mlserver
-  namespace: 'default'
 spec:
   podSpec:
     containers:
@@ -1517,6 +1503,8 @@ spec:
       - mountPath: /mnt/certs
         name: downstream-ca-certs
         readOnly: true
+    imagePullSecrets:
+    - name: ''
     securityContext:
       fsGroup: 1000
       runAsGroup: 1000
@@ -1549,7 +1537,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: triton
-  namespace: 'default'
 spec:
   podSpec:
     containers:
@@ -1755,6 +1742,8 @@ spec:
       - mountPath: /dev/shm
         name: dshm
         readOnly: false
+    imagePullSecrets:
+    - name: ''
     securityContext:
       fsGroup: 1000
       runAsGroup: 1000
