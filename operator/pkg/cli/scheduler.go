@@ -175,6 +175,9 @@ func (sc *SchedulerClient) LoadModel(data []byte) (*scheduler.LoadModelResponse,
 		return nil, err
 	}
 	req := &scheduler.LoadModelRequest{Model: schModel}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -245,7 +248,9 @@ func (sc *SchedulerClient) ModelStatus(modelName string, waitCondition string, t
 			Name: modelName,
 		},
 	}
-
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -413,6 +418,9 @@ func (sc *SchedulerClient) UnloadModel(modelName string, modelBytes []byte) (*sc
 			Name: modelName,
 		},
 	}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -432,10 +440,10 @@ func (sc *SchedulerClient) StartExperiment(data []byte) (*scheduler.StartExperim
 		return nil, err
 	}
 	schExperiment := experiment.AsSchedulerExperimentRequest()
-	if err != nil {
-		return nil, err
-	}
 	req := &scheduler.StartExperimentRequest{Experiment: schExperiment}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -460,6 +468,9 @@ func (sc *SchedulerClient) StopExperiment(experimentName string, experimentBytes
 	req := &scheduler.StopExperimentRequest{
 		Name: experimentName,
 	}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -477,7 +488,9 @@ func (sc *SchedulerClient) ExperimentStatus(experimentName string, wait bool, ti
 		SubscriberName: subscriberName,
 		Name:           &experimentName,
 	}
-
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -536,6 +549,9 @@ func (sc *SchedulerClient) ListExperiments() error {
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
 	}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return err
@@ -590,6 +606,9 @@ func (sc *SchedulerClient) LoadPipeline(data []byte) (*scheduler.LoadPipelineRes
 		return nil, err
 	}
 	req := &scheduler.LoadPipelineRequest{Pipeline: schPipeline}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -617,6 +636,9 @@ func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []b
 	req := &scheduler.UnloadPipelineRequest{
 		Name: pipelineName,
 	}
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -634,7 +656,9 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, waitCondition str
 		SubscriberName: subscriberName,
 		Name:           &pipelineName,
 	}
-
+	if sc.verbose {
+		printProto(req)
+	}
 	conn, err := sc.newConnection()
 	if err != nil {
 		return nil, err
@@ -695,6 +719,9 @@ func (sc *SchedulerClient) ListPipelines() error {
 	defer cancel()
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
+	}
+	if sc.verbose {
+		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {

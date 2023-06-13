@@ -17,12 +17,14 @@ limitations under the License.
 package resources
 
 import (
-	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"testing"
+
+	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
-func TestSingleModelLoadInferUnload(t *testing.T) {
+func TestInferRequestProtocol(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {

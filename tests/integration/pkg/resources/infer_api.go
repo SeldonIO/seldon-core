@@ -18,8 +18,9 @@ package resources
 
 import (
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"os"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 type SeldonInferAPI struct {

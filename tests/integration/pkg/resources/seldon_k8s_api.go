@@ -19,7 +19,7 @@ package resources
 import (
 	"context"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -27,6 +27,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
 type SeldonK8sAPI struct {

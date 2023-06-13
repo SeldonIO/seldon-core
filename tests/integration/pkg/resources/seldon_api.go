@@ -17,9 +17,10 @@ limitations under the License.
 package resources
 
 import (
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"os"
 	"time"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 type SeldonAPI struct {
@@ -70,7 +71,7 @@ func (s *SeldonAPI) IsLoaded(filename string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	_, err = s.schedulerClient.Status(dat, true, time.Duration(10*int64(time.Second)))
+	_, err = s.schedulerClient.Status(dat, true, 10*time.Second)
 	if err != nil {
 		return false, err
 	}

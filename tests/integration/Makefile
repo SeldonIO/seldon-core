@@ -4,6 +4,10 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 test:
 	go test -v ./pkg/... -coverprofile cover.out
 
+.PHONY: test-integration
+test-integration:
+	go test -v ./pkg/... -tags=integration
+
 .GOLANGCILINT_VERSION := v1.51.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 

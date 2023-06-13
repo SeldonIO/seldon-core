@@ -20,14 +20,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
+	"os"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 const (

@@ -1,3 +1,5 @@
+//go:build integration
+
 /*
 Copyright 2023 Seldon Technologies Ltd.
 
@@ -17,11 +19,13 @@ limitations under the License.
 package tests
 
 import (
-	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/tests/integration/v2/pkg/resources"
 	"os"
 	"testing"
 	"time"
+
+	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/tests/integration/v2/pkg/resources"
 )
 
 func TestModelInference(t *testing.T) {
