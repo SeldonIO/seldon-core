@@ -216,7 +216,7 @@ func (s *CertificateStore) GetClientCertificate(*tls.CertificateRequestInfo) (*t
 	}
 }
 
-func (s *CertificateStore) getCetificates() (*CertificateWrapper, *CertificateWrapper) {
+func (s *CertificateStore) getCertificates() (*CertificateWrapper, *CertificateWrapper) {
 	var certificate *CertificateWrapper
 	var validationCA *CertificateWrapper
 	if s.certificateManager != nil {
@@ -231,7 +231,7 @@ func (s *CertificateStore) getCetificates() (*CertificateWrapper, *CertificateWr
 func (s *CertificateStore) CreateClientTLSConfig() *tls.Config {
 	logger := s.logger.WithField("func", "CreateClientTransportCredentials")
 	var rootCAs *x509.CertPool
-	certificate, validationCA := s.getCetificates()
+	certificate, validationCA := s.getCertificates()
 	if certificate != nil {
 		rootCAs = certificate.Ca
 		logger.Info("Using rootCA from cert resource")
@@ -256,7 +256,7 @@ func (s *CertificateStore) CreateClientTransportCredentials() credentials.Transp
 }
 
 func (s *CertificateStore) CreateServerTLSConfig() *tls.Config {
-	certificate, validationCA := s.getCetificates()
+	certificate, validationCA := s.getCertificates()
 	// Assumes there is always a cert for a server
 	clientCAs := certificate.Ca
 	if validationCA != nil {

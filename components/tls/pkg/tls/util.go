@@ -23,7 +23,6 @@ import (
 
 const (
 	EnvSecurityProtocolSuffix = "_SECURITY_PROTOCOL"
-	SecurityProtocolTLS       = "TLS"
 	SecurityProtocolSSL       = "SSL"
 	SecurityProtocolPlaintxt  = "PLAINTEXT"
 	SecurityProtocolSASLSSL   = "SASL_SSL"
@@ -32,6 +31,10 @@ const (
 	SASLMechanismSCRAMSHA512 = "SCRAM-SHA-512"
 	SASLMechanismSCRAMSHA256 = "SCRAM-SHA-256"
 	SASLMechanismPlain       = "PLAIN"
+
+	EnvEndpointIdentificationMechanismSuffix = "_ENDPOINT_IDENTIFICATION_MECHANISM"
+	EndpointIdentificationMechanismNone      = "NONE"
+	EndpointIdentificationMechanismHTTPS     = "HTTPS"
 
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
 	EnvSecurityPrefixControlPlaneServer = "CONTROL_PLANE_SERVER"
@@ -61,6 +64,14 @@ func GetSASLMechanismFromEnv(prefix string) string {
 	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvSASLMechanismSuffix))
 	if !ok {
 		val = SASLMechanismPlain
+	}
+	return val
+}
+
+func GetEndpointIdentificationMechanismFromEnv(prefix string) string {
+	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvEndpointIdentificationMechanismSuffix))
+	if !ok {
+		val = EndpointIdentificationMechanismNone
 	}
 	return val
 }
