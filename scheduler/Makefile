@@ -6,18 +6,21 @@ DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
 ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 # Grafana image only used for Docker compose not k8s
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
+PROMETHEUS_IMG ?= prom/prometheus:latest
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
-KAFKA_IMG ?= docker.io/bitnami/kafka:3.3
-MLSERVER_IMG ?= seldonio/mlserver:1.2.3
+KAFKA_IMG ?= docker.io/bitnami/kafka:3.3.1
+ZOOKEEPER_IMG ?= docker.io/bitnami/zookeeper:3.8
+MLSERVER_IMG ?= seldonio/mlserver:1.3.3
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
+JAEGER_IMG ?= jaegertracing/all-in-one:latest
 PIPELINEGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-pipelinegateway:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 SCHEDULER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-scheduler:${CUSTOM_IMAGE_TAG}
-TRITON_IMG ?= nvcr.io/nvidia/tritonserver:22.11-py3
+TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 GPU_ENABLED ?= 0
 
-KIND_NAME=ansible
+KIND_NAME=seldon
 
 GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
@@ -27,7 +30,7 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	CGO_ENABLED=0 go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
+	go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
@@ -66,7 +69,7 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.48.0
+.GOLANGCILINT_VERSION := v1.51.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint: 
@@ -243,7 +246,10 @@ DOCKER_COMPOSE_IMAGES = \
 	DATAFLOW_IMAGE_AND_TAG=${DATAFLOW_IMG} \
 	HODOMETER_IMAGE_AND_TAG=${HODOMETER_IMG} \
 	KAFKA_IMAGE_AND_TAG=${KAFKA_IMG} \
-	OTELCOL_IMG=${OTELCOL_IMG}
+	PROMETHEUS_IMAGE_AND_TAG=${PROMETHEUS_IMG} \
+	ZK_IMAGE_AND_TAG=${ZOOKEEPER_IMG} \
+	OTELCOL_IMG=${OTELCOL_IMG} \
+	JAEGER_IMG=${JAEGER_IMG}
 
 DOCKER_COMPOSE_ENV = \
 	${DOCKER_COMPOSE_IMAGES} \

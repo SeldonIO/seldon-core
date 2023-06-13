@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "/mnt/models/mlserver/iris"
+  storageUri: "/mnt/models/iris"
   requirements:
   - sklearn

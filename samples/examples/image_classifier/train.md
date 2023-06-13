@@ -25,8 +25,8 @@ logger.setLevel(logging.ERROR)
 ```
 
 ```
-2022-10-02 18:02:43.572083: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-2022-10-02 18:02:43.572120: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2023-03-09 17:05:36.275254: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2023-03-09 17:05:36.275268: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 
 ```
 
@@ -85,56 +85,165 @@ save_detector(od, "./outlier-detector")
 ```
 
 ```
-782/782 [=] - 408s 521ms/step - loss_ma: 12246.5974
-782/782 [=] - 441s 563ms/step - loss_ma: -336.8379
-782/782 [=] - 514s 656ms/step - loss_ma: -2060.8556
-782/782 [=] - 385s 491ms/step - loss_ma: -2942.0786
-782/782 [=] - 334s 426ms/step - loss_ma: -3482.4651
-782/782 [=] - 331s 422ms/step - loss_ma: -3826.7684
-782/782 [=] - 328s 419ms/step - loss_ma: -4113.3548
-782/782 [=] - 324s 414ms/step - loss_ma: -4344.3997
-782/782 [=] - 356s 455ms/step - loss_ma: -4517.2223
-782/782 [=] - 340s 434ms/step - loss_ma: -4636.2948
-782/782 [=] - 338s 432ms/step - loss_ma: -4749.2001
-782/782 [=] - 332s 423ms/step - loss_ma: -4853.0608
-782/782 [=] - 333s 425ms/step - loss_ma: -4944.8810
-782/782 [=] - 326s 416ms/step - loss_ma: -5008.7755
-782/782 [=] - 326s 416ms/step - loss_ma: -5083.0938
-782/782 [=] - 315s 402ms/step - loss_ma: -5140.1222
-782/782 [=] - 311s 397ms/step - loss_ma: -5201.4831
-782/782 [=] - 316s 403ms/step - loss_ma: -5250.6943
-782/782 [=] - 318s 406ms/step - loss_ma: -5283.1387
-782/782 [=] - 316s 404ms/step - loss_ma: -5321.9071
-782/782 [=] - 320s 409ms/step - loss_ma: -5368.1527
-782/782 [=] - 321s 409ms/step - loss_ma: -5388.1669
-782/782 [=] - 317s 405ms/step - loss_ma: -5425.3241
-782/782 [=] - 319s 408ms/step - loss_ma: -5449.0800
-782/782 [=] - 320s 409ms/step - loss_ma: -5481.8549
-782/782 [=] - 319s 407ms/step - loss_ma: -5511.5501
-782/782 [=] - 318s 406ms/step - loss_ma: -5527.1451
-782/782 [=] - 319s 408ms/step - loss_ma: -5554.7566
-782/782 [=] - 373s 476ms/step - loss_ma: -5573.3425
-782/782 [=] - 376s 480ms/step - loss_ma: -5599.4756
-782/782 [=] - 375s 479ms/step - loss_ma: -5612.1058
-782/782 [=] - 375s 478ms/step - loss_ma: -5622.7508
-782/782 [=] - 373s 476ms/step - loss_ma: -5642.8896
-782/782 [=] - 374s 477ms/step - loss_ma: -5661.9375
-782/782 [=] - 373s 476ms/step - loss_ma: -5674.5788
-782/782 [=] - 374s 477ms/step - loss_ma: -5683.5199
-782/782 [=] - 373s 476ms/step - loss_ma: -5697.1596
-782/782 [=] - 375s 479ms/step - loss_ma: -5711.3716
-782/782 [=] - 376s 480ms/step - loss_ma: -5721.1513
-782/782 [=] - 377s 481ms/step - loss_ma: -5733.8188
-782/782 [=] - 376s 480ms/step - loss_ma: -5741.6455
-782/782 [=] - 376s 480ms/step - loss_ma: -5743.0460
-782/782 [=] - 376s 480ms/step - loss_ma: -5756.9715
-782/782 [=] - 376s 480ms/step - loss_ma: -5761.5570
-782/782 [=] - 376s 480ms/step - loss_ma: -5776.9497
-782/782 [=] - 376s 479ms/step - loss_ma: -5783.7933
-782/782 [=] - 374s 478ms/step - loss_ma: -5791.9981
-782/782 [=] - 377s 481ms/step - loss_ma: -5801.7900
-782/782 [=] - 377s 481ms/step - loss_ma: -5803.0183
-782/782 [=] - 376s 480ms/step - loss_ma: -5816.9740
+2023-03-09 17:05:46.653642: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/clive/miniconda3/envs/scv2/lib/python3.9/site-packages/cv2/../../lib64:
+2023-03-09 17:05:46.653676: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2023-03-09 17:05:46.653706: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (clive-ThinkPad-P1-Gen-5): /proc/driver/nvidia/version does not exist
+2023-03-09 17:05:46.654247: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-03-09 17:05:46.954048: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 614400000 exceeds 10% of free system memory.
+2023-03-09 17:05:47.164088: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 614400000 exceeds 10% of free system memory.
+
+```
+
+```
+782/782 [=] - 123s 157ms/step - loss_ma: 8047.0571
+
+```
+
+```
+2023-03-09 17:07:50.493324: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 614400000 exceeds 10% of free system memory.
+
+```
+
+```
+782/782 [=] - 121s 154ms/step - loss_ma: -2349.7290
+
+```
+
+```
+2023-03-09 17:09:51.538684: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 614400000 exceeds 10% of free system memory.
+
+```
+
+```
+782/782 [=] - 124s 158ms/step - loss_ma: -3547.2254
+
+```
+
+```
+2023-03-09 17:11:55.269597: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 614400000 exceeds 10% of free system memory.
+
+```
+
+```
+64/782 [.] - ETA: 1:50 - loss_ma: -3935.1125
+
+```
+
+```
+---------------------------------------------------------------------------
+
+```
+
+```
+KeyboardInterrupt                         Traceback (most recent call last)
+
+```
+
+```
+Input In [3], in <cell line: 29>()
+     22 od = OutlierVAE(threshold=.015,  # threshold for outlier score
+     23                 score_type='mse',  # use MSE of reconstruction error for outlier detection
+     24                 encoder_net=encoder_net,  # can also pass VAE model instead
+     25                 decoder_net=decoder_net,  # of separate encoder and decoder
+     26                 latent_dim=latent_dim,
+     27                 samples=2)
+     28 # train
+---> 29 od.fit(X_train,
+     30         loss_fn=elbo,
+     31         cov_elbo=dict(sim=.05),
+     32         epochs=50,
+     33         verbose=True)
+     35 # save the trained outlier detector
+     36 save_detector(od, "./outlier-detector")
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/alibi_detect/od/vae.py:134, in OutlierVAE.fit(self, X, loss_fn, optimizer, cov_elbo, epochs, batch_size, verbose, log_metric, callbacks)
+    131     kwargs['loss_fn_kwargs'] = {cov_elbo_type: tf.dtypes.cast(cov, tf.float32)}
+    133 # train
+--> 134 trainer(*args, **kwargs)
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/alibi_detect/models/tensorflow/trainer.py:93, in trainer(model, loss_fn, x_train, y_train, dataset, optimizer, loss_fn_kwargs, preprocess_fn, epochs, reg_loss_fn, batch_size, buffer_size, verbose, log_metric, callbacks)
+     90         loss += sum(model.losses)
+     91     loss += reg_loss_fn(model)  # alternative way they might be specified
+---> 93 grads = tape.gradient(loss, model.trainable_weights)
+     94 optimizer.apply_gradients(zip(grads, model.trainable_weights))
+     95 if verbose:
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/tensorflow/python/eager/backprop.py:1081, in GradientTape.gradient(self, target, sources, output_gradients, unconnected_gradients)
+   1077 if output_gradients is not None:
+   1078   output_gradients = [None if x is None else ops.convert_to_tensor(x)
+   1079                       for x in nest.flatten(output_gradients)]
+-> 1081 flat_grad = imperative_grad.imperative_grad(
+   1082     self._tape,
+   1083     flat_targets,
+   1084     flat_sources,
+   1085     output_gradients=output_gradients,
+   1086     sources_raw=flat_sources_raw,
+   1087     unconnected_gradients=unconnected_gradients)
+   1089 if not self._persistent:
+   1090   # Keep track of watched variables before setting tape to None
+   1091   self._watched_variables = self._tape.watched_variables()
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/tensorflow/python/eager/imperative_grad.py:67, in imperative_grad(tape, target, sources, output_gradients, sources_raw, unconnected_gradients)
+     63 except ValueError:
+     64   raise ValueError(
+     65       "Unknown value for unconnected_gradients: %r" % unconnected_gradients)
+---> 67 return pywrap_tfe.TFE_Py_TapeGradient(
+     68     tape._tape,  # pylint: disable=protected-access
+     69     target,
+     70     sources,
+     71     output_gradients,
+     72     sources_raw,
+     73     compat.as_str(unconnected_gradients.value))
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/tensorflow/python/eager/backprop.py:156, in _gradient_function(op_name, attr_tuple, num_inputs, inputs, outputs, out_grads, skip_input_indices, forward_pass_name_scope)
+    154     gradient_name_scope += forward_pass_name_scope + "/"
+    155   with ops.name_scope(gradient_name_scope):
+--> 156     return grad_fn(mock_op, *out_grads)
+    157 else:
+    158   return grad_fn(mock_op, *out_grads)
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/tensorflow/python/ops/math_grad.py:1741, in _MatMulGrad(op, grad)
+   1739 if not t_a and not t_b:
+   1740   grad_a = gen_math_ops.mat_mul(grad, b, transpose_b=True)
+-> 1741   grad_b = gen_math_ops.mat_mul(a, grad, transpose_a=True)
+   1742 elif not t_a and t_b:
+   1743   grad_a = gen_math_ops.mat_mul(grad, b)
+
+```
+
+```
+File ~/miniconda3/envs/scv2/lib/python3.9/site-packages/tensorflow/python/ops/gen_math_ops.py:6013, in mat_mul(a, b, transpose_a, transpose_b, name)
+   6011 if tld.is_eager:
+   6012   try:
+-> 6013     _result = pywrap_tfe.TFE_Py_FastPathExecute(
+   6014       _ctx, "MatMul", name, a, b, "transpose_a", transpose_a, "transpose_b",
+   6015       transpose_b)
+   6016     return _result
+   6017   except _core._NotOkStatusException as e:
+
+```
+
+```
+KeyboardInterrupt:
 
 ```
 

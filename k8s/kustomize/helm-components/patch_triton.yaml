@@ -4,6 +4,8 @@ metadata:
   name: triton
 spec:
   podSpec:
+    imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
     containers:
     - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'

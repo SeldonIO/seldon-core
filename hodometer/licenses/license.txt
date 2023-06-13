@@ -6295,29 +6295,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-go-task/slim-sprig  MIT License  https://github.com/go-task/slim-sprig/blob/master/LICENSE.txt
---------------------------------------------------------------------------------
-Copyright (C) 2013-2020 Masterminds
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
---------------------------------------------------------------------------------
 godbus/dbus  BSD 2-Clause "Simplified" License  https://github.com/godbus/dbus/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google
@@ -7012,37 +6989,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
---------------------------------------------------------------------------------
-golang/snappy  BSD 3-Clause "New" or "Revised" License  https://github.com/golang/snappy/blob/master/LICENSE
---------------------------------------------------------------------------------
-Copyright (c) 2011 The Snappy-Go Authors. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-   * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-   * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-   * Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 google/btree  Apache License 2.0  https://github.com/google/btree/blob/master/LICENSE
@@ -9120,7 +9066,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
-grpc-ecosystem/go-grpc-middleware  Apache License 2.0  https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/LICENSE
+grpc-ecosystem/go-grpc-middleware  Apache License 2.0  https://github.com/grpc-ecosystem/go-grpc-middleware/blob/main/LICENSE
 --------------------------------------------------------------------------------
                  Apache License
                            Version 2.0, January 2004
@@ -9921,6 +9867,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/errwrap  Mozilla Public License 2.0  https://github.com/hashicorp/errwrap/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2014 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -10279,6 +10227,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/go-cleanhttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2015 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -11062,8 +11012,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/master/LICENSE
+hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/main/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2014 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -11419,8 +11371,10 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
       the Mozilla Public License, v. 2.0.
 
 --------------------------------------------------------------------------------
-hashicorp/go-retryablehttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-retryablehttp/blob/master/LICENSE
+hashicorp/go-retryablehttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-retryablehttp/blob/main/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2015 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -11788,6 +11742,8 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 --------------------------------------------------------------------------------
 hashicorp/go-rootcerts  Mozilla Public License 2.0  https://github.com/hashicorp/go-rootcerts/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2016 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -13683,6 +13639,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/logutils  Mozilla Public License 2.0  https://github.com/hashicorp/logutils/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -14039,7 +13997,7 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 
 --------------------------------------------------------------------------------
-hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/master/LICENSE
+hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2014 HashiCorp, Inc.
 
@@ -14063,6 +14021,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --------------------------------------------------------------------------------
 hashicorp/memberlist  Mozilla Public License 2.0  https://github.com/hashicorp/memberlist/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -14421,6 +14381,8 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/serf  Mozilla Public License 2.0  https://github.com/hashicorp/serf/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2013 HashiCorp, Inc.
+
 Mozilla Public License, version 2.0
 
 1. Definitions
@@ -16996,7 +16958,7 @@ moby/spdystream  Apache License 2.0  https://github.com/moby/spdystream/blob/mas
    limitations under the License.
 
 --------------------------------------------------------------------------------
-moby/term  Apache License 2.0  https://github.com/moby/term/blob/master/LICENSE
+moby/term  Apache License 2.0  https://github.com/moby/term/blob/main/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -18427,42 +18389,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
---------------------------------------------------------------------------------
-otiai10/curr  MIT License  https://github.com/otiai10/curr/blob/main/LICENSE
---------------------------------------------------------------------------------
-The MIT License (MIT)
-
-Copyright (c) 2020 Hiromu Ochiai
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
---------------------------------------------------------------------------------
-otiai10/mint  MIT License  https://github.com/otiai10/mint/blob/main/LICENSE
---------------------------------------------------------------------------------
-Copyright 2017 otiai10 (Hiromu OCHIAI)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 pascaldekloe/goe  Creative Commons Zero v1.0 Universal  https://github.com/pascaldekloe/goe/blob/master/LICENSE
@@ -20398,7 +20324,7 @@ smartystreets/assertions  MIT License  https://github.com/smartystreets/assertio
 --------------------------------------------------------------------------------
 MIT License
 
-Copyright (c) 2022 Smarty
+Copyright (c) 2023 Smarty
 
 Permission is hereby granted, free of charge, to any person obtaining a copy 
 of this software and associated documentation files (the "Software"), to deal 
@@ -23683,7 +23609,7 @@ go-resty/resty  MIT License  https://github.com/go-resty/resty/blob/master/LICEN
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
-Copyright (c) 2015-2021 Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
+Copyright (c) 2015-2023 Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26591,7 +26517,7 @@ kubernetes-sigs/apiserver-network-proxy  Apache License 2.0  https://github.com/
    limitations under the License.
 
 --------------------------------------------------------------------------------
-kubernetes-sigs/controller-runtime  Apache License 2.0  https://github.com/kubernetes-sigs/controller-runtime/blob/master/LICENSE
+kubernetes-sigs/controller-runtime  Apache License 2.0  https://github.com/kubernetes-sigs/controller-runtime/blob/main/LICENSE
 --------------------------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004

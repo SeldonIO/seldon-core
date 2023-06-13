@@ -23,10 +23,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 func TestSetExplainer(t *testing.T) {
@@ -159,6 +159,19 @@ func TestLoadFromBytes(t *testing.T) {
 "parameters": {"version": 1}}`),
 			expected: &ModelSettings{},
 			error:    true,
+		},
+		{
+			name: "environment tarball",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
+"parameters": {"version": "1", "environment_tarball":"file.tar.gz"}}`),
+			expected: &ModelSettings{
+				Name:           "iris",
+				Implementation: "mlserver_sklearn.SKLearnModel",
+				Parameters: &ModelParameters{
+					Version:            "1",
+					EnvironmentTarball: "file.tar.gz",
+				},
+			},
 		},
 	}
 

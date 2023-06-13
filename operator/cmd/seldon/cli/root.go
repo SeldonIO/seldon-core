@@ -106,11 +106,16 @@ func GetCmd() *cobra.Command {
 	cmdConfigRemove := createConfigRemove()
 	cmdConfigList := createConfigList()
 
+	// Generic commands
+	cmdLoad := createLoad()
+	cmdUnload := createUnload()
+	cmdStatus := createStatus()
+
 	var rootCmd = &cobra.Command{Use: "seldon", SilenceErrors: false, SilenceUsage: true}
 
 	rootCmd.DisableAutoGenTag = true
 
-	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline, cmdConfig)
+	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline, cmdConfig, cmdLoad, cmdUnload, cmdStatus)
 	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta, cmdModelList)
 	cmdServer.AddCommand(cmdServerStatus, cmdServerList)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus, cmdExperimentList)

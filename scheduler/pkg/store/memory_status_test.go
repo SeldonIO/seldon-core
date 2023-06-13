@@ -19,11 +19,12 @@ package store
 import (
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-
 	. "github.com/onsi/gomega"
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
+
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 func TestUpdateStatus(t *testing.T) {

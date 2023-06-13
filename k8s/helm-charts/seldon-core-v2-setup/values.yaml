@@ -20,6 +20,7 @@ security:
   kafka:
     protocol: PLAINTEXT
     sasl:
+      mechanism: SCRAM-SHA-512
       client:
         username: seldon
         secret:
@@ -68,6 +69,8 @@ security:
           caPath: /tmp/certs/ddc/ca.crt
           serverCaPath: /tmp/certs/dds/ca.crt
 
+imagePullSecret:
+
 opentelemetry:
   endpoint: seldon-collector:4317
   enable: true
@@ -95,11 +98,13 @@ hodometer:
 kafka:
   debug:
   bootstrap: seldon-kafka-bootstrap.seldon-mesh:9092
+  topicPrefix: seldon
   consumer:
     sessionTimeoutMs: 6000
     autoOffsetReset: earliest
     topicMetadataRefreshIntervalMs: 1000
     topicMetadataPropagationMaxMs: 300000
+    messageMaxBytes: 1000000000
   producer:
     lingerMs: 0
     messageMaxBytes: 1000000000
@@ -242,7 +247,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/mlserver
-      tag: 1.2.3
+      tag: 1.3.3
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     resources:
@@ -254,7 +259,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: nvcr.io
       repository: nvidia/tritonserver
-      tag: 22.11-py3
+      tag: 23.03-py3
     serverCapabilities: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
     modelVolumeStorage: 1Gi
     resources:

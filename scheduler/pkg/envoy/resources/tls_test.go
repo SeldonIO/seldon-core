@@ -23,9 +23,10 @@ import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	. "github.com/onsi/gomega"
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 type FakeCertificateStore struct {

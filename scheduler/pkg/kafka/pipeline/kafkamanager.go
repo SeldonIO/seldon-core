@@ -21,22 +21,18 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
-	"go.opentelemetry.io/otel"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-	"github.com/sirupsen/logrus"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -76,17 +72,22 @@ type Request struct {
 	errorModel string
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig, traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig,
+	traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
+	if err != nil {
+		return nil, err
+	}
 	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
 		kafkaConfig:     kafkaConfig,
 		logger:          logger.WithField("source", "KafkaManager"),
-		topicNamer:      kafka2.NewTopicNamer(namespace),
+		topicNamer:      topicNamer,
 		tracer:          tracer,
 		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},
 	}
-	err := km.createProducer()
+	err = km.createProducer()
 	if err != nil {
 		return nil, err
 	}

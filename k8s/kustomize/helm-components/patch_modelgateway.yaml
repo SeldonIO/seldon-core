@@ -5,6 +5,8 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      - name: '{{ .Values.imagePullSecret }}'
       containers:
       - env:
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -31,6 +33,8 @@ spec:
             value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
           - name: KAFKA_SECURITY_PROTOCOL
             value: '{{ .Values.security.kafka.protocol }}'
+          - name: KAFKA_SASL_MECHANISM
+            value: '{{ .Values.security.kafka.sasl.mechanism }}'
           - name: KAFKA_CLIENT_TLS_SECRET_NAME
             value: '{{ .Values.security.kafka.ssl.client.secret }}'
           - name: KAFKA_CLIENT_TLS_KEY_LOCATION

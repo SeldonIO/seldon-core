@@ -26,29 +26,25 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	log "github.com/sirupsen/logrus"
+	"k8s.io/client-go/kubernetes"
 
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	controlplane_factory "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/factory"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
-	"k8s.io/client-go/kubernetes"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	log "github.com/sirupsen/logrus"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
 const (
@@ -199,8 +195,17 @@ func main() {
 		cli.EnvoyPort,
 	)
 
-	// Create V2 Protocol Handler
-	v2Client := agent.NewV2Client(cli.InferenceHost, cli.InferenceGrpcPort, logger, true)
+	// Create moddel server control plane client
+	modelServerControlPlaneClient, err := controlplane_factory.CreateModelServerControlPlane(
+		cli.ServerType,
+		interfaces.ModelServerConfig{
+			Host:   cli.InferenceHost,
+			Port:   cli.InferenceGrpcPort,
+			Logger: logger},
+	)
+	if err != nil {
+		logger.WithError(err).Fatal("Can't create model server control plane client")
+	}
 
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
@@ -282,7 +287,7 @@ func main() {
 		),
 		logger,
 		modelRepository,
-		v2Client,
+		modelServerControlPlaneClient,
 		createReplicaConfig(),
 		cli.Namespace,
 		rpHTTP,

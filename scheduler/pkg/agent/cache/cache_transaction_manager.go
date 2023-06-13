@@ -19,8 +19,9 @@ package cache
 import (
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 type CacheTransactionManager struct {

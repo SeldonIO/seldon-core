@@ -20,13 +20,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-
-	. "github.com/onsi/gomega"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 func TestUpdateModel(t *testing.T) {

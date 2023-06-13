@@ -10,7 +10,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
   requirements:
   - sklearn
 
@@ -43,7 +43,7 @@ seldon model infer income \
 {
 	"model_name": "income_1",
 	"model_version": "1",
-	"id": "e06e7238-d25f-412c-a3c4-ea77721d660d",
+	"id": "c65b8302-85af-4bac-aac5-91e3bedebee8",
 	"parameters": {},
 	"outputs": [
 		{
@@ -72,7 +72,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
@@ -106,7 +106,7 @@ seldon model infer income-explainer \
 {
 	"model_name": "income-explainer_1",
 	"model_version": "1",
-	"id": "b8c18f49-3944-4841-8d1d-81585ba40830",
+	"id": "a22c3785-ff3b-4504-9b3c-199aa48a62d6",
 	"parameters": {},
 	"outputs": [
 		{
@@ -120,7 +120,7 @@ seldon model infer income-explainer \
 				"content_type": "str"
 			},
 			"data": [
-				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"precision\": 1.0, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 5, 8], \"mean\": [0.8063492063492064, 0.9221902017291066, 1.0], \"precision\": [0.8063492063492064, 0.9221902017291066, 1.0], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], \"examples\": [{\"covered_true\": [[44, 7, 1, 1, 5, 0, 0, 1, 0, 0, 38, 9], [74, 6, 1, 1, 8, 0, 4, 1, 0, 1825, 12, 9], [58, 4, 1, 1, 2, 3, 4, 0, 0, 0, 20, 9], [48, 4, 1, 1, 6, 4, 4, 1, 0, 0, 40, 9], [22, 4, 1, 1, 2, 3, 4, 0, 0, 0, 15, 9], [57, 4, 1, 1, 8, 0, 4, 1, 0, 0, 40, 9], [36, 4, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [28, 7, 1, 1, 5, 3, 4, 1, 0, 0, 16, 9], [49, 7, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9], [27, 4, 1, 1, 4, 1, 4, 0, 0, 0, 40, 9]], \"covered_false\": [[50, 5, 1, 1, 8, 0, 4, 1, 15024, 0, 60, 9], [56, 4, 1, 1, 1, 0, 4, 1, 5178, 0, 44, 9], [50, 5, 2, 1, 5, 0, 4, 1, 15024, 0, 60, 9], [66, 4, 1, 1, 8, 0, 4, 1, 99999, 0, 55, 0], [36, 4, 1, 1, 5, 0, 4, 1, 15024, 0, 50, 9], [59, 4, 5, 1, 8, 0, 4, 1, 0, 0, 45, 9], [36, 4, 1, 1, 6, 0, 4, 1, 0, 1902, 45, 9], [37, 1, 1, 1, 1, 0, 1, 1, 7298, 0, 40, 7], [34, 4, 1, 1, 6, 0, 4, 1, 7298, 0, 60, 9], [52, 2, 5, 1, 5, 1, 4, 1, 0, 0, 32, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[33, 4, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [76, 4, 1, 1, 5, 3, 4, 0, 0, 0, 20, 9], [46, 4, 1, 1, 8, 3, 4, 1, 0, 0, 53, 9], [31, 5, 1, 1, 8, 3, 4, 1, 0, 0, 55, 9], [39, 4, 1, 1, 6, 3, 4, 1, 3464, 0, 40, 9], [41, 2, 1, 1, 5, 3, 4, 1, 0, 0, 20, 9], [30, 2, 1, 1, 5, 3, 4, 0, 0, 0, 15, 9], [37, 2, 1, 1, 5, 3, 4, 0, 0, 0, 30, 9], [45, 4, 1, 1, 5, 3, 4, 1, 0, 0, 55, 9], [54, 6, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9]], \"covered_false\": [[50, 4, 5, 1, 6, 3, 4, 1, 15024, 0, 40, 9], [45, 4, 1, 1, 6, 3, 4, 1, 8614, 0, 48, 9], [44, 4, 5, 1, 8, 3, 4, 1, 14084, 0, 56, 9], [39, 5, 1, 1, 8, 3, 4, 1, 7298, 0, 40, 9], [40, 4, 1, 1, 7, 3, 1, 0, 7688, 0, 52, 6], [64, 4, 1, 1, 8, 3, 4, 1, 27828, 0, 55, 9], [62, 5, 1, 1, 6, 3, 4, 1, 99999, 0, 40, 9], [55, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 48, 9], [32, 5, 1, 1, 2, 3, 4, 1, 7688, 0, 50, 9], [39, 4, 1, 1, 8, 3, 4, 1, 99999, 0, 70, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[66, 5, 1, 1, 8, 3, 4, 1, 0, 0, 70, 9], [49, 4, 1, 1, 8, 3, 2, 0, 0, 0, 60, 9], [40, 4, 2, 1, 5, 3, 4, 1, 0, 0, 40, 9], [59, 0, 1, 1, 0, 3, 4, 1, 0, 0, 40, 9], [62, 4, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [40, 4, 1, 1, 8, 3, 4, 1, 0, 1902, 32, 9], [37, 4, 1, 1, 7, 3, 4, 1, 0, 0, 70, 1], [38, 2, 5, 1, 8, 3, 4, 1, 0, 0, 70, 9], [23, 4, 1, 1, 1, 3, 4, 0, 0, 0, 30, 9], [32, 4, 1, 1, 6, 3, 2, 1, 0, 0, 50, 9]], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
+				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\"], \"precision\": 0.9518716577540107, \"coverage\": 0.07165109034267912, \"raw\": {\"feature\": [3, 5], \"mean\": [0.7959381044487428, 0.9518716577540107], \"precision\": [0.7959381044487428, 0.9518716577540107], \"coverage\": [0.3037383177570093, 0.07165109034267912], \"examples\": [{\"covered_true\": [[52, 5, 5, 1, 8, 1, 2, 0, 0, 0, 50, 9], [49, 4, 1, 1, 4, 4, 1, 0, 0, 0, 40, 1], [23, 4, 1, 1, 6, 1, 4, 1, 0, 0, 40, 9], [55, 2, 1, 1, 5, 1, 4, 0, 0, 0, 48, 9], [22, 4, 1, 1, 2, 3, 4, 0, 0, 0, 15, 9], [51, 4, 2, 1, 5, 0, 1, 1, 0, 0, 99, 4], [40, 4, 1, 1, 5, 1, 4, 0, 0, 0, 40, 9], [40, 6, 1, 1, 2, 0, 4, 1, 0, 0, 50, 9], [50, 5, 5, 1, 6, 0, 4, 1, 0, 0, 55, 9], [41, 4, 1, 1, 6, 0, 4, 1, 0, 0, 40, 9]], \"covered_false\": [[42, 4, 1, 1, 8, 0, 4, 1, 0, 2415, 60, 9], [48, 6, 2, 1, 5, 4, 4, 0, 0, 0, 60, 9], [37, 4, 1, 1, 5, 0, 4, 1, 0, 0, 45, 9], [57, 4, 5, 1, 8, 0, 4, 1, 0, 0, 50, 9], [63, 7, 2, 1, 8, 0, 4, 1, 0, 1902, 50, 9], [51, 4, 5, 1, 8, 0, 4, 1, 0, 1887, 47, 9], [51, 2, 2, 1, 8, 1, 4, 0, 0, 0, 45, 9], [68, 7, 5, 1, 5, 0, 4, 1, 0, 2377, 42, 0], [45, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 40, 9], [45, 4, 1, 1, 8, 0, 4, 1, 0, 1977, 60, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[44, 6, 5, 1, 8, 3, 4, 0, 0, 1902, 60, 9], [58, 7, 2, 1, 5, 3, 1, 1, 4064, 0, 40, 1], [50, 7, 1, 1, 1, 3, 2, 0, 0, 0, 37, 9], [34, 4, 2, 1, 5, 3, 4, 1, 0, 0, 45, 9], [45, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [33, 7, 5, 1, 5, 3, 1, 1, 0, 0, 30, 6], [61, 7, 2, 1, 5, 3, 4, 1, 0, 0, 40, 0], [35, 4, 5, 1, 1, 3, 4, 1, 0, 0, 40, 9], [71, 2, 1, 1, 5, 3, 4, 0, 0, 0, 6, 9], [44, 4, 1, 1, 8, 3, 2, 1, 0, 0, 35, 9]], \"covered_false\": [[30, 4, 5, 1, 5, 3, 4, 1, 10520, 0, 40, 9], [54, 7, 2, 1, 8, 3, 4, 1, 0, 1902, 50, 9], [66, 6, 2, 1, 6, 3, 4, 1, 0, 2377, 25, 9], [35, 4, 2, 1, 5, 3, 4, 1, 7298, 0, 40, 9], [44, 4, 1, 1, 8, 3, 4, 1, 7298, 0, 48, 9], [31, 4, 1, 1, 8, 3, 4, 0, 13550, 0, 50, 9], [35, 4, 1, 1, 8, 3, 4, 1, 8614, 0, 45, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
 			]
 		}
 	]
@@ -158,7 +158,7 @@ kind: Model
 metadata:
   name: sentiment
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/moviesentiment/classifier"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/moviesentiment-sklearn"
   requirements:
   - sklearn
 
@@ -191,11 +191,8 @@ seldon model infer sentiment \
 {
 	"model_name": "sentiment_1",
 	"model_version": "1",
-	"id": "6c514a89-2859-4835-97b0-a73336233726",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "ada09279-f18b-49c4-b1ba-472223362b9c",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
@@ -204,7 +201,6 @@ seldon model infer sentiment \
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
 			"data": [
 				1
 			]
@@ -224,7 +220,7 @@ kind: Model
 metadata:
   name: sentiment-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/moviesentiment/explainer"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/moviesentiment-sklearn-explainer"
   explainer:
     type: anchor_text
     modelRef: sentiment
@@ -258,11 +254,8 @@ seldon model infer sentiment-explainer \
 {
 	"model_name": "sentiment-explainer_1",
 	"model_version": "1",
-	"id": "1d5859a9-9d1b-4edc-b1c2-b40f8369c804",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "5d4bc74d-f815-469e-91dd-50e99d16ae77",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "explanation",
@@ -272,11 +265,10 @@ seldon model infer sentiment-explainer \
 			],
 			"datatype": "BYTES",
 			"parameters": {
-				"content_type": "str",
-				"headers": null
+				"content_type": "str"
 			},
 			"data": [
-				"{\"meta\": {\"name\": \"AnchorText\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 0, \"sample_proba\": 0.5}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"good\"], \"precision\": 1.0, \"coverage\": 0.5006, \"raw\": {\"feature\": [2], \"mean\": [1.0], \"precision\": [1.0], \"coverage\": [0.5006], \"examples\": [{\"covered_true\": [\"I UNK good\", \"I UNK good\", \"I am good\", \"I UNK good\", \"UNK am good\", \"I UNK good\", \"UNK UNK good\", \"I UNK good\", \"I UNK good\", \"UNK am good\"], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"good\"], \"positions\": [5], \"instance\": \"I am good\", \"instances\": [\"I am good\"], \"prediction\": [1]}}}"
+				"{\"meta\": {\"name\": \"AnchorText\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 0, \"sample_proba\": 0.5}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"good\"], \"precision\": 1.0, \"coverage\": 0.5046, \"raw\": {\"feature\": [2], \"mean\": [1.0], \"precision\": [1.0], \"coverage\": [0.5046], \"examples\": [{\"covered_true\": [\"UNK am good\", \"I UNK good\", \"UNK am good\", \"I am good\", \"UNK am good\", \"I UNK good\", \"I am good\", \"UNK UNK good\", \"I UNK good\", \"UNK UNK good\"], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"good\"], \"positions\": [5], \"instance\": \"I am good\", \"instances\": [\"I am good\"], \"prediction\": [1]}}}"
 			]
 		}
 	]
@@ -302,6 +294,3 @@ seldon model unload sentiment
 
 ```
 
-```python
-
-```

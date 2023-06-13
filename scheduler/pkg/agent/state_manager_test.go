@@ -26,21 +26,23 @@ import (
 	"time"
 
 	"github.com/jarcoal/httpmock"
-	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
+	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/onsi/gomega"
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func checkModelsStateIsSame(manager *LocalStateManager, v2State *v2State) (bool, []string) {
+func checkModelsStateIsSame(manager *LocalStateManager, v2State *testing_utils.V2State) (bool, []string) {
 	modelsInCache, _ := manager.cache.GetItems()
 	modelsInCacheMLServer := make([]string, len(modelsInCache))
 	counter := 0
-	for model := range v2State.models {
-		if v2State.isModelLoaded(model) {
+	for model := range v2State.Models {
+		if v2State.IsModelLoaded(model) {
 			modelsInCacheMLServer[counter] = model
 			counter++
 		}
@@ -104,14 +106,16 @@ func getDummyModelDetailsUnload(modelId string, version uint32) *pba.ModelVersio
 }
 
 func setupLocalTestManagerWithState(
-	numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int, overCommitPercentage uint32) (*LocalStateManager, *v2State) {
+	numModels int, modelPrefix string, v2Client interfaces.ModelServerControlPlaneClient,
+	capacity int, numVersions int, overCommitPercentage uint32,
+) (*LocalStateManager, *testing_utils.V2State) {
 
 	logger := log.New()
 	logger.SetLevel(log.InfoLevel)
 
 	modelState := NewModelState()
 	//create mock v2 client
-	var v2ClientState *v2State
+	var v2ClientState *testing_utils.V2State
 	if v2Client == nil {
 		models := make([]string, numModels*numVersions)
 		for i := 0; i < numModels; i++ {
@@ -120,7 +124,7 @@ func setupLocalTestManagerWithState(
 				models[(i*numVersions)+j] = getModelId(modelPrefix, i) + "_" + strconv.Itoa(j+1)
 			}
 		}
-		v2Client, v2ClientState = createTestV2ClientwithState(models, 200)
+		v2Client, v2ClientState = testing_utils.CreateTestV2ClientwithState(models, 200)
 	}
 	manager := NewLocalStateManager(
 		modelState,
@@ -133,7 +137,7 @@ func setupLocalTestManagerWithState(
 	return manager, v2ClientState
 }
 
-func setupLocalTestManager(numModels int, modelPrefix string, v2Client *V2Client, capacity int, numVersions int) *LocalStateManager {
+func setupLocalTestManager(numModels int, modelPrefix string, v2Client interfaces.ModelServerControlPlaneClient, capacity int, numVersions int) *LocalStateManager {
 	manager, _ := setupLocalTestManagerWithState(numModels, modelPrefix, v2Client, capacity, numVersions, 0)
 
 	return manager
@@ -154,7 +158,7 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 	return manager.LoadModelVersion(modifiedModelVersionRequest)
 }
 
-// this mimics UnoadModel in client.go with regards to locking
+// this mimics UnloadModel in client.go with regards to locking
 func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
@@ -185,7 +189,7 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, numModels-2, 1, 100)
 
 	//activate mock http server for v2
-	httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+	httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	defer httpmock.DeactivateAndReset()
 
 	g := NewGomegaWithT(t)
@@ -258,7 +262,7 @@ func TestConcurrentReload(t *testing.T) {
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			// load the first numModels, this will evict in reverse order
@@ -355,7 +359,7 @@ func TestConcurrentInfer(t *testing.T) {
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			// load the first numModels, this will evict in reverse order
@@ -456,7 +460,7 @@ func TestConcurrentLoad(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Start test")
@@ -549,7 +553,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Start test")
@@ -644,7 +648,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			t.Log("Add a single version for all models")
@@ -828,7 +832,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, capacity, 1, 100)
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			var barrier sync.WaitGroup
@@ -1006,7 +1010,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(test.overCommitPercentage))
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {
@@ -1033,7 +1037,7 @@ func TestServerConnectionIssues(t *testing.T) {
 	manager := setupLocalTestManager(numModels, dummyModelPrefix, nil, numModels-1, 1)
 
 	//activate httpmock for v2
-	httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+	httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	g := NewGomegaWithT(t)
 
 	for i := 0; i < numModels; i++ {
@@ -1086,7 +1090,7 @@ func TestModelMetricsStats(t *testing.T) {
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(50))
 
 			//activate mock http server for v2
-			httpmock.ActivateNonDefault(manager.v2Client.httpClient)
+			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {

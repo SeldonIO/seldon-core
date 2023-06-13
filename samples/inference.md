@@ -131,7 +131,7 @@ seldon model infer tfsimple1 --inference-mode grpc  --inference-host ${INFER_END
 ```
 
 ```json
-{"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
+{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
 
 ```
 
@@ -216,7 +216,7 @@ seldon pipeline status tfsimple -w PipelineReady
 ```
 
 ```json
-{"pipelineName":"tfsimple", "versions":[{"pipeline":{"name":"tfsimple", "uid":"cdqhbfkg9lks73eauglg", "version":1, "steps":[{"name":"tfsimple1"}], "output":{"steps":["tfsimple1.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-16T16:54:22.856020153Z"}}]}
+{"pipelineName":"tfsimple","versions":[{"pipeline":{"name":"tfsimple","uid":"cg5fm6c6dpcs73c4qhe0","version":1,"steps":[{"name":"tfsimple1"}],"output":{"steps":["tfsimple1.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2023-03-10T09:40:41.317797761Z","modelsReady":true}}]}
 
 ```
 
@@ -292,7 +292,7 @@ seldon pipeline infer tfsimple --inference-mode grpc  --inference-host ${INFER_E
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
+{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
 
 ```
 

@@ -28,6 +28,7 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
+        - --kafka-config-path=/mnt/kafka/kafka.json
         image: scheduler:latest
         imagePullPolicy: IfNotPresent
         name: scheduler
@@ -56,11 +57,16 @@ spec:
             cpu: 100m
             memory: 200Mi
         volumeMounts:
+        - name: kafka-config-volume
+          mountPath: /mnt/kafka
         - name: tracing-config-volume
           mountPath: /mnt/tracing
         - name: scheduler-state
           mountPath: /mnt/scheduler
       volumes:
+      - name: kafka-config-volume
+        configMap:
+          name: seldon-kafka
       - name: tracing-config-volume
         configMap:
           name: seldon-tracing

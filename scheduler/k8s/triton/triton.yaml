@@ -137,7 +137,7 @@ spec:
           name: triton-models
         - name: config-volume
           mountPath: /mnt/config
-      - image: nvcr.io/nvidia/tritonserver:22.11-py3
+      - image: nvcr.io/nvidia/tritonserver:23.03-py3
         command:
         - /opt/tritonserver/bin/tritonserver
         args:
@@ -154,6 +154,8 @@ spec:
           value: "9500"
         - name: SERVER_MODELS_DIR
           value: "/mnt/agent/models"
+        - name: LD_PRELOAD
+          value: /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
         resources:
           requests:
             cpu: '0.1'

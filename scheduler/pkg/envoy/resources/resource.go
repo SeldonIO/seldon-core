@@ -18,33 +18,31 @@ import (
 	"fmt"
 	"time"
 
-	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
-
-	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-
-	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
-
-	"github.com/golang/protobuf/ptypes/duration"
-
-	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
-	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/durationpb"
-
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	matcher "github.com/envoyproxy/go-control-plane/envoy/config/common/matcher/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	tap "github.com/envoyproxy/go-control-plane/envoy/config/tap/v3"
 	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
+	envoy_extensions_common_tap_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/common/tap/v3"
+	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
+	router "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
 	tapfilter "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/tap/v3"
+	hcm "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
+	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	"github.com/golang/protobuf/ptypes/duration"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -211,8 +209,7 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplits, mirrorTra
 			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 			ClusterSpecifier: &route.RouteAction_WeightedClusters{
 				WeightedClusters: &route.WeightedCluster{
-					Clusters:    splits,
-					TotalWeight: &wrappers.UInt32Value{Value: totWeight},
+					Clusters: splits,
 				},
 			},
 			RequestMirrorPolicies: mirrors,
@@ -248,17 +245,13 @@ func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
 	rt.Match.PathSpecifier = modelRouteMatchPathHttp
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
-		//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-		//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-		//	StringMatch: &matcher.StringMatcher{
-		//		MatchPattern: &matcher.StringMatcher_Exact{
-		//			Exact: r.Host,
-		//		},
-		//	},
-		//},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader,
@@ -289,15 +282,23 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *ro
 
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{
-			ContainsMatch: wrapRouteHeader(util.GetVersionedModelName(
-				clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Contains{
+					Contains: wrapRouteHeader(util.GetVersionedModelName(
+						clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
+				},
+			},
 		},
 	}
 
@@ -354,17 +355,13 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 	rt.Match.PathSpecifier = modelRouteMatchPathGrpc
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
-		//TODO: https://github.com/envoyproxy/envoy/blob/c75c1410c8682cb44c9136ce4ad01e6a58e16e8e/api/envoy/api/v2/route/route_components.proto#L1513
-		//HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-		//	StringMatch: &matcher.StringMatcher{
-		//		MatchPattern: &matcher.StringMatcher_Exact{
-		//			Exact: r.Host,
-		//		},
-		//	},
-		//},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader,
@@ -435,8 +432,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplits
 			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 			ClusterSpecifier: &route.RouteAction_WeightedClusters{
 				WeightedClusters: &route.WeightedCluster{
-					Clusters:    splits,
-					TotalWeight: &wrappers.UInt32Value{Value: totWeight},
+					Clusters: splits,
 				},
 			},
 			RequestMirrorPolicies: mirrors,
@@ -450,8 +446,12 @@ func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	rt.Match.PathSpecifier = pipelineRoutePathHttp
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
@@ -473,8 +473,12 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	rt.Match.PathSpecifier = pipelineRoutePathGrpc
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
@@ -502,14 +506,22 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{
-			ContainsMatch: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Contains{
+					Contains: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
+				},
+			},
 		},
 	}
 	rt.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_ExactMatch{
-			ExactMatch: r.RouteName,
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
 		},
 	}
 	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
@@ -785,7 +797,9 @@ func createAccessLogConfig() *anypb.Any {
 // Does this for model and pipeline paths allowing us to keep our current header based routing
 func createHeaderFilter() *anypb.Any {
 	luaFilter := luav3.Lua{
-		InlineCode: `function envoy_on_request(request_handle)
+		DefaultSourceCode: &core.DataSource{
+			Specifier: &core.DataSource_InlineString{
+				InlineString: `function envoy_on_request(request_handle)
   local modelHeader = request_handle:headers():get("` + SeldonModelHeader + `")
   local routeHeader = request_handle:headers():get("` + SeldonRouteHeader + `")
   if (modelHeader == nil or modelHeader == '') and (routeHeader == nil or routeHeader == '') then
@@ -812,6 +826,8 @@ func createHeaderFilter() *anypb.Any {
   end
 end
 `,
+			},
+		},
 	}
 	luaAny, err := anypb.New(&luaFilter)
 	if err != nil {
@@ -824,7 +840,7 @@ func MakeHTTPListener(listenerName, address string,
 	port uint32,
 	routeConfigurationName string,
 	serverSecret *Secret) *listener.Listener {
-
+	routerConfig, _ := anypb.New(&router.Router{})
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
 		CodecType:                    hcm.HttpConnectionManager_AUTO,
@@ -851,7 +867,8 @@ func MakeHTTPListener(listenerName, address string,
 				},
 			},
 			{
-				Name: wellknown.Router,
+				Name:       wellknown.Router,
+				ConfigType: &hcm.HttpFilter_TypedConfig{TypedConfig: routerConfig},
 			},
 		},
 		AccessLog: []*accesslog.AccessLog{

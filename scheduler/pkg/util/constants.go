@@ -1,5 +1,5 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright 2023 Seldon Technologies Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,17 @@ limitations under the License.
 package util
 
 import "time"
+
+const (
+	// REST constants
+	DefaultReverseProxyHTTPPort = 9999
+	MaxIdleConnsHTTP            = 10
+	MaxIdleConnsPerHostHTTP     = 10
+	DisableKeepAlivesHTTP       = false
+	MaxConnsPerHostHTTP         = 20
+	DefaultTimeoutSeconds       = 5
+	IdleConnTimeoutSeconds      = 60 * 30
+)
 
 const (
 	GrpcRetryBackoffMillisecs         = 100

@@ -17,11 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 // PipelineSpec defines the desired state of Pipeline
@@ -276,8 +277,8 @@ func (ps *PipelineStatus) SetCondition(conditionType apis.ConditionType, conditi
 func (ps *PipelineStatus) CreateAndSetCondition(
 	conditionType apis.ConditionType,
 	isTrue bool,
+	message string,
 	reason string,
-	description string,
 ) {
 	condition := apis.Condition{}
 	if isTrue {
@@ -286,8 +287,8 @@ func (ps *PipelineStatus) CreateAndSetCondition(
 		condition.Status = v1.ConditionFalse
 	}
 	condition.Type = conditionType
+	condition.Message = message
 	condition.Reason = reason
-	condition.Message = description
 	condition.LastTransitionTime = apis.VolatileTime{
 		Inner: metav1.Now(),
 	}

@@ -1,10 +1,10 @@
 ---
-- include_role:
-    name: seldonio.k8s.prometheus
+- name: "Install Prometheus Operator"
+  include_role:
+    name: prometheus
   when: install_prometheus | bool
 
-
-- name: Create SCV2 Specific Podmonitors
+- name: Create Seldon Core v2 PodMonitors
   kubernetes.core.k8s:
     state: present
     namespace: "{{ seldon_mesh_namespace }}"
@@ -14,4 +14,4 @@
     - prometheus/monitors/envoy-servicemonitor.yaml
     - prometheus/monitors/server-podmonitor.yaml
     - prometheus/monitors/pipelinegateway-podmonitor.yaml
-  when: ecosystem_configure_prometheus | bool
+  when: configure_prometheus | bool

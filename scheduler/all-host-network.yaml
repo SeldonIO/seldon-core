@@ -165,6 +165,8 @@ services:
       - --db-path
       - "${DB_PATH_COMPOSE}"
       - --disable-autoscaling
+      - "--kafka-config-path"
+      - "/mnt/config/kafka-host.json"
     volumes:
       - type: bind
         source: ./config

@@ -14,12 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package io.seldon.dataflow.sasl
+package controlplane_factory
 
-typealias FilePath = String
-
-data class SaslConfig(
-    val username: String,
-    val secret: String,
-    val passwordPath: FilePath
+import (
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
 )
+
+func CreateModelServerControlPlane(
+	modelServerType string,
+	config interfaces.ModelServerConfig,
+) (interfaces.ModelServerControlPlaneClient, error) {
+	// we only support v2 for now
+	return oip.NewV2Client(config.Host, config.Port, config.Logger), nil
+}

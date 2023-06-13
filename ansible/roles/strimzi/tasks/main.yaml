@@ -1,0 +1,18 @@
+---
+- name: "Create {{ strimzi_kafka_operator_namespace }} namespace if it doesn't exist"
+  kubernetes.core.k8s:
+    name: "{{ strimzi_kafka_operator_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Install Strimzi Kafka Operator
+  kubernetes.core.helm:
+    name: strimzi-kafka-operator
+    release_namespace: "{{ strimzi_kafka_operator_namespace }}"
+    chart_repo_url: "https://strimzi.io/charts/"
+    chart_ref: "strimzi-kafka-operator"
+    chart_version: "{{ strimzi_kafka_operator_version }}"
+    values: "{{ strimzi_kafka_operator_values }}"
+    wait: true
+    wait_timeout: "{{ strimzi_kafka_operator_wait_timeout }}"

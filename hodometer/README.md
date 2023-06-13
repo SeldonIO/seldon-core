@@ -14,7 +14,7 @@ Enabling full metrics collection allows Seldon to best understand what users wan
 However, you can reduce the level of information provided by changing the collection level.
 Which metrics are covered by which level is documented below.
 
-Alernatively, you can opt out entirely by simply not installing Hodometer, or by removing your existing installation of it.
+Alternatively, you can opt out entirely by simply not installing Hodometer, or by removing your existing installation of it.
 This does not affect your usage of the software in any way.
 
 ## Installation

@@ -20,11 +20,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/credentials"
 	"k8s.io/client-go/kubernetes"
-	"os"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 )
 
 const (

@@ -23,7 +23,6 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
-import jdk.incubator.vector.VectorOperators.Test
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier
 
@@ -94,7 +93,7 @@ fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KS
 }
 
 /**
- * Convert the output from one model (a response) to the input for another model (a request).
+ * Convert the output from one model (a response) to the input of another model (a request).
  */
 private fun convertToRequest(
     response: ModelInferResponse,
@@ -308,7 +307,7 @@ fun <T> KStream<T, ModelInferRequest>.convertToResponse(
 }
 
 /**
- * Convert the output from one model (a response) to the input for another model (a request).
+ * Convert the input from one model (a request) to the output for another model (a response).
  */
 private fun convertToResponse(
     request: ModelInferRequest,

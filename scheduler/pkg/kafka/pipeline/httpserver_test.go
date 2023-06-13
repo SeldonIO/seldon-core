@@ -28,15 +28,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-
 	. "github.com/onsi/gomega"
-	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
+
+	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type fakePipelineInferer struct {
@@ -53,20 +54,6 @@ func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, is
 	} else {
 		return &Request{key: f.key, response: f.data, isError: f.isPayloadErr, errorModel: f.errorModel}, nil
 	}
-}
-
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
 func waitForServer(port int) {
@@ -159,7 +146,7 @@ func TestHttpServer(t *testing.T) {
 	}
 
 	testRequestId := "test-id"
-	port, err := getFreePort()
+	port, err := testing_utils.GetFreePortForTest()
 	g.Expect(err).To(BeNil())
 	mockInferer := &fakePipelineInferer{
 		err:  nil,

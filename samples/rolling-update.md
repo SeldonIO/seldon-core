@@ -17,19 +17,16 @@ seldon model infer iris -i 1 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "20aee4f5-fbc0-4406-9b2f-04e729f6bc78",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "e36b1d20-ddbb-4bbc-9649-290a8bb14ac4",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
 			"data": [
 				2
 			]
@@ -47,7 +44,7 @@ seldon model infer iris --seconds 5 \
 
 ```
 {}
-Success: map[:iris_1::428 :iris_2::1958]
+Success: map[:iris_1::216 :iris_2::984]
 
 ```
 

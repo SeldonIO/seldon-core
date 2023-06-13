@@ -21,9 +21,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/onsi/gomega"
-
 	"github.com/cenkalti/backoff/v4"
+	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
 

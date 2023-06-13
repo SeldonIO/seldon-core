@@ -20,12 +20,13 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
 func TestGetServerConfigForServer(t *testing.T) {

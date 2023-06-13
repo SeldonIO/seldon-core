@@ -1,6 +1,6 @@
 ## Seldon Model Zoo
 
-Examples of various model artefact types from various frameworks running under Seldon Core V2.
+Examples of various model artifact types from various frameworks running under Seldon Core V2.
 
  * SKlearn
  * Tensorflow
@@ -26,7 +26,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/iris-sklearn"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -60,7 +60,7 @@ seldon model infer iris \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "4eb764d3-fa80-4f4d-b0c5-37a8e2466c16",
+	"id": "09263298-ca66-49c5-acb9-0ca75b06f825",
 	"parameters": {},
 	"outputs": [
 		{
@@ -104,8 +104,8 @@ tf.keras.backend.clear_session()
 ```
 
 ```
-2023-02-02 16:29:58.359841: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-2023-02-02 16:29:58.359854: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2023-03-09 19:43:43.637892: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2023-03-09 19:43:43.637906: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 
 ```
 
@@ -230,7 +230,7 @@ kind: Model
 metadata:
   name: income-xgb
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/income-xgb"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/income-xgb"
   requirements:
   - xgboost
 
@@ -263,7 +263,7 @@ seldon model infer income-xgb \
 {
 	"model_name": "income-xgb_1",
 	"model_version": "1",
-	"id": "ab32e5d2-29a6-4e4f-adb1-44845aef9e9f",
+	"id": "e30c3b44-fa14-4e5f-88f5-d6f4d287da20",
 	"parameters": {},
 	"outputs": [
 		{
@@ -315,12 +315,6 @@ training_data = MNIST(
 
 ```
 
-```
-/home/clive/miniconda3/envs/scv2/lib/python3.9/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libtorch_cuda_cu.so: cannot open shared object file: No such file or directory
-  warn(f"Failed to load image Python extension: {e}")
-
-```
-
 ```python
 reqJson = json.loads('{"inputs":[{"name":"Input3","data":[],"datatype":"FP32","shape":[]}]}')
 url = "http://0.0.0.0:9000/v2/models/model/infer"
@@ -355,7 +349,7 @@ kind: Model
 metadata:
   name: mnist-onnx
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/mnist-onnx"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-onnx"
   requirements:
   - onnx
 
@@ -416,7 +410,7 @@ kind: Model
 metadata:
   name: income-lgb
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/income-lgb"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/income-lgb"
   requirements:
   - lightgbm
 
@@ -449,7 +443,7 @@ seldon model infer income-lgb \
 {
 	"model_name": "income-lgb_1",
 	"model_version": "1",
-	"id": "d39cd4ce-5eef-4c68-b21a-e51ed7ada0ae",
+	"id": "4437a71e-9af1-4e3b-aa4b-cb95d2cd86b9",
 	"parameters": {},
 	"outputs": [
 		{
@@ -491,7 +485,7 @@ kind: Model
 metadata:
   name: wine
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.2.3/wine-mlflow"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/wine-mlflow"
   requirements:
   - mlflow
 
@@ -594,7 +588,7 @@ print(response_raw.json())
 ```
 
 ```json
-{'model_name': 'wine_1', 'model_version': '1', 'id': '7be046a4-8334-4ca3-8fa2-143d562d0412', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
+{'model_name': 'wine_1', 'model_version': '1', 'id': '0d7e44f8-b46c-4438-b8af-a749e6aa6039', 'parameters': {}, 'outputs': [{'name': 'output-1', 'shape': [1, 1], 'datatype': 'FP64', 'data': [5.576883936610762]}]}
 
 ```
 
@@ -665,7 +659,7 @@ kind: Model
 metadata:
   name: mnist-pytorch
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-pytorch"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-pytorch"
   requirements:
   - pytorch
 

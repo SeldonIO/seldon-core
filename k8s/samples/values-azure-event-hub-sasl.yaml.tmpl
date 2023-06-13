@@ -1,0 +1,18 @@
+kafka:
+  bootstrap: <namespace>.servicebus.windows.net
+  topics:
+    replicationFactor: 3
+    numPartitions: 4
+
+security:
+  kafka:
+    protocol: SASL_SSL
+    sasl:
+      mechanism: "PLAIN"
+      client:
+        username: $ConnectionString
+        secret: azure-kafka-secret
+    ssl:
+      client:
+        secret:
+        brokerValidationSecret:

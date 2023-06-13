@@ -18,13 +18,14 @@ package password
 
 import (
 	"fmt"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 	"os"
 	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"istio.io/pkg/filewatcher"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 )
 
 type PasswordFolderHandler struct {

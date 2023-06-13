@@ -22,16 +22,13 @@ import (
 	"path"
 	"sync"
 
-	"k8s.io/client-go/kubernetes"
-
+	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/configmap/informer"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/fsnotify/fsnotify"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -159,16 +156,20 @@ func (a *AgentConfigHandler) getConfiguration() *AgentConfiguration {
 func (a *AgentConfigHandler) updateConfig(configData []byte) error {
 	logger := a.logger.WithField("func", "updateConfig")
 	logger.Infof("Updating config %s", configData)
+
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
 	config := AgentConfiguration{}
 	err := yaml.Unmarshal(configData, &config)
 	if err != nil {
 		return err
 	}
+
 	if config.Rclone != nil {
 		logger.Infof("Rclone Config loaded %v", config.Rclone)
 	}
+
 	a.config = &config
 	return nil
 }

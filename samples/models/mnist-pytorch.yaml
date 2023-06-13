@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: mnist-pytorch
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mnist-pytorch"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-pytorch"
   requirements:
   - pytorch

@@ -13,24 +13,26 @@ on:
 jobs:
   security-operator:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
+    container: snyk/snyk:golang-1.19
     steps:
     - uses: actions/checkout@v2
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        GOFLAGS: "-buildvcs=false"
       run: |
         make -C operator fmt
         snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-scheduler:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang
+    container: snyk/snyk:golang-1.19
     steps:
     - uses: actions/checkout@v2
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        GOFLAGS: "-buildvcs=false"
       run: |
         make -C scheduler lint
         snyk test --file=scheduler/go.mod --fail-on=upgradable --severity-threshold=high

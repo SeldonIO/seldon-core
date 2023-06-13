@@ -76,7 +76,6 @@ golang/glog
 golang/groupcache
 golang/mock
 golang/protobuf
-golang/snappy
 google/btree
 google/cel-go
 google/cel-spec

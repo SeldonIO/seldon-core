@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	schedulerAPI "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
@@ -44,8 +45,11 @@ type PipelineReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-func (r *PipelineReconciler) handleFinalizer(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline) (bool, error) {
-
+func (r *PipelineReconciler) handleFinalizer(
+	ctx context.Context,
+	logger logr.Logger,
+	pipeline *mlopsv1alpha1.Pipeline,
+) (bool, error) {
 	// Check if we are being deleted or not
 	if pipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
 
@@ -64,7 +68,10 @@ func (r *PipelineReconciler) handleFinalizer(ctx context.Context, logger logr.Lo
 					return true, err
 				} else {
 					// Remove pipeline anyway on error as we assume errors from scheduler are fatal here
-					pipeline.ObjectMeta.Finalizers = utils.RemoveStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
+					pipeline.ObjectMeta.Finalizers = utils.RemoveStr(
+						pipeline.ObjectMeta.Finalizers,
+						constants.PipelineFinalizerName,
+					)
 					if errUpdate := r.Update(ctx, pipeline); errUpdate != nil {
 						logger.Error(err, "Failed to remove finalizer", "pipeline", pipeline.Name)
 						return true, err
@@ -114,7 +121,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	err, retry := r.Scheduler.LoadPipeline(ctx, pipeline)
 	if err != nil {
-		r.updateStatusFromError(ctx, logger, pipeline, err)
+		r.updateStatusFromError(ctx, logger, pipeline, retry, err)
 		if retry {
 			return ctrl.Result{}, err
 		} else {
@@ -124,10 +131,31 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
-func (r *PipelineReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, pipeline *mlopsv1alpha1.Pipeline, err error) {
-	pipeline.Status.CreateAndSetCondition(mlopsv1alpha1.PipelineReady, false, schedulerAPI.PipelineVersionState_PipelineFailed.String(), err.Error())
+func (r *PipelineReconciler) updateStatusFromError(
+	ctx context.Context,
+	logger logr.Logger,
+	pipeline *mlopsv1alpha1.Pipeline,
+	canRetry bool,
+	err error,
+) {
+	pipelineStatus := schedulerAPI.PipelineVersionState_PipelineFailed.String()
+	if canRetry {
+		pipelineStatus = schedulerAPI.PipelineVersionState_PipelineCreating.String()
+	}
+
+	pipeline.Status.CreateAndSetCondition(
+		mlopsv1alpha1.PipelineReady,
+		false,
+		pipelineStatus,
+		err.Error(),
+	)
 	if errSet := r.Status().Update(ctx, pipeline); errSet != nil {
-		logger.Error(errSet, "Failed to set status on pipeline on error", "pipeline", pipeline.Name, "error", err.Error())
+		logger.Error(
+			errSet,
+			"Failed to set status on pipeline on error",
+			"pipeline", pipeline.Name,
+			"error", err.Error(),
+		)
 	}
 }
 

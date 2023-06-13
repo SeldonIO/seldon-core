@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: sentiment
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/moviesentiment/classifier"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/moviesentiment-sklearn"
   requirements:
   - sklearn

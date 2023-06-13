@@ -47,24 +47,21 @@ seldon model infer text-gen \
 {
 	"model_name": "text-gen_1",
 	"model_version": "1",
-	"id": "5412f8b0-f440-4e33-851c-ac3ff754b9c0",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "bde3e68b-2710-4763-828c-21e58416b45c",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "output",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "BYTES",
 			"parameters": {
-				"content_type": "str",
-				"headers": null
+				"content_type": "str"
 			},
 			"data": [
-				"[{\"generated_text\": \"Once upon a time in a galaxy far away, the Human Race was destroyed at the hands of an evil machine. But in a galaxy far away, the Human Race was destroyed at the hands of an evil machine. But in a galaxy far away,\"}]"
+				"[{\"generated_text\": \"Once upon a time in a galaxy far away, you can see the galaxy and the universe together.\\n\\n\\n\\nIn the same space as Earth, there are two locations (including Earth) or regions. These regions are located on both of the\"}]"
 			]
 		}
 	]
@@ -72,13 +69,20 @@ seldon model infer text-gen \
 
 ```
 
-```bash
-seldon model infer text-gen --inference-mode grpc \
+```python
+res = !seldon model infer text-gen --inference-mode grpc \
    '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZQo="]},"datatype":"BYTES","shape":[1]}]}'
 ```
 
-```json
-{"modelName":"text-gen_1", "modelVersion":"1", "outputs":[{"name":"output", "datatype":"BYTES", "shape":["1"], "parameters":{"content_type":{"stringParam":"str"}}, "contents":{"bytesContents":["W3siZ2VuZXJhdGVkX3RleHQiOiAiT25jZSB1cG9uIGEgdGltZVxuXG5Zb3UgaGF2ZSB0YWtlbiBhIGJpZyB0dW1ibGUgaW50byB5b3VyIGxpdmluZyByb29tIGFuZCBJIGNhbiBzZWUgdGhhdCB5b3UgYXJlIGxvb2tpbmcgYXQgaGltXG5Zb3Ugd2FudCB0byBzdG9wP1xuWW91IHNlZSBhbiBleWU/XG5Zb3Uga25vdyB3aGF0P1xuU29tZXRoaW5nJ3MgYmVlbiBoYXBwZW5pbmcgaW4geW91ciJ9XQ=="]}}]}
+```python
+import json
+import base64
+r = json.loads(res[0])
+base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
+```
+
+```
+b'[{"generated_text": "Once upon a time\\n\\n\\nThe Great Depression was a devastating economic collapse. The depression was not only due to soaring interest rates, but to an epidemic of illegal foreign trade. It was the worst recession of all time because of the government\'s actions"}]'
 
 ```
 

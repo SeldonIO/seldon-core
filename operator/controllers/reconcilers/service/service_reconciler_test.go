@@ -21,21 +21,20 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-
 	logrtest "github.com/go-logr/logr/testr"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
+	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
-	. "github.com/onsi/gomega"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
 func TestToServices(t *testing.T) {

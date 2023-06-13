@@ -22,7 +22,6 @@ MESH_IP
 
 ## With MLServer
 
-- Note: GRPC support with MLServer is blocked by https://github.com/SeldonIO/MLServer/issues/48
 - Note: binary data support in HTTP is blocked by https://github.com/SeldonIO/MLServer/issues/324
 
 ### Deploy Model and Pipeline
@@ -37,7 +36,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/mlserver/iris"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -101,7 +100,7 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
 
 ```
 model ready: True
-model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
+model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {}}
 
 ```
 
@@ -120,7 +119,7 @@ result.as_numpy("predict")
 ```
 
 ```
-array([2])
+array([[2]])
 
 ```
 
@@ -139,7 +138,7 @@ result.as_numpy("predict")
 ```
 
 ```
-array([2])
+array([[2]])
 
 ```
 
@@ -187,7 +186,7 @@ result.as_numpy("predict")
 ```
 
 ```
-array([2])
+array([[2]])
 
 ```
 
@@ -209,7 +208,7 @@ result.as_numpy("predict")
 ```
 
 ```
-array([2])
+array([[2]])
 
 ```
 
@@ -293,7 +292,7 @@ print("model metadata:", http_triton_client.get_model_metadata("iris"))
 
 ```
 model ready: True
-model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {'content_type': None, 'headers': None}}
+model metadata: {'name': 'iris_1', 'versions': [], 'platform': '', 'inputs': [], 'outputs': [], 'parameters': {}}
 
 ```
 

@@ -21,19 +21,16 @@ import (
 	"math"
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-
-	"k8s.io/client-go/tools/record"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
+	"k8s.io/client-go/tools/record"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 type SchedulerClient struct {
@@ -99,18 +96,39 @@ func (s *SchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsP
 func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName string, err error) bool {
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
-			s.logger.Info("Got grpc status code", "err", err.Error(), "code", st.Code(), "resource", resource, "resourceName", resourceName)
+			s.logger.Info(
+				"Got grpc status code",
+				"err", err.Error(),
+				"code", st.Code(),
+				"resource", resource,
+				"resourceName", resourceName,
+			)
 			switch st.Code() {
 			case codes.FailedPrecondition,
 				codes.Unimplemented:
-				s.logger.Info("Non retryable error", "code", st.Code(), "resource", resource, "resourceName", resourceName)
+				s.logger.Info(
+					"Non retryable error",
+					"code", st.Code(),
+					"resource", resource,
+					"resourceName", resourceName,
+				)
 				return false
 			default:
-				s.logger.Info("retryable error", "code", st.Code(), "resource", resource, "resourceName", resourceName)
+				s.logger.Info(
+					"retryable error",
+					"code", st.Code(),
+					"resource", resource,
+					"resourceName", resourceName,
+				)
 				return true
 			}
 		} else {
-			s.logger.Info("Got non grpc error", "error", err.Error(), "resource", resource, "resourceName", resourceName)
+			s.logger.Info(
+				"Got non grpc error",
+				"error", err.Error(),
+				"resource", resource,
+				"resourceName", resourceName,
+			)
 			return true
 		}
 	} else {

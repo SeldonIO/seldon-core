@@ -19,15 +19,17 @@ package password
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"os"
-	"testing"
-	"time"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 func TestWatchSecretPassword(t *testing.T) {

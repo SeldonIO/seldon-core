@@ -171,6 +171,8 @@ class Joiner(
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0 }
             .marshallInferenceV2Request()
     }
 
@@ -192,8 +194,13 @@ class Joiner(
         if (right == null) {
             return left
         }
-        val leftRequest = V2Dataplane.ModelInferRequest.parseFrom(left)
-        val rightRequest = V2Dataplane.ModelInferRequest.parseFrom(right)
+        var leftRequest = V2Dataplane.ModelInferRequest.parseFrom(left)
+        var rightRequest = V2Dataplane.ModelInferRequest.parseFrom(right)
+        if (leftRequest.rawInputContentsCount > 0 && rightRequest.rawInputContentsCount == 0) {
+            rightRequest = rightRequest.withBinaryContents()
+        } else if (rightRequest.rawInputContentsCount > 0 && leftRequest.rawInputContentsCount == 0) {
+            leftRequest = leftRequest.withBinaryContents()
+        }
         val request = V2Dataplane.ModelInferRequest
             .newBuilder()
             .setId(leftRequest.id)
@@ -213,8 +220,13 @@ class Joiner(
         if (right == null) {
             return left
         }
-        val leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
-        val rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
+        var leftResponse = V2Dataplane.ModelInferResponse.parseFrom(left)
+        var rightResponse = V2Dataplane.ModelInferResponse.parseFrom(right)
+        if (leftResponse.rawOutputContentsCount > 0 && rightResponse.rawOutputContentsCount == 0) {
+            rightResponse = rightResponse.withBinaryContents()
+        } else if (rightResponse.rawOutputContentsCount > 0 && leftResponse.rawOutputContentsCount == 0) {
+            leftResponse = leftResponse.withBinaryContents()
+        }
         val response = V2Dataplane.ModelInferResponse
             .newBuilder()
             .setId(leftResponse.id)

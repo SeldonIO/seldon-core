@@ -3,6 +3,6 @@ kind: Model
 metadata:
   name: income-preprocess
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.2.3/income/preprocessor"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/preprocessor"
   requirements:
   - sklearn

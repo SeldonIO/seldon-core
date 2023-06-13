@@ -22,12 +22,14 @@ import io.kubernetes.client.openapi.apis.CoreV1Api
 import io.kubernetes.client.openapi.models.V1Secret
 import io.kubernetes.client.util.ClientBuilder
 import io.kubernetes.client.util.KubeConfig
+import io.seldon.dataflow.kafka.security.FilePath
+import io.seldon.dataflow.kafka.security.SaslConfig
 import java.io.File
 import java.io.FileReader
 
 object K8sPasswordSecretsProvider {
-    val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
-    val namespace = System.getenv("POD_NAMESPACE")
+    private val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
+    private val namespace = System.getenv("POD_NAMESPACE")
 
     private fun getApiClient(): ApiClient = try {
         ClientBuilder.cluster().build()
@@ -35,7 +37,7 @@ object K8sPasswordSecretsProvider {
         ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(FileReader(kubeConfigPath))).build()
     }
 
-    fun extractPassword(secret: V1Secret, path: FilePath): String {
+    private fun extractPassword(secret: V1Secret, path: FilePath): String {
         val keyFile = File(path)
         val keyData = secret.data?.get(keyFile.name)
         return String(keyData!!)

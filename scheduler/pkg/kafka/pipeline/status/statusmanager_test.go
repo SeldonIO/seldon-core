@@ -19,9 +19,9 @@ package status
 import (
 	"testing"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
-
 	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
 func TestPipelineStatusManagerUpdate(t *testing.T) {

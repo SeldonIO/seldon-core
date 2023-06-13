@@ -30,7 +30,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/mlserver/iris"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -63,12 +63,12 @@ kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2022-09-07T14:44:59Z",
+      "lastTransitionTime": "2023-03-10T10:51:22Z",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2022-09-07T14:44:59Z",
+      "lastTransitionTime": "2023-03-10T10:51:22Z",
       "status": "True",
       "type": "Ready"
     }
@@ -87,19 +87,16 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "06c8b42d-820d-42b2-b054-7d7669ca9421",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "ce0d6b9e-3752-4caa-8019-d0a664a8aa83",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
 			"data": [
 				2
 			]
@@ -123,6 +120,7 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
       "name": "predict",
       "datatype": "INT64",
       "shape": [
+        "1",
         "1"
       ],
       "contents": {
@@ -144,18 +142,20 @@ kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2022-09-07T14:44:26Z",
+      "lastTransitionTime": "2023-03-10T10:50:49Z",
       "status": "True",
       "type": "Ready"
     },
     {
-      "lastTransitionTime": "2022-09-07T14:44:26Z",
+      "lastTransitionTime": "2023-03-10T10:50:49Z",
       "reason": "StatefulSet replicas matches desired replicas",
       "status": "True",
       "type": "StatefulSetReady"
     }
   ],
-  "loadedModels": 1
+  "loadedModels": 1,
+  "replicas": 1,
+  "selector": "seldon-server-name=mlserver"
 }
 
 ```
@@ -236,9 +236,9 @@ metadata:
 spec:
   default: iris
   candidates:
-  - modelName: iris
+  - name: iris
     weight: 50
-  - modelName: iris2
+  - name: iris2
     weight: 50
 
 ```
@@ -267,7 +267,7 @@ seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
 ```
 
 ```
-map[:iris2_1::25 :iris_1::25]
+Success: map[:iris2_1::24 :iris_1::26]
 
 ```
 
@@ -568,7 +568,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 
 ```
-error: timed out waiting for the condition on pipelines/join
+pipeline.mlops.seldon.io/join condition met
 
 ```
 
@@ -636,10 +636,6 @@ seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 
         ]
       }
     }
-  ],
-  "rawOutputContents": [
-    "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
-    "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
   ]
 }
 
@@ -679,7 +675,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
   requirements:
   - sklearn
 
@@ -711,12 +707,12 @@ kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2022-08-04T11:59:29Z",
+      "lastTransitionTime": "2023-03-10T10:52:24Z",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2022-08-04T11:59:29Z",
+      "lastTransitionTime": "2023-03-10T10:52:24Z",
       "status": "True",
       "type": "Ready"
     }
@@ -735,19 +731,16 @@ seldon model infer income --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "income_1",
 	"model_version": "1",
-	"id": "389eebf2-069b-4a4b-8ae1-005402493469",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "97c219fc-a978-4b0b-82ba-b4af7cb00bce",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
 			"data": [
 				0
 			]
@@ -767,7 +760,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
@@ -801,12 +794,12 @@ kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq 
 {
   "conditions": [
     {
-      "lastTransitionTime": "2022-08-04T11:59:53Z",
+      "lastTransitionTime": "2023-03-10T10:52:39Z",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2022-08-04T11:59:53Z",
+      "lastTransitionTime": "2023-03-10T10:52:39Z",
       "status": "True",
       "type": "Ready"
     }
@@ -825,24 +818,21 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "income-explainer_1",
 	"model_version": "1",
-	"id": "02b6d055-e587-4485-a36c-d09b5830748e",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "851a6c39-4241-4991-89bb-e4bd68e8ab5d",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "explanation",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "BYTES",
 			"parameters": {
-				"content_type": "str",
-				"headers": null
+				"content_type": "str"
 			},
 			"data": [
-				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.7.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"precision\": 0.9938650306748467, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 5, 8], \"mean\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"precision\": [0.7913148371531966, 0.9178082191780822, 0.9938650306748467], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133], \"examples\": [{\"covered_true\": [[66, 0, 1, 1, 0, 0, 4, 1, 0, 0, 6, 9], [36, 2, 1, 1, 5, 1, 4, 0, 0, 0, 60, 9], [40, 4, 1, 1, 8, 0, 4, 1, 0, 0, 75, 9], [42, 4, 1, 1, 6, 4, 4, 1, 0, 0, 45, 0], [49, 2, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [37, 4, 1, 1, 5, 0, 4, 1, 0, 0, 55, 9], [61, 4, 5, 1, 6, 0, 4, 1, 3103, 0, 50, 9], [54, 4, 1, 1, 7, 0, 4, 1, 0, 0, 40, 9], [35, 2, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [24, 4, 1, 1, 6, 1, 4, 1, 0, 0, 47, 9]], \"covered_false\": [[38, 6, 5, 1, 5, 0, 2, 1, 99999, 0, 60, 9], [40, 4, 1, 1, 7, 5, 1, 0, 7688, 0, 52, 6], [43, 4, 5, 1, 5, 1, 4, 1, 0, 0, 50, 9], [51, 4, 1, 1, 8, 1, 0, 1, 0, 0, 50, 9], [42, 4, 1, 1, 8, 0, 4, 1, 0, 2415, 60, 9], [22, 4, 1, 1, 5, 1, 0, 0, 14344, 0, 40, 9], [46, 4, 5, 1, 8, 1, 4, 0, 27828, 0, 50, 9], [50, 4, 1, 1, 8, 0, 4, 1, 7298, 0, 50, 9], [43, 1, 1, 1, 8, 1, 4, 1, 0, 0, 40, 9], [56, 6, 5, 1, 2, 0, 4, 1, 0, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[36, 4, 1, 1, 6, 3, 4, 1, 0, 1902, 45, 9], [55, 4, 2, 1, 8, 3, 4, 1, 0, 0, 60, 9], [46, 4, 2, 1, 5, 3, 4, 1, 0, 0, 70, 9], [45, 2, 5, 1, 5, 3, 4, 0, 0, 0, 45, 9], [55, 5, 5, 1, 8, 3, 4, 1, 0, 0, 60, 9], [24, 4, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [58, 6, 1, 1, 8, 3, 4, 1, 0, 0, 50, 9], [34, 4, 5, 1, 4, 3, 2, 0, 0, 0, 40, 0], [30, 4, 1, 1, 4, 3, 4, 1, 0, 0, 60, 4], [39, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 1]], \"covered_false\": [[45, 2, 1, 1, 2, 3, 1, 1, 7298, 0, 40, 9], [42, 1, 5, 1, 8, 3, 4, 0, 14084, 0, 60, 9], [46, 4, 1, 1, 2, 3, 4, 1, 15024, 0, 40, 9], [36, 4, 5, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [47, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 50, 9], [42, 2, 1, 1, 1, 3, 4, 0, 99999, 0, 40, 9], [55, 4, 5, 1, 5, 3, 4, 1, 15024, 0, 50, 0], [48, 1, 5, 1, 8, 3, 4, 0, 10520, 0, 50, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[27, 4, 5, 1, 8, 3, 4, 0, 0, 0, 25, 9], [45, 1, 1, 1, 8, 3, 4, 0, 0, 0, 40, 9], [32, 4, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [81, 6, 1, 1, 5, 3, 4, 0, 0, 1668, 3, 4], [44, 2, 1, 1, 5, 3, 4, 1, 0, 0, 50, 9], [44, 7, 5, 1, 8, 3, 4, 1, 0, 0, 40, 9], [41, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [48, 7, 2, 1, 5, 3, 4, 1, 0, 0, 50, 9], [32, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 9], [68, 4, 5, 1, 5, 3, 4, 1, 0, 0, 18, 0]], \"covered_false\": [[67, 5, 1, 1, 8, 3, 4, 1, 0, 2392, 75, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
+				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\", \"Capital Loss <= 0.00\"], \"precision\": 0.9947368421052631, \"coverage\": 0.06720071206052515, \"raw\": {\"feature\": [3, 5, 8, 9], \"mean\": [0.8121546961325967, 0.9134078212290503, 0.9927007299270073, 0.9947368421052631], \"precision\": [0.8121546961325967, 0.9134078212290503, 0.9927007299270073, 0.9947368421052631], \"coverage\": [0.3037383177570093, 0.07165109034267912, 0.06853582554517133, 0.06720071206052515], \"examples\": [{\"covered_true\": [[47, 4, 5, 1, 5, 0, 1, 1, 0, 0, 45, 1], [32, 6, 1, 1, 5, 3, 2, 0, 2174, 0, 60, 0], [45, 5, 1, 1, 2, 0, 4, 1, 4386, 0, 35, 9], [85, 4, 1, 1, 8, 0, 4, 1, 0, 0, 3, 4], [29, 4, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [32, 7, 5, 1, 1, 1, 4, 0, 0, 0, 38, 9], [30, 4, 1, 1, 4, 1, 4, 1, 0, 0, 60, 4], [32, 7, 5, 1, 5, 1, 4, 1, 0, 0, 10, 9], [36, 4, 1, 1, 5, 1, 4, 0, 0, 0, 45, 9], [44, 4, 1, 1, 4, 1, 4, 1, 0, 0, 35, 9]], \"covered_false\": [[45, 4, 1, 1, 6, 1, 4, 1, 8614, 0, 48, 9], [59, 4, 1, 1, 8, 0, 4, 1, 0, 0, 60, 9], [51, 6, 1, 1, 6, 0, 4, 1, 15024, 0, 50, 9], [45, 2, 5, 1, 8, 0, 4, 1, 7688, 0, 50, 9], [40, 6, 1, 1, 5, 0, 4, 1, 7298, 0, 50, 9], [43, 4, 5, 1, 5, 0, 4, 1, 0, 0, 50, 9], [41, 1, 5, 1, 8, 0, 4, 1, 0, 0, 60, 9], [40, 4, 5, 1, 5, 5, 4, 0, 15024, 0, 24, 9], [67, 5, 1, 1, 8, 0, 4, 1, 0, 2392, 75, 9], [36, 4, 5, 1, 6, 0, 4, 1, 15024, 0, 45, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[55, 6, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [39, 6, 1, 1, 6, 3, 4, 1, 0, 0, 60, 9], [53, 4, 1, 1, 6, 3, 4, 1, 0, 0, 50, 9], [50, 1, 5, 1, 4, 3, 4, 1, 0, 0, 40, 9], [46, 7, 1, 1, 5, 3, 4, 1, 0, 0, 37, 9], [42, 4, 1, 1, 5, 3, 4, 1, 0, 653, 50, 9], [31, 4, 1, 1, 1, 3, 4, 1, 0, 0, 40, 9], [35, 4, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [47, 7, 1, 1, 7, 3, 4, 1, 0, 0, 40, 9], [26, 4, 1, 1, 8, 3, 4, 0, 0, 0, 45, 9]], \"covered_false\": [[38, 1, 1, 1, 6, 3, 4, 1, 7688, 0, 42, 9], [44, 4, 1, 1, 5, 3, 4, 1, 15024, 0, 50, 3], [52, 4, 1, 1, 8, 3, 4, 1, 15024, 0, 55, 9], [35, 4, 1, 1, 6, 3, 4, 0, 8614, 0, 45, 9], [50, 5, 1, 1, 8, 3, 4, 1, 15024, 0, 60, 9], [60, 5, 1, 1, 8, 3, 4, 1, 7298, 0, 60, 9], [70, 6, 1, 1, 5, 3, 4, 1, 20051, 0, 35, 9], [43, 5, 1, 1, 6, 3, 4, 1, 15024, 0, 60, 9], [42, 4, 1, 1, 5, 3, 4, 1, 7688, 0, 40, 9], [46, 7, 1, 1, 8, 3, 4, 1, 7688, 0, 40, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[44, 4, 1, 1, 2, 3, 4, 1, 0, 0, 55, 9], [69, 5, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [28, 4, 1, 1, 5, 3, 4, 0, 0, 0, 40, 9], [43, 4, 5, 1, 5, 3, 3, 1, 0, 0, 50, 9], [45, 5, 1, 1, 8, 3, 4, 1, 0, 0, 51, 9], [26, 4, 1, 1, 6, 3, 4, 1, 0, 0, 55, 9], [39, 6, 1, 1, 1, 3, 4, 1, 0, 1762, 40, 9], [39, 6, 1, 1, 2, 3, 2, 1, 0, 1669, 60, 0], [42, 4, 1, 1, 8, 3, 4, 1, 0, 0, 40, 9], [63, 4, 1, 1, 5, 3, 4, 1, 0, 0, 45, 9]], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[26, 7, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [32, 4, 1, 1, 1, 3, 4, 0, 0, 0, 40, 9], [29, 4, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [48, 7, 2, 1, 5, 3, 4, 1, 0, 0, 65, 9], [37, 4, 1, 1, 2, 3, 4, 1, 0, 0, 40, 9], [23, 4, 1, 1, 7, 3, 4, 0, 0, 0, 40, 9], [35, 4, 2, 1, 5, 3, 1, 1, 0, 0, 40, 2], [38, 4, 1, 1, 6, 3, 4, 1, 0, 0, 40, 9], [27, 4, 1, 1, 1, 3, 2, 0, 0, 0, 40, 9], [27, 4, 5, 1, 5, 3, 1, 1, 0, 0, 40, 2]], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\", \"Capital Gain <= 0.00\", \"Capital Loss <= 0.00\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
 			]
 		}
 	]

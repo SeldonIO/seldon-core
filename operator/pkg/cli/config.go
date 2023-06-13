@@ -63,6 +63,7 @@ type KafkaConfig struct {
 	CaPath       string `json:"caPath,omitempty"`
 	SaslUsername string `json:"saslUsername,omitempty"`
 	SaslPassword string `json:"saslPassword,omitempty"`
+	TopicPrefix  string `json:"topicPrefix,omitempty"`
 }
 
 // end config struct

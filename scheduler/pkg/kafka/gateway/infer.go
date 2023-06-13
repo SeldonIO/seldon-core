@@ -24,17 +24,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -81,11 +80,15 @@ func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig
 	if err != nil {
 		return nil, err
 	}
+	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix)
+	if err != nil {
+		return nil, err
+	}
 	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
 		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:        kafka2.NewTopicNamer(consumerConfig.Namespace),
+		topicNamer:        topicNamer,
 		loadedModels:      make(map[string]bool),
 		subscribedTopics:  make(map[string]bool),
 		consumerConfig:    consumerConfig,
@@ -146,14 +149,7 @@ func (kc *InferKafkaHandler) setup() error {
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
 	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
-		adminConfig := kafka.ConfigMap{
-			config.KafkaBootstrapServers: kc.consumerConfig.KafkaConfig.BootstrapServers,
-		}
-		err = config.AddKafkaSSLOptions(adminConfig)
-		if err != nil {
-			return err
-		}
-		kc.adminClient, err = kafka.NewAdminClient(&adminConfig)
+		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
 		if err != nil {
 			return err
 		}

@@ -1,27 +1,125 @@
+---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: hodometer
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-controller-manager
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-scheduler
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: seldon-server
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/rclone-gs-public.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: seldon-rclone-gs-public
+  namespace: 'default'
+type: Opaque
+stringData:
+  gs: |
+    type: "google cloud storage"
+    name: gs
+    parameters:
+      anonymous: true
+---
+# Source: seldon-core-v2-setup/templates/agent.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-agent
+  namespace: 'default'
+data:
+  agent.yaml: |-
+    rclone:
+      config_secrets: ["seldon-rclone-gs-public"]
+---
+# Source: seldon-core-v2-setup/templates/kafka.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-kafka
+  namespace: 'default'
+data:
+  kafka.json: |-
+   {
+      "bootstrap.servers": "seldon-kafka-bootstrap.seldon-mesh:9092",
+      "debug": "",
+      "topicPrefix": "seldon",
+      "consumer":{
+         "session.timeout.ms": 6000,
+         "auto.offset.reset": "earliest",
+         "topic.metadata.propagation.max.ms": "300000",
+         "message.max.bytes": 1000000000
+      },
+      "producer":{
+        "linger.ms": 0,
+        "message.max.bytes": 1000000000
+      },
+      "streams":{
+      }
+   }
+---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: e98130ae.seldon.io
+kind: ConfigMap
+metadata:
+  name: seldon-manager-config
+  namespace: 'default'
+---
+# Source: seldon-core-v2-setup/templates/tracing.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seldon-tracing
+  namespace: 'default'
+data:
+  tracing.json: |-
+   {
+     "enable": true,
+     "otelExporterEndpoint": "seldon-collector:4317",
+     "ratio": 1
+   }
+  OTEL_JAVAAGENT_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://seldon-collector:4317"
+---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: agent-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -46,10 +144,12 @@ rules:
   - list
   - watch
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: hodometer-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -60,10 +160,12 @@ rules:
   - list
   - watch
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-leader-election-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -97,11 +199,13 @@ rules:
   - create
   - patch
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -289,11 +393,13 @@ rules:
   verbs:
   - get
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-tls-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -304,10 +410,12 @@ rules:
   - list
   - watch
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-scheduler-role
+  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -326,10 +434,12 @@ rules:
   - list
   - watch
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: agent-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -337,11 +447,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-server
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: hodometer-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -349,11 +462,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: hodometer
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-leader-election-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -361,11 +477,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -373,11 +492,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-tls-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -385,11 +507,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
+  namespace: 'default'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-scheduler-rolebinding
+  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -397,88 +522,19 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-scheduler
+  namespace: 'default'
 ---
-apiVersion: v1
-data:
-  agent.yaml: "rclone: \n  config_secrets: [\"seldon-rclone-gs-public\"]"
-kind: ConfigMap
-metadata:
-  name: seldon-agent
----
-apiVersion: v1
-data:
-  kafka.json: |-
-    {
-       "bootstrap.servers": "seldon-kafka-bootstrap.seldon-mesh:9092",
-       "consumer":{
-          "session.timeout.ms":6000,
-          "auto.offset.reset":"earliest",
-          "topic.metadata.propagation.max.ms": 300000
-       },
-       "producer":{
-         "linger.ms":0,
-         "message.max.bytes":1000000000
-       },
-       "streams":{
-       }
-    }
-kind: ConfigMap
-metadata:
-  name: seldon-kafka
----
-apiVersion: v1
-data:
-  controller_manager_config.yaml: |
-    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
-    kind: ControllerManagerConfig
-    health:
-      healthProbeBindAddress: :8081
-    metrics:
-      bindAddress: 127.0.0.1:8080
-    webhook:
-      port: 9443
-    leaderElection:
-      leaderElect: true
-      resourceName: e98130ae.seldon.io
-kind: ConfigMap
-metadata:
-  name: seldon-manager-config
----
-apiVersion: v1
-data:
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://seldon-collector:4317
-  OTEL_JAVAAGENT_ENABLED: "true"
-  tracing.json: |-
-    {
-      "enable": true,
-      "otelExporterEndpoint": "seldon-collector:4317",
-      "ratio": 1
-    }
-kind: ConfigMap
-metadata:
-  name: seldon-tracing
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: seldon-rclone-gs-public
-stringData:
-  gs: |
-    type: "google cloud storage"
-    name: gs
-    parameters:
-      anonymous: true
-type: Opaque
----
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: seldon-mesh
   name: seldon-mesh
+  namespace: 'default'
 spec:
   ports:
-  - name: data
+  - name: 'data'
     port: 80
     protocol: TCP
     targetPort: http
@@ -488,14 +544,16 @@ spec:
     targetPort: envoy-admin
   selector:
     app: seldon-envoy
-  type: LoadBalancer
+  type: 'LoadBalancer'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: seldon-mesh
   name: seldon-pipelinegateway
+  namespace: 'default'
 spec:
   clusterIP: None
   ports:
@@ -510,48 +568,52 @@ spec:
   selector:
     app: pipelinegateway
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: seldon-scheduler
   name: seldon-scheduler
+  namespace: 'default'
 spec:
   ports:
-  - name: xds
+  - name: 'xds'
     port: 9002
     protocol: TCP
     targetPort: xds
-  - name: scheduler
+  - name: 'scheduler'
     port: 9004
     protocol: TCP
     targetPort: scheduler
-  - name: scheduler-mtls
+  - name: 'scheduler-mtls'
     port: 9044
     protocol: TCP
     targetPort: scheduler-mtls
-  - name: agent
+  - name: 'agent'
     port: 9005
     protocol: TCP
     targetPort: agent
-  - name: agent-mtls
+  - name: 'agent-mtls'
     port: 9055
     protocol: TCP
     targetPort: agent-mtls
-  - name: dataflow
+  - name: 'dataflow'
     port: 9008
     protocol: TCP
     targetPort: dataflow
   selector:
     control-plane: seldon-scheduler
-  type: LoadBalancer
+  type: 'LoadBalancer'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     control-plane: controller-manager
   name: seldon-controller-manager
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -575,6 +637,20 @@ spec:
         command:
         - /manager
         env:
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
         - name: SELDON_SCHEDULER_SVC
           value: seldon-scheduler
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
@@ -585,8 +661,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldonv2-controller:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldonv2-controller:latest'
+        imagePullPolicy: 'IfNotPresent'
         livenessProbe:
           httpGet:
             path: /healthz
@@ -602,23 +678,28 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            memory: 128Mi
+            memory: '64Mi'
           requests:
-            cpu: 10m
-            memory: 64Mi
+            cpu: '10m'
+            memory: '64Mi'
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
         runAsNonRoot: true
+        runAsUser: 1000
       serviceAccountName: seldon-controller-manager
       terminationGracePeriodSeconds: 10
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     control-plane: seldon-dataflow-engine
   name: seldon-dataflow-engine
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -632,13 +713,39 @@ spec:
       containers:
       - env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
-          value: seldon-kafka-bootstrap.seldon-mesh:9092
+          value: 'seldon-kafka-bootstrap.seldon-mesh:9092'
+        - name: SELDON_KAFKA_REPLICATION_FACTOR
+          value: '1'
+        - name: SELDON_KAFKA_PARTITIONS_DEFAULT
+          value: '1'
+        - name: SELDON_CORES_COUNT
+          value: '4'
+        - name: SELDON_KAFKA_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: SELDON_TLS_CLIENT_SECRET
+          value: ''
+        - name: SELDON_TLS_CLIENT_KEY_PATH
+          value: '/tmp/certs/kafka/client/tls.key'
+        - name: SELDON_TLS_CLIENT_CERT_PATH
+          value: '/tmp/certs/kafka/client/tls.crt'
+        - name: SELDON_TLS_CLIENT_CA_PATH
+          value: '/tmp/certs/kafka/client/ca.crt'
+        - name: SELDON_SASL_USERNAME
+          value: 'seldon'
+        - name: SELDON_SASL_SECRET
+          value: ''
+        - name: SELDON_SASL_PASSWORD_PATH
+          value: '/tmp/sasl/kafka/client/password'
+        - name: SELDON_TLS_BROKER_SECRET
+          value: ''
+        - name: SELDON_TLS_BROKER_CA_PATH
+          value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: ''
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
           value: "9008"
-        - name: SELDON_CORES_COUNT
-          value: "4"
         - name: OTEL_JAVAAGENT_ENABLED
           valueFrom:
             configMapKeyRef:
@@ -653,24 +760,31 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-dataflow-engine:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-dataflow-engine:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: dataflow-engine
         resources:
+          limits:
+            memory: '1G'
           requests:
-            cpu: 1
-            memory: 1G
+            cpu: '100m'
+            memory: '1G'
       securityContext:
-        runAsUser: 8888
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: seldon-envoy
   name: seldon-envoy
+  namespace: 'default'
 spec:
   selector:
     matchLabels:
@@ -687,41 +801,54 @@ spec:
       containers:
       - env:
         - name: ENVOY_SECURITY_PROTOCOL
-          value: PLAINTEXT
+          value: 'PLAINTEXT'
         - name: ENVOY_XDS_CLIENT_TLS_KEY
           valueFrom:
             secretKeyRef:
               key: tls.key
-              name: seldon-controlplane-client
+              name: 'seldon-controlplane-client'
               optional: true
         - name: ENVOY_XDS_CLIENT_TLS_CRT
           valueFrom:
             secretKeyRef:
               key: tls.crt
-              name: seldon-controlplane-client
+              name: 'seldon-controlplane-client'
               optional: true
         - name: ENVOY_XDS_SERVER_TLS_CA
           valueFrom:
             secretKeyRef:
               key: ca.crt
-              name: seldon-controlplane-server
+              name: 'seldon-controlplane-server'
               optional: true
-        image: seldonio/seldon-envoy:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-envoy:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: envoy
         ports:
         - containerPort: 9000
           name: http
         - containerPort: 9003
           name: envoy-admin
+        resources:
+          limits:
+            memory: '128Mi'
+          requests:
+            cpu: '100m'
+            memory: '128Mi'
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       terminationGracePeriodSeconds: 5
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/name: hodometer
   name: seldon-hodometer
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -735,9 +862,25 @@ spec:
       containers:
       - env:
         - name: METRICS_LEVEL
-          value: FEATURE
+          value: 'feature'
         - name: LOG_LEVEL
-          value: INFO
+          value: 'info'
+        - name: EXTRA_PUBLISH_URLS
+          value: ''
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
         - name: PUBLISH_URL
           value: http://hodometer.seldon.io
         - name: SCHEDULER_HOST
@@ -750,20 +893,31 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-hodometer:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-hodometer:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: hodometer
+        resources:
+          limits:
+            memory: '32Mi'
+          requests:
+            cpu: '1m'
+            memory: '32Mi'
       securityContext:
-        runAsUser: 8888
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     control-plane: seldon-modelgateway
   name: seldon-modelgateway
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -786,32 +940,93 @@ spec:
         command:
         - /bin/modelgateway
         env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: 'seldon-collector:4317'
+        - name: MODELGATEWAY_NUM_WORKERS
+          value: '8'
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: '1'
+        - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+          value: '1'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: KAFKA_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/kafka/client/tls.key'
+        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/kafka/client/tls.crt'
+        - name: KAFKA_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/client/ca.crt'
+        - name: KAFKA_CLIENT_SASL_USERNAME
+          value: 'seldon'
+        - name: KAFKA_CLIENT_SASL_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+          value: '/tmp/sasl/kafka/client/password'
+        - name: KAFKA_BROKER_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_BROKER_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+          value: 'false'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-downstream-server'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/ddc/tls.key'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/ddc/tls.crt'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/ddc/ca.crt'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dds/ca.crt'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: MODELGATEWAY_NUM_WORKERS
-          value: "8"
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: "100"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-modelgateway:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-modelgateway:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: modelgateway
         resources:
+          limits:
+            memory: '1G'
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: '100m'
+            memory: '1G'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
       securityContext:
-        runAsUser: 8888
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
@@ -822,12 +1037,14 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: pipelinegateway
   name: seldon-pipelinegateway
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -853,6 +1070,68 @@ spec:
         command:
         - /bin/pipelinegateway
         env:
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: KAFKA_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/kafka/client/tls.key'
+        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/kafka/client/tls.crt'
+        - name: KAFKA_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/client/ca.crt'
+        - name: KAFKA_CLIENT_SASL_USERNAME
+          value: 'seldon'
+        - name: KAFKA_CLIENT_SASL_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+          value: '/tmp/sasl/kafka/client/password'
+        - name: KAFKA_BROKER_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_BROKER_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-upstream-server'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-upstream-client'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_KEY_LOCATION
+          value: '/tmp/certs/dus/tls.key'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_CRT_LOCATION
+          value: '/tmp/certs/dus/tls.crt'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dus/ca.crt'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/duc/ca.crt'
+        - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+          value: 'false'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-downstream-server'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/ddc/tls.key'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/ddc/tls.crt'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/ddc/ca.crt'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dds/ca.crt'
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -861,8 +1140,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-pipelinegateway:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-pipelinegateway:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: pipelinegateway
         ports:
         - containerPort: 9010
@@ -875,16 +1154,21 @@ spec:
           name: metrics
           protocol: TCP
         resources:
+          limits:
+            memory: '1G'
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: '100m'
+            memory: '1G'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
       securityContext:
-        runAsUser: 8888
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
@@ -895,12 +1179,14 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
     control-plane: seldon-scheduler
   name: seldon-scheduler
+  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -918,17 +1204,58 @@ spec:
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
+        - --kafka-config-path=/mnt/kafka/kafka.json
         command:
         - /bin/scheduler
         env:
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_KEY_LOCATION
+          value: '/tmp/certs/cps/tls.key'
+        - name: CONTROL_PLANE_SERVER_TLS_CRT_LOCATION
+          value: '/tmp/certs/cps/tls.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-upstream-client'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-upstream-server'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/duc/tls.key'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/duc/tls.crt'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/duc/ca.crt'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dus/ca.crt'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-downstream-server'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_KEY_LOCATION
+          value: '/tmp/certs/dds/tls.key'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CRT_LOCATION
+          value: '/tmp/certs/dds/tls.crt'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dds/ca.crt'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/ddc/ca.crt'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: seldonio/seldon-scheduler:latest
-        imagePullPolicy: IfNotPresent
+        image: 'docker.io/seldonio/seldon-scheduler:latest'
+        imagePullPolicy: 'IfNotPresent'
         name: scheduler
         ports:
         - containerPort: 9002
@@ -944,10 +1271,14 @@ spec:
         - containerPort: 9008
           name: dataflow
         resources:
+          limits:
+            memory: '1Gi'
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: '100m'
+            memory: '1Gi'
         volumeMounts:
+        - mountPath: /mnt/kafka
+          name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
@@ -955,10 +1286,14 @@ spec:
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
+        runAsNonRoot: true
         runAsUser: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
+      - configMap:
+          name: seldon-kafka
+        name: kafka-config-volume
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
@@ -970,17 +1305,19 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: '1Gi'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: mlserver
+  namespace: 'default'
 spec:
   podSpec:
     containers:
-    - image: seldonio/seldon-rclone:latest
-      imagePullPolicy: IfNotPresent
+    - image: 'docker.io/seldonio/seldon-rclone:latest'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1000,9 +1337,11 @@ spec:
           port: 5572
         timeoutSeconds: 1
       resources:
+        limits:
+          memory: '128Mi'
         requests:
-          cpu: 200m
-          memory: 100M
+          cpu: '50m'
+          memory: '128Mi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1012,15 +1351,43 @@ spec:
       - /bin/agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost
-      - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: "10"
+        value: 'mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost'
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
-        value: "30"
+        value: '30'
       - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
-        value: "600"
+        value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
-        value: "20"
+        value: '20'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '10'
+      - name: CONTROL_PLANE_SECURITY_PROTOCOL
+        value: 'PLAINTEXT'
+      - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+        value: 'seldon-controlplane-client'
+      - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+        value: 'seldon-controlplane-server'
+      - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+        value: '/tmp/certs/cpc/tls.key'
+      - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+        value: '/tmp/certs/cpc/tls.crt'
+      - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+        value: '/tmp/certs/cpc/ca.crt'
+      - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+        value: '/tmp/certs/cps/ca.crt'
+      - name: ENVOY_SECURITY_PROTOCOL
+        value: 'PLAINTEXT'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+        value: 'seldon-upstream-server'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+        value: 'seldon-upstream-client'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_KEY_LOCATION
+        value: '/tmp/certs/dus/tls.key'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CRT_LOCATION
+        value: '/tmp/certs/dus/tls.crt'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+        value: '/tmp/certs/dus/ca.crt'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+        value: '/tmp/certs/duc/ca.crt'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1062,8 +1429,8 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
-      image: seldonio/seldon-agent:latest
-      imagePullPolicy: IfNotPresent
+      image: 'docker.io/seldonio/seldon-agent:latest'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1081,9 +1448,11 @@ spec:
         name: metrics
         protocol: TCP
       resources:
+        limits:
+          memory: '1Gi'
         requests:
-          cpu: 500m
-          memory: 500M
+          cpu: '200m'
+          memory: '1Gi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1103,9 +1472,9 @@ spec:
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
-        value: "104857600"
-      image: seldonio/mlserver:1.2.3
-      imagePullPolicy: IfNotPresent
+        value: "1048576000"
+      image: 'docker.io/seldonio/mlserver:1.3.3'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1130,9 +1499,11 @@ spec:
         initialDelaySeconds: 5
         periodSeconds: 5
       resources:
+        limits:
+          memory: '1Gi'
         requests:
-          cpu: 1
-          memory: 1G
+          cpu: '100m'
+          memory: '1Gi'
       startupProbe:
         failureThreshold: 10
         httpGet:
@@ -1147,22 +1518,23 @@ spec:
         name: downstream-ca-certs
         readOnly: true
     securityContext:
-      fsGroup: 2000
+      fsGroup: 1000
+      runAsGroup: 1000
       runAsNonRoot: true
       runAsUser: 1000
     serviceAccountName: seldon-server
     terminationGracePeriodSeconds: 120
     volumes:
+    - name: downstream-ca-certs
+      secret:
+        optional: true
+        secretName: 'seldon-downstream-server'
     - configMap:
         name: seldon-agent
       name: config-volume
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
-    - name: downstream-ca-certs
-      secret:
-        optional: true
-        secretName: seldon-downstream-server
   volumeClaimTemplates:
   - name: mlserver-models
     spec:
@@ -1170,17 +1542,19 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: '1Gi'
 ---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: triton
+  namespace: 'default'
 spec:
   podSpec:
     containers:
-    - image: seldonio/seldon-rclone:latest
-      imagePullPolicy: IfNotPresent
+    - image: 'docker.io/seldonio/seldon-rclone:latest'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1200,9 +1574,11 @@ spec:
           port: 5572
         timeoutSeconds: 1
       resources:
+        limits:
+          memory: '128Mi'
         requests:
-          cpu: 200m
-          memory: 100M
+          cpu: '50m'
+          memory: '128Mi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
@@ -1212,15 +1588,43 @@ spec:
       - /bin/agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt
-      - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: "10"
+        value: 'triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt'
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
-        value: "30"
+        value: '30'
       - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
-        value: "600"
+        value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
-        value: "20"
+        value: '20'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '10'
+      - name: CONTROL_PLANE_SECURITY_PROTOCOL
+        value: 'PLAINTEXT'
+      - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+        value: 'seldon-controlplane-client'
+      - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+        value: 'seldon-controlplane-server'
+      - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+        value: '/tmp/certs/cpc/tls.key'
+      - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+        value: '/tmp/certs/cpc/tls.crt'
+      - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+        value: '/tmp/certs/cpc/ca.crt'
+      - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+        value: '/tmp/certs/cps/ca.crt'
+      - name: ENVOY_SECURITY_PROTOCOL
+        value: 'PLAINTEXT'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+        value: 'seldon-upstream-server'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+        value: 'seldon-upstream-client'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_KEY_LOCATION
+        value: '/tmp/certs/dus/tls.key'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CRT_LOCATION
+        value: '/tmp/certs/dus/tls.crt'
+      - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+        value: '/tmp/certs/dus/ca.crt'
+      - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+        value: '/tmp/certs/duc/ca.crt'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1256,8 +1660,8 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      image: seldonio/seldon-agent:latest
-      imagePullPolicy: IfNotPresent
+      image: 'docker.io/seldonio/seldon-agent:latest'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1275,9 +1679,11 @@ spec:
         name: metrics
         protocol: TCP
       resources:
+        limits:
+          memory: '1Gi'
         requests:
-          cpu: 500m
-          memory: 500M
+          cpu: '200m'
+          memory: '1Gi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
@@ -1301,8 +1707,10 @@ spec:
         value: "9500"
       - name: SERVER_MODELS_DIR
         value: /mnt/agent/models
-      image: nvcr.io/nvidia/tritonserver:22.11-py3
-      imagePullPolicy: IfNotPresent
+      - name: LD_PRELOAD
+        value: /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
+      image: 'nvcr.io/nvidia/tritonserver:23.03-py3'
+      imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
           httpGet:
@@ -1329,9 +1737,11 @@ spec:
         initialDelaySeconds: 5
         periodSeconds: 5
       resources:
+        limits:
+          memory: '1Gi'
         requests:
-          cpu: 1
-          memory: 1G
+          cpu: '100m'
+          memory: '1Gi'
       startupProbe:
         failureThreshold: 10
         httpGet:
@@ -1346,7 +1756,8 @@ spec:
         name: dshm
         readOnly: false
     securityContext:
-      fsGroup: 2000
+      fsGroup: 1000
+      runAsGroup: 1000
       runAsNonRoot: true
       runAsUser: 1000
     serviceAccountName: seldon-server
@@ -1369,4 +1780,4 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: 1Gi
+          storage: '1Gi'

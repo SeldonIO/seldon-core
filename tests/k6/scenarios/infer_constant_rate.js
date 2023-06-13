@@ -37,7 +37,7 @@ export default function (config) {
     const modelId = Math.floor(Math.random() * config.maxNumModels[idx])
     const modelName = config.modelNamePrefix[idx] + modelId.toString()
 
-    const modelNameWithVersion = modelName + getVersionSuffix(config)  // first version
+    const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
 
     if (config.inferType === "REST") {
         doInfer(modelName, modelNameWithVersion, config, true, idx)

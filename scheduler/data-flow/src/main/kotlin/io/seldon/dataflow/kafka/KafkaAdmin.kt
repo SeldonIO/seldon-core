@@ -45,7 +45,11 @@ class KafkaAdmin(
                     topicName,
                     streamsConfig.numPartitions,
                     streamsConfig.replicationFactor.toShort(),
-                ).configs(kafkaTopicConfig)
+                ).configs(
+                    kafkaTopicConfig(
+                        streamsConfig.maxMessageSizeBytes,
+                    ),
+                )
             }
             .run { adminClient.createTopics(this) }
             .values()

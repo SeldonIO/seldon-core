@@ -5650,6 +5650,23 @@ public final class ChainerOuterClass {
      */
     com.google.protobuf.ByteString
         getTopicNameBytes();
+
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return Whether the tensor field is set.
+     */
+    boolean hasTensor();
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return The tensor.
+     */
+    java.lang.String getTensor();
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return The bytes for tensor.
+     */
+    com.google.protobuf.ByteString
+        getTensorBytes();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineTopic}
@@ -5666,6 +5683,7 @@ public final class ChainerOuterClass {
     private PipelineTopic() {
       pipelineName_ = "";
       topicName_ = "";
+      tensor_ = "";
     }
 
     @java.lang.Override
@@ -5693,6 +5711,7 @@ public final class ChainerOuterClass {
               io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.class, io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.Builder.class);
     }
 
+    private int bitField0_;
     public static final int PIPELINENAME_FIELD_NUMBER = 1;
     @SuppressWarnings("serial")
     private volatile java.lang.Object pipelineName_ = "";
@@ -5771,6 +5790,53 @@ public final class ChainerOuterClass {
       }
     }
 
+    public static final int TENSOR_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object tensor_ = "";
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return Whether the tensor field is set.
+     */
+    @java.lang.Override
+    public boolean hasTensor() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return The tensor.
+     */
+    @java.lang.Override
+    public java.lang.String getTensor() {
+      java.lang.Object ref = tensor_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        tensor_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string tensor = 3;</code>
+     * @return The bytes for tensor.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getTensorBytes() {
+      java.lang.Object ref = tensor_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        tensor_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -5791,6 +5857,9 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, topicName_);
       }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, tensor_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -5805,6 +5874,9 @@ public final class ChainerOuterClass {
       }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, topicName_);
+      }
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, tensor_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5825,6 +5897,11 @@ public final class ChainerOuterClass {
           .equals(other.getPipelineName())) return false;
       if (!getTopicName()
           .equals(other.getTopicName())) return false;
+      if (hasTensor() != other.hasTensor()) return false;
+      if (hasTensor()) {
+        if (!getTensor()
+            .equals(other.getTensor())) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -5840,6 +5917,10 @@ public final class ChainerOuterClass {
       hash = (53 * hash) + getPipelineName().hashCode();
       hash = (37 * hash) + TOPICNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTopicName().hashCode();
+      if (hasTensor()) {
+        hash = (37 * hash) + TENSOR_FIELD_NUMBER;
+        hash = (53 * hash) + getTensor().hashCode();
+      }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5971,6 +6052,7 @@ public final class ChainerOuterClass {
         bitField0_ = 0;
         pipelineName_ = "";
         topicName_ = "";
+        tensor_ = "";
         return this;
       }
 
@@ -6010,6 +6092,12 @@ public final class ChainerOuterClass {
         if (((from_bitField0_ & 0x00000002) != 0)) {
           result.topicName_ = topicName_;
         }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.tensor_ = tensor_;
+          to_bitField0_ |= 0x00000001;
+        }
+        result.bitField0_ |= to_bitField0_;
       }
 
       @java.lang.Override
@@ -6066,6 +6154,11 @@ public final class ChainerOuterClass {
           bitField0_ |= 0x00000002;
           onChanged();
         }
+        if (other.hasTensor()) {
+          tensor_ = other.tensor_;
+          bitField0_ |= 0x00000004;
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -6102,6 +6195,11 @@ public final class ChainerOuterClass {
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
+              case 26: {
+                tensor_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6259,6 +6357,85 @@ public final class ChainerOuterClass {
         checkByteStringIsUtf8(value);
         topicName_ = value;
         bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object tensor_ = "";
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @return Whether the tensor field is set.
+       */
+      public boolean hasTensor() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @return The tensor.
+       */
+      public java.lang.String getTensor() {
+        java.lang.Object ref = tensor_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          tensor_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @return The bytes for tensor.
+       */
+      public com.google.protobuf.ByteString
+          getTensorBytes() {
+        java.lang.Object ref = tensor_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          tensor_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @param value The tensor to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTensor(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        tensor_ = value;
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTensor() {
+        tensor_ = getDefaultInstance().getTensor();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tensor = 3;</code>
+       * @param value The bytes for tensor to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTensorBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        tensor_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -8365,24 +8542,25 @@ public final class ChainerOuterClass {
       "\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020" +
       "\003B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMapp" +
       "ing\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTen" +
-      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"8\n\rPipelin" +
+      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelin" +
       "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicNam" +
-      "e\030\002 \001(\t\"X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010w" +
-      "indowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_" +
-      "sizeB\013\n\t_windowMs\"{\n\033PipelineUpdateStatu" +
-      "sMessage\022;\n\006update\030\001 \001(\0132+.seldon.mlops." +
-      "chainer.PipelineUpdateMessage\022\017\n\007success" +
-      "\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdate" +
-      "StatusResponse2\211\002\n\007Chainer\022~\n\030SubscribeP" +
-      "ipelineUpdates\0221.seldon.mlops.chainer.Pi" +
-      "pelineSubscriptionRequest\032+.seldon.mlops" +
-      ".chainer.PipelineUpdateMessage\"\0000\001\022~\n\023Pi" +
-      "pelineUpdateEvent\0221.seldon.mlops.chainer" +
-      ".PipelineUpdateStatusMessage\0322.seldon.ml" +
-      "ops.chainer.PipelineUpdateStatusResponse" +
-      "\"\000BS\n\027io.seldon.mlops.chainerZ8github.co" +
-      "m/seldonio/seldon-core/apis/go/v2/mlops/" +
-      "chainerb\006proto3"
+      "e\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"" +
+      "X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030" +
+      "\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t" +
+      "_windowMs\"{\n\033PipelineUpdateStatusMessage" +
+      "\022;\n\006update\030\001 \001(\0132+.seldon.mlops.chainer." +
+      "PipelineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016" +
+      "\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRe" +
+      "sponse2\211\002\n\007Chainer\022~\n\030SubscribePipelineU" +
+      "pdates\0221.seldon.mlops.chainer.PipelineSu" +
+      "bscriptionRequest\032+.seldon.mlops.chainer" +
+      ".PipelineUpdateMessage\"\0000\001\022~\n\023PipelineUp" +
+      "dateEvent\0221.seldon.mlops.chainer.Pipelin" +
+      "eUpdateStatusMessage\0322.seldon.mlops.chai" +
+      "ner.PipelineUpdateStatusResponse\"\000BS\n\027io" +
+      ".seldon.mlops.chainerZ8github.com/seldon" +
+      "io/seldon-core/apis/go/v2/mlops/chainerb" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8417,7 +8595,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineTopic_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineTopic_descriptor,
-        new java.lang.String[] { "PipelineName", "TopicName", });
+        new java.lang.String[] { "PipelineName", "TopicName", "Tensor", "Tensor", });
     internal_static_seldon_mlops_chainer_Batch_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_seldon_mlops_chainer_Batch_fieldAccessorTable = new

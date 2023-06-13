@@ -108,7 +108,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "ceb1joj3gshc73fmvpu0",
+        "uid": "cgm2pdosogbs73emfvm0",
         "version": 1,
         "steps": [
           {
@@ -136,7 +136,7 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:56:51.471467841Z",
+        "lastChangeTimestamp": "2023-04-04T13:57:11.631385497Z",
         "modelsReady": true
       }
     }
@@ -287,12 +287,12 @@ seldon pipeline inspect tfsimples
 ```
 
 ```
-seldon.default.model.tfsimple1.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
-seldon.default.model.tfsimple1.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
-seldon.default.model.tfsimple2.inputs	cdqjilab951s73aqg830	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-seldon.default.model.tfsimple2.outputs	cdqjilab951s73aqg830	{"modelName":"tfsimple2_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
-seldon.default.pipeline.tfsimples.inputs	cdqjilab951s73aqg830	{"modelName":"tfsimples", "inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
-seldon.default.pipeline.tfsimples.outputs	cdqjilab951s73aqg830	{"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
+seldon.customer.default.model.tfsimple1.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+seldon.customer.default.model.tfsimple1.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
+seldon.customer.default.model.tfsimple2.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+seldon.customer.default.model.tfsimple2.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
+seldon.customer.default.pipeline.tfsimples.inputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
+seldon.customer.default.pipeline.tfsimples.outputs	cg46198fh5ss73e09pm0	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
 
 ```
 
@@ -368,6 +368,295 @@ seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 
 ```bash
 seldon pipeline unload tfsimples
+```
+
+```json
+{}
+
+```
+
+```bash
+seldon model unload tfsimple1
+seldon model unload tfsimple2
+```
+
+```json
+{}
+{}
+
+```
+
+### Model Chaining from inputs
+
+Chain the output of one model into the next. Shows using the input and outputs and combining.
+
+```bash
+cat ./models/tfsimple1.yaml
+cat ./models/tfsimple2.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: tfsimple1
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  requirements:
+  - tensorflow
+  memory: 100Ki
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: tfsimple2
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  requirements:
+  - tensorflow
+  memory: 100Ki
+
+```
+
+```bash
+seldon model load -f ./models/tfsimple1.yaml
+seldon model load -f ./models/tfsimple2.yaml
+```
+
+```json
+{}
+{}
+
+```
+
+```bash
+seldon model status tfsimple1 -w ModelAvailable | jq -M .
+seldon model status tfsimple2 -w ModelAvailable | jq -M .
+```
+
+```json
+{}
+{}
+
+```
+
+```bash
+cat ./pipelines/tfsimples-input.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: tfsimples-input
+spec:
+  steps:
+    - name: tfsimple1
+    - name: tfsimple2
+      inputs:
+      - tfsimple1.inputs.INPUT0
+      - tfsimple1.outputs.OUTPUT1
+      tensorMap:
+        tfsimple1.outputs.OUTPUT1: INPUT1
+  output:
+    steps:
+    - tfsimple2
+
+```
+
+```bash
+seldon pipeline load -f ./pipelines/tfsimples-input.yaml
+```
+
+```json
+{}
+
+```
+
+```bash
+seldon pipeline status tfsimples-input -w PipelineReady| jq -M .
+```
+
+```json
+{
+  "pipelineName": "tfsimples-input",
+  "versions": [
+    {
+      "pipeline": {
+        "name": "tfsimples-input",
+        "uid": "cgm33165u83c73dgvr00",
+        "version": 1,
+        "steps": [
+          {
+            "name": "tfsimple1"
+          },
+          {
+            "name": "tfsimple2",
+            "inputs": [
+              "tfsimple1.inputs.INPUT0",
+              "tfsimple1.outputs.OUTPUT1"
+            ],
+            "tensorMap": {
+              "tfsimple1.outputs.OUTPUT1": "INPUT1"
+            }
+          }
+        ],
+        "output": {
+          "steps": [
+            "tfsimple2.outputs"
+          ]
+        },
+        "kubernetesMeta": {}
+      },
+      "state": {
+        "pipelineVersion": 1,
+        "status": "PipelineReady",
+        "reason": "created pipeline",
+        "lastChangeTimestamp": "2023-04-04T14:17:41.667004853Z",
+        "modelsReady": true
+      }
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline infer tfsimples-input \
+    '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
+
+```json
+{
+  "model_name": "",
+  "outputs": [
+    {
+      "data": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline infer tfsimples-input --inference-mode grpc \
+    '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
+
+```json
+{
+  "outputs": [
+    {
+      "name": "OUTPUT0",
+      "datatype": "INT32",
+      "shape": [
+        "1",
+        "16"
+      ],
+      "contents": {
+        "intContents": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "name": "OUTPUT1",
+      "datatype": "INT32",
+      "shape": [
+        "1",
+        "16"
+      ],
+      "contents": {
+        "intContents": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      }
+    }
+  ]
+}
+
+```
+
+```bash
+seldon pipeline unload tfsimples-input
 ```
 
 ```json
@@ -505,7 +794,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "join",
-        "uid": "ceb1k1r3gshc73fmvpug",
+        "uid": "cg3o00od8mqs73fqhh4g",
         "version": 1,
         "steps": [
           {
@@ -537,7 +826,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:57:27.599682702Z",
+        "lastChangeTimestamp": "2023-03-07T18:18:43.910647312Z",
         "modelsReady": true
       }
     }
@@ -762,7 +1051,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "tfsimple-conditional",
-        "uid": "cfajkd95jl3s73dcqflg",
+        "uid": "cg3o05od8mqs73fqhh50",
         "version": 1,
         "steps": [
           {
@@ -800,7 +1089,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-01-28T15:07:33.574747475Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:04.254724839Z",
         "modelsReady": true
       }
     }
@@ -906,7 +1195,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -916,7 +1205,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -995,7 +1284,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "pipeline-inputs",
-        "uid": "ceb1kcj3gshc73fmvpvg",
+        "uid": "cg3o0agd8mqs73fqhh5g",
         "version": 1,
         "steps": [
           {
@@ -1029,7 +1318,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:58:11.137492043Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:22.326945896Z",
         "modelsReady": true
       }
     }
@@ -1116,7 +1405,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -1125,7 +1414,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -1207,7 +1496,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "trigger-joins",
-        "uid": "ceb1khb3gshc73fmvq00",
+        "uid": "cg3o0f0d8mqs73fqhh60",
         "version": 1,
         "steps": [
           {
@@ -1244,7 +1533,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-12-11T17:58:30.105358917Z",
+        "lastChangeTimestamp": "2023-03-07T18:19:40.673234267Z",
         "modelsReady": true
       }
     }

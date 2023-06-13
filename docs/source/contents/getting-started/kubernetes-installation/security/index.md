@@ -4,7 +4,7 @@ Seldon can be run with secure control plane and data plane operations. There are
 
  * [Control Plane](#control-plane)
  * [Kafka](#kafka)
- * [Data Plane](#data-plane) 
+ * [Data Plane](#data-plane)
 
 The various communication points betwwen services is shown in the diagram below:
 
@@ -27,13 +27,16 @@ helm install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
 
 ## Kafka
 
-Kafka secure activation is switched on and off via the environment variable: `KAFKA_SECURITY_PROTOCOL` whose values can be `PLAINTEXT` or `SSL` or `SASL_SSL`.
+Kafka secure activation is switched on and off via the environment variable: `KAFKA_SECURITY_PROTOCOL` whose values can be `PLAINTEXT`, `SSL` or `SASL_SSL`.
 
 Examples are shown below:
 
- * [mTLS Strimzi example](strimzi-mtls.md)
- * [mTLS AWS MSK example](msk.md)
- * [SASL SCRAM with Strimzi example](strimzi-sasl.md)
+ * [mTLS Strimzi](strimzi-mtls.md) example
+ * [mTLS AWS MSK](aws-msk-mtls.md) example
+ * [SASL PLAIN with Confluent Cloud](confluent-sasl.md) example
+ * [SASL PLAIN with Azure Event Hub](azure-event-hub-sasl.md) example
+ * [SASL SCRAM with Strimzi](strimzi-sasl.md) example
+ * [SASL SCRAM with AWS MSK](aws-msk-sasl.md) example
 
 ## Data Plane
 
@@ -91,6 +94,9 @@ helm install seldon-v2-certs k8s/helm-charts/seldon-core-v2-certs/ -n seldon-mes
 
 strimzi-mtls.md
 strimzi-sasl.md
-msk.md
+confluent-sasl.md
+azure-event-hub-sasl.md
+aws-msk-sasl.md
+aws-msk-mtls.md
 reference.md
 ```

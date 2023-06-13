@@ -1,4 +1,4 @@
-FROM golang:1.19.3-buster as builder
+FROM golang:1.19.8-buster as builder
 
 WORKDIR /build
 COPY . .
@@ -7,7 +7,12 @@ COPY . .
 RUN apt-get install make
 RUN make -C scheduler -o test-go build-modelgateway
 
+# We add public trust bundle so Kafka can work with e.g. Let's Encrypt certificates
+FROM registry.access.redhat.com/ubi9/ubi-minimal as certs
+
 # Kafka dependencies necessitate leaving CGo enabled and using a base image with C dependencies
-FROM registry.access.redhat.com/ubi9/ubi-micro
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.1.0-15
+COPY --from=certs /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt
+RUN chmod -R 777 /tmp/certs/
 COPY --from=builder /build/scheduler/bin/modelgateway /bin/modelgateway
 ENTRYPOINT ["/bin/modelgateway"]

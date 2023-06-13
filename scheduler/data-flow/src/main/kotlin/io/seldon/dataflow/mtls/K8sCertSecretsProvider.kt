@@ -30,8 +30,8 @@ import java.nio.file.Files
 
 object K8sCertSecretsProvider {
 
-    val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
-    val namespace = System.getenv("POD_NAMESPACE")
+    private val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
+    private val namespace = System.getenv("POD_NAMESPACE")
 
     private fun getApiClient(): ApiClient = try {
         ClientBuilder.cluster().build()
@@ -39,7 +39,7 @@ object K8sCertSecretsProvider {
         ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(FileReader(kubeConfigPath))).build()
     }
 
-    fun extractCertAndStore(secret: V1Secret, path: FilePath) {
+    private fun extractCertAndStore(secret: V1Secret, path: FilePath) {
         val keyFile = File(path)
         val keyData = secret.data?.get(keyFile.name)
         Files.createDirectories(keyFile.toPath().parent)

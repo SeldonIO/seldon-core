@@ -20,27 +20,27 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/errors"
+	apimachinary_errors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
+	"knative.dev/pkg/apis"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
-	"knative.dev/pkg/apis"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	apimachinary_errors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 // ServerReconciler reconciles a Server object
@@ -118,11 +118,15 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	stop, err := r.handleFinalizer(ctx, server)
 	if stop {
+		if err != nil {
+			r.updateStatusFromError(ctx, logger, server, err)
+		}
 		return reconcile.Result{}, err
 	}
 
 	err = r.Scheduler.ServerNotify(ctx, server)
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
@@ -132,17 +136,20 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		Client: r.Client,
 	})
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
 	// Set Controller References
 	err = setControllerReferences(server, sr.GetResources(), r.Scheme)
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
 	err = sr.Reconcile()
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
@@ -169,6 +176,13 @@ func serverReady(status mlopsv1alpha1.ServerStatus) bool {
 	return status.Conditions != nil &&
 		status.GetCondition(apis.ConditionReady) != nil &&
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
+}
+
+func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, server *mlopsv1alpha1.Server, err error) {
+	server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetReady, false, err.Error())
+	if errSet := r.Status().Update(ctx, server); errSet != nil {
+		logger.Error(errSet, "Failed to set status for server on error", "server", server.Name, "error", err.Error())
+	}
 }
 
 func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {

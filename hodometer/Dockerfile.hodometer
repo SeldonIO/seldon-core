@@ -1,6 +1,4 @@
-FROM golang:1.18-alpine as builder
-
-RUN apk add --upgrade make
+FROM golang:1.19.8-buster as builder
 
 WORKDIR /build
 # Copy the Go Modules manifests
@@ -19,11 +17,12 @@ ARG GIT_COMMIT
 ARG RELEASE_TYPE
 ARG BUILD_VERSION
 
+RUN apt-get install make
 RUN make build-hodometer
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.1.0-15
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 ARG UID=1000

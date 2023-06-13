@@ -1,5 +1,10 @@
 # Getting Started
 
+```{note}
+Some dependencies may require that the (virtual) machines on which you deploy, support the SSE4.2 instruction set or x86-64-v2 microarchitecture. If `lscpu | grep sse4_2` does not return anything on your machine, your CPU is not compatible, and you may need to update the (virtual) host's CPU. 
+```
+
+Seldon Core can be installed either with Docker Compose or with Kubernetes:
 
  * [Install locally with Docker Compose](./docker-installation/index.md)
  * [Install onto a Kubernetes cluster](./kubernetes-installation/index.md)
@@ -31,7 +36,7 @@ Your model is exposed via our internal Envoy gateway. If you wish to expose your
 
 ## Inference Metrics
 
-Metrics are exposed for scrapping by Prometheus. For Kubernetes we provide example instructions for using kube-prometheus.
+Metrics are exposed for scraping by Prometheus. For Kubernetes we provide example instructions for using kube-prometheus.
 
 ## Pipeline requirements
 
