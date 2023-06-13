@@ -270,3 +270,7 @@ serverConfig:
 # the names of ports handling gRPC/HTTP2 traffic.
 # For Istio, use 'grpc-' or 'http2-', noting the trailing '-'.
 serviceGRPCPrefix: ""
+
+
+rclone:
+  configSecrets: '["seldon-rclone-gs-public"]'
