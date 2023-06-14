@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: seldon-agent
-data:
-  agent.yaml: |-
-    rclone:
-      config_secrets: {{ .Values.rclone.configSecrets }}

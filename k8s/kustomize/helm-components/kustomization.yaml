@@ -18,7 +18,6 @@ patchesStrategicMerge:
 - patch_pipelinegateway.yaml
 - patch_scheduler.yaml
 - patch_triton.yaml
-- patch_agent.yaml
 
 patches:
 - path: patch_scheduler_service.yaml
