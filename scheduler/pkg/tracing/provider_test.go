@@ -114,6 +114,11 @@ func TestLoadConfig(t *testing.T) {
 			},
 		},
 		{
+			name:   "bad ratio",
+			config: `{"enable":true, "otelExporterEndpoint":"0.0.0.0:1234","ratio":"foo"}`,
+			err:    true,
+		},
+		{
 			name:   "bad config",
 			config: `{"foobar":true}`,
 			err:    true,

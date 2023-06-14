@@ -44,7 +44,7 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 		Pipeline: pipeline.AsSchedulerPipeline(),
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
-	_, err = grcpClient.LoadPipeline(ctx, &req, grpc_retry.WithMax(2))
+	_, err = grcpClient.LoadPipeline(ctx, &req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 }
 
@@ -59,7 +59,7 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 		Name: pipeline.Name,
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
-	_, err = grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(2))
+	_, err = grcpClient.UnloadPipeline(ctx, &req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 	}
@@ -73,14 +73,14 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, namespace string, conn *grpc.ClientConn) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribePipelineStatus(
 		ctx,
 		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(1),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 	)
 	if err != nil {
 		return err

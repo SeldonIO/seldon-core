@@ -35,6 +35,11 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
+const (
+	StatefulSetReadyReason    = "StatefulSet replicas matches desired replicas"
+	StatefulSetNotReadyReason = "StatefulSet replicas does not match desired replicas"
+)
+
 type ComponentStatefulSetReconciler struct {
 	common.ReconcilerConfig
 	Name        string
@@ -215,11 +220,6 @@ func (s *ComponentStatefulSetReconciler) Reconcile() error {
 	}
 	return nil
 }
-
-const (
-	StatefulSetReadyReason    = "StatefulSet replicas matches desired replicas"
-	StatefulSetNotReadyReason = "StatefulSet replicas does not match desired replicas"
-)
 
 func (s *ComponentStatefulSetReconciler) GetConditions() []*apis.Condition {
 	ready := s.StatefulSet.Status.ReadyReplicas >= s.StatefulSet.Status.Replicas

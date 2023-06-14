@@ -57,18 +57,18 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
-	_, err = grcpClient.ServerNotify(ctx, request, grpc_retry.WithMax(2))
+	_, err = grcpClient.ServerNotify(ctx, request, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, namespace string, conn *grpc.ClientConn) error {
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err
 	}

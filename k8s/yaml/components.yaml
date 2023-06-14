@@ -801,8 +801,6 @@ spec:
         command:
         - /bin/modelgateway
         env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: 'seldon-collector.seldon-mesh:4317'
         - name: MODELGATEWAY_NUM_WORKERS
           value: '8'
         - name: KAFKA_DEFAULT_REPLICATION_FACTOR

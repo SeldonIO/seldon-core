@@ -36,6 +36,10 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
+const (
+	SchedulerConnectMaxRetries = 2
+)
+
 type SchedulerClient struct {
 	client.Client
 	logger           logr.Logger
@@ -72,25 +76,25 @@ func getSchedulerHost(namespace string) string {
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
 	// Subscribe the event streams from scheduler
 	go func() {
-		err := s.SubscribeModelEvents(context.Background(), namespace, conn)
+		err := s.SubscribeModelEvents(context.Background(), conn)
 		if err != nil {
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribeServerEvents(context.Background(), namespace, conn)
+		err := s.SubscribeServerEvents(context.Background(), conn)
 		if err != nil {
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribePipelineEvents(context.Background(), namespace, conn)
+		err := s.SubscribePipelineEvents(context.Background(), conn)
 		if err != nil {
 			s.RemoveConnection(namespace)
 		}
 	}()
 	go func() {
-		err := s.SubscribeExperimentEvents(context.Background(), namespace, conn)
+		err := s.SubscribeExperimentEvents(context.Background(), conn)
 		if err != nil {
 			s.RemoveConnection(namespace)
 		}
@@ -109,6 +113,7 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 	}
 }
 
+// A smoke test allows us to quicky check if we actually have a functional grpc connection to the scheduler
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grcpClient := scheduler.NewSchedulerClient(conn)
 

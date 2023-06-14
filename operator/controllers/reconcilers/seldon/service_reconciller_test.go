@@ -1,3 +1,19 @@
+/*
+Copyright 2023 Seldon Technologies Ltd.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package server
 
 import (
@@ -29,7 +45,6 @@ func TestServiceReconcile(t *testing.T) {
 		serviceConfig    mlopsv1alpha1.ServiceConfig
 		runtime          *mlopsv1alpha1.OverrideSpec
 		overrides        map[string]*mlopsv1alpha1.OverrideSpec
-		error            bool
 		expectedSvcNames []string
 		expectedSvcType  map[string]v1.ServiceType
 	}
@@ -87,21 +102,18 @@ func TestServiceReconcile(t *testing.T) {
 				annotator)
 			g.Expect(err).To(BeNil())
 			err = sr.Reconcile()
-			if test.error {
-				g.Expect(err).ToNot(BeNil())
-			} else {
+
+			g.Expect(err).To(BeNil())
+			for _, svcName := range test.expectedSvcNames {
+				svc := &v1.Service{}
+				err := client.Get(context.TODO(), types.NamespacedName{
+					Name:      svcName,
+					Namespace: meta.GetNamespace(),
+				}, svc)
 				g.Expect(err).To(BeNil())
-				for _, svcName := range test.expectedSvcNames {
-					svc := &v1.Service{}
-					err := client.Get(context.TODO(), types.NamespacedName{
-						Name:      svcName,
-						Namespace: meta.GetNamespace(),
-					}, svc)
-					g.Expect(err).To(BeNil())
-					if test.expectedSvcType != nil {
-						if svcType, ok := test.expectedSvcType[svcName]; ok {
-							g.Expect(svc.Spec.Type).To(Equal(svcType))
-						}
+				if test.expectedSvcType != nil {
+					if svcType, ok := test.expectedSvcType[svcName]; ok {
+						g.Expect(svc.Spec.Type).To(Equal(svcType))
 					}
 				}
 			}

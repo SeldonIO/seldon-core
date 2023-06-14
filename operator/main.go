@@ -70,7 +70,7 @@ func main() {
 
 	watchNamespace := namespace
 	if clusterwide {
-		watchNamespace = ""
+		watchNamespace = "" // unset namespace so manager watches all namespaces
 	}
 	setupLog.Info("Starting manager", "clusterwide", clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{

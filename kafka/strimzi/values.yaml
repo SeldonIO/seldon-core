@@ -1,4 +1,4 @@
-watchAnyNamespace: true
+#watchAnyNamespace: true
 
 cluster:
   name: "seldon"

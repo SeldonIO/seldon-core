@@ -104,6 +104,13 @@ func (t *TracerProvider) loadConfig(path *string) error {
 		if err != nil {
 			return err
 		}
+		if tc.Enable { // Only check ratio is valid if enabled
+			// Check ratio
+			_, err = strconv.ParseFloat(tc.Ratio, 64)
+			if err != nil {
+				return err
+			}
+		}
 		config = &tc
 	}
 	return t.recreateTracerProvider(config)

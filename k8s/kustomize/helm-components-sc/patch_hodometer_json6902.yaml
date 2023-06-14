@@ -1,3 +1,4 @@
+# index based on position of hodometer in list of seldonconfig components
 - op: replace
   path: /spec/components/3/podSpec/securityContext  
   value: HACK_REMOVE_ME{{- toYaml .Values.hodometer.securityContext | nindent 8 }}

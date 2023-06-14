@@ -10,8 +10,6 @@ spec:
       imagePullSecrets: []
       containers:
       - env:
-          - name: OTEL_EXPORTER_OTLP_ENDPOINT
-            value: '{{ .Values.opentelemetry.endpoint }}'
           - name: MODELGATEWAY_NUM_WORKERS
             value: '{{ .Values.modelgateway.workers }}'
           - name: KAFKA_DEFAULT_REPLICATION_FACTOR
