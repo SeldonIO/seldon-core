@@ -48,6 +48,6 @@ linters-settings:
       - standard
       - default
       - prefix(github.com/seldonio/seldon-core)
-      - prefix(github.com/seldonio/seldon-core/scheduler)
+      - prefix(github.com/seldonio/seldon-core/tests/integration)
   goconst:
     min-occurrences: 5
