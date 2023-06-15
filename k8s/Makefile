@@ -22,6 +22,7 @@ create-helm-charts:
 	rm ${HELM_COMPONENTS_BASE}/.components.yaml
 	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
 		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
+	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 
 .PHONY: create-yaml
