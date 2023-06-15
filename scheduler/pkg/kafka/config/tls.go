@@ -83,7 +83,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 	config["ssl.ca.location"] = caCert.CaPath
 
-	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafka)
+	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafkaClient)
 	if (endpointMechanism != tls.EndpointIdentificationMechanismNone) && (endpointMechanism != tls.EndpointIdentificationMechanismHTTPS) {
 		return fmt.Errorf("Provided Endpoint Identification Mechanism %s is not supported", endpointMechanism)
 	}
@@ -124,7 +124,7 @@ func setupTLSAuthentication(config kafka.ConfigMap) error {
 		config["ssl.certificate.location"] = cert.CrtPath
 	}
 
-	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafka)
+	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafkaClient)
 	if (endpointMechanism != tls.EndpointIdentificationMechanismNone) && (endpointMechanism != tls.EndpointIdentificationMechanismHTTPS) {
 		return fmt.Errorf("Provided Endpoint Identification Mechanism %s is not supported", endpointMechanism)
 	}
