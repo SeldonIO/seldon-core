@@ -29,7 +29,7 @@ helm install seldon-core-v2-crds  seldon-charts/seldon-core-v2-crds
 
 ## Install the Seldon Core V2 Components
 
-You can install into any namespace. For illustration we will use `seldon-mesh`. This will install the core manager which will handle the key [resources](../../kubernetes/resources/index.md)  used by Seldon including installation into individual namespaces via the SeldonRuntime.
+You can install into any namespace. For illustration we will use `seldon-mesh`. This will install the core manager which will handle the key [resources](../../kubernetes/resources/index.md)  used by Seldon including the SeldonRuntime and Server resources.
 
 ```bash
 kubectl create namespace seldon-mesh
@@ -38,6 +38,14 @@ kubectl create namespace seldon-mesh
 ```bash
 helm install seldon-core-v2  seldon-charts/seldon-core-v2-setup --namespace seldon-mesh
 ```
+
+This will install the operator namespaced so it will only control resources in the provided namespace. To allow cluster wide usage add the `--set controller.clusterwide=true`, e.g.
+
+```
+helm install seldon-core-v2  seldon-charts/seldon-core-v2-setup --namespace seldon-mesh --set controller.clusterwide=true
+```
+
+Cluster wide operations will require ClusterRoles to be created so when deploying be aware your user will require the required permissions. With cluster wide operations you can create SeldonRuntimes in any namespace.
 
 ## Install the Default Seldon Core V2 Runtime
 
