@@ -28,20 +28,6 @@ metadata:
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: seldon-manager-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: seldon-manager-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
-  namespace: 'seldon-mesh'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-leader-election-role

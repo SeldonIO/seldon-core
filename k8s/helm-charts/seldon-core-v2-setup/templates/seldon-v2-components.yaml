@@ -772,6 +772,7 @@ subjects:
   name: seldon-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
+{{- if .Values.controller.clusterwide -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -785,6 +786,7 @@ subjects:
   name: seldon-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
+{{- end }}
 apiVersion: v1
 data:
   controller_manager_config.yaml: |

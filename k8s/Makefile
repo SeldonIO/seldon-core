@@ -23,14 +23,15 @@ create-helm-charts:
 	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
 		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding.*ServiceAccount\n  name: seldon-controller-manager\n  namespace:[^-]\{27\}\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 
 .PHONY: create-yaml
 create-yaml:
-	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs > yaml/certs.yaml
+	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs --namespace seldon-mesh > yaml/certs.yaml
 	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
-	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup > yaml/components.yaml
-	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-runtime > yaml/servers.yaml
+	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup --namespace seldon-mesh > yaml/components.yaml
+	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-runtime --namespace seldon-mesh > yaml/servers.yaml
 
 .PHONY: set-chart-version
 set-chart-version:
