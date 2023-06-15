@@ -33,8 +33,8 @@ const (
 	SASLMechanismPlain       = "PLAIN"
 
 	EnvEndpointIdentificationMechanismSuffix = "_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM"
-	EndpointIdentificationMechanismNone      = "NONE"
-	EndpointIdentificationMechanismHTTPS     = "HTTPS"
+	EndpointIdentificationMechanismNone      = "none"
+	EndpointIdentificationMechanismHTTPS     = "https"
 
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
 	EnvSecurityPrefixControlPlaneServer = "CONTROL_PLANE_SERVER"
