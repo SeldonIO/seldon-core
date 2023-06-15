@@ -74,6 +74,14 @@ const (
 	InferExplainer
 )
 
+type InferProtocol uint32
+
+const (
+	InferUnknown InferProtocol = iota
+	InferRest
+	InferGrpc
+)
+
 type InferenceClient struct {
 	host        string
 	callOptions []grpc.CallOption
@@ -115,7 +123,7 @@ type LogOptions struct {
 }
 
 type CallOptions struct {
-	InferProtocol string // REST or gRPC
+	InferProtocol InferProtocol
 	InferType     InferType
 	StickySession bool
 	Iterations    int
@@ -506,7 +514,7 @@ func canContinueInfer(callOptions *CallOptions, i int, timeStart int64) bool {
 		(callOptions.Seconds > 0 && time.Now().Unix()-timeStart < callOptions.Seconds)
 }
 
-func (ic *InferenceClient) InferRest(
+func (ic *InferenceClient) inferRest(
 	resourceName string,
 	data []byte,
 	headers []string,
@@ -514,19 +522,21 @@ func (ic *InferenceClient) InferRest(
 	stickySessionKeys []string,
 	callOptions *CallOptions,
 	logOptions *LogOptions,
-) error {
+) ([]byte, error) {
 	if logOptions.ShowRequest {
 		printPrettyJson(data)
 	}
 
 	path := fmt.Sprintf("/v2/models/%s/infer", resourceName)
 
+	var res []byte
+	var err error
 	timeStart := time.Now().Unix()
 	for i := 0; canContinueInfer(callOptions, i, timeStart); i++ {
-		res, err := ic.httpCall(resourceName, path, data, callOptions.InferType, logOptions.ShowHeaders, headers, authority, stickySessionKeys)
+		res, err = ic.httpCall(resourceName, path, data, callOptions.InferType, logOptions.ShowHeaders, headers, authority, stickySessionKeys)
 		if err != nil {
 			if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
-				return err
+				return nil, err
 			}
 			continue
 		}
@@ -534,7 +544,7 @@ func (ic *InferenceClient) InferRest(
 		v2InferResponse := V2InferenceResponse{}
 		err = json.Unmarshal(res, &v2InferResponse)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
@@ -551,7 +561,7 @@ func (ic *InferenceClient) InferRest(
 	if len(ic.errors) > 0 {
 		fmt.Printf("Errors: %v\n", ic.errors)
 	}
-	return nil
+	return res, nil
 }
 
 func getDataSize(shape []int64) int64 {
@@ -683,7 +693,7 @@ func updateRequestFromRawContents(res *v2_dataplane.ModelInferRequest) error {
 	return nil
 }
 
-func (ic *InferenceClient) InferGrpc(
+func (ic *InferenceClient) inferGrpc(
 	resourceName string,
 	data []byte,
 	headers []string,
@@ -691,10 +701,10 @@ func (ic *InferenceClient) InferGrpc(
 	stickySessionKeys []string,
 	callOptions *CallOptions,
 	logOptions *LogOptions,
-) error {
+) ([]byte, error) {
 	hs, err := validateHeaders(headers)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ctx := context.Background()
@@ -705,24 +715,25 @@ func (ic *InferenceClient) InferGrpc(
 	req := &v2_dataplane.ModelInferRequest{}
 	err = protojson.Unmarshal(data, req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.ModelName = resourceName
 
 	conn, err := ic.newGRPCConnection(authority, logOptions)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 
+	var resJson []byte
 	timeStart := time.Now().Unix()
 	for i := 0; canContinueInfer(callOptions, i, timeStart); i++ {
 		var header metadata.MD
 		res, err := grpcClient.ModelInfer(ctx, req, grpc.Header(&header))
 		if err != nil {
 			if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
-				return err
+				return nil, err
 			}
 			if e, ok := status.FromError(err); ok {
 				ic.updateErrors(int(e.Code()), header.Get(SeldonRouteHeader))
@@ -731,12 +742,16 @@ func (ic *InferenceClient) InferGrpc(
 		}
 
 		if callOptions.Iterations == 1 && callOptions.Seconds == 0 {
+			err = updateResponseFromRawContents(res)
+			if err != nil {
+				return nil, err
+			}
+			resJson, err = protojson.Marshal(res)
+			if err != nil {
+				return nil, err
+			}
 			if logOptions.ShowResponse {
-				err := updateResponseFromRawContents(res)
-				if err != nil {
-					return err
-				}
-				printProto(res)
+				fmt.Printf("%s\n", string(resJson))
 			}
 		} else {
 			ic.updateSummary(header.Get(SeldonRouteHeader))
@@ -744,7 +759,7 @@ func (ic *InferenceClient) InferGrpc(
 
 		_, err = saveStickySessionKeyGrpc(header)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -754,7 +769,7 @@ func (ic *InferenceClient) InferGrpc(
 			fmt.Printf("Errors: %v\n", ic.errors)
 		}
 	}
-	return nil
+	return resJson, nil
 }
 
 func validateHeaders(headers []string) (map[string]string, error) {
@@ -818,21 +833,21 @@ func (ic *InferenceClient) Infer(
 	authority string,
 	callOptions *CallOptions,
 	logOptions *LogOptions,
-) error {
+) ([]byte, error) {
 	var stickySessionKeys []string
 	var err error
 	if callOptions.StickySession {
 		stickySessionKeys, err = getStickySessionKeys()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 	switch callOptions.InferProtocol {
-	case "rest":
-		return ic.InferRest(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
-	case "grpc":
-		return ic.InferGrpc(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
+	case InferRest:
+		return ic.inferRest(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
+	case InferGrpc:
+		return ic.inferGrpc(modelName, data, headers, authority, stickySessionKeys, callOptions, logOptions)
 	default:
-		return fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
+		return nil, fmt.Errorf("Unknown infer mode - needs to be grpc or rest")
 	}
 }

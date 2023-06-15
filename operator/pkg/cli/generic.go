@@ -22,7 +22,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
+	"google.golang.org/protobuf/proto"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
@@ -59,7 +61,7 @@ func createDecoder(data []byte) *yaml.YAMLOrJSONDecoder {
 	return dec
 }
 
-func getNextResource(dec *yaml.YAMLOrJSONDecoder) (*k8sResource, bool, error) {
+func getNextK8sResource(dec *yaml.YAMLOrJSONDecoder) (*k8sResource, bool, error) {
 	unstructuredObject := &unstructured.Unstructured{}
 	if err := dec.Decode(unstructuredObject); err != nil {
 		if errors.Is(err, io.EOF) {
@@ -67,7 +69,7 @@ func getNextResource(dec *yaml.YAMLOrJSONDecoder) (*k8sResource, bool, error) {
 		}
 		return nil, false, err
 	}
-	// Get the resource kind nad original bytes
+	// Get the resource kind and original bytes
 	gvk := unstructuredObject.GroupVersionKind()
 	data, err := unstructuredObject.MarshalJSON()
 	if err != nil {
@@ -84,75 +86,90 @@ func getNextResource(dec *yaml.YAMLOrJSONDecoder) (*k8sResource, bool, error) {
 	}
 }
 
-func (sc *SchedulerClient) Load(data []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) Load(data []byte) ([]proto.Message, error) {
+	var protos []proto.Message
 	dec := createDecoder(data)
 	for {
-		resource, keepGoing, err := getNextResource(dec)
+		resource, keepGoing, err := getNextK8sResource(dec)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !keepGoing {
-			return err
+			return protos, nil
 		}
+		var res proto.Message
 		switch resource.kind {
 		case model:
-			err = sc.LoadModel(resource.data, showRequest, showResponse)
+			res, err = sc.LoadModel(resource.data)
 		case pipeline:
-			err = sc.LoadPipeline(resource.data, showRequest, showResponse)
+			res, err = sc.LoadPipeline(resource.data)
 		case experiment:
-			err = sc.StartExperiment(resource.data, showRequest, showResponse)
+			res, err = sc.StartExperiment(resource.data)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
+		protos = append(protos, res)
 	}
 }
 
-func (sc *SchedulerClient) Unload(data []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) Unload(data []byte) ([]proto.Message, error) {
+	var protos []proto.Message
 	dec := createDecoder(data)
 	for {
-		resource, keepGoing, err := getNextResource(dec)
-		if !keepGoing {
-			return err
+		resource, keepGoing, err := getNextK8sResource(dec)
+		if err != nil {
+			return nil, err
 		}
+		if !keepGoing {
+			return protos, err
+		}
+		var res proto.Message
 		switch resource.kind {
 		case model:
-			err = sc.UnloadModel("", resource.data, showRequest, showResponse)
+			res, err = sc.UnloadModel(resource.name, resource.data)
 		case pipeline:
-			err = sc.UnloadPipeline("", resource.data, showRequest, showResponse)
+			res, err = sc.UnloadPipeline(resource.name, resource.data)
 		case experiment:
-			err = sc.StopExperiment("", resource.data, showRequest, showResponse)
+			res, err = sc.StopExperiment(resource.name, resource.data)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
+		protos = append(protos, res)
 	}
 }
 
-func (sc *SchedulerClient) Status(data []byte, showRequest bool, showResponse bool, wait bool) error {
+func (sc *SchedulerClient) Status(data []byte, wait bool, timeout time.Duration) ([]proto.Message, error) {
+	var protos []proto.Message
 	dec := createDecoder(data)
 	for {
-		resource, keepGoing, err := getNextResource(dec)
+		resource, keepGoing, err := getNextK8sResource(dec)
+		if err != nil {
+			return nil, err
+		}
 		if !keepGoing {
-			return err
+			return protos, err
 		}
 		waitCondition := ""
+		var res proto.Message
 		switch resource.kind {
 		case model:
 			if wait {
 				waitCondition = "ModelAvailable"
 			}
-			err = sc.ModelStatus(resource.name, showRequest, showResponse, waitCondition)
+			res, err = sc.ModelStatus(resource.name, waitCondition, timeout)
 		case pipeline:
 			if wait {
 				waitCondition = "PipelineReady"
 			}
-			err = sc.PipelineStatus(resource.name, showRequest, showResponse, waitCondition)
+			res, err = sc.PipelineStatus(resource.name, waitCondition, timeout)
 		case experiment:
-			err = sc.ExperimentStatus(resource.name, showRequest, showResponse, wait)
+			res, err = sc.ExperimentStatus(resource.name, wait, timeout)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
+		protos = append(protos, res)
 	}
 }

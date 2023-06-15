@@ -17,6 +17,8 @@ limitations under the License.
 package cli
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
 
@@ -41,11 +43,7 @@ func createModelStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			showRequest, err := flags.GetBool(flagShowRequest)
-			if err != nil {
-				return err
-			}
-			showResponse, err := flags.GetBool(flagShowResponse)
+			verbose, err := flags.GetBool(flagVerbose)
 			if err != nil {
 				return err
 			}
@@ -53,21 +51,28 @@ func createModelStatus() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			timeout, err := flags.GetInt64(flagTimeout)
+			if err != nil {
+				return err
+			}
 			modelName := args[0]
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
-			err = schedulerClient.ModelStatus(modelName, showRequest, showResponse, modelWaitCondition)
+			res, err := schedulerClient.ModelStatus(modelName, modelWaitCondition, time.Duration(timeout*int64(time.Second)))
+			if err == nil {
+				cli.PrintProto(res)
+			}
 			return err
 		},
 	}
 
 	flags := cmd.Flags()
-	flags.BoolP(flagShowRequest, "r", false, "show request")
-	flags.BoolP(flagShowResponse, "o", true, "show response")
+	flags.Int64P(flagTimeout, "t", flagTimeoutDefault, "timeout seconds")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagWaitCondition, "w", "", "model wait condition")

@@ -34,6 +34,8 @@ const (
 	flagShowResponse        = "show-response"
 	flagStickySession       = "sticky-session"
 	flagWaitCondition       = "wait"
+	flagTimeout             = "timeout-secs"
+	flagVerbose             = "verbose"
 )
 
 // Env vars

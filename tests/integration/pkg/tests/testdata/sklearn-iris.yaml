@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/rolling/iris/v1"
+  requirements:
+  - sklearn
+  memory: 100Ki
