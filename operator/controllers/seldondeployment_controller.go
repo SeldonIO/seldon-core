@@ -120,6 +120,24 @@ type components struct {
 	addressable           *machinelearningv1.SeldonAddressable
 }
 
+func (c *components) deploymentHasHpa(depname string) bool {
+	for _, hpa := range c.hpas {
+		if hpa.Name == depname {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *components) deploymentHasKeda(depname string) bool {
+	for _, scaledObject := range c.kedaScaledObjects {
+		if scaledObject.Name == depname {
+			return true
+		}
+	}
+	return false
+}
+
 type httpGrpcPorts struct {
 	httpPort int
 	grpcPort int
@@ -494,6 +512,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 			deploy := createDeploymentWithoutEngine(depName, seldonId, cSpec, &p, mlDep, securityContext, true)
 
 			if cSpec.KedaSpec != nil { // Add KEDA if needed
+				r.Log.Info("Creating keda scaled object", "deployment", depName)
 				c.kedaScaledObjects = append(c.kedaScaledObjects, createKeda(cSpec, depName, seldonId, namespace))
 			} else if cSpec.HpaSpec != nil { // Add HPA if needed
 				c.hpas = append(c.hpas, createHpa(cSpec, depName, seldonId, namespace))
@@ -1700,6 +1719,10 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 				patch.IgnoreField("apiVersion"),
 				patch.IgnoreField("metadata"),
 			}
+			// Ignore replica count disparities as that is controlled by HPA/KEDA
+			if components.deploymentHasHpa(deploy.Name) || components.deploymentHasKeda(deploy.Name) {
+				opts = append(opts, utils2.IgnoreReplicas())
+			}
 			patcherMaker := patch.NewPatchMaker(annotator, &patch.K8sStrategicMergePatcher{}, &patch.BaseJSONMergePatcher{})
 			patchResult, err := patcherMaker.Calculate(found, deploy, opts...)
 			if err != nil {
@@ -1707,14 +1730,14 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			}
 			if !patchResult.IsEmpty() {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-				fmt.Printf("\n%s\n", patchResult.String())
+				log.V(5).Info("Deployment differs", "patch result", patchResult.String())
 				b, err := json.Marshal(deploy.Spec.Template.Spec)
 				if err == nil {
-					fmt.Printf("\n%s\n", string(b))
+					log.V(5).Info("Deployment differs", "existing", string(b))
 				}
 				b2, err := json.Marshal(found.Spec.Template.Spec)
 				if err == nil {
-					fmt.Printf("\n%s\n", string(b2))
+					log.V(5).Info("Deployment differs", "found", string(b2))
 				}
 
 				desiredDeployment := found.DeepCopy()
