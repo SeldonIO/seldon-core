@@ -41,8 +41,12 @@ func createPipelineList() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			verbose, err := flags.GetBool(flagVerbose)
+			if err != nil {
+				return err
+			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
@@ -53,6 +57,7 @@ func createPipelineList() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 

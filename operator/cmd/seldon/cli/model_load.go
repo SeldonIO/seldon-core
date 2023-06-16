@@ -47,28 +47,26 @@ func createModelLoad() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			showRequest, err := flags.GetBool(flagShowRequest)
-			if err != nil {
-				return err
-			}
-			showResponse, err := flags.GetBool(flagShowResponse)
+			verbose, err := flags.GetBool(flagVerbose)
 			if err != nil {
 				return err
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
-			err = schedulerClient.LoadModel(loadFile(filename), showRequest, showResponse)
+			res, err := schedulerClient.LoadModel(loadFile(filename))
+			if err == nil {
+				cli.PrintProto(res)
+			}
 			return err
 		},
 	}
 
 	flags := cmd.Flags()
-	flags.BoolP(flagShowRequest, "r", false, "show request")
-	flags.BoolP(flagShowResponse, "o", true, "show response")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagFile, "f", "", "model manifest file (YAML)")

@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 func printPrettyJson(data []byte) {
@@ -36,4 +39,13 @@ func prettyJson(data []byte) (string, error) {
 		return "", err
 	}
 	return prettyJSON.String(), nil
+}
+
+func PrintProto(msg proto.Message) {
+	resJson, err := protojson.Marshal(msg)
+	if err != nil {
+		fmt.Printf("Failed to print proto: %s", err.Error())
+	} else {
+		fmt.Printf("%s\n", string(resJson))
+	}
 }
