@@ -6,4 +6,4 @@ metadata:
 data:
   agent.yaml: |-
     rclone:
-      config_secrets: ["seldon-rclone-gs-public"]
+      config_secrets: {{ .Values.rclone.configSecrets }}
