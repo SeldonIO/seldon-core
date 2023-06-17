@@ -154,8 +154,6 @@ func getPredictorServerConfigs() (map[string]PredictorServerConfig, error) {
 	err := C.Get(context.TODO(), k8types.NamespacedName{Name: ControllerConfigMapName, Namespace: ControllerNamespace}, configMap)
 
 	if err != nil {
-		fmt.Println("Failed to find config map " + ControllerConfigMapName)
-		fmt.Println(err)
 		return map[string]PredictorServerConfig{}, err
 	}
 	return getPredictorServerConfigsFromMap(configMap)
