@@ -44,8 +44,3 @@ config:
     serviceGRPCPrefix:
     serviceType:
   
-mlserver:
-  replicas: 1
-
-triton:
-  replicas: 1
