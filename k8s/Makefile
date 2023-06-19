@@ -29,11 +29,11 @@ create-helm-charts:
 
 .PHONY: create-yaml
 create-yaml:
-	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs --namespace seldon-mesh > yaml/certs.yaml
+	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs | grep -v "namespace:" > yaml/certs.yaml
 	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
-	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup --namespace seldon-mesh > yaml/components.yaml
-	helm template seldon-core-v2-runtime ./helm-charts/seldon-core-v2-runtime --namespace seldon-mesh > yaml/runtime.yaml
-	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers --namespace seldon-mesh > yaml/servers.yaml
+	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup  | grep -v "namespace:" > yaml/components.yaml
+	helm template seldon-core-v2-runtime ./helm-charts/seldon-core-v2-runtime  | grep -v "namespace:" > yaml/runtime.yaml
+	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers  | grep -v "namespace:" > yaml/servers.yaml
 
 .PHONY: set-chart-version
 set-chart-version:
