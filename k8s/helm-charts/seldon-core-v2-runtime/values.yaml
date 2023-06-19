@@ -1,0 +1,46 @@
+hodometer:
+  disable: false
+  replicas: 1
+  
+scheduler:
+  disable: false
+  replicas: 1
+  # controlplane exposure
+  serviceType: LoadBalancer 
+  
+envoy:
+  disable: false
+  replicas: 1
+  # dataplane exposure
+  serviceType: LoadBalancer 
+  
+dataflow:
+  disable: false
+  replicas: 1
+  
+modelgateway:
+  disable: false
+  replicas: 1
+  
+pipelinegateway:
+  disable: false
+  replicas: 1
+
+config:
+  agentConfig:
+    rclone:
+      configSecrets:
+  kafkaConfig:
+    bootstrap:
+    topicPrefix:
+    consumer:
+    producer:
+    streams:
+  tracingConfig:
+    enable:
+    otelExporterEndpoint:
+    ratio:
+  serviceConfig:
+    serviceGRPCPrefix:
+    serviceType:
+  

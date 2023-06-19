@@ -69,10 +69,12 @@ security:
           caPath: /tmp/certs/ddc/ca.crt
           serverCaPath: /tmp/certs/dds/ca.crt
 
-imagePullSecret:
+# A list of image pull secrets
+imagePullSecrets:
 
 opentelemetry:
-  endpoint: seldon-collector:4317
+  # This will need to be customized to your open telemetry installation endpoint
+  endpoint: seldon-collector.seldon-mesh:4317
   enable: true
   ratio: 1
 
@@ -97,6 +99,7 @@ hodometer:
 
 kafka:
   debug:
+  # This will need to be customized to your kafka installation broker endpoint
   bootstrap: seldon-kafka-bootstrap.seldon-mesh:9092
   topicPrefix: seldon
   consumer:
@@ -160,6 +163,7 @@ dataflow:
     runAsNonRoot: true
 
 controller:
+  clusterwide: false
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
@@ -266,11 +270,9 @@ serverConfig:
       cpu: 100m
       memory: 1Gi
 
+services:
 # For use with service meshes like Istio, which require specific prefixes for
 # the names of ports handling gRPC/HTTP2 traffic.
 # For Istio, use 'grpc-' or 'http2-', noting the trailing '-'.
-serviceGRPCPrefix: ""
-
-
-rclone:
-  configSecrets: '["seldon-rclone-gs-public"]'
+  serviceGRPCPrefix: ""
+  defaultServiceType: LoadBalancer

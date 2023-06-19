@@ -36,8 +36,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
@@ -63,10 +63,15 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 				return true, err
 			}
 		}
-	} else { // model is being deleted
+	} else { // server is being deleted
 		if utils.ContainsStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName) {
 			// Handle unload in scheduler
 			if err := r.Scheduler.ServerNotify(ctx, server); err != nil {
+				// Remove finalizer as we can't reach scheduler
+				server.ObjectMeta.Finalizers = utils.RemoveStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName)
+				if err2 := r.Update(ctx, server); err != nil {
+					return true, err2
+				}
 				return true, err
 			}
 			if server.Status.LoadedModelReplicas == 0 { // Remove finalizer if no models loaded otherwise we wait
@@ -82,15 +87,15 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 	return false, nil
 }
 
-//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mlops.seldon.io,namespace=seldon-mesh,resources=servers/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",namespace=seldon-mesh,resources=events,verbs=create;patch
-// +kubebuilder:rbac:groups=v1,namespace=seldon-mesh,resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",namespace=seldon-mesh,resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=v1,namespace=seldon-mesh,resources=services/status,verbs=get
-// +kubebuilder:rbac:groups=apps,namespace=seldon-mesh,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,namespace=seldon-mesh,resources=statefulsets/status,verbs=get
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=v1,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=v1,resources=services/status,verbs=get
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -104,6 +109,8 @@ func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1a
 func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
 
+	logger.Info("Received reconcile for Server", "name", req.Name, "namespace", req.NamespacedName.Namespace)
+
 	server := &mlopsv1alpha1.Server{}
 	if err := r.Get(ctx, req.NamespacedName, server); err != nil {
 		if errors.IsNotFound(err) {
@@ -115,6 +122,8 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		logger.Error(err, "unable to fetch Server", "name", req.Name, "namespace", req.Namespace)
 		return reconcile.Result{}, err
 	}
+
+	logger.Info("Found server", "name", server.Name, "namespace", server.Namespace)
 
 	stop, err := r.handleFinalizer(ctx, server)
 	if stop {
@@ -130,7 +139,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, err
 	}
 
-	sr, err := reconcilers.NewServerReconciler(server, common.ReconcilerConfig{
+	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
 		Ctx:    ctx,
 		Logger: logger,
 		Client: r.Client,
@@ -141,7 +150,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// Set Controller References
-	err = setControllerReferences(server, sr.GetResources(), r.Scheme)
+	err = setControllerReferences(server, common.ToMetaObjects(sr.GetResources()), r.Scheme)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err

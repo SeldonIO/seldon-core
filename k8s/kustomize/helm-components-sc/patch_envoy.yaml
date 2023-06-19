@@ -1,0 +1,41 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  components:
+  - name: seldon-envoy
+    replicas: 1
+    podSpec:
+      imagePullSecrets: []
+      containers:
+      - image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository }}:{{ .Values.envoy.image.tag }}'
+        imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
+        name: envoy
+        resources:
+          requests:
+            cpu: '{{ .Values.envoy.resources.cpu }}'
+            memory: '{{ .Values.envoy.resources.memory }}'
+          limits:
+            memory: '{{ .Values.envoy.resources.memory }}'
+        env:
+          - name: ENVOY_SECURITY_PROTOCOL
+            value: '{{ .Values.security.envoy.protocol }}' 
+          - name: ENVOY_XDS_CLIENT_TLS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ .Values.security.controlplane.ssl.client.secret }}' 
+                key: tls.key
+                optional: true 
+          - name: ENVOY_XDS_CLIENT_TLS_CRT
+            valueFrom:
+              secretKeyRef:
+                name: '{{ .Values.security.controlplane.ssl.client.secret }}' 
+                key: tls.crt
+                optional: true 
+          - name: ENVOY_XDS_SERVER_TLS_CA
+            valueFrom:
+              secretKeyRef:
+                name: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret }}' 
+                key: ca.crt
+                optional: true 

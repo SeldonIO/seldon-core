@@ -8,6 +8,7 @@ spec:
   isCA: true
   commonName: seldon-ca
   dnsNames:
+  - "*.seldon-mesh"
   - "*.seldon-mesh.svc"
   - localhost
   secretName: cacert
@@ -30,7 +31,9 @@ spec:
   renewBefore: 360h
   commonName: "seldon-mesh.svc"
   dnsNames:
-  - "seldon-scheduler"    
+  - "seldon-scheduler"
+  - "seldon-scheduler.seldon-mesh"
+  - "seldon-scheduler.seldon-mesh.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -51,7 +54,9 @@ spec:
   renewBefore: 360h
   commonName: "seldon-mesh.svc"
   dnsNames:
-  - "seldon-scheduler"    
+  - "seldon-scheduler"
+  - "seldon-scheduler.seldon-mesh"  
+  - "seldon-scheduler.seldon-mesh.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -72,7 +77,7 @@ spec:
   renewBefore: 360h
   commonName: "*.seldon-mesh.svc"
   dnsNames:
-  - "seldon-mesh"    
+  - "seldon-mesh"
   - "*.seldon-mesh"    
   - "*.seldon-mesh.svc"
   - localhost

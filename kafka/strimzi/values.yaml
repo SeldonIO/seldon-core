@@ -1,3 +1,5 @@
+#watchAnyNamespace: true
+
 cluster:
   name: "seldon"
   version: "3.3.1"

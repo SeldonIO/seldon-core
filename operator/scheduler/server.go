@@ -21,6 +21,7 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,7 +33,11 @@ import (
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Server) error {
 	logger := s.logger.WithName("NotifyServer")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(server.Namespace)
+	if err != nil {
+		return err
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	var replicas int32
 	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -52,18 +57,18 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
-	_, err := grcpClient.ServerNotify(ctx, request, grpc_retry.WithMax(2))
+	_, err = grcpClient.ServerNotify(ctx, request, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err
 	}

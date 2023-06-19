@@ -1,0 +1,182 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: seldonruntimes.mlops.seldon.io
+spec:
+  group: mlops.seldon.io
+  names:
+    kind: SeldonRuntime
+    listKind: SeldonRuntimeList
+    plural: seldonruntimes
+    singular: seldonruntime
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SeldonRuntime is the Schema for the seldonruntimes API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SeldonRuntimeSpec defines the desired state of SeldonRuntime
+            properties:
+              config:
+                properties:
+                  agentConfig:
+                    properties:
+                      rclone:
+                        properties:
+                          config:
+                            items:
+                              type: string
+                            type: array
+                          config_secrets:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  kafkaConfig:
+                    properties:
+                      bootstrap.servers:
+                        type: string
+                      consumer:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      debug:
+                        type: string
+                      producer:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      streams:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
+                      topicPrefix:
+                        type: string
+                    type: object
+                  serviceConfig:
+                    properties:
+                      grpcServicePrefix:
+                        type: string
+                      serviceType:
+                        description: Service Type string describes ingress methods
+                          for a service
+                        type: string
+                    type: object
+                  tracingConfig:
+                    properties:
+                      enable:
+                        type: boolean
+                      otelExporterEndpoint:
+                        type: string
+                      ratio:
+                        type: string
+                    type: object
+                type: object
+              overrides:
+                items:
+                  properties:
+                    disable:
+                      type: boolean
+                    name:
+                      type: string
+                    replicas:
+                      format: int32
+                      type: integer
+                    serviceType:
+                      description: Service Type string describes ingress methods for
+                        a service
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+              seldonConfig:
+                type: string
+            required:
+            - seldonConfig
+            type: object
+          status:
+            description: SeldonRuntimeStatus defines the observed state of SeldonRuntime
+            properties:
+              annotations:
+                additionalProperties:
+                  type: string
+                description: Annotations is additional Status fields for the Resource
+                  to save some additional State as well as convey more information
+                  to the user. This is roughly akin to Annotations on any k8s resource,
+                  just the reconciler conveying richer information outwards.
+                type: object
+              conditions:
+                description: Conditions the latest available observations of a resource's
+                  current state.
+                items:
+                  description: 'Condition defines a readiness condition for a Knative
+                    resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time the condition
+                        transitioned from one status to another. We use VolatileTime
+                        in place of metav1.Time to exclude this from creating equality.Semantic
+                        differences (all other things held constant).
+                      type: string
+                    message:
+                      description: A human readable message indicating details about
+                        the transition.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition.
+                      type: string
+                    severity:
+                      description: Severity with which to treat failures of this type
+                        of condition. When this is not specified, it defaults to Error.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              observedGeneration:
+                description: ObservedGeneration is the 'Generation' of the Service
+                  that was last processed by the controller.
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

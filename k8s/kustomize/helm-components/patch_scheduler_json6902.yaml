@@ -1,3 +1,0 @@
-- op: replace
-  path: /spec/template/spec/securityContext
-  value: HACK_REMOVE_ME{{- toYaml .Values.scheduler.securityContext | nindent 8 }}

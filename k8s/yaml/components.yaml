@@ -3,80 +3,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: hodometer
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: seldon-controller-manager
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: seldon-scheduler
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: seldon-server
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/rclone-gs-public.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: seldon-rclone-gs-public
-  namespace: 'default'
-type: Opaque
-stringData:
-  gs: |
-    type: "google cloud storage"
-    name: gs
-    parameters:
-      anonymous: true
----
-# Source: seldon-core-v2-setup/templates/agent.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: seldon-agent
-  namespace: 'default'
-data:
-  agent.yaml: |-
-    rclone:
-      config_secrets: ["seldon-rclone-gs-public"]
----
-# Source: seldon-core-v2-setup/templates/kafka.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: seldon-kafka
-  namespace: 'default'
-data:
-  kafka.json: |-
-   {
-      "bootstrap.servers": "seldon-kafka-bootstrap.seldon-mesh:9092",
-      "debug": "",
-      "topicPrefix": "seldon",
-      "consumer":{
-         "session.timeout.ms": 6000,
-         "auto.offset.reset": "earliest",
-         "topic.metadata.propagation.max.ms": "300000",
-         "message.max.bytes": 1000000000
-      },
-      "producer":{
-        "linger.ms": 0,
-        "message.max.bytes": 1000000000
-      },
-      "streams":{
-      }
-   }
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: v1
@@ -96,76 +23,12 @@ data:
 kind: ConfigMap
 metadata:
   name: seldon-manager-config
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/tracing.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: seldon-tracing
-  namespace: 'default'
-data:
-  tracing.json: |-
-   {
-     "enable": true,
-     "otelExporterEndpoint": "seldon-collector:4317",
-     "ratio": 1
-   }
-  OTEL_JAVAAGENT_ENABLED: "true"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://seldon-collector:4317"
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: agent-role
-  namespace: 'default'
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: hodometer-role
-  namespace: 'default'
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: seldon-leader-election-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -205,8 +68,19 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-role
-  namespace: 'default'
 rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -214,6 +88,30 @@ rules:
   verbs:
   - create
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -226,6 +124,24 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments/status
+  verbs:
+  - get
 - apiGroups:
   - apps
   resources:
@@ -325,6 +241,58 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - seldonconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
+  - seldonruntimes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - mlops.seldon.io
+  resources:
   - serverconfigs
   verbs:
   - create
@@ -375,6 +343,42 @@ rules:
   - patch
   - update
 - apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - v1
   resources:
   - services
@@ -399,7 +403,6 @@ kind: Role
 metadata:
   creationTimestamp: null
   name: seldon-manager-tls-role
-  namespace: 'default'
 rules:
 - apiGroups:
   - ""
@@ -409,67 +412,12 @@ rules:
   - get
   - list
   - watch
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: seldon-scheduler-role
-  namespace: 'default'
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: agent-rolebinding
-  namespace: 'default'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: agent-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-server
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: hodometer-rolebinding
-  namespace: 'default'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: hodometer-role
-subjects:
-- kind: ServiceAccount
-  name: hodometer
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-leader-election-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -477,14 +425,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -492,14 +438,12 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: seldon-manager-tls-rolebinding
-  namespace: 'default'
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -507,104 +451,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: seldon-controller-manager
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: seldon-scheduler-rolebinding
-  namespace: 'default'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: seldon-scheduler-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-scheduler
-  namespace: 'default'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: seldon-mesh
-  name: seldon-mesh
-  namespace: 'default'
-spec:
-  ports:
-  - name: 'data'
-    port: 80
-    protocol: TCP
-    targetPort: http
-  - name: admin
-    port: 9003
-    protocol: TCP
-    targetPort: envoy-admin
-  selector:
-    app: seldon-envoy
-  type: 'LoadBalancer'
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: seldon-mesh
-  name: seldon-pipelinegateway
-  namespace: 'default'
-spec:
-  clusterIP: None
-  ports:
-  - name: http
-    port: 9010
-    protocol: TCP
-    targetPort: http
-  - name: grpc
-    port: 9011
-    protocol: TCP
-    targetPort: grpc
-  selector:
-    app: pipelinegateway
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: seldon-scheduler
-  name: seldon-scheduler
-  namespace: 'default'
-spec:
-  ports:
-  - name: 'xds'
-    port: 9002
-    protocol: TCP
-    targetPort: xds
-  - name: 'scheduler'
-    port: 9004
-    protocol: TCP
-    targetPort: scheduler
-  - name: 'scheduler-mtls'
-    port: 9044
-    protocol: TCP
-    targetPort: scheduler-mtls
-  - name: 'agent'
-    port: 9005
-    protocol: TCP
-    targetPort: agent
-  - name: 'agent-mtls'
-    port: 9055
-    protocol: TCP
-    targetPort: agent-mtls
-  - name: 'dataflow'
-    port: 9008
-    protocol: TCP
-    targetPort: dataflow
-  selector:
-    control-plane: seldon-scheduler
-  type: 'LoadBalancer'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: apps/v1
@@ -613,7 +459,6 @@ metadata:
   labels:
     control-plane: controller-manager
   name: seldon-controller-manager
-  namespace: 'default'
 spec:
   replicas: 1
   selector:
@@ -630,13 +475,13 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
-        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
-        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
         - --namespace=$(POD_NAMESPACE)
+        - --clusterwide=$(CLUSTERWIDE)
         command:
         - /manager
         env:
+        - name: CLUSTERWIDE
+          value: 'false'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
         - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -651,12 +496,6 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
-        - name: SELDON_SCHEDULER_SVC
-          value: seldon-scheduler
-        - name: SELDON_SCHEDULER_PLAINTXT_PORT
-          value: "9004"
-        - name: SELDON_SCHEDULER_TLS_PORT
-          value: "9044"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -693,335 +532,99 @@ spec:
       terminationGracePeriodSeconds: 10
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
 metadata:
-  labels:
-    control-plane: seldon-dataflow-engine
-  name: seldon-dataflow-engine
-  namespace: 'default'
+  name: default
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      control-plane: seldon-dataflow-engine
-  template:
-    metadata:
-      labels:
-        control-plane: seldon-dataflow-engine
-    spec:
-      containers:
-      - env:
-        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
-          value: 'seldon-kafka-bootstrap.seldon-mesh:9092'
-        - name: SELDON_KAFKA_REPLICATION_FACTOR
-          value: '1'
-        - name: SELDON_KAFKA_PARTITIONS_DEFAULT
-          value: '1'
-        - name: SELDON_CORES_COUNT
-          value: '4'
-        - name: SELDON_KAFKA_SECURITY_PROTOCOL
-          value: 'PLAINTEXT'
-        - name: SELDON_TLS_CLIENT_SECRET
-          value: ''
-        - name: SELDON_TLS_CLIENT_KEY_PATH
-          value: '/tmp/certs/kafka/client/tls.key'
-        - name: SELDON_TLS_CLIENT_CERT_PATH
-          value: '/tmp/certs/kafka/client/tls.crt'
-        - name: SELDON_TLS_CLIENT_CA_PATH
-          value: '/tmp/certs/kafka/client/ca.crt'
-        - name: SELDON_SASL_USERNAME
-          value: 'seldon'
-        - name: SELDON_SASL_SECRET
-          value: ''
-        - name: SELDON_SASL_PASSWORD_PATH
-          value: '/tmp/sasl/kafka/client/password'
-        - name: SELDON_TLS_BROKER_SECRET
-          value: ''
-        - name: SELDON_TLS_BROKER_CA_PATH
-          value: '/tmp/certs/kafka/broker/ca.crt'
-        - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
-          value: ''
-        - name: SELDON_UPSTREAM_HOST
-          value: seldon-scheduler
-        - name: SELDON_UPSTREAM_PORT
-          value: "9008"
-        - name: OTEL_JAVAAGENT_ENABLED
-          valueFrom:
-            configMapKeyRef:
-              key: OTEL_JAVAAGENT_ENABLED
-              name: seldon-tracing
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          valueFrom:
-            configMapKeyRef:
-              key: OTEL_EXPORTER_OTLP_ENDPOINT
-              name: seldon-tracing
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-dataflow-engine:latest'
-        imagePullPolicy: 'IfNotPresent'
-        name: dataflow-engine
-        resources:
-          limits:
-            memory: '1G'
-          requests:
-            cpu: '100m'
-            memory: '1G'
-      securityContext:
-        fsGroup: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        runAsUser: 1000
-      serviceAccountName: seldon-scheduler
-      terminationGracePeriodSeconds: 5
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: seldon-envoy
-  name: seldon-envoy
-  namespace: 'default'
-spec:
-  selector:
-    matchLabels:
-      app: seldon-envoy
-  template:
-    metadata:
-      annotations:
-        prometheus.io/path: /stats/prometheus
-        prometheus.io/port: "9003"
-        prometheus.io/scrape: "true"
-      labels:
-        app: seldon-envoy
-    spec:
-      containers:
-      - env:
-        - name: ENVOY_SECURITY_PROTOCOL
-          value: 'PLAINTEXT'
-        - name: ENVOY_XDS_CLIENT_TLS_KEY
-          valueFrom:
-            secretKeyRef:
-              key: tls.key
-              name: 'seldon-controlplane-client'
-              optional: true
-        - name: ENVOY_XDS_CLIENT_TLS_CRT
-          valueFrom:
-            secretKeyRef:
-              key: tls.crt
-              name: 'seldon-controlplane-client'
-              optional: true
-        - name: ENVOY_XDS_SERVER_TLS_CA
-          valueFrom:
-            secretKeyRef:
-              key: ca.crt
-              name: 'seldon-controlplane-server'
-              optional: true
-        image: 'docker.io/seldonio/seldon-envoy:latest'
-        imagePullPolicy: 'IfNotPresent'
-        name: envoy
-        ports:
-        - containerPort: 9000
-          name: http
-        - containerPort: 9003
-          name: envoy-admin
-        resources:
-          limits:
-            memory: '128Mi'
-          requests:
-            cpu: '100m'
-            memory: '128Mi'
-      securityContext:
-        fsGroup: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        runAsUser: 1000
-      terminationGracePeriodSeconds: 5
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/name: hodometer
-  name: seldon-hodometer
-  namespace: 'default'
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: hodometer
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: hodometer
-    spec:
-      containers:
-      - env:
-        - name: METRICS_LEVEL
-          value: 'feature'
-        - name: LOG_LEVEL
-          value: 'info'
-        - name: EXTRA_PUBLISH_URLS
-          value: ''
-        - name: CONTROL_PLANE_SECURITY_PROTOCOL
-          value: 'PLAINTEXT'
-        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
-          value: 'seldon-controlplane-client'
-        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
-          value: 'seldon-controlplane-server'
-        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
-          value: '/tmp/certs/cpc/tls.key'
-        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
-          value: '/tmp/certs/cpc/tls.crt'
-        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
-          value: '/tmp/certs/cpc/ca.crt'
-        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
-          value: '/tmp/certs/cps/ca.crt'
-        - name: PUBLISH_URL
-          value: http://hodometer.seldon.io
-        - name: SCHEDULER_HOST
-          value: seldon-scheduler
-        - name: SCHEDULER_PLAINTXT_PORT
-          value: "9004"
-        - name: SCHEDULER_TLS_PORT
-          value: "9044"
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-hodometer:latest'
-        imagePullPolicy: 'IfNotPresent'
-        name: hodometer
-        resources:
-          limits:
-            memory: '32Mi'
-          requests:
-            cpu: '1m'
-            memory: '32Mi'
-      securityContext:
-        fsGroup: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        runAsUser: 1000
-      serviceAccountName: hodometer
-      terminationGracePeriodSeconds: 5
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    control-plane: seldon-modelgateway
-  name: seldon-modelgateway
-  namespace: 'default'
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      control-plane: seldon-modelgateway
-  template:
-    metadata:
-      labels:
-        control-plane: seldon-modelgateway
-    spec:
+  components:
+  - name: seldon-scheduler
+    podSpec:
       containers:
       - args:
-        - --scheduler-host=seldon-scheduler
-        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
-        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
-        - --envoy-host=seldon-mesh
-        - --envoy-port=80
-        - --kafka-config-path=/mnt/kafka/kafka.json
+        - --pipeline-gateway-host=seldon-pipelinegateway
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --db-path=/mnt/scheduler/db
+        - --allow-plaintxt=$(ALLOW_PLAINTXT)
+        - --kafka-config-path=/mnt/kafka/kafka.json
         command:
-        - /bin/modelgateway
+        - /bin/scheduler
         env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: 'seldon-collector:4317'
-        - name: MODELGATEWAY_NUM_WORKERS
-          value: '8'
-        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
-          value: '1'
-        - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
-          value: '1'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
-        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
-          value: 'seldon-controlplane-client'
         - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
           value: 'seldon-controlplane-server'
-        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
-          value: '/tmp/certs/cpc/tls.key'
-        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
-          value: '/tmp/certs/cpc/tls.crt'
-        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
-          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_KEY_LOCATION
+          value: '/tmp/certs/cps/tls.key'
+        - name: CONTROL_PLANE_SERVER_TLS_CRT_LOCATION
+          value: '/tmp/certs/cps/tls.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
-        - name: KAFKA_SECURITY_PROTOCOL
-          value: 'PLAINTEXT'
-        - name: KAFKA_CLIENT_TLS_SECRET_NAME
-          value: ''
-        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
-          value: '/tmp/certs/kafka/client/tls.key'
-        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
-          value: '/tmp/certs/kafka/client/tls.crt'
-        - name: KAFKA_CLIENT_TLS_CA_LOCATION
-          value: '/tmp/certs/kafka/client/ca.crt'
-        - name: KAFKA_CLIENT_SASL_USERNAME
-          value: 'seldon'
-        - name: KAFKA_CLIENT_SASL_SECRET_NAME
-          value: ''
-        - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
-          value: '/tmp/sasl/kafka/client/password'
-        - name: KAFKA_BROKER_TLS_SECRET_NAME
-          value: ''
-        - name: KAFKA_BROKER_TLS_CA_LOCATION
-          value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
         - name: ENVOY_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
-        - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
-          value: 'false'
-        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
-          value: ''
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-upstream-client'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-upstream-server'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/duc/tls.key'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/duc/tls.crt'
+        - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/duc/ca.crt'
+        - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dus/ca.crt'
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
           value: 'seldon-downstream-server'
-        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
-          value: '/tmp/certs/ddc/tls.key'
-        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
-          value: '/tmp/certs/ddc/tls.crt'
-        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
-          value: '/tmp/certs/ddc/ca.crt'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_KEY_LOCATION
+          value: '/tmp/certs/dds/tls.key'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CRT_LOCATION
+          value: '/tmp/certs/dds/tls.crt'
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/dds/ca.crt'
-        - name: SELDON_SCHEDULER_PLAINTXT_PORT
-          value: "9004"
-        - name: SELDON_SCHEDULER_TLS_PORT
-          value: "9044"
-        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
-          value: "100"
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/ddc/ca.crt'
+        - name: ALLOW_PLAINTXT
+          value: "true"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-modelgateway:latest'
+        image: 'docker.io/seldonio/seldon-scheduler:latest'
         imagePullPolicy: 'IfNotPresent'
-        name: modelgateway
+        name: scheduler
+        ports:
+        - containerPort: 9002
+          name: xds
+        - containerPort: 9004
+          name: scheduler
+        - containerPort: 9044
+          name: scheduler-mtls
+        - containerPort: 9005
+          name: agent
+        - containerPort: 9055
+          name: agent-mtls
+        - containerPort: 9008
+          name: dataflow
         resources:
           limits:
-            memory: '1G'
+            memory: '1Gi'
           requests:
             cpu: '100m'
-            memory: '1G'
+            memory: '1Gi'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+        - mountPath: /mnt/scheduler
+          name: scheduler-state
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1036,25 +639,17 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app: pipelinegateway
-  name: seldon-pipelinegateway
-  namespace: 'default'
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: pipelinegateway
-  template:
-    metadata:
-      labels:
-        app: pipelinegateway
-    spec:
+    replicas: 1
+    volumeClaimTemplates:
+    - name: scheduler-state
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: '1Gi'
+  - name: seldon-pipelinegateway
+    podSpec:
       containers:
       - args:
         - --http-port=9010
@@ -1072,6 +667,8 @@ spec:
         env:
         - name: KAFKA_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
+        - name: KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
           value: ''
         - name: KAFKA_CLIENT_TLS_KEY_LOCATION
@@ -1178,111 +775,103 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  labels:
-    control-plane: seldon-scheduler
-  name: seldon-scheduler
-  namespace: 'default'
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      control-plane: seldon-scheduler
-  serviceName: seldon-scheduler
-  template:
-    metadata:
-      labels:
-        control-plane: seldon-scheduler
-    spec:
+    replicas: 1
+  - name: seldon-modelgateway
+    podSpec:
       containers:
       - args:
-        - --pipeline-gateway-host=seldon-pipelinegateway
-        - --tracing-config-path=/mnt/tracing/tracing.json
-        - --db-path=/mnt/scheduler/db
-        - --allow-plaintxt=$(ALLOW_PLAINTXT)
+        - --scheduler-host=seldon-scheduler
+        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
+        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)
+        - --envoy-host=seldon-mesh
+        - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --tracing-config-path=/mnt/tracing/tracing.json
         command:
-        - /bin/scheduler
+        - /bin/modelgateway
         env:
+        - name: MODELGATEWAY_NUM_WORKERS
+          value: '8'
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: '1'
+        - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+          value: '1'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
-        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
-          value: 'seldon-controlplane-server'
         - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
           value: 'seldon-controlplane-client'
-        - name: CONTROL_PLANE_SERVER_TLS_KEY_LOCATION
-          value: '/tmp/certs/cps/tls.key'
-        - name: CONTROL_PLANE_SERVER_TLS_CRT_LOCATION
-          value: '/tmp/certs/cps/tls.crt'
-        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
-          value: '/tmp/certs/cps/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
         - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
           value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
+        - name: KAFKA_CLIENT_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/kafka/client/tls.key'
+        - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/kafka/client/tls.crt'
+        - name: KAFKA_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/client/ca.crt'
+        - name: KAFKA_CLIENT_SASL_USERNAME
+          value: 'seldon'
+        - name: KAFKA_CLIENT_SASL_SECRET_NAME
+          value: ''
+        - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+          value: '/tmp/sasl/kafka/client/password'
+        - name: KAFKA_BROKER_TLS_SECRET_NAME
+          value: ''
+        - name: KAFKA_BROKER_TLS_CA_LOCATION
+          value: '/tmp/certs/kafka/broker/ca.crt'
         - name: ENVOY_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
-        - name: ENVOY_UPSTREAM_CLIENT_TLS_SECRET_NAME
-          value: 'seldon-upstream-client'
-        - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
-          value: 'seldon-upstream-server'
-        - name: ENVOY_UPSTREAM_CLIENT_TLS_KEY_LOCATION
-          value: '/tmp/certs/duc/tls.key'
-        - name: ENVOY_UPSTREAM_CLIENT_TLS_CRT_LOCATION
-          value: '/tmp/certs/duc/tls.crt'
-        - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
-          value: '/tmp/certs/duc/ca.crt'
-        - name: ENVOY_UPSTREAM_SERVER_TLS_CA_LOCATION
-          value: '/tmp/certs/dus/ca.crt'
-        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
-          value: 'seldon-downstream-server'
+        - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+          value: 'false'
         - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
           value: ''
-        - name: ENVOY_DOWNSTREAM_SERVER_TLS_KEY_LOCATION
-          value: '/tmp/certs/dds/tls.key'
-        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CRT_LOCATION
-          value: '/tmp/certs/dds/tls.crt'
-        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
-          value: '/tmp/certs/dds/ca.crt'
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+          value: 'seldon-downstream-server'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/ddc/tls.key'
+        - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/ddc/tls.crt'
         - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
           value: '/tmp/certs/ddc/ca.crt'
-        - name: ALLOW_PLAINTXT
-          value: "true"
+        - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/dds/ca.crt'
+        - name: SELDON_SCHEDULER_PLAINTXT_PORT
+          value: "9004"
+        - name: SELDON_SCHEDULER_TLS_PORT
+          value: "9044"
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: "100"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-scheduler:latest'
+        image: 'docker.io/seldonio/seldon-modelgateway:latest'
         imagePullPolicy: 'IfNotPresent'
-        name: scheduler
-        ports:
-        - containerPort: 9002
-          name: xds
-        - containerPort: 9004
-          name: scheduler
-        - containerPort: 9044
-          name: scheduler-mtls
-        - containerPort: 9005
-          name: agent
-        - containerPort: 9055
-          name: agent-mtls
-        - containerPort: 9008
-          name: dataflow
+        name: modelgateway
         resources:
           limits:
-            memory: '1Gi'
+            memory: '1G'
           requests:
             cpu: '100m'
-            memory: '1Gi'
+            memory: '1G'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
-        - mountPath: /mnt/scheduler
-          name: scheduler-state
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1297,22 +886,210 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-  volumeClaimTemplates:
-  - metadata:
-      name: scheduler-state
-    spec:
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: '1Gi'
+    replicas: 1
+  - name: hodometer
+    podSpec:
+      containers:
+      - env:
+        - name: METRICS_LEVEL
+          value: 'feature'
+        - name: LOG_LEVEL
+          value: 'info'
+        - name: EXTRA_PUBLISH_URLS
+          value: ''
+        - name: CONTROL_PLANE_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+          value: 'seldon-controlplane-client'
+        - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+          value: 'seldon-controlplane-server'
+        - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+          value: '/tmp/certs/cpc/tls.key'
+        - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+          value: '/tmp/certs/cpc/tls.crt'
+        - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+          value: '/tmp/certs/cpc/ca.crt'
+        - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+          value: '/tmp/certs/cps/ca.crt'
+        - name: PUBLISH_URL
+          value: http://hodometer.seldon.io
+        - name: SCHEDULER_HOST
+          value: seldon-scheduler
+        - name: SCHEDULER_PLAINTXT_PORT
+          value: "9004"
+        - name: SCHEDULER_TLS_PORT
+          value: "9044"
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: 'docker.io/seldonio/seldon-hodometer:latest'
+        imagePullPolicy: 'IfNotPresent'
+        name: hodometer
+        resources:
+          limits:
+            memory: '32Mi'
+          requests:
+            cpu: '1m'
+            memory: '32Mi'
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: hodometer
+      terminationGracePeriodSeconds: 5
+    replicas: 1
+  - name: seldon-envoy
+    podSpec:
+      containers:
+      - env:
+        - name: ENVOY_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: ENVOY_XDS_CLIENT_TLS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: tls.key
+              name: 'seldon-controlplane-client'
+              optional: true
+        - name: ENVOY_XDS_CLIENT_TLS_CRT
+          valueFrom:
+            secretKeyRef:
+              key: tls.crt
+              name: 'seldon-controlplane-client'
+              optional: true
+        - name: ENVOY_XDS_SERVER_TLS_CA
+          valueFrom:
+            secretKeyRef:
+              key: ca.crt
+              name: 'seldon-controlplane-server'
+              optional: true
+        image: 'docker.io/seldonio/seldon-envoy:latest'
+        imagePullPolicy: 'IfNotPresent'
+        name: envoy
+        ports:
+        - containerPort: 9000
+          name: http
+        - containerPort: 9003
+          name: envoy-admin
+        resources:
+          limits:
+            memory: '128Mi'
+          requests:
+            cpu: '100m'
+            memory: '128Mi'
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      terminationGracePeriodSeconds: 5
+    replicas: 1
+  - name: dataflow-engine
+    podSpec:
+      containers:
+      - env:
+        - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
+          value: 'seldon-kafka-bootstrap.seldon-mesh:9092'
+        - name: SELDON_KAFKA_REPLICATION_FACTOR
+          value: '1'
+        - name: SELDON_KAFKA_PARTITIONS_DEFAULT
+          value: '1'
+        - name: SELDON_KAFKA_MAX_MESSAGE_SIZE_BYTES
+          value: '1000000000'
+        - name: SELDON_KAFKA_SECURITY_PROTOCOL
+          value: 'PLAINTEXT'
+        - name: SELDON_KAFKA_TLS_CLIENT_SECRET
+          value: ''
+        - name: SELDON_KAFKA_TLS_CLIENT_KEY_PATH
+          value: '/tmp/certs/kafka/client/tls.key'
+        - name: SELDON_KAFKA_TLS_CLIENT_CERT_PATH
+          value: '/tmp/certs/kafka/client/tls.crt'
+        - name: SELDON_KAFKA_TLS_CLIENT_CA_PATH
+          value: '/tmp/certs/kafka/client/ca.crt'
+        - name: SELDON_KAFKA_TLS_BROKER_SECRET
+          value: ''
+        - name: SELDON_KAFKA_TLS_BROKER_CA_PATH
+          value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: SELDON_KAFKA_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: ''
+        - name: SELDON_KAFKA_SASL_MECHANISM
+          value: 'SCRAM-SHA-512'
+        - name: SELDON_KAFKA_SASL_USERNAME
+          value: 'seldon'
+        - name: SELDON_KAFKA_SASL_SECRET
+          value: ''
+        - name: SELDON_KAFKA_SASL_PASSWORD_PATH
+          value: '/tmp/sasl/kafka/client/password'
+        - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: ''
+        - name: SELDON_CORES_COUNT
+          value: '4'
+        - name: SELDON_UPSTREAM_HOST
+          value: seldon-scheduler
+        - name: SELDON_UPSTREAM_PORT
+          value: "9008"
+        - name: OTEL_JAVAAGENT_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_JAVAAGENT_ENABLED
+              name: seldon-tracing
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+              name: seldon-tracing
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: 'docker.io/seldonio/seldon-dataflow-engine:latest'
+        imagePullPolicy: 'IfNotPresent'
+        name: dataflow-engine
+        resources:
+          limits:
+            memory: '1G'
+          requests:
+            cpu: '100m'
+            memory: '1G'
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: seldon-scheduler
+      terminationGracePeriodSeconds: 5
+    replicas: 1
+  config:
+    agentConfig:
+      rclone:
+        config_secrets:
+        - seldon-rclone-gs-public
+    kafkaConfig:
+      bootstrap.servers: 'seldon-kafka-bootstrap.seldon-mesh:9092'
+      consumer:
+        auto.offset.reset: 'earliest'
+        message.max.bytes: '1000000000'
+        session.timeout.ms: '6000'
+        topic.metadata.propagation.max.ms: '300000'
+      debug: ''
+      producer:
+        linger.ms: '0'
+        message.max.bytes: '1000000000'
+      topicPrefix: 'seldon'
+    serviceConfig:
+      grpcServicePrefix: ''
+      serviceType: 'LoadBalancer'
+    tracingConfig:
+      enable: true
+      otelExporterEndpoint: 'seldon-collector.seldon-mesh:4317'
+      ratio: '1'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: mlserver
-  namespace: 'default'
 spec:
   podSpec:
     containers:
@@ -1549,7 +1326,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
   name: triton
-  namespace: 'default'
 spec:
   podSpec:
     containers:

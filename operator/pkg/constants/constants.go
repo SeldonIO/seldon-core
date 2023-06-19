@@ -23,6 +23,7 @@ const (
 	ServerFinalizerName     = "seldon.server.finalizer"
 	PipelineFinalizerName   = "seldon.pipeline.finalizer"
 	ExperimentFinalizerName = "seldon.experiment.finalizer"
+	RuntimeFinalizerName    = "seldon.runtime.finalizer"
 )
 
 func getEnvOrDefault(key string, fallback string) string {
@@ -39,10 +40,13 @@ var (
 // Label selector
 const (
 	AppKey                    = "app"
+	KubernetesNameLabelKey    = "app.kubernetes.io/name"
 	ServerLabelValue          = "seldon-server"
 	ServerLabelNameKey        = "seldon-server-name"
 	ServerReplicaLabelKey     = "seldon-server-replica"
 	ServerReplicaNameLabelKey = "seldon-server-replica-name"
+	ControlPlaneLabelKey      = "control-plane"
+	LastAppliedConfig         = "seldon.io/last-applied"
 )
 
 // Reconcilliation operations

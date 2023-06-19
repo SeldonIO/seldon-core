@@ -1,0 +1,57 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonRuntime
+metadata:
+  name: seldon
+  namespace: '{{ .Release.Namespace }}'  
+spec:
+  seldonConfig: default
+  overrides:
+  - name: hodometer
+    disable: {{ .Values.hodometer.disable }}
+    replicas: {{ .Values.hodometer.replicas }}
+  - name: seldon-scheduler
+    disable: {{ .Values.scheduler.disable }}
+    serviceType: {{ .Values.scheduler.serviceType }}    
+  - name: seldon-envoy
+    disable: {{ .Values.envoy.disable }}
+    replicas: {{ .Values.envoy.replicas }}
+    serviceType: {{ .Values.envoy.serviceType }}    
+  - name: seldon-dataflow-engine
+    disable: {{ .Values.dataflow.disable }}
+    replicas: {{ .Values.dataflow.replicas }}    
+  - name: seldon-modelgateway
+    disable: {{ .Values.modelgateway.disable }}
+    replicas: {{ .Values.modelgateway.replicas }}    
+  - name: seldon-pipelinegateway
+    disable: {{ .Values.pipelinegateway.disable }}    
+    replicas: {{ .Values.pipelinegateway.replicas }}
+  config:
+    agentConfig:
+      rclone:
+        config_secrets:
+          {{- with .Values.config.agentConfig.rclone.configSecrets }}
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+    kafkaConfig:
+      bootstrap.servers: {{ .Values.config.kafkaConfig.bootstrap }}
+      consumer:
+        {{- with .Values.config.kafkaConfig.consumer }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      debug: {{ .Values.config.kafkaConfig.debug }}
+      producer:
+        {{- with .Values.config.kafkaConfig.producer }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      streams:
+        {{- with .Values.config.kafkaConfig.streams }}
+           {{- toYaml . | nindent 8 }}
+        {{- end }}
+      topicPrefix: {{ .Values.config.kafkaConfig.topicPrefix }}
+    serviceConfig:
+      grpcServicePrefix: {{ .Values.config.serviceConfig.serviceGRPCPrefix }}
+      serviceType: {{ .Values.config.serviceConfig.serviceType }}
+    tracingConfig:
+      enable: {{ .Values.config.tracingConfig.enable }}
+      otelExporterEndpoint: {{ .Values.config.tracingConfig.otelExporterEndpoint }}
+      ratio: {{ .Values.config.tracingConfig.ratio }}

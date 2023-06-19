@@ -1,0 +1,11 @@
+# HACK is needed as enable is a boolean but kustomize would only accept a string
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  config:
+    tracingConfig:
+      enable: HACK_REMOVE_ME{{ .Values.opentelemetry.enable }}
+      otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+      ratio: '{{ .Values.opentelemetry.ratio }}'
