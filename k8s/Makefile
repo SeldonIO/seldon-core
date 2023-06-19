@@ -3,7 +3,8 @@ NEW_VERSION ?= 0.0.0
 
 HELM_CRD_BASE := helm-charts/seldon-core-v2-crds/templates
 HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
-HELM_SERVERS_BASE := helm-charts/seldon-core-v2-runtime/templates
+HELM_RUNTIME_BASE := helm-charts/seldon-core-v2-runtime/templates
+HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
 
 .PHONY: create
 create: create-helm-charts create-yaml
@@ -31,11 +32,13 @@ create-yaml:
 	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs --namespace seldon-mesh > yaml/certs.yaml
 	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
 	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup --namespace seldon-mesh > yaml/components.yaml
-	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-runtime --namespace seldon-mesh > yaml/servers.yaml
+	helm template seldon-core-v2-runtime ./helm-charts/seldon-core-v2-runtime --namespace seldon-mesh > yaml/runtime.yaml
+	helm template seldon-core-v2-servers ./helm-charts/seldon-core-v2-servers --namespace seldon-mesh > yaml/servers.yaml
 
 .PHONY: set-chart-version
 set-chart-version:
 	sed -i -r 's/(version|appVersion): .*/\1: ${NEW_VERSION}/' helm-charts/seldon-core-v2-certs/Chart.yaml
 	sed -i -r 's/(version|appVersion): .*/\1: ${NEW_VERSION}/' helm-charts/seldon-core-v2-crds/Chart.yaml
 	sed -i -r 's/(version|appVersion): .*/\1: ${NEW_VERSION}/' helm-charts/seldon-core-v2-setup/Chart.yaml
+	sed -i -r 's/(version|appVersion): .*/\1: ${NEW_VERSION}/' helm-charts/seldon-core-v2-runtime/Chart.yaml
 	sed -i -r 's/(version|appVersion): .*/\1: ${NEW_VERSION}/' helm-charts/seldon-core-v2-servers/Chart.yaml
