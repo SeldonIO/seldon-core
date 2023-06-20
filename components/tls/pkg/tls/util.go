@@ -32,6 +32,10 @@ const (
 	SASLMechanismSCRAMSHA256 = "SCRAM-SHA-256"
 	SASLMechanismPlain       = "PLAIN"
 
+	EnvEndpointIdentificationMechanismSuffix = "_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM"
+	EndpointIdentificationMechanismNone      = "none"
+	EndpointIdentificationMechanismHTTPS     = "https"
+
 	EnvSecurityPrefixControlPlane       = "CONTROL_PLANE"
 	EnvSecurityPrefixControlPlaneServer = "CONTROL_PLANE_SERVER"
 	EnvSecurityPrefixControlPlaneClient = "CONTROL_PLANE_CLIENT"
@@ -60,6 +64,16 @@ func GetSASLMechanismFromEnv(prefix string) string {
 	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvSASLMechanismSuffix))
 	if !ok {
 		val = SASLMechanismPlain
+	}
+	return val
+}
+
+func GetEndpointIdentificationMechanismFromEnv(prefix string) string {
+	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvEndpointIdentificationMechanismSuffix))
+	if !ok {
+		val = EndpointIdentificationMechanismHTTPS
+	} else if val == "" {
+		val = EndpointIdentificationMechanismNone
 	}
 	return val
 }
