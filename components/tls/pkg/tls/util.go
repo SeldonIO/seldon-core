@@ -71,6 +71,8 @@ func GetSASLMechanismFromEnv(prefix string) string {
 func GetEndpointIdentificationMechanismFromEnv(prefix string) string {
 	val, ok := os.LookupEnv(fmt.Sprintf("%s%s", prefix, EnvEndpointIdentificationMechanismSuffix))
 	if !ok {
+		val = EndpointIdentificationMechanismHTTPS
+	} else if val == "" {
 		val = EndpointIdentificationMechanismNone
 	}
 	return val
