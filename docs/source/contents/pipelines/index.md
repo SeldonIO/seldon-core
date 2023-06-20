@@ -367,7 +367,7 @@ Present caveats:
 
 ## Filter requests
 
-If some paths through the pipeline do not need all requests you can use the step `filterPercent` to filter a percentage of requests. The random filtering is done after all joins have been processed.An example is shown below:
+If some paths through the pipeline do not need all requests you can use the step `filterPercent` to filter a percentage of requests. The random filtering is done after all joins have been processed. An example is shown below:
 
 ```{literalinclude} ../../../../samples/pipelines/sampling-example.yaml
 :language: yaml
