@@ -22,6 +22,7 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -39,9 +40,12 @@ import (
 
 func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("LoadModel")
+	conn, err := s.getConnection(model.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	logger.Info("Load", "model name", model.Name)
-
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	md, err := model.AsSchedulerModel()
 	if err != nil {
 		return err, false
@@ -50,7 +54,7 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 		Model: md,
 	}
 
-	_, err = grcpClient.LoadModel(ctx, &loadModelRequest, grpc_retry.WithMax(2))
+	_, err = grcpClient.LoadModel(ctx, &loadModelRequest, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
@@ -60,9 +64,12 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 
 func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
+	conn, err := s.getConnection(model.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	logger.Info("Unload", "model name", model.Name)
-
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
 	modelRef := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
 			Name: model.Name,
@@ -72,8 +79,8 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 			Generation: model.Generation,
 		},
 	}
-
-	_, err := grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(2))
+	logger.Info("Unload", "model name", model.Name)
+	_, err = grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
@@ -81,14 +88,14 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeModelStatus(
 		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(1),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 	)
 	if err != nil {
 		return err

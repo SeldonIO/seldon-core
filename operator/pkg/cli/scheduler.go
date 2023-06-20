@@ -49,9 +49,10 @@ type SchedulerClient struct {
 	authority     string
 	callOptions   []grpc.CallOption
 	config        *SeldonCLIConfig
+	verbose       bool
 }
 
-func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority string) (*SchedulerClient, error) {
+func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority string, verbose bool) (*SchedulerClient, error) {
 
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -71,6 +72,7 @@ func NewSchedulerClient(schedulerHost string, schedulerHostIsSet bool, authority
 		authority:     authority,
 		callOptions:   opts,
 		config:        config,
+		verbose:       verbose,
 	}, nil
 }
 
@@ -162,33 +164,30 @@ func unMarshallYamlStrict(data []byte, msg interface{}) error {
 	return nil
 }
 
-func (sc *SchedulerClient) LoadModel(data []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) LoadModel(data []byte) (*scheduler.LoadModelResponse, error) {
 	model := &mlopsv1alpha1.Model{}
 	err := unMarshallYamlStrict(data, model)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	schModel, err := model.AsSchedulerModel()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req := &scheduler.LoadModelRequest{Model: schModel}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.LoadModel(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
 func (sc *SchedulerClient) ListModels() error {
@@ -242,29 +241,29 @@ func (sc *SchedulerClient) ListModels() error {
 	return nil
 }
 
-func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showResponse bool, waitCondition string) error {
+func (sc *SchedulerClient) ModelStatus(modelName string, waitCondition string, timeout time.Duration) (*scheduler.ModelStatusResponse, error) {
 	req := &scheduler.ModelStatusRequest{
 		SubscriberName: subscriberName,
 		Model: &scheduler.ModelReference{
 			Name: modelName,
 		},
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
-
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	var res *scheduler.ModelStatusResponse
 	if waitCondition != "" {
+		secsStart := time.Now().Unix()
 		for {
 			res, err := sc.getModelStatus(grpcClient, req)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if len(res.Versions) > 0 {
@@ -274,18 +273,17 @@ func (sc *SchedulerClient) ModelStatus(modelName string, showRequest bool, showR
 				}
 			}
 			time.Sleep(1 * time.Second)
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
+				return nil, fmt.Errorf("Model wait status timeout")
+			}
 		}
 	} else {
 		res, err = sc.getModelStatus(grpcClient, req)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
 func (sc *SchedulerClient) getModelStatus(
@@ -406,12 +404,12 @@ func (sc *SchedulerClient) ListServers() error {
 	return nil
 }
 
-func (sc *SchedulerClient) UnloadModel(modelName string, modelBytes []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) UnloadModel(modelName string, modelBytes []byte) (*scheduler.UnloadModelResponse, error) {
 	if len(modelBytes) > 0 && modelName == "" {
 		model := &mlopsv1alpha1.Model{}
 		err := unMarshallYamlStrict(modelBytes, model)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		modelName = model.Name
 	}
@@ -420,120 +418,108 @@ func (sc *SchedulerClient) UnloadModel(modelName string, modelBytes []byte, show
 			Name: modelName,
 		},
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.UnloadModel(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
-func (sc *SchedulerClient) StartExperiment(data []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) StartExperiment(data []byte) (*scheduler.StartExperimentResponse, error) {
 	experiment := &mlopsv1alpha1.Experiment{}
 	err := unMarshallYamlStrict(data, experiment)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	schExperiment := experiment.AsSchedulerExperimentRequest()
-	if err != nil {
-		return err
-	}
 	req := &scheduler.StartExperimentRequest{Experiment: schExperiment}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.StartExperiment(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
-func (sc *SchedulerClient) StopExperiment(experimentName string, experimentBytes []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) StopExperiment(experimentName string, experimentBytes []byte) (*scheduler.StopExperimentResponse, error) {
 	if len(experimentBytes) > 0 && experimentName == "" {
 		experiment := &mlopsv1alpha1.Experiment{}
 		err := unMarshallYamlStrict(experimentBytes, experiment)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		experimentName = experiment.Name
 	}
 	req := &scheduler.StopExperimentRequest{
 		Name: experimentName,
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.StopExperiment(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
-func (sc *SchedulerClient) ExperimentStatus(experimentName string, showRequest bool, showResponse bool, wait bool) error {
+func (sc *SchedulerClient) ExperimentStatus(experimentName string, wait bool, timeout time.Duration) (*scheduler.ExperimentStatusResponse, error) {
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           &experimentName,
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
-
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	var res *scheduler.ExperimentStatusResponse
 	if wait {
+		secsStart := time.Now().Unix()
 		for {
 			res, err = sc.getExperimentStatus(grpcClient, req)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if res.Active {
 				break
 			}
 			time.Sleep(1 * time.Second)
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
+				return nil, fmt.Errorf("Experiment wait status timeout")
+			}
 		}
 	} else {
 		res, err = sc.getExperimentStatus(grpcClient, req)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
 func (sc *SchedulerClient) getExperimentStatus(
@@ -562,6 +548,9 @@ func (sc *SchedulerClient) ListExperiments() error {
 	defer cancel()
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: subscriberName,
+	}
+	if sc.verbose {
+		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
@@ -606,42 +595,40 @@ func (sc *SchedulerClient) ListExperiments() error {
 	return nil
 }
 
-func (sc *SchedulerClient) LoadPipeline(data []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) LoadPipeline(data []byte) (*scheduler.LoadPipelineResponse, error) {
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	err := unMarshallYamlStrict(data, pipeline)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	schPipeline := pipeline.AsSchedulerPipeline()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req := &scheduler.LoadPipelineRequest{Pipeline: schPipeline}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.LoadPipeline(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+
+	return res, nil
 }
 
-func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []byte, showRequest bool, showResponse bool) error {
+func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []byte) (*scheduler.UnloadPipelineResponse, error) {
 
 	if len(pipelineBytes) > 0 && pipelineName == "" {
 		pipeline := &mlopsv1alpha1.Pipeline{}
 		err := unMarshallYamlStrict(pipelineBytes, pipeline)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		pipelineName = pipeline.Name
 	}
@@ -649,45 +636,42 @@ func (sc *SchedulerClient) UnloadPipeline(pipelineName string, pipelineBytes []b
 	req := &scheduler.UnloadPipelineRequest{
 		Name: pipelineName,
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 	res, err := grpcClient.UnloadPipeline(context.Background(), req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
-func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool, showResponse bool, waitCondition string) error {
+func (sc *SchedulerClient) PipelineStatus(pipelineName string, waitCondition string, timeout time.Duration) (*scheduler.PipelineStatusResponse, error) {
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
 		Name:           &pipelineName,
 	}
-	if showRequest {
+	if sc.verbose {
 		printProto(req)
 	}
-
 	conn, err := sc.newConnection()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	var res *scheduler.PipelineStatusResponse
 	if waitCondition != "" {
+		secsStart := time.Now().Unix()
 		for {
 			res, err = sc.getPipelineStatus(grpcClient, req)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if len(res.Versions) > 0 {
 				modelStatus := res.Versions[0].GetState().GetStatus().String()
@@ -696,17 +680,17 @@ func (sc *SchedulerClient) PipelineStatus(pipelineName string, showRequest bool,
 				}
 			}
 			time.Sleep(1 * time.Second)
+			if time.Now().Unix()-secsStart > (timeout.Milliseconds() / 1000) {
+				return nil, fmt.Errorf("Pipeline wait status timeout")
+			}
 		}
 	} else {
 		res, err = sc.getPipelineStatus(grpcClient, req)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	if showResponse {
-		printProto(res)
-	}
-	return nil
+	return res, nil
 }
 
 func (sc *SchedulerClient) getPipelineStatus(
@@ -735,6 +719,9 @@ func (sc *SchedulerClient) ListPipelines() error {
 	defer cancel()
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: subscriberName,
+	}
+	if sc.verbose {
+		printProto(req)
 	}
 	conn, err := sc.newConnection()
 	if err != nil {

@@ -49,6 +49,10 @@ help: ## Display this help.
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	sed -i '/namespace: seldon-mesh/d' config/rbac/role.yaml # remove namespace added by controller-gen
+	cp config/rbac/role.yaml config/rbac/namespace_role.yaml
+	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role.yaml
+	cp config/rbac/role_binding.yaml config/rbac/namespace_role_binding.yaml
+	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role_binding.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.

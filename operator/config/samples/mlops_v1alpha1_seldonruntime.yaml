@@ -1,0 +1,12 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonRuntime
+metadata:
+  labels:
+    app.kubernetes.io/name: seldonruntime
+    app.kubernetes.io/instance: seldonruntime-sample
+    app.kubernetes.io/part-of: operator/v2
+    app.kuberentes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator/v2
+  name: seldonruntime-sample
+spec:
+  # TODO(user): Add fields here

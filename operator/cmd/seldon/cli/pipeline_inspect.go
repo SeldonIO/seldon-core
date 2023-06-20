@@ -26,12 +26,12 @@ import (
 )
 
 const (
-	flagOffset       = "offset"
-	flagRequestId    = "request-id"
-	flagOutputFormat = "format"
-	flagVerbose      = "verbose"
-	flagTruncate     = "truncate"
-	flagNamespace    = "namespace"
+	flagOffset         = "offset"
+	flagRequestId      = "request-id"
+	flagOutputFormat   = "format"
+	flagTruncate       = "truncate"
+	flagNamespace      = "namespace"
+	flagTimeoutDefault = int64(60)
 )
 
 func createPipelineInspect() *cobra.Command {

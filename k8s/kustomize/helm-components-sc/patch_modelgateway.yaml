@@ -1,0 +1,81 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  components:
+  - name: seldon-modelgateway
+    replicas: 1
+    podSpec:
+      imagePullSecrets: []
+      containers:
+      - env:
+          - name: MODELGATEWAY_NUM_WORKERS
+            value: '{{ .Values.modelgateway.workers }}'
+          - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+            value: '{{ .Values.kafka.topics.replicationFactor }}'
+          - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+            value: '{{ .Values.kafka.topics.numPartitions }}'
+          - name: CONTROL_PLANE_SECURITY_PROTOCOL
+            value: '{{ .Values.security.controlplane.protocol }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
+            value: '{{ .Values.security.controlplane.ssl.client.secret }}'
+          - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME
+            value: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_KEY_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.keyPath }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_CRT_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.crtPath }}'
+          - name: CONTROL_PLANE_CLIENT_TLS_CA_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
+          - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
+            value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
+          - name: KAFKA_SECURITY_PROTOCOL
+            value: '{{ .Values.security.kafka.protocol }}'
+          - name: KAFKA_SASL_MECHANISM
+            value: '{{ .Values.security.kafka.sasl.mechanism }}'
+          - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+            value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm }}'
+          - name: KAFKA_CLIENT_TLS_SECRET_NAME
+            value: '{{ .Values.security.kafka.ssl.client.secret }}'
+          - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+            value: '{{ .Values.security.kafka.ssl.client.keyPath }}'
+          - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+            value: '{{ .Values.security.kafka.ssl.client.crtPath }}'
+          - name: KAFKA_CLIENT_TLS_CA_LOCATION
+            value: '{{ .Values.security.kafka.ssl.client.caPath }}'
+          - name: KAFKA_CLIENT_SASL_USERNAME
+            value: '{{ .Values.security.kafka.sasl.client.username }}'
+          - name: KAFKA_CLIENT_SASL_SECRET_NAME
+            value: '{{ .Values.security.kafka.sasl.client.secret }}'
+          - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+            value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
+          - name: KAFKA_BROKER_TLS_SECRET_NAME
+            value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
+          - name: KAFKA_BROKER_TLS_CA_LOCATION
+            value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
+          - name: ENVOY_SECURITY_PROTOCOL
+            value: '{{ .Values.security.envoy.protocol }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_MTLS
+            value: '{{ .Values.security.envoy.ssl.downstream.client.mtls }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_SECRET_NAME
+            value: '{{ .Values.security.envoy.ssl.downstream.client.secret }}'
+          - name: ENVOY_DOWNSTREAM_SERVER_TLS_SECRET_NAME
+            value: '{{ .Values.security.envoy.ssl.downstream.client.serverValidationSecret }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_KEY_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.keyPath }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CRT_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.crtPath }}'
+          - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.caPath }}'
+          - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
+            value: '{{ .Values.security.envoy.ssl.downstream.client.serverCaPath }}'
+        resources:
+          requests:
+            cpu: '{{ .Values.modelgateway.resources.cpu }}'
+            memory: '{{ .Values.modelgateway.resources.memory }}'
+          limits:
+            memory: '{{ .Values.modelgateway.resources.memory }}'
+        image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository }}:{{ .Values.modelgateway.image.tag }}'
+        imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
+        name: modelgateway

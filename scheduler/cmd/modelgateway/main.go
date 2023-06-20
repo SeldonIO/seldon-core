@@ -127,7 +127,7 @@ func main() {
 
 	tracer, err := tracing.NewTraceProvider("seldon-modelgateway", &tracingConfigPath, logger)
 	if err != nil {
-		logger.WithError(err).Error("Failed to configure otel tracer")
+		logger.WithError(err).Fatalf("Failed to configure otel tracer")
 	} else {
 		defer tracer.Stop()
 	}

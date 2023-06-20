@@ -24,20 +24,14 @@ spec:
         args:
         - --health-probe-bind-address=:8081
         - --leader-elect
-        - --scheduler-host=$(SELDON_SCHEDULER_SVC)
-        - --scheduler-plaintxt-port=$(SELDON_SCHEDULER_PLAINTXT_PORT)
-        - --scheduler-tls-port=$(SELDON_SCHEDULER_TLS_PORT)        
         - --namespace=$(POD_NAMESPACE)
+        - --clusterwide=$(CLUSTERWIDE)
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
         env:
-          - name: SELDON_SCHEDULER_SVC
-            value: "seldon-scheduler"
-          - name: SELDON_SCHEDULER_PLAINTXT_PORT
-            value: "9004"
-          - name: SELDON_SCHEDULER_TLS_PORT
-            value: "9044"
+          - name: CLUSTERWIDE
+            value: "false"
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

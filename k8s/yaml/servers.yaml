@@ -4,7 +4,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: mlserver
-  namespace: 'default'
 spec:
   replicas: 1
   serverConfig: mlserver
@@ -14,7 +13,6 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: triton
-  namespace: 'default'
 spec:
   replicas: 1
   serverConfig: triton

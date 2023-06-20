@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 
@@ -51,19 +50,15 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
-	var schedulerHost string
-	var schedulerPlaintxtPort int
-	var schedulerTLSPort int
 	var namespace string
+	var clusterwide bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.StringVar(&schedulerHost, "scheduler-host", "0.0.0.0", "Scheduler host")
-	flag.IntVar(&schedulerPlaintxtPort, "scheduler-plaintxt-port", 9004, "Scheduler port")
-	flag.IntVar(&schedulerTLSPort, "scheduler-tls-port", 9044, "Scheduler port")
+	flag.BoolVar(&clusterwide, "clusterwide", false, "Allow clusterwide operations")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -73,10 +68,15 @@ func main() {
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
 
+	watchNamespace := namespace
+	if clusterwide {
+		watchNamespace = "" // unset namespace so manager watches all namespaces
+	}
+	setupLog.Info("Starting manager", "clusterwide", clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
-		Namespace:              namespace,
+		Namespace:              watchNamespace,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
@@ -87,45 +87,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create and connect to scheduler
+	// Create scheduler client
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"))
-	err = schedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTLSPort)
-	if err != nil {
-		setupLog.Error(err, "unable to connect to scheduler")
-		os.Exit(1)
-	}
-
-	// Subscribe the event streams from scheduler
-	go func() {
-		err := schedulerClient.SubscribeModelEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler model events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribeServerEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler server events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribePipelineEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler pipeline events")
-		}
-		os.Exit(1)
-	}()
-	go func() {
-		err := schedulerClient.SubscribeExperimentEvents(context.Background())
-		if err != nil {
-			setupLog.Error(err, "Failed to subscribe to scheduler experiment events")
-		}
-		os.Exit(1)
-	}()
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),
@@ -168,6 +133,22 @@ func main() {
 		Recorder:  mgr.GetEventRecorderFor("pipeline-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Experiment")
+		os.Exit(1)
+	}
+	if err = (&mlopscontrollers.SeldonRuntimeReconciler{
+		Client:    mgr.GetClient(),
+		Scheme:    mgr.GetScheme(),
+		Scheduler: schedulerClient,
+		Recorder:  mgr.GetEventRecorderFor("seldonruntime-controller"),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SeldonRuntime")
+		os.Exit(1)
+	}
+	if err = (&mlopscontrollers.SeldonConfigReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SeldonConfig")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

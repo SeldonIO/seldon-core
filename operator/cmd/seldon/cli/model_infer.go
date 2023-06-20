@@ -91,13 +91,18 @@ func createModelInfer() *cobra.Command {
 				return fmt.Errorf("required inline data or from file with -f <file-path>")
 			}
 
+			inferModeParsed, err := getInferProtocol(inferMode)
+			if err != nil {
+				return err
+			}
+
 			inferenceClient, err := cli.NewInferenceClient(inferenceHost, inferenceHostIsSet)
 			if err != nil {
 				return err
 			}
 
 			callOpts := &cli.CallOptions{
-				InferProtocol: inferMode,
+				InferProtocol: inferModeParsed,
 				InferType:     cli.InferModel,
 				StickySession: stickySession,
 				Iterations:    iterations,
@@ -109,7 +114,7 @@ func createModelInfer() *cobra.Command {
 				ShowResponse: showResponse,
 			}
 
-			err = inferenceClient.Infer(
+			_, err = inferenceClient.Infer(
 				modelName,
 				data,
 				headers,

@@ -65,15 +65,22 @@ type CertificateStoreOptions struct {
 	validationPrefix string
 	clientset        kubernetes.Interface
 	validationOnly   bool
+	Namespace        string
 }
 
 func (c CertificateStoreOptions) String() string {
-	return fmt.Sprintf("prefix=%s validationPrefix=%s clientset=%v",
-		c.prefix, c.validationPrefix, c.clientset)
+	return fmt.Sprintf("prefix=%s validationPrefix=%s clientset=%v namespace=%s",
+		c.prefix, c.validationPrefix, c.clientset, c.Namespace)
 }
 
 func getDefaultCertificateStoreOptions() CertificateStoreOptions {
 	return CertificateStoreOptions{}
+}
+
+func Namespace(namespace string) TLSServerOption {
+	return newFuncServerOption(func(o *CertificateStoreOptions) {
+		o.Namespace = namespace
+	})
 }
 
 func Prefix(prefix string) TLSServerOption {
@@ -113,9 +120,12 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 	if !opts.validationOnly {
 		if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
 			logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
-			namespace, ok := os.LookupEnv(envNamespace)
-			if !ok {
-				return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+			namespace := opts.Namespace
+			if namespace == "" {
+				namespace, ok = os.LookupEnv(envNamespace)
+				if !ok {
+					return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+				}
 			}
 			manager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.prefix, false, logger)
 			if err != nil {
@@ -148,9 +158,12 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 	} else if opts.validationPrefix != "" {
 		logger.Info("Just looking for validation cert")
 		if secretName, ok := util.GetEnv(opts.validationPrefix, envSecretSuffix); ok {
-			namespace, ok := os.LookupEnv(envNamespace)
-			if !ok {
-				return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+			namespace := opts.Namespace
+			if namespace == "" {
+				namespace, ok = os.LookupEnv(envNamespace)
+				if !ok {
+					return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+				}
 			}
 			logger.Infof("Starting new certificate store for %s from secret %s", opts.validationPrefix, secretName)
 			validationManager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.validationPrefix, true, logger)
@@ -216,7 +229,7 @@ func (s *CertificateStore) GetClientCertificate(*tls.CertificateRequestInfo) (*t
 	}
 }
 
-func (s *CertificateStore) getCertificates() (*CertificateWrapper, *CertificateWrapper) {
+func (s *CertificateStore) getCetificates() (*CertificateWrapper, *CertificateWrapper) {
 	var certificate *CertificateWrapper
 	var validationCA *CertificateWrapper
 	if s.certificateManager != nil {
@@ -231,7 +244,7 @@ func (s *CertificateStore) getCertificates() (*CertificateWrapper, *CertificateW
 func (s *CertificateStore) CreateClientTLSConfig() *tls.Config {
 	logger := s.logger.WithField("func", "CreateClientTransportCredentials")
 	var rootCAs *x509.CertPool
-	certificate, validationCA := s.getCertificates()
+	certificate, validationCA := s.getCetificates()
 	if certificate != nil {
 		rootCAs = certificate.Ca
 		logger.Info("Using rootCA from cert resource")
@@ -256,7 +269,7 @@ func (s *CertificateStore) CreateClientTransportCredentials() credentials.Transp
 }
 
 func (s *CertificateStore) CreateServerTLSConfig() *tls.Config {
-	certificate, validationCA := s.getCertificates()
+	certificate, validationCA := s.getCetificates()
 	// Assumes there is always a cert for a server
 	clientCAs := certificate.Ca
 	if validationCA != nil {

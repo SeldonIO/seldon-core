@@ -21,6 +21,7 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,29 +35,37 @@ import (
 
 func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StartExperiment")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(experiment.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StartExperimentRequest{
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err := grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(2))
+	_, err = grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
 func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
 	logger := s.logger.WithName("StopExperiment")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	conn, err := s.getConnection(experiment.Namespace)
+	if err != nil {
+		return err, true
+	}
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StopExperimentRequest{
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err := grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(2))
+	_, err = grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
-func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *grpc.ClientConn) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
-	grcpClient := scheduler.NewSchedulerClient(s.conn)
+	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {

@@ -40,11 +40,7 @@ func createUnload() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			showRequest, err := flags.GetBool(flagShowRequest)
-			if err != nil {
-				return err
-			}
-			showResponse, err := flags.GetBool(flagShowResponse)
+			verbose, err := flags.GetBool(flagVerbose)
 			if err != nil {
 				return err
 			}
@@ -57,19 +53,23 @@ func createUnload() *cobra.Command {
 				dataFile = loadFile(filename)
 			}
 
-			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority)
+			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
 				return err
 			}
 
-			err = schedulerClient.Unload(dataFile, showRequest, showResponse)
+			responses, err := schedulerClient.Unload(dataFile)
+			if err == nil && verbose {
+				for _, res := range responses {
+					cli.PrintProto(res)
+				}
+			}
 			return err
 		},
 	}
 
 	flags := cmd.Flags()
-	flags.BoolP(flagShowRequest, "r", false, "show request")
-	flags.BoolP(flagShowResponse, "o", false, "show response")
+	flags.BoolP(flagVerbose, "v", false, "verbose output")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagFile, "f", "", "model manifest file (YAML)")
