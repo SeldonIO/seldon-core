@@ -49,7 +49,6 @@ class UserObjectLowLevel:
     def aggregate_grpc(
         self, request: Union[prediction_pb2.SeldonMessage, List, Dict]
     ) -> Union[prediction_pb2.SeldonMessage, List, Dict]:
-
         is_proto = isinstance(request, prediction_pb2.SeldonMessage)
 
         arr = np.array([9, 9])

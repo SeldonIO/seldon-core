@@ -3,7 +3,7 @@ from itertools import chain
 
 from setuptools import find_packages, setup
 
-# Extra dependencies, with special 'tensorflow' key. TF requires a specific versio of 
+# Extra dependencies, with special 'tensorflow' key. TF requires a specific versio of
 # proto to be installed to use their protos.
 extras = {"tensorflow": ["tensorflow", "protobuf>=3.20.2,<4.0.0"]}
 all_extra_deps = chain.from_iterable(extras.values())

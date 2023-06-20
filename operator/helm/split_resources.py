@@ -5,8 +5,7 @@ import re
 import yaml
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prefix", default="xx",
-                    help="find files matching prefix")
+parser.add_argument("--prefix", default="xx", help="find files matching prefix")
 parser.add_argument("--folder", required=True, help="Output folder")
 args, _ = parser.parse_known_args()
 
@@ -30,11 +29,13 @@ HELM_CREATERESOURCES_IF_START = "{{- if not .Values.managerCreateResources }}\n"
 HELM_CREATERESOURCES_RBAC_IF_START = "{{- if .Values.managerCreateResources }}\n"
 HELM_K8S_V1_CRD_IF_START = '{{- if or (ge (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1) }}\n'
 HELM_K8S_V1BETA1_CRD_IF_START = '{{- if or (lt (int (regexFind "[0-9]+" .Capabilities.KubeVersion.Minor)) 18) (.Values.crd.forcev1beta1) }}\n'
-HELM_CRD_ANNOTATIONS_WITH_START = '{{- with .Values.crd.annotations }}\n'
-HELM_ANNOTATIONS_TOYAML4 = '{{- toYaml . | nindent 4}}\n'
-HELM_ANNOTATIONS_TOYAML8 = '{{- toYaml . | nindent 8}}\n'
-HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = '{{- with .Values.manager.annotations }}\n'
-HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START = '{{- with .Values.manager.containerSecurityContext }}\n'
+HELM_CRD_ANNOTATIONS_WITH_START = "{{- with .Values.crd.annotations }}\n"
+HELM_ANNOTATIONS_TOYAML4 = "{{- toYaml . | nindent 4}}\n"
+HELM_ANNOTATIONS_TOYAML8 = "{{- toYaml . | nindent 8}}\n"
+HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START = "{{- with .Values.manager.annotations }}\n"
+HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START = (
+    "{{- with .Values.manager.containerSecurityContext }}\n"
+)
 HELM_IF_END = "{{- end }}\n"
 
 HELM_ENV_SUBST = {
@@ -71,7 +72,7 @@ HELM_ENV_SUBST = {
     "EXECUTOR_REQUEST_LOGGER_WORK_QUEUE_SIZE": "executor.requestLogger.workQueueSize",
     "EXECUTOR_REQUEST_LOGGER_WRITE_TIMEOUT_MS": "executor.requestLogger.writeTimeoutMs",
     "DEPLOYMENT_NAME_AS_PREFIX": "manager.deploymentNameAsPrefix",
-    "EXECUTOR_FULL_HEALTH_CHECKS": "executor.fullHealthChecks"
+    "EXECUTOR_FULL_HEALTH_CHECKS": "executor.fullHealthChecks",
 }
 HELM_VALUES_IMAGE_PULL_POLICY = "{{ .Values.image.pullPolicy }}"
 
@@ -100,8 +101,7 @@ if __name__ == "__main__":
         webhookData
         + '{{- $altNames := list ( printf "seldon-webhook-service.%s" (include "seldon.namespace" .) ) ( printf "seldon-webhook-service.%s.svc" (include "seldon.namespace" .) ) -}}\n'
     )
-    webhookData = webhookData + \
-        '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
+    webhookData = webhookData + '{{- $ca := genCA "custom-metrics-ca" 365 -}}\n'
     webhookData = (
         webhookData
         + '{{- $cert := genSignedCert "seldon-webhook-service" nil $altNames 365 $ca -}}\n'
@@ -113,8 +113,7 @@ if __name__ == "__main__":
             kind = res["kind"].lower()
             name = res["metadata"]["name"].lower()
             version = res["apiVersion"]
-            filename = args.folder + "/" + \
-                (kind + "_" + name).lower() + ".yaml"
+            filename = args.folder + "/" + (kind + "_" + name).lower() + ".yaml"
             print(filename)
             print(version)
             if (
@@ -173,7 +172,9 @@ if __name__ == "__main__":
                 ] = helm_value("managerUserID")
 
                 # Priority class name
-                res["spec"]["template"]["spec"]["priorityClassName"] = helm_value("manager.priorityClassName")
+                res["spec"]["template"]["spec"]["priorityClassName"] = helm_value(
+                    "manager.priorityClassName"
+                )
 
                 # Resource requests
                 res["spec"]["template"]["spec"]["containers"][0]["resources"][
@@ -206,8 +207,7 @@ if __name__ == "__main__":
                     if portSpec["name"] == "webhook-server":
                         portSpec["containerPort"] = helm_value("webhook.port")
                 for argIdx in range(
-                    0, len(res["spec"]["template"]["spec"]
-                           ["containers"][0]["args"])
+                    0, len(res["spec"]["template"]["spec"]["containers"][0]["args"])
                 ):
                     if (
                         res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
@@ -221,7 +221,9 @@ if __name__ == "__main__":
                 )
 
                 # Update metrics port
-                res["spec"]["template"]["metadata"]["annotations"]["prometheus.io/port"] = helm_value("metrics.port")
+                res["spec"]["template"]["metadata"]["annotations"][
+                    "prometheus.io/port"
+                ] = helm_value("metrics.port")
                 for portSpec in res["spec"]["template"]["spec"]["containers"][0][
                     "ports"
                 ]:
@@ -229,8 +231,7 @@ if __name__ == "__main__":
                         portSpec["containerPort"] = helm_value("metrics.port")
 
                 for argIdx in range(
-                    0, len(res["spec"]["template"]["spec"]
-                           ["containers"][0]["args"])
+                    0, len(res["spec"]["template"]["spec"]["containers"][0]["args"])
                 ):
                     if (
                         res["spec"]["template"]["spec"]["containers"][0]["args"][argIdx]
@@ -241,12 +242,13 @@ if __name__ == "__main__":
                         ] = "--metrics-addr=:" + helm_value("metrics.port")
 
                 # Networking
-                res["spec"]["template"]["spec"]["hostNetwork"] = helm_value("hostNetwork")
+                res["spec"]["template"]["spec"]["hostNetwork"] = helm_value(
+                    "hostNetwork"
+                )
 
             if kind == "configmap" and name == "seldon-config":
                 res["data"]["credentials"] = helm_value_json("credentials")
-                res["data"]["predictor_servers"] = helm_value_json(
-                    "predictor_servers")
+                res["data"]["predictor_servers"] = helm_value_json("predictor_servers")
                 res["data"]["storageInitializer"] = helm_value_json(
                     "storageInitializer"
                 )
@@ -269,8 +271,7 @@ if __name__ == "__main__":
                     res["roleRef"]["name"] + "-" + helm_namespace_override()
                 )
                 if name == "seldon-manager-rolebinding":
-                    res["subjects"][0]["name"] = helm_value(
-                        "serviceAccount.name")
+                    res["subjects"][0]["name"] = helm_value("serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()
                 elif name != "seldon-spartakus-volunteer":
                     res["subjects"][0]["namespace"] = helm_namespace_override()
@@ -283,8 +284,7 @@ if __name__ == "__main__":
                     or name == "seldon1-manager-sas-rolebinding"
                     or name == "seldon-leader-election-rolebinding"
                 ):
-                    res["subjects"][0]["name"] = helm_value(
-                        "serviceAccount.name")
+                    res["subjects"][0]["name"] = helm_value("serviceAccount.name")
                     res["subjects"][0]["namespace"] = helm_namespace_override()
 
             # Update webhook certificates
@@ -333,8 +333,7 @@ if __name__ == "__main__":
 
             # Update webhook service port
             if kind == "service" and name == "seldon-webhook-service":
-                res["spec"]["ports"][0]["targetPort"] = helm_value(
-                    "webhook.port")
+                res["spec"]["ports"][0]["targetPort"] = helm_value("webhook.port")
 
             fdata = yaml.dump(res, width=1000)
 
@@ -427,8 +426,10 @@ if __name__ == "__main__":
                     + HELM_K8S_V1BETA1_CRD_IF_START
                     + re.sub(
                         r"(.*controller-gen.kubebuilder.io/version.*\n)",
-                        r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
-                        HELM_ANNOTATIONS_TOYAML4 + HELM_IF_END,
+                        r"\1"
+                        + HELM_CRD_ANNOTATIONS_WITH_START
+                        + HELM_ANNOTATIONS_TOYAML4
+                        + HELM_IF_END,
                         fdata,
                         re.M,
                     )
@@ -444,8 +445,10 @@ if __name__ == "__main__":
                     + HELM_K8S_V1_CRD_IF_START
                     + re.sub(
                         r"(.*controller-gen.kubebuilder.io/version.*\n)",
-                        r"\1" + HELM_CRD_ANNOTATIONS_WITH_START +
-                        HELM_ANNOTATIONS_TOYAML4 + HELM_IF_END,
+                        r"\1"
+                        + HELM_CRD_ANNOTATIONS_WITH_START
+                        + HELM_ANNOTATIONS_TOYAML4
+                        + HELM_IF_END,
                         fdata,
                         re.M,
                     )
@@ -459,8 +462,10 @@ if __name__ == "__main__":
             elif kind == "deployment" and name == "seldon-controller-manager":
                 fdata = re.sub(
                     r"(.*template:\n.*metadata:\n.*annotations:\n)",
-                    r"\1" + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START +
-                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END,
+                    r"\1"
+                    + HELM_CONTROLER_DEP_ANNOTATIONS_WITH_START
+                    + HELM_ANNOTATIONS_TOYAML8
+                    + HELM_IF_END,
                     fdata,
                     re.M,
                 )
@@ -480,8 +485,10 @@ if __name__ == "__main__":
 
                 fdata = re.sub(
                     r"(.*command:\n)",
-                    HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START +
-                    HELM_ANNOTATIONS_TOYAML8 + HELM_IF_END + r"\1",
+                    HELM_CONTROLER_DEP_POD_SEC_CTX_WITH_START
+                    + HELM_ANNOTATIONS_TOYAML8
+                    + HELM_IF_END
+                    + r"\1",
                     fdata,
                     re.M,
                 )
@@ -492,7 +499,8 @@ if __name__ == "__main__":
             )
             # make sure metrics.port is not quoted as its an int
             fdata = fdata.replace(
-                "containerPort: '{{ .Values.metrics.port }}'", "containerPort: {{ .Values.metrics.port }}"
+                "containerPort: '{{ .Values.metrics.port }}'",
+                "containerPort: {{ .Values.metrics.port }}",
             )
             # make sure webhook is not quoted as its an int
             fdata = fdata.replace(
@@ -538,9 +546,7 @@ if __name__ == "__main__":
     )
     webhookData = re.sub(
         r"(.*caBundle:.*\n)",
-        HELM_NOT_CERTMANAGER_IF_START
-        + r"\1"
-        + HELM_IF_END,
+        HELM_NOT_CERTMANAGER_IF_START + r"\1" + HELM_IF_END,
         webhookData,
         re.M,
     )

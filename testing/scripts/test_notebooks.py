@@ -8,7 +8,6 @@ from seldon_e2e_utils import create_and_run_script
 @pytest.mark.flaky(max_runs=2)
 @pytest.mark.notebooks
 class TestNotebooks(object):
-
     #
     # Core notebooks
     #

@@ -665,7 +665,6 @@ def create_and_run_script(folder, notebook):
 
 
 def bench_results_from_output_logs(name, namespace="argo", print_results=True):
-
     output = run(
         f"argo logs --no-color {name} -n {namespace}",
         stdout=subprocess.PIPE,
@@ -766,7 +765,6 @@ def run_benchmark_and_capture_results(
     benchmark_data={"data": {"ndarray": [[1, 2, 3, 4]]}},
     benchmark_grpc_data_override="",
 ):
-
     # Helm chart command requires escaped commas and brackets
     data_str = (
         json.dumps(benchmark_data)
