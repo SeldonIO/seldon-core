@@ -19,6 +19,8 @@ package mlops
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -217,6 +219,29 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 	return nil
 }
 
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(obj client.Object) []reconcile.Request {
+	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
+	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
+	if err := r.Client.List(context.Background(), &seldonRuntimes); err != nil {
+		logger.Error(err, "error listing seldonRuntimes")
+		return nil
+	}
+
+	seldonConfig := obj.(*mlopsv1alpha1.SeldonConfig)
+	var req []reconcile.Request
+	for _, seldonRuntime := range seldonRuntimes.Items {
+		if seldonRuntime.Spec.SeldonConfig == seldonConfig.Name {
+			req = append(req, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: seldonRuntime.Namespace,
+					Name:      seldonRuntime.Name,
+				},
+			})
+		}
+	}
+	return req
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	//pred := predicate.GenerationChangedPredicate{}
@@ -229,5 +254,9 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.Role{}).
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
+		Watches(
+			&source.Kind{Type: &mlopsv1alpha1.SeldonConfig{}},
+			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),
+		).
 		Complete(r)
 }
