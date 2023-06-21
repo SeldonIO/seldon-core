@@ -574,8 +574,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		}
 	}
 
-	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
-	if err != nil || server == nil {
+	_, err = p.modelStore.GetServer(latestModel.Server(), false, false)
+	if err != nil {
 		logger.Debugf("sync: No server - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
@@ -658,7 +658,7 @@ func (p *IncrementalProcessor) modelSync() {
 		}
 
 		s, err := p.modelStore.GetServer(v.Server(), false, false)
-		if err != nil || s == nil {
+		if err != nil {
 			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server())
 			p.modelStore.UnlockModel(mv.name)
 			continue
