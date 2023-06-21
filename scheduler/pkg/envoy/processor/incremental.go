@@ -308,6 +308,9 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	modelName := model.Name
 	latestModel := model.GetLatest()
 	if latestModel == nil || !model.CanReceiveTraffic() {
+		if latestModel == nil {
+			logger.Infof("latest model is nil for model %s route %s", model.Name, routeName)
+		}
 		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
 	}
 
@@ -566,37 +569,44 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
+	modelRemoved := false
 	if !model.CanReceiveTraffic() {
 		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
 			return err
 		}
+		modelRemoved = true
 	}
 
-	_, err = p.modelStore.GetServer(latestModel.Server(), false, false)
-	if err != nil {
-		logger.Debugf("sync: No server - removing for %s", modelName)
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-			return err
+	if !modelRemoved {
+		_, err = p.modelStore.GetServer(latestModel.Server(), false, false)
+		if err != nil {
+			logger.Debugf("sync: No server - removing for %s", modelName)
+			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+				return err
+			}
+			modelRemoved = true
 		}
 	}
 
-	// Remove routes before we recreate
-	if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-		logger.Debugf("Failed to remove route before starting update for %s", modelName)
-		return err
-	}
-
-	err = p.addModel(model)
-	if err != nil {
-		// note that on error for `addModel` we specifically do not return so that we can do batched
-		// delete of envoy routes
-		logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
+	if !modelRemoved {
+		// Remove routes before we recreate
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			logger.Debugf("Failed to remove route before starting update for %s", modelName)
 			return err
+		}
+
+		err = p.addModel(model)
+		if err != nil {
+			// note that on error for `addModel` we specifically do not return so that we can do batched
+			// delete of envoy routes
+			logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
+			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+				return err
+			}
 		}
 	}
 
