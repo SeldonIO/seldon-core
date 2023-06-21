@@ -569,6 +569,9 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
+	// Add a modelRemoved boolean so we can continue to batch update but skip steps if we have
+	// decided this model can't be added for some reason. This allows batch deletion of routes
+	// to take place for errors as well as the successful path through the methods
 	modelRemoved := false
 	if !model.CanReceiveTraffic() {
 		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
