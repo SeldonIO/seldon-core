@@ -1,5 +1,5 @@
 {
-    "enable": true,
-    "otelExporterEndpoint": "otel-collector:4317",
-    "ratio": 1
+  "enable": true,
+  "otelExporterEndpoint": "otel-collector:4317",
+  "ratio": "1"
 }
