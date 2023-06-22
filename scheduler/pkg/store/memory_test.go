@@ -1530,10 +1530,11 @@ func TestRemoveServerReplica(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			g.Expect(test.modelsReturned).To(Equal(len(models)))
 			server, err := ms.GetServer(test.serverName, false, true)
-			g.Expect(err).To(BeNil())
 			if test.serverExists {
+				g.Expect(err).To(BeNil())
 				g.Expect(server).ToNot(BeNil())
 			} else {
+				g.Expect(err).ToNot(BeNil())
 				g.Expect(server).To(BeNil())
 			}
 		})

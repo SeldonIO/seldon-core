@@ -425,9 +425,6 @@ func (s *SchedulerServer) ServerStatus(
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, err.Error())
 		}
-		if server == nil {
-			return status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find server %s", req.GetName()))
-		}
 		resp := createServerStatusResponse(server)
 		err = stream.Send(resp)
 		if err != nil {

@@ -221,10 +221,6 @@ func (s *SchedulerServer) sendServerStatus() {
 			logger.Errorf("Failed to get server %s", serverName)
 			continue
 		}
-		if server == nil {
-			logger.Warnf("Server %s does not exist", serverName)
-			continue
-		}
 		ssr := createServerStatusResponse(server)
 
 		for stream, subscription := range s.serverEventStream.streams {

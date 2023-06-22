@@ -231,7 +231,7 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 	defer m.mu.RUnlock()
 	server := m.store.servers[serverKey]
 	if server == nil {
-		return nil, nil
+		return nil, fmt.Errorf("Server [%s] not found", serverKey)
 	} else {
 		return server.CreateSnapshot(shallow, modelDetails), nil
 	}
