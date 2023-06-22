@@ -19,8 +19,7 @@ package mlops
 import (
 	"context"
 	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
+
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -35,8 +34,10 @@ import (
 	"knative.dev/pkg/apis"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -219,6 +220,7 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 	return nil
 }
 
+// Find SeldonRuntimes that reference the changes SeldonConfig
 func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(obj client.Object) []reconcile.Request {
 	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
