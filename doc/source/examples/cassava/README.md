@@ -15,7 +15,7 @@ This tutorial walks through the steps required to take a python ML model from yo
 The tutorial comes with an accompanying video which you might find useful as you work through the steps:
 [![video_play_icon](img/video_play.png)](https://youtu.be/3bR25_qpokM)
 
-The slides used in the video can be found [here](img/slides.pdf).
+The slides used in the video can be found at `img/slides.pdf`.
 
 ### The Use Case
 
@@ -179,7 +179,7 @@ Our setup has now evloved and looks like this:
 
 ## Containerizing The Model
 
-[Containers](https://en.wikipedia.org/wiki/Containerization_(computing)) are an easy way to package our application together with it's runtime and dependencies. More importantly, containerizing our model allows it to run in a variety of different environments. 
+Containers are an easy way to package our application together with it's runtime and dependencies. More importantly, containerizing our model allows it to run in a variety of different environments. 
 
 > **Note:** you will need [Docker](https://www.docker.com/) installed to run this section of the tutorial. You'll also need a [docker hub](https://hub.docker.com/) account or another container registry.
 
