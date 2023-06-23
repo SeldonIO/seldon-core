@@ -1,6 +1,36 @@
 ## Seldon V2 Multi-Namespace Kubernetes Example
 
 ```bash
+helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-crds -n seldon-mesh
+```
+
+```
+Release "seldon-core-v2-crds" does not exist. Installing it now.
+NAME: seldon-core-v2-crds
+LAST DEPLOYED: Fri Jun 23 14:41:22 2023
+NAMESPACE: seldon-mesh
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+helm upgrade --install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh --set controller.clusterwide=true
+```
+
+```
+Release "seldon-v2" does not exist. Installing it now.
+NAME: seldon-v2
+LAST DEPLOYED: Fri Jun 23 14:41:26 2023
+NAMESPACE: seldon-mesh
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
 kubectl create namespace ns1
 kubectl create namespace ns2
 ```
@@ -12,13 +42,41 @@ namespace/ns2 created
 ```
 
 ```bash
+helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1 --wait
+```
+
+```yaml
+NAME: seldon-v2-runtime
+LAST DEPLOYED: Fri Jun 23 14:10:23 2023
+NAMESPACE: ns1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
 helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns1 --wait
 ```
 
 ```yaml
 NAME: seldon-v2-servers
-LAST DEPLOYED: Thu May 11 10:15:20 2023
+LAST DEPLOYED: Fri Jun 23 14:10:38 2023
 NAMESPACE: ns1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2 --wait
+```
+
+```yaml
+NAME: seldon-v2-runtime
+LAST DEPLOYED: Fri Jun 23 14:10:42 2023
+NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -31,7 +89,7 @@ helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns2
 
 ```yaml
 NAME: seldon-v2-servers
-LAST DEPLOYED: Thu May 11 10:15:25 2023
+LAST DEPLOYED: Fri Jun 23 14:10:44 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
@@ -111,7 +169,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "83372e34-5f0c-4df6-8bde-cc4f4f2c3ffe",
+	"id": "276de7e7-9f2f-4329-9179-08d4d54bb0b5",
 	"parameters": {},
 	"outputs": [
 		{
@@ -121,6 +179,9 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -147,6 +208,11 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP_NS1}:80
         "1",
         "1"
       ],
+      "parameters": {
+        "content_type": {
+          "stringParam": "np"
+        }
+      },
       "contents": {
         "int64Contents": [
           "2"
@@ -185,7 +251,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "4da38370-5790-4739-8ec7-6389f86843e5",
+	"id": "7c0bb004-be2c-4483-97a9-6fd2e0a834ad",
 	"parameters": {},
 	"outputs": [
 		{
@@ -195,6 +261,9 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -221,6 +290,11 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP_NS2}:80
         "1",
         "1"
       ],
+      "parameters": {
+        "content_type": {
+          "stringParam": "np"
+        }
+      },
       "contents": {
         "int64Contents": [
           "2"
@@ -246,13 +320,53 @@ model.mlops.seldon.io "iris" deleted
 ## TearDown
 
 ```bash
-helm delete seldon-v2-servers -n ns1
-helm delete seldon-v2-servers -n ns2
+helm delete seldon-v2-servers -n ns1 --wait
+helm delete seldon-v2-servers -n ns2 --wait
 ```
 
 ```
 release "seldon-v2-servers" uninstalled
 release "seldon-v2-servers" uninstalled
+
+```
+
+```bash
+helm delete seldon-v2-runtime -n ns1 --wait
+helm delete seldon-v2-runtime -n ns2 --wait
+```
+
+```
+release "seldon-v2-runtime" uninstalled
+Error: uninstall: Release not loaded: seldon-v2-runtime: release: not found
+
+```
+
+```bash
+helm delete seldon-v2 -n seldon-mesh --wait
+```
+
+```
+release "seldon-v2" uninstalled
+
+```
+
+```bash
+helm delete seldon-core-v2-crds -n seldon-mesh
+```
+
+```
+release "seldon-core-v2-crds" uninstalled
+
+```
+
+```bash
+kubectl delete namespace ns1
+kubectl delete namespace ns2
+```
+
+```
+namespace "ns1" deleted
+namespace "ns2" deleted
 
 ```
 

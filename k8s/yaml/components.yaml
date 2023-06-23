@@ -985,7 +985,7 @@ spec:
         runAsUser: 1000
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: dataflow-engine
+  - name: seldon-dataflow-engine
     podSpec:
       containers:
       - env:
