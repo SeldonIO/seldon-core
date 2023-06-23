@@ -32,8 +32,10 @@ import (
 	"knative.dev/pkg/apis"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -226,11 +228,39 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 	return nil
 }
 
+// Find Servers that need reconcilliation from a change to a given ServerConfig
+func (r *ServerReconciler) mapServerFromServerConfig(obj client.Object) []reconcile.Request {
+	logger := log.FromContext(context.Background()).WithName("mapServerFromServerConfig")
+	var servers mlopsv1alpha1.ServerList
+	if err := r.Client.List(context.Background(), &servers); err != nil {
+		logger.Error(err, "error listing servers")
+		return nil
+	}
+
+	serverConfig := obj.(*mlopsv1alpha1.ServerConfig)
+	var req []reconcile.Request
+	for _, server := range servers.Items {
+		if server.Spec.ServerConfig == serverConfig.Name {
+			req = append(req, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: server.Namespace,
+					Name:      server.Name,
+				},
+			})
+		}
+	}
+	return req
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *ServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.Server{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&v1.Service{}).
+		Watches(
+			&source.Kind{Type: &mlopsv1alpha1.ServerConfig{}},
+			handler.EnqueueRequestsFromMapFunc(r.mapServerFromServerConfig),
+		).
 		Complete(r)
 }

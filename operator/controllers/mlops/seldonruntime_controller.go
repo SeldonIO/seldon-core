@@ -33,8 +33,10 @@ import (
 	"knative.dev/pkg/apis"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -217,6 +219,30 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 	return nil
 }
 
+// Find SeldonRuntimes that reference the changes SeldonConfig
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(obj client.Object) []reconcile.Request {
+	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
+	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
+	if err := r.Client.List(context.Background(), &seldonRuntimes); err != nil {
+		logger.Error(err, "error listing seldonRuntimes")
+		return nil
+	}
+
+	seldonConfig := obj.(*mlopsv1alpha1.SeldonConfig)
+	var req []reconcile.Request
+	for _, seldonRuntime := range seldonRuntimes.Items {
+		if seldonRuntime.Spec.SeldonConfig == seldonConfig.Name {
+			req = append(req, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: seldonRuntime.Namespace,
+					Name:      seldonRuntime.Name,
+				},
+			})
+		}
+	}
+	return req
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	//pred := predicate.GenerationChangedPredicate{}
@@ -229,5 +255,9 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.Role{}).
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
+		Watches(
+			&source.Kind{Type: &mlopsv1alpha1.SeldonConfig{}},
+			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),
+		).
 		Complete(r)
 }
