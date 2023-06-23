@@ -55,7 +55,9 @@ func NewSeldonRuntimeReconciler(
 	var componentReconcilers []common.Reconciler
 	for _, c := range seldonConfig.Spec.Components {
 		override := overrides[c.Name]
+		commonConfig.Logger.Info("Creating reconciler", "name", c.Name, "has override", override != nil)
 		if override == nil || !override.Disable {
+			commonConfig.Logger.Info("Creating component", "name", c.Name)
 			if len(c.VolumeClaimTemplates) > 0 {
 				componentReconcilers = append(componentReconcilers,
 					NewComponentStatefulSetReconciler(

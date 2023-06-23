@@ -4,7 +4,7 @@ metadata:
   name: default
 spec:
   components:
-  - name: dataflow-engine
+  - name: seldon-dataflow-engine
     replicas: 1
     podSpec:
       imagePullSecrets: []

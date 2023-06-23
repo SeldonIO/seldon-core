@@ -17,12 +17,12 @@ helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-cr
 ```
 
 ```
-Release "seldon-core-v2-crds" does not exist. Installing it now.
+Release "seldon-core-v2-crds" has been upgraded. Happy Helming!
 NAME: seldon-core-v2-crds
-LAST DEPLOYED: Fri May 19 19:10:21 2023
+LAST DEPLOYED: Thu Jun 22 09:11:26 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
-REVISION: 1
+REVISION: 2
 TEST SUITE: None
 
 ```
@@ -51,7 +51,7 @@ helm install seldon-v2-certs ../k8s/helm-charts/seldon-core-v2-certs/ -n ns1
 
 ```yaml
 NAME: seldon-v2-certs
-LAST DEPLOYED: Fri May 19 19:10:25 2023
+LAST DEPLOYED: Thu Jun 22 10:00:32 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -65,7 +65,7 @@ helm install seldon-v2-certs ../k8s/helm-charts/seldon-core-v2-certs/ -n ns2
 
 ```yaml
 NAME: seldon-v2-certs
-LAST DEPLOYED: Fri May 19 19:10:28 2023
+LAST DEPLOYED: Thu Jun 22 09:11:36 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
@@ -112,7 +112,7 @@ helm install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh -
 
 ```yaml
 NAME: seldon-v2
-LAST DEPLOYED: Fri May 19 19:10:30 2023
+LAST DEPLOYED: Thu Jun 22 09:11:40 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -126,7 +126,21 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Fri May 19 19:10:32 2023
+LAST DEPLOYED: Thu Jun 22 10:00:36 2023
+NAMESPACE: ns1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns1
+```
+
+```yaml
+NAME: seldon-v2-servers
+LAST DEPLOYED: Thu Jun 22 10:00:36 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -140,7 +154,21 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Fri May 19 19:10:35 2023
+LAST DEPLOYED: Thu Jun 22 09:11:49 2023
+NAMESPACE: ns2
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns2
+```
+
+```yaml
+NAME: seldon-v2-servers
+LAST DEPLOYED: Thu Jun 22 09:12:16 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
@@ -179,7 +207,7 @@ MESH_IP_NS1
 ```
 
 ```
-'172.21.255.4'
+'172.21.255.2'
 
 ```
 
@@ -192,7 +220,7 @@ MESH_IP_NS2
 ```
 
 ```
-'172.21.255.2'
+'172.21.255.4'
 
 ```
 
@@ -233,7 +261,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "c584e29e-66fd-479c-9e9b-afe044256594",
+	"id": "77f21360-b6cf-4c50-a000-1f219f5e9e29",
 	"parameters": {},
 	"outputs": [
 		{
@@ -243,6 +271,9 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -281,7 +312,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "ef72541f-2445-4fa9-b0d2-b9d0706cf4bf",
+	"id": "902b8483-0ede-4136-97be-dbf266f05a0c",
 	"parameters": {},
 	"outputs": [
 		{
@@ -291,6 +322,9 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -321,11 +355,13 @@ model.mlops.seldon.io "iris" deleted
 ```
 
 ```bash
+helm delete seldon-v2-servers -n ns1
 helm delete seldon-v2-runtime -n ns1
 helm delete seldon-v2-certs -n ns1
 ```
 
 ```
+release "seldon-v2-servers" uninstalled
 release "seldon-v2-runtime" uninstalled
 release "seldon-v2-certs" uninstalled
 
@@ -333,11 +369,13 @@ release "seldon-v2-certs" uninstalled
 
 ```bash
 helm delete seldon-v2-runtime -n ns2
+helm delete seldon-v2-runtime -n ns2
 helm delete seldon-v2-certs -n ns2
 ```
 
 ```
 release "seldon-v2-runtime" uninstalled
+Error: uninstall: Release not loaded: seldon-v2-runtime: release: not found
 release "seldon-v2-certs" uninstalled
 
 ```

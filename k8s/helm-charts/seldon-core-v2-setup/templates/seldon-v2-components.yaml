@@ -1363,7 +1363,7 @@ spec:
         8 }}
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: dataflow-engine
+  - name: seldon-dataflow-engine
     podSpec:
       containers:
       - env:

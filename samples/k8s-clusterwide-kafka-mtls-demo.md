@@ -17,12 +17,12 @@ helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-cr
 ```
 
 ```
-Release "seldon-core-v2-crds" does not exist. Installing it now.
+Release "seldon-core-v2-crds" has been upgraded. Happy Helming!
 NAME: seldon-core-v2-crds
-LAST DEPLOYED: Sun May 14 16:08:17 2023
+LAST DEPLOYED: Thu Jun 22 15:22:04 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
-REVISION: 1
+REVISION: 5
 TEST SUITE: None
 
 ```
@@ -74,7 +74,7 @@ helm install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh -
 
 ```yaml
 NAME: seldon-v2
-LAST DEPLOYED: Sun May 14 16:13:24 2023
+LAST DEPLOYED: Thu Jun 22 15:22:11 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -87,16 +87,12 @@ TEST SUITE: None
 Strimzi doesn't allow a single Kafka cluster to be used in TLS easily from multiple namespaces without copying the user Secrets created by the KafkaUser to those namespaces.
 
 ```bash
-kubectl create -f ../k8s/samples/strimzi-example-tls-user.yaml -n ns1
-```
-
-```
-kafkauser.kafka.strimzi.io/seldon created
-
-```
-
-```bash
 kubectl get secret seldon -n seldon-mesh -o json | jq 'del(.metadata.ownerReferences) | del(.metadata.namespace)' | kubectl create -f - -n ns1
+```
+
+```
+secret/seldon created
+
 ```
 
 ```bash
@@ -129,12 +125,12 @@ secret/seldon-cluster-ca-cert created
 ## Create SeldonRuntimes
 
 ```bash
-helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1
+helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1 --wait
 ```
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Sun May 14 16:13:43 2023
+LAST DEPLOYED: Thu Jun 22 15:22:19 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -143,16 +139,64 @@ TEST SUITE: None
 ```
 
 ```bash
-helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2
+helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2 --wait
 ```
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Sun May 14 16:16:05 2023
+LAST DEPLOYED: Thu Jun 22 15:22:20 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
+
+```
+
+```bash
+helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns1 --wait
+```
+
+```yaml
+NAME: seldon-v2-servers
+LAST DEPLOYED: Thu Jun 22 15:22:23 2023
+NAMESPACE: ns1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns2 --wait
+```
+
+```yaml
+NAME: seldon-v2-servers
+LAST DEPLOYED: Thu Jun 22 15:22:24 2023
+NAMESPACE: ns2
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s server --all -n ns1
+```
+
+```
+server.mlops.seldon.io/mlserver condition met
+server.mlops.seldon.io/triton condition met
+
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s server --all -n ns2
+```
+
+```
+server.mlops.seldon.io/mlserver condition met
+server.mlops.seldon.io/triton condition met
 
 ```
 
@@ -426,7 +470,16 @@ model.mlops.seldon.io "tfsimple2" deleted
 ```
 
 ```bash
-helm delete seldon-v2-runtime -n ns1
+helm delete seldon-v2-servers -n ns1 --wait
+```
+
+```
+release "seldon-v2-servers" uninstalled
+
+```
+
+```bash
+helm delete seldon-v2-runtime -n ns1 --wait
 ```
 
 ```
@@ -435,7 +488,16 @@ release "seldon-v2-runtime" uninstalled
 ```
 
 ```bash
-helm delete seldon-v2-runtime -n ns2
+helm delete seldon-v2-servers -n ns2 --wait
+```
+
+```
+release "seldon-v2-servers" uninstalled
+
+```
+
+```bash
+helm delete seldon-v2-runtime -n ns2 --wait
 ```
 
 ```
@@ -449,6 +511,17 @@ helm delete seldon-v2  -n seldon-mesh
 
 ```
 release "seldon-v2" uninstalled
+
+```
+
+```bash
+kubectl delete namespace ns1
+kubectl delete namespace ns2
+```
+
+```
+namespace "ns1" deleted
+namespace "ns2" deleted
 
 ```
 
