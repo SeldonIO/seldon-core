@@ -1,0 +1,12 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: sampling
+spec:
+  steps:
+    - name: tfsimple1
+    - name: tfsimple2
+      filterPercent: 50
+  output:
+    steps:
+    - tfsimple1

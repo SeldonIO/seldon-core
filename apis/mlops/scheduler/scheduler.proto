@@ -290,6 +290,7 @@ message PipelineStep {
   repeated string triggers = 6;
   JoinOp triggersJoin = 7;
   Batch batch = 8;
+  int32 FilterPercent = 9;
 }
 
 message Batch {

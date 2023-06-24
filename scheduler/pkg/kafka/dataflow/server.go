@@ -213,10 +213,11 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 	var stepUpdates []*chainer.PipelineStepUpdate
 	for _, step := range pv.Steps {
 		stepUpdate := chainer.PipelineStepUpdate{
-			Sources:   c.createTopicSources(step.Inputs, pv.Name),
-			Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
-			Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
-			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+			Sources:       c.createTopicSources(step.Inputs, pv.Name),
+			Triggers:      c.createTriggerSources(step.Triggers, pv.Name),
+			Sink:          &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
+			TensorMap:     c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+			FilterPercent: step.FilterPercent,
 		}
 		switch step.InputsJoinType {
 		case pipeline.JoinInner:

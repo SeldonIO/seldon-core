@@ -41,6 +41,7 @@ message PipelineStepUpdate {
   optional uint32 joinWindowMs = 7; // Join window millisecs, some nozero default (TBD)
   repeated PipelineTensorMapping tensorMap = 8; // optional list of tensor name mappings
   Batch batch = 9; // Batch settings
+  int32 FilterPercent = 10; // Sample percentage
 }
 
 message PipelineTensorMapping {

@@ -63,6 +63,9 @@ type PipelineStep struct {
 	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
 	// Batch size of request required before data will be sent to this step
 	Batch *PipelineBatch `json:"batch,omitempty"`
+	// percent of requests to filter after any join or triggers
+	// Defaults to 0% if not provided
+	FilterPercent *int32 `json:"filterPercent,omitempty"`
 }
 
 type PipelineBatch struct {
@@ -201,6 +204,9 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 				Size:     step.Batch.Size,
 				WindowMs: step.Batch.WindowMs,
 			}
+		}
+		if step.FilterPercent != nil {
+			pipelineStep.FilterPercent = *step.FilterPercent
 		}
 		steps = append(steps, pipelineStep)
 	}

@@ -852,3 +852,79 @@ func TestCheckStepOutputs(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckStepSamplePercent(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "step sample percent ok",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"b": {
+						Name:          "b",
+						Inputs:        []string{},
+						FilterPercent: 25,
+					},
+				},
+			},
+		},
+		{
+			name: "step sample percent more than 100",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"b": {
+						Name:          "b",
+						Inputs:        []string{},
+						FilterPercent: 125,
+					},
+				},
+			},
+			err: &PipelineStepFilterErr{pipeline: "test", step: "b", filterPercent: 125},
+		},
+		{
+			name: "step sample percent 100",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"b": {
+						Name:          "b",
+						Inputs:        []string{},
+						FilterPercent: 100,
+					},
+				},
+			},
+		},
+		{
+			name: "step sample percent less than 0",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"b": {
+						Name:          "b",
+						Inputs:        []string{},
+						FilterPercent: -10,
+					},
+				},
+			},
+			err: &PipelineStepFilterErr{pipeline: "test", step: "b", filterPercent: -10},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkStepFilterPercent(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}

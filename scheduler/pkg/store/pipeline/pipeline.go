@@ -118,6 +118,7 @@ type PipelineStep struct {
 	InputsJoinType   JoinType
 	TriggersJoinType JoinType
 	Batch            *Batch
+	FilterPercent    int32
 	Available        bool
 }
 
