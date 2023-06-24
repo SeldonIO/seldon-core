@@ -37,6 +37,11 @@ spec:
           spec:
             description: ServerSpec defines the desired state of Server
             properties:
+              disableAutoUpdate:
+                description: If set then when the referenced ServerConfig changes
+                  we will NOT update the Server immediately. Explicit changes to the
+                  Server itself will force a reconcile though
+                type: boolean
               extraCapabilities:
                 description: The capabilities this server will advertise
                 items:

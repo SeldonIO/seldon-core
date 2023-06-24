@@ -28,6 +28,10 @@ type SeldonRuntimeSpec struct {
 	SeldonConfig string              `json:"seldonConfig"`
 	Overrides    []*OverrideSpec     `json:"overrides,omitempty"`
 	Config       SeldonConfiguration `json:"config,omitempty"`
+	// +Optional
+	// If set then when the referenced SeldonConfig changes we will NOT update the SeldonRuntime immediately.
+	// Explicit changes to the SeldonRuntime itself will force a reconcile though
+	DisableAutoUpdate bool `json:"disableAutoUpdate,omitempty"`
 }
 
 type OverrideSpec struct {

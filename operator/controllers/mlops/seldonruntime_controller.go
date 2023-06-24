@@ -231,7 +231,7 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(obj client.O
 	seldonConfig := obj.(*mlopsv1alpha1.SeldonConfig)
 	var req []reconcile.Request
 	for _, seldonRuntime := range seldonRuntimes.Items {
-		if seldonRuntime.Spec.SeldonConfig == seldonConfig.Name {
+		if !seldonRuntime.Spec.DisableAutoUpdate && seldonRuntime.Spec.SeldonConfig == seldonConfig.Name {
 			req = append(req, reconcile.Request{
 				NamespacedName: types.NamespacedName{
 					Namespace: seldonRuntime.Namespace,

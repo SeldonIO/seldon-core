@@ -1,3 +1,5 @@
+disableAutoUpdate: false
+
 hodometer:
   disable: false
   replicas: 1

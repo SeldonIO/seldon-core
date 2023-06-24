@@ -5,6 +5,7 @@ metadata:
   namespace: '{{ .Release.Namespace }}'  
 spec:
   seldonConfig: default
+  disableAutoUpdate: {{ .Values.disableAutoUpdate }}
   overrides:
   - name: hodometer
     disable: {{ .Values.hodometer.disable }}

@@ -240,7 +240,7 @@ func (r *ServerReconciler) mapServerFromServerConfig(obj client.Object) []reconc
 	serverConfig := obj.(*mlopsv1alpha1.ServerConfig)
 	var req []reconcile.Request
 	for _, server := range servers.Items {
-		if server.Spec.ServerConfig == serverConfig.Name {
+		if !server.Spec.DisableAutoUpdate && server.Spec.ServerConfig == serverConfig.Name {
 			req = append(req, reconcile.Request{
 				NamespacedName: types.NamespacedName{
 					Namespace: server.Namespace,
