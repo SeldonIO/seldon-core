@@ -142,15 +142,18 @@ func main() {
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
 	}
-	consumerConfig := gateway.ConsumerConfig{
-		KafkaConfig:           kafkaConfigMap,
+	consumerConfig := gateway.ManagerConfig{
+		SeldonKafkaConfig:     kafkaConfigMap,
 		Namespace:             namespace,
 		InferenceServerConfig: inferServerConfig,
 		TraceProvider:         tracer,
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
 	}
-	kafkaConsumer := gateway.NewConsumerManager(logger, &consumerConfig,
+	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
 		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create consumer manager")
+	}
 	defer kafkaConsumer.Stop()
 
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)

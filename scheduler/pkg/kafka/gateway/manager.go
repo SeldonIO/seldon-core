@@ -17,8 +17,10 @@ limitations under the License.
 package gateway
 
 import (
+	"encoding/json"
 	"sync"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
@@ -36,26 +38,77 @@ type ConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.Mutex
 	// all consumers we have
-	consumers       map[string]*InferKafkaHandler
-	consumerConfig  *ConsumerConfig
-	maxNumConsumers int
+	consumers         map[string]*InferKafkaHandler
+	managerConfig     *ManagerConfig
+	maxNumConsumers   int
+	consumerConfigMap kafka.ConfigMap
+	producerConfigMap kafka.ConfigMap
 }
 
-type ConsumerConfig struct {
-	KafkaConfig           *config.KafkaConfig
+type ManagerConfig struct {
+	SeldonKafkaConfig     *config.KafkaConfig
 	Namespace             string
 	InferenceServerConfig *InferenceServerConfig
 	TraceProvider         *seldontracer.TracerProvider
 	NumWorkers            int // infer workers
 }
 
-func NewConsumerManager(logger log.FieldLogger, consumerConfig *ConsumerConfig, maxNumConsumers int) *ConsumerManager {
-	return &ConsumerManager{
+func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
+	m2 := make(kafka.ConfigMap)
+	for k, v := range m {
+		m2[k] = v
+	}
+	return m2
+}
+
+func NewConsumerManager(logger log.FieldLogger, managerConfig *ManagerConfig, maxNumConsumers int) (*ConsumerManager, error) {
+	cm := &ConsumerManager{
 		logger:          logger.WithField("source", "ConsumerManager"),
-		consumerConfig:  consumerConfig,
+		managerConfig:   managerConfig,
 		consumers:       make(map[string]*InferKafkaHandler),
 		maxNumConsumers: maxNumConsumers,
 	}
+	err := cm.createKafkaConfigs(managerConfig)
+	if err != nil {
+		return nil, err
+	}
+	return cm, nil
+}
+
+func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error {
+	logger := cm.logger.WithField("func", "createKafkaConfigs")
+	var err error
+
+	producerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
+	producerConfigMap["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfigMap)
+	if err != nil {
+		return err
+	}
+
+	producerConfigAsJSON, err := json.Marshal(&producerConfigMap)
+	if err != nil {
+		logger.WithField("config", &producerConfigMap).Info("Creating producer config for use later")
+	} else {
+		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer config for use later")
+	}
+
+	consumerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
+	err = config.AddKafkaSSLOptions(consumerConfigMap)
+	if err != nil {
+		return err
+	}
+
+	consumerConfigAsJson, err := json.Marshal(&consumerConfigMap)
+	if err != nil {
+		logger.WithField("config", &consumerConfigMap).Info("Creating consumer config for use later")
+	} else {
+		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer config for use later")
+	}
+
+	cm.consumerConfigMap = consumerConfigMap
+	cm.producerConfigMap = producerConfigMap
+	return nil
 }
 
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
@@ -69,7 +122,11 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 
 	if !ok {
 		var err error
-		ic, err = NewInferKafkaHandler(cm.logger, cm.consumerConfig, consumerBucketId)
+		ic, err = NewInferKafkaHandler(cm.logger,
+			cm.managerConfig,
+			cloneKafkaConfigMap(cm.consumerConfigMap),
+			cloneKafkaConfigMap(cm.producerConfigMap),
+			consumerBucketId)
 		if err != nil {
 			return nil, err
 		}
