@@ -11,8 +11,6 @@ LABEL name="Seldon Alibi Detect Server" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
 
 FROM base as builder
-ARG PYTHON_VERSION
-ARG CONDA_VERSION
 
 RUN microdnf update -y && \
     microdnf install -y \
@@ -23,19 +21,15 @@ RUN microdnf update -y && \
       gcc-c++
 
 # Install Rclone Binary to be present in the image
-RUN wget https://downloads.rclone.org/v1.61.1/rclone-v1.61.1-linux-amd64.zip && \
-    unzip rclone-v1.61.1-linux-amd64.zip && \
-    mv rclone-v1.61.1-linux-amd64/rclone /usr/bin/rclone && \
-    rm -rf rclone-v1.61.1-linux-amd64.zip rclone-v1.61.1-linux-amd64
+RUN wget https://downloads.rclone.org/v1.62.2/rclone-v1.62.2-linux-amd64.zip && \
+    unzip rclone-v1.62.2-linux-amd64.zip && \
+    mv rclone-v1.62.2-linux-amd64/rclone /usr/bin/rclone && \
+    rm -rf rclone-v1.62.2-linux-amd64.zip rclone-v1.62.2-linux-amd64
 
-# Install Python / Conda
 # Note that we need to force Conda to use the system's std-c++ library, as
 # otherwise PyStan won't compile with Conda's older stdc++ library:
 # https://github.com/stan-dev/pystan/issues/294#issuecomment-870711100
-RUN conda install --yes -c conda-forge \
-      python=${PYTHON_VERSION} \
-      conda=${CONDA_VERSION} && \
-    pip install --upgrade pip setuptools wheel && \
+RUN pip install --upgrade pip setuptools wheel && \
     cd /opt/conda/lib && \
       rm libstdc++.so libstdc++.so.6 && \
       ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so && \
@@ -80,8 +74,11 @@ COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder /usr/bin/rclone /usr/bin/rclone
 COPY --from=builder /licenses /licenses
 
-# This is to have writable numba cache directory
+# This is to have writable numba and keops cache directories
 ENV NUMBA_CACHE_DIR /tmp/numba-cache
+RUN mkdir /.cache && \
+    chown -R 8888:0 /.cache && \
+    chmod -R 776 /.cache
 
 USER 8888
 ENTRYPOINT ["python", "-m", "adserver"]

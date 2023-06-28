@@ -39,8 +39,8 @@ RUN cd /microservice/python && pip install .
 # server).
 # Clean Conda's cache to avoid cache file conflicts between user IDs:
 # https://github.com/conda/conda/issues/7227
-RUN mkdir -p /.conda && \
-    chmod a+rwx /.conda && \
+RUN mkdir -p /.conda /.cache/conda && \
+    chmod a+rwx /.conda /.cache/conda && \
     chown -R 8888 /microservice  && \
     conda clean --yes --index-cache
 

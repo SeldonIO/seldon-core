@@ -1,17 +1,17 @@
 [tool.poetry]
 name = "adserver"
-version = "1.16.0-dev"
+version = "1.17.0-dev"
 description = "Model Explanation Server"
 authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
 license = "Apache-2.0"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 seldon-core = { path = "_seldon_core", develop = false }
-alibi-detect = {version = "0.10.4", extras = ["all"]}
-numpy = "1.21.5"
+alibi-detect = {version = "^0.11.2", extras = ["all"]}
+numpy = "*"
 cloudevents = "1.2.0"
-tensorflow = "2.9.3"
+tensorflow = "^2.12.0"
 scikit-learn = "0.24.2"
 
 elasticsearch = "7.9.1"
@@ -19,7 +19,7 @@ elasticsearch = "7.9.1"
 sh = "^1.14.2"
 tornado = "^6.1"
 kfserving = "^0.3"
-protobuf = "^3.19.1"
+protobuf = "^3.20.3"
 
 google-cloud-core = "1.4.1"
 google-cloud-storage = "1.31.2"
@@ -28,7 +28,6 @@ dill = "0.3.2"
 joblib = "1.2.0"
 
 pystan = "2.19.1.1"
-fbprophet = "0.6"
 # CVE-2022-29217
 PyJWT = "2.6.0"
 # catalogue@2.1.0 has been yanked

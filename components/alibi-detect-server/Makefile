@@ -7,9 +7,6 @@ KIND_NAME=kind
 SELDON_CORE_DIR=../..
 
 BASE_IMAGE ?= seldonio/conda-ubi8
-PYTHON_VERSION ?= 3.7.10
-CONDA_VERSION ?= 4.13.0
-
 
 get_local_repo: clean
 	cp $(SELDON_CORE_DIR)/version.txt version.txt
@@ -100,7 +97,7 @@ curl-metrics-server-metrics:
 # image building logic
 
 docker-build: get_local_repo
-	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
+	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
 
 docker-build-gpu:
 	docker build -f Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .

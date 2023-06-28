@@ -6,8 +6,7 @@ REPO=seldonio
 IMAGE=alibiexplainer
 
 BASE_IMAGE ?= ${REPO}/conda-ubi8
-PYTHON_VERSION ?= 3.7.10
-CONDA_VERSION ?= 4.7.12
+PYTHON_VERSION ?= 3.8.16
 
 KIND_NAME ?= kind
 
@@ -54,7 +53,7 @@ fmt:
 	black . --exclude "(proto|.eggs|.tox)"
 
 docker-build: build_apis
-	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
 
 docker-build-gpu:
 	docker build --file=Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .

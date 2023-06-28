@@ -9,10 +9,17 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    container: seldonio/python-builder:0.6
-
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.1.15
+          virtualenvs-create: false
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools
@@ -23,15 +30,20 @@ jobs:
 
   python-tests:
     runs-on: ubuntu-latest
-    container: seldonio/python-builder:0.6
-
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          version: 1.1.15
+          python-version: 3.8
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: false
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools
-          apt-get update
-          apt-get -y install ffmpeg libsm6 libxext6
           make -C components/alibi-detect-server dev_install
       - name: Test
         run: |
