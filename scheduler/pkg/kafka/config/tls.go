@@ -94,6 +94,8 @@ func setupTLSAuthentication(config kafka.ConfigMap) error {
 		tls.Prefix(EnvKafkaClientPrefix),
 		tls.ValidationPrefix(EnvKafkaBrokerPrefix),
 	)
+	// In case of error (missing client certificates) we fallback to one-sided TLS
+	// In case mTLS is required for auth brokers will reject the consumer connection
 	if err != nil {
 		cs, err = tls.NewCertificateStore(
 			tls.ValidationOnly(true),
