@@ -3,7 +3,7 @@
 seldon_mesh_namespace: seldon-mesh
 
 seldon_core_v2_component_values: "{{ lookup('template', 'values-seldon-core-v2-components.yaml.j2') | from_yaml }}"
-seldon_core_v2_runtime_values: "{{ lookup('template', 'values-seldon-core-v2-runtime.yaml.j2') | from_yaml }}"
+seldon_core_v2_servers_values: "{{ lookup('template', 'values-seldon-core-v2-servers.yaml.j2') | from_yaml }}"
 
 seldon_core_v2_type_svc_type: LoadBalancer
 seldon_core_v2_scheduler_svc_type: LoadBalancer

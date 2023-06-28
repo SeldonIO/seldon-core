@@ -1,0 +1,9 @@
+---
+- name: "Install Seldon Core v2 runtime"
+  kubernetes.core.helm:
+    state: present
+    name: "seldon-core-v2-runtime"
+    namespace: "{{ seldon_mesh_namespace }}"
+    chart_ref: "{{ repo_root_dir }}/k8s/helm-charts/seldon-core-v2-runtime"
+    wait: yes
+    wait_timeout: "{{ seldon_core_v2_timeout_helm }}"

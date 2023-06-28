@@ -10,6 +10,10 @@
   import_tasks: install_components.yaml
   when: seldon_install_components | bool
 
+- name: "Install runtime"
+  import_tasks: install_runtime.yaml
+  when: seldon_install_runtime | bool
+
 - name: "Install servers"
   include_tasks: install_servers.yaml
   when: seldon_install_servers | bool
