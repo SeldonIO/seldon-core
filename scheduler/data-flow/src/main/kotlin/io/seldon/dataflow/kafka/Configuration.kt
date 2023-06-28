@@ -75,21 +75,25 @@ private fun getSecurityProperties(params: KafkaStreamsParams): Properties {
 }
 
 private fun getSslProperties(params: KafkaStreamsParams): Properties {
-    return Properties().apply {
-        with(params.security.certConfig) {
-            if (clientSecret != "" && brokerSecret != "") {
-                K8sCertSecretsProvider.downloadCertsFromSecrets(this)
-            }
-        }
+    val certConfig = params.security.certConfig
 
-        val (keyStoreConfig, trustStoreConfig) = Provider.keyStoresFromCertificates(params.security.certConfig)
-        this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
-        this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
-        this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+    if (certConfig.brokerSecret != "" || certConfig.clientSecret != "") {
+        K8sCertSecretsProvider.downloadCertsFromSecrets(certConfig)
+    }
+
+    return Properties().apply {
+        val trustStoreConfig = Provider.trustStoreFromCertificates(certConfig)
         this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
         this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
-        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
-            params.security.certConfig.endpointIdentificationAlgorithm
+
+        if (certConfig.clientSecret.isNotEmpty()) {
+            val keyStoreConfig = Provider.keyStoreFromCertificates(certConfig)
+            this[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = keyStoreConfig.keyStoreLocation
+            this[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+            this[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = keyStoreConfig.keyStorePassword
+        }
+
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] = certConfig.endpointIdentificationAlgorithm
     }
 }
 
