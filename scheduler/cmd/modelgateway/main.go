@@ -142,8 +142,8 @@ func main() {
 		HttpPort: envoyPort,
 		GrpcPort: envoyPort,
 	}
-	consumerConfig := gateway.ConsumerConfig{
-		KafkaConfig:           kafkaConfigMap,
+	consumerConfig := gateway.ManagerConfig{
+		SeldonKafkaConfig:     kafkaConfigMap,
 		Namespace:             namespace,
 		InferenceServerConfig: inferServerConfig,
 		TraceProvider:         tracer,

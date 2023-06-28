@@ -88,7 +88,7 @@ func TestRestRequest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 			g.Expect(err).To(BeNil())
 			tn, err := kafka2.NewTopicNamer("default", "seldon")
@@ -135,7 +135,7 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 			g.Expect(err).To(BeNil())
 			tn, err := kafka2.NewTopicNamer("default", "seldon")
@@ -209,7 +209,7 @@ func createInferWorkerWithMockConn(
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
-	config := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
+	config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
 	ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 	g.Expect(err).To(BeNil())
 	topicNamer, err := kafka2.NewTopicNamer("default", "seldon")

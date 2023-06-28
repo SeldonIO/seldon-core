@@ -39,14 +39,14 @@ type ConsumerManager struct {
 	mu     sync.Mutex
 	// all consumers we have
 	consumers         map[string]*InferKafkaHandler
-	managerConfig     *ConsumerConfig
+	managerConfig     *ManagerConfig
 	maxNumConsumers   int
 	consumerConfigMap kafka.ConfigMap
 	producerConfigMap kafka.ConfigMap
 }
 
-type ConsumerConfig struct {
-	KafkaConfig           *config.KafkaConfig
+type ManagerConfig struct {
+	SeldonKafkaConfig     *config.KafkaConfig
 	Namespace             string
 	InferenceServerConfig *InferenceServerConfig
 	TraceProvider         *seldontracer.TracerProvider
@@ -61,7 +61,7 @@ func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	return m2
 }
 
-func NewConsumerManager(logger log.FieldLogger, managerConfig *ConsumerConfig, maxNumConsumers int) (*ConsumerManager, error) {
+func NewConsumerManager(logger log.FieldLogger, managerConfig *ManagerConfig, maxNumConsumers int) (*ConsumerManager, error) {
 	cm := &ConsumerManager{
 		logger:          logger.WithField("source", "ConsumerManager"),
 		managerConfig:   managerConfig,
@@ -75,11 +75,11 @@ func NewConsumerManager(logger log.FieldLogger, managerConfig *ConsumerConfig, m
 	return cm, nil
 }
 
-func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ConsumerConfig) error {
+func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error {
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.KafkaConfig.Producer)
+	producerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
 	err = config.AddKafkaSSLOptions(producerConfigMap)
 	if err != nil {
@@ -93,7 +93,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ConsumerConfig) error
 		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer config for use later")
 	}
 
-	consumerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.KafkaConfig.Consumer)
+	consumerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
 	err = config.AddKafkaSSLOptions(consumerConfigMap)
 	if err != nil {
 		return err

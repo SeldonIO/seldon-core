@@ -73,7 +73,7 @@ func TestAddRemoveModel(t *testing.T) {
 			}
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			c := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			c := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, test.numConsumers)
 			g.Expect(err).To(BeNil())
 			for _, model := range test.models {
@@ -117,7 +117,7 @@ func TestConsistentModelToConsumer(t *testing.T) {
 			}
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			c := &ConsumerConfig{KafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			c := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, 10)
 			g.Expect(err).To(BeNil())
 			ic, _ := cm.getInferKafkaConsumer(test.model, true)

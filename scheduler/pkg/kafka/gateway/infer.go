@@ -55,7 +55,7 @@ type InferKafkaHandler struct {
 	done              chan bool
 	tracer            trace.Tracer
 	topicNamer        *kafka2.TopicNamer
-	consumerConfig    *ConsumerConfig
+	consumerConfig    *ManagerConfig
 	adminClient       *kafka.AdminClient
 	consumerName      string
 	replicationFactor int
@@ -66,7 +66,7 @@ type InferKafkaHandler struct {
 }
 
 func NewInferKafkaHandler(logger log.FieldLogger,
-	consumerConfig *ConsumerConfig,
+	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
 	consumerName string) (*InferKafkaHandler, error) {
@@ -82,7 +82,7 @@ func NewInferKafkaHandler(logger log.FieldLogger,
 	if err != nil {
 		return nil, err
 	}
-	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix)
+	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.SeldonKafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	}
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
-	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
+	if kc.consumerConfig.SeldonKafkaConfig.HasKafkaBootstrapServer() {
 		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
 		if err != nil {
 			return err
