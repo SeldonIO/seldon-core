@@ -4,4 +4,4 @@ scikit-learn==0.23.2
 simpletransformers==0.48.5
 # tensorboardX==1.9
 torch==1.6.0
-transformers==3.2.0
+transformers==4.30.0
