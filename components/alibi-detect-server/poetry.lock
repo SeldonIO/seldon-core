@@ -7,20 +7,6 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
-name = "adal"
-version = "1.2.7"
-description = "Note: This library is already replaced by MSAL Python, available here: https://pypi.org/project/msal/ .ADAL Python remains available here as a legacy. The ADAL for Python library makes it easy for python application to authenticate to Azure Active Directory (AAD) in order to access AAD protected web resources."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-cryptography = ">=1.1.0"
-PyJWT = ">=1.0.0,<3"
-python-dateutil = ">=2.1.0,<3"
-requests = ">=2.0.0,<3"
-
-[[package]]
 name = "alibi-detect"
 version = "0.11.3"
 description = "Algorithms for outlier detection, concept drift and metrics."
@@ -79,14 +65,6 @@ python-versions = ">=3.6"
 test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
-name = "argparse"
-version = "1.4.0"
-description = "Python command-line parsing library"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "astunparse"
 version = "1.6.3"
 description = "An AST unparser for Python"
@@ -119,40 +97,6 @@ dev = ["attrs", "pre-commit"]
 docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier", "zope-interface"]
 tests = ["attrs", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist"]
-
-[[package]]
-name = "azure-common"
-version = "1.1.28"
-description = "Microsoft Azure Client Library for Python (Common)"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
-name = "azure-storage-blob"
-version = "2.1.0"
-description = "Microsoft Azure Storage Blob Client Library for Python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-azure-common = ">=1.1.5"
-azure-storage-common = ">=2.1,<3.0"
-
-[[package]]
-name = "azure-storage-common"
-version = "2.1.0"
-description = "Microsoft Azure Storage Common Client Library for Python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-azure-common = ">=1.1.5"
-cryptography = "*"
-python-dateutil = "*"
-requests = "*"
 
 [[package]]
 name = "black"
@@ -1082,60 +1026,12 @@ optional = false
 python-versions = ">=3.8"
 
 [[package]]
-name = "kfserving"
-version = "0.3.0.2"
-description = "KFServing Python SDK"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-adal = ">=1.2.2"
-argparse = ">=1.4.0"
-azure-storage-blob = ">=1.3.0,<=2.1.0"
-certifi = ">=14.05.14"
-google-cloud-storage = ">=1.16.0"
-kubernetes = "10.0.1"
-minio = ">=4.0.9"
-numpy = ">=1.17.3"
-python-dateutil = ">=2.5.3"
-six = ">=1.10"
-table-logger = ">=0.3.5"
-tornado = ">=1.4.1"
-urllib3 = ">=1.15.1"
-
-[package.extras]
-test = ["mypy", "pytest", "pytest-tornasync"]
-
-[[package]]
 name = "kiwisolver"
 version = "1.4.4"
 description = "A fast implementation of the Cassowary constraint solver"
 category = "main"
 optional = false
 python-versions = ">=3.7"
-
-[[package]]
-name = "kubernetes"
-version = "10.0.1"
-description = "Kubernetes python client"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-certifi = ">=14.05.14"
-google-auth = ">=1.0.1"
-python-dateutil = ">=2.5.3"
-pyyaml = ">=3.12"
-requests = "*"
-requests-oauthlib = "*"
-six = ">=1.9.0"
-urllib3 = ">=1.24.2"
-websocket-client = ">=0.32.0,<0.40.0 || >0.40.0,<0.41.0 || >=0.43.0"
-
-[package.extras]
-adal = ["adal (>=1.0.2)"]
 
 [[package]]
 name = "lazy-loader"
@@ -1220,18 +1116,6 @@ pillow = ">=6.2.0"
 pyparsing = ">=2.3.1"
 python-dateutil = ">=2.7"
 setuptools_scm = ">=7"
-
-[[package]]
-name = "minio"
-version = "7.1.15"
-description = "MinIO Python SDK for Amazon S3 Compatible Cloud Storage"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-certifi = "*"
-urllib3 = "*"
 
 [[package]]
 name = "ml-dtypes"
@@ -2027,17 +1911,6 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
-name = "table-logger"
-version = "0.3.6"
-description = "TableLogger is a handy Python utility for logging tabular data into a console or a file."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-numpy = "*"
-
-[[package]]
 name = "tenacity"
 version = "8.2.2"
 description = "Retry code until it succeeds"
@@ -2387,19 +2260,6 @@ secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "p
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
-name = "websocket-client"
-version = "1.6.1"
-description = "WebSocket client for Python with low level API options"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
-optional = ["python-socks", "wsaccel"]
-test = ["websockets"]
-
-[[package]]
 name = "werkzeug"
 version = "2.2.3"
 description = "The comprehensive WSGI web application library."
@@ -2436,16 +2296,12 @@ testing = ["big-o", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "408f82eaa8c9f92512227018b6e9f59d832a417c11b1e8127d04cd2ff5ebc648"
+content-hash = "93ecbeee9215f981f08b7b239cbe67b368984e4ed9fbab93454ecf07ffd8201a"
 
 [metadata.files]
 absl-py = [
     {file = "absl-py-1.4.0.tar.gz", hash = "sha256:d2c244d01048ba476e7c080bd2c6df5e141d211de80223460d5b3b8a2a58433d"},
     {file = "absl_py-1.4.0-py3-none-any.whl", hash = "sha256:0d3fe606adfa4f7db64792dd4c7aee4ee0c38ab75dfd353b7a83ed3e957fcb47"},
-]
-adal = [
-    {file = "adal-1.2.7-py2.py3-none-any.whl", hash = "sha256:2a7451ed7441ddbc57703042204a3e30ef747478eea022c70f789fc7f084bc3d"},
-    {file = "adal-1.2.7.tar.gz", hash = "sha256:d74f45b81317454d96e982fd1c50e6fb5c99ac2223728aea8764433a39f566f1"},
 ]
 alibi-detect = [
     {file = "alibi-detect-0.11.3.tar.gz", hash = "sha256:110d94b03648354264fb9f82cbe34b103135f6303449769e60a088daee5a135a"},
@@ -2459,10 +2315,6 @@ argcomplete = [
     {file = "argcomplete-3.1.1-py3-none-any.whl", hash = "sha256:35fa893a88deea85ea7b20d241100e64516d6af6d7b0ae2bed1d263d26f70948"},
     {file = "argcomplete-3.1.1.tar.gz", hash = "sha256:6c4c563f14f01440aaffa3eae13441c5db2357b5eec639abe7c0b15334627dff"},
 ]
-argparse = [
-    {file = "argparse-1.4.0-py2.py3-none-any.whl", hash = "sha256:c31647edb69fd3d465a847ea3157d37bed1f95f19760b11a47aa91c04b666314"},
-    {file = "argparse-1.4.0.tar.gz", hash = "sha256:62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4"},
-]
 astunparse = [
     {file = "astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8"},
     {file = "astunparse-1.6.3.tar.gz", hash = "sha256:5ad93a8456f0d084c3456d059fd9a92cce667963232cbf763eac3bc5b7940872"},
@@ -2473,18 +2325,6 @@ atomicwrites = [
 attrs = [
     {file = "attrs-23.1.0-py3-none-any.whl", hash = "sha256:1f28b4522cdc2fb4256ac1a020c78acf9cba2c6b461ccd2c126f3aa8e8335d04"},
     {file = "attrs-23.1.0.tar.gz", hash = "sha256:6279836d581513a26f1bf235f9acd333bc9115683f14f7e8fae46c98fc50e015"},
-]
-azure-common = [
-    {file = "azure-common-1.1.28.zip", hash = "sha256:4ac0cd3214e36b6a1b6a442686722a5d8cc449603aa833f3f0f40bda836704a3"},
-    {file = "azure_common-1.1.28-py2.py3-none-any.whl", hash = "sha256:5c12d3dcf4ec20599ca6b0d3e09e86e146353d443e7fcc050c9a19c1f9df20ad"},
-]
-azure-storage-blob = [
-    {file = "azure-storage-blob-2.1.0.tar.gz", hash = "sha256:b90323aad60f207f9f90a0c4cf94c10acc313c20b39403398dfba51f25f7b454"},
-    {file = "azure_storage_blob-2.1.0-py2.py3-none-any.whl", hash = "sha256:a8e91a51d4f62d11127c7fd8ba0077385c5b11022f0269f8a2a71b9fc36bef31"},
-]
-azure-storage-common = [
-    {file = "azure-storage-common-2.1.0.tar.gz", hash = "sha256:ccedef5c67227bc4d6670ffd37cec18fb529a1b7c3a5e53e4096eb0cf23dc73f"},
-    {file = "azure_storage_common-2.1.0-py2.py3-none-any.whl", hash = "sha256:b01a491a18839b9d05a4fe3421458a0ddb5ab9443c14e487f40d16f9a1dc2fbe"},
 ]
 black = [
     {file = "black-21.7b0-py3-none-any.whl", hash = "sha256:1c7aa6ada8ee864db745b22790a32f94b2795c253a75d6d9b5e439ff10d23116"},
@@ -3215,10 +3055,6 @@ keopscore = [
 keras = [
     {file = "keras-2.12.0-py2.py3-none-any.whl", hash = "sha256:35c39534011e909645fb93515452e98e1a0ce23727b55d4918b9c58b2308c15e"},
 ]
-kfserving = [
-    {file = "kfserving-0.3.0.2-py3-none-any.whl", hash = "sha256:6b2f67e1e1c610ffce63ede6796d7f1e93f2e15a4d10ac81a87582b5a0d69fac"},
-    {file = "kfserving-0.3.0.2.tar.gz", hash = "sha256:a95d0cc39a98dfaabe63c111c94fa2dfe1af335d9a7db96614de06a3da7d6ef1"},
-]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:10ee06759482c78bdb864f4109886dff7b8a56529bc1609d4f1112b93fe6423c"},
@@ -3288,10 +3124,6 @@ kiwisolver = [
     {file = "kiwisolver-1.4.4-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f6cb459eea32a4e2cf18ba5fcece2dbdf496384413bc1bae15583f19e567f3b2"},
     {file = "kiwisolver-1.4.4-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:36dafec3d6d6088d34e2de6b85f9d8e2324eb734162fba59d2ba9ed7a2043d5b"},
     {file = "kiwisolver-1.4.4.tar.gz", hash = "sha256:d41997519fcba4a1e46eb4a2fe31bc12f0ff957b2b81bac28db24744f333e955"},
-]
-kubernetes = [
-    {file = "kubernetes-10.0.1-py2.py3-none-any.whl", hash = "sha256:a6dee02a1b39ea4bb9c4c2cc415ea0ada33d8ea0a920f7d4fb6d166989dcac01"},
-    {file = "kubernetes-10.0.1.tar.gz", hash = "sha256:3770a496663396ad1def665eeadb947b3f45217a08b64b10c01a57e981ac8592"},
 ]
 lazy-loader = [
     {file = "lazy_loader-0.2-py3-none-any.whl", hash = "sha256:c35875f815c340f823ce3271ed645045397213f961b40ad0c0d395c3f5218eeb"},
@@ -3435,10 +3267,6 @@ matplotlib = [
     {file = "matplotlib-3.7.1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:75d4725d70b7c03e082bbb8a34639ede17f333d7247f56caceb3801cb6ff703d"},
     {file = "matplotlib-3.7.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:97cc368a7268141afb5690760921765ed34867ffb9655dd325ed207af85c7529"},
     {file = "matplotlib-3.7.1.tar.gz", hash = "sha256:7b73305f25eab4541bd7ee0b96d87e53ae9c9f1823be5659b806cd85786fe882"},
-]
-minio = [
-    {file = "minio-7.1.15-py3-none-any.whl", hash = "sha256:1afdf01c1bc8b57ddd12d438e3e168d625465b56f4d1c2af7576744c688e84c6"},
-    {file = "minio-7.1.15.tar.gz", hash = "sha256:fcf8ac2cef310d5ddff2bef2c42f4e5a8bb546b87bca5bf8832135db054ca4e1"},
 ]
 ml-dtypes = [
     {file = "ml_dtypes-0.2.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df6a76e1c8adf484feb138ed323f9f40a7b6c21788f120f7c78bec20ac37ee81"},
@@ -4171,10 +3999,6 @@ six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
-table-logger = [
-    {file = "table-logger-0.3.6.tar.gz", hash = "sha256:cd348ba7d9d167d0bd7fdb988cd2d1d3051b5a17236a7c50979678a82f0b4ca4"},
-    {file = "table_logger-0.3.6-py3-none-any.whl", hash = "sha256:dac0be8b20ea8ce6a9646bf68fb2f71218724fb4dbe3108a105641ca14bd167a"},
-]
 tenacity = [
     {file = "tenacity-8.2.2-py3-none-any.whl", hash = "sha256:2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0"},
     {file = "tenacity-8.2.2.tar.gz", hash = "sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0"},
@@ -4355,10 +4179,6 @@ tzdata = [
 urllib3 = [
     {file = "urllib3-1.26.16-py2.py3-none-any.whl", hash = "sha256:8d36afa7616d8ab714608411b4a3b13e58f463aee519024578e062e141dce20f"},
     {file = "urllib3-1.26.16.tar.gz", hash = "sha256:8f135f6502756bde6b2a9b28989df5fbe87c9970cecaa69041edcce7f0589b14"},
-]
-websocket-client = [
-    {file = "websocket-client-1.6.1.tar.gz", hash = "sha256:c951af98631d24f8df89ab1019fc365f2227c0892f12fd150e935607c79dd0dd"},
-    {file = "websocket_client-1.6.1-py3-none-any.whl", hash = "sha256:f1f9f2ad5291f0225a49efad77abf9e700b6fef553900623060dad6e26503b9d"},
 ]
 werkzeug = [
     {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},

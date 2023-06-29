@@ -18,7 +18,6 @@ elasticsearch = "7.9.1"
 
 sh = "^1.14.2"
 tornado = "^6.1"
-kfserving = "^0.3"
 protobuf = "^3.20.3"
 
 google-cloud-core = "1.4.1"
