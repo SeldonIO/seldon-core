@@ -31,7 +31,6 @@ def scan_images(debug=False):
         "servers/xgboostserver",
         "servers/tfserving_proxy",
         "components/alibi-explain-server",
-        "components/storage-initializer",
         "components/rclone-storage-initializer",
         "servers/tfserving",
     ]
