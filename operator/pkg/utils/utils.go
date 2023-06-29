@@ -57,6 +57,7 @@ func MergeMaps(child map[string]string, parent map[string]string) map[string]str
 	// remove any keys we want to ignore
 	delete(merged, "meta.helm.sh/release-name")
 	delete(merged, "meta.helm.sh/release-namespace")
+	delete(merged, "kubectl.kubernetes.io/last-applied-configuration")
 	return merged
 }
 
