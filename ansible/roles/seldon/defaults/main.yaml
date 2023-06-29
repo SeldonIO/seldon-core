@@ -4,6 +4,7 @@ seldon_mesh_namespace: "seldon-mesh"
 
 seldon_install_crds: true
 seldon_install_components: true
+seldon_install_runtime: true
 seldon_install_servers: true
 
 seldon_force_install_crds: false

@@ -9,6 +9,7 @@
 
     seldon_install_crds: "{{ full_install }}"
     seldon_install_components: "{{ full_install }}"
+    seldon_install_runtime: "{{ full_install }}"
     seldon_install_servers: "{{ full_install }}"
 
   pre_tasks:
