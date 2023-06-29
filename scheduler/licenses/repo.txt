@@ -164,6 +164,7 @@ hashicorp/serf
 heetch/avro
 hpcloud/tail
 iancoleman/orderedmap
+iancoleman/strcase
 ianlancetaylor/demangle
 imdario/mergo
 inconshreveable/mousetrap
@@ -200,6 +201,7 @@ kr/pty
 kr/text
 leodido/go-urn
 linkedin/goavro
+lyft/protoc-gen-star
 lyft/protoc-gen-validate
 magiconair/properties
 mailru/easyjson
