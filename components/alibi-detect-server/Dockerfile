@@ -47,9 +47,15 @@ ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
 
 # Install the server
+## NOTE: Removing explicitly requirements.txt file from subdeps test
+## dependencies causing false positives in Snyk.
 COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
-RUN poetry install && rm ~/.cache/pip -rf
+RUN poetry install && \
+    rm ~/.cache/pip -rf && \
+    rm -f /opt/conda/lib/python3.8/site-packages/gslib/vendored/boto/requirements.txt \
+          /opt/conda/lib/python3.8/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
+          /opt/conda/lib/python3.8/site-packages/tests/conda_env/support/requirements.txt
 
 # Add licences
 RUN mkdir /licenses
