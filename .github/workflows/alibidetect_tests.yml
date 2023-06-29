@@ -32,6 +32,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install Rclone
+        run: |
+          wget https://downloads.rclone.org/v1.62.2/rclone-v1.62.2-linux-amd64.zip
+          unzip rclone-v1.62.2-linux-amd64.zip
+          mv rclone-v1.62.2-linux-amd64/rclone /usr/local/bin/rclone
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
