@@ -10,6 +10,7 @@ contrib.go.opencensus.io/exporter/ocagent
 contrib.go.opencensus.io/exporter/prometheus
 contrib.go.opencensus.io/exporter/zipkin
 dmitri.shuralyov.com/gpu/mtl
+emperror.dev/errors
 github.com/Azure/go-ansiterm
 github.com/Azure/go-autorest
 github.com/Azure/go-autorest/autorest
@@ -37,6 +38,7 @@ github.com/armon/go-metrics
 github.com/armon/go-radix
 github.com/armon/go-socks5
 github.com/asaskevich/govalidator
+github.com/banzaicloud/k8s-objectmatcher
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/bgentry/speakeasy
