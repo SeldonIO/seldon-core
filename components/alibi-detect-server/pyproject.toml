@@ -27,7 +27,6 @@ transformers = "^4.0"
 dill = "0.3.2"
 joblib = "1.2.0"
 
-pystan = "2.19.1.1"
 # CVE-2022-29217
 PyJWT = "2.6.0"
 # catalogue@2.1.0 has been yanked
