@@ -1,4 +1,4 @@
 seldon_core
-scikit-learn == 1.1.0
-numpy >= 1.17.3
+scikit-learn == 0.24.2
+numpy >= 1.8.2
 joblib >= 1.2.0
