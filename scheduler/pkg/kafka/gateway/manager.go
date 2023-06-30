@@ -61,7 +61,11 @@ func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	return m2
 }
 
-func NewConsumerManager(logger log.FieldLogger, managerConfig *ManagerConfig, maxNumConsumers int) (*ConsumerManager, error) {
+func NewConsumerManager(
+	logger log.FieldLogger,
+	managerConfig *ManagerConfig,
+	maxNumConsumers int,
+) (*ConsumerManager, error) {
 	cm := &ConsumerManager{
 		logger:          logger.WithField("source", "ConsumerManager"),
 		managerConfig:   managerConfig,
@@ -113,6 +117,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
+
 	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
 	logger.Debugf("Getting consumer for model %s with bucket id %s", modelName, consumerBucketId)
@@ -130,6 +135,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 		if err != nil {
 			return nil, err
 		}
+
 		go ic.Serve()
 		logger.Debugf("Created consumer for model %s with bucket id %s", modelName, consumerBucketId)
 		cm.consumers[consumerBucketId] = ic
