@@ -15,7 +15,7 @@ The referenced SASL/SCRAM YAML file looks like the below:
 This will use the Strimzi Helm chart provided in Core v2.
 This will call the Strimzi cluster Helm chart provided by the project with overrides for the cluster authentication type and will also create a user `seldon` with password credentials in a Kubernetes Secret.
 
-Install seldon with sasl settings using a custom values file.
+Install Core v2 with SASL settings using a custom values file.
 This sets the secret created by Strimzi for the user created above (`seldon`) and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster (`seldon-cluster-ca-cert`).
 
 ```{literalinclude} ../../../../../../k8s/samples/values-strimzi-kafka-sasl-scram.yaml
