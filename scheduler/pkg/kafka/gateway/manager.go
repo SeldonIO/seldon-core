@@ -90,9 +90,10 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		return err
 	}
 
-	producerConfigAsJSON, err := json.Marshal(&producerConfigMap)
+	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfigMap)
+	producerConfigAsJSON, err := json.Marshal(&producerConfigWithoutSecrets)
 	if err != nil {
-		logger.WithField("config", &producerConfigMap).Info("Creating producer config for use later")
+		logger.WithField("config", &producerConfigWithoutSecrets).Info("Creating producer config for use later")
 	} else {
 		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer config for use later")
 	}
@@ -103,9 +104,10 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		return err
 	}
 
-	consumerConfigAsJson, err := json.Marshal(&consumerConfigMap)
+	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfigMap)
+	consumerConfigAsJson, err := json.Marshal(&consumerConfigWithoutSecrets)
 	if err != nil {
-		logger.WithField("config", &consumerConfigMap).Info("Creating consumer config for use later")
+		logger.WithField("config", &consumerConfigWithoutSecrets).Info("Creating consumer config for use later")
 	} else {
 		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer config for use later")
 	}
