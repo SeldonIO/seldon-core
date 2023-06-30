@@ -130,7 +130,7 @@ var secretConfigFields = map[string]struct{}{
 	"sasl.oauthbearer.client.secret": struct{}{},
 }
 
-func ToLogSafeConfig(c kafka.ConfigMap) kafka.ConfigMap {
+func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
 	safe := make(kafka.ConfigMap)
 
 	for k, v := range c {
