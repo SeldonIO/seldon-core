@@ -38,6 +38,18 @@ const (
 	KafkaDebug            = "debug"
 )
 
+// Based on config options defined for librdkafka:
+// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+var secretConfigFields = map[string]struct{}{
+	"ssl.key.password":               struct{}{},
+	"ssl.key.pem":                    struct{}{},
+	"ssl_key":                        struct{}{},
+	"ssl.keystore.password":          struct{}{},
+	"sasl.username":                  struct{}{},
+	"sasl.password":                  struct{}{},
+	"sasl.oauthbearer.client.secret": struct{}{},
+}
+
 func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	m2 := make(kafka.ConfigMap)
 	for k, v := range m {
@@ -116,18 +128,6 @@ func convertConfigMap(cm kafka.ConfigMap) (kafka.ConfigMap, error) {
 func (kc KafkaConfig) HasKafkaBootstrapServer() bool {
 	bs := kc.Consumer[KafkaBootstrapServers]
 	return bs != nil && bs != ""
-}
-
-// Based on config options defined for librdkafka:
-// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
-var secretConfigFields = map[string]struct{}{
-	"ssl.key.password":               struct{}{},
-	"ssl.key.pem":                    struct{}{},
-	"ssl_key":                        struct{}{},
-	"ssl.keystore.password":          struct{}{},
-	"sasl.username":                  struct{}{},
-	"sasl.password":                  struct{}{},
-	"sasl.oauthbearer.client.secret": struct{}{},
 }
 
 func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
