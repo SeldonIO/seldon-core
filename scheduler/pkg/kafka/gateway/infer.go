@@ -65,11 +65,13 @@ type InferKafkaHandler struct {
 	producerActive    atomic.Bool
 }
 
-func NewInferKafkaHandler(logger log.FieldLogger,
+func NewInferKafkaHandler(
+	logger log.FieldLogger,
 	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
-	consumerName string) (*InferKafkaHandler, error) {
+	consumerName string,
+) (*InferKafkaHandler, error) {
 	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
@@ -86,6 +88,7 @@ func NewInferKafkaHandler(logger log.FieldLogger,
 	if err != nil {
 		return nil, err
 	}
+
 	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
@@ -207,15 +210,22 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 			ReplicationFactor: kc.replicationFactor,
 		})
 	}
-	results, err := kc.adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
+	results, err := kc.adminClient.CreateTopics(
+		context.Background(),
+		topicSpecs,
+		kafka.SetAdminOperationTimeout(time.Minute),
+	)
 	if err != nil {
 		return err
 	}
+
 	for _, result := range results {
 		logger.Debugf("Topic result for %s", result.String())
 	}
+
 	t2 := time.Now()
 	logger.Infof("Topic created in %d millis", t2.Sub(t1).Milliseconds())
+
 	return nil
 }
 
