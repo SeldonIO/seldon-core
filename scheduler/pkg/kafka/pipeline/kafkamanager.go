@@ -135,7 +135,8 @@ func (km *KafkaManager) createProducer() error {
 		return err
 	}
 
-	km.logger.Infof("Creating producer with config %v", producerConfigMap)
+	configWithoutSecrets := config.WithoutSecrets(producerConfigMap)
+	km.logger.Infof("Creating producer with config %v", configWithoutSecrets)
 
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
 	return err
