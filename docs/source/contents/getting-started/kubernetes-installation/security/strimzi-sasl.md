@@ -3,7 +3,7 @@
 Create a Strimzi Kafka cluster with SASL_SSL enabled. This can be done with our Ansible scripts during ecosystem setup by running from the project ansible folder:
 
 ```
-ansible-playbook playbooks/setup-ecosystem.yaml -e kafka_cluster_values_files=${PWD}/../k8s/samples/ansible-strimzi-kafka-sasl-scram.yaml -e strimzi_kafka_add_feature_gates=false
+ansible-playbook playbooks/setup-ecosystem.yaml -e kafka_cluster_values_files=${PWD}/../k8s/samples/ansible-strimzi-kafka-sasl-scram.yaml -e strimzi_kafka_operator_feature_gates=""
 ```
 
 This will call the Strimzi cluster Helm chart provided by the project with overrides for the cluster authentication type and will also create a user `seldon` with password credentials in a Kubernetes Secret:
