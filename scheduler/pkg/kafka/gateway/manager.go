@@ -83,37 +83,37 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
-	producerConfigMap["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfigMap)
+	producerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
+	producerConfig["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
 
-	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfigMap)
-	producerConfigAsJSON, err := json.Marshal(&producerConfigWithoutSecrets)
+	producerConfigMasked := config.WithoutSecrets(producerConfig)
+	producerConfigMaskedJSON, err := json.Marshal(&producerConfigMasked)
 	if err != nil {
-		logger.WithField("config", &producerConfigWithoutSecrets).Info("Creating producer config for use later")
+		logger.WithField("config", &producerConfigMasked).Info("Creating producer config for use later")
 	} else {
-		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer config for use later")
+		logger.WithField("config", string(producerConfigMaskedJSON)).Info("Creating producer config for use later")
 	}
 
-	consumerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
-	err = config.AddKafkaSSLOptions(consumerConfigMap)
+	consumerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
+	err = config.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
 
-	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfigMap)
-	consumerConfigAsJson, err := json.Marshal(&consumerConfigWithoutSecrets)
+	consumerConfigMasked := config.WithoutSecrets(consumerConfig)
+	consumerConfigMaskedJson, err := json.Marshal(&consumerConfigMasked)
 	if err != nil {
-		logger.WithField("config", &consumerConfigWithoutSecrets).Info("Creating consumer config for use later")
+		logger.WithField("config", &consumerConfigMasked).Info("Creating consumer config for use later")
 	} else {
-		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer config for use later")
+		logger.WithField("config", string(consumerConfigMaskedJson)).Info("Creating consumer config for use later")
 	}
 
-	cm.consumerConfigMap = consumerConfigMap
-	cm.producerConfigMap = producerConfigMap
+	cm.consumerConfigMap = consumerConfig
+	cm.producerConfigMap = producerConfig
 	return nil
 }
 
