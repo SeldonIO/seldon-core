@@ -46,8 +46,18 @@ type ConsumerManager struct {
 	tracer                  trace.Tracer
 }
 
-func NewConsumerManager(logger log.FieldLogger, consumerConfig *config.KafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers int, tracer trace.Tracer) *ConsumerManager {
-	logger.Infof("Setting consumer manager with max num consumers: %d, max topics per consumers: %d", maxNumConsumers, maxNumTopicsPerConsumer)
+func NewConsumerManager(
+	logger log.FieldLogger,
+	consumerConfig *config.KafkaConfig,
+	maxNumTopicsPerConsumer,
+	maxNumConsumers int,
+	tracer trace.Tracer,
+) *ConsumerManager {
+	logger.
+		WithField("max consumers", maxNumConsumers).
+		WithField("max topics per consumer", maxNumTopicsPerConsumer).
+		Info("creating consumer manager")
+
 	return &ConsumerManager{
 		logger:                  logger.WithField("source", "ConsumerManager"),
 		consumerConfig:          consumerConfig,
@@ -62,10 +72,16 @@ func (cm *ConsumerManager) createConsumer() error {
 		return fmt.Errorf("Max number of consumers reached")
 	}
 
-	c, err := NewMultiTopicsKafkaConsumer(cm.logger, cm.consumerConfig, getKafkaConsumerName(kafkaConsumerNamePrefix, uuid.New().String()), cm.tracer)
+	c, err := NewMultiTopicsKafkaConsumer(
+		cm.logger,
+		cm.consumerConfig,
+		getKafkaConsumerName(kafkaConsumerNamePrefix, uuid.New().String()),
+		cm.tracer,
+	)
 	if err != nil {
 		return err
 	}
+
 	cm.consumers = append(cm.consumers, c)
 	return nil
 }

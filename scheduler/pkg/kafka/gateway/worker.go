@@ -72,7 +72,12 @@ type V2Error struct {
 	Error string `json:"error"`
 }
 
-func NewInferWorker(consumer *InferKafkaHandler, logger log.FieldLogger, traceProvider *seldontracer.TracerProvider, topicNamer *kafka2.TopicNamer) (*InferWorker, error) {
+func NewInferWorker(
+	consumer *InferKafkaHandler,
+	logger log.FieldLogger,
+	traceProvider *seldontracer.TracerProvider,
+	topicNamer *kafka2.TopicNamer,
+) (*InferWorker, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -86,7 +91,10 @@ func NewInferWorker(consumer *InferKafkaHandler, logger log.FieldLogger, tracePr
 		topicNamer:  topicNamer,
 	}
 	// Create gRPC clients
-	grpcClient, err := iw.getGrpcClient(consumer.consumerConfig.InferenceServerConfig.Host, consumer.consumerConfig.InferenceServerConfig.GrpcPort)
+	grpcClient, err := iw.getGrpcClient(
+		consumer.consumerConfig.InferenceServerConfig.Host,
+		consumer.consumerConfig.InferenceServerConfig.GrpcPort,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +121,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
 		grpc_retry.WithMax(util.GrpcRetryMaxCount), // retry envoy connection
 	}
+
 	var creds credentials.TransportCredentials
 	if iw.consumer.tlsClientOptions.TLS {
 		logger.Info("Creating TLS credentials")
@@ -121,11 +130,21 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		logger.Info("Creating insecure credentials")
 		creds = insecure.NewCredentials()
 	}
+
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(util.GrpcMaxMsgSizeBytes), grpc.MaxCallSendMsgSize(util.GrpcMaxMsgSizeBytes)),
-		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(grpc_retry.UnaryClientInterceptor(retryOpts...), otelgrpc.UnaryClientInterceptor())),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(util.GrpcMaxMsgSizeBytes),
+			grpc.MaxCallSendMsgSize(util.GrpcMaxMsgSizeBytes),
+		),
+		grpc.WithUnaryInterceptor(
+			grpc_middleware.ChainUnaryClient(
+				grpc_retry.UnaryClientInterceptor(retryOpts...),
+				otelgrpc.UnaryClientInterceptor(),
+			),
+		),
 	}
+
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
@@ -214,13 +233,21 @@ func existsKafkaHeader(headers []kafka.Header, key string, val string) bool {
 	return false
 }
 
-func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string, b []byte, errorTopic bool, headers map[string][]string) error {
+func (iw *InferWorker) produce(
+	ctx context.Context,
+	job *InferWork,
+	topic string,
+	b []byte,
+	errorTopic bool,
+	headers map[string][]string,
+) error {
 	logger := iw.logger.WithField("func", "produce")
 
 	kafkaHeaders := job.msg.Headers
 	if errorTopic {
 		kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: kafka2.TopicErrorHeader, Value: []byte(job.modelName)})
 	}
+
 	for k, vs := range headers {
 		for _, v := range vs {
 			if !existsKafkaHeader(kafkaHeaders, k, v) {
@@ -229,6 +256,7 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 			}
 		}
 	}
+
 	if logger.Logger.IsLevelEnabled(log.DebugLevel) {
 		for _, h := range kafkaHeaders {
 			logger.Debugf("Adding kafka header for topic %s %s:%s", topic, h.Key, string(h.Value))
@@ -264,8 +292,16 @@ func (iw *InferWorker) produce(ctx context.Context, job *InferWork, topic string
 
 func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeConvert bool) error {
 	logger := iw.logger.WithField("func", "restRequest")
-	restUrl := getRestUrl(iw.consumer.tlsClientOptions.TLS, iw.consumer.consumerConfig.InferenceServerConfig.Host, iw.consumer.consumerConfig.InferenceServerConfig.HttpPort, job.modelName)
+
+	restUrl := getRestUrl(
+		iw.consumer.tlsClientOptions.TLS,
+		iw.consumer.consumerConfig.InferenceServerConfig.Host,
+		iw.consumer.consumerConfig.InferenceServerConfig.HttpPort,
+		job.modelName,
+	)
+
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
+
 	data := job.msg.Value
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
@@ -274,29 +310,43 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	if err != nil {
 		return err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(resources.SeldonModelHeader, job.modelName)
 	if reqId, ok := job.headers[util.RequestIdHeader]; ok {
 		req.Header[util.RequestIdHeader] = []string{reqId}
 	}
+
 	response, err := iw.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
+
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
+
 	err = response.Body.Close()
 	if err != nil {
 		return err
 	}
+
 	iw.logger.Infof("v2 server response: %s", b)
+
 	if response.StatusCode != http.StatusOK {
 		logger.Warnf("Failed infer request with status code %d and payload %s", response.StatusCode, string(b))
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), b, true, nil)
 	}
-	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false, extractHeadersHttp(response.Header))
+
+	return iw.produce(
+		ctx,
+		job,
+		iw.topicNamer.GetModelTopicOutputs(job.modelName),
+		b,
+		false,
+		extractHeadersHttp(response.Header),
+	)
 }
 
 // Add all external headers to request metadata
@@ -333,5 +383,12 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	if err != nil {
 		return err
 	}
-	return iw.produce(ctx, job, iw.topicNamer.GetModelTopicOutputs(job.modelName), b, false, extractHeadersGrpc(header, trailer))
+	return iw.produce(
+		ctx,
+		job,
+		iw.topicNamer.GetModelTopicOutputs(job.modelName),
+		b,
+		false,
+		extractHeadersGrpc(header, trailer),
+	)
 }

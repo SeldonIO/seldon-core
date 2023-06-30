@@ -31,6 +31,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -65,11 +66,13 @@ type InferKafkaHandler struct {
 	producerActive    atomic.Bool
 }
 
-func NewInferKafkaHandler(logger log.FieldLogger,
+func NewInferKafkaHandler(
+	logger log.FieldLogger,
 	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
-	consumerName string) (*InferKafkaHandler, error) {
+	consumerName string,
+) (*InferKafkaHandler, error) {
 	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
@@ -86,6 +89,7 @@ func NewInferKafkaHandler(logger log.FieldLogger,
 	if err != nil {
 		return nil, err
 	}
+
 	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
@@ -106,7 +110,8 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	kc.logger.Infof("Creating producer with config %v", producerConfig)
+	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfig)
+	kc.logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
 		return err
@@ -118,7 +123,8 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
-	kc.logger.Infof("Creating consumer with config %v", consumerConfig)
+	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	kc.logger.Infof("Creating consumer with config %v", consumerConfigWithoutSecrets)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
@@ -207,15 +213,22 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 			ReplicationFactor: kc.replicationFactor,
 		})
 	}
-	results, err := kc.adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
+	results, err := kc.adminClient.CreateTopics(
+		context.Background(),
+		topicSpecs,
+		kafka.SetAdminOperationTimeout(time.Minute),
+	)
 	if err != nil {
 		return err
 	}
+
 	for _, result := range results {
 		logger.Debugf("Topic result for %s", result.String())
 	}
+
 	t2 := time.Now()
 	logger.Infof("Topic created in %d millis", t2.Sub(t1).Milliseconds())
+
 	return nil
 }
 

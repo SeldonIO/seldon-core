@@ -46,7 +46,12 @@ type MultiTopicsKafkaConsumer struct {
 	tracer   trace.Tracer
 }
 
-func NewMultiTopicsKafkaConsumer(logger log.FieldLogger, consumerConfig *config.KafkaConfig, id string, tracer trace.Tracer) (*MultiTopicsKafkaConsumer, error) {
+func NewMultiTopicsKafkaConsumer(
+	logger log.FieldLogger,
+	consumerConfig *config.KafkaConfig,
+	id string,
+	tracer trace.Tracer,
+) (*MultiTopicsKafkaConsumer, error) {
 	consumer := &MultiTopicsKafkaConsumer{
 		logger:   logger.WithField("source", "MultiTopicsKafkaConsumer"),
 		config:   consumerConfig,
@@ -61,25 +66,29 @@ func NewMultiTopicsKafkaConsumer(logger log.FieldLogger, consumerConfig *config.
 }
 
 func (c *MultiTopicsKafkaConsumer) createConsumer() error {
-
 	consumerConfig := config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
 	err := config.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
-	c.logger.Infof("Creating consumer with config %v", consumerConfig)
+
+	configWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	c.logger.Infof("Creating consumer with config %v", configWithoutSecrets)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
 	}
+
 	c.logger.Infof("Created consumer %s", c.id)
 	c.consumer = consumer
 	c.isActive.Store(true)
+
 	go func() {
 		err := c.pollAndMatch()
 		c.logger.WithError(err).Infof("Consumer %s failed and is ending", c.id)
 	}()
+
 	return nil
 }
 
@@ -148,9 +157,12 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 
 		switch e := ev.(type) {
 		case *kafka.Message:
-			logger.Debugf("Received message from %s with key %s", *e.TopicPartition.Topic, string(e.Key))
-			if val, ok := c.requests.Get(string(e.Key)); ok {
+			logger.
+				WithField("topic", *e.TopicPartition.Topic).
+				WithField("key", string(e.Key)).
+				Debugf("received message")
 
+			if val, ok := c.requests.Get(string(e.Key)); ok {
 				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)

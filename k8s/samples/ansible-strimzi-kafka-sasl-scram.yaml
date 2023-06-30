@@ -1,4 +1,5 @@
-broker:
-  tls:
-    authentication:
-      type: scram-sha-512
+seldon_kafka_cluster_values:
+  broker:
+    tls:
+      authentication:
+        type: scram-sha-512
