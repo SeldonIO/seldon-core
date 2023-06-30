@@ -33,6 +33,9 @@ type KafkaConfig struct {
 	TopicPrefix      string          `json:"topicPrefix,omitempty"`
 }
 
+type none = struct{}
+type stringSet = map[string]none
+
 const (
 	KafkaBootstrapServers = "bootstrap.servers"
 	KafkaDebug            = "debug"
@@ -40,14 +43,15 @@ const (
 
 // Based on config options defined for librdkafka:
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+var empty = struct{}{}
 var secretConfigFields = map[string]struct{}{
-	"ssl.key.password":               struct{}{},
-	"ssl.key.pem":                    struct{}{},
-	"ssl_key":                        struct{}{},
-	"ssl.keystore.password":          struct{}{},
-	"sasl.username":                  struct{}{},
-	"sasl.password":                  struct{}{},
-	"sasl.oauthbearer.client.secret": struct{}{},
+	"ssl.key.password":               empty,
+	"ssl.key.pem":                    empty,
+	"ssl_key":                        empty,
+	"ssl.keystore.password":          empty,
+	"sasl.username":                  empty,
+	"sasl.password":                  empty,
+	"sasl.oauthbearer.client.secret": empty,
 }
 
 func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
