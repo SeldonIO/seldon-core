@@ -73,7 +73,8 @@ func (c *MultiTopicsKafkaConsumer) createConsumer() error {
 		return err
 	}
 
-	c.logger.Infof("Creating consumer with config %v", consumerConfig)
+	configWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	c.logger.Infof("Creating consumer with config %v", configWithoutSecrets)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
