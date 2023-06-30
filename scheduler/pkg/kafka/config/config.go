@@ -44,7 +44,7 @@ const (
 // Based on config options defined for librdkafka:
 // https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
 var empty = struct{}{}
-var secretConfigFields = map[string]struct{}{
+var secretConfigFields = stringSet{
 	"ssl.key.password":               empty,
 	"ssl.key.pem":                    empty,
 	"ssl_key":                        empty,
