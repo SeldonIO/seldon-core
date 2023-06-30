@@ -135,7 +135,9 @@ func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
 
 	for k, v := range c {
 		_, isSecret := secretConfigFields[k]
-		if !isSecret {
+		if isSecret {
+			safe[k] = "***"
+		} else {
 			safe[k] = v
 		}
 	}
