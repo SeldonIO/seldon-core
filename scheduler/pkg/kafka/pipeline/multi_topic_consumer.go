@@ -46,7 +46,12 @@ type MultiTopicsKafkaConsumer struct {
 	tracer   trace.Tracer
 }
 
-func NewMultiTopicsKafkaConsumer(logger log.FieldLogger, consumerConfig *config.KafkaConfig, id string, tracer trace.Tracer) (*MultiTopicsKafkaConsumer, error) {
+func NewMultiTopicsKafkaConsumer(
+	logger log.FieldLogger,
+	consumerConfig *config.KafkaConfig,
+	id string,
+	tracer trace.Tracer,
+) (*MultiTopicsKafkaConsumer, error) {
 	consumer := &MultiTopicsKafkaConsumer{
 		logger:   logger.WithField("source", "MultiTopicsKafkaConsumer"),
 		config:   consumerConfig,
