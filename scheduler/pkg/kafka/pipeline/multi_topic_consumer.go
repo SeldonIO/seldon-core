@@ -153,9 +153,12 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 
 		switch e := ev.(type) {
 		case *kafka.Message:
-			logger.Debugf("Received message from %s with key %s", *e.TopicPartition.Topic, string(e.Key))
-			if val, ok := c.requests.Get(string(e.Key)); ok {
+			logger.
+				WithField("topic", *e.TopicPartition.Topic).
+				WithField("key", string(e.Key)).
+				Debugf("received message")
 
+			if val, ok := c.requests.Get(string(e.Key)); ok {
 				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
