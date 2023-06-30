@@ -1,6 +1,7 @@
 # Strimzi SASL Example
 
-Create a Strimzi Kafka cluster with SASL_SSL enabled. This can be done with our Ansible scripts during ecosystem setup by running from the project ansible folder:
+Create a Strimzi Kafka cluster with SASL_SSL enabled.
+This can be done with our Ansible scripts by running the following from the `ansible/` folder:
 
 ```
 ansible-playbook playbooks/setup-ecosystem.yaml -e kafka_cluster_values_files=${PWD}/../k8s/samples/ansible-strimzi-kafka-sasl-scram.yaml -e strimzi_kafka_operator_feature_gates=""
