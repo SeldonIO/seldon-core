@@ -53,11 +53,10 @@ func NewConsumerManager(
 	maxNumConsumers int,
 	tracer trace.Tracer,
 ) *ConsumerManager {
-	logger.Infof(
-		"Setting consumer manager with max num consumers: %d, max topics per consumers: %d",
-		maxNumConsumers,
-		maxNumTopicsPerConsumer,
-	)
+	logger.
+		WithField("max consumers", maxNumConsumers).
+		WithField("max topics per consumer", maxNumTopicsPerConsumer).
+		Info("creating consumer manager")
 
 	return &ConsumerManager{
 		logger:                  logger.WithField("source", "ConsumerManager"),
