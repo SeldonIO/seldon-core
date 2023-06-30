@@ -66,25 +66,28 @@ func NewMultiTopicsKafkaConsumer(
 }
 
 func (c *MultiTopicsKafkaConsumer) createConsumer() error {
-
 	consumerConfig := config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
 	err := config.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
+
 	c.logger.Infof("Creating consumer with config %v", consumerConfig)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
 	}
+
 	c.logger.Infof("Created consumer %s", c.id)
 	c.consumer = consumer
 	c.isActive.Store(true)
+
 	go func() {
 		err := c.pollAndMatch()
 		c.logger.WithError(err).Infof("Consumer %s failed and is ending", c.id)
 	}()
+
 	return nil
 }
 
