@@ -12,10 +12,31 @@ This configuration is provided by the Kubernetes `secret` `seldon-rclone-gs-publ
 It is made available to `Servers` via a [centralised configmap](#central-config-map).
 You can define and use your own storage configurations in exactly the same way.
 
-The format for defining your Rclone storage credentials is described [here](https://rclone.org/rc/#config-create).
-The main requirements will be to choose a particular `type` and `name` to use in storage urls and set the parameters as described in the Rclone docs where the parameters follow the given options described in the docs where for example `--gcs-client-secret` can be added as a paramater `client_secret`, i.e. without the type prefix and with underscores.
+## Configuration Format
 
-To add authorization for cloud storage you need to define an Rclone provider as discussed below in a Kubernetes Secret.
+To define a new storage configuration, you need the following details:
+* Remote name
+* Remote type
+* Provider parameters
+
+A _remote_ is what Rclone calls a storage location.
+The _type_ defines what protocol Rclone should use to talk to this remote.
+A _provider_ is a particular implementation for that storage type.
+Some storage types have multiple providers, such as `s3` having AWS S3 itself, MinIO, Ceph, and so on.
+
+The remote **name** is your choice.
+Be aware that the prefix you use for models in `spec.storageUri` must be the same as the remote name.
+
+The remote type is one of the values [supported by Rclone](https://rclone.org/docs/).
+For example, for AWS S3 it is `s3` and for Dropbox it is `dropbox`.
+
+The provider parameters depend entirely on the remote _type_ and the specific _provider_ you are using.
+Please check the Rclone documentation for the appropriate provider.
+Note that Rclone docs for storage types call the parameters _properties_ and provide both _config_ and _env var_ formats--you need to use the _config_ format.
+For example, the GCS parameter `--gcs-client-id` described [here](https://rclone.org/googlecloudstorage/#gcs-client-id) should be used as `client_id`.
+
+For reference, this format is described in the [Rclone documentation](https://rclone.org/rc/#config-create).
+Note that we do not support the use of `opts` discussed in that section.
 
 ## Kubernetes Secret
 
