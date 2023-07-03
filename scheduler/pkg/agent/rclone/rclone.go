@@ -270,17 +270,25 @@ func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string
 }
 
 func (r *RCloneClient) Config(config []byte) (string, error) {
+	logger := r.logger.WithField("func", "Config")
+
 	configCreate, err := r.parseRcloneConfig(config)
 	if err != nil {
 		return "", err
 	}
+
+	logger.WithField("remote name", configCreate.Name).Info("loaded config")
+
 	exists, err := r.configExists(configCreate.Name)
 	if err != nil {
 		return "", err
 	}
+
 	if exists {
+		logger.WithField("remote name", configCreate.Name).Info("updating existing Rclone remote")
 		return configCreate.Name, r.configUpdate(configCreate)
 	} else {
+		logger.WithField("remote name", configCreate.Name).Info("creating new Rclone remote")
 		return configCreate.Name, r.configCreate(configCreate)
 	}
 }

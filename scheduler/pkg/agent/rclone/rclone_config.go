@@ -64,6 +64,8 @@ func (r *RCloneClient) loadRcloneRawConfiguration(config *config.AgentConfigurat
 
 	var rcloneNamesAdded []string
 	if len(config.Rclone.Config) > 0 {
+		logger.Infof("found %d Rclone configs", len(config.Rclone.Config))
+
 		for _, config := range config.Rclone.Config {
 			logger.Infof("Loading rclone config %s", config)
 
