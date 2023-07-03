@@ -67,7 +67,7 @@ func (r *RCloneClient) loadRcloneRawConfiguration(config *config.AgentConfigurat
 		logger.Infof("found %d Rclone configs", len(config.Rclone.Config))
 
 		for _, config := range config.Rclone.Config {
-			logger.Infof("Loading rclone config %s", config)
+			logger.Info("loading Rclone config")
 
 			name, err := r.Config([]byte(config))
 			if err != nil {
