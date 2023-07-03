@@ -137,7 +137,7 @@ func (r *RCloneClient) StartConfigListener(configHandler *config.AgentConfigHand
 	logger.Info("Loading initial rclone configuration")
 	err := r.loadRcloneConfiguration(configHandler.AddListener(r.configChan))
 	if err != nil {
-		r.logger.WithError(err).Errorf("Failed to load rclone defaults")
+		logger.WithError(err).Errorf("Failed to load rclone defaults")
 		return err
 	}
 	return nil
