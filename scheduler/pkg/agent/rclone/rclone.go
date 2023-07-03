@@ -277,7 +277,7 @@ func (r *RCloneClient) Config(config []byte) (string, error) {
 		return "", err
 	}
 
-	logger.WithField("remote name", configCreate.Name).Info("loaded config")
+	logger.WithField("remote_name", configCreate.Name).Info("loaded config")
 
 	exists, err := r.configExists(configCreate.Name)
 	if err != nil {
@@ -285,10 +285,10 @@ func (r *RCloneClient) Config(config []byte) (string, error) {
 	}
 
 	if exists {
-		logger.WithField("remote name", configCreate.Name).Info("updating existing Rclone remote")
+		logger.WithField("remote_name", configCreate.Name).Info("updating existing Rclone remote")
 		return configCreate.Name, r.configUpdate(configCreate)
 	} else {
-		logger.WithField("remote name", configCreate.Name).Info("creating new Rclone remote")
+		logger.WithField("remote_name", configCreate.Name).Info("creating new Rclone remote")
 		return configCreate.Name, r.configCreate(configCreate)
 	}
 }

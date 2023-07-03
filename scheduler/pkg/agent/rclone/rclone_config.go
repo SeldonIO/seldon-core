@@ -124,7 +124,7 @@ func (r *RCloneClient) loadRcloneSecretsConfiguration(config *config.AgentConfig
 
 		secretsHandler := k8s.NewSecretsHandler(secretClientSet, r.namespace)
 		for _, secret := range config.Rclone.ConfigSecrets {
-			logger.WithField("secret name", secret).Infof("retrieving Rclone secret")
+			logger.WithField("secret_name", secret).Infof("retrieving Rclone secret")
 
 			config, err := secretsHandler.GetSecretConfig(secret)
 			if err != nil {
