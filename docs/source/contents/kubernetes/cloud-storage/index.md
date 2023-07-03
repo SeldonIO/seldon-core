@@ -76,5 +76,3 @@ To allow all models to utilize particular rclone providers one can add the secre
 ```{literalinclude} ../../../../../samples/auth/agent.yaml
 :language: yaml
 ```
-
-
