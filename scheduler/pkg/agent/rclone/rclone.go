@@ -331,7 +331,10 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		CreateEmptySrcDirs: true,
 	}
 
-	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, srcUri, dst)
+	logger.
+		WithField("source", srcUri).
+		WithField("destination", dst).
+		Info("copy model artifacts")
 
 	b, err := json.Marshal(copy)
 	if err != nil {
