@@ -50,7 +50,7 @@ Assuming you have installed MinIO in the `minio-system` namespace, a correspondi
 :language: yaml
 ```
 
-You can then reference this in a `Model` as `.spec.secretName`:
+You can then reference this in a `Model` with `.spec.secretName`:
 
 ```{literalinclude} ../../../../../samples/models/sklearn-iris-minio.yaml
 :language: yaml
@@ -59,13 +59,16 @@ You can then reference this in a `Model` as `.spec.secretName`:
 
 ````{group-tab} Google Cloud Storage
 
-An example for [Google Storage](https://rclone.org/googlecloudstorage/) could use a [service account](https://cloud.google.com/iam/docs/service-accounts) with credentials created with the [gcloud CLI](https://cloud.google.com/sdk/gcloud/reference/iam/service-accounts/keys/create) as follows:
+[GCS](https://rclone.org/googlecloudstorage/) can use [service accounts](https://cloud.google.com/iam/docs/service-accounts) for access.
+You can generate the credentials for a service account using the [gcloud CLI](https://cloud.google.com/sdk/gcloud/reference/iam/service-accounts/keys/create):
 
 ```bash
-gcloud iam service-accounts keys create gcloud-application-credentials.json --iam-account [SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com
+gcloud iam service-accounts keys create \
+  gcloud-application-credentials.json \
+  --iam-account [SERVICE-ACCOUNT--NAME]@[PROJECT-ID].iam.gserviceaccount.com
 ```
 
-Once the `gcloud-application-credentials.json` has been created you can then include it in the rclone provider credentials.
+The contents of `gcloud-application-credentials.json` can be put into a secret:
 
 ```yaml
 apiVersion: v1
@@ -81,7 +84,7 @@ stringData:
       service_account_credentials: '<gcloud-application-credentials.json>'
 ```
 
-and then one could use these in Models like:
+You can then reference this in a `Model` with `.spec.secretName`:
 
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
