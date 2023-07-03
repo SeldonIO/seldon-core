@@ -25,7 +25,7 @@ A _provider_ is a particular implementation for that storage type.
 Some storage types have multiple providers, such as `s3` having AWS S3 itself, MinIO, Ceph, and so on.
 
 The remote **name** is your choice.
-Be aware that the prefix you use for models in `spec.storageUri` must be the same as the remote name.
+The prefix you use for models in `spec.storageUri` must be the same as this remote name.
 
 The remote type is one of the values [supported by Rclone](https://rclone.org/docs/).
 For example, for AWS S3 it is `s3` and for Dropbox it is `dropbox`.
