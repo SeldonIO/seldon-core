@@ -1,11 +1,16 @@
 # Cloud Storage
 
-Inference artifacts referenced in Models can be stored in local mounted folders or on any of the cloud storage technologies supported by [Rclone](https://rclone.org/).
-Public Google buckets work by default which allows us to use examples such as below:
+Inference artifacts referenced by Models can be stored in any of the storage backends supported by [Rclone](https://rclone.org/).
+This includes local filesystems, AWS S3, and Google Cloud Storage (GCS), among others.
+Configuration is provided out-of-the-box for public GCS buckets, which enables the use of Seldon-provided models like in the below example:
 
 ```{literalinclude} ../../../../../samples/models/sklearn-iris-gs.yaml 
 :language: yaml
 ```
+
+This configuration is provided by the Kubernetes `secret` `seldon-rclone-gs-public`.
+It is made available to `Servers` via a [centralised configmap](#central-config-map).
+You can define and use your own storage configurations in exactly the same way.
 
 The format for defining your Rclone storage credentials is described [here](https://rclone.org/rc/#config-create).
 The main requirements will be to choose a particular `type` and `name` to use in storage urls and set the parameters as described in the Rclone docs where the parameters follow the given options described in the docs where for example `--gcs-client-secret` can be added as a paramater `client_secret`, i.e. without the type prefix and with underscores.
