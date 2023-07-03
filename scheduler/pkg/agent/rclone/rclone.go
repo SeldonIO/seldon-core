@@ -303,6 +303,8 @@ func pathExists(path string) (bool, error) {
 
 // Call Rclone /sync/copy
 func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
+	logger := r.logger.WithField("func", "Copy")
+
 	var srcUpdated string
 	var err error
 	if len(config) > 0 {
