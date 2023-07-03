@@ -25,7 +25,7 @@ Assuming minio has be installed in the cluster an example secret would be:
 :language: yaml
 ```
 
-Yoiu can then reference this in a Model:
+You can then reference this in a Model:
 
 ```{literalinclude} ../../../../../samples/models/sklearn-iris-minio.yaml
 :language: yaml
