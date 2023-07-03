@@ -38,26 +38,26 @@ For example, the GCS parameter `--gcs-client-id` described [here](https://rclone
 For reference, this format is described in the [Rclone documentation](https://rclone.org/rc/#config-create).
 Note that we do not support the use of `opts` discussed in that section.
 
-## Kubernetes Secret
+## Examples
 
-You can provide the provider credentials in a Kubernetes secret.
-We show some examples in the following sections.
+`````{tabs}
 
-### S3 Minio Example
+````{group-tab} S3 MinIO
 
-Assuming minio has be installed in the cluster an example secret would be:
+Assuming you have installed MinIO in the `minio-system` namespace, a corresponding secret could be:
 
 ```{literalinclude} ../../../../../samples/auth/minio-secret.yaml
 :language: yaml
 ```
 
-You can then reference this in a Model:
+You can then reference this in a `Model` as `.spec.secretName`:
 
 ```{literalinclude} ../../../../../samples/models/sklearn-iris-minio.yaml
 :language: yaml
 ```
+````
 
-### Google Storage Example
+````{group-tab} Google Cloud Storage
 
 An example for [Google Storage](https://rclone.org/googlecloudstorage/) could use a [service account](https://cloud.google.com/iam/docs/service-accounts) with credentials created with the [gcloud CLI](https://cloud.google.com/sdk/gcloud/reference/iam/service-accounts/keys/create) as follows:
 
@@ -94,6 +94,9 @@ spec:
   requirements:
   - pytorch
 ```
+````
+`````
+
 
 ## Central Config Map
 
