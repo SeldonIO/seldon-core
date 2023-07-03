@@ -342,8 +342,8 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	}
 
 	logger.
-		WithField("source", srcUri).
-		WithField("destination", dst).
+		WithField("source_uri", srcUri).
+		WithField("destination_uri", dst).
 		Info("will copy model artifacts")
 
 	b, err := json.Marshal(copy)
