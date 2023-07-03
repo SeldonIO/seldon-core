@@ -70,6 +70,8 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
+ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
+    RCLONE_CONFIG_GS_ANONYMOUS="true"
 
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
 RUN microdnf install -y mesa-libGL
