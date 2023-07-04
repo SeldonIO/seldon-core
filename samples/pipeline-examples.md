@@ -92,11 +92,6 @@ spec:
 seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status tfsimples -w PipelineReady| jq -M .
 ```
@@ -108,8 +103,8 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples",
-        "uid": "cgm2pdosogbs73emfvm0",
-        "version": 1,
+        "uid": "ciep26qi8ufs73flaiqg",
+        "version": 2,
         "steps": [
           {
             "name": "tfsimple1"
@@ -133,10 +128,10 @@ seldon pipeline status tfsimples -w PipelineReady| jq -M .
         "kubernetesMeta": {}
       },
       "state": {
-        "pipelineVersion": 1,
+        "pipelineVersion": 2,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-04-04T13:57:11.631385497Z",
+        "lastChangeTimestamp": "2023-06-29T14:11:40.101677847Z",
         "modelsReady": true
       }
     }
@@ -287,12 +282,12 @@ seldon pipeline inspect tfsimples
 ```
 
 ```
-seldon.customer.default.model.tfsimple1.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-seldon.customer.default.model.tfsimple1.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple1_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
-seldon.customer.default.model.tfsimple2.inputs	cg46198fh5ss73e09pm0	{"inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}],"rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
-seldon.customer.default.model.tfsimple2.outputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimple2_1","modelVersion":"1","outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
-seldon.customer.default.pipeline.tfsimples.inputs	cg46198fh5ss73e09pm0	{"modelName":"tfsimples","inputs":[{"name":"INPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}},{"name":"INPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}}]}
-seldon.customer.default.pipeline.tfsimples.outputs	cg46198fh5ss73e09pm0	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32]}}]}
+seldon.default.model.tfsimple1.inputs	ciep298fh5ss73dpdir0	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+seldon.default.model.tfsimple1.outputs	ciep298fh5ss73dpdir0	{"modelName":"tfsimple1_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}]}
+seldon.default.model.tfsimple2.inputs	ciep298fh5ss73dpdir0	{"inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}}], "rawInputContents":["AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="]}
+seldon.default.model.tfsimple2.outputs	ciep298fh5ss73dpdir0	{"modelName":"tfsimple2_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
+seldon.default.pipeline.tfsimples.inputs	ciep298fh5ss73dpdir0	{"modelName":"tfsimples", "inputs":[{"name":"INPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}, {"name":"INPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}}]}
+seldon.default.pipeline.tfsimples.outputs	ciep298fh5ss73dpdir0	{"outputs":[{"name":"OUTPUT0", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}, {"name":"OUTPUT1", "datatype":"INT32", "shape":["1", "16"], "contents":{"intContents":[2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32]}}]}
 
 ```
 
@@ -370,20 +365,9 @@ seldon pipeline inspect tfsimples --format json | jq -M .topics[0].msgs[0].value
 seldon pipeline unload tfsimples
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload tfsimple1
 seldon model unload tfsimple2
-```
-
-```json
-{}
-{}
-
 ```
 
 ### Model Chaining from inputs
@@ -467,11 +451,6 @@ spec:
 seldon pipeline load -f ./pipelines/tfsimples-input.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status tfsimples-input -w PipelineReady| jq -M .
 ```
@@ -483,7 +462,7 @@ seldon pipeline status tfsimples-input -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "tfsimples-input",
-        "uid": "cgm33165u83c73dgvr00",
+        "uid": "ciep2fii8ufs73flair0",
         "version": 1,
         "steps": [
           {
@@ -511,7 +490,7 @@ seldon pipeline status tfsimples-input -w PipelineReady| jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-04-04T14:17:41.667004853Z",
+        "lastChangeTimestamp": "2023-06-29T14:12:14.711416101Z",
         "modelsReady": true
       }
     }
@@ -659,20 +638,9 @@ seldon pipeline infer tfsimples-input --inference-mode grpc \
 seldon pipeline unload tfsimples-input
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload tfsimple1
 seldon model unload tfsimple2
-```
-
-```json
-{}
-{}
-
 ```
 
 ### Model Join
@@ -778,11 +746,6 @@ spec:
 seldon pipeline load -f ./pipelines/tfsimples-join.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status join -w PipelineReady | jq -M .
 ```
@@ -794,7 +757,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "join",
-        "uid": "cg3o00od8mqs73fqhh4g",
+        "uid": "ciep2k2i8ufs73flairg",
         "version": 1,
         "steps": [
           {
@@ -826,7 +789,7 @@ seldon pipeline status join -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-03-07T18:18:43.910647312Z",
+        "lastChangeTimestamp": "2023-06-29T14:12:32.938603415Z",
         "modelsReady": true
       }
     }
@@ -910,22 +873,10 @@ seldon pipeline infer join --inference-mode grpc \
 seldon pipeline unload join
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload tfsimple1
 seldon model unload tfsimple2
 seldon model unload tfsimple3
-```
-
-```json
-{}
-{}
-{}
-
 ```
 
 ### Conditional
@@ -1035,11 +986,6 @@ spec:
 seldon pipeline load -f ./pipelines/conditional.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
 ```
@@ -1051,7 +997,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "tfsimple-conditional",
-        "uid": "cg3o05od8mqs73fqhh50",
+        "uid": "ciepga2i8ufs73flais0",
         "version": 1,
         "steps": [
           {
@@ -1089,7 +1035,7 @@ seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-03-07T18:19:04.254724839Z",
+        "lastChangeTimestamp": "2023-06-29T14:41:45.133142725Z",
         "modelsReady": true
       }
     }
@@ -1162,22 +1108,10 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc \
 seldon pipeline unload tfsimple-conditional
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload conditional
 seldon model unload add10
 seldon model unload mul10
-```
-
-```json
-{}
-{}
-{}
-
 ```
 
 ### Pipeline Input Tensors
@@ -1268,11 +1202,6 @@ spec:
 seldon pipeline load -f ./pipelines/pipeline-inputs.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
 ```
@@ -1284,7 +1213,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "pipeline-inputs",
-        "uid": "cg3o0agd8mqs73fqhh5g",
+        "uid": "ciepgeqi8ufs73flaisg",
         "version": 1,
         "steps": [
           {
@@ -1318,7 +1247,7 @@ seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-03-07T18:19:22.326945896Z",
+        "lastChangeTimestamp": "2023-06-29T14:42:04.202598715Z",
         "modelsReady": true
       }
     }
@@ -1374,20 +1303,9 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc \
 seldon pipeline unload pipeline-inputs
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload mul10
 seldon model unload add10
-```
-
-```json
-{}
-{}
-
 ```
 
 ### Trigger Joins
@@ -1480,11 +1398,6 @@ spec:
 seldon pipeline load -f ./pipelines/trigger-joins.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status trigger-joins -w PipelineReady | jq -M .
 ```
@@ -1496,7 +1409,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "trigger-joins",
-        "uid": "cg3o0f0d8mqs73fqhh60",
+        "uid": "ciepgkqi8ufs73flait0",
         "version": 1,
         "steps": [
           {
@@ -1533,7 +1446,7 @@ seldon pipeline status trigger-joins -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-03-07T18:19:40.673234267Z",
+        "lastChangeTimestamp": "2023-06-29T14:42:27.595300698Z",
         "modelsReady": true
       }
     }
@@ -1602,20 +1515,9 @@ seldon pipeline infer trigger-joins --inference-mode grpc \
 seldon pipeline unload trigger-joins
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon model unload mul10
 seldon model unload add10
-```
-
-```json
-{}
-{}
-
 ```
 
 ```python

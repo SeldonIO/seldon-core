@@ -81,8 +81,7 @@ seldon pipeline status tfsimples -w PipelineReady
 ```
 
 ```json
-{}
-{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cg5g53s6dpcs73c4qhf0","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2023-03-10T10:12:31.298579659Z"}}]}
+{"pipelineName":"tfsimples", "versions":[{"pipeline":{"name":"tfsimples", "uid":"ciepit2i8ufs73flaitg", "version":1, "steps":[{"name":"tfsimple1"}, {"name":"tfsimple2", "inputs":["tfsimple1.outputs"], "tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0", "tfsimple1.outputs.OUTPUT1":"INPUT1"}}], "output":{"steps":["tfsimple2.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:47:16.365934922Z"}}]}
 
 ```
 
@@ -202,11 +201,6 @@ true
 seldon pipeline unload tfsimples
 ```
 
-```json
-{}
-
-```
-
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
@@ -248,8 +242,7 @@ seldon pipeline status tfsimples -w PipelineReady
 ```
 
 ```json
-{}
-{"pipelineName":"tfsimples","versions":[{"pipeline":{"name":"tfsimples","uid":"cg5g5bc6dpcs73c4qhfg","version":1,"steps":[{"name":"tfsimple1"},{"name":"tfsimple2","inputs":["tfsimple1.outputs"],"tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0","tfsimple1.outputs.OUTPUT1":"INPUT1"}}],"output":{"steps":["tfsimple2.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2023-03-10T10:13:02.109711244Z","modelsReady":true}}]}
+{"pipelineName":"tfsimples", "versions":[{"pipeline":{"name":"tfsimples", "uid":"ciepj5qi8ufs73flaiu0", "version":1, "steps":[{"name":"tfsimple1"}, {"name":"tfsimple2", "inputs":["tfsimple1.outputs"], "tensorMap":{"tfsimple1.outputs.OUTPUT0":"INPUT0", "tfsimple1.outputs.OUTPUT1":"INPUT1"}}], "output":{"steps":["tfsimple2.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:47:51.626155116Z", "modelsReady":true}}]}
 
 ```
 
@@ -291,12 +284,6 @@ seldon model unload tfsimple1
 seldon model unload tfsimple2
 ```
 
-```json
-{}
-{}
-
-```
-
 ```bash
 seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 ```
@@ -308,11 +295,6 @@ null
 
 ```bash
 seldon pipeline unload tfsimples
-```
-
-```json
-{}
-
 ```
 
 ### Kubernetes Resource Example

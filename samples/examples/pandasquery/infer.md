@@ -42,7 +42,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -52,7 +52,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -124,11 +124,6 @@ spec:
 seldon pipeline load -f ../../pipelines/choice.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status choice -w PipelineReady | jq -M .
 ```
@@ -140,7 +135,7 @@ seldon pipeline status choice -w PipelineReady | jq -M .
     {
       "pipeline": {
         "name": "choice",
-        "uid": "cc67qd45em8of75v7phg",
+        "uid": "cifel9aufmbc73e5intg",
         "version": 1,
         "steps": [
           {
@@ -181,7 +176,8 @@ seldon pipeline status choice -w PipelineReady | jq -M .
         "pipelineVersion": 1,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2022-08-29T08:47:48.496640155Z"
+        "lastChangeTimestamp": "2023-06-30T14:45:57.284684328Z",
+        "modelsReady": true
       }
     }
   ]
@@ -212,9 +208,6 @@ seldon pipeline infer choice --inference-mode grpc \
         ]
       }
     }
-  ],
-  "rawOutputContents": [
-    "AABIQgAAcEIAAIxCAACgQg=="
   ]
 }
 
@@ -243,9 +236,6 @@ seldon pipeline infer choice --inference-mode grpc \
         ]
       }
     }
-  ],
-  "rawOutputContents": [
-    "AABwQQAAgEEAAIhBAACQQQ=="
   ]
 }
 
@@ -257,15 +247,6 @@ seldon model unload choice-is-two
 seldon model unload add10
 seldon model unload mul10
 seldon pipeline unload choice
-```
-
-```json
-{}
-{}
-{}
-{}
-{}
-
 ```
 
 ```python

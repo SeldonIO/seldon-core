@@ -41,8 +41,8 @@ def infer(resource: str):
     reqId = response_raw.headers["x-request-id"]
     print(reqId)
     os.environ["REQUEST_ID"]=reqId
-    print(text)
-    print(sentiment)
+    print(base64.b64decode(text))
+    print(base64.b64decode(sentiment))
 ```
 
 ### Load Huggingface Models
@@ -139,17 +139,23 @@ class SentimentInputTransformRuntime(MLModel):
     return self.ready
 
   async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+    logger.info("payload (input-transform): %s",payload)
     res_list = self.decode_request(payload, default_codec=StringRequestCodec)
+    logger.info("res list (input-transform): %s",res_list)
     texts = []
     for res in res_list:
-      logger.debug("decoded data: %s", res)
-      text = json.loads(res)
+      logger.info("decoded data (input-transform): %s", res)
+      #text = json.loads(res)
+      text = res
       texts.append(text["text"])
 
-    return StringRequestCodec.encode_response(
+    logger.info("transformed data (input-transform): %s", texts)
+    response =  StringRequestCodec.encode_response(
       model_name="sentiment",
       payload=texts
     )
+    logger.info("response (input-transform): %s", response)
+    return response
 
 ```
 
@@ -188,19 +194,24 @@ class SentimentOutputTransformRuntime(MLModel):
     return self.ready
 
   async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+    logger.info("payload (output-transform): %s",payload)
     res_list = self.decode_request(payload, default_codec=StringRequestCodec)
+    logger.info("res list (output-transform): %s",res_list)
     scores = []
     for res in res_list:
-      logger.debug("decoded data: %s",res)
-      sentiment = json.loads(res)
+      logger.debug("decoded data (output transform): %s",res)
+      #sentiment = json.loads(res)
+      sentiment = res
       if sentiment["label"] == "POSITIVE":
         scores.append(1)
       else:
         scores.append(0)
-    return NumpyRequestCodec.encode_response(
+    response =  NumpyRequestCodec.encode_response(
       model_name="sentiments",
       payload=np.array(scores)
     )
+    logger.info("response (output-transform): %s", response)
+    return response
 
 ```
 
@@ -216,7 +227,7 @@ kind: Model
 metadata:
   name: sentiment-input-transform
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-input-transform"
+  storageUri: "gs://seldon-models/scv2/examples/huggingface/mlserver_1.3.5/sentiment-input-transform"
   requirements:
   - mlserver
   - python
@@ -226,7 +237,7 @@ kind: Model
 metadata:
   name: sentiment-output-transform
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-output-transform"
+  storageUri: "gs://seldon-models/scv2/examples/huggingface/mlserver_1.3.5/sentiment-output-transform"
   requirements:
   - mlserver
   - python
@@ -268,7 +279,7 @@ spec:
   steps:
     - name: sentiment
       tensorMap:
-        sentiment-explain.inputs.predict: args
+        sentiment-explain.inputs.predict: array_inputs
     - name: sentiment-output-transform
       inputs:
       - sentiment
@@ -282,11 +293,6 @@ spec:
 seldon pipeline load -f ../../pipelines/sentiment-explain.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
 ```
@@ -298,13 +304,13 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "sentiment-explain",
-        "uid": "cfekrhgq4n3c73fctnp0",
-        "version": 1,
+        "uid": "cihuo3svgtec73bj6ncg",
+        "version": 2,
         "steps": [
           {
             "name": "sentiment",
             "tensorMap": {
-              "sentiment-explain.inputs.predict": "args"
+              "sentiment-explain.inputs.predict": "array_inputs"
             }
           },
           {
@@ -322,10 +328,10 @@ seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
         "kubernetesMeta": {}
       },
       "state": {
-        "pipelineVersion": 1,
+        "pipelineVersion": 2,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-02-03T18:09:10.174677246Z",
+        "lastChangeTimestamp": "2023-07-04T09:53:19.250753906Z",
         "modelsReady": true
       }
     }
@@ -364,8 +370,8 @@ seldon model load -f ../../models/hf-sentiment-explainer.yaml
 seldon model status sentiment-explainer -w ModelAvailable | jq -M .
 ```
 
-```json
-{}
+```
+Error: Model wait status timeout
 
 ```
 
@@ -407,11 +413,6 @@ spec:
 seldon pipeline load -f ../../pipelines/speech-to-sentiment.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
 ```
@@ -423,8 +424,8 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
     {
       "pipeline": {
         "name": "speech-to-sentiment",
-        "uid": "cfekrnoq4n3c73fctnpg",
-        "version": 1,
+        "uid": "cihuqb4vgtec73bj6nd0",
+        "version": 2,
         "steps": [
           {
             "name": "sentiment",
@@ -460,10 +461,10 @@ seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
         "kubernetesMeta": {}
       },
       "state": {
-        "pipelineVersion": 1,
+        "pipelineVersion": 2,
         "status": "PipelineReady",
         "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-02-03T18:09:35.558610135Z",
+        "lastChangeTimestamp": "2023-07-04T09:58:04.277171896Z",
         "modelsReady": true
       }
     }
@@ -490,9 +491,9 @@ infer("speech-to-sentiment.pipeline")
 ```
 
 ```
-cfeks30fh5ss739vr63g
-{"text": " I hate working on Sundays."}
-{"label": "NEGATIVE", "score": 0.9994712471961975}
+cihuqm8fh5ss73der5gg
+b'{"text": " Cambridge is a great place."}'
+b'{"label": "POSITIVE", "score": 0.9998548030853271}'
 
 ```
 
@@ -518,7 +519,7 @@ while True:
 
 ```
 ......
-Explanation anchors: ['hate']
+Explanation anchors: ['great']
 
 ```
 
@@ -529,29 +530,10 @@ seldon pipeline unload speech-to-sentiment
 seldon pipeline unload sentiment-explain
 ```
 
-```json
-{}
-{}
-
-```
-
 ```bash
 seldon model unload whisper
 seldon model unload sentiment
 seldon model unload sentiment-explainer
 seldon model unload sentiment-output-transform
 seldon model unload sentiment-input-transform
-```
-
-```json
-{}
-{}
-{}
-{}
-{}
-
-```
-
-```python
-
 ```

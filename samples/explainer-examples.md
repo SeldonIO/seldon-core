@@ -189,9 +189,9 @@ seldon model infer sentiment \
 
 ```json
 {
-	"model_name": "sentiment_1",
+	"model_name": "sentiment_2",
 	"model_version": "1",
-	"id": "ada09279-f18b-49c4-b1ba-472223362b9c",
+	"id": "f5c07363-7e9d-4f09-aa30-228c81fdf4a4",
 	"parameters": {},
 	"outputs": [
 		{
@@ -201,8 +201,11 @@ seldon model infer sentiment \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
-				1
+				0
 			]
 		}
 	]
@@ -250,29 +253,49 @@ seldon model infer sentiment-explainer \
   '{"parameters": {"content_type": "str"}, "inputs": [{"name": "foo", "data": ["I am good"], "datatype": "BYTES","shape": [1]}]}'
 ```
 
-```json
-{
-	"model_name": "sentiment-explainer_1",
-	"model_version": "1",
-	"id": "5d4bc74d-f815-469e-91dd-50e99d16ae77",
-	"parameters": {},
-	"outputs": [
-		{
-			"name": "explanation",
-			"shape": [
-				1,
-				1
-			],
-			"datatype": "BYTES",
-			"parameters": {
-				"content_type": "str"
-			},
-			"data": [
-				"{\"meta\": {\"name\": \"AnchorText\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 0, \"sample_proba\": 0.5}, \"version\": \"0.9.0\"}, \"data\": {\"anchor\": [\"good\"], \"precision\": 1.0, \"coverage\": 0.5046, \"raw\": {\"feature\": [2], \"mean\": [1.0], \"precision\": [1.0], \"coverage\": [0.5046], \"examples\": [{\"covered_true\": [\"UNK am good\", \"I UNK good\", \"UNK am good\", \"I am good\", \"UNK am good\", \"I UNK good\", \"I am good\", \"UNK UNK good\", \"I UNK good\", \"UNK UNK good\"], \"covered_false\": [], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"good\"], \"positions\": [5], \"instance\": \"I am good\", \"instances\": [\"I am good\"], \"prediction\": [1]}}}"
-			]
-		}
-	]
-}
+```
+Error: V2 server error: 500 Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/site-packages/starlette/middleware/errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette_exporter/middleware.py", line 307, in __call__
+    await self.app(scope, receive, wrapped_send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/middleware/gzip.py", line 24, in __call__
+    await responder(scope, receive, send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/middleware/gzip.py", line 44, in __call__
+    await self.app(scope, receive, self.send_with_gzip)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/middleware/exceptions.py", line 79, in __call__
+    raise exc
+  File "/opt/conda/lib/python3.8/site-packages/starlette/middleware/exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "/opt/conda/lib/python3.8/site-packages/fastapi/middleware/asyncexitstack.py", line 21, in __call__
+    raise e
+  File "/opt/conda/lib/python3.8/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/routing.py", line 706, in __call__
+    await route.handle(scope, receive, send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/opt/conda/lib/python3.8/site-packages/starlette/routing.py", line 66, in app
+    response = await func(request)
+  File "/opt/conda/lib/python3.8/site-packages/mlserver/rest/app.py", line 42, in custom_route_handler
+    return await original_route_handler(request)
+  File "/opt/conda/lib/python3.8/site-packages/fastapi/routing.py", line 237, in app
+    raw_response = await run_endpoint_function(
+  File "/opt/conda/lib/python3.8/site-packages/fastapi/routing.py", line 163, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/opt/conda/lib/python3.8/site-packages/mlserver/rest/endpoints.py", line 99, in infer
+    inference_response = await self._data_plane.infer(
+  File "/opt/conda/lib/python3.8/site-packages/mlserver/handlers/dataplane.py", line 103, in infer
+    prediction = await model.predict(payload)
+  File "/opt/conda/lib/python3.8/site-packages/mlserver_alibi_explain/runtime.py", line 86, in predict
+    output_data = await self._async_explain_impl(input_data, payload.parameters)
+  File "/opt/conda/lib/python3.8/site-packages/mlserver_alibi_explain/runtime.py", line 119, in _async_explain_impl
+    explanation = await loop.run_in_executor(self._executor, explain_call)
+  File "/opt/conda/lib/python3.8/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/mlserver_alibi_explain/explainers/black_box_runtime.py", line 62, in _explain_impl
+    input_data = input_data[0]
+KeyError: 0
 
 ```
 
