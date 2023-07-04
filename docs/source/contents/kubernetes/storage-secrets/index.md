@@ -71,17 +71,34 @@ By default this ConfigMap only includes `seldon-rclone-gs-public`, but can be ex
 ```
 
 The easiest way to change this is to update your SeldonRuntime.
-* If you are using Helm, the corresponding value is `config.agentConfig.rclone.configSecrets`:
-  ```{literalinclude} ../../../../../k8s/helm-charts/seldon-core-v2-runtime/values.yaml
-  :language: yaml
-  :start-at: config
-  :end-at: configSecrets
+* If your SeldonRuntime is configured using the `seldon-core-v2-runtime` Helm chart, the corresponding value is `config.agentConfig.rclone.configSecrets`.
+  This can be used as shown below:
+  ```yaml
+  config:
+    agentConfig:
+      rclone:
+        configSecrets:
+          - my-s3
+          - custom-gcs
+          - minio-in-cluster
   ```
-* Otherwise, you can add secrets to `.spec.config.agentConfig.rclone.config_secrets`:
-  ```{literalinclude} ../../../../../k8s/helm-charts/seldon-core-v2-runtime/templates/seldon-runtime.yaml
-  :language: yaml
-  :start-at: config
-  :end-at: config_secrets
+* Otherwise, if your SeldonRuntime is configured directly, you can add secrets by setting `.spec.config.agentConfig.rclone.config_secrets`.
+  This can be used as follows:
+  ```yaml
+  apiVersion: mlops.seldon.io/v1alpha1
+  kind: SeldonRuntime
+  metadata:
+    name: seldon
+  spec:
+    seldonConfig: default
+    config:
+      agentConfig:
+        rclone:
+          config_secrets:
+            - my-s3
+            - custom-gcs
+            - minio-in-cluster
+    ...
   ```
 
 ## Examples
