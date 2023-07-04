@@ -152,14 +152,6 @@ function build_push_alibi_explainer {
     EXPLAIN_EXIT_VALUE=$?
 }
 
-function build_push_storage_initializer {
-    make \
-	-C components/storage-initializer \
-        docker-build \
-	docker-push 
-    STORAGE_INITIALIZER_EXIT_VALUE=$?
-}
-
 function build_push_rclone_storage_initializer {
     make \
     -C components/rclone-storage-initializer \
@@ -204,7 +196,6 @@ build_push_mlflowserver
 build_push_xgboostserver
 build_push_tfproxy
 build_push_alibi_explainer
-build_push_storage_initializer
 build_push_rclone_storage_initializer
 build_push_mab
 build_push_keras_cifar10

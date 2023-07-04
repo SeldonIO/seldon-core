@@ -29,12 +29,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// TODO: change image to seldon? is at least configurable by configmap now (with fixed version there)
 // TODO: check PVC
 const (
 	DefaultModelLocalMountPath         = "/mnt/models"
 	StorageInitializerConfigMapKeyName = "storageInitializer"
-	ModelInitializerContainerImage     = "gcr.io/kfserving/model-initializer"
+	ModelInitializerContainerImage     = "docker.io/seldonio/rclone-storage-initializer"
 	ModelInitializerContainerVersion   = "latest"
 	PvcURIPrefix                       = "pvc://"
 	PvcSourceMountName                 = "kfserving-pvc-source"

@@ -35,7 +35,7 @@ func TestStorageInitalizerInjector(t *testing.T) {
 	_, err = mi.InjectModelInitializer(&d, containerName, "gs://mybucket/mymodel", "", "", "")
 	g.Expect(err).To(BeNil())
 	g.Expect(len(d.Spec.Template.Spec.InitContainers)).To(Equal(1))
-	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal("kfserving/storage-initializer:v0.6.1"))
+	g.Expect(d.Spec.Template.Spec.InitContainers[0].Image).To(Equal("seldonio/rclone-storage-initializer:1.16.0"))
 }
 
 func TestStorageInitalizerInjectorWithRelatedImage(t *testing.T) {

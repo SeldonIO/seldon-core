@@ -422,7 +422,6 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
         "executor/Dockerfile.executor.redhat",
         "servers/tfserving/Dockerfile.redhat",
         "components/alibi-detect-server/Dockerfile",
-        "components/storage-initializer/Dockerfile",
         "components/alibi-explain-server/Dockerfile",
     ]
     replaces = [
@@ -617,7 +616,6 @@ def main(argv):
             "examples/batch/kubeflow-pipelines-batch/README.md",
             "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
             "doc/source/workflow/quickstart.md",
-            "doc/source/servers/kfserving-storage-initializer.md",
             "doc/source/servers/overview.md",
             "doc/source/servers/sklearn.md",
             "doc/source/graph/protocols.md",

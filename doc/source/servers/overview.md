@@ -52,9 +52,6 @@ predictiveUnit:
   defaultEnvSecretRefName: ""
 ```
 
-Note: prior to Seldon Core 1.8 we were using `kfserving/storage-initializer`, see [these](./kfserving-storage-initializer.md) notes if you wish to keep using it.
-
-
 ### Customizing Init Containers
 
 You can specify a custom `initContainer` image and default `secret` **globally** by overwriting the helm values specified in the previous section.

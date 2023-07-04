@@ -127,7 +127,7 @@ var configs = map[string]string{
      }`,
 	"storageInitializer": `
 	{
-	"image" : "kfserving/storage-initializer:v0.6.1",
+	"image" : "seldonio/rclone-storage-initializer:1.16.0",
 	"memoryRequest": "100Mi",
 	"memoryLimit": "1Gi",
 	"cpuRequest": "100m",

@@ -6,4 +6,3 @@ Pre-Packaged Model Servers
     :maxdepth: 1
 
     Configuration with rclone-based storage initializer <overview.md>
-    Configuration with kfserving/storage-initializer <kfserving-storage-initializer.md>
