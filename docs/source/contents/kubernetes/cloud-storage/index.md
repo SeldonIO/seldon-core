@@ -47,6 +47,14 @@ A `Server` can use storage secrets in one of two ways:
 * It can dynamically load a secret specified by a `Model` in its `.spec.secretName`
 * It can use global configurations made available via a [central configmap](#central-config-map)
 
+### Central Config Map
+
+To allow all models to utilize particular rclone providers one can add the secrets to the agent configMap, e.g.
+
+```{literalinclude} ../../../../../samples/auth/agent.yaml
+:language: yaml
+```
+
 ## Examples
 
 `````{tabs}
@@ -108,12 +116,3 @@ spec:
 ```
 ````
 `````
-
-
-## Central Config Map
-
-To allow all models to utilize particular rclone providers one can add the secrets to the agent configMap, e.g.
-
-```{literalinclude} ../../../../../samples/auth/agent.yaml
-:language: yaml
-```
