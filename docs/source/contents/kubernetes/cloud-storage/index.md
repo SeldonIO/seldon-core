@@ -45,17 +45,39 @@ Each `Secret` should contain **exactly one** Rclone configuration.
 
 A `Server` can use storage secrets in one of two ways:
 * It can dynamically load a secret specified by a `Model` in its `.spec.secretName`
-* It can use global configurations made available via a [central configmap](#central-config-map)
+* It can use global configurations made available via a [preloaded secrets](#preloaded-secrets)
 
 It is possible to use preloaded secrets for some `Models` and dynamically loaded secrets for others.
- 
-### Central Config Map
 
-To allow all models to utilize particular rclone providers one can add the secrets to the agent configMap, e.g.
+### Preloaded Secrets
+
+Rather than `Models` always having to specify which secret to use, a `Server` can load storage secrets ahead of time.
+These can then be reused across many `Models`.
+
+When using a preloaded secret, the `Model` definition should leave `.spec.secretName` empty.
+The protocol prefix in `.spec.storageUri` still needs to match the remote name specified by a storage secret.
+
+The secrets to preload are named in a centralised `ConfigMap` called `seldon-agent`.
+This `ConfigMap` applies to _all_ `Servers` managed by the same `SeldonRuntime`.
+By default this `ConfigMap` only includes `seldon-rclone-gs-public`, but can be extended with your own secrets as shown below:
 
 ```{literalinclude} ../../../../../samples/auth/agent.yaml
 :language: yaml
 ```
+
+The easiest way to change this is to update your `SeldonRuntime`.
+* If you are using Helm, the corresponding value is `config.agentConfig.rclone.configSecrets`:
+  ```{literalinclude} ../../../../../k8s/helm-charts/seldon-core-v2-runtime/values.yaml
+  :language: yaml
+  :start-at: config
+  :end-at: configSecrets
+  ```
+* Otherwise, you can add secrets to `.spec.config.agentConfig.rclone.config_secrets`:
+  ```{literalinclude} ../../../../../k8s/helm-charts/seldon-core-v2-runtime/templates/seldon-runtime.yaml
+  :language: yaml
+  :start-at: config
+  :end-at: config_secrets
+  ```
 
 ## Examples
 
