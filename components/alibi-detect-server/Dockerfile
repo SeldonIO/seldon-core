@@ -47,9 +47,15 @@ ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
 
 # Install the server
+## NOTE: Removing explicitly requirements.txt file from subdeps test
+## dependencies causing false positives in Snyk.
 COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
-RUN poetry install && rm ~/.cache/pip -rf
+RUN poetry install && \
+    rm ~/.cache/pip -rf && \
+    rm -f /opt/conda/lib/python3.8/site-packages/gslib/vendored/boto/requirements.txt \
+          /opt/conda/lib/python3.8/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
+          /opt/conda/lib/python3.8/site-packages/tests/conda_env/support/requirements.txt
 
 # Add licences
 RUN mkdir /licenses
@@ -64,6 +70,8 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
+ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
+    RCLONE_CONFIG_GS_ANONYMOUS="true"
 
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
 RUN microdnf install -y mesa-libGL
