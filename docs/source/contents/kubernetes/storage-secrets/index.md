@@ -9,7 +9,7 @@ Configuration is provided out-of-the-box for public GCS buckets, which enables t
 ```
 
 This configuration is provided by the Kubernetes `secret` `seldon-rclone-gs-public`.
-It is made available to `Servers` via a [centralised configmap](#central-config-map).
+It is made available to `Servers` as a [preloaded secret](#preloaded-secrets).
 You can define and use your own storage configurations in exactly the same way.
 
 ## Configuration Format
