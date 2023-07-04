@@ -15469,8 +15469,14 @@ spec:
           spec:
             description: ServerSpec defines the desired state of Server
             properties:
+              capabilities:
+                description: The capabilities this server will advertise This will
+                  override any from the ServerConfig
+                items:
+                  type: string
+                type: array
               extraCapabilities:
-                description: The capabilities this server will advertise
+                description: The extra capabilities this server will advertise
                 items:
                   type: string
                 type: array

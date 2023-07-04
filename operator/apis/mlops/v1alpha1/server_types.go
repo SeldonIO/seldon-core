@@ -33,8 +33,12 @@ const (
 type ServerSpec struct {
 	// Server definition
 	ServerConfig string `json:"serverConfig"`
-	// The capabilities this server will advertise
+	// The extra capabilities this server will advertise
+	// +Deprecated
 	ExtraCapabilities []string `json:"extraCapabilities,omitempty"`
+	// The capabilities this server will advertise
+	// This will override any from the ServerConfig
+	Capabilities []string `json:"capabilities,omitempty"`
 	// Image overrides
 	ImageOverrides *ContainerOverrideSpec `json:"imageOverrides,omitempty"`
 	// PodSpec overrides

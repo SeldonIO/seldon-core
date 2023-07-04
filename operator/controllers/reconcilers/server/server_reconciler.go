@@ -104,14 +104,19 @@ func (s *ServerReconciler) Reconcile() error {
 	return nil
 }
 
-func updateCapabilities(extraCapabilities []string, podSpec *v1.PodSpec) {
-	if len(extraCapabilities) > 0 {
+func updateCapabilities(capabilities []string, extraCapabilities []string, podSpec *v1.PodSpec) {
+	if len(extraCapabilities) > 0 || len(capabilities) > 0 {
 		for _, container := range podSpec.Containers {
 			for idx, envVar := range container.Env {
 				if envVar.Name == EnvVarNameCapabilities {
-					capabilitiesStr := strings.Join(extraCapabilities, ",")
-					val := fmt.Sprintf("%s,%s", envVar.Value, capabilitiesStr)
-					container.Env[idx] = v1.EnvVar{Name: EnvVarNameCapabilities, Value: val}
+					if len(capabilities) > 0 {
+						capabilitiesStr := strings.Join(capabilities, ",")
+						container.Env[idx] = v1.EnvVar{Name: EnvVarNameCapabilities, Value: capabilitiesStr}
+					} else { // Deprecated
+						capabilitiesStr := strings.Join(extraCapabilities, ",")
+						val := fmt.Sprintf("%s,%s", envVar.Value, capabilitiesStr)
+						container.Env[idx] = v1.EnvVar{Name: EnvVarNameCapabilities, Value: val}
+					}
 				}
 			}
 		}
@@ -132,7 +137,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	}
 
 	// Update capabilities
-	updateCapabilities(server.Spec.ExtraCapabilities, podSpec)
+	updateCapabilities(server.Spec.Capabilities, server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
 	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig,
