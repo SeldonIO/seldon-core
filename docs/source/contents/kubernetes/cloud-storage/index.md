@@ -47,6 +47,9 @@ A `Server` can use storage secrets in one of two ways:
 * It can dynamically load a secret specified by a `Model` in its `.spec.secretName`
 * It can use global configurations made available via [preloaded secrets](#preloaded-secrets)
 
+The name of a `Secret` is entirely your choice, as is the name of the data key in that `Secret`.
+All that matters is that there is a single data key and that its value is in the format described above.
+
 It is possible to use preloaded secrets for some `Models` and dynamically loaded secrets for others.
 
 ### Preloaded Secrets
