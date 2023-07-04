@@ -1,4 +1,4 @@
-# Cloud Storage
+# Storage Secrets
 
 Inference artifacts referenced by Models can be stored in any of the storage backends supported by [Rclone](https://rclone.org/).
 This includes local filesystems, AWS S3, and Google Cloud Storage (GCS), among others.
