@@ -38,6 +38,15 @@ For example, the GCS parameter `--gcs-client-id` described [here](https://rclone
 For reference, this format is described in the [Rclone documentation](https://rclone.org/rc/#config-create).
 Note that we do not support the use of `opts` discussed in that section.
 
+## Kubernetes Secrets
+
+Kubernetes `Secrets` are used to store Rclone configurations, or _storage secrets_, for use by `Servers`.
+Each `Secret` should contain **exactly one** Rclone configuration.
+
+A `Server` can use storage secrets in one of two ways.
+Firstly, it can dynamically load a secret specified by a `Model` in its `.spec.secretName`.
+Secondly, it can used global configurations made available via a [central configmap](#central-config-map).
+
 ## Examples
 
 `````{tabs}
