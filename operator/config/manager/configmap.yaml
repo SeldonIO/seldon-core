@@ -34,37 +34,37 @@ data:
             "seldon": {
               "image": "seldonio/sklearnserver",
               "defaultImageVersion": "1.17.0-dev"
-              },
-            "v2": {
-              "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.3.4-sklearn"
-              }
-            }
-        },
+             },
+           "v2": {
+             "image": "seldonio/mlserver",
+             "defaultImageVersion": "1.3.5.rc1-sklearn"
+             }
+           }
+       },
         "XGBOOST_SERVER": {
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
               "defaultImageVersion": "1.17.0-dev"
-              },
-            "v2": {
-              "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.3.4-xgboost"
-              }
-            }
-        },
+             },
+           "v2": {
+             "image": "seldonio/mlserver",
+             "defaultImageVersion": "1.3.5.rc1-xgboost"
+             }
+           }
+       },
         "MLFLOW_SERVER": {
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
               "defaultImageVersion": "1.17.0-dev"
-              },
-            "v2": {
-              "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.3.4-mlflow"
-              }
-            }
-        },
+             },
+           "v2": {
+             "image": "seldonio/mlserver",
+             "defaultImageVersion": "1.3.5.rc1-mlflow"
+             }
+           }
+       },
         "TRITON_SERVER": {
           "protocols" : {
             "v2": {
@@ -74,21 +74,21 @@ data:
             }
         },
         "HUGGINGFACE_SERVER": {
-          "protocols" : {
-            "v2": {
-              "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.3.4-huggingface"
-              }
-            }
-        },
+         "protocols" : {
+           "v2": {
+             "image": "seldonio/mlserver",
+             "defaultImageVersion": "1.3.5.rc1-huggingface"
+             }
+           }
+       },
         "TEMPO_SERVER": {
-          "protocols" : {
-            "v2": {
-              "image": "seldonio/mlserver",
-              "defaultImageVersion": "1.3.4-slim"
-              }
-            }
-        }
+         "protocols" : {
+           "v2": {
+             "image": "seldonio/mlserver",
+             "defaultImageVersion": "1.3.5.rc1-slim"
+             }
+           }
+       }
     }
   storageInitializer: |-
     {
@@ -98,8 +98,8 @@ data:
         "cpuRequest": "100m",
         "cpuLimit": "1"
     }
-  explainer: |-
-    {
-        "image" : "seldonio/alibiexplainer:1.17.0-dev",
-        "image_v2" : "seldonio/mlserver:1.3.4-alibi-explain"
-    }
+ explainer: |-
+   {
+       "image" : "seldonio/alibiexplainer:1.17.0-dev",
+       "image_v2" : "seldonio/mlserver:1.3.5.rc1-alibi-explain"
+   }
