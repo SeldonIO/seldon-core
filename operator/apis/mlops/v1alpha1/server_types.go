@@ -34,10 +34,10 @@ type ServerSpec struct {
 	// Server definition
 	ServerConfig string `json:"serverConfig"`
 	// The extra capabilities this server will advertise
-	// +Deprecated
+	// These are added to the capabilities exposed by the referenced ServerConfig
 	ExtraCapabilities []string `json:"extraCapabilities,omitempty"`
 	// The capabilities this server will advertise
-	// This will override any from the ServerConfig
+	// This will override any from the referenced ServerConfig
 	Capabilities []string `json:"capabilities,omitempty"`
 	// Image overrides
 	ImageOverrides *ContainerOverrideSpec `json:"imageOverrides,omitempty"`
