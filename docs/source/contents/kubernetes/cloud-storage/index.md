@@ -50,7 +50,9 @@ A `Server` can use storage secrets in one of two ways:
 The name of a `Secret` is entirely your choice, as is the name of the data key in that `Secret`.
 All that matters is that there is a single data key and that its value is in the format described above.
 
+```{note}
 It is possible to use preloaded secrets for some `Models` and dynamically loaded secrets for others.
+```
 
 ### Preloaded Secrets
 
