@@ -14,7 +14,7 @@ MESH_IP
 ```
 
 ```
-'172.19.255.1'
+'172.18.255.2'
 
 ```
 
@@ -130,7 +130,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 {
   "model_name": "iris_1",
   "model_version": "1",
-  "id": "0fb4dde4-fced-4da5-b9fc-f939dca60fbd",
+  "id": "25e1c1b9-a20f-456d-bdff-c75d5ba83b1f",
   "parameters": {},
   "outputs": [
     {
@@ -140,6 +140,9 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
         1
       ],
       "datatype": "INT64",
+      "parameters": {
+        "content_type": "np"
+      },
       "data": [
         2
       ]
@@ -167,7 +170,10 @@ seldon pipeline infer iris-pipeline --inference-host ${MESH_IP}:80 \
         1,
         1
       ],
-      "datatype": "INT64"
+      "datatype": "INT64",
+      "parameters": {
+        "content_type": "np"
+      }
     }
   ]
 }
@@ -316,21 +322,20 @@ mlserver infer -u ${MESH_IP} -m iris -i batch-inputs/iris-input.txt -o /tmp/iris
 ```
 
 ```
-2023-03-10 10:53:40,831 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-2023-03-10 10:53:40,836 [mlserver] INFO - server url: 172.19.255.1
-2023-03-10 10:53:40,836 [mlserver] INFO - model name: iris
-2023-03-10 10:53:40,836 [mlserver] INFO - request headers: {}
-2023-03-10 10:53:40,836 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-2023-03-10 10:53:40,836 [mlserver] INFO - output file path: /tmp/iris-output.txt
-2023-03-10 10:53:40,836 [mlserver] INFO - workers: 5
-2023-03-10 10:53:40,836 [mlserver] INFO - retries: 3
-2023-03-10 10:53:40,836 [mlserver] INFO - batch interval: 0.0
-2023-03-10 10:53:40,836 [mlserver] INFO - batch jitter: 0.0
-2023-03-10 10:53:40,836 [mlserver] INFO - connection timeout: 60
-2023-03-10 10:53:40,836 [mlserver] INFO - micro-batch size: 1
-2023-03-10 10:53:40,993 [mlserver] INFO - Finalizer: processed instances: 100
-2023-03-10 10:53:40,994 [mlserver] INFO - Total processed instances: 100
-2023-03-10 10:53:40,994 [mlserver] INFO - Time taken: 0.16 seconds
+2023-06-30 11:05:32,389 [mlserver] INFO - server url: 172.18.255.2
+2023-06-30 11:05:32,389 [mlserver] INFO - model name: iris
+2023-06-30 11:05:32,389 [mlserver] INFO - request headers: {}
+2023-06-30 11:05:32,389 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+2023-06-30 11:05:32,389 [mlserver] INFO - output file path: /tmp/iris-output.txt
+2023-06-30 11:05:32,389 [mlserver] INFO - workers: 5
+2023-06-30 11:05:32,389 [mlserver] INFO - retries: 3
+2023-06-30 11:05:32,389 [mlserver] INFO - batch interval: 0.0
+2023-06-30 11:05:32,389 [mlserver] INFO - batch jitter: 0.0
+2023-06-30 11:05:32,389 [mlserver] INFO - connection timeout: 60
+2023-06-30 11:05:32,389 [mlserver] INFO - micro-batch size: 1
+2023-06-30 11:05:32,503 [mlserver] INFO - Finalizer: processed instances: 100
+2023-06-30 11:05:32,503 [mlserver] INFO - Total processed instances: 100
+2023-06-30 11:05:32,503 [mlserver] INFO - Time taken: 0.11 seconds
 
 ```
 
@@ -341,21 +346,20 @@ mlserver infer -u ${MESH_IP} -m iris-pipeline.pipeline -i batch-inputs/iris-inpu
 ```
 
 ```
-2023-03-10 10:53:50,712 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-2023-03-10 10:53:50,713 [mlserver] INFO - server url: 172.19.255.1
-2023-03-10 10:53:50,714 [mlserver] INFO - model name: iris-pipeline.pipeline
-2023-03-10 10:53:50,714 [mlserver] INFO - request headers: {}
-2023-03-10 10:53:50,714 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
-2023-03-10 10:53:50,714 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
-2023-03-10 10:53:50,714 [mlserver] INFO - workers: 5
-2023-03-10 10:53:50,714 [mlserver] INFO - retries: 3
-2023-03-10 10:53:50,714 [mlserver] INFO - batch interval: 0.0
-2023-03-10 10:53:50,714 [mlserver] INFO - batch jitter: 0.0
-2023-03-10 10:53:50,714 [mlserver] INFO - connection timeout: 60
-2023-03-10 10:53:50,714 [mlserver] INFO - micro-batch size: 1
-2023-03-10 10:53:51,195 [mlserver] INFO - Finalizer: processed instances: 100
-2023-03-10 10:53:51,195 [mlserver] INFO - Total processed instances: 100
-2023-03-10 10:53:51,195 [mlserver] INFO - Time taken: 0.48 seconds
+2023-06-30 11:05:35,857 [mlserver] INFO - server url: 172.18.255.2
+2023-06-30 11:05:35,858 [mlserver] INFO - model name: iris-pipeline.pipeline
+2023-06-30 11:05:35,858 [mlserver] INFO - request headers: {}
+2023-06-30 11:05:35,858 [mlserver] INFO - input file path: batch-inputs/iris-input.txt
+2023-06-30 11:05:35,858 [mlserver] INFO - output file path: /tmp/iris-pipeline-output.txt
+2023-06-30 11:05:35,858 [mlserver] INFO - workers: 5
+2023-06-30 11:05:35,858 [mlserver] INFO - retries: 3
+2023-06-30 11:05:35,858 [mlserver] INFO - batch interval: 0.0
+2023-06-30 11:05:35,858 [mlserver] INFO - batch jitter: 0.0
+2023-06-30 11:05:35,858 [mlserver] INFO - connection timeout: 60
+2023-06-30 11:05:35,858 [mlserver] INFO - micro-batch size: 1
+2023-06-30 11:05:36,145 [mlserver] INFO - Finalizer: processed instances: 100
+2023-06-30 11:05:36,146 [mlserver] INFO - Total processed instances: 100
+2023-06-30 11:05:36,146 [mlserver] INFO - Time taken: 0.29 seconds
 
 ```
 
@@ -367,10 +371,10 @@ cat /tmp/iris-output.txt | head -n 1 | jq -M .
 {
   "model_name": "iris_1",
   "model_version": "1",
-  "id": "d7707cc7-37be-426e-812c-3f79969ad82c",
+  "id": "46bdfca2-8805-4a72-b1ce-95e4f38c1a19",
   "parameters": {
-    "batch_index": 0,
-    "inference_id": "d7707cc7-37be-426e-812c-3f79969ad82c"
+    "inference_id": "46bdfca2-8805-4a72-b1ce-95e4f38c1a19",
+    "batch_index": 0
   },
   "outputs": [
     {
@@ -380,6 +384,9 @@ cat /tmp/iris-output.txt | head -n 1 | jq -M .
         1
       ],
       "datatype": "INT64",
+      "parameters": {
+        "content_type": "np"
+      },
       "data": [
         1
       ]
@@ -396,9 +403,9 @@ cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
 ```json
 {
   "model_name": "",
-  "id": "81e2294f-b8ae-4f6c-bcdb-144aae7cac5a",
+  "id": "37e8c013-b348-41e8-89b9-fea86a4f9632",
   "parameters": {
-    "batch_index": 0
+    "batch_index": 1
   },
   "outputs": [
     {
@@ -408,6 +415,9 @@ cat /tmp/iris-pipeline-output.txt | head -n 1 | jq .
         1
       ],
       "datatype": "INT64",
+      "parameters": {
+        "content_type": "np"
+      },
       "data": [
         1
       ]
@@ -490,21 +500,20 @@ mlserver infer -u ${MESH_IP} -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o 
 ```
 
 ```
-2023-03-10 10:54:05,427 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-2023-03-10 10:54:05,429 [mlserver] INFO - server url: 172.19.255.1
-2023-03-10 10:54:05,429 [mlserver] INFO - model name: tfsimple1
-2023-03-10 10:54:05,429 [mlserver] INFO - request headers: {}
-2023-03-10 10:54:05,429 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-2023-03-10 10:54:05,429 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
-2023-03-10 10:54:05,429 [mlserver] INFO - workers: 5
-2023-03-10 10:54:05,429 [mlserver] INFO - retries: 3
-2023-03-10 10:54:05,429 [mlserver] INFO - batch interval: 0.0
-2023-03-10 10:54:05,429 [mlserver] INFO - batch jitter: 0.0
-2023-03-10 10:54:05,429 [mlserver] INFO - connection timeout: 60
-2023-03-10 10:54:05,429 [mlserver] INFO - micro-batch size: 1
-2023-03-10 10:54:05,527 [mlserver] INFO - Finalizer: processed instances: 100
-2023-03-10 10:54:05,527 [mlserver] INFO - Total processed instances: 100
-2023-03-10 10:54:05,528 [mlserver] INFO - Time taken: 0.10 seconds
+2023-06-30 11:22:52,662 [mlserver] INFO - server url: 172.18.255.2
+2023-06-30 11:22:52,662 [mlserver] INFO - model name: tfsimple1
+2023-06-30 11:22:52,662 [mlserver] INFO - request headers: {}
+2023-06-30 11:22:52,662 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+2023-06-30 11:22:52,662 [mlserver] INFO - output file path: /tmp/tfsimple-output.txt
+2023-06-30 11:22:52,662 [mlserver] INFO - workers: 5
+2023-06-30 11:22:52,662 [mlserver] INFO - retries: 3
+2023-06-30 11:22:52,662 [mlserver] INFO - batch interval: 0.0
+2023-06-30 11:22:52,662 [mlserver] INFO - batch jitter: 0.0
+2023-06-30 11:22:52,662 [mlserver] INFO - connection timeout: 60
+2023-06-30 11:22:52,662 [mlserver] INFO - micro-batch size: 1
+2023-06-30 11:22:52,755 [mlserver] INFO - Finalizer: processed instances: 100
+2023-06-30 11:22:52,755 [mlserver] INFO - Total processed instances: 100
+2023-06-30 11:22:52,756 [mlserver] INFO - Time taken: 0.09 seconds
 
 ```
 
@@ -515,21 +524,20 @@ mlserver infer -u ${MESH_IP} -m tfsimple.pipeline -i batch-inputs/tfsimple-input
 ```
 
 ```
-2023-03-10 10:54:07,559 [mlserver] INFO - Using asyncio event-loop policy: uvloop
-2023-03-10 10:54:07,560 [mlserver] INFO - server url: 172.19.255.1
-2023-03-10 10:54:07,560 [mlserver] INFO - model name: tfsimple.pipeline
-2023-03-10 10:54:07,560 [mlserver] INFO - request headers: {}
-2023-03-10 10:54:07,560 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
-2023-03-10 10:54:07,560 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
-2023-03-10 10:54:07,560 [mlserver] INFO - workers: 5
-2023-03-10 10:54:07,560 [mlserver] INFO - retries: 3
-2023-03-10 10:54:07,560 [mlserver] INFO - batch interval: 0.0
-2023-03-10 10:54:07,560 [mlserver] INFO - batch jitter: 0.0
-2023-03-10 10:54:07,560 [mlserver] INFO - connection timeout: 60
-2023-03-10 10:54:07,560 [mlserver] INFO - micro-batch size: 1
-2023-03-10 10:54:07,857 [mlserver] INFO - Finalizer: processed instances: 100
-2023-03-10 10:54:07,858 [mlserver] INFO - Total processed instances: 100
-2023-03-10 10:54:07,858 [mlserver] INFO - Time taken: 0.30 seconds
+2023-06-30 11:22:54,065 [mlserver] INFO - server url: 172.18.255.2
+2023-06-30 11:22:54,065 [mlserver] INFO - model name: tfsimple.pipeline
+2023-06-30 11:22:54,065 [mlserver] INFO - request headers: {}
+2023-06-30 11:22:54,065 [mlserver] INFO - input file path: batch-inputs/tfsimple-input.txt
+2023-06-30 11:22:54,065 [mlserver] INFO - output file path: /tmp/tfsimple-pipeline-output.txt
+2023-06-30 11:22:54,065 [mlserver] INFO - workers: 5
+2023-06-30 11:22:54,065 [mlserver] INFO - retries: 3
+2023-06-30 11:22:54,065 [mlserver] INFO - batch interval: 0.0
+2023-06-30 11:22:54,065 [mlserver] INFO - batch jitter: 0.0
+2023-06-30 11:22:54,065 [mlserver] INFO - connection timeout: 60
+2023-06-30 11:22:54,065 [mlserver] INFO - micro-batch size: 1
+2023-06-30 11:22:54,302 [mlserver] INFO - Finalizer: processed instances: 100
+2023-06-30 11:22:54,302 [mlserver] INFO - Total processed instances: 100
+2023-06-30 11:22:54,303 [mlserver] INFO - Time taken: 0.24 seconds
 
 ```
 
@@ -541,10 +549,10 @@ cat /tmp/tfsimple-output.txt | head -n 1 | jq -M .
 {
   "model_name": "tfsimple1_1",
   "model_version": "1",
-  "id": "cbce88c5-508d-4c34-bb04-228c4ca4cfa3",
+  "id": "19952272-b023-4079-aa08-f1880ded05e5",
   "parameters": {
-    "batch_index": 1,
-    "inference_id": "cbce88c5-508d-4c34-bb04-228c4ca4cfa3"
+    "inference_id": "19952272-b023-4079-aa08-f1880ded05e5",
+    "batch_index": 1
   },
   "outputs": [
     {
@@ -613,9 +621,9 @@ cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
 ```json
 {
   "model_name": "",
-  "id": "734b54c5-2253-4311-b097-5f63d821c29d",
+  "id": "46b05aab-07d9-414d-be96-c03d1863552a",
   "parameters": {
-    "batch_index": 0
+    "batch_index": 3
   },
   "outputs": [
     {
@@ -626,22 +634,22 @@ cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
       ],
       "datatype": "INT32",
       "data": [
-        114,
-        46,
-        23,
-        102,
-        45,
-        185,
-        197,
-        106,
-        110,
-        84,
-        74,
-        39,
-        67,
         140,
-        99,
-        72
+        164,
+        85,
+        58,
+        152,
+        76,
+        70,
+        56,
+        100,
+        141,
+        98,
+        181,
+        115,
+        177,
+        106,
+        193
       ]
     },
     {
@@ -652,22 +660,22 @@ cat /tmp/tfsimple-pipeline-output.txt | head -n 1 | jq -M .
       ],
       "datatype": "INT32",
       "data": [
-        36,
-        32,
+        -10,
+        0,
+        -11,
+        -38,
+        2,
+        -36,
+        -52,
+        -8,
+        -18,
+        57,
+        94,
         -5,
-        -14,
-        19,
-        9,
-        1,
-        -26,
-        -84,
-        -30,
-        -24,
-        33,
-        -31,
-        14,
-        25,
-        48
+        -27,
+        17,
+        58,
+        -1
       ]
     }
   ]

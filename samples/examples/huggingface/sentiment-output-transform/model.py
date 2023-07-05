@@ -28,16 +28,21 @@ class SentimentOutputTransformRuntime(MLModel):
     return self.ready
 
   async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+    logger.info("payload (output-transform): %s",payload)
     res_list = self.decode_request(payload, default_codec=StringRequestCodec)
+    logger.info("res list (output-transform): %s",res_list)
     scores = []
     for res in res_list:
-      logger.debug("decoded data: %s",res)
-      sentiment = json.loads(res)
+      logger.debug("decoded data (output transform): %s",res)
+      #sentiment = json.loads(res)
+      sentiment = res
       if sentiment["label"] == "POSITIVE":
         scores.append(1)
       else:
         scores.append(0)
-    return NumpyRequestCodec.encode_response(
+    response =  NumpyRequestCodec.encode_response(
       model_name="sentiments",
       payload=np.array(scores)
     )
+    logger.info("response (output-transform): %s", response)
+    return response

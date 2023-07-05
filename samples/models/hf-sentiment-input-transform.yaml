@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: sentiment-input-transform
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/huggingface/sentiment-input-transform"
+  storageUri: "gs://seldon-models/scv2/examples/huggingface/mlserver_1.3.5/sentiment-input-transform"
   requirements:
   - mlserver
   - python

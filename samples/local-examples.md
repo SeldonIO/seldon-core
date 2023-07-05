@@ -14,7 +14,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/mlserver/iris"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -54,19 +54,19 @@ seldon model infer iris \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "e08dda16-776e-40e9-b556-273d8bf851ae",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "983bd95f-4b4d-4ff1-95b2-df9d6d089164",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -92,8 +92,14 @@ seldon model infer iris --inference-mode grpc \
       "name": "predict",
       "datatype": "INT64",
       "shape": [
+        "1",
         "1"
       ],
+      "parameters": {
+        "content_type": {
+          "stringParam": "np"
+        }
+      },
       "contents": {
         "int64Contents": [
           "2"
@@ -109,11 +115,6 @@ Unload the model
 
 ```bash
 seldon model unload iris
-```
-
-```json
-{}
-
 ```
 
 ### Tensorflow Model
@@ -360,11 +361,6 @@ Unload the model
 seldon model unload tfsimple1
 ```
 
-```json
-{}
-
-```
-
 ### Experiment
 
 We will use two SKlearn Iris classification models to illustrate an experiment.
@@ -432,13 +428,13 @@ seldon model status iris2 | jq -M .
       "modelReplicaState": {
         "0": {
           "state": "Available",
-          "lastChangeTimestamp": "2022-11-15T10:45:30.088668539Z"
+          "lastChangeTimestamp": "2023-06-29T14:01:41.362720538Z"
         }
       },
       "state": {
         "state": "ModelAvailable",
         "availableReplicas": 1,
-        "lastChangeTimestamp": "2022-11-15T10:45:30.088668539Z"
+        "lastChangeTimestamp": "2023-06-29T14:01:41.362720538Z"
       },
       "modelDefn": {
         "meta": {
@@ -468,13 +464,13 @@ seldon model status iris2 | jq -M .
       "modelReplicaState": {
         "0": {
           "state": "Available",
-          "lastChangeTimestamp": "2022-11-15T10:45:30.088816590Z"
+          "lastChangeTimestamp": "2023-06-29T14:01:41.362845079Z"
         }
       },
       "state": {
         "state": "ModelAvailable",
         "availableReplicas": 1,
-        "lastChangeTimestamp": "2022-11-15T10:45:30.088816590Z"
+        "lastChangeTimestamp": "2023-06-29T14:01:41.362845079Z"
       },
       "modelDefn": {
         "meta": {
@@ -524,11 +520,6 @@ Start the experiment.
 seldon experiment start -f ./experiments/ab-default-model.yaml
 ```
 
-```json
-{}
-
-```
-
 Wait for the experiment to be ready.
 
 ```bash
@@ -555,7 +546,7 @@ seldon model infer iris -i 100 \
 ```
 
 ```
-Success: map[:iris2_1::41 :iris_1::59]
+Success: map[:iris2_1::57 :iris_1::43]
 
 ```
 
@@ -570,19 +561,19 @@ seldon model infer iris \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "35a7fce6-db28-4229-ba35-dd2c1db02505",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "fa425bdf-737c-41fe-894d-58868f70fe5d",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -621,11 +612,6 @@ Stop the experiment
 seldon experiment stop experiment-sample
 ```
 
-```json
-{}
-
-```
-
 Show the requests all go to original model now.
 
 ```bash
@@ -643,12 +629,6 @@ Unload both models.
 ```bash
 seldon model unload iris
 seldon model unload iris2
-```
-
-```json
-{}
-{}
-
 ```
 
 ```python
