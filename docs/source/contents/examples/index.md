@@ -22,6 +22,10 @@ This section will provide some examples to allow operations with Seldon to be te
 
 * [Explainer examples](explainer-examples.md)
 
+## Servers
+
+* [Custom Servers](custom-servers.md)
+
 ## Experiments
 
  * [Local experiments](local-experiments.md)
