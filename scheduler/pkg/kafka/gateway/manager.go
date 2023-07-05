@@ -61,7 +61,11 @@ func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	return m2
 }
 
-func NewConsumerManager(logger log.FieldLogger, managerConfig *ManagerConfig, maxNumConsumers int) (*ConsumerManager, error) {
+func NewConsumerManager(
+	logger log.FieldLogger,
+	managerConfig *ManagerConfig,
+	maxNumConsumers int,
+) (*ConsumerManager, error) {
 	cm := &ConsumerManager{
 		logger:          logger.WithField("source", "ConsumerManager"),
 		managerConfig:   managerConfig,
@@ -79,40 +83,43 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
-	producerConfigMap["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfigMap)
+	producerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
+	producerConfig["go.delivery.reports"] = true
+	err = config.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
 
-	producerConfigAsJSON, err := json.Marshal(&producerConfigMap)
+	producerConfigMasked := config.WithoutSecrets(producerConfig)
+	producerConfigMaskedJSON, err := json.Marshal(&producerConfigMasked)
 	if err != nil {
-		logger.WithField("config", &producerConfigMap).Info("Creating producer config for use later")
+		logger.WithField("config", &producerConfigMasked).Info("Creating producer config for use later")
 	} else {
-		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer config for use later")
+		logger.WithField("config", string(producerConfigMaskedJSON)).Info("Creating producer config for use later")
 	}
 
-	consumerConfigMap := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
-	err = config.AddKafkaSSLOptions(consumerConfigMap)
+	consumerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
+	err = config.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
 
-	consumerConfigAsJson, err := json.Marshal(&consumerConfigMap)
+	consumerConfigMasked := config.WithoutSecrets(consumerConfig)
+	consumerConfigMaskedJson, err := json.Marshal(&consumerConfigMasked)
 	if err != nil {
-		logger.WithField("config", &consumerConfigMap).Info("Creating consumer config for use later")
+		logger.WithField("config", &consumerConfigMasked).Info("Creating consumer config for use later")
 	} else {
-		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer config for use later")
+		logger.WithField("config", string(consumerConfigMaskedJson)).Info("Creating consumer config for use later")
 	}
 
-	cm.consumerConfigMap = consumerConfigMap
-	cm.producerConfigMap = producerConfigMap
+	cm.consumerConfigMap = consumerConfig
+	cm.producerConfigMap = producerConfig
 	return nil
 }
 
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
+
 	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
 	logger.Debugf("Getting consumer for model %s with bucket id %s", modelName, consumerBucketId)
@@ -130,6 +137,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 		if err != nil {
 			return nil, err
 		}
+
 		go ic.Serve()
 		logger.Debugf("Created consumer for model %s with bucket id %s", modelName, consumerBucketId)
 		cm.consumers[consumerBucketId] = ic

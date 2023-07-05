@@ -64,8 +64,10 @@ func (r *RCloneClient) loadRcloneRawConfiguration(config *config.AgentConfigurat
 
 	var rcloneNamesAdded []string
 	if len(config.Rclone.Config) > 0 {
+		logger.Infof("found %d Rclone configs", len(config.Rclone.Config))
+
 		for _, config := range config.Rclone.Config {
-			logger.Infof("Loading rclone config %s", config)
+			logger.Info("loading Rclone config")
 
 			name, err := r.Config([]byte(config))
 			if err != nil {
@@ -122,7 +124,7 @@ func (r *RCloneClient) loadRcloneSecretsConfiguration(config *config.AgentConfig
 
 		secretsHandler := k8s.NewSecretsHandler(secretClientSet, r.namespace)
 		for _, secret := range config.Rclone.ConfigSecrets {
-			logger.Infof("Loading rclone secret %s", secret)
+			logger.WithField("secret_name", secret).Infof("retrieving Rclone secret")
 
 			config, err := secretsHandler.GetSecretConfig(secret)
 			if err != nil {

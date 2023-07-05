@@ -4,7 +4,7 @@ metadata:
   name: mlserver-134
 spec:
   serverConfig: mlserver
-  extraCapabilities:
+  capabilities:
   - mlserver-1.3.4
   podSpec:
     containers:

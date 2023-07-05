@@ -22,8 +22,22 @@ There is a default capabilities for each server as follows:
   :end-before: SELDON_OVERCOMMIT_PERCENTAGE
   ```
 
-## Extra Capabilities
-Servers can be set up with the `extraCapabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
+## Custom Capabilities
+Servers can be defined with a `capabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
+
+```{literalinclude} ../../../../samples/servers/custom-mlserver-capabilities.yaml
+:language: yaml
+```
+
+These `capabilities` overrride the ones from the `serverConfig: mlserver`. A model that takes advantage of this is shown below:
+
+```{literalinclude} ../../../../samples/models/iris-custom-requirements.yaml
+:language: yaml
+```
+
+This above model will be matched with the previous custom server `mlserver-134`.
+
+Servers can also be set up with the `extraCapabilities` that add to existing capabilities from the referenced ServerConfig. For instance:
 
 ```{literalinclude} ../../../../samples/servers/mlserver-extra-capabilities.yaml
 :language: yaml
@@ -36,6 +50,10 @@ Models can then specify requirements to select a server that satisfies those req
 ```{literalinclude} ../../../../samples/models/extra-model-requirements.yaml
 :language: yaml
 ```
+
+The `capabilities` field takes precedence over the `extraCapabilities` field.
+
+For some examples see [here](../examples/custom-servers.md).
 
 
 ## Autoscaling of Servers

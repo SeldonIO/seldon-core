@@ -137,7 +137,7 @@ func (r *RCloneClient) StartConfigListener(configHandler *config.AgentConfigHand
 	logger.Info("Loading initial rclone configuration")
 	err := r.loadRcloneConfiguration(configHandler.AddListener(r.configChan))
 	if err != nil {
-		r.logger.WithError(err).Errorf("Failed to load rclone defaults")
+		logger.WithError(err).Errorf("Failed to load rclone defaults")
 		return err
 	}
 	return nil
@@ -270,17 +270,25 @@ func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string
 }
 
 func (r *RCloneClient) Config(config []byte) (string, error) {
+	logger := r.logger.WithField("func", "Config")
+
 	configCreate, err := r.parseRcloneConfig(config)
 	if err != nil {
 		return "", err
 	}
+
+	logger.WithField("remote_name", configCreate.Name).Info("loaded config")
+
 	exists, err := r.configExists(configCreate.Name)
 	if err != nil {
 		return "", err
 	}
+
 	if exists {
+		logger.WithField("remote_name", configCreate.Name).Info("updating existing Rclone remote")
 		return configCreate.Name, r.configUpdate(configCreate)
 	} else {
+		logger.WithField("remote_name", configCreate.Name).Info("creating new Rclone remote")
 		return configCreate.Name, r.configCreate(configCreate)
 	}
 }
@@ -303,6 +311,8 @@ func pathExists(path string) (bool, error) {
 
 // Call Rclone /sync/copy
 func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
+	logger := r.logger.WithField("func", "Copy")
+
 	var srcUpdated string
 	var err error
 	if len(config) > 0 {
@@ -331,7 +341,10 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		CreateEmptySrcDirs: true,
 	}
 
-	r.logger.Infof("Copy from %s (original %s) to %s", srcUpdated, srcUri, dst)
+	logger.
+		WithField("source_uri", srcUri).
+		WithField("destination_uri", dst).
+		Info("will copy model artifacts")
 
 	b, err := json.Marshal(copy)
 	if err != nil {
@@ -340,7 +353,7 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 
 	_, err = r.call(b, RcloneSyncCopyPath)
 	if err != nil {
-		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUpdated, dst, err)
+		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUri, dst, err)
 	}
 
 	// Even if we had success from rclone the src may be empty so need to check

@@ -1384,6 +1384,11 @@ func (in *ServerSpec) DeepCopyInto(out *ServerSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.Capabilities != nil {
+		in, out := &in.Capabilities, &out.Capabilities
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ImageOverrides != nil {
 		in, out := &in.ImageOverrides, &out.ImageOverrides
 		*out = new(ContainerOverrideSpec)
