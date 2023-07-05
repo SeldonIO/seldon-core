@@ -140,7 +140,7 @@ kind: Model
 metadata:
   name: cifar10-outlier
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/cifar10/outlier-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/cifar10/outlier-detector"
   requirements:
     - mlserver
     - alibi-detect
@@ -150,7 +150,7 @@ kind: Model
 metadata:
   name: cifar10-drift
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/cifar10/drift-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/cifar10/drift-detector"
   requirements:
     - mlserver
     - alibi-detect

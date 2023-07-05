@@ -27,12 +27,12 @@ upload-all:
 	find . \
 		-type f \( -name '*.ipynb' -o -name '*.md' -o -name '*.yaml' \) \
 		-exec \
-			sed -i "s/gs:\/\/\(.*\)\/mlserver_.*\/\(.*\)/gs:\/\/\1\/$(MLSERVER_FOLDER)\/\2/g" \
+			sed -i "s/gs:\/\/\(.*\)\/mlserver_.[^/]*\/\(.*\)/gs:\/\/\1\/$(MLSERVER_FOLDER)\/\2/g" \
 			{} \;
 	find . \
 		-type f \( -name '*.ipynb' -o -name '*.md' -o -name '*.yaml' \) \
 		-exec \
-			sed -i "s/gs:\/\/\(.*\)\/triton_.*\/\(.*\)/gs:\/\/\1\/$(TRITON_FOLDER)\/\2/g" \
+			sed -i "s/gs:\/\/\(.*\)\/triton_.[^/]*\/\(.*\)/gs:\/\/\1\/$(TRITON_FOLDER)\/\2/g" \
 			{} \;
 
 %.md: %.ipynb

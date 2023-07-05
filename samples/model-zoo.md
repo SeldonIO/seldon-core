@@ -26,7 +26,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -230,7 +230,7 @@ kind: Model
 metadata:
   name: income-xgb
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/income-xgb"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/income-xgb"
   requirements:
   - xgboost
 
@@ -410,7 +410,7 @@ kind: Model
 metadata:
   name: income-lgb
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/income-lgb"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/income-lgb"
   requirements:
   - lightgbm
 
@@ -485,7 +485,7 @@ kind: Model
 metadata:
   name: wine
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/wine-mlflow"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/wine-mlflow"
   requirements:
   - mlflow
 

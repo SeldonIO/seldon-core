@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: income-drift
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/drift-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/drift-detector"
   requirements:
     - mlserver
     - alibi-detect
