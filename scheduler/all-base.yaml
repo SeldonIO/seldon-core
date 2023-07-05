@@ -166,7 +166,7 @@ services:
       - "--verbose"
 
   scheduler:
-    user: "1000:1000"
+    user: "${UID_GID}"
     volumes:
       - type: bind
         source: ./mnt
@@ -177,7 +177,7 @@ services:
     image: "${SCHEDULER_IMAGE_AND_TAG}"
 
   mlserver:
-    user: "1000:1000"    
+    user: "${UID_GID}"   
     image: "${SERVER_MLSERVER_IMAGE_AND_TAG}"
     command:
       - "mlserver"
@@ -190,7 +190,7 @@ services:
       - MLSERVER_DEBUG=TRUE
 
   triton:
-    user: "1000:1000"    
+    user: "${UID_GID}"    
     image: "${SERVER_TRITON_IMAGE_AND_TAG}"
     command:
       - "/opt/tritonserver/bin/tritonserver"
