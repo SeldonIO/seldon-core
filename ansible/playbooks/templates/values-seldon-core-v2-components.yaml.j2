@@ -7,7 +7,6 @@ envoy:
     type: "{{ seldon_core_v2_type_svc_type }}"
 
 kafka:
-  debug: all
   bootstrap: "seldon-kafka-bootstrap.{{ seldon_kafka_namespace }}.svc.cluster.local:9093"
   topics:
     numPartitions: 4
