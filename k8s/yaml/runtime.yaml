@@ -19,6 +19,7 @@ metadata:
   name: seldon
 spec:
   seldonConfig: default
+  disableAutoUpdate: false
   overrides:
   - name: hodometer
     disable: false

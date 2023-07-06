@@ -8264,6 +8264,11 @@ spec:
                         type: string
                     type: object
                 type: object
+              disableAutoUpdate:
+                description: If set then when the referenced SeldonConfig changes
+                  we will NOT update the SeldonRuntime immediately. Explicit changes
+                  to the SeldonRuntime itself will force a reconcile though
+                type: boolean
               overrides:
                 items:
                   properties:
@@ -15475,6 +15480,11 @@ spec:
                 items:
                   type: string
                 type: array
+              disableAutoUpdate:
+                description: If set then when the referenced ServerConfig changes
+                  we will NOT update the Server immediately. Explicit changes to the
+                  Server itself will force a reconcile though
+                type: boolean
               extraCapabilities:
                 description: The extra capabilities this server will advertise These
                   are added to the capabilities exposed by the referenced ServerConfig

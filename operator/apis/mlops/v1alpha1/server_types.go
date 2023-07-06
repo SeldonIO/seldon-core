@@ -46,6 +46,10 @@ type ServerSpec struct {
 	PodSpec *PodSpec `json:"podSpec,omitempty"`
 	// Scaling spec
 	ScalingSpec `json:",inline"`
+	// +Optional
+	// If set then when the referenced ServerConfig changes we will NOT update the Server immediately.
+	// Explicit changes to the Server itself will force a reconcile though
+	DisableAutoUpdate bool `json:"disableAutoUpdate,omitempty"`
 }
 
 type ContainerOverrideSpec struct {
