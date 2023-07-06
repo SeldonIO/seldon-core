@@ -1369,8 +1369,8 @@ def grpc_predict_seldon(
         else:
             if data is None:
                 data = np.random.rand(*shape)
-            datadef = array_to_grpc_datadef(payload_type, data, names=names, meta=metaKV)
-            request = prediction_pb2.SeldonMessage(data=datadef)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            request = prediction_pb2.SeldonMessage(data=datadef, meta=metaKV)
 
     channel = grpc.insecure_channel(
         gateway_endpoint,
