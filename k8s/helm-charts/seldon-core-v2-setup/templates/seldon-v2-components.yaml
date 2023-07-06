@@ -1644,6 +1644,8 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000"
+      - name: MLSERVER_TRACING_SERVER
+        value: '{{ .Values.opentelemetry.endpoint }}'
       image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository
         }}:{{ .Values.serverConfig.mlserver.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
