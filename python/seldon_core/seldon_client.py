@@ -1307,6 +1307,7 @@ def grpc_predict_seldon(
     names: Iterable[str] = None,
     client_return_type: str = "proto",
     raw_data: Dict = None,
+    meta: Dict = {},
     **kwargs,
 ) -> SeldonClientPrediction:
     """
@@ -1340,6 +1341,8 @@ def grpc_predict_seldon(
         the return type of all functions can be either dict or proto
     raw_data
         Raw payload (dictionary or proto) given by the user
+    meta
+        Custom meta data map, supplied as tags
     kwargs
 
     Returns
@@ -1347,15 +1350,18 @@ def grpc_predict_seldon(
        A SeldonMessage proto
 
     """
+    metaKV = prediction_pb2.Meta()
+    metaJson = {"tags": meta}
+    json_format.ParseDict(metaJson, metaKV)
     if isinstance(raw_data, prediction_pb2.SeldonMessage):
         request = raw_data
     elif raw_data:
         request = json_to_seldon_message(raw_data)
     else:
         if bin_data is not None:
-            request = prediction_pb2.SeldonMessage(binData=bin_data)
+            request = prediction_pb2.SeldonMessage(binData=bin_data, meta=metaKV)
         elif str_data is not None:
-            request = prediction_pb2.SeldonMessage(strData=str_data)
+            request = prediction_pb2.SeldonMessage(strData=str_data, meta=metaKV)
         elif json_data is not None:
             request = json_to_seldon_message({"jsonData": json_data})
         elif custom_data is not None:
@@ -1363,7 +1369,7 @@ def grpc_predict_seldon(
         else:
             if data is None:
                 data = np.random.rand(*shape)
-            datadef = array_to_grpc_datadef(payload_type, data, names=names)
+            datadef = array_to_grpc_datadef(payload_type, data, names=names, meta=metaKV)
             request = prediction_pb2.SeldonMessage(data=datadef)
 
     channel = grpc.insecure_channel(
