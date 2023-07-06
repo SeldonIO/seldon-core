@@ -33,10 +33,26 @@ type KafkaConfig struct {
 	TopicPrefix      string          `json:"topicPrefix,omitempty"`
 }
 
+type none = struct{}
+type stringSet = map[string]none
+
 const (
 	KafkaBootstrapServers = "bootstrap.servers"
 	KafkaDebug            = "debug"
 )
+
+// Based on config options defined for librdkafka:
+// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+var empty = struct{}{}
+var secretConfigFields = stringSet{
+	"ssl.key.password":               empty,
+	"ssl.key.pem":                    empty,
+	"ssl_key":                        empty,
+	"ssl.keystore.password":          empty,
+	"sasl.username":                  empty,
+	"sasl.password":                  empty,
+	"sasl.oauthbearer.client.secret": empty,
+}
 
 func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	m2 := make(kafka.ConfigMap)
@@ -116,4 +132,19 @@ func convertConfigMap(cm kafka.ConfigMap) (kafka.ConfigMap, error) {
 func (kc KafkaConfig) HasKafkaBootstrapServer() bool {
 	bs := kc.Consumer[KafkaBootstrapServers]
 	return bs != nil && bs != ""
+}
+
+func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
+	safe := make(kafka.ConfigMap)
+
+	for k, v := range c {
+		_, isSecret := secretConfigFields[k]
+		if isSecret {
+			safe[k] = "***"
+		} else {
+			safe[k] = v
+		}
+	}
+
+	return safe
 }

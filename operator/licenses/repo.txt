@@ -4,6 +4,7 @@ census-ecosystem/opencensus-go-exporter-ocagent
 census-ecosystem/opencensus-go-exporter-prometheus
 census-ecosystem/opencensus-go-exporter-zipkin
 https://gotools.org/dmitri.shuralyov.com/gpu/mtl
+emperror/errors
 Azure/go-ansiterm
 Azure/go-autorest
 BurntSushi/toml
@@ -24,6 +25,7 @@ armon/go-metrics
 armon/go-radix
 armon/go-socks5
 asaskevich/govalidator
+banzaicloud/k8s-objectmatcher
 benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy
@@ -58,6 +60,7 @@ dgrijalva/jwt-go
 dgryski/go-gk
 dgryski/go-lttb
 dgryski/go-sip13
+docker/spdystream
 docopt/docopt-go
 dustin/go-humanize
 eapache/go-resiliency

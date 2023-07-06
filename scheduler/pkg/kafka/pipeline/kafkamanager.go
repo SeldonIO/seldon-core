@@ -40,7 +40,14 @@ const (
 )
 
 type PipelineInferer interface {
-	Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error)
+	Infer(
+		ctx context.Context,
+		resourceName string,
+		isModel bool,
+		data []byte,
+		headers []kafka.Header,
+		requestId string,
+	) (*Request, error)
 }
 
 type KafkaManager struct {
@@ -72,12 +79,19 @@ type Request struct {
 	errorModel string
 }
 
-func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *config.KafkaConfig,
-	traceProvider *seldontracer.TracerProvider, maxNumConsumers, maxNumTopicsPerConsumer int) (*KafkaManager, error) {
+func NewKafkaManager(
+	logger logrus.FieldLogger,
+	namespace string,
+	kafkaConfig *config.KafkaConfig,
+	traceProvider *seldontracer.TracerProvider,
+	maxNumConsumers,
+	maxNumTopicsPerConsumer int,
+) (*KafkaManager, error) {
 	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
 	}
+
 	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
 		kafkaConfig:     kafkaConfig,
@@ -87,18 +101,22 @@ func NewKafkaManager(logger logrus.FieldLogger, namespace string, kafkaConfig *c
 		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},
 	}
+
 	err = km.createProducer()
 	if err != nil {
 		return nil, err
 	}
+
 	return km, nil
 }
 
 func (km *KafkaManager) Stop() {
 	logger := km.logger.WithField("func", "Stop")
 	logger.Info("Stopping pipelines")
+
 	km.mu.Lock()
 	defer km.mu.Unlock()
+
 	km.producer.Close()
 	km.consumerManager.Stop()
 	logger.Info("Stopped all pipelines")
@@ -116,7 +134,10 @@ func (km *KafkaManager) createProducer() error {
 	if err != nil {
 		return err
 	}
-	km.logger.Infof("Creating producer with config %v", producerConfigMap)
+
+	configWithoutSecrets := config.WithoutSecrets(producerConfigMap)
+	km.logger.Infof("Creating producer with config %v", configWithoutSecrets)
+
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
 	return err
 }
@@ -173,7 +194,14 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 	}
 }
 
-func (km *KafkaManager) Infer(ctx context.Context, resourceName string, isModel bool, data []byte, headers []kafka.Header, requestId string) (*Request, error) {
+func (km *KafkaManager) Infer(
+	ctx context.Context,
+	resourceName string,
+	isModel bool,
+	data []byte,
+	headers []kafka.Header,
+	requestId string,
+) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 	km.mu.RLock()
 	pipeline, err := km.loadOrStorePipeline(resourceName, isModel)

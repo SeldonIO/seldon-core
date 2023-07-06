@@ -350,13 +350,14 @@ func TestUpdateServerCapabilities(t *testing.T) {
 
 	type test struct {
 		name                 string
+		capabilities         []string
 		extraCapabilities    []string
 		podSpec              *v1.PodSpec
 		expectedCapabilities string
 	}
 	tests := []test{
 		{
-			name: "add capability",
+			name: "add extra capability",
 			podSpec: &v1.PodSpec{
 				Containers: []v1.Container{
 					{
@@ -373,8 +374,53 @@ func TestUpdateServerCapabilities(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			capabilities:         []string{},
 			extraCapabilities:    []string{"bar"},
 			expectedCapabilities: "foo,bar",
+		},
+		{
+			name: "set capabilities",
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  EnvVarNameCapabilities,
+								Value: "foo",
+							},
+						},
+					},
+				},
+				NodeName: "node",
+			},
+			capabilities:         []string{"bar1", "bar2"},
+			extraCapabilities:    []string{},
+			expectedCapabilities: "bar1,bar2",
+		},
+		{
+			name: "set capabilities and extra capabilities - capabilities take precedence",
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+						Env: []v1.EnvVar{
+							{
+								Name:  EnvVarNameCapabilities,
+								Value: "foo",
+							},
+						},
+					},
+				},
+				NodeName: "node",
+			},
+			capabilities:         []string{"bar1", "bar2"},
+			extraCapabilities:    []string{"zed"},
+			expectedCapabilities: "bar1,bar2",
 		},
 		{
 			name: "no new capability",
@@ -394,13 +440,14 @@ func TestUpdateServerCapabilities(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			capabilities:         []string{},
 			extraCapabilities:    []string{},
 			expectedCapabilities: "foo",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			updateCapabilities(test.extraCapabilities, test.podSpec)
+			updateCapabilities(test.capabilities, test.extraCapabilities, test.podSpec)
 			for _, container := range test.podSpec.Containers {
 				for _, envVar := range container.Env {
 					if envVar.Name == EnvVarNameCapabilities {

@@ -9,7 +9,7 @@ v2Client.load(['../../../apis/mlops/v2_dataplane/'], 'v2_dataplane.proto');
 export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix) {
     const url = endpoint + "/v2/models/"+modelName+"/infer"
     const payloadStr = JSON.stringify(payload);
-    var headers = {
+    var metadata = {
         'Content-Type': 'application/json',
         'Host': modelName,
         // we add here either .model or .pipeline to test dataflow
@@ -18,10 +18,10 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         'Accept-Encoding': 'entity',
     };
     if (viaEnvoy != true) {
-        headers['seldon-internal-model'] = modelName
+        metadata['seldon-internal-model'] = modelName
     }
     const params = {
-        headers:  headers
+        metadata:  metadata
     };
     //console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
     const response = http.post(url, payloadStr, params);
@@ -36,15 +36,15 @@ export function inferHttpLoop(endpoint, modelName, payload, iterations, viaEnvoy
 }
 
 export function inferGrpc(modelName, payload, viaEnvoy, pipelineSuffix) {
-    var headers = {
+    var metadata = {
         // we add here either .model or .pipeline to test dataflow
         'seldon-model': generateDataFlowName(modelName, pipelineSuffix),
     };
     if (viaEnvoy != true) {
-        headers['seldon-internal-model'] = modelName
+        metadata['seldon-internal-model'] = modelName
     }
     const params = {
-        headers: headers
+        metadata: metadata
     };
     payload.model_name = modelName
     const response = v2Client.invoke('inference.GRPCInferenceService/ModelInfer', payload, params);
@@ -62,16 +62,16 @@ export function inferGrpcLoop(endpoint, modelName, payload, iterations, viaEnvoy
 
 export function modelStatusHttp(endpoint, modelName, viaEnvoy = true) {
     const url = endpoint + "/v2/models/"+modelName+"/ready"
-    var headers = {
+    var metadata = {
         'Content-Type': 'application/json',
         'Host' : modelName,
         'seldon-model' : modelName,
     };
     if (viaEnvoy != true) {
-        headers['seldon-internal-model'] = modelName
+        metadata['seldon-internal-model'] = modelName
     }
     const params = {
-        headers: headers
+        metadata: metadata
     };
     const response = http.get(url, params);
     return response.status

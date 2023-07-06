@@ -6,7 +6,7 @@ spec:
   steps:
     - name: sentiment
       tensorMap:
-        sentiment-explain.inputs.predict: args
+        sentiment-explain.inputs.predict: array_inputs
     - name: sentiment-output-transform
       inputs:
       - sentiment

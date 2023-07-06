@@ -25,14 +25,20 @@ class SentimentInputTransformRuntime(MLModel):
     return self.ready
 
   async def predict(self, payload: InferenceRequest) -> InferenceResponse:
+    logger.info("payload (input-transform): %s",payload)
     res_list = self.decode_request(payload, default_codec=StringRequestCodec)
+    logger.info("res list (input-transform): %s",res_list)
     texts = []
     for res in res_list:
-      logger.debug("decoded data: %s", res)
-      text = json.loads(res)
+      logger.info("decoded data (input-transform): %s", res)
+      #text = json.loads(res)
+      text = res
       texts.append(text["text"])
 
-    return StringRequestCodec.encode_response(
+    logger.info("transformed data (input-transform): %s", texts)
+    response =  StringRequestCodec.encode_response(
       model_name="sentiment",
       payload=texts
     )
+    logger.info("response (input-transform): %s", response)
+    return response

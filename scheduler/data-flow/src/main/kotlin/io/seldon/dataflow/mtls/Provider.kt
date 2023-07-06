@@ -41,18 +41,6 @@ object Provider {
     private const val keyType = "RSA"
     private const val keyName = "dataflow-engine-key"
 
-    fun keyStoresFromCertificates(certs: CertificateConfig): Pair<KeystoreConfig, TruststoreConfig> {
-        val (trustStoreLocation, trustStorePassword) = trustStoreFromCACert(certs)
-        val (keyStoreLocation, keyStorePassword) = keyStoreFromCerts(certs)
-        return KeystoreConfig(
-            keyStorePassword = keyStorePassword,
-            keyStoreLocation = keyStoreLocation,
-        ) to TruststoreConfig(
-            trustStorePassword = trustStorePassword,
-            trustStoreLocation = trustStoreLocation,
-        )
-    }
-
     fun trustStoreFromCertificates(certs: CertificateConfig): TruststoreConfig {
         val (trustStoreLocation, trustStorePassword) = trustStoreFromCACert(certs)
         return TruststoreConfig(
@@ -92,6 +80,14 @@ object Provider {
                     .getInstance(certificateType)
                     .generateCertificates(certStream)
             }
+    }
+
+    fun keyStoreFromCertificates(certs: CertificateConfig): KeystoreConfig {
+        val (keyStoreLocation, keyStorePassword) = keyStoreFromCerts(certs)
+        return KeystoreConfig(
+            keyStorePassword = keyStorePassword,
+            keyStoreLocation = keyStoreLocation,
+        )
     }
 
     private fun keyStoreFromCerts(certPaths: CertificateConfig): Pair<FilePath, KeystorePassword> {

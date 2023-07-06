@@ -4,7 +4,7 @@ Pipelines allow models to be connected into flows of data transformations. This 
 
 ## Creating Pipelines
 
-The simplest way to create Pipelines is by defining them with the [Pipeline resource we provide for Kubernetes](../kubernetes/resources/pipeline/index). This format is accepted by our Kubernetes implementation but also locally via out `seldon` CLI.
+The simplest way to create Pipelines is by defining them with the [Pipeline resource we provide for Kubernetes](../kubernetes/resources/pipeline/index). This format is accepted by our Kubernetes implementation but also locally via our `seldon` CLI.
 
 Internally in both cases Pipelines are created via our [Scheduler API](../apis/scheduler/index). Advanced users could submit Pipelines directly using this gRPC service.
 

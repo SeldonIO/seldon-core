@@ -14,7 +14,7 @@ MESH_IP
 ```
 
 ```
-'172.21.255.2'
+'172.18.255.2'
 
 ```
 
@@ -63,12 +63,13 @@ kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2023-05-09T10:16:01Z",
+      "lastTransitionTime": "2023-06-30T10:01:52Z",
+      "message": "ModelAvailable",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2023-05-09T10:16:01Z",
+      "lastTransitionTime": "2023-06-30T10:01:52Z",
       "status": "True",
       "type": "Ready"
     }
@@ -87,7 +88,7 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "24922888-94a9-4c12-b1a8-db7e9c31ec66",
+	"id": "7fd401e1-3dce-46f5-9668-902aea652b89",
 	"parameters": {},
 	"outputs": [
 		{
@@ -97,6 +98,9 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -123,6 +127,11 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
         "1",
         "1"
       ],
+      "parameters": {
+        "content_type": {
+          "stringParam": "np"
+        }
+      },
       "contents": {
         "int64Contents": [
           "2"
@@ -142,12 +151,12 @@ kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2023-05-09T10:14:16Z",
+      "lastTransitionTime": "2023-06-30T09:59:12Z",
       "status": "True",
       "type": "Ready"
     },
     {
-      "lastTransitionTime": "2023-05-09T10:14:16Z",
+      "lastTransitionTime": "2023-06-30T09:59:12Z",
       "reason": "StatefulSet replicas matches desired replicas",
       "status": "True",
       "type": "StatefulSetReady"
@@ -267,7 +276,7 @@ seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
 ```
 
 ```
-Success: map[:iris2_1::27 :iris_1::23]
+Success: map[:iris2_1::29 :iris_1::21]
 
 ```
 
@@ -707,12 +716,13 @@ kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 {
   "conditions": [
     {
-      "lastTransitionTime": "2023-05-09T10:16:52Z",
+      "lastTransitionTime": "2023-06-30T10:02:53Z",
+      "message": "ModelAvailable",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2023-05-09T10:16:52Z",
+      "lastTransitionTime": "2023-06-30T10:02:53Z",
       "status": "True",
       "type": "Ready"
     }
@@ -731,7 +741,7 @@ seldon model infer income --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "income_1",
 	"model_version": "1",
-	"id": "ccea37e6-5b71-40ba-ab0f-48f358738c57",
+	"id": "f52acfeb-0f22-429f-8c7a-785ef17cd470",
 	"parameters": {},
 	"outputs": [
 		{
@@ -741,6 +751,9 @@ seldon model infer income --inference-host ${MESH_IP}:80 \
 				1
 			],
 			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				0
 			]
@@ -794,12 +807,13 @@ kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq 
 {
   "conditions": [
     {
-      "lastTransitionTime": "2023-05-09T10:17:39Z",
+      "lastTransitionTime": "2023-06-30T10:03:07Z",
+      "message": "ModelAvailable",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2023-05-09T10:17:39Z",
+      "lastTransitionTime": "2023-06-30T10:03:07Z",
       "status": "True",
       "type": "Ready"
     }
@@ -818,7 +832,7 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "income-explainer_1",
 	"model_version": "1",
-	"id": "4a94be87-b0ed-4abc-83fa-e83db84fd330",
+	"id": "3028a904-9bb3-42d7-bdb7-6e6993323ed7",
 	"parameters": {},
 	"outputs": [
 		{
@@ -832,7 +846,7 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
 				"content_type": "str"
 			},
 			"data": [
-				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.1\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Capital Gain <= 0.00\", \"Relationship = Own-child\"], \"precision\": 0.9869281045751634, \"coverage\": 0.06853582554517133, \"raw\": {\"feature\": [3, 8, 5], \"mean\": [0.8080110497237569, 0.896, 0.9869281045751634], \"precision\": [0.8080110497237569, 0.896, 0.9869281045751634], \"coverage\": [0.3037383177570093, 0.2834890965732087, 0.06853582554517133], \"examples\": [{\"covered_true\": [[49, 5, 1, 1, 5, 4, 4, 1, 6497, 0, 45, 9], [41, 6, 5, 1, 2, 0, 4, 1, 0, 0, 65, 9], [28, 4, 1, 1, 1, 2, 4, 0, 0, 0, 15, 9], [66, 0, 1, 1, 0, 0, 4, 1, 6767, 0, 20, 9], [43, 2, 1, 1, 5, 3, 4, 0, 0, 0, 39, 9], [35, 4, 5, 1, 8, 1, 4, 0, 0, 0, 55, 9], [58, 2, 5, 1, 5, 0, 4, 1, 0, 0, 40, 9], [41, 0, 1, 1, 0, 5, 4, 0, 0, 0, 30, 9], [44, 4, 1, 1, 1, 4, 4, 0, 0, 0, 40, 9], [39, 4, 1, 1, 8, 1, 4, 1, 0, 0, 55, 9]], \"covered_false\": [[46, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [32, 4, 1, 1, 5, 0, 4, 1, 99999, 0, 50, 9], [39, 4, 2, 1, 5, 0, 4, 1, 99999, 0, 55, 9], [32, 4, 5, 1, 8, 1, 4, 1, 14084, 0, 40, 9], [55, 4, 1, 1, 8, 0, 4, 1, 15024, 0, 42, 9], [45, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [38, 0, 5, 1, 0, 5, 2, 0, 15024, 0, 2, 9], [43, 4, 5, 1, 5, 4, 4, 0, 0, 2547, 40, 9], [30, 4, 1, 1, 4, 1, 4, 0, 4787, 0, 45, 9], [69, 6, 1, 1, 5, 0, 4, 1, 20051, 0, 45, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[40, 2, 1, 1, 5, 0, 4, 1, 0, 0, 48, 9], [38, 4, 1, 1, 6, 0, 4, 1, 0, 0, 40, 9], [43, 6, 5, 1, 5, 1, 4, 0, 0, 0, 20, 9], [38, 6, 1, 1, 5, 0, 4, 1, 0, 0, 70, 9], [60, 4, 1, 1, 5, 0, 4, 1, 0, 0, 50, 9], [36, 4, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [35, 4, 1, 1, 2, 0, 1, 1, 0, 0, 40, 7], [67, 0, 1, 1, 0, 0, 4, 1, 0, 0, 60, 9], [28, 2, 1, 1, 1, 1, 2, 0, 0, 0, 60, 9], [47, 4, 1, 1, 1, 0, 4, 1, 0, 0, 40, 9]], \"covered_false\": [[49, 4, 1, 1, 8, 1, 4, 0, 0, 0, 56, 9], [35, 4, 5, 1, 5, 0, 4, 1, 0, 1977, 45, 9], [49, 4, 5, 1, 8, 0, 4, 1, 0, 1977, 40, 9], [51, 4, 1, 1, 8, 1, 4, 1, 0, 0, 50, 9], [32, 4, 1, 1, 8, 0, 4, 1, 0, 0, 60, 9], [42, 1, 1, 1, 8, 0, 4, 1, 0, 0, 52, 9], [36, 4, 5, 1, 8, 0, 4, 1, 0, 0, 50, 9], [55, 4, 5, 1, 8, 0, 4, 1, 0, 0, 55, 9], [37, 4, 5, 1, 8, 0, 4, 1, 0, 0, 45, 9], [48, 4, 1, 1, 8, 0, 4, 1, 0, 0, 60, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[30, 4, 1, 1, 8, 3, 1, 1, 0, 0, 40, 2], [40, 4, 2, 1, 5, 3, 4, 1, 0, 0, 40, 9], [30, 6, 5, 1, 5, 3, 1, 1, 0, 0, 50, 1], [30, 4, 1, 1, 8, 3, 1, 1, 0, 0, 40, 2], [27, 4, 1, 1, 8, 3, 4, 1, 0, 0, 45, 9], [65, 4, 1, 1, 7, 3, 4, 1, 0, 0, 20, 9], [31, 4, 1, 1, 1, 3, 4, 0, 0, 0, 45, 9], [57, 6, 1, 1, 6, 3, 4, 1, 0, 0, 10, 9], [28, 4, 1, 1, 7, 3, 4, 0, 0, 0, 50, 9], [26, 2, 1, 1, 5, 3, 4, 0, 0, 0, 40, 9]], \"covered_false\": [[71, 5, 1, 1, 8, 3, 4, 1, 0, 2392, 60, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Capital Gain <= 0.00\", \"Relationship = Own-child\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
+				"{\"meta\": {\"name\": \"AnchorTabular\", \"type\": [\"blackbox\"], \"explanations\": [\"local\"], \"params\": {\"seed\": 1, \"disc_perc\": [25, 50, 75], \"threshold\": 0.95, \"delta\": 0.1, \"tau\": 0.15, \"batch_size\": 100, \"coverage_samples\": 10000, \"beam_size\": 1, \"stop_on_first\": false, \"max_anchor_size\": null, \"min_samples_start\": 100, \"n_covered_ex\": 10, \"binary_cache_size\": 10000, \"cache_margin\": 1000, \"verbose\": false, \"verbose_every\": 1, \"kwargs\": {}}, \"version\": \"0.9.1\"}, \"data\": {\"anchor\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\"], \"precision\": 0.9705882352941176, \"coverage\": 0.0699, \"raw\": {\"feature\": [3, 5], \"mean\": [0.8094218415417559, 0.9705882352941176], \"precision\": [0.8094218415417559, 0.9705882352941176], \"coverage\": [0.3036, 0.0699], \"examples\": [{\"covered_true\": [[23, 4, 1, 1, 5, 1, 4, 0, 0, 0, 40, 9], [44, 4, 1, 1, 8, 0, 4, 1, 0, 0, 40, 9], [60, 2, 5, 1, 5, 1, 4, 0, 0, 0, 25, 9], [52, 4, 1, 1, 2, 0, 4, 1, 0, 0, 50, 9], [66, 6, 1, 1, 8, 0, 4, 1, 0, 0, 8, 9], [52, 4, 1, 1, 8, 0, 4, 1, 0, 0, 40, 9], [27, 4, 1, 1, 1, 1, 4, 1, 0, 0, 35, 9], [48, 4, 1, 1, 6, 0, 4, 1, 0, 0, 45, 9], [45, 6, 1, 1, 5, 0, 4, 1, 0, 0, 40, 9], [40, 2, 1, 1, 5, 4, 4, 0, 0, 0, 45, 9]], \"covered_false\": [[42, 6, 5, 1, 6, 0, 4, 1, 99999, 0, 80, 9], [29, 4, 1, 1, 8, 1, 4, 1, 0, 0, 50, 9], [49, 4, 1, 1, 8, 0, 4, 1, 0, 0, 50, 9], [34, 4, 5, 1, 8, 0, 4, 1, 0, 0, 40, 9], [38, 2, 1, 1, 5, 5, 4, 0, 7688, 0, 40, 9], [45, 7, 5, 1, 5, 0, 4, 1, 0, 0, 45, 9], [43, 4, 2, 1, 5, 0, 4, 1, 99999, 0, 55, 9], [47, 4, 5, 1, 6, 1, 4, 1, 27828, 0, 60, 9], [42, 6, 1, 1, 2, 0, 4, 1, 15024, 0, 60, 9], [56, 4, 1, 1, 6, 0, 2, 1, 7688, 0, 45, 9]], \"uncovered_true\": [], \"uncovered_false\": []}, {\"covered_true\": [[23, 4, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [50, 2, 5, 1, 8, 3, 2, 1, 0, 0, 45, 9], [24, 4, 1, 1, 7, 3, 4, 0, 0, 0, 40, 3], [62, 4, 5, 1, 5, 3, 4, 1, 0, 0, 40, 9], [22, 4, 1, 1, 5, 3, 4, 1, 0, 0, 40, 9], [44, 4, 1, 1, 1, 3, 4, 0, 0, 0, 40, 9], [46, 4, 1, 1, 4, 3, 4, 1, 0, 0, 40, 9], [44, 4, 1, 1, 2, 3, 4, 1, 0, 0, 40, 9], [25, 4, 5, 1, 5, 3, 4, 1, 0, 0, 35, 9], [32, 2, 5, 1, 5, 3, 4, 1, 0, 0, 50, 9]], \"covered_false\": [[57, 5, 5, 1, 6, 3, 4, 1, 99999, 0, 40, 9], [44, 4, 1, 1, 8, 3, 4, 1, 7688, 0, 60, 9], [43, 2, 5, 1, 4, 3, 2, 0, 8614, 0, 47, 9], [56, 5, 2, 1, 5, 3, 4, 1, 99999, 0, 70, 9]], \"uncovered_true\": [], \"uncovered_false\": []}], \"all_precision\": 0, \"num_preds\": 1000000, \"success\": true, \"names\": [\"Marital Status = Never-Married\", \"Relationship = Own-child\"], \"prediction\": [0], \"instance\": [47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0], \"instances\": [[47.0, 4.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 0.0, 0.0, 40.0, 9.0]]}}}"
 			]
 		}
 	]
@@ -848,128 +862,6 @@ kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 model.mlops.seldon.io "income" deleted
 model.mlops.seldon.io "income-explainer" deleted
-
-```
-
-## Custom Server
-
-```bash
-cat ./servers/custom-mlserver.yaml
-```
-
-```yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Server
-metadata:
-  name: mlserver-custom
-spec:
-  serverConfig: mlserver
-  podSpec:
-    containers:
-    - image: cliveseldon/mlserver:1.2.0.dev1
-      name: mlserver
-
-```
-
-```bash
-kubectl create -f ./servers/custom-mlserver.yaml -n ${NAMESPACE}
-```
-
-```
-server.mlops.seldon.io/mlserver-custom created
-
-```
-
-```bash
-kubectl wait --for condition=ready --timeout=300s server --all -n ${NAMESPACE}
-```
-
-```
-server.mlops.seldon.io/mlserver condition met
-server.mlops.seldon.io/mlserver-custom condition met
-server.mlops.seldon.io/triton condition met
-
-```
-
-```bash
-cat ./models/iris-custom-server.yaml
-```
-
-```yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Model
-metadata:
-  name: iris
-spec:
-  storageUri: "gs://seldon-models/mlserver/iris"
-  server: mlserver-custom
-
-```
-
-```bash
-kubectl create -f ./models/iris-custom-server.yaml -n ${NAMESPACE}
-```
-
-```
-model.mlops.seldon.io/iris created
-
-```
-
-```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
-```
-
-```
-model.mlops.seldon.io/iris condition met
-
-```
-
-```bash
-seldon model infer iris --inference-host ${MESH_IP}:80 \
-  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
-
-```json
-{
-	"model_name": "iris_1",
-	"model_version": "1",
-	"id": "ddfb14fa-dd0e-4960-9a89-4137570f5feb",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
-	"outputs": [
-		{
-			"name": "predict",
-			"shape": [
-				1
-			],
-			"datatype": "INT64",
-			"parameters": null,
-			"data": [
-				2
-			]
-		}
-	]
-}
-
-```
-
-```bash
-kubectl delete -f ./models/iris-custom-server.yaml -n ${NAMESPACE}
-```
-
-```
-model.mlops.seldon.io "iris" deleted
-
-```
-
-```bash
-kubectl delete -f ./servers/custom-mlserver.yaml -n ${NAMESPACE}
-```
-
-```
-server.mlops.seldon.io "mlserver-custom" deleted
 
 ```
 

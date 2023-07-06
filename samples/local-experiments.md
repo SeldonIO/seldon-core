@@ -109,11 +109,6 @@ Start the experiment.
 seldon experiment start -f ./experiments/ab-default-model.yaml
 ```
 
-```json
-{}
-
-```
-
 Wait for the experiment to be ready.
 
 ```bash
@@ -140,7 +135,7 @@ seldon model infer iris -i 50 \
 ```
 
 ```
-Success: map[:iris2_1::30 :iris_1::20]
+Success: map[:iris2_1::27 :iris_1::23]
 
 ```
 
@@ -153,43 +148,43 @@ seldon model infer iris --show-headers \
 
 ```
 > POST /v2/models/iris/infer HTTP/1.1
-> Host: 0.0.0.0:9000
+> Host: localhost:9000
 > Content-Type:[application/json]
 > Seldon-Model:[iris]
 
-< Ce-Requestid:[3568c090-f916-44db-95b6-cbcc2b2e4eda]
-< Ce-Type:[io.seldon.serving.inference.response]
-< Content-Type:[application/json]
-< X-Request-Id:[cdnmtbv2c1bs73a62cb0]
-< X-Seldon-Route:[:iris2_1:]
-< Ce-Id:[3568c090-f916-44db-95b6-cbcc2b2e4eda]
-< Ce-Modelid:[iris2_1]
+< X-Seldon-Route:[:iris_1:]
+< Ce-Id:[463e96ad-645f-4442-8890-4c340b58820b]
+< Traceparent:[00-fe9e87fcbe4be98ed82fb76166e15ceb-d35e7ac96bd8b718-01]
+< X-Envoy-Upstream-Service-Time:[3]
 < Ce-Specversion:[0.3]
-< Server:[envoy]
-< Ce-Endpoint:[iris2_1]
+< Date:[Thu, 29 Jun 2023 14:03:03 GMT]
 < Ce-Source:[io.seldon.serving.deployment.mlserver]
-< Date:[Sat, 12 Nov 2022 10:00:15 GMT]
-< Traceparent:[00-f927e47b237c00f371dcc88f3c0ec2ac-ccc466a3ec1cf492-01]
+< Content-Type:[application/json]
+< Server:[envoy]
+< X-Request-Id:[cieou5ofh5ss73fbjdu0]
+< Ce-Endpoint:[iris_1]
+< Ce-Modelid:[iris_1]
+< Ce-Type:[io.seldon.serving.inference.response]
+< Content-Length:[213]
 < Ce-Inferenceservicename:[mlserver]
-< Content-Length:[229]
-< X-Envoy-Upstream-Service-Time:[2]
+< Ce-Requestid:[463e96ad-645f-4442-8890-4c340b58820b]
 
 {
-	"model_name": "iris2_1",
+	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "3568c090-f916-44db-95b6-cbcc2b2e4eda",
-	"parameters": {
-		"content_type": null,
-		"headers": null
-	},
+	"id": "463e96ad-645f-4442-8890-4c340b58820b",
+	"parameters": {},
 	"outputs": [
 		{
 			"name": "predict",
 			"shape": [
+				1,
 				1
 			],
 			"datatype": "INT64",
-			"parameters": null,
+			"parameters": {
+				"content_type": "np"
+			},
 			"data": [
 				2
 			]
@@ -207,7 +202,7 @@ seldon model infer iris -s -i 50 \
 ```
 
 ```
-Success: map[:iris2_1::50]
+Success: map[:iris_1::50]
 
 ```
 
@@ -217,7 +212,7 @@ seldon model infer iris --inference-mode grpc -s -i 50\
 ```
 
 ```
-Success: map[:iris2_1::50]
+Success: map[:iris_1::50]
 
 ```
 
@@ -227,22 +222,11 @@ Stop the experiment
 seldon experiment stop experiment-sample
 ```
 
-```json
-{}
-
-```
-
 Unload both models.
 
 ```bash
 seldon model unload iris
 seldon model unload iris2
-```
-
-```json
-{}
-{}
-
 ```
 
 ### Pipeline Experiment
@@ -257,7 +241,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -274,7 +258,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -344,20 +328,14 @@ seldon pipeline load -f ./pipelines/add10.yaml
 seldon pipeline load -f ./pipelines/mul10.yaml
 ```
 
-```json
-{}
-{}
-
-```
-
 ```bash
 seldon pipeline status pipeline-add10 -w PipelineReady
 seldon pipeline status pipeline-mul10 -w PipelineReady
 ```
 
 ```json
-{"pipelineName":"pipeline-add10", "versions":[{"pipeline":{"name":"pipeline-add10", "uid":"cdnmtgv7uvcc73er9lu0", "version":1, "steps":[{"name":"add10"}], "output":{"steps":["add10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-12T10:00:35.844121227Z"}}]}
-{"pipelineName":"pipeline-mul10", "versions":[{"pipeline":{"name":"pipeline-mul10", "uid":"cdnmtgv7uvcc73er9lug", "version":1, "steps":[{"name":"mul10"}], "output":{"steps":["mul10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2022-11-12T10:00:36.037598129Z"}}]}
+{"pipelineName":"pipeline-add10", "versions":[{"pipeline":{"name":"pipeline-add10", "uid":"cieov47l80lc739juklg", "version":1, "steps":[{"name":"add10"}], "output":{"steps":["add10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:05:04.460868091Z", "modelsReady":true}}]}
+{"pipelineName":"pipeline-mul10", "versions":[{"pipeline":{"name":"pipeline-mul10", "uid":"cieov47l80lc739jukm0", "version":1, "steps":[{"name":"mul10"}], "output":{"steps":["mul10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:05:04.631980330Z", "modelsReady":true}}]}
 
 ```
 
@@ -441,11 +419,6 @@ spec:
 seldon experiment start -f ./experiments/addmul10.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon experiment status addmul10 -w | jq -M .
 ```
@@ -468,7 +441,7 @@ seldon pipeline infer pipeline-add10 -i 50 --inference-mode grpc \
 ```
 
 ```
-Success: map[:add10_1::34 :mul10_1::16 :pipeline-add10.pipeline::34 :pipeline-mul10.pipeline::16]
+Success: map[:add10_1::28 :mul10_1::22 :pipeline-add10.pipeline::28 :pipeline-mul10.pipeline::22]
 
 ```
 
@@ -481,17 +454,17 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
 
 ```
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
-> Host: 0.0.0.0:9000
+> Host: localhost:9000
 > seldon-model:[pipeline-add10.pipeline]
 
+< x-envoy-expected-rq-timeout-ms:[60000]
+< x-request-id:[cieov8ofh5ss739277i0]
+< date:[Thu, 29 Jun 2023 14:05:23 GMT]
 < server:[envoy]
 < content-type:[application/grpc]
+< x-envoy-upstream-service-time:[6]
 < x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
-< x-envoy-expected-rq-timeout-ms:[60000]
 < x-forwarded-proto:[http]
-< x-request-id:[cdnmtl95h2ks73fq2810]
-< x-envoy-upstream-service-time:[9]
-< date:[Sat, 12 Nov 2022 10:00:53 GMT]
 
 {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
 
@@ -504,18 +477,18 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
 
 ```
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
-> Host: 0.0.0.0:9000
+> Host: localhost:9000
 > x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
 > seldon-model:[pipeline-add10.pipeline]
 
+< content-type:[application/grpc]
 < x-forwarded-proto:[http]
 < x-envoy-expected-rq-timeout-ms:[60000]
-< x-request-id:[cdnmtmp5h2ks73fq281g]
-< x-envoy-upstream-service-time:[9]
-< date:[Sat, 12 Nov 2022 10:00:59 GMT]
-< server:[envoy]
-< content-type:[application/grpc]
 < x-seldon-route:[:add10_1: :pipeline-add10.pipeline: :pipeline-add10.pipeline:]
+< x-request-id:[cieov90fh5ss739277ig]
+< x-envoy-upstream-service-time:[7]
+< date:[Thu, 29 Jun 2023 14:05:24 GMT]
+< server:[envoy]
 
 {"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
 
@@ -589,11 +562,6 @@ spec:
 seldon experiment start -f ./experiments/add1020.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon experiment status add1020 -w | jq -M .
 ```
@@ -616,7 +584,7 @@ seldon model infer add10 -i 50  --inference-mode grpc \
 ```
 
 ```
-Success: map[:add10_1::20 :add20_1::30]
+Success: map[:add10_1::22 :add20_1::28]
 
 ```
 
@@ -626,7 +594,7 @@ seldon pipeline infer pipeline-add10 -i 100 --inference-mode grpc \
 ```
 
 ```
-Success: map[:add10_1::25 :add20_1::26 :mul10_1::49 :pipeline-add10.pipeline::51 :pipeline-mul10.pipeline::49]
+Success: map[:add10_1::24 :add20_1::32 :mul10_1::44 :pipeline-add10.pipeline::56 :pipeline-mul10.pipeline::44]
 
 ```
 
@@ -637,19 +605,19 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
 
 ```
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
-> Host: 0.0.0.0:9000
+> Host: localhost:9000
 > seldon-model:[pipeline-add10.pipeline]
 
-< x-envoy-expected-rq-timeout-ms:[60000]
-< x-seldon-route:[:add20_1: :pipeline-add10.pipeline:]
-< x-request-id:[cdnmtqp5h2ks73fq2ad0]
-< x-envoy-upstream-service-time:[6]
-< date:[Sat, 12 Nov 2022 10:01:15 GMT]
+< x-request-id:[cieovf0fh5ss739279u0]
+< x-envoy-upstream-service-time:[5]
+< x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
+< date:[Thu, 29 Jun 2023 14:05:48 GMT]
 < server:[envoy]
 < content-type:[application/grpc]
 < x-forwarded-proto:[http]
+< x-envoy-expected-rq-timeout-ms:[60000]
 
-{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[21, 22, 23, 24]}}]}
+{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
 
 ```
 
@@ -660,20 +628,20 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
 
 ```
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
-> Host: 0.0.0.0:9000
-> x-seldon-route:[:add20_1: :pipeline-add10.pipeline:]
+> Host: localhost:9000
+> x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
 > seldon-model:[pipeline-add10.pipeline]
 
 < x-forwarded-proto:[http]
+< x-envoy-expected-rq-timeout-ms:[60000]
+< x-request-id:[cieovf8fh5ss739279ug]
 < x-envoy-upstream-service-time:[6]
-< x-request-id:[cdnmtrh5h2ks73fq2adg]
-< date:[Sat, 12 Nov 2022 10:01:18 GMT]
+< date:[Thu, 29 Jun 2023 14:05:49 GMT]
 < server:[envoy]
 < content-type:[application/grpc]
-< x-envoy-expected-rq-timeout-ms:[60000]
-< x-seldon-route:[:add20_1: :pipeline-add10.pipeline: :add10_1: :pipeline-add10.pipeline:]
+< x-seldon-route:[:add10_1: :pipeline-add10.pipeline: :add20_1: :pipeline-add10.pipeline:]
 
-{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
+{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[21, 22, 23, 24]}}]}
 
 ```
 
@@ -685,17 +653,6 @@ seldon pipeline unload pipeline-mul10
 seldon model unload add10
 seldon model unload add20
 seldon model unload mul10
-```
-
-```json
-{}
-{}
-{}
-{}
-{}
-{}
-{}
-
 ```
 
 ### Model Mirror Experiment
@@ -788,11 +745,6 @@ Start the experiment.
 seldon experiment start -f ./experiments/sklearn-mirror.yaml
 ```
 
-```json
-{}
-
-```
-
 Wait for the experiment to be ready.
 
 ```bash
@@ -840,22 +792,11 @@ Stop the experiment
 seldon experiment stop sklearn-mirror
 ```
 
-```json
-{}
-
-```
-
 Unload both models.
 
 ```bash
 seldon model unload iris
 seldon model unload iris2
-```
-
-```json
-{}
-{}
-
 ```
 
 ## Pipeline Mirror Experiment
@@ -870,7 +811,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/triton/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
   requirements:
   - triton
   - python
@@ -887,7 +828,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/triton/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
   requirements:
   - triton
   - python
@@ -957,20 +898,14 @@ seldon pipeline load -f ./pipelines/add10.yaml
 seldon pipeline load -f ./pipelines/mul10.yaml
 ```
 
-```json
-{}
-{}
-
-```
-
 ```bash
 seldon pipeline status pipeline-add10 -w PipelineReady
 seldon pipeline status pipeline-mul10 -w PipelineReady
 ```
 
 ```json
-{"pipelineName":"pipeline-add10","versions":[{"pipeline":{"name":"pipeline-add10","uid":"ce35uho4mlvc73d8elh0","version":1,"steps":[{"name":"add10"}],"output":{"steps":["add10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-29T19:36:39.645836943Z","modelsReady":true}}]}
-{"pipelineName":"pipeline-mul10","versions":[{"pipeline":{"name":"pipeline-mul10","uid":"ce35uho4mlvc73d8elhg","version":1,"steps":[{"name":"mul10"}],"output":{"steps":["mul10.outputs"]},"kubernetesMeta":{}},"state":{"pipelineVersion":1,"status":"PipelineReady","reason":"created pipeline","lastChangeTimestamp":"2022-11-29T19:36:39.824124774Z","modelsReady":true}}]}
+{"pipelineName":"pipeline-add10", "versions":[{"pipeline":{"name":"pipeline-add10", "uid":"ciep072i8ufs73flaipg", "version":1, "steps":[{"name":"add10"}], "output":{"steps":["add10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:07:24.903503109Z", "modelsReady":true}}]}
+{"pipelineName":"pipeline-mul10", "versions":[{"pipeline":{"name":"pipeline-mul10", "uid":"ciep072i8ufs73flaiq0", "version":1, "steps":[{"name":"mul10"}], "output":{"steps":["mul10.outputs"]}, "kubernetesMeta":{}}, "state":{"pipelineVersion":1, "status":"PipelineReady", "reason":"created pipeline", "lastChangeTimestamp":"2023-06-29T14:07:25.082642153Z", "modelsReady":true}}]}
 
 ```
 
@@ -980,7 +915,7 @@ seldon pipeline infer pipeline-add10 --inference-mode grpc \
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}]}
+{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
 
 ```
 
@@ -990,7 +925,7 @@ seldon pipeline infer pipeline-mul10 --inference-mode grpc \
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
+{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}]}
 
 ```
 
@@ -1019,11 +954,6 @@ spec:
 seldon experiment start -f ./experiments/addmul10-mirror.yaml
 ```
 
-```json
-{}
-
-```
-
 ```bash
 seldon experiment status addmul10-mirror -w | jq -M .
 ```
@@ -1046,7 +976,7 @@ seldon pipeline infer pipeline-add10 -i 1 --inference-mode grpc \
 ```
 
 ```json
-{"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[11,12,13,14]}}]}
+{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[11, 12, 13, 14]}}]}
 
 ```
 
@@ -1122,10 +1052,10 @@ seldon pipeline inspect pipeline-mul10
 ```
 
 ```
-seldon.default.model.mul10.inputs	ce35uksj0jvc73bqr0pg	{"inputs":[{"name":"INPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[1,2,3,4]}}]}
-seldon.default.model.mul10.outputs	ce35uksj0jvc73bqr0pg	{"modelName":"mul10_1","modelVersion":"1","outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
-seldon.default.pipeline.pipeline-mul10.inputs	ce35uksj0jvc73bqr0pg	{"inputs":[{"name":"INPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[1,2,3,4]}}]}
-seldon.default.pipeline.pipeline-mul10.outputs	ce35uksj0jvc73bqr0pg	{"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":["4"],"contents":{"fp32Contents":[10,20,30,40]}}]}
+seldon.default.model.mul10.inputs	ciep0bofh5ss73dpdiq0	{"inputs":[{"name":"INPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[1, 2, 3, 4]}}]}
+seldon.default.model.mul10.outputs	ciep0bofh5ss73dpdiq0	{"modelName":"mul10_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}]}
+seldon.default.pipeline.pipeline-mul10.inputs	ciep0bofh5ss73dpdiq0	{"inputs":[{"name":"INPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[1, 2, 3, 4]}}]}
+seldon.default.pipeline.pipeline-mul10.outputs	ciep0bofh5ss73dpdiq0	{"outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}]}
 
 ```
 
@@ -1135,15 +1065,6 @@ seldon pipeline unload pipeline-add10
 seldon pipeline unload pipeline-mul10
 seldon model unload add10
 seldon model unload mul10
-```
-
-```json
-{}
-{}
-{}
-{}
-{}
-
 ```
 
 ```python

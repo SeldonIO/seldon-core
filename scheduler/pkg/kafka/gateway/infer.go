@@ -18,7 +18,6 @@ package gateway
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -57,7 +56,7 @@ type InferKafkaHandler struct {
 	done              chan bool
 	tracer            trace.Tracer
 	topicNamer        *kafka2.TopicNamer
-	consumerConfig    *ConsumerConfig
+	consumerConfig    *ManagerConfig
 	adminClient       *kafka.AdminClient
 	consumerName      string
 	replicationFactor int
@@ -67,7 +66,13 @@ type InferKafkaHandler struct {
 	producerActive    atomic.Bool
 }
 
-func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig, consumerName string) (*InferKafkaHandler, error) {
+func NewInferKafkaHandler(
+	logger log.FieldLogger,
+	consumerConfig *ManagerConfig,
+	consumerConfigMap kafka.ConfigMap,
+	producerConfigMap kafka.ConfigMap,
+	consumerName string,
+) (*InferKafkaHandler, error) {
 	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
@@ -80,10 +85,11 @@ func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig
 	if err != nil {
 		return nil, err
 	}
-	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.KafkaConfig.TopicPrefix)
+	topicNamer, err := kafka2.NewTopicNamer(consumerConfig.Namespace, consumerConfig.SeldonKafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
 	}
+
 	ic := &InferKafkaHandler{
 		logger:            logger.WithField("source", "InferConsumer"),
 		done:              make(chan bool),
@@ -97,27 +103,15 @@ func NewInferKafkaHandler(logger log.FieldLogger, consumerConfig *ConsumerConfig
 		numPartitions:     numPartitions,
 		tlsClientOptions:  tlsClientOptions,
 	}
-	return ic, ic.setup()
+	return ic, ic.setup(consumerConfigMap, producerConfigMap)
 }
 
-func (kc *InferKafkaHandler) setup() error {
+func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfig kafka.ConfigMap) error {
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Producer)
-	producerConfig["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfig)
-	if err != nil {
-		return err
-	}
-
-	producerConfigAsJSON, err := json.Marshal(&producerConfig)
-	if err != nil {
-		logger.WithField("config", &producerConfig).Info("Creating producer")
-	} else {
-		logger.WithField("config", string(producerConfigAsJSON)).Info("Creating producer")
-	}
-	kc.logger.Infof("Creating producer with config %v", producerConfig)
+	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfig)
+	kc.logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
 		return err
@@ -125,30 +119,19 @@ func (kc *InferKafkaHandler) setup() error {
 	kc.producerActive.Store(true)
 	logger.Infof("Created producer %s", kc.producer.String())
 
-	consumerConfig := config.CloneKafkaConfigMap(kc.consumerConfig.KafkaConfig.Consumer)
 	// we map topics consistently to consumers and we choose the consumer group.id based on this mapping
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
-	err = config.AddKafkaSSLOptions(consumerConfig)
-	if err != nil {
-		return err
-	}
-
-	consumerConfigAsJson, err := json.Marshal(&consumerConfig)
-	if err != nil {
-		logger.WithField("config", &consumerConfig).Info("Creating consumer")
-	} else {
-		logger.WithField("config", string(consumerConfigAsJson)).Info("Creating consumer")
-	}
-
+	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	kc.logger.Infof("Creating consumer with config %v", consumerConfigWithoutSecrets)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return err
 	}
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
-	if kc.consumerConfig.KafkaConfig.HasKafkaBootstrapServer() {
+	if kc.consumerConfig.SeldonKafkaConfig.HasKafkaBootstrapServer() {
 		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
 		if err != nil {
 			return err
@@ -230,15 +213,22 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 			ReplicationFactor: kc.replicationFactor,
 		})
 	}
-	results, err := kc.adminClient.CreateTopics(context.Background(), topicSpecs, kafka.SetAdminOperationTimeout(time.Minute))
+	results, err := kc.adminClient.CreateTopics(
+		context.Background(),
+		topicSpecs,
+		kafka.SetAdminOperationTimeout(time.Minute),
+	)
 	if err != nil {
 		return err
 	}
+
 	for _, result := range results {
 		logger.Debugf("Topic result for %s", result.String())
 	}
+
 	t2 := time.Now()
 	logger.Infof("Topic created in %d millis", t2.Sub(t1).Milliseconds())
+
 	return nil
 }
 
