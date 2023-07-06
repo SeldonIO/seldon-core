@@ -241,7 +241,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/add10"
   requirements:
   - triton
   - python
@@ -258,7 +258,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mul10"
   requirements:
   - triton
   - python
@@ -811,7 +811,7 @@ kind: Model
 metadata:
   name: add10
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/add10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/add10"
   requirements:
   - triton
   - python
@@ -828,7 +828,7 @@ kind: Model
 metadata:
   name: mul10
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/mul10"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mul10"
   requirements:
   - triton
   - python

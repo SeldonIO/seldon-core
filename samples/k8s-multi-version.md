@@ -41,7 +41,7 @@ kind: Model
 metadata:
   name: math
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/multi-version"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/multi-version"
   artifactVersion: 1
   requirements:
   - triton
@@ -107,7 +107,7 @@ kind: Model
 metadata:
   name: math
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/triton_22-11/multi-version"
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/multi-version"
   artifactVersion: 2
   requirements:
   - triton

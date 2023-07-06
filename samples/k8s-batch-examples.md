@@ -30,7 +30,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki

@@ -30,7 +30,7 @@ kind: Model
 metadata:
   name: iris
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn"
   requirements:
   - sklearn
   memory: 100Ki
@@ -684,7 +684,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/classifier"
   requirements:
   - sklearn
 
@@ -773,7 +773,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income

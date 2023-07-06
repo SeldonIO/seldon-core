@@ -12,7 +12,7 @@ Various example notebooks.
 
 All (Python) artefacts are versioned by their respective version of Triton and
 MLServer used at the time of training (e.g.
-`gs://seldon-models/scv2/samples/mlserver_1.3.0/iris-sklearn`).
+`gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn`).
 To re-generate them, you can call the following Makefile targets:
 
 ```

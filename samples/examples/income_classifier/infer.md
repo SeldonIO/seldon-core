@@ -58,7 +58,7 @@ kind: Model
 metadata:
   name: income-preprocess
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/preprocessor"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/preprocessor"
   requirements:
   - sklearn
 ---
@@ -67,7 +67,7 @@ kind: Model
 metadata:
   name: income
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/classifier"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/classifier"
   requirements:
   - sklearn
 ---
@@ -76,7 +76,7 @@ kind: Model
 metadata:
   name: income-drift
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/drift-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/drift-detector"
   requirements:
     - mlserver
     - alibi-detect
@@ -86,7 +86,7 @@ kind: Model
 metadata:
   name: income-outlier
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/outlier-detector"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/outlier-detector"
   requirements:
     - mlserver
     - alibi-detect
@@ -291,7 +291,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.0/income/explainer"
+  storageUri: "gs://seldon-models/scv2/examples/mlserver_1.3.5/income/explainer"
   explainer:
     type: anchor_tabular
     modelRef: income
