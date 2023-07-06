@@ -20,6 +20,15 @@ def _append_drift_metrcs(metrics, drift, name):
             metric_found = [metric_found]
 
         for i, instance in enumerate(metric_found):
+            if name == "is_drift":
+                metrics.append(
+                    {
+                        "key": f"seldon_metric_drift_counter",
+                        "value": instance,
+                        "type": "COUNTER",
+                        "tags": {"index": str(i)},
+                    }
+                )
             metrics.append(
                 {
                     "key": f"seldon_metric_drift_{name}",
