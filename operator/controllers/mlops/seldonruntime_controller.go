@@ -255,6 +255,7 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.Role{}).
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
+		Owns(&v1.ConfigMap{}).
 		Watches(
 			&source.Kind{Type: &mlopsv1alpha1.SeldonConfig{}},
 			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),
