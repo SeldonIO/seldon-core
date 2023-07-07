@@ -46,7 +46,7 @@ type TracerProvider struct {
 }
 
 type TracingConfig struct {
-	Enable               bool   `json:"enable"`
+	Disable              bool   `json:"disable"`
 	OtelExporterEndpoint string `json:"otelExporterEndpoint"`
 	Ratio                string `json:"Ratio"`
 }
@@ -88,7 +88,7 @@ func (t *TracerProvider) loadConfig(path *string) error {
 	var config *TracingConfig
 	if path == nil || *path == "" {
 		config = &TracingConfig{
-			Enable: false,
+			Disable: true,
 		}
 		logger.Info("No tracing path provided so setting NOOP TraceProvider")
 	} else {
@@ -104,7 +104,7 @@ func (t *TracerProvider) loadConfig(path *string) error {
 		if err != nil {
 			return err
 		}
-		if tc.Enable { // Only check ratio is valid if enabled
+		if !tc.Disable { // Only check ratio is valid if enabled
 			// Check ratio
 			_, err = strconv.ParseFloat(tc.Ratio, 64)
 			if err != nil {
@@ -119,7 +119,7 @@ func (t *TracerProvider) loadConfig(path *string) error {
 func (t *TracerProvider) recreateTracerProvider(config *TracingConfig) error {
 	logger := t.logger.WithField("func", "recreateTracerProvider")
 	// add further check for config semantic validity
-	if config.Enable {
+	if !config.Disable {
 		if config.OtelExporterEndpoint == "" {
 			return fmt.Errorf("Trace enabled but Otel endpoint empty")
 		}
@@ -127,7 +127,7 @@ func (t *TracerProvider) recreateTracerProvider(config *TracingConfig) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.config = config
-	if t.config.Enable {
+	if !t.config.Disable {
 
 		traceClient := otlptracegrpc.NewClient(
 			otlptracegrpc.WithInsecure(),

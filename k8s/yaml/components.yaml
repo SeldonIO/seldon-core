@@ -1085,7 +1085,7 @@ spec:
       grpcServicePrefix: ''
       serviceType: 'LoadBalancer'
     tracingConfig:
-      enable: true
+      disable: false
       otelExporterEndpoint: 'seldon-collector.seldon-mesh:4317'
       ratio: '1'
 ---

@@ -1,5 +1,5 @@
 {
-  "enable": true,
+  "disable": false,
   "otelExporterEndpoint": "0.0.0.0:4317",
   "ratio": "1"
 }

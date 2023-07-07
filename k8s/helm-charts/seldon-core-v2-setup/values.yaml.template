@@ -75,7 +75,7 @@ imagePullSecrets:
 opentelemetry:
   # This will need to be customized to your open telemetry installation endpoint
   endpoint: seldon-collector.seldon-mesh:4317
-  enable: true
+  disable: false
   ratio: 1
 
 hodometer:

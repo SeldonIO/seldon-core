@@ -44,12 +44,14 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			},
 			runtime: SeldonConfiguration{
 				TracingConfig: TracingConfig{
+					Disable:              true,
 					OtelExporterEndpoint: "bar",
 				},
 				KafkaConfig: KafkaConfig{},
 			},
 			expected: SeldonConfiguration{
 				TracingConfig: TracingConfig{
+					Disable:              true,
 					OtelExporterEndpoint: "bar",
 					Ratio:                "0.5",
 				},
