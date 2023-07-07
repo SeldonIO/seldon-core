@@ -58,6 +58,24 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			},
 		},
 		{
+			name: "no tracing overrides",
+			defaults: SeldonConfiguration{
+				TracingConfig: TracingConfig{
+					Disable:              false,
+					OtelExporterEndpoint: "foo",
+					Ratio:                "0.5",
+				},
+			},
+			runtime: SeldonConfiguration{},
+			expected: SeldonConfiguration{
+				TracingConfig: TracingConfig{
+					Disable:              false,
+					OtelExporterEndpoint: "foo",
+					Ratio:                "0.5",
+				},
+			},
+		},
+		{
 			name: "kafka overrides",
 			defaults: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
