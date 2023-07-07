@@ -7608,7 +7608,7 @@ spec:
                     type: object
                   tracingConfig:
                     properties:
-                      enable:
+                      disable:
                         type: boolean
                       otelExporterEndpoint:
                         type: string

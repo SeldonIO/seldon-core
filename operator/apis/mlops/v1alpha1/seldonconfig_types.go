@@ -78,7 +78,7 @@ type RcloneConfiguration struct {
 }
 
 type TracingConfig struct {
-	Enable               bool   `json:"enable,omitempty"`
+	Disable              bool   `json:"disable,omitempty"`
 	OtelExporterEndpoint string `json:"otelExporterEndpoint,omitempty"`
 	Ratio                string `json:"ratio,omitempty"`
 }

@@ -1470,7 +1470,7 @@ spec:
       grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
       serviceType: '{{ .Values.services.defaultServiceType }}'
     tracingConfig:
-      enable: {{ .Values.opentelemetry.enable }}
+      disable: {{ .Values.opentelemetry.disable }}
       otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
       ratio: '{{ .Values.opentelemetry.ratio }}'
 {{ end }}

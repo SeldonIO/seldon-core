@@ -134,7 +134,7 @@ func getTracingConfigMap(tracingConfig mlopsv1alpha1.TracingConfig, namespace st
 		},
 		Data: map[string]string{
 			"tracing.json":                string(tracingJson),
-			"OTEL_JAVAAGENT_ENABLED":      strconv.FormatBool(tracingConfig.Enable),
+			"OTEL_JAVAAGENT_ENABLED":      strconv.FormatBool(!tracingConfig.Disable),
 			"OTEL_EXPORTER_OTLP_ENDPOINT": fmt.Sprintf("http://%s", tracingConfig.OtelExporterEndpoint),
 		},
 	}, nil
