@@ -68,7 +68,6 @@ clean:
 	rm -rf test/transformer-template-app/.git
 
 after_build_image_seldon_core_check:
-	docker run --rm -it docker.io/seldonio/seldon-core-s2i-python36:$(IMAGE_VERSION) python -c 'import seldon_core; print(seldon_core.version.__version__)'
 	docker run --rm -it docker.io/seldonio/seldon-core-s2i-python37:$(IMAGE_VERSION) python -c 'import seldon_core; print(seldon_core.version.__version__)'
 
 
