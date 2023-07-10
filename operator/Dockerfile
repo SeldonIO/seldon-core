@@ -18,7 +18,7 @@ COPY operator/main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.1.0-15
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.2-9
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532
