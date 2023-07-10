@@ -17,5 +17,5 @@ func (r ServerReplicaFilter) Filter(model *store.ModelVersion, server *store.Ser
 }
 
 func (r ServerReplicaFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
-	return fmt.Sprintf("expected replicas %d > 0", len(server.Replicas))
+	return fmt.Sprintf("%d server replicas (waiting for server replicas to connect)", len(server.Replicas))
 }
