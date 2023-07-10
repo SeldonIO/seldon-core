@@ -53,6 +53,6 @@ spec:
       grpcServicePrefix: {{ .Values.config.serviceConfig.serviceGRPCPrefix }}
       serviceType: {{ .Values.config.serviceConfig.serviceType }}
     tracingConfig:
-      enable: {{ .Values.config.tracingConfig.enable }}
+      disable: {{ .Values.config.tracingConfig.disable }}
       otelExporterEndpoint: {{ .Values.config.tracingConfig.otelExporterEndpoint }}
       ratio: {{ .Values.config.tracingConfig.ratio }}
