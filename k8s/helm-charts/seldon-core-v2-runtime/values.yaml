@@ -39,7 +39,7 @@ config:
     producer:
     streams:
   tracingConfig:
-    enable:
+    disable:
     otelExporterEndpoint:
     ratio:
   serviceConfig:
