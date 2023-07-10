@@ -1,4 +1,4 @@
-FROM golang:1.19.8-alpine AS builder
+FROM golang:1.19.10-alpine AS builder
 
 RUN apk add --upgrade make
 
@@ -18,7 +18,7 @@ RUN make build-receiver
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.1.0-15
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.2-9
 COPY --from=builder /build/bin/receiver /bin/receiver
 
 ARG UID=1000
