@@ -1169,6 +1169,8 @@ spec:
         value: '/tmp/certs/dus/ca.crt'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '/tmp/certs/duc/ca.crt'
+      - name: MLSERVER_TRACING_SERVER
+        value: 'seldon-collector.seldon-mesh:4317'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT

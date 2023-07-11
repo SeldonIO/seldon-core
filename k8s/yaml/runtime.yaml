@@ -55,6 +55,6 @@ spec:
       grpcServicePrefix: 
       serviceType: 
     tracingConfig:
-      enable: 
+      disable: 
       otelExporterEndpoint: 
       ratio:
