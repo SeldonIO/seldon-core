@@ -11,7 +11,7 @@ NYTimes/gziphandler,https://github.com/nytimes/gziphandler/blob/master/LICENSE,A
 OneOfOne/xxhash,https://github.com/OneOfOne/xxhash/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/OneOfOne/xxhash/master/LICENSE
 PuerkitoBio/purell,https://github.com/PuerkitoBio/purell/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/PuerkitoBio/purell/master/LICENSE
 PuerkitoBio/urlesc,https://github.com/PuerkitoBio/urlesc/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/PuerkitoBio/urlesc/master/LICENSE
-Shopify/sarama,https://github.com/Shopify/sarama/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/Shopify/sarama/main/LICENSE
+Shopify/sarama,https://github.com/markrcote/sarama/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/markrcote/sarama/main/LICENSE
 Shopify/toxiproxy,https://github.com/Shopify/toxiproxy/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/Shopify/toxiproxy/main/LICENSE
 actgardner/gogen-avro,https://github.com/actgardner/gogen-avro/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/actgardner/gogen-avro/master/LICENSE
 alecthomas/jsonschema,https://github.com/alecthomas/jsonschema/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/alecthomas/jsonschema/master/COPYING
@@ -124,11 +124,11 @@ google/uuid,https://github.com/google/uuid/blob/master/LICENSE,BSD 3-Clause "New
 googleapis/gax-go,https://github.com/googleapis/gax-go/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/googleapis/gax-go/main/LICENSE
 googleapis/gnostic,https://github.com/google/gnostic/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/gnostic/main/LICENSE
 gopherjs/gopherjs,https://github.com/gopherjs/gopherjs/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gopherjs/gopherjs/master/LICENSE
-gorilla/context,https://github.com/gorilla/context/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/context/master/LICENSE
-gorilla/mux,https://github.com/gorilla/mux/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/mux/master/LICENSE
-gorilla/securecookie,https://github.com/gorilla/securecookie/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/securecookie/master/LICENSE
-gorilla/sessions,https://github.com/gorilla/sessions/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/sessions/master/LICENSE
-gorilla/websocket,https://github.com/gorilla/websocket/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gorilla/websocket/master/LICENSE
+gorilla/context,https://github.com/gorilla/context/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/context/main/LICENSE
+gorilla/mux,https://github.com/gorilla/mux/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/mux/main/LICENSE
+gorilla/securecookie,https://github.com/gorilla/securecookie/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/securecookie/main/LICENSE
+gorilla/sessions,https://github.com/gorilla/sessions/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/sessions/main/LICENSE
+gorilla/websocket,https://github.com/gorilla/websocket/blob/main/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gorilla/websocket/main/LICENSE
 gregjones/httpcache,https://github.com/gregjones/httpcache/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/gregjones/httpcache/master/LICENSE.txt
 grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-middleware/main/LICENSE
 grpc-ecosystem/go-grpc-prometheus,https://github.com/grpc-ecosystem/go-grpc-prometheus/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-prometheus/master/LICENSE
