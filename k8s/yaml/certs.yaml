@@ -8,8 +8,8 @@ spec:
   isCA: true
   commonName: seldon-ca
   dnsNames:
-  - "*.seldon-mesh"
-  - "*.seldon-mesh.svc"
+  - "*.default"
+  - "*.default.svc"
   - localhost
   secretName: cacert
   privateKey:
@@ -29,11 +29,11 @@ spec:
   secretName: seldon-controlplane-server
   duration: 2160h
   renewBefore: 360h
-  commonName: "seldon-mesh.svc"
+  commonName: "default.svc"
   dnsNames:
   - "seldon-scheduler"
-  - "seldon-scheduler.seldon-mesh"
-  - "seldon-scheduler.seldon-mesh.svc"
+  - "seldon-scheduler.default"
+  - "seldon-scheduler.default.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -55,8 +55,8 @@ spec:
   commonName: "seldon-mesh.svc"
   dnsNames:
   - "seldon-scheduler"
-  - "seldon-scheduler.seldon-mesh"  
-  - "seldon-scheduler.seldon-mesh.svc"
+  - "seldon-scheduler.default"  
+  - "seldon-scheduler.default.svc"
   - "seldon-scheduler.svc"
   - localhost
   usages:
@@ -77,9 +77,9 @@ spec:
   renewBefore: 360h
   commonName: "*.seldon-mesh.svc"
   dnsNames:
-  - "seldon-mesh"
-  - "*.seldon-mesh"    
-  - "*.seldon-mesh.svc"
+  - "default"
+  - "*.default"    
+  - "*.default.svc"
   - localhost
   usages:
   - server auth
@@ -97,11 +97,11 @@ spec:
   secretName: seldon-upstream-client
   duration: 2160h
   renewBefore: 360h
-  commonName: "*.seldon-mesh.svc"
+  commonName: "*.default.svc"
   dnsNames:
-  - "seldon-mesh"
-  - "*.seldon-mesh"    
-  - "*.seldon-mesh.svc"
+  - "default"
+  - "*.default"    
+  - "*.default.svc"
   - localhost
   usages:
   - server auth
@@ -119,10 +119,10 @@ spec:
   secretName: seldon-downstream-server
   duration: 2160h
   renewBefore: 360h
-  commonName: "seldon-mesh.svc"
+  commonName: "default.svc"
   dnsNames:
-  - "seldon-mesh"    
-  - "seldon-mesh.svc"
+  - "default"    
+  - "default.svc"
   - localhost
   usages:
   - server auth
@@ -140,11 +140,11 @@ spec:
   secretName: seldon-downstream-client
   duration: 2160h
   renewBefore: 360h
-  commonName: "*.seldon-mesh.svc"
+  commonName: "*.default.svc"
   dnsNames:
-  - "seldon-mesh"    
-  - "*.seldon-mesh"    
-  - "*.seldon-mesh.svc"
+  - "default"    
+  - "*.default"    
+  - "*.default.svc"
   - localhost
   usages:
   - server auth
