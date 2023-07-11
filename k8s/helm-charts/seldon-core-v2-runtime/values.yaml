@@ -1,4 +1,5 @@
 disableAutoUpdate: false
+seldonConfig: default
 
 hodometer:
   disable: false
