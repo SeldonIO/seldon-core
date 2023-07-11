@@ -5,6 +5,9 @@
   "outputs": [
     {
       "name": "predict",
+      "parameters": {
+        "content_type": "np"
+      },
       "shape": [
         1,
         1

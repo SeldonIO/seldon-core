@@ -1760,7 +1760,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-Shopify/sarama  MIT License  https://github.com/Shopify/sarama/blob/main/LICENSE
+Shopify/sarama  MIT License  https://github.com/markrcote/sarama/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013 Shopify
 
@@ -12170,7 +12170,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gorilla/context  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/context/blob/master/LICENSE
+gorilla/context  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/context/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012 Rodrigo Moraes. All rights reserved.
 
@@ -12201,7 +12201,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gorilla/mux  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/mux/blob/master/LICENSE
+gorilla/mux  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/mux/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012-2018 The Gorilla Authors. All rights reserved.
 
@@ -12232,7 +12232,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gorilla/securecookie  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/securecookie/blob/master/LICENSE
+gorilla/securecookie  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/securecookie/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012-2018 The Gorilla Authors. All rights reserved.
 
@@ -12263,7 +12263,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gorilla/sessions  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/sessions/blob/master/LICENSE
+gorilla/sessions  BSD 3-Clause "New" or "Revised" License  https://github.com/gorilla/sessions/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012-2018 The Gorilla Authors. All rights reserved.
 
@@ -12294,7 +12294,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-gorilla/websocket  BSD 2-Clause "Simplified" License  https://github.com/gorilla/websocket/blob/master/LICENSE
+gorilla/websocket  BSD 2-Clause "Simplified" License  https://github.com/gorilla/websocket/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
 
