@@ -9,7 +9,7 @@ GO_ENV = GO111MODULE=on CGO_ENABLED=0
 
 VERBOSE ?=
 
-KIND_NAME=ansible
+KIND_NAME=seldon
 
 # Build information
 VERSION_PACKAGE = $(shell sed -n 's/^module\s\+//p' go.mod)/pkg/hodometer

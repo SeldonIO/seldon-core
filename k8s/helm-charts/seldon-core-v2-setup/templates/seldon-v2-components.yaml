@@ -1558,6 +1558,8 @@ spec:
         value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
+      - name: MLSERVER_TRACING_SERVER
+        value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1644,8 +1646,6 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000"
-      - name: MLSERVER_TRACING_SERVER
-        value: '{{ .Values.opentelemetry.endpoint }}'
       image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository
         }}:{{ .Values.serverConfig.mlserver.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
