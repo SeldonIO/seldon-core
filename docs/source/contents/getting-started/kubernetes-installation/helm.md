@@ -51,7 +51,7 @@ Cluster wide operations will require ClusterRoles to be created so when deployin
 ## Install the default Seldon Core V2 Runtime
 
 ```bash
-helm install seldon-v2-servers seldon-charts/seldon-core-v2-runtime --namespace seldon-mesh
+helm install seldon-v2-runtime seldon-charts/seldon-core-v2-runtime --namespace seldon-mesh
 ```
 
 This will install the core components in your desired namespace.
