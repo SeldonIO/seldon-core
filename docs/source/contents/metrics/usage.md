@@ -84,13 +84,13 @@ These Helm values and their equivalents are provided below:
 | `hodometer.extraPublishUrls` | `EXTRA_PUBLISH_URLS` |
 | `hodometer.logLevel` | `LOG_LEVEL` |
 
-If you do not want usage metrics to be recorded, you can disable Hodometer via the `hodometer.enabled` Helm value.
+If you do not want usage metrics to be recorded, you can disable Hodometer via the `hodometer.disable` Helm value when installing the runtime Helm chart.
 The following command disables collection of usage metrics in fresh installations and also serves to remove Hodometer from an existing installation:
 
 ```bash
-helm install seldon-core-v2 k8s/helm-charts/seldon-core-v2-setup \
+helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
   --namespace seldon-mesh \
-  --set hodometer.enabled=false
+  --set hodometer.disable=true
 ```
 
 ```{note}
@@ -98,16 +98,6 @@ It is a good practice to set Helm values in values file.
 These can be applied by using the `-f <filename>` switch when running Helm.
 ```
 
-````
-````{group-tab} YAML
-
-The [raw YAML](../getting-started/kubernetes-installation/raw.md) approach to installing Seldon Core v2 provides an opinionated, pre-configured set of manifests.
-Hodometer is automatically enabled with this approach.
-
-You can disable Hodometer by manually removing the appropriate resources before applying the manifests.
-If you have an existing installation, you will also need to delete the deployment and, optionally, any of the RBAC resources.
-
-As there is no templating with the raw YAML manifests, you would need to set configuration environment variables manually before deploying them to a cluster.
 ````
 `````
 

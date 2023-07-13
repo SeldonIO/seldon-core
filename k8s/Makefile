@@ -16,11 +16,7 @@ create-helm-charts:
 	kustomize build kustomize/helm-components-ns/ > ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	kustomize build kustomize/helm-servers/ > ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 	sed -i 's/\(.*\)\(imagePullSecrets:\).*/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
-	sed -n --file=add-helm-toggle-hodometer.sed ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml \
-		> ${HELM_COMPONENTS_BASE}/.components.yaml
-	sed 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/.components.yaml \
-		> ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
-	rm ${HELM_COMPONENTS_BASE}/.components.yaml
+	sed -i 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
 		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
