@@ -21,8 +21,10 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -35,18 +37,36 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 )
 
-func createTestRCloneMockResponders(host string, port int, status int, body string) {
+func createTestRCloneMockResponders(host string, port int, status int, body string, artifactVersion uint32) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d/", host, port),
-		httpmock.NewStringResponder(status, body))
+		func(r *http.Request) (*http.Response, error) {
+			if r.URL.Path == "/operations/list" {
+				items, err := json.Marshal(rclone.RcloneListItems{
+					Items: []rclone.RcloneListItem{
+						{
+							Name:  strconv.Itoa(int(artifactVersion)),
+							IsDir: true,
+						},
+					},
+				})
+				if err != nil {
+					return nil, err
+				}
+				listResponseBody := string(items)
+
+				return httpmock.NewStringResponse(status, listResponseBody), nil
+			}
+			return httpmock.NewStringResponse(status, body), nil
+		})
 }
 
-func createFakeRcloneClient(status int, path string) *rclone.RCloneClient {
+func createFakeRcloneClient(status int, path string, artifactVersion uint32) *rclone.RCloneClient {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	host := "rclone-server"
 	port := 5572
 	r := rclone.NewRCloneClient(host, port, path, logger, "default")
-	createTestRCloneMockResponders(host, port, status, "")
+	createTestRCloneMockResponders(host, port, status, "", artifactVersion)
 	return r
 }
 
@@ -235,7 +255,11 @@ func TestDownloadModelVersion(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 			logger := log.New()
-			rcloneClient := createFakeRcloneClient(200, rclonePath)
+			artifactVersion := uint32(0)
+			if test.modelSpec.ArtifactVersion != nil {
+				artifactVersion = *test.modelSpec.ArtifactVersion
+			}
+			rcloneClient := createFakeRcloneClient(200, rclonePath, artifactVersion)
 			modelRepoPath := t.TempDir()
 			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
 			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.modelSpec, nil)
