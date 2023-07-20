@@ -4,4 +4,4 @@ We utilize [Rclone](https://rclone.org/) to copy model artifacts from a storage 
 
 For local storage while developing see [here](../../getting-started/docker-installation/index.html#local-models).
 
-For authorization needed for cloud storage when running on Kubernetes see [here](../../kubernetes/cloud-storage/index.html#kubernetes-secret).
+For authorization needed for cloud storage when running on Kubernetes see [here](../../kubernetes/storage-secrets/index).
