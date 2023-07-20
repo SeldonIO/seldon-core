@@ -82,7 +82,7 @@ The simplest Pipeline chains models together: the output of one model goes into 
 
 In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT1`. This allows these models to be chained together. The shape and data-type of the tensors needs to match as well.
 
-This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-chaining).
+This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#model-chaining).
 
 ## Join
 
@@ -127,7 +127,7 @@ Joins can have a join type which can be specified with `inputsJoinType` and can 
   * `outer` : wait for `joinWindowMs` to join any inputs. Ignoring any inputs that have not sent any data at that point. This will mean this step of the pipeline is guaranteed to have a latency of at least `joinWindowMs`.
   * `any` : Wait for any of the specified data sources.
 
-This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-join).
+This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#model-join).
 
 ## Conditional Logic
 
@@ -181,7 +181,7 @@ In the above we have a step `conditional` that either outputs a tensor named `OU
 
 Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.
 
-This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#conditional).
+This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#conditional).
 
 ### Errors
 
@@ -193,7 +193,7 @@ Its also possible to abort pipelines when an error is produced to in effect crea
 
 This Pipeline runs normally or throws an error based on whether the input tensors have certain values.
 
-This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#error).
+This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#error).
 
 ### Triggers
 
@@ -241,7 +241,7 @@ Sometimes you want to run a step if an output is received from a previous step b
 
 In this example the last step `tfsimple3` runs only if there are outputs from `tfsimple1` and `tfsimple2` but also data from the `check` step. However, if the step `tfsimple3` is run it only receives the join of data from `tfsimple1` and `tfsimple2`.
 
-This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.html#model-join-with-trigger).
+This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#model-join-with-trigger).
 
 ### Trigger Joins
 
