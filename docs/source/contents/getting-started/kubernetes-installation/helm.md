@@ -13,7 +13,7 @@ The Helm charts can be found within the `k8s/helm-charts` folder and they are pu
 Assuming you have installed any ecosystem components: Jaeger, Prometheus, Kafka as discussed [here](./index.md) you can follow the
 following steps.
 
-Note that for Kafka follow the steps discussed [here](kafka.md)
+Note that for Kafka follow the steps discussed [here](../../kubernetes/kafka/index)
 
 ## Add Seldon Core v2 Charts
 

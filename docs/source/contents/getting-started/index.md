@@ -12,7 +12,7 @@ Seldon Core can be installed either with Docker Compose or with Kubernetes:
 Once installed:
 
   * Try the existing [examples](../examples/index.md).
-  * Train and deploy your own [model artifact](../models/inference-artifacts/index.html#saving-model-artifacts). 
+  * Train and deploy your own [model artifact](../models/inference-artifacts/index.md#saving-model-artifacts). 
 
 
 ## Core Concepts
