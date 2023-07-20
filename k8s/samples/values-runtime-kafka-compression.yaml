@@ -1,0 +1,6 @@
+config:
+  kafkaConfig:
+    producer:
+      compression.type: gzip
+
+
