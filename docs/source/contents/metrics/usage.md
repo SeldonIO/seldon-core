@@ -75,7 +75,7 @@ Hodometer is installed as a separate deployment, by default in the same namespac
 ````{group-tab} Helm
 
 
-If you install Seldon Core v2 by [Helm chart](../getting-started/kubernetes-installation/helm.md), there are values corresponding to the key environment variables discussed [above](#setting-options).
+If you install Seldon Core v2 by [Helm chart](../getting-started/kubernetes-installation/helm.md), there are values corresponding to the key environment variables discussed [above](#options).
 These Helm values and their equivalents are provided below:
 
 | Helm value | Environment variable |

@@ -29,15 +29,15 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - LightGBM
   - MLServer
   - `lightgbm`
-  - [example](../../examples/model-zoo.html#lightgbm-model)
+  - [example](../../examples/model-zoo.md#lightgbm-model)
 * - MLFlow
   - MLServer
   - `mlflow`
-  - [example](../../examples/model-zoo.html#mlflow-wine-model)
+  - [example](../../examples/model-zoo.md#mlflow-wine-model)
 * - ONNX
   - Triton
   - `onnx`
-  - [example](../../examples/model-zoo.html#onnx-mnist-model)
+  - [example](../../examples/model-zoo.md#onnx-mnist-model)
 * - OpenVino
   - Triton
   - `openvino`
@@ -53,7 +53,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - PyTorch
   - Triton
   - `pytorch`
-  - [example](../../examples/model-zoo.html#pytorch-mnist-model)
+  - [example](../../examples/model-zoo.md#pytorch-mnist-model)
 * - SKLearn
   - MLServer
   - `sklearn`
@@ -77,7 +77,7 @@ To run your model inside Seldon you must supply an inference artifact that can b
 * - XGBoost
   - MLServer
   - `xgboost`
-  - [example](../../examples/model-zoo.html#xgboost-model)
+  - [example](../../examples/model-zoo.md#xgboost-model)
 ```
 
 ## Saving Model artifacts
