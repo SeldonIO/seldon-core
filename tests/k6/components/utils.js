@@ -22,7 +22,7 @@ export function setupBase(config ) {
         for (let j = 0; j < config.maxNumModels.length; j++) {        
             for (let i = 0; i < config.maxNumModels[j]; i++) {
                 const modelName = config.modelNamePrefix[j] + i.toString()
-                const model = generateModel(config.modelType[j], modelName, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes[j], config.inferBatchSize[j])
+                const model = generateModel(config.modelType[j], modelName, 1, config.modelReplicas[j], config.isSchedulerProxy, config.modelMemoryBytes[j], config.inferBatchSize[j])
                 const modelDefn = model.modelDefn
                 const pipelineDefn = model.pipelineDefn
 
