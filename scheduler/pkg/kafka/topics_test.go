@@ -457,6 +457,12 @@ func TestNewTopicNamer(t *testing.T) {
 			topicPrefix: "my_prefix&",
 			err:         true,
 		},
+		{
+			name:        "prefix with digits",
+			namespace:   "seldon-mesh",
+			topicPrefix: "a51691-preprod-seldon",
+			err:         false,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
