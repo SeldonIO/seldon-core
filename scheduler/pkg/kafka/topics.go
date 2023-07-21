@@ -44,7 +44,7 @@ type TopicNamer struct {
 }
 
 var (
-	isValidPrefix = regexp.MustCompile(`^[A-Za-z._-]+$`).MatchString
+	isValidPrefix = regexp.MustCompile(`^[A-Za-z0-9._-]+$`).MatchString
 )
 
 // Topics can only have a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash)
