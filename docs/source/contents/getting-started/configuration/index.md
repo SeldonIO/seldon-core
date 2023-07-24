@@ -22,13 +22,28 @@ For `topicPrefix` you can use any acceptable kafka topic characters which are `a
 
 ### Kubernetes
 
-For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default value is shown below:
+For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default values are defined in the `SeldonConfig` custom resource.
 
-```{literalinclude} ../../../../../scheduler/k8s/config/kafka.yaml
+```{literalinclude} ../../../../../k8s/yaml/components.yaml
 :language: yaml
+:start-after:     kafkaConfig
+:end-before:     serviceConfig
 ```
 
-Note, this ConfigMap is created via our Helm charts and there is usually no need to modify it manually.
+When the `SeldonRuntime` is installed in a namespace a configMap will be created with these settings for Kafka configuration.
+
+To customize the settings you can add and modify the Kafka configuration via Helm, for example below is a custom Helm values file that add compression for producers:
+
+```{literalinclude} ../../../../../k8s/samples/values-runtime-kafka-compression.yaml
+:language: yaml
+```
+To use this with the SeldonRuntime Helm chart:
+
+```
+helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
+    --namespace seldon-mesh \
+    --values k8s/samples/values-runtime-kafka-compression.yaml
+```
 
 ## Tracing Configuration
 
