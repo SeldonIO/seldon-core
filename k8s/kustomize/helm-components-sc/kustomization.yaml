@@ -33,7 +33,7 @@ patches:
   target:
     version: v1
     kind: Deployment
-    name: seldon-controller-manager
+    name: seldon-v2-controller-manager
 - path: patch_envoy_json6902.yaml
   target:
     version: v1alpha1

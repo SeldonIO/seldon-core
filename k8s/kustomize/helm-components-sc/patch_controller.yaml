@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: seldon-controller-manager
+  name: seldon-v2-controller-manager
 spec:
   template:
     spec:
@@ -20,7 +20,7 @@ spec:
           - name: CLUSTERWIDE
             value: '{{ .Values.controller.clusterwide }}'
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
-            value: '{{ .Values.security.controlplane.protocol }}'            
+            value: '{{ .Values.security.controlplane.protocol }}'
           - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
             value: '{{ .Values.security.controlplane.ssl.client.secret }}'
           - name: CONTROL_PLANE_SERVER_TLS_SECRET_NAME

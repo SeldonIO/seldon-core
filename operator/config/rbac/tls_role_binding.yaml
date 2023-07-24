@@ -8,5 +8,4 @@ roleRef:
   name: manager-tls-role
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
-
+  name: v2-controller-manager

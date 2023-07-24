@@ -22,5 +22,5 @@
 - name: "Wait for OpenTelemetry Deployment"
   shell: "kubectl rollout status -n {{ opentelemetry_namespace }} deploy/{{ item }}"
   with_items:
-    - opentelemetry-operator-controller-manager
+    - opentelemetry-operator-v2-controller-manager
   when: opentelemetry_wait_for_deployments | bool

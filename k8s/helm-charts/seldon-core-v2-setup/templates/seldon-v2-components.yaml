@@ -1,46 +1,8 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: seldon-controller-manager
+  name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: seldon-leader-election-role
-  namespace: '{{ .Release.Namespace }}'
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - create
-  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -392,6 +354,44 @@ rules:
   - get
   - list
   - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: seldon-v2-leader-election-role
+  namespace: '{{ .Release.Namespace }}'
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
 ---
 {{- if .Values.controller.clusterwide -}}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -732,20 +732,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: seldon-leader-election-rolebinding
-  namespace: '{{ .Release.Namespace }}'
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: seldon-leader-election-role
-subjects:
-- kind: ServiceAccount
-  name: seldon-controller-manager
-  namespace: '{{ .Release.Namespace }}'
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
   name: seldon-manager-rolebinding
   namespace: '{{ .Release.Namespace }}'
 roleRef:
@@ -754,7 +740,7 @@ roleRef:
   name: seldon-manager-role
 subjects:
 - kind: ServiceAccount
-  name: seldon-controller-manager
+  name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -768,7 +754,21 @@ roleRef:
   name: seldon-manager-tls-role
 subjects:
 - kind: ServiceAccount
-  name: seldon-controller-manager
+  name: seldon-v2-controller-manager
+  namespace: '{{ .Release.Namespace }}'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seldon-v2-leader-election-rolebinding
+  namespace: '{{ .Release.Namespace }}'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seldon-v2-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
 {{- if .Values.controller.clusterwide -}}
@@ -782,7 +782,7 @@ roleRef:
   name: seldon-manager-role
 subjects:
 - kind: ServiceAccount
-  name: seldon-controller-manager
+  name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
 {{- end }}
@@ -809,20 +809,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    control-plane: controller-manager
-  name: seldon-controller-manager
+    control-plane: v2-controller-manager
+  name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
 spec:
   replicas: 1
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: v2-controller-manager
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        control-plane: controller-manager
+        control-plane: v2-controller-manager
     spec:
       containers:
       - args:
@@ -884,7 +884,7 @@ spec:
 {{- end }}
       securityContext: {{- toYaml .Values.controller.securityContext
         | nindent 8 }}
-      serviceAccountName: seldon-controller-manager
+      serviceAccountName: seldon-v2-controller-manager
       terminationGracePeriodSeconds: 10
 ---
 apiVersion: mlops.seldon.io/v1alpha1
