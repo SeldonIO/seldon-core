@@ -110,6 +110,13 @@ function inferBatchSize() {
     return [1]
 }
 
+function modelReplicas() {
+    if (__ENV.MODEL_NUM_REPLICAS) {
+        return __ENV.MODEL_NUM_REPLICAS.split(",").map( s => parseInt(s))
+    }
+    return [1]
+}
+
 function modelStartIdx() {
     if (__ENV.MODEL_START_IDX) {
         return parseInt(__ENV.MODEL_START_IDX)
@@ -217,5 +224,6 @@ export function getConfig() {
         "doWarmup": doWarmup(),
         "requestRate": requestRate(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
+        "modelReplicas": modelReplicas(),
     }
 }
