@@ -368,8 +368,7 @@ Present caveats:
 
 ## Data Centric Implementation
 
-Internally Pipelines are implemented using Kafka. Each input and output to a pipeline s
-tep has an associated Kafka topic. This has many advantages and allows auditing, replay and debugging easier as data is preseved from every step in your pipeline.
+Internally Pipelines are implemented using Kafka. Each input and output to a pipeline step has an associated Kafka topic. This has many advantages and allows auditing, replay and debugging easier as data is preseved from every step in your pipeline.
 
 Tracing allows you to monitor the processing latency of your pipelines.
 
