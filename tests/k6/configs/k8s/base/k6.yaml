@@ -36,6 +36,8 @@ spec:
         #   "scenarios/infer_constant_rate.js",
         #   ]
         env:
+        # - name: SKIP_LOAD_MODEL
+        #   value: "1"
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
@@ -43,16 +45,19 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa"
+          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa,onnx_gpt2a"
         - name: MODEL_TYPE
-          value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
+          value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris,onnx_gpt2"
         - name: MODEL_MEMORY_BYTES
-          value: "400000,8000000,43000000,200000,3000000"
+          value: "400000,8000000,100000000,200000,3000000,1800000000"
         - name: MAX_NUM_MODELS
-          value: "800,100,25,100,100"
+          value: "100,100,120,100,100,14"
+          # value: "800,100,50,100,100,14"
           # value: "0,0,25,100,100"
+        - name: MODEL_NUM_REPLICAS
+          value: "1,1,1,1,1,1"
         - name: INFER_BATCH_SIZE
-          value: "1,1,1,1,1"
+          value: "1,1,1,1,1,1"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS

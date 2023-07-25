@@ -1140,7 +1140,7 @@ spec:
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '10'
+        value: '20'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: 'PLAINTEXT'
       - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -1378,7 +1378,7 @@ spec:
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '10'
+        value: '20'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: 'PLAINTEXT'
       - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -1498,10 +1498,10 @@ spec:
           httpGet:
             path: terminate
             port: 9007
-      livenessProbe:
-        httpGet:
-          path: /v2/health/live
-          port: server-http
+      # livenessProbe:
+      #   httpGet:
+      #     path: /v2/health/live
+      #     port: server-http
       name: triton
       ports:
       - containerPort: 9500
@@ -1512,12 +1512,12 @@ spec:
         protocol: TCP
       - containerPort: 8002
         name: server-metrics
-      readinessProbe:
-        httpGet:
-          path: /v2/health/live
-          port: server-http
-        initialDelaySeconds: 5
-        periodSeconds: 5
+      # readinessProbe:
+      #   httpGet:
+      #     path: /v2/health/live
+      #     port: server-http
+      #   initialDelaySeconds: 5
+      #   periodSeconds: 5
       resources:
         limits:
           memory: '1Gi'
@@ -1562,4 +1562,4 @@ spec:
       - ReadWriteOnce
       resources:
         requests:
-          storage: '1Gi'
+          storage: '50Gi'
