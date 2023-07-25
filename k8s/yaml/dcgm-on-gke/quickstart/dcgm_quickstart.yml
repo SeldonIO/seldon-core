@@ -1,0 +1,191 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-dcgm
+  namespace: seldon-mesh
+  labels:
+    app: nvidia-dcgm
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-dcgm
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: nvidia-dcgm
+        app: nvidia-dcgm
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-accelerator
+                operator: Exists
+      tolerations:
+      - operator: "Exists"
+      volumes:
+      - name: nvidia-install-dir-host
+        hostPath:
+          path: /home/kubernetes/bin/nvidia
+      containers:
+      - image: "nvcr.io/nvidia/cloud-native/dcgm:3.1.7-1-ubuntu20.04"
+        command: ["nv-hostengine", "-n", "-b", "ALL"]
+        ports:
+        - containerPort: 5555
+          hostPort: 5555
+        name: nvidia-dcgm
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: nvidia-install-dir-host
+          mountPath: /usr/local/nvidia
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-dcgm-exporter
+  namespace: seldon-mesh
+  labels:
+    app: nvidia-dcgm-exporter
+spec:
+  selector:
+    matchLabels:
+      app: nvidia-dcgm-exporter
+  template:
+    metadata:
+      labels:
+        app: nvidia-dcgm-exporter
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cloud.google.com/gke-accelerator
+                operator: Exists
+      tolerations:
+      - operator: "Exists"
+      volumes:   
+      - name: nvidia-dcgm-exporter-metrics
+        configMap:
+          name: nvidia-dcgm-exporter-metrics    
+      - name: nvidia-install-dir-host
+        hostPath:
+          path: /home/kubernetes/bin/nvidia           
+      - name: pod-resources
+        hostPath:
+            path: /var/lib/kubelet/pod-resources              
+      containers:
+      - name: nvidia-dcgm-exporter  
+        image: nvcr.io/nvidia/k8s/dcgm-exporter:3.1.7-3.1.4-ubuntu20.04
+        command: ["/bin/bash", "-c"]
+        args: 
+        - hostname $NODE_NAME; dcgm-exporter -k --remote-hostengine-info $(NODE_IP) --collectors /etc/dcgm-exporter/counters.csv --collect-interval 20000
+        ports:
+        - name: metrics
+          containerPort: 9400
+        securityContext:
+          privileged: true          
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: "DCGM_EXPORTER_KUBERNETES_GPU_ID_TYPE"
+          value: "device-name"              
+        - name: LD_LIBRARY_PATH
+          value: /usr/local/nvidia/lib64
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        volumeMounts:
+        - name: nvidia-dcgm-exporter-metrics
+          mountPath: "/etc/dcgm-exporter"
+          readOnly: true
+        - name: nvidia-install-dir-host
+          mountPath: /usr/local/nvidia
+        - name: pod-resources
+          mountPath: /var/lib/kubelet/pod-resources          
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-dcgm-exporter-metrics
+  namespace: seldon-mesh
+data:
+  counters.csv: |
+    # Temperature,,
+    DCGM_FI_DEV_MEMORY_TEMP, gauge, Memory temperature (in C).
+    DCGM_FI_DEV_GPU_TEMP, gauge, GPU temperature (in C).
+    
+    # Clocks,,
+    DCGM_FI_DEV_SM_CLOCK, gauge, SM clock frequency (in MHz).
+    DCGM_FI_DEV_MEM_CLOCK, gauge, Memory clock frequency (in MHz).
+
+    # Power,,
+    DCGM_FI_DEV_POWER_USAGE, gauge, Power draw (in W).
+    DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION, counter, Total energy consumption since boot (in mJ).
+
+    # Utilization (the sample period varies depending on the product),,
+    DCGM_FI_DEV_GPU_UTIL, gauge, GPU utilization (in %).
+    DCGM_FI_DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
+
+    # Utilization of IP blocks,,
+    DCGM_FI_PROF_SM_ACTIVE, gauge, The ratio of cycles an SM has at least 1 warp assigned
+    DCGM_FI_PROF_SM_OCCUPANCY, gauge, The fraction of resident warps on a multiprocessor    
+    DCGM_FI_PROF_PIPE_TENSOR_ACTIVE, gauge, The ratio of cycles the tensor (HMMA) pipe is active (off the peak sustained elapsed cycles)
+    DCGM_FI_PROF_PIPE_FP64_ACTIVE, gauge, The fraction of cycles the FP64 (double precision) pipe was active. 
+    DCGM_FI_PROF_PIPE_FP32_ACTIVE, gauge, The fraction of cycles the FP32 (single precision) pipe was active. 
+    DCGM_FI_PROF_PIPE_FP16_ACTIVE, gauge, The fraction of cycles the FP16 (half precision) pipe was active. 
+
+    # Utilization (the sample period varies depending on the product),,
+    DCGM_FI_DEV_GPU_UTIL, gauge, GPU utilization (in %).
+    DCGM_FI_DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
+    DCGM_FI_DEV_ENC_UTIL, gauge, Encoder utilization (in %).
+    DCGM_FI_DEV_DEC_UTIL, gauge, Decoder utilization (in %).
+
+    # Memory usage,,
+    DCGM_FI_DEV_FB_FREE, gauge, Framebuffer memory free (in MiB).
+    DCGM_FI_DEV_FB_USED, gauge, Framebuffer memory used (in MiB).
+    DCGM_FI_DEV_FB_TOTAL, gauge, Total Frame Buffer of the GPU in MB.
+    DCGM_FI_DEV_MEM_COPY_UTIL, gauge, Memory utilization (in %).
+    DCGM_FI_DEV_VGPU_MEMORY_USAGE, gauge, vGPU memory usage (in MiB).
+
+    # PCIE,,
+    DCGM_FI_PROF_PCIE_TX_BYTES, gauge, Total number of bytes transmitted through PCIe TX.
+    DCGM_FI_PROF_PCIE_RX_BYTES, gauge, Total number of bytes received through PCIe RX.
+
+    # NVLink,,
+    DCGM_FI_PROF_NVLINK_TX_BYTES, gauge, The number of bytes of active NvLink tx (transmit) data including both header and payload.
+    DCGM_FI_PROF_NVLINK_RX_BYTES, gauge, The number of bytes of active NvLink rx (read) data including both header and payload.
+---
+# apiVersion: monitoring.googleapis.com/v1alpha1
+# kind: PodMonitoring
+# metadata:
+#   name: nvidia-dcgm-exporter-gmp-monitor
+#   namespace: seldon-mesh
+# spec:
+#   selector:
+#     matchLabels:
+#       app: nvidia-dcgm-exporter
+#   endpoints:
+#   - port: metrics
+#     interval: 20s
