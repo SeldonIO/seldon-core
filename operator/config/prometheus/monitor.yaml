@@ -4,8 +4,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    control-plane: controller-manager
-  name: controller-manager-metrics-monitor
+    control-plane: v2-controller-manager
+  name: v2-controller-manager-metrics-monitor
 spec:
   endpoints:
     - path: /metrics
@@ -16,4 +16,4 @@ spec:
         insecureSkipVerify: true
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: v2-controller-manager

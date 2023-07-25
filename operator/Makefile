@@ -47,7 +47,7 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=v2-manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 	sed -i '/namespace: seldon-mesh/d' config/rbac/role.yaml # remove namespace added by controller-gen
 	cp config/rbac/role.yaml config/rbac/namespace_role.yaml
 	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role.yaml
