@@ -1357,10 +1357,10 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '128Mi'
+          memory: '1Gi'
         requests:
-          cpu: '50m'
-          memory: '128Mi'
+          cpu: '1'
+          memory: '1Gi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
