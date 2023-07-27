@@ -18,27 +18,29 @@ package modelscaling
 
 import (
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 )
 
-func TestModelLagsSimple(t *testing.T) {
+func TestModelDelaysSimple(t *testing.T) {
 	g := NewGomegaWithT(t)
-	t.Logf("Start!")
 
-	lag := &lagStats{
-		lag: 0,
-	}
+	dummyModelBase := "dummy_model_0"
+	t.Run("simple", func(t *testing.T) {
 
-	lag.Enter("")
-	g.Expect(lag.Get()).To(Equal(uint32(1)))
-	lag.Exit("")
-	g.Expect(lag.Get()).To(Equal(uint32(0)))
-	lag.Enter("")
-	lag.Enter("")
-	g.Expect(lag.Get()).To(Equal(uint32(2)))
-	lag.Reset()
-	g.Expect(lag.Get()).To(Equal(uint32(0)))
+		requestId := "request_id_0"
+		delays := NewModelReplicaDelaysKeeper()
 
-	t.Logf("Done!")
+		_, err := delays.Get(dummyModelBase)
+		g.Expect(err).To(Not(BeNil()))
+
+		delays.ModelInferEnter(dummyModelBase, requestId)
+		time.Sleep(time.Millisecond * time.Duration(10))
+		delays.ModelInferExit(dummyModelBase, requestId)
+
+		delay, err := delays.Get(dummyModelBase)
+		g.Expect(err).To(BeNil())
+		g.Expect(delay > 0).To(BeTrue())
+	})
 }

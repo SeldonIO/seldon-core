@@ -346,18 +346,18 @@ func TestLoadModel(t *testing.T) {
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
 			lags := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     true,
-				EventType: modelscaling.ScaleUpEvent,
+				StatsKeeper: modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:    interfaces.Gte,
+				Threshold:   10,
+				Reset:       true,
+				EventType:   modelscaling.ScaleUpEvent,
 			}
 			lastUsed := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     false,
-				EventType: modelscaling.ScaleDownEvent,
+				StatsKeeper: modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:    interfaces.Gte,
+				Threshold:   10,
+				Reset:       false,
+				EventType:   modelscaling.ScaleDownEvent,
 			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
@@ -387,14 +387,14 @@ func TestLoadModel(t *testing.T) {
 				// we have set model stats state if autoscaling is enabled
 				versionedModelName := util.GetVersionedModelName(test.op.GetModelVersion().Model.Meta.Name, test.op.GetModelVersion().GetVersion())
 				if test.autoscalingEnabled {
-					_, err := lags.Stats.Get(versionedModelName)
+					_, err := lags.StatsKeeper.Get(versionedModelName)
 					g.Expect(err).To(BeNil())
-					_, err = lastUsed.Stats.Get(versionedModelName)
+					_, err = lastUsed.StatsKeeper.Get(versionedModelName)
 					g.Expect(err).To(BeNil())
 				} else {
-					_, err := lags.Stats.Get(versionedModelName)
+					_, err := lags.StatsKeeper.Get(versionedModelName)
 					g.Expect(err).ToNot(BeNil())
-					_, err = lastUsed.Stats.Get(versionedModelName)
+					_, err = lastUsed.StatsKeeper.Get(versionedModelName)
 					g.Expect(err).ToNot(BeNil())
 				}
 			} else {
@@ -626,18 +626,18 @@ func TestUnloadModel(t *testing.T) {
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
 			lags := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     true,
-				EventType: modelscaling.ScaleUpEvent,
+				StatsKeeper: modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:    interfaces.Gte,
+				Threshold:   10,
+				Reset:       true,
+				EventType:   modelscaling.ScaleUpEvent,
 			}
 			lastUsed := modelscaling.ModelScalingStatsWrapper{
-				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-				Operator:  interfaces.Gte,
-				Threshold: 10,
-				Reset:     false,
-				EventType: modelscaling.ScaleDownEvent,
+				StatsKeeper: modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:    interfaces.Gte,
+				Threshold:   10,
+				Reset:       false,
+				EventType:   modelscaling.ScaleDownEvent,
 			}
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
@@ -667,9 +667,9 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				// check model scaling stats removed
 				versionedModelName := util.GetVersionedModelName(test.unloadOp.GetModelVersion().Model.Meta.Name, test.unloadOp.GetModelVersion().GetVersion())
-				_, err := lags.Stats.Get(versionedModelName)
+				_, err := lags.StatsKeeper.Get(versionedModelName)
 				g.Expect(err).ToNot(BeNil())
-				_, err = lastUsed.Stats.Get(versionedModelName)
+				_, err = lastUsed.StatsKeeper.Get(versionedModelName)
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).ToNot(BeNil())

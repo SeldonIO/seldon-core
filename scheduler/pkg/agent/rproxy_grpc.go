@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -223,17 +224,21 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+	// to sync between ModelInferEnter and ModelInferExit calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	requestId := uuid.NewString()
 	go func() {
-		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+		if err := rp.modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId); err != nil {
 			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 		}
+		wg.Done()
 	}()
 	defer func() {
 		go func() {
-			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+			wg.Wait()
+			if err := rp.modelScalingStatsCollector.ModelInferExit(internalModelName, requestId); err != nil {
 				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()

@@ -222,22 +222,33 @@ func main() {
 	defer func() { _ = promMetrics.Stop() }()
 
 	modelLagStatsWrapper := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: uint(cli.ModelInferenceLagThreshold),
-		Reset:     true,
-		EventType: modelscaling.ScaleUpEvent,
+		StatsKeeper: modelscaling.NewModelReplicaLagsKeeper(),
+		Operator:    interfaces.Gte,
+		Threshold:   uint(cli.ModelInferenceLagThreshold),
+		Reset:       true,
+		EventType:   modelscaling.ScaleUpEvent,
 	}
 	modelLastUsedStatsWrapper := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: uint(cli.ModelInactiveSecondsThreshold),
-		Reset:     false,
-		EventType: modelscaling.ScaleDownEvent,
+		StatsKeeper: modelscaling.NewModelReplicaLastUsedKeeper(),
+		Operator:    interfaces.Gte,
+		Threshold:   uint(cli.ModelInactiveSecondsThreshold),
+		Reset:       false,
+		EventType:   modelscaling.ScaleDownEvent,
 	}
+	modelDelayStatsWrapper := modelscaling.ModelScalingStatsWrapper{
+		StatsKeeper: modelscaling.NewModelReplicaDelaysKeeper(),
+		Operator:    interfaces.Gte,
+		Threshold:   uint(cli.ModelInferenceDelayMSThreshold),
+		Reset:       true,
+		EventType:   modelscaling.ScaleUpEvent,
+	}
+
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
-		modelLagStatsWrapper.Stats,
-		modelLastUsedStatsWrapper.Stats,
+		[]interfaces.ModelStatsKeeper{
+			modelLagStatsWrapper.StatsKeeper,
+			modelLastUsedStatsWrapper.StatsKeeper,
+			modelDelayStatsWrapper.StatsKeeper,
+		},
 	)
 
 	rpHTTP := agent.NewReverseHTTPProxy(
@@ -264,7 +275,12 @@ func main() {
 	defer func() { _ = agentDebugService.Stop() }()
 
 	modelScalingService := modelscaling.NewStatsAnalyserService(
-		[]modelscaling.ModelScalingStatsWrapper{modelLagStatsWrapper, modelLastUsedStatsWrapper}, logger, uint(cli.ScalingStatsPeriodSeconds))
+		[]modelscaling.ModelScalingStatsWrapper{
+			modelLagStatsWrapper,
+			modelLastUsedStatsWrapper,
+			modelDelayStatsWrapper},
+		logger, uint(cli.ScalingStatsPeriodSeconds))
+
 	defer func() { _ = modelScalingService.Stop() }()
 
 	drainerService := drainservice.NewDrainerService(

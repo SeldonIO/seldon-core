@@ -31,6 +31,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
@@ -86,17 +87,21 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	externalModelName := req.Header.Get(resources.SeldonModelHeader)
 	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+	// to sync between ModelInferEnter and ModelInferExit calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	requestId := uuid.NewString()
 	go func() {
-		if err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+		if err := t.modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId); err != nil {
 			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 		}
+		wg.Done()
 	}()
 	defer func() {
 		go func() {
-			if err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+			wg.Wait()
+			if err := t.modelScalingStatsCollector.ModelInferExit(internalModelName, requestId); err != nil {
 				t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()

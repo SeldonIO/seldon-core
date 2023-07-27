@@ -152,8 +152,9 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 	v2Client := testing_utils.NewV2RestClientForTest("localhost", serverPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
-		modelscaling.NewModelReplicaLagsKeeper(),
-		modelscaling.NewModelReplicaLastUsedKeeper(),
+		[]interfaces.ModelStatsKeeper{
+			modelscaling.NewModelReplicaLagsKeeper(),
+			modelscaling.NewModelReplicaLastUsedKeeper()},
 	)
 	rp := NewReverseHTTPProxy(
 		logger,
@@ -259,8 +260,8 @@ func TestReverseProxySmoke(t *testing.T) {
 
 			//  test model scaling stats
 			if test.statusCode == http.StatusOK {
-				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
-				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+				g.Expect(rpHTTP.modelScalingStatsCollector.StatKeepers[0].Get(test.modelToRequest)).To(Equal(uint32(0)))
+				g.Expect(rpHTTP.modelScalingStatsCollector.StatKeepers[1].Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
 			}
 
@@ -419,7 +420,10 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			httpClient := http.DefaultClient
 			metricsHandler := newFakeMetricsHandler()
 			modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
-				modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper())
+				[]interfaces.ModelStatsKeeper{
+					modelscaling.NewModelReplicaLagsKeeper(),
+					modelscaling.NewModelReplicaLastUsedKeeper(),
+				})
 			httpClient.Transport = &lazyModelLoadTransport{
 				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
 			mockMLServerState.setModelServerUnloaded(dummyModel)

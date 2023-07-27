@@ -22,33 +22,35 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 func TestStatsCollectorSmoke(t *testing.T) {
 	g := NewGomegaWithT(t)
 	dummyModel := "model_0"
+	dummyRequestId := "request_id_0"
 
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
 
-	collector := NewDataPlaneStatsCollector(lags, lastUsed)
+	collector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed})
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	err := collector.ScalingMetricsSetup(&wg, dummyModel)
+	err := collector.ModelInferEnter(dummyModel, dummyRequestId)
 	g.Expect(err).To(BeNil())
 
-	lagCount, _ := collector.ModelLagStats.Get(dummyModel)
-	lastUsedCount, _ := collector.ModelLastUsedStats.Get(dummyModel)
+	lagCount, _ := lags.Get(dummyModel)
+	lastUsedCount, _ := lastUsed.Get(dummyModel)
 
 	g.Expect(lagCount).To(Equal(uint32(1)))
 	g.Expect(lastUsedCount).Should(BeNumerically("<=", time.Now().Unix()))
 
-	err = collector.ScalingMetricsTearDown(&wg, dummyModel)
+	err = collector.ModelInferExit(dummyModel, dummyRequestId)
 	g.Expect(err).To(BeNil())
 
-	lagCount, _ = collector.ModelLagStats.Get(dummyModel)
+	lagCount, _ = lags.Get(dummyModel)
 	g.Expect(lagCount).To(Equal(uint32(0)))
 
 }
