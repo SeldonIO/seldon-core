@@ -584,7 +584,7 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 		}
 
 		pi := NewPrePackedInitializer(ctx, r.ClientSet)
-		err = pi.createStandaloneModelServers(mlDep, &p, &c, &p.Graph, securityContext)
+		err = pi.addModelServersAndInitContainers(mlDep, &p, &c, &p.Graph, securityContext, log)
 		if err != nil {
 			return nil, err
 		}
