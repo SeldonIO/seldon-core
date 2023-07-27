@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION "3.7.11"
+ENV PYTHON_VERSION "3.8.10"
 
 # install docker
 RUN \
@@ -45,10 +45,10 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install maven
-ENV MAVEN_VERSION=3.6.3
+ENV MAVEN_VERSION=3.9.3
 ENV USER_HOME_DIR="/root"
-ENV SHA=c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0
-ENV BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
+ENV SHA=400fc5b6d000c158d5ee7937543faa06b6bda8408caa2444a9c947c21472fde0f0b64ac452b8cec8855d528c0335522ed5b6c8f77085811c7e29e1bedbb5daa2
+ENV BASE_URL=https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
   && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
   && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
@@ -67,17 +67,18 @@ RUN apt-get upgrade && \
 	apt-get install libbz2-dev -y && \
 	apt-get install liblzma-dev -y
 
-ENV CONDA_VERSION "4.7.12"
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$CONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh && \
+ENV CONDA_DOWNLOAD_VERSION="py38_23.3.1-0"
+ENV CONDA_VERSION "23.5.0"
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipsy && \
+    /opt/conda/bin/conda clean -tipy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
     chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
 ENV PATH="/opt/conda/bin:${PATH}"
-ENV PYTHON_VERSION "3.7.10"
+ENV PYTHON_VERSION "3.8.10"
 
 # This is to install desired version of Python without updating conda version
 RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
