@@ -35,6 +35,7 @@ extensions = [
     'sphinx_toolbox.collapse',
     'sphinx_copybutton',
     'sphinx_togglebutton',
+    'sphinxcontrib.youtube'
 ]
 
 sphinx_tabs_disable_tab_closing = True
