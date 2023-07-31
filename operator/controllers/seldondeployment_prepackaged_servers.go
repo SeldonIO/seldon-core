@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-logr/logr"
 	"strconv"
 	"strings"
 
@@ -401,25 +402,33 @@ func SetUriParamsForTFServingProxyContainer(pu *machinelearningv1.PredictiveUnit
 	}
 }
 
-func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearningv1.SeldonDeployment, p *machinelearningv1.PredictorSpec, c *components, pu *machinelearningv1.PredictiveUnit, podSecurityContext *v1.PodSecurityContext) error {
-
-	if machinelearningv1.IsPrepack(pu) {
-		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-		if sPodSpec == nil {
-			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+func (pi *PrePackedInitialiser) findDeployment(c *components, depName string) (*appsv1.Deployment, bool, error) {
+	for i := 0; i < len(c.deployments); i++ {
+		d := c.deployments[i]
+		if strings.Compare(d.Name, depName) == 0 {
+			return d, true, nil
 		}
-		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
-		seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
+	}
+	return nil, false, nil
+}
 
-		var deploy *appsv1.Deployment
-		existing := false
-		for i := 0; i < len(c.deployments); i++ {
-			d := c.deployments[i]
-			if strings.Compare(d.Name, depName) == 0 {
-				deploy = d
-				existing = true
-				break
-			}
+func (pi *PrePackedInitialiser) addModelServersAndInitContainers(mlDep *machinelearningv1.SeldonDeployment,
+	p *machinelearningv1.PredictorSpec,
+	c *components,
+	pu *machinelearningv1.PredictiveUnit,
+	podSecurityContext *v1.PodSecurityContext,
+	log logr.Logger) error {
+
+	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+	if sPodSpec == nil {
+		return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+	}
+	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+	if machinelearningv1.IsPrepack(pu) {
+
+		deploy, existing, err := pi.findDeployment(c, depName)
+		if err != nil {
+			return err
 		}
 
 		// might not be a Deployment yet - if so we have to create one
@@ -462,7 +471,7 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 		}
 
 		if !existing {
-
+			seldonId := machinelearningv1.GetSeldonDeploymentName(mlDep)
 			// this is a new deployment so its containers won't have a containerService
 			for k := 0; k < len(deploy.Spec.Template.Spec.Containers); k++ {
 				con := &deploy.Spec.Template.Spec.Containers[k]
@@ -478,10 +487,32 @@ func (pi *PrePackedInitialiser) createStandaloneModelServers(mlDep *machinelearn
 				c.deployments = append(c.deployments, deploy)
 			}
 		}
+	} else {
+		// add model uri initializer for non server components
+		if pu.ModelURI != "" {
+			log.Info("Add rclone init container for predictive unit", "predictive unit", pu.Name)
+			deploy, existing, err := pi.findDeployment(c, depName)
+			if err != nil {
+				return err
+			}
+			if !existing {
+				return fmt.Errorf("Expected to find a deployment for predictive unit %s", pu.Name)
+			}
+			mi := NewModelInitializer(pi.ctx, pi.clientset)
+			c := utils.GetContainerForDeployment(deploy, pu.Name)
+			if c == nil {
+				return fmt.Errorf("Expected to find container for predictive unit %s", pu.Name)
+			}
+			envSecretRefName := extractEnvSecretRefName(pu)
+			_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	for i := 0; i < len(pu.Children); i++ {
-		if err := pi.createStandaloneModelServers(mlDep, p, c, &pu.Children[i], podSecurityContext); err != nil {
+		if err := pi.addModelServersAndInitContainers(mlDep, p, c, &pu.Children[i], podSecurityContext, log); err != nil {
 			return err
 		}
 	}
