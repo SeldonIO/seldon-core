@@ -2,8 +2,11 @@ package controllers
 
 import (
 	"context"
+	"github.com/go-logr/logr/testr"
+	"k8s.io/client-go/kubernetes/fake"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -16,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	crfake "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
 var _ = Describe("Create a prepacked sklearn server.", func() {
@@ -1213,3 +1217,177 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 	})
 
 })
+
+func createCustomModelWithUri() (*machinelearningv1.SeldonDeployment,
+	*machinelearningv1.PredictorSpec,
+	*components,
+	*machinelearningv1.PredictiveUnit) {
+	impl := machinelearningv1.SIMPLE_MODEL
+	sdep := &machinelearningv1.SeldonDeployment{
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{
+									{
+										Name: "model1",
+									},
+								},
+							},
+						},
+					},
+					Graph: machinelearningv1.PredictiveUnit{
+						Name:           "model1",
+						ModelURI:       "gs://abc",
+						Implementation: &impl,
+					},
+				},
+			},
+		},
+	}
+	depName := machinelearningv1.GetDeploymentName(sdep, sdep.Spec.Predictors[0], sdep.Spec.Predictors[0].ComponentSpecs[0], 0)
+	c := &components{
+		deployments: []*appsv1.Deployment{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: depName,
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "model1",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return sdep, &sdep.Spec.Predictors[0], c, &sdep.Spec.Predictors[0].Graph
+}
+
+func createPrePackedServer() (*machinelearningv1.SeldonDeployment,
+	*machinelearningv1.PredictorSpec,
+	*components,
+	*machinelearningv1.PredictiveUnit) {
+	impl := machinelearningv1.PredictiveUnitImplementation("SKLEARN_SERVER")
+	sdep := &machinelearningv1.SeldonDeployment{
+		Spec: machinelearningv1.SeldonDeploymentSpec{
+			Predictors: []machinelearningv1.PredictorSpec{
+				{
+					Name: "p1",
+					ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+						{
+							Spec: corev1.PodSpec{
+								Containers: []corev1.Container{
+									{
+										Name: "model1",
+									},
+								},
+							},
+						},
+					},
+					Graph: machinelearningv1.PredictiveUnit{
+						Name:           "model1",
+						ModelURI:       "gs://abc",
+						Implementation: &impl,
+					},
+				},
+			},
+		},
+	}
+	depName := machinelearningv1.GetDeploymentName(sdep, sdep.Spec.Predictors[0], sdep.Spec.Predictors[0].ComponentSpecs[0], 0)
+	c := &components{
+		deployments: []*appsv1.Deployment{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: depName,
+				},
+				Spec: appsv1.DeploymentSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{
+							Containers: []corev1.Container{
+								{
+									Name: "model1",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return sdep, &sdep.Spec.Predictors[0], c, &sdep.Spec.Predictors[0].Graph
+}
+
+func getNumInitContainers(c *components) int {
+	tot := 0
+	for _, d := range c.deployments {
+		tot = tot + len(d.Spec.Template.Spec.InitContainers)
+	}
+	return tot
+}
+
+func setupTestConfigMap() error {
+	scheme := createScheme()
+	machinelearningv1.C = crfake.NewFakeClientWithScheme(scheme)
+	testConfigMap1 := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ControllerConfigMapName,
+			Namespace: ControllerNamespace,
+		},
+		Data: configs,
+	}
+	return machinelearningv1.C.Create(context.TODO(), testConfigMap1)
+}
+
+func TestAddModelServersAndInitContainers(t *testing.T) {
+	g := NewGomegaWithT(t)
+	err := setupTestConfigMap()
+	g.Expect(err).To(BeNil())
+	type test struct {
+		name      string
+		error     bool
+		generator func() (
+			*machinelearningv1.SeldonDeployment,
+			*machinelearningv1.PredictorSpec,
+			*components,
+			*machinelearningv1.PredictiveUnit)
+		expectedNumInitContainers int
+	}
+
+	tests := []test{
+		{
+			name:                      "model uri in custom model",
+			generator:                 createCustomModelWithUri,
+			expectedNumInitContainers: 1,
+		},
+		{
+			name:                      "model uri in prepackaged server",
+			generator:                 createPrePackedServer,
+			expectedNumInitContainers: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sdep, p, c, pu := test.generator()
+			cs := fake.NewSimpleClientset(configMap)
+			pi := NewPrePackedInitializer(context.TODO(), cs)
+			logger := testr.New(t)
+			err := pi.addModelServersAndInitContainers(sdep, p, c, pu, nil, logger)
+			if test.error {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(getNumInitContainers(c)).To(Equal(test.expectedNumInitContainers))
+			}
+		})
+	}
+}
