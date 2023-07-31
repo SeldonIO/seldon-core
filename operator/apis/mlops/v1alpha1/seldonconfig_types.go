@@ -32,7 +32,7 @@ import (
 const (
 	SchedulerName       = "seldon-scheduler"
 	EnvoyName           = "seldon-envoy"
-	DataflowEngineName  = "dataflow-engine"
+	DataflowEngineName  = "seldon-dataflow-engine"
 	HodometerName       = "hodometer"
 	ModelGatewayName    = "seldon-modelgateway"
 	PipelineGatewayName = "seldon-pipelinegateway"

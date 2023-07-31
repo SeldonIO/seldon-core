@@ -40,8 +40,6 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
@@ -51,42 +49,6 @@ type ServerReconciler struct {
 	Scheme    *runtime.Scheme
 	Scheduler *scheduler.SchedulerClient
 	Recorder  record.EventRecorder
-}
-
-func (r *ServerReconciler) handleFinalizer(ctx context.Context, server *mlopsv1alpha1.Server) (bool, error) {
-
-	// Check if we are being deleted or not
-	if server.ObjectMeta.DeletionTimestamp.IsZero() { // Not being deleted
-
-		// Add our finalizer
-		if !utils.ContainsStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName) {
-			server.ObjectMeta.Finalizers = append(server.ObjectMeta.Finalizers, constants.ServerFinalizerName)
-			if err := r.Update(context.Background(), server); err != nil {
-				return true, err
-			}
-		}
-	} else { // server is being deleted
-		if utils.ContainsStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName) {
-			// Handle unload in scheduler
-			if err := r.Scheduler.ServerNotify(ctx, server); err != nil {
-				// Remove finalizer as we can't reach scheduler
-				server.ObjectMeta.Finalizers = utils.RemoveStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName)
-				if err2 := r.Update(ctx, server); err != nil {
-					return true, err2
-				}
-				return true, err
-			}
-			if server.Status.LoadedModelReplicas == 0 { // Remove finalizer if no models loaded otherwise we wait
-				server.ObjectMeta.Finalizers = utils.RemoveStr(server.ObjectMeta.Finalizers, constants.ServerFinalizerName)
-				if err := r.Update(ctx, server); err != nil {
-					return true, err
-				}
-			}
-		}
-		// Stop reconciliation as the item is being deleted
-		return true, nil
-	}
-	return false, nil
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
@@ -127,15 +89,14 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	logger.Info("Found server", "name", server.Name, "namespace", server.Namespace)
 
-	stop, err := r.handleFinalizer(ctx, server)
-	if stop {
-		if err != nil {
-			r.updateStatusFromError(ctx, logger, server, err)
-		}
-		return reconcile.Result{}, err
+	// Check if we are being deleted and return if so
+	// Cleanup of server is handled by the server pod itself informing the scheduler and waiting as models are
+	// recheculed (if possible).
+	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
+		return reconcile.Result{}, nil
 	}
 
-	err = r.Scheduler.ServerNotify(ctx, server)
+	err := r.Scheduler.ServerNotify(ctx, server)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
