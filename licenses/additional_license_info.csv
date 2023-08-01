@@ -50,7 +50,7 @@ https://github.com/miekg/dns/blob/master/LICENSE,BSD 3-Clause "New" or "Revised"
 https://github.com/pascaldekloe/goe/blob/master/LICENSE,CC0 1.0 Universal
 https://github.com/samuel/go-zookeeper/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/sean-/seed/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
-https://github.com/smartystreets/assertions/blob/master/LICENSE.md,MIT License
+https://github.com/smarty/assertions/blob/master/LICENSE.md,MIT License
 https://github.com/smartystreets/goconvey/blob/master/LICENSE.md,MIT License
 https://github.com/go-gcfg/gcfg/blob/v1/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/DataDog/zstd/blob/1.x/LICENSE,BSD 2-Clause "Simplified" License
@@ -80,7 +80,6 @@ https://github.com/phayes/freeport/blob/master/LICENSE.md,BSD 3-Clause "New" or 
 https://github.com/sean-/seed/blob/master/LICENSE,MIT License
 https://github.com/shirou/gopsutil/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/shirou/w32/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
-https://github.com/smartystreets/assertions/blob/master/LICENSE.md,MIT License
 https://github.com/smarty-archives/go-aws-auth/blob/master/LICENSE.md,MIT License
 https://github.com/smartystreets/goconvey/blob/master/LICENSE.md,MIT License
 https://github.com/smartystreets/gunit/blob/master/LICENSE.md,MIT License

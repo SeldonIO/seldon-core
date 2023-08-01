@@ -12,7 +12,7 @@ setup(
     name="seldon-core",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.17.0-dev",
+    version="1.18.0-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",
@@ -40,7 +40,7 @@ setup(
         # Addresses CVE SNYK-PYTHON-CRYPTOGRAPHY-3315328
         "cryptography >= 39.0.1, < 40.1",
         # Addresses CVE SNYK-PYTHON-PYYAML-590151
-        "PyYAML >= 5.4, < 5.5",
+        "PyYAML >= 5.4, <= 6.0.1",
         # Addresses CVE PRISMA-2021-0020
         "click >= 8.0.0a1, < 8.1",
         # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
