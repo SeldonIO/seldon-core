@@ -1935,7 +1935,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-antlr/antlr4  BSD 3-Clause "New" or "Revised" License  https://github.com/antlr/antlr4/blob/master/LICENSE.txt
+antlr/antlr4  BSD 3-Clause "New" or "Revised" License  https://github.com/antlr/antlr4/blob/dev/LICENSE.txt
 --------------------------------------------------------------------------------
 Copyright (c) 2012-2022 The ANTLR Project. All rights reserved.
 
@@ -15134,7 +15134,7 @@ grpc-ecosystem/go-grpc-prometheus  Apache License 2.0  https://github.com/grpc-e
    See the License for the specific language governing permissions and
    limitations under the License.
 --------------------------------------------------------------------------------
-grpc-ecosystem/grpc-gateway  BSD 3-Clause "New" or "Revised" License  https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE.txt
+grpc-ecosystem/grpc-gateway  BSD 3-Clause "New" or "Revised" License  https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2015, Gengo, Inc.
 All rights reserved.
@@ -20770,7 +20770,7 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 
 --------------------------------------------------------------------------------
-hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/master/LICENSE
+hashicorp/mdns  MIT License  https://github.com/hashicorp/mdns/blob/main/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2014 HashiCorp, Inc.
 
@@ -26641,7 +26641,7 @@ moby/spdystream  Apache License 2.0  https://github.com/moby/spdystream/blob/mas
    limitations under the License.
 
 --------------------------------------------------------------------------------
-moby/term  Apache License 2.0  https://github.com/moby/term/blob/master/LICENSE
+moby/term  Apache License 2.0  https://github.com/moby/term/blob/main/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
@@ -30962,7 +30962,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-smartystreets/assertions  MIT License  https://github.com/smartystreets/assertions/blob/master/LICENSE.md
+smartystreets/assertions  MIT License  https://github.com/smarty/assertions/blob/master/LICENSE.md
 --------------------------------------------------------------------------------
 MIT License
 
