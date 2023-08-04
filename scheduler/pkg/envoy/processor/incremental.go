@@ -63,6 +63,7 @@ type IncrementalProcessor struct {
 	batchWaitMillis      time.Duration
 	pendingModelVersions []*pendingModelVersion
 	versionCleaner       cleaner.ModelVersionCleaner
+	batchTriggerManual   *time.Time
 }
 
 type pendingModelVersion struct {
@@ -94,6 +95,7 @@ func NewIncrementalProcessor(
 		batchTrigger:         nil,
 		batchWaitMillis:      util.EnvoyUpdateDefaultBatchWaitMillis,
 		versionCleaner:       versionCleaner,
+		batchTriggerManual:   nil,
 	}
 
 	err := ip.setListeners()
@@ -622,6 +624,13 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		},
 	)
 
+	if p.batchTriggerManual == nil {
+		*p.batchTriggerManual = time.Now()
+	} else if time.Since(*p.batchTriggerManual) > p.batchWaitMillis {
+		p.modelSync()
+		p.batchTriggerManual = nil
+	}
+	// we still need to enable the cron timer as there is no guarantee that the manual trigger will be called
 	if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
 		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
 	}
