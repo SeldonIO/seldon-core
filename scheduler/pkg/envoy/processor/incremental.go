@@ -623,7 +623,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	)
 
 	if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
-		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSync)
+		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
 	}
 
 	return nil
@@ -640,10 +640,14 @@ func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	}
 }
 
-func (p *IncrementalProcessor) modelSync() {
-	logger := p.logger.WithField("func", "modelSync")
+func (p *IncrementalProcessor) modelSyncWithLock() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	p.modelSync()
+}
+
+func (p *IncrementalProcessor) modelSync() {
+	logger := p.logger.WithField("func", "modelSync")
 
 	envoyErr := p.updateEnvoy()
 	serverReplicaState := store.Available
