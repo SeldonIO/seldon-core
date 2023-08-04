@@ -662,6 +662,7 @@ func (p *IncrementalProcessor) modelSyncWithLock() {
 
 func (p *IncrementalProcessor) modelSync() {
 	logger := p.logger.WithField("func", "modelSync")
+	logger.Debugf("Calling model sync")
 
 	envoyErr := p.updateEnvoy()
 	serverReplicaState := store.Available
