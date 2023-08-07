@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "alibiexplainer"
-version = "1.17.0-dev"
+version = "1.17.1"
 description = "Model Explanation Server"
 authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
 license = "Apache-2.0"

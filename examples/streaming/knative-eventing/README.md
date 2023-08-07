@@ -29,7 +29,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.17.0/sklearn/iris
+      modelUri: gs://seldon-models/v1.17.1/sklearn/iris
       name: simple-iris-model
       children: []
     name: default
