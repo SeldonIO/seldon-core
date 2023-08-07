@@ -9,10 +9,10 @@ all_extra_deps = chain.from_iterable(extras.values())
 extras["all"] = list(set(all_extra_deps))
 
 setup(
-    name="seldon-core",
+    name="seldon-core-sxf",
     author="Seldon Technologies Ltd.",
     author_email="hello@seldon.io",
-    version="1.18.0-dev",
+    version="1.17.0-dev",
     description="Seldon Core client and microservice wrapper",
     url="https://github.com/SeldonIO/seldon-core",
     license="Apache 2.0",

@@ -3,7 +3,7 @@ import os
 from concurrent import futures
 
 import grpc
-from flask import Flask, Response, request, send_from_directory
+from flask import Flask, request, send_from_directory, Response
 from flask_cors import CORS
 from grpc_reflection.v1alpha import reflection
 
@@ -74,7 +74,6 @@ def get_rest_microservice(user_model, seldon_metrics):
         response = seldon_core.seldon_methods.predict(
             user_model, requestJson, seldon_metrics
         )
-
         json_response = jsonify(response, skip_encoding=PAYLOAD_PASSTHROUGH)
         if (
             isinstance(response, dict)
@@ -85,6 +84,19 @@ def get_rest_microservice(user_model, seldon_metrics):
 
         logger.debug("REST Response: %s", response)
         return json_response
+
+    @app.route("/stream", methods=["GET", "POST"])
+    @app.route("/api/v1.0/streams", methods=["POST"])
+    @app.route("/api/v0.1/streams", methods=["POST"])
+    # [ADD: Stream-Predict]
+    def Stream_Predict():
+        requestJson = get_request(skip_decoding=PAYLOAD_PASSTHROUGH)
+        logger.debug("REST Request: %s", request)
+        response = seldon_core.seldon_methods.stream_predict(
+            user_model, requestJson, seldon_metrics
+        )
+
+        return Response(response, mimetype="text/event-stream")
 
     @app.route("/send-feedback", methods=["GET", "POST"])
     @app.route("/api/v1.0/feedback", methods=["POST"])
