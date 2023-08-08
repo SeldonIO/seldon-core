@@ -120,7 +120,11 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
 
-	consumerBucketId := util.GetKafkaConsumerName(modelName, modelGatewayConsumerNamePrefix, cm.maxNumConsumers)
+	consumerBucketId := util.GetKafkaConsumerName(
+		cm.managerConfig.SeldonKafkaConfig.ConsumerGroupIdPrefix,
+		modelName,
+		modelGatewayConsumerNamePrefix,
+		cm.maxNumConsumers)
 	ic, ok := cm.consumers[consumerBucketId]
 	logger.Debugf("Getting consumer for model %s with bucket id %s", modelName, consumerBucketId)
 	if !ok && !create {

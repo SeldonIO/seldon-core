@@ -50,7 +50,10 @@ func modelIdToConsumerBucket(modelId string, numBuckets int) uint32 {
 	return hash % uint32(numBuckets)
 }
 
-func GetKafkaConsumerName(modelName, prefix string, maxConsumers int) string {
+func GetKafkaConsumerName(consumerGroupIdPrefix, modelName, prefix string, maxConsumers int) string {
 	idx := modelIdToConsumerBucket(modelName, maxConsumers)
-	return fmt.Sprintf("%s-%d", prefix, idx)
+	if consumerGroupIdPrefix == "" {
+		return fmt.Sprintf("%s-%d", prefix, idx)
+	}
+	return fmt.Sprintf("%s-%s-%d", consumerGroupIdPrefix, prefix, idx)
 }

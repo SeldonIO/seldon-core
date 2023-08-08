@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -52,6 +53,44 @@ func TestConsistentHash(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			g.Expect(modelIdToConsumerBucket(test.modelId, numBuckets)).To(Equal(test.hash))
+
+		})
+	}
+}
+
+func TestGetKafkaConsumerName(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                  string
+		consumerGroupIdPrefix string
+		modelName             string
+		prefix                string
+		maxConsumers          int
+		expected              string
+	}
+	tests := []test{
+		{
+			name:                  "all params",
+			consumerGroupIdPrefix: "foo",
+			modelName:             "model",
+			prefix:                "p",
+			maxConsumers:          100,
+			expected:              fmt.Sprintf("%s-%s-%d", "foo", "p", modelIdToConsumerBucket("model", 100)),
+		},
+		{
+			name:                  "no consumer prefix",
+			consumerGroupIdPrefix: "",
+			modelName:             "model",
+			prefix:                "p",
+			maxConsumers:          100,
+			expected:              fmt.Sprintf("%s-%d", "p", modelIdToConsumerBucket("model", 100)),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			g.Expect(GetKafkaConsumerName(test.consumerGroupIdPrefix, test.modelName, test.prefix, test.maxConsumers)).To(Equal(test.expected))
 
 		})
 	}

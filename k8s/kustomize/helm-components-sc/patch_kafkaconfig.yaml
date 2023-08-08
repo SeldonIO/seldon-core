@@ -8,6 +8,7 @@ spec:
       bootstrap.servers: '{{ .Values.kafka.bootstrap }}'
       debug: '{{ .Values.kafka.debug }}'
       topicPrefix: '{{ .Values.kafka.topicPrefix }}'
+      consumerGroupIdPrefix: '{{ .Values.kafka.consumerGroupIdPrefix }}'
       consumer:
         "session.timeout.ms": '{{ .Values.kafka.consumer.sessionTimeoutMs }}'
         "auto.offset.reset": '{{ .Values.kafka.consumer.autoOffsetReset }}'

@@ -36,6 +36,7 @@ object Cli {
 
     // Kafka
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
+    val kafkaConsumerGroupIdPrefix = Key("kafka.consumer.prefix", stringType)
     val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*KafkaSecurityProtocols))
     val kafkaPartitions = Key("kafka.partitions.default", intType)
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
@@ -65,6 +66,7 @@ object Cli {
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,
+            kafkaConsumerGroupIdPrefix,
             kafkaSecurityProtocol,
             kafkaPartitions,
             kafkaReplicationFactor,

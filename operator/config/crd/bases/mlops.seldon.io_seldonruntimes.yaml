@@ -62,6 +62,8 @@ spec:
                           - type: string
                           x-kubernetes-int-or-string: true
                         type: object
+                      consumerGroupIdPrefix:
+                        type: string
                       debug:
                         type: string
                       producer:

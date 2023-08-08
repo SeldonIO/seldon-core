@@ -75,7 +75,7 @@ func (cm *ConsumerManager) createConsumer() error {
 	c, err := NewMultiTopicsKafkaConsumer(
 		cm.logger,
 		cm.consumerConfig,
-		getKafkaConsumerName(kafkaConsumerNamePrefix, uuid.New().String()),
+		getKafkaConsumerName(cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
 		cm.tracer,
 	)
 	if err != nil {
@@ -132,6 +132,9 @@ func (cm *ConsumerManager) Stop() {
 	}
 }
 
-func getKafkaConsumerName(prefix, id string) string {
-	return fmt.Sprintf("%s-%s", prefix, id)
+func getKafkaConsumerName(consumerGroupIdPrefix, componentPrefix, id string) string {
+	if consumerGroupIdPrefix == "" {
+		return fmt.Sprintf("%s-%s", componentPrefix, id)
+	}
+	return fmt.Sprintf("%s-%s-%s", consumerGroupIdPrefix, componentPrefix, id)
 }

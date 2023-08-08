@@ -25,12 +25,13 @@ import (
 )
 
 type KafkaConfig struct {
-	BootstrapServers string          `json:"bootstrap.servers,omitempty"`
-	Debug            string          `json:"debug,omitempty"`
-	Consumer         kafka.ConfigMap `json:"consumer,omitempty"`
-	Producer         kafka.ConfigMap `json:"producer,omitempty"`
-	Streams          kafka.ConfigMap `json:"streams,omitempty"`
-	TopicPrefix      string          `json:"topicPrefix,omitempty"`
+	BootstrapServers      string          `json:"bootstrap.servers,omitempty"`
+	Debug                 string          `json:"debug,omitempty"`
+	Consumer              kafka.ConfigMap `json:"consumer,omitempty"`
+	Producer              kafka.ConfigMap `json:"producer,omitempty"`
+	Streams               kafka.ConfigMap `json:"streams,omitempty"`
+	TopicPrefix           string          `json:"topicPrefix,omitempty"`
+	ConsumerGroupIdPrefix string          `json:"consumerGroupIdPrefix,omitempty"`
 }
 
 type none = struct{}
