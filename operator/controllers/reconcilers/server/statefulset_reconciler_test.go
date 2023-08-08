@@ -42,7 +42,7 @@ import (
 func TestStatefulSetReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	stsJson := `{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm"},"ownerReferences":[{"apiVersion":"mlops.seldon.io/v1alpha1","kind":"Server","name":"mlserver","uid":"7a9dc74b-552c-49da-8e45-09a6af752319","controller":true,"blockOwnerDeletion":true}]},"spec":{"replicas":1,"selector":{"matchLabels":{"seldon-server-name":"mlserver"}},"template":{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm","seldon-server-name":"mlserver"}},"spec":{"volumes":[{"name":"downstream-ca-certs","secret":{"secretName":"seldon-downstream-server","optional":true}},{"name":"config-volume","configMap":{"name":"seldon-agent"}},{"name":"tracing-config-volume","configMap":{"name":"seldon-tracing"}}],"containers":[{"name":"rclone","image":"docker.io/seldonio/seldon-rclone:latest","ports":[{"name":"rclone","containerPort":5572,"protocol":"TCP"}],"resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"50m","memory":"128Mi"}},"volumeMounts":[{"name":"mlserver-models","mountPath":"/mnt/agent"}],"readinessProbe":{"tcpSocket":{"port":5572},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":5,"successThreshold":1,"failureThreshold":3},"lifecycle":{"preStop":{"httpGet":{"path":"terminate","port":9007}}},"imagePullPolicy":"IfNotPresent"}],"terminationGracePeriodSeconds":120,"serviceAccountName":"seldon-server","securityContext":{"runAsUser":1000,"runAsGroup":1000,"runAsNonRoot":true,"fsGroup":1000}}},"volumeClaimTemplates":[{"metadata":{"name":"mlserver-models","creationTimestamp":null},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"status":{}}],"serviceName":"mlserver","podManagementPolicy":"Parallel","updateStrategy":{}},"status":{"replicas":0,"availableReplicas":0}}`
+	stsJson := `{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app.kubernetes.io/name":"seldon-server","app.kubernetes.io/managed-by":"Helm"},"ownerReferences":[{"apiVersion":"mlops.seldon.io/v1alpha1","kind":"Server","name":"mlserver","uid":"7a9dc74b-552c-49da-8e45-09a6af752319","controller":true,"blockOwnerDeletion":true}]},"spec":{"replicas":1,"selector":{"matchLabels":{"seldon-server-name":"mlserver"}},"template":{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm","seldon-server-name":"mlserver"}},"spec":{"volumes":[{"name":"downstream-ca-certs","secret":{"secretName":"seldon-downstream-server","optional":true}},{"name":"config-volume","configMap":{"name":"seldon-agent"}},{"name":"tracing-config-volume","configMap":{"name":"seldon-tracing"}}],"containers":[{"name":"rclone","image":"docker.io/seldonio/seldon-rclone:latest","ports":[{"name":"rclone","containerPort":5572,"protocol":"TCP"}],"resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"50m","memory":"128Mi"}},"volumeMounts":[{"name":"mlserver-models","mountPath":"/mnt/agent"}],"readinessProbe":{"tcpSocket":{"port":5572},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":5,"successThreshold":1,"failureThreshold":3},"lifecycle":{"preStop":{"httpGet":{"path":"terminate","port":9007}}},"imagePullPolicy":"IfNotPresent"}],"terminationGracePeriodSeconds":120,"serviceAccountName":"seldon-server","securityContext":{"runAsUser":1000,"runAsGroup":1000,"runAsNonRoot":true,"fsGroup":1000}}},"volumeClaimTemplates":[{"metadata":{"name":"mlserver-models","creationTimestamp":null},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"status":{}}],"serviceName":"mlserver","podManagementPolicy":"Parallel","updateStrategy":{}},"status":{"replicas":0,"availableReplicas":0}}`
 	sts := appsv1.StatefulSet{}
 	err := json.Unmarshal([]byte(stsJson), &sts)
 	g.Expect(err).To(BeNil())
@@ -271,7 +271,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
-					Labels:    map[string]string{constants.AppKey: constants.ServerLabelValue},
+					Labels:    map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue},
 				},
 				Spec: appsv1.StatefulSetSpec{
 					ServiceName: "foo",
@@ -281,7 +281,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 					},
 					Template: v1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels:    map[string]string{constants.ServerLabelNameKey: "foo", constants.AppKey: constants.ServerLabelValue},
+							Labels:    map[string]string{constants.ServerLabelNameKey: "foo", constants.KubernetesNameLabelKey: constants.ServerLabelValue},
 							Name:      "foo",
 							Namespace: "default",
 						},
@@ -417,8 +417,8 @@ func TestToStatefulSet(t *testing.T) {
 					Name:      "foo",
 					Namespace: "default",
 					Labels: map[string]string{
-						constants.AppKey: constants.ServerLabelValue,
-						"l1":             "l1val"},
+						constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+						"l1":                             "l1val"},
 					Annotations: map[string]string{"a1": "a1val"},
 				},
 				Spec: appsv1.StatefulSetSpec{
@@ -430,8 +430,8 @@ func TestToStatefulSet(t *testing.T) {
 					Template: v1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{constants.ServerLabelNameKey: "foo",
-								constants.AppKey: constants.ServerLabelValue,
-								"l1":             "l1val"},
+								constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+								"l1":                             "l1val"},
 							Annotations: map[string]string{"a1": "a1val"},
 							Name:        "foo",
 							Namespace:   "default",

@@ -70,9 +70,9 @@ func toStatefulSet(meta metav1.ObjectMeta,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	labels map[string]string,
 	annotations map[string]string) *appsv1.StatefulSet {
-	labels[constants.AppKey] = constants.ServerLabelValue
-	metaLabels := utils.MergeMaps(map[string]string{constants.AppKey: constants.ServerLabelValue}, labels)
-	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.AppKey: constants.ServerLabelValue}, labels)
+	labels[constants.KubernetesNameLabelKey] = constants.ServerLabelValue
+	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
+	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 	ss := &appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        meta.Name,
