@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: seldon-server
+      app.kubernetes.io/name: seldon-server
   namespaceSelector:
     matchNames: []
     any: false

@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: seldon-mesh
+      app.kubernetes.io/name: seldon-envoy
   namespaceSelector:
     matchNames: []
     any: false
