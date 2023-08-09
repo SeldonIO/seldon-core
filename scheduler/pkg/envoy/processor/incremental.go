@@ -631,11 +631,13 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		},
 	)
 	p.modelStore.UnlockModel(modelName)
-	p.triggerModelSyncIfNeeded()
+	triggered := p.triggerModelSyncIfNeeded()
 
-	// we still need to enable the cron timer as there is no guarantee that the manual trigger will be called
-	if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
-		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
+	if !triggered {
+		// we still need to enable the cron timer as there is no guarantee that the manual trigger will be called
+		if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
+			p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
+		}
 	}
 
 	return nil
@@ -652,18 +654,21 @@ func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	}
 }
 
-func (p *IncrementalProcessor) triggerModelSyncIfNeeded() {
+func (p *IncrementalProcessor) triggerModelSyncIfNeeded() bool {
 	if p.batchTriggerManual == nil {
 		p.batchTriggerManual = new(time.Time)
 		*p.batchTriggerManual = time.Now()
-	} else if time.Since(*p.batchTriggerManual) > p.batchWaitMillis {
+	}
+	if time.Since(*p.batchTriggerManual) > p.batchWaitMillis {
 		// we have waited long enough so we can trigger the batch update
 		// we do this inline so that we do not require to release and reacquire the lock
 		// which under heavy load there is no guarantee of order and therefore could lead
 		// to starvation of the batch update
 		p.modelSync()
 		*p.batchTriggerManual = time.Now()
+		return true
 	}
+	return false
 }
 
 func (p *IncrementalProcessor) modelSyncWithLock() {
