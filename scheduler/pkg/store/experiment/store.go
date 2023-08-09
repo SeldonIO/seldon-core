@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize      int = 100
+	pendingSyncsQueueSize      int = 1000
 	experimentStartEventSource     = "experiment.store.start"
 	experimentStopEventSource      = "experiment.store.stop"
 	modelEventHandlerName          = "experiment.store.models"
