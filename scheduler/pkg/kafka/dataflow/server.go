@@ -377,26 +377,48 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 		c.mu.Lock()
 		defer c.mu.Unlock()
 
-		// Handle case where we have no subscribers
-		if len(c.streams) == 0 {
-			logger.Warnf("Can't handle event as no streams available for pipeline %s", event.PipelineName)
-			return
-		}
-
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			return
 		}
-
 		logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
+
+		// Handle case where we have no subscribers
+		if len(c.streams) == 0 {
+			return
+		}
 
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
+			if len(c.streams) == 0 {
+				errMsg := "no dataflow engines available to schedule pipeline"
+				logger.
+					WithField("pipeline", event.PipelineName).
+					Warn(errMsg)
+
+				err := c.pipelineHandler.SetPipelineState(
+					pv.Name,
+					pv.Version,
+					pv.UID,
+					pipeline.PipelineCreating,
+					errMsg,
+				)
+				if err != nil {
+					logger.
+						WithError(err).
+						WithField("pipeline", pv.String()).
+						Error("Failed to set pipeline state to creating")
+				}
+
+				return
+			}
+
 			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "")
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
+
 			msg := c.createPipelineMessage(pv)
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
