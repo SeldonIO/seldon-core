@@ -341,7 +341,14 @@ func (c *ChainerServer) rebalance() {
 		}
 		c.mu.Lock()
 		if len(c.streams) == 0 {
-			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreate, "No servers available", sourceChainerServer); err != nil {
+			if err := c.pipelineHandler.SetPipelineState(
+				pv.Name,
+				pv.Version,
+				pv.UID,
+				pipeline.PipelineCreate,
+				"no dataflow engines available to handle pipeline",
+				sourceChainerServer,
+			); err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 		} else {
