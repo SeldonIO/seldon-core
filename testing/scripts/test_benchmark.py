@@ -11,7 +11,6 @@ from seldon_e2e_utils import post_comment_in_pr, run_benchmark_and_capture_resul
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
 def test_service_orchestrator():
-
     sort_by = ["apiType", "disableOrchestrator"]
 
     data_size = 1_000
@@ -69,7 +68,6 @@ def test_service_orchestrator():
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
 def test_workers_performance():
-
     sort_by = ["apiType", "serverWorkers"]
 
     data_size = 10
@@ -99,7 +97,6 @@ def test_workers_performance():
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
 def test_python_wrapper_v1_vs_v2_iris():
-
     sort_by = ["concurrency", "apiType"]
     benchmark_concurrency_list = ["1", "50", "150"]
 
@@ -218,7 +215,6 @@ def test_python_wrapper_v1_vs_v2_iris():
 @pytest.mark.benchmark
 @pytest.mark.usefixtures("argo_worfklows")
 def test_v1_seldon_data_types():
-
     sort_by = ["concurrency", "apiType"]
 
     # 10000 element array

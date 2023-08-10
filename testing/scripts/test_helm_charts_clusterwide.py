@@ -12,7 +12,6 @@ from seldon_e2e_utils import (
 
 
 class TestClusterWide(object):
-
     # Test singe model helm script with 4 API methods
     def test_single_model(self, namespace):
         command = (

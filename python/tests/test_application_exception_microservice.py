@@ -35,7 +35,6 @@ class UserCustomException(Exception):
 
 
 class UserObject(SeldonComponent):
-
     model_error_handler = flask.Blueprint("error_handlers", __name__)
 
     @model_error_handler.app_errorhandler(UserCustomException)
@@ -56,7 +55,6 @@ class UserObject(SeldonComponent):
 
 
 class UserObjectLowLevel(SeldonComponent):
-
     model_error_handler = flask.Blueprint("error_handlers", __name__)
 
     @model_error_handler.app_errorhandler(UserCustomException)

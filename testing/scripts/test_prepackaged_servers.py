@@ -21,7 +21,6 @@ from seldon_e2e_utils import (
 
 
 class TestPrepack(object):
-
     # Test prepackaged server for sklearn
     def test_sklearn(self, namespace):
         spec = "../../servers/sklearnserver/samples/iris.yaml"
