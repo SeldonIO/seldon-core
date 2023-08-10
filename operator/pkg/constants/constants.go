@@ -39,7 +39,6 @@ var (
 
 // Label selector
 const (
-	AppKey                    = "app"
 	KubernetesNameLabelKey    = "app.kubernetes.io/name"
 	ServerLabelValue          = "seldon-server"
 	ServerLabelNameKey        = "seldon-server-name"
