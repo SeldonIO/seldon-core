@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-alibi = "0.9.4"
+alibi = {version = "^0.9.4", extras = ["shap"]}
 numpy = "*"
 tensorflow = "^2.12.0"
 scikit-learn = "1.0.2"
@@ -21,8 +21,6 @@ joblib = "1.2.0"
 
 werkzeug = "^2.1.1"
 pillow = "^9.0.1"
-
-shap = { git = "https://github.com/slundberg/shap.git", tag = "v0.40.0" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
