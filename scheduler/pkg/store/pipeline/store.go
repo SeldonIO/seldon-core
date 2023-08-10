@@ -46,7 +46,7 @@ type PipelineHandler interface {
 	GetPipelineVersion(name string, version uint32, uid string) (*PipelineVersion, error)
 	GetPipeline(name string) (*Pipeline, error)
 	GetPipelines() ([]*Pipeline, error)
-	SetPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string) error
+	SetPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string, source string) error
 	GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg
 }
 
@@ -349,7 +349,7 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 	return evts
 }
 
-func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string) error {
+func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string, source string) error {
 	logger := ps.logger.WithField("func", "SetPipelineState")
 	logger.Debugf("Attempt to set state on pipeline %s:%d status:%s", name, versionNumber, status.String())
 	evts, err := ps.setPipelineStateImpl(name, versionNumber, uid, status, reason)
@@ -358,6 +358,7 @@ func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid
 	}
 	if ps.eventHub != nil {
 		for _, evt := range evts {
+			evt.Source = source
 			ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, *evt)
 		}
 	}
