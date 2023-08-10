@@ -11,7 +11,7 @@ You will need at least `Standard` tier for your Event Hub Namespace as `Basic` t
 ```{warning}
 Seldon Core v2 creates 2 Kafka topics for each pipeline and model plus one global topic for errors.
 This means that total number of topics will be `2 x (#models + #pipelines) + 1` which will likely exceed the limit of `Standard` tier in Azure Event Hub.
-See quota information [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas#basic-vs-standard-vs-premium-vs-dedicated-tiers).
+You can find more information on quotas, like the number of partitions per Event Hub, [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas#basic-vs-standard-vs-premium-vs-dedicated-tiers).
 ```
 
 ## Prerequisites
