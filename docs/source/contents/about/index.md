@@ -2,6 +2,10 @@
 
 Seldon V2 APIs provide a state of the art solution for machine learning inference which can be run locally on a laptop as well as on Kubernetes for production.
 
+```{youtube} ar5lSG_idh4
+:width: 100%
+```
+
 ## Features
 
  * A single platform for inference of wide range of standard and custom artifacts.
