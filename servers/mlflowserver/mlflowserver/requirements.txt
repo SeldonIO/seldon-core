@@ -1,8 +1,12 @@
 # Addresses CVE SNYK-PYTHON-PYYAML-590151
 PyYAML >= 5.4, <= 6.0
-requests <= 2.28.2
+requests <= 2.31.0
 mlflow <= 2.5.0
 pandas <= 2.0.0
+
+# CVE-2023-38325
+pyopenssl >= 23.2.0
+cryptography >= 41.0.3
 
 # local seldon-core inside the s2i image
 /microservice/python
