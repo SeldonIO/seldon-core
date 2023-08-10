@@ -19,6 +19,7 @@ attrs = ">=19.2.0,<24.0.0"
 blis = "<0.8.0"
 dill = ">=0.3.0,<0.4.0"
 matplotlib = ">=3.0.0,<4.0.0"
+numba = {version = ">=0.50.0,<0.54.0 || >0.54.0,<0.58.0", optional = true, markers = "extra == \"shap\""}
 numpy = ">=1.16.2,<2.0.0"
 pandas = ">=1.0.0,<3.0.0"
 Pillow = ">=5.4.1,<10.0"
@@ -26,6 +27,7 @@ requests = ">=2.21.0,<3.0.0"
 scikit-image = ">=0.17.2,<0.22"
 scikit-learn = ">=1.0.0,<2.0.0"
 scipy = ">=1.1.0,<2.0.0"
+shap = {version = ">=0.40.0,<0.43.0", optional = true, markers = "extra == \"shap\""}
 spacy = {version = ">=2.0.0,<4.0.0", extras = ["lookups"]}
 tqdm = ">=4.28.1,<5.0.0"
 transformers = ">=4.7.0,<5.0.0"
@@ -1461,12 +1463,11 @@ toml = ["setuptools (>=42)"]
 
 [[package]]
 name = "shap"
-version = "0.40.0"
+version = "0.42.1"
 description = "A unified approach to explain the output of any machine learning model."
 category = "main"
 optional = false
-python-versions = "*"
-develop = false
+python-versions = ">=3.7"
 
 [package.dependencies]
 cloudpickle = "*"
@@ -1477,20 +1478,14 @@ pandas = "*"
 scikit-learn = "*"
 scipy = "*"
 slicer = "0.0.7"
-tqdm = ">4.25.0"
+tqdm = ">=4.27.0"
 
 [package.extras]
-all = ["catboost", "ipython", "lightgbm", "lime", "matplotlib", "nbsphinx", "numpydoc", "opencv-python", "pyod", "pyspark", "pytest", "pytest-cov", "pytest-mpl", "sentencepiece", "sphinx", "sphinx-rtd-theme", "torch", "transformers", "xgboost"]
 docs = ["ipython", "matplotlib", "nbsphinx", "numpydoc", "sphinx", "sphinx-rtd-theme"]
 others = ["lime"]
 plots = ["ipython", "matplotlib"]
-test = ["catboost", "lightgbm", "opencv-python", "pyod", "pyspark", "pytest", "pytest-cov", "pytest-mpl", "sentencepiece", "torch", "transformers", "xgboost"]
-
-[package.source]
-type = "git"
-url = "https://github.com/slundberg/shap.git"
-reference = "v0.40.0"
-resolved_reference = "429fb3e0ac2ef179f1cff7e1a64b4f7b26f41eb5"
+test = ["catboost", "lightgbm", "opencv-python", "protobuf (==3.20.3)", "pyod", "pyspark", "pytest", "pytest-cov", "pytest-mpl", "sentencepiece", "tensorflow", "torch", "torchvision", "transformers", "xgboost"]
+test-core = ["pytest", "pytest-cov", "pytest-mpl"]
 
 [[package]]
 name = "six"
@@ -1831,7 +1826,7 @@ python-versions = ">= 3.8"
 
 [[package]]
 name = "tqdm"
-version = "4.65.2"
+version = "4.66.0"
 description = "Fast, Extensible Progress Meter"
 category = "main"
 optional = false
@@ -2034,7 +2029,7 @@ testing = ["big-o", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c4fca841e495f8cefce6b3bfb76e1ae901b2bf9da450f15d944908dd17e73105"
+content-hash = "e26f4cdd08d0d1a76e3638499f344de1f31a045143a8d4dfb1f904e381a9ada0"
 
 [metadata.files]
 absl-py = [
@@ -3582,7 +3577,33 @@ setuptools-scm = [
     {file = "setuptools_scm-7.1.0-py3-none-any.whl", hash = "sha256:73988b6d848709e2af142aa48c986ea29592bbcfca5375678064708205253d8e"},
     {file = "setuptools_scm-7.1.0.tar.gz", hash = "sha256:6c508345a771aad7d56ebff0e70628bf2b0ec7573762be9960214730de278f27"},
 ]
-shap = []
+shap = [
+    {file = "shap-0.42.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:4c6106e59dbd446114bb5f7f0762ae0fa4ffa28bdf79a860d287e37ac5233d48"},
+    {file = "shap-0.42.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:46cf52ce701eeee554d7b773b09ff907838f1210013c1cee5ddbee021a7f2c72"},
+    {file = "shap-0.42.1-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e5d4e6c8d63a1e3535c2f3fc64f47f09862d1cc437ad434e9cdc50225d360266"},
+    {file = "shap-0.42.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:60d272e133f28cce322049dadec8909d2912c12c31ba38cb2eb861c01e3d16b8"},
+    {file = "shap-0.42.1-cp310-cp310-win_amd64.whl", hash = "sha256:c6d1b381a365a4a8582ac0fe1800282a89479757e20fb5f8d8db2ec8e853461c"},
+    {file = "shap-0.42.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b6bfe78edf8478c5f0bc2ae1f4150ab1ae3065b5655fcce580fd99ef30601db7"},
+    {file = "shap-0.42.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:53f6b6ab79f67dabb6fbc6613b373ebd726c200f8136f1f7e43d8a8068edcad1"},
+    {file = "shap-0.42.1-cp311-cp311-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ce0fc9654ab62c6edeaf375c235a781bb280a40ffbbdbce35102d3b2d1a323a4"},
+    {file = "shap-0.42.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6c570de5b91e26d26c93e6c028d13636845ef86619a3559145de98b7ec1148f1"},
+    {file = "shap-0.42.1-cp311-cp311-win_amd64.whl", hash = "sha256:b32b13a5a5fc089594b676f32565d5c5ea3abf5f0755b0fa0d25ffc9d53cb6ea"},
+    {file = "shap-0.42.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:34bc359b7c60f873d589133a54640929f76ead7cbe036d5faa35ddb96d2a8168"},
+    {file = "shap-0.42.1-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f14bcad9dcc3b48082c3b9a93ca3577610d110a768674b1ce209ada18619c133"},
+    {file = "shap-0.42.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:56b1d4aa0c9bba4050279a2bfcc3efcabb1af45cb1657e6c57d629810b4b360f"},
+    {file = "shap-0.42.1-cp37-cp37m-win_amd64.whl", hash = "sha256:26a3c8321852f12c650f685973159fbdcef75aae47405c4ceb702e3dbf49dcac"},
+    {file = "shap-0.42.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:93c97525068868bd84a13a68f853b6286fafc035bbc308291e3a6497677c5d89"},
+    {file = "shap-0.42.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:8d9b55b34e9027157f02f996bab71cc5e286ed246c031112a700461a1e2acb4f"},
+    {file = "shap-0.42.1-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6acc29bd3e1bd8eebf94d22ec35421a791fce62d35260e34468e6e6cf008a7c5"},
+    {file = "shap-0.42.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c6bb4e3044240b300690d7e0282b512d4ffa4def49816e03fe0d6a06dcbde957"},
+    {file = "shap-0.42.1-cp38-cp38-win_amd64.whl", hash = "sha256:00cf2878c4a5fa5a6fcb72520ace9d17a027d64dd49272bd2072c20f2f97121d"},
+    {file = "shap-0.42.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:48511486c568a09d469381278bb40982cb0f74c1cf8a391dfb79d81e53843beb"},
+    {file = "shap-0.42.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d43d31adeae9b1f628f49917179777580c7deceefa6156b5cf488a298287eabd"},
+    {file = "shap-0.42.1-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9d0b2e82bb3a5938b41fa640bb86894dc14b4935d419597d33b7d04392cd6ad0"},
+    {file = "shap-0.42.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:de4bf0035265cbc127b39ad8ecd1272acb5619e89cae666808d87d17cf6a0b28"},
+    {file = "shap-0.42.1-cp39-cp39-win_amd64.whl", hash = "sha256:dfc77a2a4c37ac1c74c54af60d92732991386bd60da8763660846225384fe592"},
+    {file = "shap-0.42.1.tar.gz", hash = "sha256:64403915e4a07d2951e7eee4af0e835b1b519367b11806fe1aa4bd6d81adb626"},
+]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -3826,8 +3847,8 @@ tornado = [
     {file = "tornado-6.3.2.tar.gz", hash = "sha256:4b927c4f19b71e627b13f3db2324e4ae660527143f9e1f2e2fb404f3a187e2ba"},
 ]
 tqdm = [
-    {file = "tqdm-4.65.2-py3-none-any.whl", hash = "sha256:6c431f7dee4f57284c8f4bd2eb1d4af00d730d38cc6098bd79880bcbec676276"},
-    {file = "tqdm-4.65.2.tar.gz", hash = "sha256:5f7d8b4ac76016ce9d51a7f0ea30d30984888d97c474fdc4a4148abfb5ee76aa"},
+    {file = "tqdm-4.66.0-py3-none-any.whl", hash = "sha256:39d459c7140b7890174e69d4d68d6291bc774a55b4bc5d93c0b760798ac5a03e"},
+    {file = "tqdm-4.66.0.tar.gz", hash = "sha256:cc6e7e52202d894e66632c5c8a9330bd0e3ff35d2965c93ca832114a3d865362"},
 ]
 transformers = [
     {file = "transformers-4.31.0-py3-none-any.whl", hash = "sha256:8487aab0195ce1c2a5ae189305118b9720daddbc7b688edb09ccd79e3b149f6b"},
