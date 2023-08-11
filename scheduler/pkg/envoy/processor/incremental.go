@@ -655,6 +655,7 @@ func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 }
 
 func (p *IncrementalProcessor) triggerModelSyncIfNeeded() bool {
+	// the first time we trigger the batch update we need to set the time
 	if p.batchTriggerManual == nil {
 		p.batchTriggerManual = new(time.Time)
 		*p.batchTriggerManual = time.Now()
