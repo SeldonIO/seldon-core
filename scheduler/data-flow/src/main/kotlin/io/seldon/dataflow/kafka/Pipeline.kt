@@ -25,6 +25,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import java.util.concurrent.CountDownLatch
+import javax.xml.stream.events.Namespace
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
@@ -77,6 +78,7 @@ class Pipeline(
 
     companion object {
         private val logger = noCoLogger(Pipeline::class)
+        private val namespace = System.getenv("POD_NAMESPACE")
 
         fun forSteps(
             metadata: PipelineMetadata,
@@ -86,7 +88,7 @@ class Pipeline(
             kafkaConsumerGroupIdPrefix: String,
         ): Pipeline {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
-            val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix)
+            val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
             val streamsApp = KafkaStreams(topology, pipelineProperties)
             logger.info("Create pipeline stream for name:${metadata.name} id:${metadata.id} version:${metadata.version} stream with kstream app id:${pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]}")
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps)
@@ -122,9 +124,11 @@ class Pipeline(
             metadata: PipelineMetadata,
             numSteps: Int,
             kafkaConsumerGroupIdPrefix: String,
+            namespace: String
         ): KafkaProperties {
             return kafkaProperties
                 .withAppId(
+                    namespace,
                     kafkaConsumerGroupIdPrefix,
                     HashUtils.hashIfLong(metadata.id),
                 )

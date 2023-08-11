@@ -2,8 +2,9 @@ package pipeline
 
 import (
 	"fmt"
-	. "github.com/onsi/gomega"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestGetKafkaConsumerName(t *testing.T) {
@@ -11,6 +12,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 
 	type test struct {
 		name                  string
+		namespace             string
 		consumerGroupIdPrefix string
 		componentPrefix       string
 		id                    string
@@ -18,24 +20,42 @@ func TestGetKafkaConsumerName(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:                  "all params",
+			name:                  "all params no namespace",
+			namespace:             "",
 			consumerGroupIdPrefix: "foo",
 			componentPrefix:       "pipeline",
 			id:                    "id",
 			expected:              fmt.Sprintf("%s-%s-%s", "foo", "pipeline", "id"),
 		},
 		{
-			name:                  "no consumer group prefix",
+			name:                  "no consumer group prefix no namespace",
+			namespace:             "",
 			consumerGroupIdPrefix: "",
 			componentPrefix:       "pipeline",
 			id:                    "id",
 			expected:              fmt.Sprintf("%s-%s", "pipeline", "id"),
 		},
+		{
+			name:                  "all params",
+			namespace:             "default",
+			consumerGroupIdPrefix: "foo",
+			componentPrefix:       "pipeline",
+			id:                    "id",
+			expected:              fmt.Sprintf("%s-%s-%s-%s", "foo", "default", "pipeline", "id"),
+		},
+		{
+			name:                  "no consumer group prefix",
+			namespace:             "default",
+			consumerGroupIdPrefix: "",
+			componentPrefix:       "pipeline",
+			id:                    "id",
+			expected:              fmt.Sprintf("%s-%s-%s", "default", "pipeline", "id"),
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			g.Expect(getKafkaConsumerName(test.consumerGroupIdPrefix, test.componentPrefix, test.id)).To(Equal(test.expected))
+			g.Expect(getKafkaConsumerName(test.namespace, test.consumerGroupIdPrefix, test.componentPrefix, test.id)).To(Equal(test.expected))
 
 		})
 	}

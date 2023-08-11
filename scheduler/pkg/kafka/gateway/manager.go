@@ -121,6 +121,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
 
 	consumerBucketId := util.GetKafkaConsumerName(
+		cm.managerConfig.Namespace,
 		cm.managerConfig.SeldonKafkaConfig.ConsumerGroupIdPrefix,
 		modelName,
 		modelGatewayConsumerNamePrefix,

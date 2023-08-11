@@ -63,6 +63,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 
 	type test struct {
 		name                  string
+		namespace             string
 		consumerGroupIdPrefix string
 		modelName             string
 		prefix                string
@@ -86,11 +87,29 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			maxConsumers:          100,
 			expected:              fmt.Sprintf("%s-%d", "p", modelIdToConsumerBucket("model", 100)),
 		},
+		{
+			name:                  "all params",
+			namespace:             "default",
+			consumerGroupIdPrefix: "foo",
+			modelName:             "model",
+			prefix:                "p",
+			maxConsumers:          100,
+			expected:              fmt.Sprintf("%s-%s-%s-%d", "foo", "default", "p", modelIdToConsumerBucket("model", 100)),
+		},
+		{
+			name:                  "no consumer prefix",
+			namespace:             "default",
+			consumerGroupIdPrefix: "",
+			modelName:             "model",
+			prefix:                "p",
+			maxConsumers:          100,
+			expected:              fmt.Sprintf("%s-%s-%d", "default", "p", modelIdToConsumerBucket("model", 100)),
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			g.Expect(GetKafkaConsumerName(test.consumerGroupIdPrefix, test.modelName, test.prefix, test.maxConsumers)).To(Equal(test.expected))
+			g.Expect(GetKafkaConsumerName(test.namespace, test.consumerGroupIdPrefix, test.modelName, test.prefix, test.maxConsumers)).To(Equal(test.expected))
 
 		})
 	}

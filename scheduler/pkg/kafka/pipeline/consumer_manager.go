@@ -44,9 +44,11 @@ type ConsumerManager struct {
 	maxNumConsumers         int
 	maxNumTopicsPerConsumer int
 	tracer                  trace.Tracer
+	namespace               string
 }
 
 func NewConsumerManager(
+	namespace string,
 	logger log.FieldLogger,
 	consumerConfig *config.KafkaConfig,
 	maxNumTopicsPerConsumer,
@@ -59,6 +61,7 @@ func NewConsumerManager(
 		Info("creating consumer manager")
 
 	return &ConsumerManager{
+		namespace:               namespace,
 		logger:                  logger.WithField("source", "ConsumerManager"),
 		consumerConfig:          consumerConfig,
 		maxNumTopicsPerConsumer: maxNumTopicsPerConsumer,
@@ -75,7 +78,7 @@ func (cm *ConsumerManager) createConsumer() error {
 	c, err := NewMultiTopicsKafkaConsumer(
 		cm.logger,
 		cm.consumerConfig,
-		getKafkaConsumerName(cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
+		getKafkaConsumerName(cm.namespace, cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
 		cm.tracer,
 	)
 	if err != nil {
@@ -132,9 +135,18 @@ func (cm *ConsumerManager) Stop() {
 	}
 }
 
-func getKafkaConsumerName(consumerGroupIdPrefix, componentPrefix, id string) string {
+func getKafkaConsumerName(namespace, consumerGroupIdPrefix, componentPrefix, id string) string {
 	if consumerGroupIdPrefix == "" {
-		return fmt.Sprintf("%s-%s", componentPrefix, id)
+		if namespace == "" {
+			return fmt.Sprintf("%s-%s", componentPrefix, id)
+		} else {
+			return fmt.Sprintf("%s-%s-%s", namespace, componentPrefix, id)
+		}
 	}
-	return fmt.Sprintf("%s-%s-%s", consumerGroupIdPrefix, componentPrefix, id)
+	if namespace == "" {
+		return fmt.Sprintf("%s-%s-%s", consumerGroupIdPrefix, componentPrefix, id)
+	} else {
+		return fmt.Sprintf("%s-%s-%s-%s", consumerGroupIdPrefix, namespace, componentPrefix, id)
+	}
+
 }

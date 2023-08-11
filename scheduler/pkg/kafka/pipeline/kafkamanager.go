@@ -98,7 +98,7 @@ func NewKafkaManager(
 		logger:          logger.WithField("source", "KafkaManager"),
 		topicNamer:      topicNamer,
 		tracer:          tracer,
-		consumerManager: NewConsumerManager(logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
+		consumerManager: NewConsumerManager(namespace, logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},
 	}
 

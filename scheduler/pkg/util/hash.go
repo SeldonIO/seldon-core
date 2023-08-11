@@ -50,10 +50,19 @@ func modelIdToConsumerBucket(modelId string, numBuckets int) uint32 {
 	return hash % uint32(numBuckets)
 }
 
-func GetKafkaConsumerName(consumerGroupIdPrefix, modelName, prefix string, maxConsumers int) string {
+func GetKafkaConsumerName(namespace, consumerGroupIdPrefix, modelName, prefix string, maxConsumers int) string {
 	idx := modelIdToConsumerBucket(modelName, maxConsumers)
 	if consumerGroupIdPrefix == "" {
-		return fmt.Sprintf("%s-%d", prefix, idx)
+		if namespace == "" {
+			return fmt.Sprintf("%s-%d", prefix, idx)
+		} else {
+			return fmt.Sprintf("%s-%s-%d", namespace, prefix, idx)
+		}
 	}
-	return fmt.Sprintf("%s-%s-%d", consumerGroupIdPrefix, prefix, idx)
+	if namespace == "" {
+		return fmt.Sprintf("%s-%s-%d", consumerGroupIdPrefix, prefix, idx)
+	} else {
+		return fmt.Sprintf("%s-%s-%s-%d", consumerGroupIdPrefix, namespace, prefix, idx)
+	}
+
 }
