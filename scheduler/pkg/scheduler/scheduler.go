@@ -149,7 +149,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
-		resetServerInCaseOfError := true
 		logger.Debugf("Model %s with desired replicas %d candidate servers %v", modelName, latestModel.DesiredReplicas(), filteredServers)
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
@@ -161,12 +160,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			s.muSortAndUpdate.Lock()
 			candidateReplicas, debugTrail = s.filterReplicas(latestModel, candidateServer, debugTrail)
 			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
-				if len(candidateReplicas.ChosenReplicas) > 0 {
-					// in this case we have some replicas but not enough, typically in the case where we are scaling up
-					// beyond the number of the server replicas we have
-					// therefore we do not want to reset the server as we will lose the replicas we have
-					resetServerInCaseOfError = false
-				}
 				s.muSortAndUpdate.Unlock()
 				continue
 			}
@@ -183,7 +176,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 		if !ok {
 			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
-			s.store.FailedScheduling(latestModel, failureErrMsg, resetServerInCaseOfError)
+			// we do not want to reset the server if it has live replicas
+			s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
 			return fmt.Errorf(failureErrMsg)
 		}
 	}
