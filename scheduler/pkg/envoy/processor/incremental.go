@@ -706,7 +706,6 @@ func (p *IncrementalProcessor) modelSync() {
 			continue
 		}
 
-		logger.Debugf("sherif: getting server model %s", mv.name)
 		s, err := p.modelStore.GetServer(v.Server(), false, false)
 		if err != nil {
 			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server())
