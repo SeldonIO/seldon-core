@@ -18,7 +18,7 @@ patchesStrategicMerge:
 - patches/cainjection_in_seldondeployments.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
-patchesJson6902:
+patches:
 # Ensure multiple levels of graph defn in OpenAPISpec as you can't have references let alone recursive refs
 # https://github.com/kubernetes/kubernetes/issues/54579  
 - target: 
