@@ -18,24 +18,28 @@ package modelscaling
 
 import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	log "github.com/sirupsen/logrus"
 )
 
 type DataPlaneStatsCollector struct {
+	logger      log.FieldLogger
 	StatKeepers []interfaces.ModelStatsKeeper
 }
 
-func NewDataPlaneStatsCollector(statKeepers []interfaces.ModelStatsKeeper) *DataPlaneStatsCollector {
+func NewDataPlaneStatsCollector(statKeepers []interfaces.ModelStatsKeeper, logger log.FieldLogger) *DataPlaneStatsCollector {
 	return &DataPlaneStatsCollector{
+		logger:      logger,
 		StatKeepers: statKeepers,
 	}
 }
 
 func (c *DataPlaneStatsCollector) ModelInferEnter(internalModelName, requestId string) error {
 	var err error
+	c.logger.Infof("ModelInferEnter for model %s request %s", internalModelName, requestId)
 	for _, stat := range c.StatKeepers {
 		err = stat.ModelInferEnter(internalModelName, requestId)
 		if err != nil {
-			return err
+			c.logger.WithError(err).Warnf("model stats error for model %s request %s", internalModelName, requestId)
 		}
 	}
 
@@ -44,11 +48,13 @@ func (c *DataPlaneStatsCollector) ModelInferEnter(internalModelName, requestId s
 
 func (c *DataPlaneStatsCollector) ModelInferExit(internalModelName, requestId string) error {
 	var err error
+	c.logger.Infof("ModelInferExit for model %s request %s", internalModelName, requestId)
 	for _, stat := range c.StatKeepers {
 		err = stat.ModelInferExit(internalModelName, requestId)
 		if err != nil {
-			return err
+			c.logger.WithError(err).Warnf("model stats error for model %s request %s", internalModelName, requestId)
 		}
+
 	}
 	return nil
 }

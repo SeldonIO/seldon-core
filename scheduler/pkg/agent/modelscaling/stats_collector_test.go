@@ -33,7 +33,7 @@ func TestStatsCollectorSmoke(t *testing.T) {
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
 
-	collector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed})
+	collector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed}, nil)
 
 	var wg sync.WaitGroup
 	wg.Add(1)

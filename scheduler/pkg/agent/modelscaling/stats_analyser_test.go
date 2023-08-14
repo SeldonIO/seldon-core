@@ -160,7 +160,7 @@ func TestStatsAnalyserSoak(t *testing.T) {
 
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
-	modelScalingStatsCollector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed})
+	modelScalingStatsCollector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed}, nil)
 	service := NewStatsAnalyserService(
 		[]ModelScalingStatsWrapper{
 			{

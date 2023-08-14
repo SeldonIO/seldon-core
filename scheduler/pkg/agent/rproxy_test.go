@@ -154,7 +154,9 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		[]interfaces.ModelStatsKeeper{
 			modelscaling.NewModelReplicaLagsKeeper(),
-			modelscaling.NewModelReplicaLastUsedKeeper()},
+			modelscaling.NewModelReplicaLastUsedKeeper()
+		},
+		nil,
 	)
 	rp := NewReverseHTTPProxy(
 		logger,

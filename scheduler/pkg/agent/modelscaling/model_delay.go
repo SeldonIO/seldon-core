@@ -67,7 +67,6 @@ func (stats *delayStats) Reset() error {
 	stats.mu.Lock()
 	defer stats.mu.Unlock()
 	stats.delays = []int64{}
-	stats.startTimes = make(map[string]time.Time)
 	return nil
 }
 
