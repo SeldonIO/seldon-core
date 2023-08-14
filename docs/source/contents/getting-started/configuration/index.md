@@ -13,7 +13,7 @@ We allow configuration of the Kafka integration. In general this configuration l
 The top level keys are:
 
  * `topicPrefix` : the prefix to add to kafka topics created by Seldon
- * `consumerGroupIdPrefix` : the prefix to add to kafka consumer group ids created by Seldon
+ * `consumerGroupIdPrefix` : the prefix to add to Kafka consumer group IDs created by Seldon
  * `bootstrap.servers` : the global bootstrap kafka servers to use
  * `consumer` : consumer settings
  * `producer` : producer settings
