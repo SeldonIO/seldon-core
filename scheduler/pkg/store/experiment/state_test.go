@@ -742,7 +742,7 @@ func (f fakePipelineStore) GetPipelines() ([]*pipeline.Pipeline, error) {
 	panic("implement me")
 }
 
-func (f fakePipelineStore) SetPipelineState(name string, version uint32, uid string, state pipeline.PipelineStatus, reason string) error {
+func (f fakePipelineStore) SetPipelineState(name string, version uint32, uid string, state pipeline.PipelineStatus, reason string, source string) error {
 	panic("implement me")
 }
 

@@ -726,7 +726,7 @@ func TestSetPipelineState(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := test.store.SetPipelineState(test.pipelineName, test.pipelineVersion, test.uid, test.status, test.reason)
+			err := test.store.SetPipelineState(test.pipelineName, test.pipelineVersion, test.uid, test.status, test.reason, "")
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
 				pv, err := test.store.GetPipelineVersion(test.pipelineName, test.pipelineVersion, test.uid)

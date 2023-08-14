@@ -203,26 +203,26 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grp
 			case scheduler.PipelineVersionState_PipelineReady:
 				logger.Info(
 					"Setting pipeline to ready",
-					"pipeline", event.PipelineName,
+					"pipeline", pipeline.Name,
 					"generation", pipeline.Generation,
 				)
 				pipeline.Status.CreateAndSetCondition(
 					v1alpha1.PipelineReady,
 					true,
-					pv.State.Status.String(),
 					pv.State.Reason,
+					pv.State.Status.String(),
 				)
 			default:
 				logger.Info(
 					"Setting pipeline to not ready",
-					"pipeline", event.PipelineName,
+					"pipeline", pipeline.Name,
 					"generation", pipeline.Generation,
 				)
 				pipeline.Status.CreateAndSetCondition(
 					v1alpha1.PipelineReady,
 					false,
-					pv.State.Status.String(),
 					pv.State.Reason,
+					pv.State.Status.String(),
 				)
 			}
 			// Set models ready
