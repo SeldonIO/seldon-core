@@ -51,8 +51,8 @@ helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
 
 If you use a shared Kafka cluster with other applications you may want to isolate the topic names and consumer group IDs from other users of the cluster to ensure there is no name clash. For this we provide two settings:
 
- * topicPrefix : set a prefix for all topics
- * consumerGroupIdPrefix : set a prefix for all consumer groups
+ * `topicPrefix`: set a prefix for all topics
+ * `consumerGroupIdPrefix`: set a prefix for all consumer groups
 
 An example to set this in the configuration when using the helm installation is showm below:
 
