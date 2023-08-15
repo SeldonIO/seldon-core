@@ -419,12 +419,12 @@ func (pi *PrePackedInitialiser) addModelServersAndInitContainers(mlDep *machinel
 	podSecurityContext *v1.PodSecurityContext,
 	log logr.Logger) error {
 
-	sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
-	if sPodSpec == nil {
-		return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
-	}
-	depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
 	if machinelearningv1.IsPrepack(pu) {
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+		if sPodSpec == nil {
+			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+		}
+		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
 
 		deploy, existing, err := pi.findDeployment(c, depName)
 		if err != nil {
@@ -487,27 +487,30 @@ func (pi *PrePackedInitialiser) addModelServersAndInitContainers(mlDep *machinel
 				c.deployments = append(c.deployments, deploy)
 			}
 		}
-	} else {
-		// add model uri initializer for non server components
-		if pu.ModelURI != "" {
-			log.Info("Add rclone init container for predictive unit", "predictive unit", pu.Name)
-			deploy, existing, err := pi.findDeployment(c, depName)
-			if err != nil {
-				return err
-			}
-			if !existing {
-				return fmt.Errorf("Expected to find a deployment for predictive unit %s", pu.Name)
-			}
-			mi := NewModelInitializer(pi.ctx, pi.clientset)
-			c := utils.GetContainerForDeployment(deploy, pu.Name)
-			if c == nil {
-				return fmt.Errorf("Expected to find container for predictive unit %s", pu.Name)
-			}
-			envSecretRefName := extractEnvSecretRefName(pu)
-			_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
-			if err != nil {
-				return err
-			}
+	} else if pu.ModelURI != "" { // add model uri initializer for non server components
+		sPodSpec, idx := utils.GetSeldonPodSpecForPredictiveUnit(p, pu.Name)
+		if sPodSpec == nil {
+			return fmt.Errorf("Failed to find PodSpec for Prepackaged server PreditiveUnit named %s", pu.Name)
+		}
+		depName := machinelearningv1.GetDeploymentName(mlDep, *p, sPodSpec, idx)
+
+		log.Info("Add rclone init container for predictive unit", "predictive unit", pu.Name)
+		deploy, existing, err := pi.findDeployment(c, depName)
+		if err != nil {
+			return err
+		}
+		if !existing {
+			return fmt.Errorf("Expected to find a deployment for predictive unit %s", pu.Name)
+		}
+		mi := NewModelInitializer(pi.ctx, pi.clientset)
+		c := utils.GetContainerForDeployment(deploy, pu.Name)
+		if c == nil {
+			return fmt.Errorf("Expected to find container for predictive unit %s", pu.Name)
+		}
+		envSecretRefName := extractEnvSecretRefName(pu)
+		_, err = mi.InjectModelInitializer(deploy, c.Name, pu.ModelURI, pu.ServiceAccountName, envSecretRefName, pu.StorageInitializerImage)
+		if err != nil {
+			return err
 		}
 	}
 
