@@ -15,7 +15,9 @@ TEST SUITE: None
 
 ```
 
- The below setup also illustrates using kafka specific prefixes for topics and consumerIds for isolation where the kafka cluster is shared with other applications and you want to enforce constraints. You would not strictly need this in this example as we install Kafka just for Seldon here.
+The below setup also illustrates using Kafka specific prefixes for topics and consumer IDs for isolation where the Kafka cluster is shared with other applications and you want to enforce constraints.
+
+You would not strictly need this in this example as we install Kafka just for Seldon here.
 
 ```bash
 helm upgrade --install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
