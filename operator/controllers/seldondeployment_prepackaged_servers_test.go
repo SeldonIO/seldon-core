@@ -1218,6 +1218,85 @@ var _ = Describe("Create a prepacked triton server with seldon.io/no-storage-ini
 
 })
 
+var _ = Describe("Create a RANDOM_ABTEST deployment", func() {
+	const timeout = time.Second * 30
+	const interval = time.Second * 1
+	const name = "pp1"
+	const sdepName = "prepack13"
+	envExecutorUser = "2"
+	By("Creating a resource")
+	It("should create a resource with defaults", func() {
+		Expect(k8sClient).NotTo(BeNil())
+
+		key := types.NamespacedName{
+			Name:      sdepName,
+			Namespace: "default",
+		}
+		impl := machinelearningv1.RANDOM_ABTEST
+		instance := &machinelearningv1.SeldonDeployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: machinelearningv1.SeldonDeploymentSpec{
+				Predictors: []machinelearningv1.PredictorSpec{
+					{
+						Name: name,
+						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
+							{
+								Spec: corev1.PodSpec{
+									Containers: []corev1.Container{
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier1",
+										},
+										{
+											Image: "seldonio/mock_classifier:1.0",
+											Name:  "classifier2",
+										},
+									},
+								},
+							},
+						},
+						Graph: machinelearningv1.PredictiveUnit{
+							Implementation: &impl,
+							Children: []machinelearningv1.PredictiveUnit{
+								{
+									Name: "classifier1",
+								},
+								{
+									Name: "classifier2",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		configMapName := types.NamespacedName{Name: "seldon-config",
+			Namespace: "seldon-system"}
+		configResult := &corev1.ConfigMap{}
+		const timeout = time.Second * 30
+		Eventually(func() error { return k8sClient.Get(context.TODO(), configMapName, configResult) }, timeout).
+			Should(Succeed())
+
+		// Run Defaulter
+		instance.Default()
+
+		Expect(k8sClient.Create(context.Background(), instance)).Should(Succeed())
+
+		fetched := &machinelearningv1.SeldonDeployment{}
+		Eventually(func() error {
+			err := k8sClient.Get(context.Background(), key, fetched)
+			return err
+		}, timeout, interval).Should(BeNil())
+		Expect(fetched.Name).Should(Equal(sdepName))
+
+		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
+	})
+})
+
 func createCustomModelWithUri() (*machinelearningv1.SeldonDeployment,
 	*machinelearningv1.PredictorSpec,
 	*components,
