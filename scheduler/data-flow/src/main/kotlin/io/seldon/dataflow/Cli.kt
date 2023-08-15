@@ -29,6 +29,7 @@ object Cli {
     // General setup
     val logLevelApplication = Key("log.level.app", enumType(*Level.values()))
     val logLevelKafka = Key("log.level.kafka", enumType(*Level.values()))
+    val namespace = Key("pod.namespace", stringType)
 
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
@@ -63,6 +64,7 @@ object Cli {
         return listOf(
             logLevelApplication,
             logLevelKafka,
+            namespace,
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,

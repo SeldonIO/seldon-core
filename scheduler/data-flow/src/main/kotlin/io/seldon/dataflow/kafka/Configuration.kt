@@ -160,21 +160,15 @@ fun KafkaProperties.withAppId(namespace: String, consumerGroupIdPrefix: String, 
     val properties = KafkaProperties()
 
     properties.putAll(this.toMap())
-    if (consumerGroupIdPrefix.equals(""))
-    {
-        if (namespace.equals(""))
-        {
-            properties[StreamsConfig.APPLICATION_ID_CONFIG] = "seldon-dataflow-$name"
-        } else {
-            properties[StreamsConfig.APPLICATION_ID_CONFIG] = "$namespace-seldon-dataflow-$name"
-        }
-    } else {
-        if (namespace.equals("")) {
-            properties[StreamsConfig.APPLICATION_ID_CONFIG] = "$consumerGroupIdPrefix-seldon-dataflow-$name"
-        } else {
-            properties[StreamsConfig.APPLICATION_ID_CONFIG] = "$consumerGroupIdPrefix-$namespace-seldon-dataflow-$name"
-        }
+    val str = StringBuilder()
+    if (consumerGroupIdPrefix.isNotEmpty()) {
+        str.append(consumerGroupIdPrefix+"-")
     }
+    if (namespace.isNotEmpty()) {
+        str.append(namespace+"-")
+    }
+    str.append("seldon-dataflow-"+name)
+    properties[StreamsConfig.APPLICATION_ID_CONFIG] = str.toString()
 
     // TODO add k8s host name to ensure static membership is only used for consumers from the same pod restarting?
     //

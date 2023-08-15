@@ -84,6 +84,7 @@ object Main {
             config[Cli.upstreamPort],
             GrpcServiceConfigProvider.config,
             config[Cli.kafkaConsumerGroupIdPrefix],
+            config[Cli.namespace],
         )
 
         addShutdownHandler(subscriber)

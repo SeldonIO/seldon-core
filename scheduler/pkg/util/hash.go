@@ -19,6 +19,7 @@ package util
 import (
 	"fmt"
 	"hash/fnv"
+	"strings"
 
 	"github.com/OneOfOne/xxhash"
 )
@@ -52,17 +53,14 @@ func modelIdToConsumerBucket(modelId string, numBuckets int) uint32 {
 
 func GetKafkaConsumerName(namespace, consumerGroupIdPrefix, modelName, prefix string, maxConsumers int) string {
 	idx := modelIdToConsumerBucket(modelName, maxConsumers)
-	if consumerGroupIdPrefix == "" {
-		if namespace == "" {
-			return fmt.Sprintf("%s-%d", prefix, idx)
-		} else {
-			return fmt.Sprintf("%s-%s-%d", namespace, prefix, idx)
-		}
+	var sb strings.Builder
+	if consumerGroupIdPrefix != "" {
+		sb.WriteString(consumerGroupIdPrefix + "-")
 	}
-	if namespace == "" {
-		return fmt.Sprintf("%s-%s-%d", consumerGroupIdPrefix, prefix, idx)
-	} else {
-		return fmt.Sprintf("%s-%s-%s-%d", consumerGroupIdPrefix, namespace, prefix, idx)
+	if namespace != "" {
+		sb.WriteString(namespace + "-")
 	}
-
+	sb.WriteString(prefix + "-")
+	sb.WriteString(fmt.Sprintf("%d", idx))
+	return sb.String()
 }

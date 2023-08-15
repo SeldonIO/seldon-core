@@ -29,7 +29,7 @@ import java.io.FileReader
 
 object K8sPasswordSecretsProvider {
     private val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
-    private val namespace = System.getenv("POD_NAMESPACE")
+    private val namespace = System.getenv("SELDON_POD_NAMESPACE")
 
     private fun getApiClient(): ApiClient = try {
         ClientBuilder.cluster().build()

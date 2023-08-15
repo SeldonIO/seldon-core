@@ -18,6 +18,7 @@ package pipeline
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -136,17 +137,13 @@ func (cm *ConsumerManager) Stop() {
 }
 
 func getKafkaConsumerName(namespace, consumerGroupIdPrefix, componentPrefix, id string) string {
-	if consumerGroupIdPrefix == "" {
-		if namespace == "" {
-			return fmt.Sprintf("%s-%s", componentPrefix, id)
-		} else {
-			return fmt.Sprintf("%s-%s-%s", namespace, componentPrefix, id)
-		}
+	var sb strings.Builder
+	if consumerGroupIdPrefix != "" {
+		sb.WriteString(consumerGroupIdPrefix + "-")
 	}
-	if namespace == "" {
-		return fmt.Sprintf("%s-%s-%s", consumerGroupIdPrefix, componentPrefix, id)
-	} else {
-		return fmt.Sprintf("%s-%s-%s-%s", consumerGroupIdPrefix, namespace, componentPrefix, id)
+	if namespace != "" {
+		sb.WriteString(namespace + "-")
 	}
-
+	sb.WriteString(componentPrefix + "-" + id)
+	return sb.String()
 }

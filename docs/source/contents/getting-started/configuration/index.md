@@ -54,7 +54,7 @@ If you use a shared Kafka cluster with other applications you may want to isolat
  * `topicPrefix`: set a prefix for all topics
  * `consumerGroupIdPrefix`: set a prefix for all consumer groups
 
-An example to set this in the configuration when using the helm installation is showm below:
+An example to set this in the configuration when using the helm installation is showm below for creating the default `SeldonConfig`:
 
 ```
 helm upgrade --install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
@@ -65,6 +65,7 @@ helm upgrade --install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon
 
 You can find a worked example [here](../../examples/k8s-clusterwide.md).
 
+You can create alternate `SeldonConfig`s with different values or override values for particular `SeldonRuntime` installs.
 
 ## Tracing Configuration
 

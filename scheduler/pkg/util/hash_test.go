@@ -17,7 +17,6 @@ limitations under the License.
 package util
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -72,20 +71,20 @@ func TestGetKafkaConsumerName(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:                  "all params",
+			name:                  "all params except namespace",
 			consumerGroupIdPrefix: "foo",
 			modelName:             "model",
 			prefix:                "p",
-			maxConsumers:          100,
-			expected:              fmt.Sprintf("%s-%s-%d", "foo", "p", modelIdToConsumerBucket("model", 100)),
+			maxConsumers:          1,
+			expected:              "foo-p-0",
 		},
 		{
-			name:                  "no consumer prefix",
+			name:                  "no consumer prefix or namespace",
 			consumerGroupIdPrefix: "",
 			modelName:             "model",
 			prefix:                "p",
-			maxConsumers:          100,
-			expected:              fmt.Sprintf("%s-%d", "p", modelIdToConsumerBucket("model", 100)),
+			maxConsumers:          1,
+			expected:              "p-0",
 		},
 		{
 			name:                  "all params",
@@ -93,8 +92,8 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "foo",
 			modelName:             "model",
 			prefix:                "p",
-			maxConsumers:          100,
-			expected:              fmt.Sprintf("%s-%s-%s-%d", "foo", "default", "p", modelIdToConsumerBucket("model", 100)),
+			maxConsumers:          1,
+			expected:              "foo-default-p-0",
 		},
 		{
 			name:                  "no consumer prefix",
@@ -102,14 +101,18 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "",
 			modelName:             "model",
 			prefix:                "p",
-			maxConsumers:          100,
-			expected:              fmt.Sprintf("%s-%s-%d", "default", "p", modelIdToConsumerBucket("model", 100)),
+			maxConsumers:          1,
+			expected:              "default-p-0",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			g.Expect(GetKafkaConsumerName(test.namespace, test.consumerGroupIdPrefix, test.modelName, test.prefix, test.maxConsumers)).To(Equal(test.expected))
+			g.Expect(
+				GetKafkaConsumerName(test.namespace, test.consumerGroupIdPrefix, test.modelName, test.prefix, test.maxConsumers),
+			).To(Equal(
+				test.expected,
+			))
 
 		})
 	}

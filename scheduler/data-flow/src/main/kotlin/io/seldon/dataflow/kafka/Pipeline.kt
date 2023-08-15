@@ -78,7 +78,6 @@ class Pipeline(
 
     companion object {
         private val logger = noCoLogger(Pipeline::class)
-        private val namespace = System.getenv("POD_NAMESPACE")
 
         fun forSteps(
             metadata: PipelineMetadata,
@@ -86,6 +85,7 @@ class Pipeline(
             kafkaProperties: KafkaProperties,
             kafkaDomainParams: KafkaDomainParams,
             kafkaConsumerGroupIdPrefix: String,
+            namespace: String,
         ): Pipeline {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)

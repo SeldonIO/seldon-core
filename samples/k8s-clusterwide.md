@@ -7,7 +7,7 @@ helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-cr
 ```
 Release "seldon-core-v2-crds" does not exist. Installing it now.
 NAME: seldon-core-v2-crds
-LAST DEPLOYED: Fri Aug 11 11:05:27 2023
+LAST DEPLOYED: Tue Aug 15 11:01:03 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -15,9 +15,7 @@ TEST SUITE: None
 
 ```
 
-The below setup also illustrates using Kafka specific prefixes for topics and consumer IDs for isolation where the Kafka cluster is shared with other applications and you want to enforce constraints.
-
-You would not strictly need this in this example as we install Kafka just for Seldon here.
+ The below setup also illustrates using kafka specific prefixes for topics and consumerIds for isolation where the kafka cluster is shared with other applications and you want to enforce constraints. You would not strictly need this in this example as we install Kafka just for Seldon here.
 
 ```bash
 helm upgrade --install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
@@ -29,7 +27,7 @@ helm upgrade --install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n sel
 ```
 Release "seldon-v2" does not exist. Installing it now.
 NAME: seldon-v2
-LAST DEPLOYED: Fri Aug 11 11:05:30 2023
+LAST DEPLOYED: Tue Aug 15 11:01:07 2023
 NAMESPACE: seldon-mesh
 STATUS: deployed
 REVISION: 1
@@ -54,7 +52,7 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns1
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Fri Aug 11 11:05:38 2023
+LAST DEPLOYED: Tue Aug 15 11:01:11 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -68,7 +66,7 @@ helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns1
 
 ```yaml
 NAME: seldon-v2-servers
-LAST DEPLOYED: Fri Aug 11 11:05:53 2023
+LAST DEPLOYED: Tue Aug 15 10:47:31 2023
 NAMESPACE: ns1
 STATUS: deployed
 REVISION: 1
@@ -82,7 +80,7 @@ helm install seldon-v2-runtime ../k8s/helm-charts/seldon-core-v2-runtime  -n ns2
 
 ```yaml
 NAME: seldon-v2-runtime
-LAST DEPLOYED: Fri Aug 11 11:16:45 2023
+LAST DEPLOYED: Tue Aug 15 10:53:12 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
@@ -96,7 +94,7 @@ helm install seldon-v2-servers ../k8s/helm-charts/seldon-core-v2-servers  -n ns2
 
 ```yaml
 NAME: seldon-v2-servers
-LAST DEPLOYED: Fri Aug 11 11:16:45 2023
+LAST DEPLOYED: Tue Aug 15 10:53:28 2023
 NAMESPACE: ns2
 STATUS: deployed
 REVISION: 1
@@ -196,7 +194,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "276de7e7-9f2f-4329-9179-08d4d54bb0b5",
+	"id": "3ca1757c-df02-4e57-87c1-38311bcc5943",
 	"parameters": {},
 	"outputs": [
 		{
@@ -278,7 +276,7 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 {
 	"model_name": "iris_1",
 	"model_version": "1",
-	"id": "7c0bb004-be2c-4483-97a9-6fd2e0a834ad",
+	"id": "f706a23e-775f-4765-bd18-2e98d83bf7d5",
 	"parameters": {},
 	"outputs": [
 		{
@@ -531,6 +529,53 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
     }
   ]
 }
+
+```
+
+If you have installed Kafka via the ansible playbook setup-ecosystem then you can use the following command to see the consumer group ids which are reflecting the settings we created.
+
+```bash
+kubectl exec seldon-kafka-0 -n seldon-mesh -- bin/kafka-consumer-groups.sh --list --bootstrap-server localhost:9092
+```
+
+```
+myorg-ns2-seldon-pipelinegateway-dfd61b49-4bb9-4684-adce-0b7cc215d3af
+myorg-ns2-seldon-modelgateway-17
+myorg-ns1-seldon-pipelinegateway-d4fc83e6-29cb-442e-90cd-92a389961cfe
+myorg-ns2-seldon-modelgateway-60
+myorg-ns2-seldon-dataflow-73d465744b7b1b5be20e88d6245e50bd
+myorg-ns1-seldon-modelgateway-60
+myorg-ns1-seldon-modelgateway-17
+myorg-ns1-seldon-dataflow-f563e04e093caa20c03e6eced084331b
+
+```
+
+We can similarly show the topics that have been created.
+
+```bash
+kubectl exec seldon-kafka-0 -n seldon-mesh -- bin/kafka-topics.sh --bootstrap-server=localhost:9092 --list
+```
+
+```
+__consumer_offsets
+myorg.ns1.errors.errors
+myorg.ns1.model.iris.inputs
+myorg.ns1.model.iris.outputs
+myorg.ns1.model.tfsimple1.inputs
+myorg.ns1.model.tfsimple1.outputs
+myorg.ns1.model.tfsimple2.inputs
+myorg.ns1.model.tfsimple2.outputs
+myorg.ns1.pipeline.tfsimples.inputs
+myorg.ns1.pipeline.tfsimples.outputs
+myorg.ns2.errors.errors
+myorg.ns2.model.iris.inputs
+myorg.ns2.model.iris.outputs
+myorg.ns2.model.tfsimple1.inputs
+myorg.ns2.model.tfsimple1.outputs
+myorg.ns2.model.tfsimple2.inputs
+myorg.ns2.model.tfsimple2.outputs
+myorg.ns2.pipeline.tfsimples.inputs
+myorg.ns2.pipeline.tfsimples.outputs
 
 ```
 

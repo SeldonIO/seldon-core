@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"fmt"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -25,7 +24,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "foo",
 			componentPrefix:       "pipeline",
 			id:                    "id",
-			expected:              fmt.Sprintf("%s-%s-%s", "foo", "pipeline", "id"),
+			expected:              "foo-pipeline-id",
 		},
 		{
 			name:                  "no consumer group prefix no namespace",
@@ -33,7 +32,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "",
 			componentPrefix:       "pipeline",
 			id:                    "id",
-			expected:              fmt.Sprintf("%s-%s", "pipeline", "id"),
+			expected:              "pipeline-id",
 		},
 		{
 			name:                  "all params",
@@ -41,7 +40,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "foo",
 			componentPrefix:       "pipeline",
 			id:                    "id",
-			expected:              fmt.Sprintf("%s-%s-%s-%s", "foo", "default", "pipeline", "id"),
+			expected:              "foo-default-pipeline-id",
 		},
 		{
 			name:                  "no consumer group prefix",
@@ -49,14 +48,18 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			consumerGroupIdPrefix: "",
 			componentPrefix:       "pipeline",
 			id:                    "id",
-			expected:              fmt.Sprintf("%s-%s-%s", "default", "pipeline", "id"),
+			expected:              "default-pipeline-id",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			g.Expect(getKafkaConsumerName(test.namespace, test.consumerGroupIdPrefix, test.componentPrefix, test.id)).To(Equal(test.expected))
-
+			g.Expect(
+				getKafkaConsumerName(
+					test.namespace, test.consumerGroupIdPrefix, test.componentPrefix, test.id),
+			).To(Equal(
+				test.expected),
+			)
 		})
 	}
 }
