@@ -27,7 +27,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -228,7 +227,9 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	requestId := uuid.NewString()
+	// Create an outgoing context for the proxy call to service from incoming context
+	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
+
 	go func() {
 		if err := rp.modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId); err != nil {
 			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
@@ -251,9 +252,6 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
-
-	// Create an outgoing context for the proxy call to service from incoming context
-	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
 
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))

@@ -154,9 +154,9 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		[]interfaces.ModelStatsKeeper{
 			modelscaling.NewModelReplicaLagsKeeper(),
-			modelscaling.NewModelReplicaLastUsedKeeper()
+			modelscaling.NewModelReplicaLastUsedKeeper(),
 		},
-		nil,
+		logger,
 	)
 	rp := NewReverseHTTPProxy(
 		logger,
@@ -421,13 +421,15 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			req.Header.Set("contentType", "application/json")
 			httpClient := http.DefaultClient
 			metricsHandler := newFakeMetricsHandler()
+			logger := log.New()
 			modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 				[]interfaces.ModelStatsKeeper{
 					modelscaling.NewModelReplicaLagsKeeper(),
 					modelscaling.NewModelReplicaLastUsedKeeper(),
-				})
+				},
+				logger)
 			httpClient.Transport = &lazyModelLoadTransport{
-				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
+				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, logger}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)

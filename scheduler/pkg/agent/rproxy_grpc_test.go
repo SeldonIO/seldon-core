@@ -47,7 +47,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 		[]interfaces.ModelStatsKeeper{modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper()},
-		nil,
+		logger,
 	)
 	rp := NewReverseGRPCProxy(
 		newFakeMetricsHandler(),

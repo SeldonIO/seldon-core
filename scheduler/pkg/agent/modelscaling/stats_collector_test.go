@@ -23,6 +23,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestStatsCollectorSmoke(t *testing.T) {
@@ -33,7 +34,7 @@ func TestStatsCollectorSmoke(t *testing.T) {
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
 
-	collector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed}, nil)
+	collector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed}, log.New())
 
 	var wg sync.WaitGroup
 	wg.Add(1)

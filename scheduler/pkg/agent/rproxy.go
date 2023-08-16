@@ -31,7 +31,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
@@ -77,6 +76,18 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 	}
 }
 
+func getRequestId(req *http.Request) string {
+	var requestId string
+	requestIds := req.Header[util.RequestIdHeaderCanonical]
+	if len(requestIds) == 0 {
+		requestId = util.CreateRequestId()
+		req.Header[util.RequestIdHeaderCanonical] = []string{requestId}
+	} else {
+		requestId = requestIds[0]
+	}
+	return requestId
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
@@ -91,7 +102,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	requestId := uuid.NewString()
+	requestId := getRequestId(req)
 	go func() {
 		if err := t.modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId); err != nil {
 			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
