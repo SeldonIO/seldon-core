@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize             int = 100
+	pendingSyncsQueueSize             int = 1000
 	addPipelineEventSource                = "pipeline.store.addpipeline"
 	removePipelineEventSource             = "pipeline.store.removepipeline"
 	setStatusPipelineEventSource          = "pipeline.store.setstatus"

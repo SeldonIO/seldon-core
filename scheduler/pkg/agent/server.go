@@ -43,7 +43,7 @@ import (
 
 const (
 	grpcMaxConcurrentStreams           = 1_000_000
-	pendingSyncsQueueSize          int = 10
+	pendingSyncsQueueSize          int = 1000
 	modelEventHandlerName              = "agent.server.models"
 	modelScalingCoolingDownSeconds     = 60 // this is currently used in scale down events
 	serverDrainingExtraWaitMillis      = 500

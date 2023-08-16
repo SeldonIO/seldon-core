@@ -95,7 +95,7 @@ func (f fakeModelStore) RemoveServerReplica(serverName string, replicaIdx int) (
 	panic("implement me")
 }
 
-func (f fakeModelStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
+func (f fakeModelStore) FailedScheduling(modelVersion *store.ModelVersion, reason string, reset bool) {
 	panic("implement me")
 }
 

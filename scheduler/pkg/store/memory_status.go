@@ -110,7 +110,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
-func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string) {
+func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
 		Reason:              reason,
@@ -118,8 +118,10 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 		AvailableReplicas:   modelVersion.state.AvailableReplicas,
 		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - modelVersion.state.AvailableReplicas,
 	}
-	// make sure we reset server
-	modelVersion.server = ""
+	// make sure we reset server but only if there are no available replicas
+	if reset {
+		modelVersion.server = ""
+	}
 	m.eventHub.PublishModelEvent(
 		modelFailureEventSource,
 		coordinator.ModelEventMsg{

@@ -766,7 +766,7 @@ func TestModelSync(t *testing.T) {
 			for _, op := range test.ops {
 				op(inc, g)
 			}
-			inc.modelSync()
+			inc.modelSyncWithLock()
 			for modelName, modelReplicas := range test.expectedReplicaStats {
 				model, err := inc.modelStore.GetModel(modelName)
 				g.Expect(err).To(BeNil())

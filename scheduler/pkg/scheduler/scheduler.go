@@ -149,9 +149,10 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
-		logger.Debugf("Model %s candidate servers %v", modelName, filteredServers)
+		logger.Debugf("Model %s with desired replicas %d candidate servers %v", modelName, latestModel.DesiredReplicas(), filteredServers)
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
+			logger.Debugf("Candidate server %s", candidateServer.Name)
 			var candidateReplicas *sorters.CandidateServer
 
 			// we need a lock here, we could have many goroutines at sorting
@@ -175,7 +176,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 		if !ok {
 			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
-			s.store.FailedScheduling(latestModel, failureErrMsg)
+			// we do not want to reset the server if it has live replicas
+			s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
 			return fmt.Errorf(failureErrMsg)
 		}
 	}

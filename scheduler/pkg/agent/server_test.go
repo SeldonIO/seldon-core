@@ -38,7 +38,7 @@ type mockStore struct {
 
 var _ store.ModelStore = (*mockStore)(nil)
 
-func (m *mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string) {
+func (m *mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string, reset bool) {
 }
 
 func (m *mockStore) UpdateModel(config *pbs.LoadModelRequest) error {

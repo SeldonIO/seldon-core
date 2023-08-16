@@ -41,7 +41,7 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize      int = 100
+	pendingSyncsQueueSize      int = 1000
 	modelEventHandlerName          = "incremental.processor.models"
 	experimentEventHandlerName     = "incremental.processor.experiments"
 	pipelineEventHandlerName       = "incremental.processor.pipelines"
@@ -63,6 +63,7 @@ type IncrementalProcessor struct {
 	batchWaitMillis      time.Duration
 	pendingModelVersions []*pendingModelVersion
 	versionCleaner       cleaner.ModelVersionCleaner
+	batchTriggerManual   *time.Time
 }
 
 type pendingModelVersion struct {
@@ -94,6 +95,7 @@ func NewIncrementalProcessor(
 		batchTrigger:         nil,
 		batchWaitMillis:      util.EnvoyUpdateDefaultBatchWaitMillis,
 		versionCleaner:       versionCleaner,
+		batchTriggerManual:   nil,
 	}
 
 	err := ip.setListeners()
@@ -542,13 +544,15 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.modelStore.LockModel(modelName)
-	defer p.modelStore.UnlockModel(modelName)
+
+	logger.Debugf("Calling model update for %s", modelName)
 
 	model, err := p.modelStore.GetModel(modelName)
 	if err != nil {
 		logger.WithError(err).Warnf("Failed to sync model %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			p.modelStore.UnlockModel(modelName)
 			return err
 		}
 	}
@@ -557,6 +561,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
 		}
+		p.modelStore.UnlockModel(modelName)
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
@@ -566,6 +571,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
 		}
+		p.modelStore.UnlockModel(modelName)
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
@@ -577,6 +583,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			p.modelStore.UnlockModel(modelName)
 			return err
 		}
 		modelRemoved = true
@@ -598,6 +605,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		// Remove routes before we recreate
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.Debugf("Failed to remove route before starting update for %s", modelName)
+			p.modelStore.UnlockModel(modelName)
 			return err
 		}
 
@@ -608,6 +616,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 			logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
 			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+				p.modelStore.UnlockModel(modelName)
 				return err
 			}
 		}
@@ -621,9 +630,14 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 			version: latestModel.GetVersion(),
 		},
 	)
+	p.modelStore.UnlockModel(modelName)
+	triggered := p.triggerModelSyncIfNeeded()
 
-	if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
-		p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSync)
+	if !triggered {
+		// we still need to enable the cron timer as there is no guarantee that the manual trigger will be called
+		if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
+			p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
+		}
 	}
 
 	return nil
@@ -640,10 +654,33 @@ func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	}
 }
 
-func (p *IncrementalProcessor) modelSync() {
-	logger := p.logger.WithField("func", "modelSync")
+func (p *IncrementalProcessor) triggerModelSyncIfNeeded() bool {
+	// the first time we trigger the batch update we need to set the time
+	if p.batchTriggerManual == nil {
+		p.batchTriggerManual = new(time.Time)
+		*p.batchTriggerManual = time.Now()
+	}
+	if time.Since(*p.batchTriggerManual) > p.batchWaitMillis {
+		// we have waited long enough so we can trigger the batch update
+		// we do this inline so that we do not require to release and reacquire the lock
+		// which under heavy load there is no guarantee of order and therefore could lead
+		// to starvation of the batch update
+		p.modelSync()
+		*p.batchTriggerManual = time.Now()
+		return true
+	}
+	return false
+}
+
+func (p *IncrementalProcessor) modelSyncWithLock() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	p.modelSync()
+}
+
+func (p *IncrementalProcessor) modelSync() {
+	logger := p.logger.WithField("func", "modelSync")
+	logger.Debugf("Calling model sync")
 
 	envoyErr := p.updateEnvoy()
 	serverReplicaState := store.Available
@@ -728,4 +765,5 @@ func (p *IncrementalProcessor) modelSync() {
 	// Reset
 	p.batchTrigger = nil
 	p.pendingModelVersions = nil
+	logger.Debugf("Done modelSync")
 }
