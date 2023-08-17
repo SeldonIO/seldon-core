@@ -51,3 +51,9 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/scheduler)
   goconst:
     min-occurrences: 5
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: data-flow/scripts/(common|producer|consumer).go
+      text: ".*main redeclared in this block.*"
