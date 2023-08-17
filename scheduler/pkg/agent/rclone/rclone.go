@@ -49,7 +49,6 @@ const (
 	RcloneListRemotesPath     = "/config/listremotes"
 	RcloneConfigDeletePath    = "/config/delete"
 	RcloneConfigGetPath       = "/config/get"
-	TritonConfigFileName      = "config.pbtxt"
 )
 
 type RCloneClient struct {
@@ -253,7 +252,7 @@ func (r *RCloneClient) parseRcloneConfig(config []byte) (*RcloneConfigCreate, er
 
 // Creating a connection string with https://rclone.org/docs/#connection-strings
 func (r *RCloneClient) createUriWithConfig(uri string, rawConfig []byte) (string, error) {
-	
+
 	remoteName, err := getRemoteName(uri)
 	if err != nil {
 		return "", err
@@ -358,9 +357,16 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, artifactVersion *ui
 
 	dst := fmt.Sprintf("%s/%d", r.localPath, hash)
 
-	artifactVersionDirFound := false
-	tritonConfigFileFound := false
-	if artifactVersion != nil && *artifactVersion > 0 {
+	if artifactVersion == nil || *artifactVersion <= 0 {
+		r.logger.
+			WithField("source_uri", srcUri).
+			WithField("destination_uri", dst).
+			Info("will copy model artifacts")
+		err = r.syncCopy(srcUriWithConfig, dst)
+		if err != nil {
+			return "", fmt.Errorf("failed to sync/copy %s to %s %w", srcUri, dst, err)
+		}
+	} else {
 		items, err := r.listDir(srcUriWithConfig)
 		if err != nil {
 			return "", fmt.Errorf("failed to list dir %s %w", srcUri, err)
@@ -369,40 +375,23 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, artifactVersion *ui
 		artifactVersionStr := strconv.Itoa(int(*artifactVersion))
 		for _, item := range items {
 			if item.IsDir && item.Name == artifactVersionStr {
-				artifactVersionDirFound = true
-			} else if !item.IsDir && item.Name == TritonConfigFileName {
-				tritonConfigFileFound = true
+				artifactVersionSrc := fmt.Sprintf("%s/%d", srcUri, *artifactVersion)
+				artifactVersionDst := fmt.Sprintf("%s/%d", dst, *artifactVersion)
+				artifactVersionSrcWithConfig, err := r.createUriWithConfig(artifactVersionSrc, config)
+				if err != nil {
+					return "", err
+				}
+				err = r.syncCopy(artifactVersionSrcWithConfig, artifactVersionDst)
+				if err != nil {
+					r.logger.WithError(err).Error("failed to sync/copy artifact version directory")
+					return "", err
+				}
+			} else if !item.IsDir {
+				err = r.copyFile(srcUriWithConfig, item.Name, dst, item.Name)
+				if err != nil {
+					return "", err
+				}
 			}
-		}
-	}
-
-	if artifactVersionDirFound {
-		artifactVersionSrc := fmt.Sprintf("%s/%d", srcUri, *artifactVersion)
-		artifactVersionDst := fmt.Sprintf("%s/%d", dst, *artifactVersion)
-		artifactVersionSrcWithConfig, err := r.createUriWithConfig(artifactVersionSrc, config)
-		if err != nil {
-			return "", err
-		}
-		err = r.syncCopy(artifactVersionSrcWithConfig, artifactVersionDst)
-		if err != nil {
-			r.logger.WithError(err).Error("failed to sync/copy artifact version directory")
-			return "", err
-		}
-
-		if tritonConfigFileFound {
-			err = r.copyFile(srcUriWithConfig, TritonConfigFileName, dst, TritonConfigFileName)
-			if err != nil {
-				return "", err
-			}
-		}
-	} else {
-		r.logger.
-			WithField("source_uri", srcUri).
-			WithField("destination_uri", dst).
-			Info("will copy model artifacts")
-		err = r.syncCopy(srcUriWithConfig, dst)
-		if err != nil {
-			return "", fmt.Errorf("failed to sync/copy %s to %s %w", srcUri, dst, err)
 		}
 	}
 
