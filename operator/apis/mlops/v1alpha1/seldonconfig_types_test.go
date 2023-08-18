@@ -79,7 +79,8 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			name: "kafka overrides",
 			defaults: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
-					BootstrapServers: "h1,h2",
+					BootstrapServers:      "h1,h2",
+					ConsumerGroupIdPrefix: "foo",
 					Consumer: map[string]intstr.IntOrString{
 						"key1": intstr.FromInt(1000),
 					},
@@ -93,7 +94,8 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			},
 			runtime: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
-					Consumer: map[string]intstr.IntOrString{},
+					ConsumerGroupIdPrefix: "bar",
+					Consumer:              map[string]intstr.IntOrString{},
 					Producer: map[string]intstr.IntOrString{
 						"key4": intstr.FromString("val"),
 					},
@@ -104,7 +106,8 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			},
 			expected: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
-					BootstrapServers: "h1,h2",
+					BootstrapServers:      "h1,h2",
+					ConsumerGroupIdPrefix: "bar",
 					Consumer: map[string]intstr.IntOrString{
 						"key1": intstr.FromInt(1000),
 					},
@@ -122,7 +125,8 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			name: "kafka no overrides",
 			defaults: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
-					BootstrapServers: "h1,h2",
+					BootstrapServers:      "h1,h2",
+					ConsumerGroupIdPrefix: "foo",
 					Consumer: map[string]intstr.IntOrString{
 						"key1": intstr.FromInt(1000),
 					},
@@ -139,7 +143,8 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			},
 			expected: SeldonConfiguration{
 				KafkaConfig: KafkaConfig{
-					BootstrapServers: "h1,h2",
+					BootstrapServers:      "h1,h2",
+					ConsumerGroupIdPrefix: "foo",
 					Consumer: map[string]intstr.IntOrString{
 						"key1": intstr.FromInt(1000),
 					},

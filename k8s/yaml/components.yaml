@@ -995,6 +995,8 @@ spec:
       - env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
           value: 'seldon-kafka-bootstrap.seldon-mesh:9092'
+        - name: SELDON_KAFKA_CONSUMER_PREFIX
+          value: ''
         - name: SELDON_KAFKA_REPLICATION_FACTOR
           value: '1'
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT
@@ -1043,7 +1045,7 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
-        - name: POD_NAMESPACE
+        - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
@@ -1076,6 +1078,7 @@ spec:
         message.max.bytes: '1000000000'
         session.timeout.ms: '6000'
         topic.metadata.propagation.max.ms: '300000'
+      consumerGroupIdPrefix: ''
       debug: ''
       producer:
         linger.ms: '0'

@@ -29,6 +29,7 @@ object Cli {
     // General setup
     val logLevelApplication = Key("log.level.app", enumType(*Level.values()))
     val logLevelKafka = Key("log.level.kafka", enumType(*Level.values()))
+    val namespace = Key("pod.namespace", stringType)
 
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
@@ -36,6 +37,7 @@ object Cli {
 
     // Kafka
     val kafkaBootstrapServers = Key("kafka.bootstrap.servers", stringType)
+    val kafkaConsumerGroupIdPrefix = Key("kafka.consumer.prefix", stringType)
     val kafkaSecurityProtocol = Key("kafka.security.protocol", enumType(*KafkaSecurityProtocols))
     val kafkaPartitions = Key("kafka.partitions.default", intType)
     val kafkaReplicationFactor = Key("kafka.replication.factor", intType)
@@ -62,9 +64,11 @@ object Cli {
         return listOf(
             logLevelApplication,
             logLevelKafka,
+            namespace,
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,
+            kafkaConsumerGroupIdPrefix,
             kafkaSecurityProtocol,
             kafkaPartitions,
             kafkaReplicationFactor,

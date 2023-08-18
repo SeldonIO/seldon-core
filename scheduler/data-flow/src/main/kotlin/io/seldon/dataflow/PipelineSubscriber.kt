@@ -49,6 +49,8 @@ class PipelineSubscriber(
     private val upstreamHost: String,
     private val upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
+    private val kafkaConsumerGroupIdPrefix: String,
+    private val namespace: String,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams)
     private val channel = ManagedChannelBuilder
@@ -72,7 +74,7 @@ class PipelineSubscriber(
     suspend fun subscribe() {
         logger.info("will connect to ${upstreamHost}:${upstreamPort}")
         retry(grpcFailurePolicy + binaryExponentialBackoff(50..5_000L)) {
-            subscribePipelines()
+            subscribePipelines(kafkaConsumerGroupIdPrefix, namespace)
         }
     }
 
@@ -83,7 +85,7 @@ class PipelineSubscriber(
     //  Pipeline UID should be enough to uniquely key it, even across versions?
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
-    private suspend fun subscribePipelines() {
+    private suspend fun subscribePipelines(kafkaConsumerGroupIdPrefix: String, namespace: String) {
         logger.info("Subscribing to pipeline updates")
         client
             .subscribePipelineUpdates(request = makeSubscriptionRequest())
@@ -97,7 +99,7 @@ class PipelineSubscriber(
                 )
 
                 when (update.op) {
-                    PipelineOperation.Create -> handleCreate(metadata, update.updatesList)
+                    PipelineOperation.Create -> handleCreate(metadata, update.updatesList, kafkaConsumerGroupIdPrefix, namespace)
                     PipelineOperation.Delete -> handleDelete(metadata)
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
@@ -119,9 +121,11 @@ class PipelineSubscriber(
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
+        kafkaConsumerGroupIdPrefix: String,
+        namespace: String,
     ) {
         logger.info("Create pipeline ${metadata.name} version: ${metadata.version} id: ${metadata.id}")
-        val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams)
+        val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
         if (pipeline.size != steps.size) {
             client.pipelineUpdateEvent(
                 makePipelineUpdateEvent(

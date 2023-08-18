@@ -15,6 +15,8 @@ spec:
         env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
           value: '{{ .Values.kafka.bootstrap }}'
+        - name: SELDON_KAFKA_CONSUMER_PREFIX
+          value: '{{ .Values.kafka.consumerGroupIdPrefix }}'
         - name: SELDON_KAFKA_REPLICATION_FACTOR
           value: '{{ .Values.kafka.topics.replicationFactor }}'
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT

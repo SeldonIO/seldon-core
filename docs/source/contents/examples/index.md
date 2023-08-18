@@ -43,6 +43,10 @@ This section will provide some examples to allow operations with Seldon to be te
 
  * [Checking Pipeline readiness](pipeline-ready-and-metadata.md)
 
+## Further Kubernetes Examples
+
+ * [Kubernetes custerwide example](k8s-clusterwide.md)
+
 ## Advanced Examples
 
  * [Huggingface speech to sentiment with explanations pipeline](speech-to-sentiment.md)

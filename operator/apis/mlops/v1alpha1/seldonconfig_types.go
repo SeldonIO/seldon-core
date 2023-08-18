@@ -60,12 +60,13 @@ type ServiceConfig struct {
 }
 
 type KafkaConfig struct {
-	BootstrapServers string                        `json:"bootstrap.servers,omitempty"`
-	Debug            string                        `json:"debug,omitempty"`
-	Consumer         map[string]intstr.IntOrString `json:"consumer,omitempty"`
-	Producer         map[string]intstr.IntOrString `json:"producer,omitempty"`
-	Streams          map[string]intstr.IntOrString `json:"streams,omitempty"`
-	TopicPrefix      string                        `json:"topicPrefix,omitempty"`
+	BootstrapServers      string                        `json:"bootstrap.servers,omitempty"`
+	ConsumerGroupIdPrefix string                        `json:"consumerGroupIdPrefix,omitempty"`
+	Debug                 string                        `json:"debug,omitempty"`
+	Consumer              map[string]intstr.IntOrString `json:"consumer,omitempty"`
+	Producer              map[string]intstr.IntOrString `json:"producer,omitempty"`
+	Streams               map[string]intstr.IntOrString `json:"streams,omitempty"`
+	TopicPrefix           string                        `json:"topicPrefix,omitempty"`
 }
 
 type AgentConfiguration struct {
@@ -141,6 +142,9 @@ func (s *SeldonConfiguration) AddDefaults(defaults SeldonConfiguration) {
 func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 	if k.BootstrapServers == "" {
 		k.BootstrapServers = defaults.BootstrapServers
+	}
+	if k.ConsumerGroupIdPrefix == "" {
+		k.ConsumerGroupIdPrefix = defaults.ConsumerGroupIdPrefix
 	}
 	if k.Consumer == nil && defaults.Consumer != nil {
 		k.Consumer = make(map[string]intstr.IntOrString)

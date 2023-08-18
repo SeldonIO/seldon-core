@@ -23,7 +23,7 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
-        - name: POD_NAMESPACE
+        - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace

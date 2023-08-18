@@ -83,9 +83,11 @@ class Pipeline(
             steps: List<PipelineStepUpdate>,
             kafkaProperties: KafkaProperties,
             kafkaDomainParams: KafkaDomainParams,
+            kafkaConsumerGroupIdPrefix: String,
+            namespace: String,
         ): Pipeline {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
-            val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps)
+            val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
             val streamsApp = KafkaStreams(topology, pipelineProperties)
             logger.info("Create pipeline stream for name:${metadata.name} id:${metadata.id} version:${metadata.version} stream with kstream app id:${pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]}")
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps)
@@ -120,9 +122,13 @@ class Pipeline(
             kafkaProperties: KafkaProperties,
             metadata: PipelineMetadata,
             numSteps: Int,
+            kafkaConsumerGroupIdPrefix: String,
+            namespace: String
         ): KafkaProperties {
             return kafkaProperties
                 .withAppId(
+                    namespace,
+                    kafkaConsumerGroupIdPrefix,
                     HashUtils.hashIfLong(metadata.id),
                 )
                 .withStreamThreads(

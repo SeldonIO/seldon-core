@@ -18,6 +18,7 @@ package pipeline
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -44,9 +45,11 @@ type ConsumerManager struct {
 	maxNumConsumers         int
 	maxNumTopicsPerConsumer int
 	tracer                  trace.Tracer
+	namespace               string
 }
 
 func NewConsumerManager(
+	namespace string,
 	logger log.FieldLogger,
 	consumerConfig *config.KafkaConfig,
 	maxNumTopicsPerConsumer,
@@ -59,6 +62,7 @@ func NewConsumerManager(
 		Info("creating consumer manager")
 
 	return &ConsumerManager{
+		namespace:               namespace,
 		logger:                  logger.WithField("source", "ConsumerManager"),
 		consumerConfig:          consumerConfig,
 		maxNumTopicsPerConsumer: maxNumTopicsPerConsumer,
@@ -75,7 +79,7 @@ func (cm *ConsumerManager) createConsumer() error {
 	c, err := NewMultiTopicsKafkaConsumer(
 		cm.logger,
 		cm.consumerConfig,
-		getKafkaConsumerName(kafkaConsumerNamePrefix, uuid.New().String()),
+		getKafkaConsumerName(cm.namespace, cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
 		cm.tracer,
 	)
 	if err != nil {
@@ -132,6 +136,14 @@ func (cm *ConsumerManager) Stop() {
 	}
 }
 
-func getKafkaConsumerName(prefix, id string) string {
-	return fmt.Sprintf("%s-%s", prefix, id)
+func getKafkaConsumerName(namespace, consumerGroupIdPrefix, componentPrefix, id string) string {
+	var sb strings.Builder
+	if consumerGroupIdPrefix != "" {
+		sb.WriteString(consumerGroupIdPrefix + "-")
+	}
+	if namespace != "" {
+		sb.WriteString(namespace + "-")
+	}
+	sb.WriteString(componentPrefix + "-" + id)
+	return sb.String()
 }

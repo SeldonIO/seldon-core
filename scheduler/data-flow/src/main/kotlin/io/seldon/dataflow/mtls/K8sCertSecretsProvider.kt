@@ -31,7 +31,7 @@ import java.nio.file.Files
 object K8sCertSecretsProvider {
 
     private val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
-    private val namespace = System.getenv("POD_NAMESPACE")
+    private val namespace = System.getenv("SELDON_POD_NAMESPACE")
 
     private fun getApiClient(): ApiClient = try {
         ClientBuilder.cluster().build()

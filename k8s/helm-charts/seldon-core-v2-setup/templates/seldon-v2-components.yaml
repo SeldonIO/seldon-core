@@ -1373,6 +1373,8 @@ spec:
       - env:
         - name: SELDON_KAFKA_BOOTSTRAP_SERVERS
           value: '{{ .Values.kafka.bootstrap }}'
+        - name: SELDON_KAFKA_CONSUMER_PREFIX
+          value: '{{ .Values.kafka.consumerGroupIdPrefix }}'
         - name: SELDON_KAFKA_REPLICATION_FACTOR
           value: '{{ .Values.kafka.topics.replicationFactor }}'
         - name: SELDON_KAFKA_PARTITIONS_DEFAULT
@@ -1423,7 +1425,7 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
-        - name: POD_NAMESPACE
+        - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
@@ -1459,6 +1461,7 @@ spec:
         session.timeout.ms: '{{ .Values.kafka.consumer.sessionTimeoutMs }}'
         topic.metadata.propagation.max.ms: '{{ .Values.kafka.consumer.topicMetadataPropagationMaxMs
           }}'
+      consumerGroupIdPrefix: '{{ .Values.kafka.consumerGroupIdPrefix }}'
       debug: '{{ .Values.kafka.debug }}'
       producer:
         linger.ms: '{{ .Values.kafka.producer.lingerMs }}'

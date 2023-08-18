@@ -13,12 +13,15 @@ We allow configuration of the Kafka integration. In general this configuration l
 The top level keys are:
 
  * `topicPrefix` : the prefix to add to kafka topics created by Seldon
+ * `consumerGroupIdPrefix` : the prefix to add to Kafka consumer group IDs created by Seldon
  * `bootstrap.servers` : the global bootstrap kafka servers to use
  * `consumer` : consumer settings
  * `producer` : producer settings
  * `streams` : KStreams settings
 
 For `topicPrefix` you can use any acceptable kafka topic characters which are `a-z, A-Z, 0-9, . (dot), _ (underscore), and - (dash)`. We use `.` (dot) internally as topic naming separator so we would suggest you don't end your topic prefix with a dot for clarity. For illustration, an example topic could be `seldon.default.model.mymodel.inputs` where `seldon` is the topic prefix.
+
+The `consumerGroupIdPrefix` will ensure that all consumer groups created have a given prefix.
 
 ### Kubernetes
 
@@ -44,6 +47,25 @@ helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
     --namespace seldon-mesh \
     --values k8s/samples/values-runtime-kafka-compression.yaml
 ```
+### Topic and consumer isolation
+
+If you use a shared Kafka cluster with other applications you may want to isolate the topic names and consumer group IDs from other users of the cluster to ensure there is no name clash. For this we provide two settings:
+
+ * `topicPrefix`: set a prefix for all topics
+ * `consumerGroupIdPrefix`: set a prefix for all consumer groups
+
+An example to set this in the configuration when using the helm installation is showm below for creating the default `SeldonConfig`:
+
+```
+helm upgrade --install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
+    --set controller.clusterwide=true \
+    --set kafka.topicPrefix=myorg \
+    --set kafka.consumerGroupIdPrefix=myorg
+```
+
+You can find a worked example [here](../../examples/k8s-clusterwide.md).
+
+You can create alternate `SeldonConfig`s with different values or override values for particular `SeldonRuntime` installs.
 
 ## Tracing Configuration
 
