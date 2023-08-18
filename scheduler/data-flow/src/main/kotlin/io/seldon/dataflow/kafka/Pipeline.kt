@@ -25,7 +25,6 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import java.util.concurrent.CountDownLatch
-import javax.xml.stream.events.Namespace
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
