@@ -17,11 +17,11 @@ limitations under the License.
 package oauth
 
 const (
-	methodKey           = "method"
-	clientIDKey         = "client_id"
-	clientSecretKey     = "client_secret"
-	tokenEndpointURLKey = "token_endpoint_url"
-	extensionsKey       = "extensions"
+	SecretKeyMethod           = "method"
+	SecretKeyClientID         = "client_id"
+	SecretKeyClientSecret     = "client_secret"
+	SecretKeyTokenEndpointURL = "token_endpoint_url"
+	SecretKeyExtensions       = "extensions"
 )
 
 type OAUTHConfig struct {

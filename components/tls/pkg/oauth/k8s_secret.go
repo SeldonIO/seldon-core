@@ -71,37 +71,37 @@ func (s *OAUTHSecretHandler) Stop() {
 
 func (s *OAUTHSecretHandler) saveOAUTHFromSecret(secret *corev1.Secret) error {
 	// Read and Save oauthbearer method
-	method, ok := secret.Data[methodKey]
+	method, ok := secret.Data[SecretKeyMethod]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", methodKey, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyMethod, secret.Name)
 	}
 	s.oauthConfig.Method = string(method)
 
 	// Read and Save oauthbearer client id
-	clientID, ok := secret.Data[clientIDKey]
+	clientID, ok := secret.Data[SecretKeyClientID]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", clientIDKey, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientID, secret.Name)
 	}
 	s.oauthConfig.ClientID = string(clientID)
 
 	// Read and Save oauthbearer client secret
-	clientSecret, ok := secret.Data[clientSecretKey]
+	clientSecret, ok := secret.Data[SecretKeyClientSecret]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", clientSecretKey, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientSecret, secret.Name)
 	}
 	s.oauthConfig.ClientSecret = string(clientSecret)
 
 	// Read and Save oauthbearer token endpoint url
-	tokenEndpointURL, ok := secret.Data[tokenEndpointURLKey]
+	tokenEndpointURL, ok := secret.Data[SecretKeyTokenEndpointURL]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", tokenEndpointURLKey, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyTokenEndpointURL, secret.Name)
 	}
 	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
 
 	// Read and Save oauthbearer extensions
-	extensions, ok := secret.Data[extensionsKey]
+	extensions, ok := secret.Data[SecretKeyExtensions]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", extensionsKey, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyExtensions, secret.Name)
 	}
 	s.oauthConfig.Extensions = string(extensions)
 
