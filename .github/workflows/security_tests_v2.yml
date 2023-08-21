@@ -21,7 +21,6 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         GOFLAGS: "-buildvcs=false"
       run: |
-        make -C operator fmt
         snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-scheduler:
@@ -34,7 +33,6 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         GOFLAGS: "-buildvcs=false"
       run: |
-        make -C scheduler lint
         snyk test --file=scheduler/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-image-operator:
