@@ -55,7 +55,7 @@ const (
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
 	SeldonModelHeaderSuffix       = "model"
 	SeldonPipelineHeaderSuffix    = "pipeline"
-	DefaultRouteTimeoutSecs       = 60 //TODO allow configurable override
+	DefaultRouteTimeoutSecs       = 0 //TODO allow configurable override
 	ExternalHeaderPrefix          = "x-"
 	DefaultRouteConfigurationName = "listener_0"
 	MirrorRouteConfigurationName  = "listener_1"
