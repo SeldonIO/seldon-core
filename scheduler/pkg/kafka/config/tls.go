@@ -53,6 +53,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	mechanism := tls.GetSASLMechanismFromEnv(tls.EnvSecurityPrefixKafka)
 
 	// TODO: Remove before merge (overwrite for testing)
+	_ = mechanism
 	mechanism = tls.SASLMechanismOAUTHBEARER
 
 	var err error
