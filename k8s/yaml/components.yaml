@@ -1282,6 +1282,8 @@ spec:
       - containerPort: 9000
         name: server-http
         protocol: TCP
+      - containerPort: 8082
+        name: server-metrics
       readinessProbe:
         httpGet:
           path: /v2/health/live
