@@ -25,3 +25,8 @@ scheduler/mlrepo
 scheduler/mnt
 scheduler/notebooks
 scheduler/venv
+
+# General
+go.work
+go.work.sum
+
