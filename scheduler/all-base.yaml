@@ -58,6 +58,8 @@ services:
     depends_on:
       - kafka
       - otel-collector
+    environment:
+      - SELDON_POD_NAMESPACE=${SELDON_POD_NAMESPACE}
 
   envoy:
     build:
