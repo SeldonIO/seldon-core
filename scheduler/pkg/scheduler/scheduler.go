@@ -105,7 +105,7 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 
 // TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
-	logger := s.logger.WithField("func", "scheduleToServer")
+	logger := s.logger.WithField("func", "scheduleToServer").WithField("model", modelName)
 	logger.Debugf("Schedule model %s", modelName)
 	s.store.LockModel(modelName)
 	defer s.store.UnlockModel(modelName)
