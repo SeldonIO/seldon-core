@@ -106,7 +106,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 // TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	logger := s.logger.WithField("func", "scheduleToServer").WithField("model", modelName)
-	logger.Debugf("Schedule model %s", modelName)
+	logger.Debug("Schedule model")
+
 	s.store.LockModel(modelName)
 	defer s.store.UnlockModel(modelName)
 
@@ -133,10 +134,10 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			server = latestModel.Server()
 		}
 
-		logger.Debugf("Model %s is deleted ensuring removed", modelName)
+		logger.Debug("Ensuring deleted model is removed", modelName)
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
-			logger.WithError(err).Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, server)
+			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
 		}
 	} else {
 		var debugTrail []string
@@ -152,11 +153,14 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
-		logger.Debugf("Model %s with desired replicas %d candidate servers %v", modelName, latestModel.DesiredReplicas(), filteredServers)
+		logger.
+			WithField("candidate servers", filteredServers).
+			WithField("desired replicas", latestModel.DesiredReplicas()).
+			Debug("Identified candidate servers for model")
 
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
-			logger.Debugf("Candidate server %s", candidateServer.Name)
+			logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
 			var candidateReplicas *sorters.CandidateServer
 
 			// we need a lock here, we could have many goroutines at sorting
@@ -173,7 +177,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			s.muSortAndUpdate.Unlock()
 
 			if err != nil {
-				logger.Warnf("Failed to update model replicas for model %s on server %s", modelName, candidateServer.Name)
+				logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
 			} else {
 				ok = true
 				break
