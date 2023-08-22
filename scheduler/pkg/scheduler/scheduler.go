@@ -246,25 +246,31 @@ func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer)
 // Filter servers for this model
 func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot, debugTrail []string) ([]*store.ServerSnapshot, []string) {
 	logger := s.logger.WithField("func", "filterServer")
+
 	var filteredServers []*store.ServerSnapshot
 	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
-				msg := fmt.Sprintf("failed server filter %s for server replica %s : %s",
+				msg := fmt.Sprintf(
+					"failed server filter %s for server replica %s : %s",
 					serverFilter.Name(),
 					server.Name,
-					serverFilter.Description(model, server))
+					serverFilter.Description(model, server),
+				)
 				logger.Debugf(msg)
 				debugTrail = append(debugTrail, msg)
+
 				ok = false
 				break
 			}
 		}
+
 		if ok {
 			filteredServers = append(filteredServers, server)
 		}
 	}
+
 	return filteredServers, debugTrail
 }
 
