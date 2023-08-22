@@ -118,6 +118,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	if model == nil {
 		return fmt.Errorf("Can't find model with key %s", modelName)
 	}
+
 	latestModel := model.GetLatest()
 	if latestModel == nil {
 		return fmt.Errorf("No latest model for %s", modelName)
@@ -131,25 +132,28 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		if latestModel.HasServer() {
 			server = latestModel.Server()
 		}
+
 		logger.Debugf("Model %s is deleted ensuring removed", modelName)
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
 			logger.WithError(err).Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, server)
 		}
-
 	} else {
 		var debugTrail []string
 		var filteredServers []*store.ServerSnapshot
+
 		// Get all servers
 		servers, err := s.store.GetServers(false, true)
 		if err != nil {
 			return err
 		}
+
 		// Filter and sort servers
 		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
 		logger.Debugf("Model %s with desired replicas %d candidate servers %v", modelName, latestModel.DesiredReplicas(), filteredServers)
+
 		// For each server filter and sort replicas and attempt schedule if enough replicas
 		for _, candidateServer := range filteredServers {
 			logger.Debugf("Candidate server %s", candidateServer.Name)
@@ -163,6 +167,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 				s.muSortAndUpdate.Unlock()
 				continue
 			}
+
 			s.sortReplicas(candidateReplicas)
 			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
 			s.muSortAndUpdate.Unlock()
@@ -174,6 +179,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 				break
 			}
 		}
+
 		if !ok {
 			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
 			// we do not want to reset the server if it has live replicas
