@@ -23,28 +23,48 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
-type RequirementsReplicaFilter struct{}
+type ServerRequirementFilter struct{}
 
-func (s RequirementsReplicaFilter) Name() string {
-	return "RequirementsReplicaFilter"
+func (s ServerRequirementFilter) Name() string {
+	return "ServerRequirementsFilter"
 }
 
-func (s RequirementsReplicaFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
-	for _, requirement := range model.GetRequirements() {
-		requirementFound := false
-		for _, capability := range replica.GetCapabilities() {
-			if strings.TrimSpace(requirement) == capability {
-				requirementFound = true
-				break
-			}
-		}
-		if !requirementFound {
+func (s ServerRequirementFilter) Filter(model *store.ModelVersion, server *store.ServerSnapshot) bool {
+	if len(server.Replicas) == 0 {
+		// Capabilities are currently stored on replicas, so no replicas means no capabilities can be determined.
+		return false
+	}
+
+	requirements := model.GetRequirements()
+	capabilities := server.Replicas[0].GetCapabilities()
+
+	for _, r := range requirements {
+		if !contains(capabilities, r) {
 			return false
 		}
 	}
+
 	return true
 }
 
-func (s RequirementsReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
-	return fmt.Sprintf("model requirements %v replica capabilities %v", model.GetRequirements(), replica.GetCapabilities())
+func contains(capabilities []string, requirement string) bool {
+	for _, c := range capabilities {
+		if c == strings.TrimSpace(requirement) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s ServerRequirementFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
+	requirements := model.GetRequirements()
+	capabilities := []string{}
+
+	replicas := server.Replicas
+	if len(replicas) > 0 {
+		capabilities = replicas[0].GetCapabilities()
+	}
+
+	return fmt.Sprintf("model requirements %v server capabilities %v", requirements, capabilities)
 }
