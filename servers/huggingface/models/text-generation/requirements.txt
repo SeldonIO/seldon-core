@@ -1,0 +1,3 @@
+seldon_core
+transformers >=4.30,<4.32
+tensorflow == 2.12.0
