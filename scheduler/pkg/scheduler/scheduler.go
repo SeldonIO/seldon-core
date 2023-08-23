@@ -139,62 +139,64 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		if err != nil {
 			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
 		}
-	} else {
-		var filteredServers []*store.ServerSnapshot
 
-		// Get all servers
-		servers, err := s.store.GetServers(false, true)
-		if err != nil {
-			return err
-		}
+		return nil
+	}
 
-		// Filter and sort servers
-		filteredServers = s.filterServers(latestModel, servers)
-		s.sortServers(latestModel, filteredServers)
-		ok := false
-		logger.
-			WithField("candidate_servers", filteredServers).
-			WithField("desired_replicas", latestModel.DesiredReplicas()).
-			Debug("Identified candidate servers for model")
+	var filteredServers []*store.ServerSnapshot
 
-		// For each server filter and sort replicas and attempt schedule if enough replicas
-		for _, candidateServer := range filteredServers {
-			logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
-			var candidateReplicas *sorters.CandidateServer
+	// Get all servers
+	servers, err := s.store.GetServers(false, true)
+	if err != nil {
+		return err
+	}
 
-			// we need a lock here, we could have many goroutines at sorting
-			// without the store being reflected and hence sorting on stale values
-			s.muSortAndUpdate.Lock()
-			candidateReplicas = s.filterReplicas(latestModel, candidateServer)
-			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
-				logger.
-					WithField("server", candidateServer.Name).
-					WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
-					WithField("desired_replicas", latestModel.DesiredReplicas()).
-					Debug("Skipping server due to insufficient available replicas")
+	// Filter and sort servers
+	filteredServers = s.filterServers(latestModel, servers)
+	s.sortServers(latestModel, filteredServers)
+	ok := false
+	logger.
+		WithField("candidate_servers", filteredServers).
+		WithField("desired_replicas", latestModel.DesiredReplicas()).
+		Debug("Identified candidate servers for model")
 
-				s.muSortAndUpdate.Unlock()
-				continue
-			}
+	// For each server filter and sort replicas and attempt schedule if enough replicas
+	for _, candidateServer := range filteredServers {
+		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
+		var candidateReplicas *sorters.CandidateServer
 
-			s.sortReplicas(candidateReplicas)
-			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+		// we need a lock here, we could have many goroutines at sorting
+		// without the store being reflected and hence sorting on stale values
+		s.muSortAndUpdate.Lock()
+		candidateReplicas = s.filterReplicas(latestModel, candidateServer)
+		if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
+			logger.
+				WithField("server", candidateServer.Name).
+				WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
+				WithField("desired_replicas", latestModel.DesiredReplicas()).
+				Debug("Skipping server due to insufficient available replicas")
+
 			s.muSortAndUpdate.Unlock()
-
-			if err != nil {
-				logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
-			} else {
-				ok = true
-				break
-			}
+			continue
 		}
 
-		if !ok {
-			failureErrMsg := fmt.Sprintf("failed to schedule model %s", modelName)
-			// we do not want to reset the server if it has live replicas
-			s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
-			return fmt.Errorf(failureErrMsg)
+		s.sortReplicas(candidateReplicas)
+		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+		s.muSortAndUpdate.Unlock()
+
+		if err != nil {
+			logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
+		} else {
+			ok = true
+			break
 		}
+	}
+
+	if !ok {
+		failureErrMsg := fmt.Sprintf("failed to schedule model %s", modelName)
+		// we do not want to reset the server if it has live replicas
+		s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
+		return fmt.Errorf(failureErrMsg)
 	}
 
 	//TODO Cleanup previous version if needed?
