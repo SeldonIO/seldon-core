@@ -182,7 +182,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 
 		s.sortReplicas(candidateReplicas)
-		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+		err = s.store.UpdateLoadedModels(
+			modelName,
+			latestModel.GetVersion(),
+			candidateServer.Name,
+			candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()],
+		)
 		s.muSortAndUpdate.Unlock()
 
 		if err != nil {
