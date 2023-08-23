@@ -154,8 +154,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		s.sortServers(latestModel, filteredServers)
 		ok := false
 		logger.
-			WithField("candidate servers", filteredServers).
-			WithField("desired replicas", latestModel.DesiredReplicas()).
+			WithField("candidate_servers", filteredServers).
+			WithField("desired_replicas", latestModel.DesiredReplicas()).
 			Debug("Identified candidate servers for model")
 
 		// For each server filter and sort replicas and attempt schedule if enough replicas
@@ -170,8 +170,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
 				logger.
 					WithField("server", candidateServer.Name).
-					WithField("available replicas", len(candidateReplicas.ChosenReplicas)).
-					WithField("desired replicas", latestModel.DesiredReplicas()).
+					WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
+					WithField("desired_replicas", latestModel.DesiredReplicas()).
 					Debug("Skipping server due to insufficient available replicas")
 
 				s.muSortAndUpdate.Unlock()
