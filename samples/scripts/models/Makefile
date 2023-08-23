@@ -48,8 +48,8 @@ text-generation-huggingface: env
 
 .PHONY: upload-text-generation-huggingface
 upload-text-generation-huggingface:
-	gsutil cp -r text-generation-huggingface/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/text-generation-huggingface/
-	gsutil cp text-generation-huggingface/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/text-generation-huggingface/
+	gsutil cp -r text-generation-huggingface/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/custom-text-generation-huggingface/
+	gsutil cp text-generation-huggingface/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/custom-text-generation-huggingface/
 
 #
 # movie sentiment SKLearn model
