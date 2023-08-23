@@ -183,7 +183,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 				WithField("server", candidateServer.Name).
 				WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
 				WithField("desired_replicas", latestModel.DesiredReplicas()).
-				Debug("Skipping server due to insufficient available replicas")
+				Debug("Skipping server due to insufficient suitable replicas")
 
 			s.muSortAndUpdate.Unlock()
 			continue
