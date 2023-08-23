@@ -17,6 +17,7 @@ limitations under the License.
 package scheduler
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -154,14 +155,21 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 
 	// Filter and sort servers
 	filteredServers = s.filterServers(latestModel, servers)
+	if len(filteredServers) == 0 {
+		logger.Debug("Failed to schedule model as no matching servers are available")
+		msg := fmt.Sprintf("Failed to schedule model %s as no matching servers are available", modelName)
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		return errors.New(msg)
+	}
+
 	s.sortServers(latestModel, filteredServers)
-	ok := false
 	logger.
 		WithField("candidate_servers", filteredServers).
 		WithField("desired_replicas", latestModel.DesiredReplicas()).
 		Debug("Identified candidate servers for model")
 
 	// For each server filter and sort replicas and attempt schedule if enough replicas
+	ok := false
 	for _, candidateServer := range filteredServers {
 		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
 		var candidateReplicas *sorters.CandidateServer
@@ -193,16 +201,18 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		if err != nil {
 			logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
 		} else {
+			logger.WithField("server", candidateServer.Name).Debug("Scheduled model onto server")
 			ok = true
 			break
 		}
 	}
 
 	if !ok {
-		failureErrMsg := fmt.Sprintf("failed to schedule model %s", modelName)
+		logger.Debug("Failed to schedule model as no matching server had enough suitable replicas")
+		msg := fmt.Sprintf("Failed to schedule model %s as no matching server had enough suitable replicas", modelName)
 		// we do not want to reset the server if it has live replicas
-		s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
-		return fmt.Errorf(failureErrMsg)
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		return errors.New(msg)
 	}
 
 	//TODO Cleanup previous version if needed?
