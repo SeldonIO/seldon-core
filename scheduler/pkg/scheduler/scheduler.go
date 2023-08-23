@@ -251,20 +251,26 @@ func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer)
 
 // Filter servers for this model
 func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot, debugTrail []string) ([]*store.ServerSnapshot, []string) {
-	logger := s.logger.WithField("func", "filterServer")
+	logger := s.logger.WithField("func", "filterServer").WithField("model", model.GetMeta().GetName())
+	logger.WithField("num_servers", len(servers)).Debug("Filtering servers for model")
 
 	var filteredServers []*store.ServerSnapshot
 	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
+				logger.
+					WithField("filter", serverFilter.Name()).
+					WithField("server", server.Name).
+					WithField("reason", serverFilter.Description(model, server)).
+					Debug("Rejecting server for model")
+
 				msg := fmt.Sprintf(
 					"failed server filter %s for server replica %s : %s",
 					serverFilter.Name(),
 					server.Name,
 					serverFilter.Description(model, server),
 				)
-				logger.Debugf(msg)
 				debugTrail = append(debugTrail, msg)
 
 				ok = false
@@ -273,6 +279,7 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 		}
 
 		if ok {
+			logger.WithField("server", server.Name).Debug("Accepting server for model")
 			filteredServers = append(filteredServers, server)
 		}
 	}
@@ -281,26 +288,40 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 }
 
 func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot, debugTrail []string) (*sorters.CandidateServer, []string) {
-	logger := s.logger.WithField("func", "filterReplicas")
+	logger := s.logger.
+		WithField("func", "filterReplicas").
+		WithField("model", model.GetMeta().GetName()).
+		WithField("server", server.Name)
+	logger.Debug("Filtering server replicas for model")
+
 	candidateServer := sorters.CandidateServer{Model: model, Server: server}
 	for _, replica := range server.Replicas {
 		ok := true
 		for _, replicaFilter := range s.replicaFilters {
 			if !replicaFilter.Filter(model, replica) {
+				logger.
+					WithField("filter", replicaFilter.Name()).
+					WithField("replica", replica.GetReplicaIdx()).
+					WithField("reason", replicaFilter.Description(model, replica)).
+					Debug("Rejecting server replica for model")
+
 				msg := fmt.Sprintf("failed replica filter %s for server replica %s:%d : %s",
 					replicaFilter.Name(),
 					server.Name,
 					replica.GetReplicaIdx(),
 					replicaFilter.Description(model, replica))
-				logger.Debugf(msg)
 				debugTrail = append(debugTrail, msg)
+
 				ok = false
 				break
 			}
 		}
+
 		if ok {
+			logger.WithField("replica", replica.GetReplicaIdx()).Debug("Accepting server replica for model")
 			candidateServer.ChosenReplicas = append(candidateServer.ChosenReplicas, replica)
 		}
 	}
+
 	return &candidateServer, debugTrail
 }
