@@ -100,7 +100,7 @@ func NewOAUTHStore(opt ...OAUTHStoreOption) (OAUTHStore, error) {
 		if !ok {
 			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAUTH secret", envNamespace)
 		}
-		ps, err := NewOAUTHSecretHandler(secretName, opts.clientset, namespace, opts.prefix, opts.locationSuffix, logger)
+		ps, err := NewOAUTHSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
 		if err != nil {
 			return nil, err
 		}

@@ -41,7 +41,7 @@ type OAUTHSecretHandler struct {
 	oauthConfig OAUTHConfig
 }
 
-func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, locationSuffix string, logger log.FieldLogger) (*OAUTHSecretHandler, error) {
+func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, logger log.FieldLogger) (*OAUTHSecretHandler, error) {
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
