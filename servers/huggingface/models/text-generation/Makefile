@@ -13,4 +13,4 @@ train:
 	.env/bin/python train.py
 
 upload:
-	gsutil cp -r text-generation-model-artefacts/* gs://seldon-models/v${VERSION}/huggingface/text-generation/
+	gsutil cp -r text-generation-model-artefacts/* gs://seldon-models/v${VERSION}/huggingface/custom-text-generation/
