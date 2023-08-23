@@ -47,7 +47,7 @@ seldon model infer text-gen \
 {
 	"model_name": "text-gen_1",
 	"model_version": "1",
-	"id": "bde3e68b-2710-4763-828c-21e58416b45c",
+	"id": "95270c33-e2e3-4799-b243-06e834e730b8",
 	"parameters": {},
 	"outputs": [
 		{
@@ -58,10 +58,10 @@ seldon model infer text-gen \
 			],
 			"datatype": "BYTES",
 			"parameters": {
-				"content_type": "str"
+				"content_type": "hg_jsonlist"
 			},
 			"data": [
-				"[{\"generated_text\": \"Once upon a time in a galaxy far away, you can see the galaxy and the universe together.\\n\\n\\n\\nIn the same space as Earth, there are two locations (including Earth) or regions. These regions are located on both of the\"}]"
+				"{\"generated_text\": \"Once upon a time in a galaxy far away?\\nI hope the experience will be filled with awe and excitement for our current hero's creation. I would love for you to give you an opportunity to enjoy the game and share some of the gameplay ideas\"}"
 			]
 		}
 	]
@@ -82,7 +82,7 @@ base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
 ```
 
 ```
-b'[{"generated_text": "Once upon a time\\n\\n\\nThe Great Depression was a devastating economic collapse. The depression was not only due to soaring interest rates, but to an epidemic of illegal foreign trade. It was the worst recession of all time because of the government\'s actions"}]'
+b'{"generated_text": "Once upon a time\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n"}'
 
 ```
 
@@ -92,11 +92,95 @@ Unload the model
 seldon model unload text-gen
 ```
 
+### Custom Text Generation Model
+
+```bash
+cat ./models/hf-custom-text-gen.yaml
+```
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: custom-text-gen
+spec:
+  storageUri: "gs://viktor-models/scv2/samples/mlserver_1.3.5/text-generation-huggingface"  # change bucket name
+  requirements:
+    - huggingface
+  memory: 3Gi
+
+```
+
+Load the model
+
+```bash
+seldon model load -f ./models/hf-custom-text-gen.yaml
+```
+
 ```json
 {}
 
 ```
 
-```python
+```bash
+seldon model status custom-text-gen -w ModelAvailable | jq -M .
+```
 
+```json
+{}
+
+```
+
+```bash
+seldon model infer custom-text-gen \
+  '{"inputs": [{"name": "args","shape": [1],"datatype": "BYTES","data": ["Once upon a time in a galaxy far away"]}]}'
+```
+
+```json
+{
+	"model_name": "custom-text-gen_1",
+	"model_version": "1",
+	"id": "726a4b73-25b6-4f6c-8473-02ab5eaa72fd",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "output",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "BYTES",
+			"parameters": {
+				"content_type": "hg_jsonlist"
+			},
+			"data": [
+				"{\"generated_text\": \"Once upon a time in a galaxy far away that the vast majority of our current civilization is of the same technological, racial, and culture, humanity may have found a way out of those limitations. This may be where the future is not at stake.\"}"
+			]
+		}
+	]
+}
+
+```
+
+```python
+res = !seldon model infer custom-text-gen --inference-mode grpc \
+   '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZQo="]},"datatype":"BYTES","shape":[1]}]}'
+```
+
+```python
+import json
+import base64
+r = json.loads(res[0])
+base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
+```
+
+```
+b'{"generated_text": "Once upon a time\\n\\nIn the past, there were certain classes of adventurers and travelers, who sought to enter a single location and do one thing a little different than everybody else. Then there were those who were good folk, and those who had"}'
+
+```
+
+Unload the model
+
+```bash
+seldon model unload custom-text-gen
 ```
