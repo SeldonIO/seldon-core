@@ -5,10 +5,10 @@ TRITON_VERSION=$(shell grep 'nvidia/tritonserver' ../../../scheduler/Makefile | 
 TRITON_FOLDER=triton_${TRITON_VERSION}
 
 .PHONY: train-all
-train-all: iris moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
+train-all: iris text-generation-huggingface moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
 
 .PHONY: upload-all
-upload-all: upload-iris upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
+upload-all: upload-iris upload-text-generation-huggingface upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
 
 .PHONY: env
 env:
@@ -20,6 +20,7 @@ env:
 		mlserver-mlflow==${MLSERVER_VERSION} \
 		mlserver-lightgbm==${MLSERVER_VERSION} \
 		mlserver-alibi-explain==${MLSERVER_VERSION} \
+		mlserver-huggingface==${MLSERVER_VERSION} \
 		requests
 	wget https://raw.githubusercontent.com/pytorch/examples/main/mnist/requirements.txt -O mnist-pytorch/requirements.txt
 	.env/bin/pip install -r mnist-pytorch/requirements.txt
@@ -35,6 +36,20 @@ iris: env
 .PHONY: upload-iris
 upload-iris:
 	gsutil cp iris/model.joblib gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/iris-sklearn/model.joblib
+
+#
+# HuggingFace text-generation model
+#
+
+.PHONY: text-generation-huggingface
+text-generation-huggingface: env
+	cd text-generation-huggingface && ../.env/bin/python3 train.py
+
+
+.PHONY: upload-text-generation-huggingface
+upload-text-generation-huggingface:
+	gsutil cp -r text-generation-huggingface/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/text-generation-huggingface/
+	gsutil cp text-generation-huggingface/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/text-generation-huggingface/
 
 #
 # movie sentiment SKLearn model
