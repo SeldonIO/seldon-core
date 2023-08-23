@@ -140,7 +140,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
 		}
 	} else {
-		var debugTrail []string
 		var filteredServers []*store.ServerSnapshot
 
 		// Get all servers
@@ -150,7 +149,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 
 		// Filter and sort servers
-		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
+		filteredServers = s.filterServers(latestModel, servers)
 		s.sortServers(latestModel, filteredServers)
 		ok := false
 		logger.
@@ -166,7 +165,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			// we need a lock here, we could have many goroutines at sorting
 			// without the store being reflected and hence sorting on stale values
 			s.muSortAndUpdate.Lock()
-			candidateReplicas, debugTrail = s.filterReplicas(latestModel, candidateServer, debugTrail)
+			candidateReplicas = s.filterReplicas(latestModel, candidateServer)
 			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
 				logger.
 					WithField("server", candidateServer.Name).
@@ -191,7 +190,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 
 		if !ok {
-			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
+			failureErrMsg := fmt.Sprintf("failed to schedule model %s", modelName)
 			// we do not want to reset the server if it has live replicas
 			s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
 			return fmt.Errorf(failureErrMsg)
@@ -250,7 +249,7 @@ func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer)
 }
 
 // Filter servers for this model
-func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot, debugTrail []string) ([]*store.ServerSnapshot, []string) {
+func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot) []*store.ServerSnapshot {
 	logger := s.logger.WithField("func", "filterServer").WithField("model", model.GetMeta().GetName())
 	logger.WithField("num_servers", len(servers)).Debug("Filtering servers for model")
 
@@ -265,14 +264,6 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 					WithField("reason", serverFilter.Description(model, server)).
 					Debug("Rejecting server for model")
 
-				msg := fmt.Sprintf(
-					"failed server filter %s for server replica %s : %s",
-					serverFilter.Name(),
-					server.Name,
-					serverFilter.Description(model, server),
-				)
-				debugTrail = append(debugTrail, msg)
-
 				ok = false
 				break
 			}
@@ -284,10 +275,10 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 		}
 	}
 
-	return filteredServers, debugTrail
+	return filteredServers
 }
 
-func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot, debugTrail []string) (*sorters.CandidateServer, []string) {
+func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot) *sorters.CandidateServer {
 	logger := s.logger.
 		WithField("func", "filterReplicas").
 		WithField("model", model.GetMeta().GetName()).
@@ -305,13 +296,6 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 					WithField("reason", replicaFilter.Description(model, replica)).
 					Debug("Rejecting server replica for model")
 
-				msg := fmt.Sprintf("failed replica filter %s for server replica %s:%d : %s",
-					replicaFilter.Name(),
-					server.Name,
-					replica.GetReplicaIdx(),
-					replicaFilter.Description(model, replica))
-				debugTrail = append(debugTrail, msg)
-
 				ok = false
 				break
 			}
@@ -323,5 +307,5 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 		}
 	}
 
-	return &candidateServer, debugTrail
+	return &candidateServer
 }
