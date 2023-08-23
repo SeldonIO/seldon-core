@@ -8,12 +8,13 @@ We also support the high performance optimizations provided by the [Transformer 
 
 The parameters that are available for you to configure include:
 
-| Name | Description |
-| ---- | ----------- |
-| `task` | The transformer pipeline task |
-| `pretrained_model` | The name of the pretrained model in the Hub |
+| Name                   | Description                                                         |
+|------------------------|---------------------------------------------------------------------|
+| `modelUri`             | The artefacts location of a custom HuggingFace model                |
+| `task`                 | The transformer pipeline task                                       |
+| `pretrained_model`     | The name of the pretrained model in the Hub                         |
 | `pretrained_tokenizer` | Transformer name in Hub if different to the one provided with model |
-| `optimum_model` | Boolean to enable loading model with Optimum framework |
+| `optimum_model`        | Boolean to enable loading model with Optimum framework              |
 
 ## Simple Example
 
@@ -43,7 +44,7 @@ spec:
 
 ## Quantized & Optimized Models with Optimum
 
-You can deploy a HuggingFace model loaded using the Optimum library by using the `optimum_model` parameter
+You can deploy a HuggingFace model loaded using the Optimum library by using the `optimum_model` parameter.
 
 ```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
@@ -70,3 +71,37 @@ spec:
     replicas: 1
 ```
 
+## Custom Model Example
+
+You can deploy a custom HuggingFace model by providing the location of the model artefacts using the `modelUri` parameter.
+
+```yaml
+apiVersion: machinelearning.seldon.io/v1alpha2
+kind: SeldonDeployment
+metadata:
+  name: custom-gpt2-model
+spec:
+  protocol: v2
+  predictors:
+  - graph:
+      name: transformer
+      implementation: HUGGINGFACE_SERVER
+      modelUri: gs://viktor-models/v1.18.0-dev/huggingface/custom-text-generation  # change bucket name
+      parameters:
+      - name: task
+        type: STRING
+        value: text-generation
+    componentSpecs:
+      - spec:
+          containers:
+            - name: transformer
+              resources:
+                limits:
+                  cpu: 1
+                  memory: 4Gi
+                requests:
+                  cpu: 100m
+                  memory: 3Gi
+    name: default
+    replicas: 1
+```
