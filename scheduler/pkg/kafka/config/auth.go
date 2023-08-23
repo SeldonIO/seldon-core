@@ -21,18 +21,19 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/oauth"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config/oauth"
 )
 
 const (
-	EnvKafkaClientPrefix      = "KAFKA_CLIENT"
-	EnvKafkaBrokerPrefix      = "KAFKA_BROKER"
-	EnvSASLUsernameSuffix     = "_SASL_USERNAME"
-	EnvPasswordLocationSuffix = "_SASL_PASSWORD_LOCATION"
-	DefaultSASLUsername       = "seldon"
+	EnvKafkaClientPrefix         = "KAFKA_CLIENT"
+	EnvKafkaBrokerPrefix         = "KAFKA_BROKER"
+	EnvSASLUsernameSuffix        = "_SASL_USERNAME"
+	EnvPasswordLocationSuffix    = "_SASL_PASSWORD_LOCATION"
+	EnvOAUTHConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
+	DefaultSASLUsername          = "seldon"
 )
 
 func AddKafkaSSLOptions(config kafka.ConfigMap) error {
@@ -118,7 +119,7 @@ func configureSASLSSLOAUTHBEARER(mechanism string, config kafka.ConfigMap) error
 	// Set OAUTH Configuration
 	oauthStore, err := oauth.NewOAUTHStore(
 		oauth.Prefix(EnvKafkaClientPrefix),
-		oauth.LocationSuffix(EnvPasswordLocationSuffix),
+		oauth.LocationSuffix(EnvOAUTHConfigLocationSuffix),
 	)
 	if err != nil {
 		return err
