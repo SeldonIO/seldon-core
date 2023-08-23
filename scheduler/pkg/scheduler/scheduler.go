@@ -143,6 +143,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return nil
 	}
 
+	// Model needs to be (re)scheduled
 	var filteredServers []*store.ServerSnapshot
 
 	// Get all servers
