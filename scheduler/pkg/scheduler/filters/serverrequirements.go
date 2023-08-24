@@ -59,12 +59,12 @@ func contains(capabilities []string, requirement string) bool {
 
 func (s ServerRequirementFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
 	requirements := model.GetRequirements()
-	capabilities := []string{}
 
 	replicas := server.Replicas
-	if len(replicas) > 0 {
-		capabilities = replicas[0].GetCapabilities()
+	if len(replicas) == 0 {
+		return fmt.Sprintf("model requirements %v, server capabilities unknown", requirements)
 	}
 
-	return fmt.Sprintf("model requirements %v server capabilities %v", requirements, capabilities)
+	capabilities := replicas[0].GetCapabilities()
+	return fmt.Sprintf("model requirements %v, server capabilities %v", requirements, capabilities)
 }
