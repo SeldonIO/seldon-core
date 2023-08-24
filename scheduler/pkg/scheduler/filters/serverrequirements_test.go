@@ -63,6 +63,7 @@ func TestServerRequirementFilter(t *testing.T) {
 	}
 
 	tests := []test{
+		{name: "NoReplicas", model: makeModel([]string{"sklearn"}), server: makeServer(0, []string{}), expected: false},
 		{name: "Match", model: makeModel([]string{"sklearn"}), server: makeServer(1, []string{"sklearn"}), expected: true},
 		{name: "Mismatch", model: makeModel([]string{"sklearn"}), server: makeServer(1, []string{"xgboost"}), expected: false},
 		{name: "PartialMatch", model: makeModel([]string{"sklearn", "xgboost"}), server: makeServer(1, []string{"xgboost"}), expected: false},
