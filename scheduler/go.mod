@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/OneOfOne/xxhash v1.2.8
 	github.com/cenkalti/backoff/v4 v4.1.2
-	github.com/confluentinc/confluent-kafka-go v1.9.1
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/envoyproxy/go-control-plane v0.11.1
 	github.com/fsnotify/fsnotify v1.5.1
