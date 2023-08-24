@@ -1,4 +1,4 @@
-models: mlflowserver-models sklearnserver-models
+models: mlflowserver-models sklearnserver-models huggingface-models
 
 
 mlflowserver-models:
@@ -8,3 +8,7 @@ mlflowserver-models:
 sklearnserver-models:
 	make -C sklearnserver/models/iris
 	make -C sklearnserver/models/moviesentiment
+
+
+huggingface-models:
+	make -C huggingface/models/text-generation
