@@ -31,12 +31,22 @@ func TestServerRequirementFilter(t *testing.T) {
 
 	makeModel := func(requirements []string) *store.ModelVersion {
 		return store.NewModelVersion(
-			&pb.Model{ModelSpec: &pb.ModelSpec{Requirements: requirements}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+			&pb.Model{
+				ModelSpec: &pb.ModelSpec{
+					Requirements: requirements,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{
+					Replicas: 1,
+				},
+			},
 			1,
 			"server",
-			map[int]store.ReplicaStatus{3: {State: store.Loading}},
+			map[int]store.ReplicaStatus{
+				3: {State: store.Loading},
+			},
 			false,
-			store.ModelProgressing)
+			store.ModelProgressing,
+		)
 	}
 
 	makeServerReplica := func(server *store.Server, capabilities []string) *store.ServerReplica {
