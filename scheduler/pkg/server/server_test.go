@@ -53,7 +53,7 @@ func TestLoadModel(t *testing.T) {
 
 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
 		logger := log.New()
-		log.SetLevel(log.DebugLevel)
+		logger.SetLevel(log.DebugLevel)
 
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
