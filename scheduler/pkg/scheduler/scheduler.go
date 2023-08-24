@@ -18,7 +18,6 @@ package scheduler
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -118,12 +117,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return err
 	}
 	if model == nil {
-		return fmt.Errorf("Can't find model with key %s", modelName)
+		return errors.New("Unable to find model")
 	}
 
 	latestModel := model.GetLatest()
 	if latestModel == nil {
-		return fmt.Errorf("No latest model for %s", modelName)
+		return errors.New("Unable to find latest version for model")
 	}
 
 	if model.Deleted {
@@ -156,8 +155,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	// Filter and sort servers
 	filteredServers = s.filterServers(latestModel, servers)
 	if len(filteredServers) == 0 {
-		logger.Debug("Failed to schedule model as no matching servers are available")
-		msg := fmt.Sprintf("Failed to schedule model %s as no matching servers are available", modelName)
+		msg := "Failed to schedule model as no matching servers are available"
+		logger.Debug(msg)
 		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
 		return errors.New(msg)
 	}
@@ -208,8 +207,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	if !ok {
-		logger.Debug("Failed to schedule model as no matching server had enough suitable replicas")
-		msg := fmt.Sprintf("Failed to schedule model %s as no matching server had enough suitable replicas", modelName)
+		msg := "Failed to schedule model as no matching server had enough suitable replicas"
+		logger.Debug(msg)
 		// we do not want to reset the server if it has live replicas
 		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
 		return errors.New(msg)
