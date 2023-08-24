@@ -300,15 +300,20 @@ func TestLoadModel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			// Given
 			s, _ := createTestScheduler()
 			for _, repReq := range test.req {
 				err := s.modelStore.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
 			}
+
+			// When
 			lm := pb.LoadModelRequest{
 				Model: test.model,
 			}
 			r, err := s.LoadModel(context.Background(), &lm)
+
+			// Then
 			if test.code != codes.OK {
 				g.Expect(err).ToNot(BeNil())
 				e, ok := status.FromError(err)
