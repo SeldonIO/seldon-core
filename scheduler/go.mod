@@ -9,6 +9,7 @@ require (
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/envoyproxy/go-control-plane v0.11.1
 	github.com/fsnotify/fsnotify v1.5.1
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.5.9
