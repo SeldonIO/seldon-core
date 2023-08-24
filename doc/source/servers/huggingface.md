@@ -10,7 +10,6 @@ The parameters that are available for you to configure include:
 
 | Name                   | Description                                                         |
 |------------------------|---------------------------------------------------------------------|
-| `modelUri`             | The artefacts location of a custom HuggingFace model                |
 | `task`                 | The transformer pipeline task                                       |
 | `pretrained_model`     | The name of the pretrained model in the Hub                         |
 | `pretrained_tokenizer` | Transformer name in Hub if different to the one provided with model |
@@ -73,7 +72,7 @@ spec:
 
 ## Custom Model Example
 
-You can deploy a custom HuggingFace model by providing the location of the model artefacts using the `modelUri` parameter.
+You can deploy a custom HuggingFace model by providing the location of the model artefacts using the `modelUri` field.
 
 ```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
