@@ -276,7 +276,7 @@ func TestLoadModel(t *testing.T) {
 					ServerName:           "server1",
 					ReplicaIdx:           1,
 					Shared:               true,
-					AvailableMemoryBytes: 1000,
+					AvailableMemoryBytes: 0,
 					ReplicaConfig: &pba.ReplicaConfig{
 						InferenceSvc:      "server1",
 						InferenceHttpPort: 1,
