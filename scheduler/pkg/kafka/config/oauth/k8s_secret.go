@@ -91,6 +91,13 @@ func (s *OAUTHSecretHandler) saveOAUTHFromSecret(secret *corev1.Secret) error {
 	}
 	s.oauthConfig.ClientSecret = string(clientSecret)
 
+	// Read and Save oauthbearer scope
+	scope, ok := secret.Data[SecretKeyScope]
+	if !ok {
+		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyScope, secret.Name)
+	}
+	s.oauthConfig.Scope = string(scope)
+
 	// Read and Save oauthbearer token endpoint url
 	tokenEndpointURL, ok := secret.Data[SecretKeyTokenEndpointURL]
 	if !ok {

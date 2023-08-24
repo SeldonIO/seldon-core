@@ -131,6 +131,7 @@ func configureSASLSSLOAUTHBEARER(mechanism string, config kafka.ConfigMap) error
 	config["sasl.oauthbearer.method"] = oauthConfig.Method
 	config["sasl.oauthbearer.client.id"] = oauthConfig.ClientID
 	config["sasl.oauthbearer.client.secret"] = oauthConfig.ClientSecret
+	config["sasl.oauthbearer.scope"] = oauthConfig.Scope
 	config["sasl.oauthbearer.token.endpoint.url"] = oauthConfig.TokenEndpointURL
 	config["sasl.oauthbearer.extensions"] = oauthConfig.Extensions
 

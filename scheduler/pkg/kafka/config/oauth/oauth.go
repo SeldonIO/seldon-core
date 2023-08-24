@@ -20,6 +20,7 @@ const (
 	SecretKeyMethod           = "method"
 	SecretKeyClientID         = "client_id"
 	SecretKeyClientSecret     = "client_secret"
+	SecretKeyScope            = "scope"
 	SecretKeyTokenEndpointURL = "token_endpoint_url"
 	SecretKeyExtensions       = "extensions"
 )
@@ -28,6 +29,7 @@ type OAUTHConfig struct {
 	Method           string
 	ClientID         string
 	ClientSecret     string
+	Scope            string
 	TokenEndpointURL string
 	Extensions       string
 }

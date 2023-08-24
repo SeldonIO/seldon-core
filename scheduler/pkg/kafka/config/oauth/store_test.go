@@ -77,6 +77,7 @@ func TestNewOAUTHStoreWithSecret(t *testing.T) {
 	g.Expect(oauthConfig.Method).To(Equal("OIDC"))
 	g.Expect(oauthConfig.ClientID).To(Equal("test-client-id"))
 	g.Expect(oauthConfig.ClientSecret).To(Equal("test-client-secret"))
+	g.Expect(oauthConfig.Scope).To(Equal("test scope"))
 	g.Expect(oauthConfig.TokenEndpointURL).To(Equal("https://keycloak.example.com/auth/realms/example-realm/protocol/openid-connect/token"))
 	g.Expect(oauthConfig.Extensions).To(Equal("logicalCluster=logic-1234,identityPoolId=pool-1234"))
 
