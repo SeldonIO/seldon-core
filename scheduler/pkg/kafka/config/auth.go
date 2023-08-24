@@ -24,6 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config/oauth"
 )
 
