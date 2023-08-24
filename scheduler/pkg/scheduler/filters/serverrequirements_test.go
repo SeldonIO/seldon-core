@@ -99,6 +99,18 @@ func TestServerRequirementFilter(t *testing.T) {
 			server:   makeServer(1, []string{"xgboost", "sklearn", "tensorflow"}),
 			expected: true,
 		},
+		{
+			name:     "MultipleReplicasMatch",
+			model:    makeModel([]string{"sklearn"}),
+			server:   makeServer(2, []string{"xgboost", "sklearn", "tensorflow"}),
+			expected: true,
+		},
+		{
+			name:     "MultipleReplicasMismatch",
+			model:    makeModel([]string{"sklearn"}),
+			server:   makeServer(2, []string{"xgboost"}),
+			expected: false,
+		},
 	}
 
 	for _, test := range tests {
