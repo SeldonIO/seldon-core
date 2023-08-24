@@ -135,7 +135,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			server = latestModel.Server()
 		}
 
-		logger.Debug("Ensuring deleted model is removed", modelName)
+		logger.Debug("Ensuring deleted model is removed")
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
 			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
