@@ -220,7 +220,7 @@ func TestScheduler(t *testing.T) {
 					Name: "server2",
 					Replicas: map[int]*store.ServerReplica{
 						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false),
-						1: gsr(1, 200, []string{"foo"}, "server2", true, false),
+						1: gsr(1, 0, []string{"sklearn"}, "server2", true, false),
 					},
 					Shared:           true,
 					ExpectedReplicas: -1,

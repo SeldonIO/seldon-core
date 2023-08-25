@@ -17,7 +17,7 @@ limitations under the License.
 package scheduler
 
 import (
-	"fmt"
+	"errors"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,8 +46,8 @@ type SchedulerConfig struct {
 
 func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
-		serverFilters:  []filters.ServerFilter{filters.ServerReplicaFilter{}, filters.SharingServerFilter{}, filters.DeletedServerFilter{}},
-		replicaFilters: []filters.ReplicaFilter{filters.RequirementsReplicaFilter{}, filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}, filters.ReplicaDrainingFilter{}},
+		serverFilters:  []filters.ServerFilter{filters.ServerReplicaFilter{}, filters.SharingServerFilter{}, filters.DeletedServerFilter{}, filters.ServerRequirementFilter{}},
+		replicaFilters: []filters.ReplicaFilter{filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}, filters.ReplicaDrainingFilter{}},
 		serverSorts:    []sorters.ServerSorter{},
 		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}
@@ -105,8 +105,9 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 
 // TODO - clarify non shared models should not be scheduled
 func (s *SimpleScheduler) scheduleToServer(modelName string) error {
-	logger := s.logger.WithField("func", "scheduleToServer")
-	logger.Debugf("Schedule model %s", modelName)
+	logger := s.logger.WithField("func", "scheduleToServer").WithField("model", modelName)
+	logger.Debug("Schedule model")
+
 	s.store.LockModel(modelName)
 	defer s.store.UnlockModel(modelName)
 
@@ -116,11 +117,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return err
 	}
 	if model == nil {
-		return fmt.Errorf("Can't find model with key %s", modelName)
+		return errors.New("Unable to find model")
 	}
+
 	latestModel := model.GetLatest()
 	if latestModel == nil {
-		return fmt.Errorf("No latest model for %s", modelName)
+		return errors.New("Unable to find latest version for model")
 	}
 
 	if model.Deleted {
@@ -131,55 +133,85 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		if latestModel.HasServer() {
 			server = latestModel.Server()
 		}
-		logger.Debugf("Model %s is deleted ensuring removed", modelName)
+
+		logger.Debug("Ensuring deleted model is removed")
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
-			logger.WithError(err).Warnf("Failed to unschedule model replicas for model %s on server %s", modelName, server)
+			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
 		}
 
-	} else {
-		var debugTrail []string
-		var filteredServers []*store.ServerSnapshot
-		// Get all servers
-		servers, err := s.store.GetServers(false, true)
-		if err != nil {
-			return err
-		}
-		// Filter and sort servers
-		filteredServers, debugTrail = s.filterServers(latestModel, servers, debugTrail)
-		s.sortServers(latestModel, filteredServers)
-		ok := false
-		logger.Debugf("Model %s with desired replicas %d candidate servers %v", modelName, latestModel.DesiredReplicas(), filteredServers)
-		// For each server filter and sort replicas and attempt schedule if enough replicas
-		for _, candidateServer := range filteredServers {
-			logger.Debugf("Candidate server %s", candidateServer.Name)
-			var candidateReplicas *sorters.CandidateServer
+		return nil
+	}
 
-			// we need a lock here, we could have many goroutines at sorting
-			// without the store being reflected and hence sorting on stale values
-			s.muSortAndUpdate.Lock()
-			candidateReplicas, debugTrail = s.filterReplicas(latestModel, candidateServer, debugTrail)
-			if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
-				s.muSortAndUpdate.Unlock()
-				continue
-			}
-			s.sortReplicas(candidateReplicas)
-			err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), candidateServer.Name, candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()])
+	// Model needs to be (re)scheduled
+	var filteredServers []*store.ServerSnapshot
+
+	// Get all servers
+	servers, err := s.store.GetServers(false, true)
+	if err != nil {
+		return err
+	}
+
+	// Filter and sort servers
+	filteredServers = s.filterServers(latestModel, servers)
+	if len(filteredServers) == 0 {
+		msg := "Failed to schedule model as no matching servers are available"
+		logger.Debug(msg)
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		return errors.New(msg)
+	}
+
+	s.sortServers(latestModel, filteredServers)
+	logger.
+		WithField("candidate_servers", filteredServers).
+		WithField("desired_replicas", latestModel.DesiredReplicas()).
+		Debug("Identified candidate servers for model")
+
+	// For each server filter and sort replicas and attempt schedule if enough replicas
+	ok := false
+	for _, candidateServer := range filteredServers {
+		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
+		var candidateReplicas *sorters.CandidateServer
+
+		// we need a lock here, we could have many goroutines at sorting
+		// without the store being reflected and hence sorting on stale values
+		s.muSortAndUpdate.Lock()
+		candidateReplicas = s.filterReplicas(latestModel, candidateServer)
+		if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
+			logger.
+				WithField("server", candidateServer.Name).
+				WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
+				WithField("desired_replicas", latestModel.DesiredReplicas()).
+				Debug("Skipping server due to insufficient suitable replicas")
+
 			s.muSortAndUpdate.Unlock()
+			continue
+		}
 
-			if err != nil {
-				logger.Warnf("Failed to update model replicas for model %s on server %s", modelName, candidateServer.Name)
-			} else {
-				ok = true
-				break
-			}
+		s.sortReplicas(candidateReplicas)
+		err = s.store.UpdateLoadedModels(
+			modelName,
+			latestModel.GetVersion(),
+			candidateServer.Name,
+			candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()],
+		)
+		s.muSortAndUpdate.Unlock()
+
+		if err != nil {
+			logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
+		} else {
+			logger.WithField("server", candidateServer.Name).Debug("Scheduled model onto server")
+			ok = true
+			break
 		}
-		if !ok {
-			failureErrMsg := fmt.Sprintf("failed to schedule model %s. %v", modelName, debugTrail)
-			// we do not want to reset the server if it has live replicas
-			s.store.FailedScheduling(latestModel, failureErrMsg, !latestModel.HasLiveReplicas())
-			return fmt.Errorf(failureErrMsg)
-		}
+	}
+
+	if !ok {
+		msg := "Failed to schedule model as no matching server had enough suitable replicas"
+		logger.Debug(msg)
+		// we do not want to reset the server if it has live replicas
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		return errors.New(msg)
 	}
 
 	//TODO Cleanup previous version if needed?
@@ -234,51 +266,63 @@ func (s *SimpleScheduler) sortReplicas(candidateServer *sorters.CandidateServer)
 }
 
 // Filter servers for this model
-func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot, debugTrail []string) ([]*store.ServerSnapshot, []string) {
-	logger := s.logger.WithField("func", "filterServer")
+func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*store.ServerSnapshot) []*store.ServerSnapshot {
+	logger := s.logger.WithField("func", "filterServer").WithField("model", model.GetMeta().GetName())
+	logger.WithField("num_servers", len(servers)).Debug("Filtering servers for model")
+
 	var filteredServers []*store.ServerSnapshot
 	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
-				msg := fmt.Sprintf("failed server filter %s for server replica %s : %s",
-					serverFilter.Name(),
-					server.Name,
-					serverFilter.Description(model, server))
-				logger.Debugf(msg)
-				debugTrail = append(debugTrail, msg)
+				logger.
+					WithField("filter", serverFilter.Name()).
+					WithField("server", server.Name).
+					WithField("reason", serverFilter.Description(model, server)).
+					Debug("Rejecting server for model")
+
 				ok = false
 				break
 			}
 		}
+
 		if ok {
+			logger.WithField("server", server.Name).Debug("Accepting server for model")
 			filteredServers = append(filteredServers, server)
 		}
 	}
-	return filteredServers, debugTrail
+
+	return filteredServers
 }
 
-func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot, debugTrail []string) (*sorters.CandidateServer, []string) {
-	logger := s.logger.WithField("func", "filterReplicas")
+func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *store.ServerSnapshot) *sorters.CandidateServer {
+	logger := s.logger.
+		WithField("func", "filterReplicas").
+		WithField("model", model.GetMeta().GetName()).
+		WithField("server", server.Name)
+	logger.Debug("Filtering server replicas for model")
+
 	candidateServer := sorters.CandidateServer{Model: model, Server: server}
 	for _, replica := range server.Replicas {
 		ok := true
 		for _, replicaFilter := range s.replicaFilters {
 			if !replicaFilter.Filter(model, replica) {
-				msg := fmt.Sprintf("failed replica filter %s for server replica %s:%d : %s",
-					replicaFilter.Name(),
-					server.Name,
-					replica.GetReplicaIdx(),
-					replicaFilter.Description(model, replica))
-				logger.Debugf(msg)
-				debugTrail = append(debugTrail, msg)
+				logger.
+					WithField("filter", replicaFilter.Name()).
+					WithField("replica", replica.GetReplicaIdx()).
+					WithField("reason", replicaFilter.Description(model, replica)).
+					Debug("Rejecting server replica for model")
+
 				ok = false
 				break
 			}
 		}
+
 		if ok {
+			logger.WithField("replica", replica.GetReplicaIdx()).Debug("Accepting server replica for model")
 			candidateServer.ChosenReplicas = append(candidateServer.ChosenReplicas, replica)
 		}
 	}
-	return &candidateServer, debugTrail
+
+	return &candidateServer
 }
