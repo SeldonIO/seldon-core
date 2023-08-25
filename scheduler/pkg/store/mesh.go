@@ -185,7 +185,8 @@ func NewServerReplica(inferenceSvc string,
 	availableMemory,
 	reservedMemory uint64,
 	loadedModels map[ModelVersionID]bool,
-	overCommitPercentage uint32) *ServerReplica {
+	overCommitPercentage uint32,
+) *ServerReplica {
 	return &ServerReplica{
 		inferenceSvc:         inferenceSvc,
 		inferenceHttpPort:    inferenceHttpPort,
