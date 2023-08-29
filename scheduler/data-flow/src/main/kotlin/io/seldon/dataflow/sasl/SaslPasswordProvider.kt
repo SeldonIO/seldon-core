@@ -42,4 +42,8 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
             }
         }
     }
+
+    companion object {
+        val default = SaslPasswordProvider(KubernetesSecretProvider)
+    }
 }
