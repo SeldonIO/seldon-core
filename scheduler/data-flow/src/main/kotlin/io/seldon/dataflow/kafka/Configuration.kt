@@ -112,16 +112,31 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
 
         val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
-        this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
-            KafkaSaslMechanisms.PLAIN ->
-                "org.apache.kafka.common.security.plain.PlainLoginModule required" +
-                        """ username="${params.security.saslConfig.username}"""" +
-                        """ password="$password";"""
+        when (params.security.saslConfig.mechanism) {
+            KafkaSaslMechanisms.PLAIN -> {
+                this[SaslConfigs.SASL_JAAS_CONFIG] =
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+            }
             KafkaSaslMechanisms.SCRAM_SHA_256,
-            KafkaSaslMechanisms.SCRAM_SHA_512 ->
-                "org.apache.kafka.common.security.scram.ScramLoginModule required" +
-                        """ username="${params.security.saslConfig.username}"""" +
-                        """ password="$password";"""
+            KafkaSaslMechanisms.SCRAM_SHA_512 -> {
+                this[SaslConfigs.SASL_JAAS_CONFIG] =
+                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+            }
+            KafkaSaslMechanisms.OAUTH_BEARER -> {
+                this[SaslConfigs.SASL_JAAS_CONFIG] =
+                    "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required" +
+                            """ clientId=""" +
+                            """ clientSecret=""" +
+                            """ scope=""" +
+                            """ extensions="""
+                this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = ""
+                this[SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS] =
+                    "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler"
+            }
         }
     }
 }
