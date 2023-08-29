@@ -6,12 +6,16 @@ import io.kubernetes.client.openapi.Configuration
 import io.kubernetes.client.openapi.apis.CoreV1Api
 import io.kubernetes.client.util.ClientBuilder
 
-object KubernetesSecretProvider {
+interface SecretsProvider {
+    fun getSecret(name: String): Map<String, ByteArray>
+}
+
+object KubernetesSecretProvider : SecretsProvider {
     private val logger = noCoLogger(KubernetesSecretProvider::class)
     private val namespace = System.getenv("SELDON_POD_NAMESPACE")
     private val client by lazy { ClientBuilder.standard().build() }
 
-    fun getSecret(name: String): Map<String, ByteArray> {
+    override fun getSecret(name: String): Map<String, ByteArray> {
         logger.info("reading secret $name from $namespace")
 
         return try {
