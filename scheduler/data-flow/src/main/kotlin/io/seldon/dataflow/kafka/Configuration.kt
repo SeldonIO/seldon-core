@@ -21,7 +21,7 @@ import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
-import io.seldon.dataflow.sasl.K8sPasswordSecretsProvider
+import io.seldon.dataflow.sasl.SaslPasswordProvider
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -110,7 +110,7 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
         this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
         this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
 
-        val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
+        val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
         when (params.security.saslConfig.mechanism) {
             KafkaSaslMechanisms.PLAIN -> {
