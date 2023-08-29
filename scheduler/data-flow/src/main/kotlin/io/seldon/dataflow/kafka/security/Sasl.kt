@@ -28,7 +28,8 @@ data class SaslConfig(
 enum class KafkaSaslMechanisms(private val mechanism: String) {
     PLAIN("PLAIN"),
     SCRAM_SHA_256("SCRAM-SHA-256"),
-    SCRAM_SHA_512("SCRAM-SHA-512");
+    SCRAM_SHA_512("SCRAM-SHA-512"),
+    OAUTH_BEARER("OAUTHBEARER");
 
     override fun toString(): String {
         return this.mechanism
