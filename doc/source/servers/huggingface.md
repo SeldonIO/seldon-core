@@ -85,7 +85,7 @@ spec:
   - graph:
       name: transformer
       implementation: HUGGINGFACE_SERVER
-      modelUri: gs://viktor-models/v1.18.0-dev/huggingface/custom-text-generation  # change bucket name
+      modelUri: gs://seldon-models/v1.18.0-dev/huggingface/custom-text-generation
       parameters:
       - name: task
         type: STRING
