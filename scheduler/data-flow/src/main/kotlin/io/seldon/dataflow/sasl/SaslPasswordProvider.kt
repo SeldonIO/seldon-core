@@ -21,7 +21,6 @@ import io.seldon.dataflow.kafka.security.FilePath
 import io.seldon.dataflow.kafka.security.SaslConfig
 
 class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
-    private val logger = noCoLogger(SaslPasswordProvider::class)
 
     fun getPassword(config: SaslConfig): String {
         logger.info("retrieving password for SASL user")
@@ -44,6 +43,7 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
     }
 
     companion object {
+        private val logger = noCoLogger(SaslPasswordProvider::class)
         val default = SaslPasswordProvider(KubernetesSecretProvider)
     }
 }
