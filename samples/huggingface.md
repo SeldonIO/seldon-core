@@ -47,7 +47,7 @@ seldon model infer text-gen \
 {
 	"model_name": "text-gen_1",
 	"model_version": "1",
-	"id": "95270c33-e2e3-4799-b243-06e834e730b8",
+	"id": "bcd24642-ade5-4b39-9c70-5d62bbfbe43c",
 	"parameters": {},
 	"outputs": [
 		{
@@ -61,7 +61,7 @@ seldon model infer text-gen \
 				"content_type": "hg_jsonlist"
 			},
 			"data": [
-				"{\"generated_text\": \"Once upon a time in a galaxy far away?\\nI hope the experience will be filled with awe and excitement for our current hero's creation. I would love for you to give you an opportunity to enjoy the game and share some of the gameplay ideas\"}"
+				"{\"generated_text\": \"Once upon a time in a galaxy far away, the Galaxy has made it a little easier to travel to and from your home planet through the galaxy's solar system. The planet's atmosphere is also a key asset to the Galaxy's galactic evolution! The\"}"
 			]
 		}
 	]
@@ -82,7 +82,7 @@ base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
 ```
 
 ```
-b'{"generated_text": "Once upon a time\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n"}'
+b'{"generated_text": "Once upon a time\\n\\n\\nI have no idea if he or she will fall prey to my whims\\nAnd\\n\\nAnd when\\n\\nOr\\n\\nAnd when I say\\nTo\\n\\nI\'ll have to\\nEven\\nOr\\nTo"}'
 
 ```
 
@@ -104,7 +104,7 @@ kind: Model
 metadata:
   name: custom-text-gen
 spec:
-  storageUri: "gs://viktor-models/scv2/samples/mlserver_1.3.5/text-generation-huggingface"  # change bucket name
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/custom-text-generation-huggingface"
   requirements:
     - huggingface
   memory: 3Gi
@@ -140,7 +140,7 @@ seldon model infer custom-text-gen \
 {
 	"model_name": "custom-text-gen_1",
 	"model_version": "1",
-	"id": "726a4b73-25b6-4f6c-8473-02ab5eaa72fd",
+	"id": "ea5d4209-a5cf-4179-ba81-87b8bcfdf894",
 	"parameters": {},
 	"outputs": [
 		{
@@ -154,7 +154,7 @@ seldon model infer custom-text-gen \
 				"content_type": "hg_jsonlist"
 			},
 			"data": [
-				"{\"generated_text\": \"Once upon a time in a galaxy far away that the vast majority of our current civilization is of the same technological, racial, and culture, humanity may have found a way out of those limitations. This may be where the future is not at stake.\"}"
+				"{\"generated_text\": \"Once upon a time in a galaxy far away, scientists in the universe are told the universe is on a collision course with stars, and the result is the emergence of new universes. This has been possible for, say, the distant history of the Milky\"}"
 			]
 		}
 	]
@@ -175,7 +175,7 @@ base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
 ```
 
 ```
-b'{"generated_text": "Once upon a time\\n\\nIn the past, there were certain classes of adventurers and travelers, who sought to enter a single location and do one thing a little different than everybody else. Then there were those who were good folk, and those who had"}'
+b'{"generated_text": "Once upon a time\\n\\nand again\\n\\nwe took care not a minute of\\n\\nbeing alone in a\\n\\nworld that we had not seen\\n\\nfor\\n\\nten thousand years\\n\\nbefore it occurred to our\\n\\nmind that"}'
 
 ```
 
