@@ -78,7 +78,7 @@ You can deploy a custom HuggingFace model by providing the location of the model
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: custom-gpt2-model
+  name: custom-gpt2-hf-model
 spec:
   protocol: v2
   predictors:
