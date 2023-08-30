@@ -21,6 +21,7 @@ import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
+import io.seldon.dataflow.sasl.SaslOauthProvider
 import io.seldon.dataflow.sasl.SaslPasswordProvider
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -112,6 +113,7 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
 
         val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
+
         when (params.security.saslConfig.mechanism) {
             KafkaSaslMechanisms.PLAIN -> {
                 this[SaslConfigs.SASL_JAAS_CONFIG] =
@@ -127,13 +129,23 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
                             """ password="$password";"""
             }
             KafkaSaslMechanisms.OAUTH_BEARER -> {
-                this[SaslConfigs.SASL_JAAS_CONFIG] =
-                    "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required" +
-                            """ clientId=""" +
-                            """ clientSecret=""" +
-                            """ scope=""" +
-                            """ extensions="""
-                this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = ""
+                val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
+
+                val jaasConfig = StringBuilder()
+                jaasConfig.append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
+                jaasConfig.append(" clientId=${oauthConfig.clientId}")
+                jaasConfig.append(" clientSecret=${oauthConfig.clientSecret}")
+                oauthConfig.scope?.let {
+                    jaasConfig.append(" scope=$it")
+                }
+                oauthConfig.extensions?.let { extensions ->
+                    extensions.forEach {
+                        jaasConfig.append(" $it")
+                    }
+                }
+
+                this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig.toString()
+                this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = oauthConfig.tokenUrl
                 this[SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS] =
                     "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler"
             }
