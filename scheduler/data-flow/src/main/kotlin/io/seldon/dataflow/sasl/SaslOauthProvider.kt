@@ -17,6 +17,7 @@ limitations under the License.
 package io.seldon.dataflow.sasl
 
 import io.klogging.noCoLogger
+import io.seldon.dataflow.decodeBase64
 import io.seldon.dataflow.kafka.security.SaslConfig
 
 data class SaslOauthConfig(
@@ -36,11 +37,11 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
     }
 
     private fun Map<String, ByteArray>.toOauthConfig(): SaslOauthConfig {
-        val clientId = this.getValue(clientIdKey).toString()
-        val clientSecret = this.getValue(clientSecretKey).toString()
-        val tokenUrl = this.getValue(tokenUrlKey).toString()
-        val scope = this.getValue(scopeKey).toString()
-        val extensions = this.getValue(extensionsKey).toString().toExtensions()
+        val clientId = this.getValue(clientIdKey).decodeBase64().toString()
+        val clientSecret = this.getValue(clientSecretKey).decodeBase64().toString()
+        val tokenUrl = this.getValue(tokenUrlKey).decodeBase64().toString()
+        val scope = this.getValue(scopeKey).decodeBase64().toString()
+        val extensions = this.getValue(extensionsKey).decodeBase64().toString().toExtensions()
 
         return SaslOauthConfig(
             tokenUrl = tokenUrl,
