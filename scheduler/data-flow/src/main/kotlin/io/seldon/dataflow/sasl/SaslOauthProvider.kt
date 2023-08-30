@@ -54,5 +54,7 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
         private const val extensionsKey = "extension"
 
         private val logger = noCoLogger(SaslOauthProvider::class)
+
+        val default by lazy { SaslOauthProvider(KubernetesSecretProvider) }
     }
 }
