@@ -18,7 +18,6 @@ package io.seldon.dataflow
 
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.*
-import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.kafka.security.SaslConfig
 import kotlinx.coroutines.runBlocking
