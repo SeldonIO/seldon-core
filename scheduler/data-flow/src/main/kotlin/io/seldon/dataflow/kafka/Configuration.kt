@@ -133,16 +133,17 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
 
                 val jaasConfig = buildString {
                     append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
-                    append(" clientId=${oauthConfig.clientId}")
-                    append(" clientSecret=${oauthConfig.clientSecret}")
+                    append(""" clientId="${oauthConfig.clientId}"""")
+                    append(""" clientSecret="${oauthConfig.clientSecret}"""")
                     oauthConfig.scope?.let {
-                        append(" scope=$it")
+                        append(""" scope="$it"""")
                     }
                     oauthConfig.extensions?.let { extensions ->
                         extensions.forEach {
-                            append(" $it")
+                            append(""" $it""")
                         }
                     }
+                    append(";")
                 }
 
                 this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig
