@@ -17,7 +17,6 @@ limitations under the License.
 package io.seldon.dataflow.sasl
 
 import io.klogging.noCoLogger
-import io.seldon.dataflow.decodeBase64
 import io.seldon.dataflow.kafka.security.SaslConfig
 
 data class SaslOauthConfig(
