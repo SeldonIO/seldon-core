@@ -15,13 +15,16 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
     fun getOauthConfig(config: SaslConfig): SaslOauthConfig {
         logger.info("retrieving OAuth config")
 
-        val secret = secretsProvider.getSecret(config.secret).withDefault { byteArrayOf() }
+        val secret = secretsProvider.getSecret(config.secret)
+        return secret.withDefault { byteArrayOf() }.toOauthConfig()
+    }
 
-        val clientId = secret.getValue(clientIdKey).toString()
-        val clientSecret = secret.getValue(clientSecretKey).toString()
-        val tokenUrl = secret.getValue(tokenUrlKey).toString()
-        val scope = secret.getValue(scopeKey).toString()
-        val extensions = secret.getValue(extensionsKey).toString().toExtensions()
+    private fun Map<String, ByteArray>.toOauthConfig(): SaslOauthConfig {
+        val clientId = this.getValue(clientIdKey).toString()
+        val clientSecret = this.getValue(clientSecretKey).toString()
+        val tokenUrl = this.getValue(tokenUrlKey).toString()
+        val scope = this.getValue(scopeKey).toString()
+        val extensions = this.getValue(extensionsKey).toString().toExtensions()
 
         return SaslOauthConfig(
             tokenUrl = tokenUrl,
