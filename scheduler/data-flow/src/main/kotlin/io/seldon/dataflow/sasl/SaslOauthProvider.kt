@@ -87,7 +87,7 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
         private const val clientSecretKey = "client_secret"
         private const val tokenUrlKey = "token_endpoint_url"
         private const val scopeKey = "scope"
-        private const val extensionsKey = "extension"
+        private const val extensionsKey = "extensions"
 
         private val logger = noCoLogger(SaslOauthProvider::class)
 
