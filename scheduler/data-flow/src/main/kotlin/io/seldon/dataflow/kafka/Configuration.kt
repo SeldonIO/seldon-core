@@ -131,20 +131,21 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
             KafkaSaslMechanisms.OAUTH_BEARER -> {
                 val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
 
-                val jaasConfig = StringBuilder()
-                jaasConfig.append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
-                jaasConfig.append(" clientId=${oauthConfig.clientId}")
-                jaasConfig.append(" clientSecret=${oauthConfig.clientSecret}")
-                oauthConfig.scope?.let {
-                    jaasConfig.append(" scope=$it")
-                }
-                oauthConfig.extensions?.let { extensions ->
-                    extensions.forEach {
-                        jaasConfig.append(" $it")
+                val jaasConfig = buildString {
+                    append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
+                    append(" clientId=${oauthConfig.clientId}")
+                    append(" clientSecret=${oauthConfig.clientSecret}")
+                    oauthConfig.scope?.let {
+                        append(" scope=$it")
+                    }
+                    oauthConfig.extensions?.let { extensions ->
+                        extensions.forEach {
+                            append(" $it")
+                        }
                     }
                 }
 
-                this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig.toString()
+                this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig
                 this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = oauthConfig.tokenUrl
                 this[SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS] =
                     "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler"
