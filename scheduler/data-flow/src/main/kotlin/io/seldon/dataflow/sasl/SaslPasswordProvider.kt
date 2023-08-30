@@ -44,6 +44,6 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
 
     companion object {
         private val logger = noCoLogger(SaslPasswordProvider::class)
-        val default = SaslPasswordProvider(KubernetesSecretProvider)
+        val default by lazy { SaslPasswordProvider(KubernetesSecretProvider) }
     }
 }
