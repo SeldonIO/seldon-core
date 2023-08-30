@@ -52,7 +52,7 @@ object Main {
         val saslConfig = SaslConfig(
             mechanism = config[Cli.saslMechanism],
             username = config[Cli.saslUsername],
-            secret = config[Cli.saslSecret],
+            passwordSecret = config[Cli.saslSecret],
             passwordPath = config[Cli.saslPasswordPath],
         )
 

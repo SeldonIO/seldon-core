@@ -25,7 +25,7 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
     fun getPassword(config: SaslConfig): String {
         logger.info("retrieving password for SASL user")
 
-        val secret = secretsProvider.getSecret(config.secret)
+        val secret = secretsProvider.getSecret(config.passwordSecret)
         return extractPassword(secret, config.passwordPath)
     }
 
