@@ -120,11 +120,10 @@ func TestUpdateModelRepository(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name            string
-		config          *pb.ModelConfig
-		repoConfig      *pb.ModelConfig
-		isVersionFolder bool
-		modelName       string
+		name       string
+		config     *pb.ModelConfig
+		repoConfig *pb.ModelConfig
+		modelName  string
 	}
 
 	tests := []test{
