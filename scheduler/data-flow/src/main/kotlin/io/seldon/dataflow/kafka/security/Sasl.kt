@@ -22,7 +22,8 @@ data class SaslConfig(
     val mechanism: KafkaSaslMechanisms,
     val username: String,
     val passwordSecret: String,
-    val passwordPath: FilePath
+    val passwordPath: FilePath,
+    val oauthSecret: String,
 )
 
 enum class KafkaSaslMechanisms(private val mechanism: String) {
