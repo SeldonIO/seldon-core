@@ -33,15 +33,16 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
         logger.info("retrieving OAuth config")
 
         val secret = secretsProvider.getSecret(config.oauthSecret)
+
         return secret.withDefault { byteArrayOf() }.toOauthConfig()
     }
 
     private fun Map<String, ByteArray>.toOauthConfig(): SaslOauthConfig {
-        val clientId = this.getValue(clientIdKey).decodeBase64().toString()
-        val clientSecret = this.getValue(clientSecretKey).decodeBase64().toString()
-        val tokenUrl = this.getValue(tokenUrlKey).decodeBase64().toString()
-        val scope = this.getValue(scopeKey).decodeBase64().toString()
-        val extensions = this.getValue(extensionsKey).decodeBase64().toString().toExtensions()
+        val clientId = this.getValue(clientIdKey).toString(Charsets.UTF_8)
+        val clientSecret = this.getValue(clientSecretKey).toString(Charsets.UTF_8)
+        val tokenUrl = this.getValue(tokenUrlKey).toString(Charsets.UTF_8)
+        val scope = this.getValue(scopeKey).toString(Charsets.UTF_8)
+        val extensions = this.getValue(extensionsKey).toString(Charsets.UTF_8).toExtensions()
 
         return SaslOauthConfig(
             tokenUrl = tokenUrl,
