@@ -58,10 +58,28 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
             return null
         }
 
+        // Expect comma-separated key/value pairs, possibly with the values already quoted.
+        // E.g. a="b", c=d
         return this
-            .split(",")
+            .splitToSequence(",")
             .map { it.trim() }
-            .map { "extension_$it" }
+            .filter { "=" in it }
+            .map { it.split("=", limit = 2) }
+            .map { parts ->
+                val k = parts.first()
+                val v = parts
+                    .last()
+                    .let {
+                        if (it.startsWith('"')) it else """"$it""""
+                    }
+
+                k to v
+            }
+            .map {
+                if (it.first.startsWith("extension_")) it else "extension_${it.first}" to it.second
+            }
+            .map { "${it.first}=${it.second}" }
+            .toList()
     }
 
     companion object {
