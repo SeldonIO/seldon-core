@@ -54,6 +54,7 @@ object Main {
             username = config[Cli.saslUsername],
             passwordSecret = config[Cli.saslSecret],
             passwordPath = config[Cli.saslPasswordPath],
+            oauthSecret = config[Cli.saslOAuthSecret],
         )
 
         val kafkaSecurityParams = KafkaSecurityParams(
