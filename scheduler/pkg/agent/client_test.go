@@ -257,8 +257,10 @@ func TestLoadModel(t *testing.T) {
 		success                 bool
 		autoscalingEnabled      bool
 	}
+
 	smallMemory := uint64(500)
 	largeMemory := uint64(2000)
+
 	tests := []test{
 		{
 			name:   "simple",
@@ -339,12 +341,15 @@ func TestLoadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
+
+			// Set up dependencies
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := FakeModelRepository{err: test.modelRepoErr}
 			rpHTTP := FakeDependencyService{err: nil}
 			rpGRPC := FakeDependencyService{err: nil}
 			agentDebug := FakeDependencyService{err: nil}
+
 			lags := modelscaling.ModelScalingStatsWrapper{
 				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
 				Operator:  interfaces.Gte,
@@ -352,6 +357,7 @@ func TestLoadModel(t *testing.T) {
 				Reset:     true,
 				EventType: modelscaling.ScaleUpEvent,
 			}
+
 			lastUsed := modelscaling.ModelScalingStatsWrapper{
 				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
 				Operator:  interfaces.Gte,
@@ -359,23 +365,36 @@ func TestLoadModel(t *testing.T) {
 				Reset:     false,
 				EventType: modelscaling.ScaleDownEvent,
 			}
+
 			modelScalingService := modelscaling.NewStatsAnalyserService(
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+
 			client := NewClient(
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
+
 			client.conn = conn
+
 			go func() {
-				_ = client.Start()
+				err := client.Start()
+				// Regardless if this is/isn't a success test case, the client should've started without error
+				g.Expect(err).To(BeNil())
 			}()
+
+			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
+
+			// Do the actual function call that is being tested
 			err := client.LoadModel(test.op)
+
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -386,6 +405,7 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(proto.Clone(loadedVersions[0])).To(Equal(proto.Clone(test.op.ModelVersion)))
 				// we have set model stats state if autoscaling is enabled
 				versionedModelName := util.GetVersionedModelName(test.op.GetModelVersion().Model.Meta.Name, test.op.GetModelVersion().GetVersion())
+
 				if test.autoscalingEnabled {
 					_, err := lags.Stats.Get(versionedModelName)
 					g.Expect(err).To(BeNil())
@@ -428,13 +448,13 @@ func TestLoadModelWithAuth(t *testing.T) {
 	rcloneConfig := `{"type":"s3","name":"s3","parameters":{"provider":"minio","env_auth":"false","access_key_id":"minioadmin","secret_access_key":"minioadmin","endpoint":"http://172.18.255.2:9000"}}`
 	rcloneSecret := "minio-secret"
 	yamlSecretDataOK := `
-type: s3                                                                                                  
-name: s3                                                                                                  
-parameters:                                                                                               
-   provider: minio                                                                                         
-   env_auth: false                                                                                         
-   access_key_id: minioadmin                                                                               
-   secret_access_key: minioadmin                                                                           
+type: s3
+name: s3
+parameters:
+   provider: minio
+   env_auth: false
+   access_key_id: minioadmin
+   secret_access_key: minioadmin
    endpoint: http://172.18.255.2:9000
 `
 	smallMemory := uint64(500)

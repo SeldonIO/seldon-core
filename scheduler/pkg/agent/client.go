@@ -428,6 +428,7 @@ func (c *Client) StartService() error {
 
 	grpcClient := agent.NewAgentServiceClient(c.conn)
 
+	// Connect to the scheduler for server-side streaming
 	stream, err := grpcClient.Subscribe(
 		context.Background(),
 		&agent.AgentSubscribeRequest{
@@ -457,7 +458,7 @@ func (c *Client) StartService() error {
 		_, _ = clientStream.CloseAndRecv()
 	}()
 
-	// start stream to server
+	// Start the main control loop for the agent<-scheduler stream
 	for {
 		if c.stop.Load() {
 			logger.Info("Stopping")
@@ -489,6 +490,7 @@ func (c *Client) StartService() error {
 
 		case agent.ModelOperationMessage_UNLOAD_MODEL:
 			c.logger.Infof("calling unload model")
+
 			go func() {
 				err := c.UnloadModel(operation)
 				if err != nil {
@@ -677,8 +679,9 @@ func (c *Client) sendModelEventError(
 	event agent.ModelEventMessage_Event,
 	err error,
 ) {
+	c.logger.WithError(err).Errorf("Failed to load model, sending error to scheduler")
 	grpcClient := agent.NewAgentServiceClient(c.conn)
-	_, err = grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
+	modelEventResponse, err := grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
 		ServerName:           c.serverName,
 		ReplicaIdx:           c.replicaIdx,
 		ModelName:            modelName,
@@ -688,8 +691,10 @@ func (c *Client) sendModelEventError(
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
 	if err != nil {
-		c.logger.WithError(err).Errorf("Failed to send error back on load model")
+		c.logger.WithError(err).Errorf("Failed to send error back to scheduler on load model")
+		return
 	}
+	c.logger.WithField("modelEventResponse", modelEventResponse).Infof("Sent agent model event to scheduler")
 }
 
 func (c *Client) sendAgentEvent(
