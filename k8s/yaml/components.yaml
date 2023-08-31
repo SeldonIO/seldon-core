@@ -1259,7 +1259,7 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000"
-      image: 'docker.io/seldonio/mlserver:1.4.0.rc1'
+      image: 'docker.io/seldonio/mlserver:1.4.0.rc2'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
