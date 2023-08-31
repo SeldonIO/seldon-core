@@ -66,16 +66,17 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
             .map { it.split("=", limit = 2) }
             .map { parts ->
                 val k = parts.first()
-                val v = parts
-                    .last()
-                    .let {
-                        if (it.startsWith('"')) it else """"$it""""
-                    }
+                val v = parts.last().let {
+                    if (it.startsWith('"')) it else """"$it""""
+                }
 
                 k to v
             }
             .map {
-                if (it.first.startsWith("extension_")) it else "extension_${it.first}" to it.second
+                when {
+                    it.first.startsWith("extension_") -> it
+                    else -> "extension_${it.first}" to it.second
+                }
             }
             .map { "${it.first}=${it.second}" }
             .toList()
