@@ -47,5 +47,3 @@ suspend fun <T, R> Flow<T>.parallel(
             }
     }
 }
-
-fun ByteArray.decodeBase64() = Base64.getUrlDecoder().decode(this)
