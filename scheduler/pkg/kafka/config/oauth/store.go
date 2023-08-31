@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	envSecretSuffix = "_OAUTH_SECRET_NAME"
+	envSecretSuffix = "_SASL_SECRET_NAME"
 	envNamespace    = "POD_NAMESPACE"
 )
 

@@ -669,8 +669,6 @@ spec:
           value: 'PLAINTEXT'
         - name: KAFKA_SASL_MECHANISM
           value: 'SCRAM-SHA-512'
-        - name: KAFKA_CLIENT_OAUTH_SECRET_NAME
-          value: ''
         - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
@@ -818,8 +816,6 @@ spec:
           value: 'PLAINTEXT'
         - name: KAFKA_SASL_MECHANISM
           value: 'SCRAM-SHA-512'
-        - name: KAFKA_CLIENT_OAUTH_SECRET_NAME
-          value: ''
         - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
         - name: KAFKA_CLIENT_TLS_SECRET_NAME
