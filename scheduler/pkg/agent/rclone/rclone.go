@@ -157,6 +157,7 @@ func (r *RCloneClient) listenForConfigUpdates() {
 	}
 }
 
+// Sends a serialised operation (op) payload to Rclone's HTTP API.
 func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	rcloneUrl := url.URL{
 		Scheme: "http",
@@ -188,12 +189,16 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	return b, nil
 }
 
+// Ready sends a no-op request to the RClone client and checks if it is ready.
+// It returns an error if there was a problem marshaling the request or if the client is not ready.
+// It uses Rclone's built-in no-op HTTP endpoint.
 func (r *RCloneClient) Ready() error {
 	noop := Noop{Foo: "bar"}
 	b, err := json.Marshal(noop)
 	if err != nil {
 		return err
 	}
+	// It's a no-op, so ignore the response.
 	_, err = r.call(b, RcloneNoopPath)
 	return err
 }

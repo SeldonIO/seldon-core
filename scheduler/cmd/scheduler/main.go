@@ -24,19 +24,19 @@ import (
 	"time"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
+	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
+	envoyServer "github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
-	server2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/server"
+	schedulerServer "github.com/seldonio/seldon-core/scheduler/v2/pkg/server"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
@@ -158,8 +158,8 @@ func main() {
 	// Create a cache
 	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
 	ctx := context.Background()
-	srv := serverv3.NewServer(ctx, xdsCache, nil)
-	xdsServer := server.NewXDSServer(srv, logger)
+	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
+	xdsServer := envoyServer.NewXDSServer(srv, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")
@@ -228,25 +228,28 @@ func main() {
 		log.Warn("Not running with scheduler local DB")
 	}
 
-	s := server2.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
+	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
-		log.WithError(err).Fatalf("Scheduler start servers error")
+		log.WithError(err).Fatalf("Failed to start server gRPC servers")
 	}
 
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
-		log.Fatalf("Failed to start agent grpc server %s", err.Error())
+		log.WithError(err).Fatalf("Failed to start agent gRPC server")
 	}
 
 	// Wait for completion
 	<-done
 
 	log.Info("Shutting down services")
+
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
 	cs.StopSendPipelineEvents()
 	as.StopAgentStreams()
+
+	log.Info("Shutdown services")
 }

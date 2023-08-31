@@ -88,11 +88,10 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name         string
-		server       *ChainerServer
-		pipelineName string
-		inputs       []string
-		sources      []*chainer.PipelineTopic
+		name    string
+		server  *ChainerServer
+		inputs  []string
+		sources []*chainer.PipelineTopic
 	}
 
 	getPtrStr := func(val string) *string { return &val }
@@ -108,7 +107,6 @@ func TestCreatePipelineTopicSources(t *testing.T) {
 				logger:     log.New(),
 				topicNamer: createTopicNamer("default", "seldon"),
 			},
-			pipelineName: "p1",
 			inputs: []string{
 				"foo.inputs",
 				"foo.outputs",
