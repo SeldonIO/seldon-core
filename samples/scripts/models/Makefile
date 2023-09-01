@@ -5,10 +5,10 @@ TRITON_VERSION=$(shell grep 'nvidia/tritonserver' ../../../scheduler/Makefile | 
 TRITON_FOLDER=triton_${TRITON_VERSION}
 
 .PHONY: train-all
-train-all: iris text-generation-huggingface moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
+train-all: iris huggingface-text-gen-gpt2 huggingface-text-gen-tiny-stories moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
 
 .PHONY: upload-all
-upload-all: upload-iris upload-text-generation-huggingface upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
+upload-all: upload-iris upload-huggingface-text-gen-gpt2 upload-huggingface-text-gen-tiny-stories upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
 
 .PHONY: env
 env:
@@ -38,18 +38,30 @@ upload-iris:
 	gsutil cp iris/model.joblib gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/iris-sklearn/model.joblib
 
 #
-# HuggingFace text-generation model
+# HuggingFace GPT2 text-generation model
 #
 
-.PHONY: text-generation-huggingface
-text-generation-huggingface: env
-	cd text-generation-huggingface && ../.env/bin/python3 train.py
+.PHONY: huggingface-text-gen-gpt2
+huggingface-text-gen-gpt2: env
+	cd huggingface-text-gen-gpt2 && ../.env/bin/python3 train.py
 
+.PHONY: upload-huggingface-text-gen-gpt2
+upload-huggingface-text-gen-gpt2:
+	gsutil cp -r huggingface-text-gen-gpt2/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/huggingface-text-gen-custom-gpt2/
+	gsutil cp huggingface-text-gen-gpt2/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/huggingface-text-gen-custom-gpt2/
 
-.PHONY: upload-text-generation-huggingface
-upload-text-generation-huggingface:
-	gsutil cp -r text-generation-huggingface/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/custom-text-generation-huggingface/
-	gsutil cp text-generation-huggingface/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/custom-text-generation-huggingface/
+#
+# HuggingFace Tiny Stories text-generation model
+#
+
+.PHONY: huggingface-text-gen-tiny-stories
+huggingface-text-gen-tiny-stories: env
+	cd huggingface-text-gen-tiny-stories && ../.env/bin/python3 train.py
+
+.PHONY: upload-huggingface-text-gen-tiny-stories
+upload-huggingface-text-gen-tiny-stories:
+	gsutil cp -r huggingface-text-gen-tiny-stories/text-generation-model-artefacts/* gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/huggingface-text-gen-custom-tiny-stories/
+	gsutil cp huggingface-text-gen-tiny-stories/model-settings.json gs://seldon-models/scv2/samples/${MLSERVER_FOLDER}/huggingface-text-gen-custom-tiny-stories/
 
 #
 # movie sentiment SKLearn model
