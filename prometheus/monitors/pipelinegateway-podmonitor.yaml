@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: seldon-pipelinegateway
+      app.kubernetes.io/name: pipelinegateway
   namespaceSelector:
     matchNames: []
     any: false
