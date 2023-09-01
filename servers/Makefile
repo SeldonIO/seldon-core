@@ -11,4 +11,6 @@ sklearnserver-models:
 
 
 huggingface-models:
-	make -C huggingface/models/text-generation
+	make -C huggingface/models/text-gen-gpt2
+	make -C huggingface/models/text-gen-tiny-stories
+
