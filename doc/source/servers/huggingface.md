@@ -78,29 +78,22 @@ You can deploy a custom HuggingFace model by providing the location of the model
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
-  name: custom-gpt2-hf-model
+  name: custom-tiny-stories-model
 spec:
   protocol: v2
   predictors:
   - graph:
       name: transformer
       implementation: HUGGINGFACE_SERVER
-      modelUri: gs://seldon-models/v1.18.0-dev/huggingface/custom-text-generation
+      modelUri: gs://seldon-models/v1.18.0-dev/huggingface/text-gen-custom-tiny-stories
       parameters:
       - name: task
         type: STRING
         value: text-generation
-    componentSpecs:
-      - spec:
-          containers:
-            - name: transformer
-              resources:
-                limits:
-                  cpu: 1
-                  memory: 4Gi
-                requests:
-                  cpu: 100m
-                  memory: 3Gi
     name: default
     replicas: 1
 ```
+
+````{note}
+As a next step, why not try running a larger-scale model? You can find one in gs://seldon-models/v1.18.0-dev/huggingface/text-gen-custom-gpt2. However, you may need to request more memory!
+````
