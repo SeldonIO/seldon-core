@@ -64,10 +64,10 @@ helm_setup:
 .PHONY: install_ambassador
 install_ambassador:
 	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/3.1.0/aes-crds.yaml
-	kubectl wait --timeout=180s --for=condition=available deployment emissary-apiext -n emissary-system
+	kubectl wait --timeout=2m --for=condition=available deployment emissary-apiext -n emissary-system
 	helm install -n ambassador --create-namespace edge-stack datawire/edge-stack \
-		-f ../resources/ambassador_values.yaml --wait --timeout 180s
-	kubectl rollout status  -n ambassador deployment/edge-stack -w
+		-f ../resources/ambassador_values.yaml
+	kubectl rollout status  -n ambassador deployment/edge-stack -w --timeout=2m
 	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
 .PHONY: install_jaeger
