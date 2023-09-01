@@ -47,7 +47,7 @@ seldon model infer text-gen \
 {
 	"model_name": "text-gen_1",
 	"model_version": "1",
-	"id": "bcd24642-ade5-4b39-9c70-5d62bbfbe43c",
+	"id": "121ff5f4-1d4a-46d0-9a5e-4cd3b11040df",
 	"parameters": {},
 	"outputs": [
 		{
@@ -61,7 +61,7 @@ seldon model infer text-gen \
 				"content_type": "hg_jsonlist"
 			},
 			"data": [
-				"{\"generated_text\": \"Once upon a time in a galaxy far away, the Galaxy has made it a little easier to travel to and from your home planet through the galaxy's solar system. The planet's atmosphere is also a key asset to the Galaxy's galactic evolution! The\"}"
+				"{\"generated_text\": \"Once upon a time in a galaxy far away, the planet is full of strange little creatures. A very strange combination of creatures in that universe, that is. A strange combination of creatures in that universe, that is. A kind of creature that is\"}"
 			]
 		}
 	]
@@ -71,7 +71,7 @@ seldon model infer text-gen \
 
 ```python
 res = !seldon model infer text-gen --inference-mode grpc \
-   '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZQo="]},"datatype":"BYTES","shape":[1]}]}'
+   '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZSBpbiBhIGdhbGF4eSBmYXIgYXdheQo="]},"datatype":"BYTES","shape":[1]}]}'
 ```
 
 ```python
@@ -82,7 +82,7 @@ base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
 ```
 
 ```
-b'{"generated_text": "Once upon a time\\n\\n\\nI have no idea if he or she will fall prey to my whims\\nAnd\\n\\nAnd when\\n\\nOr\\n\\nAnd when I say\\nTo\\n\\nI\'ll have to\\nEven\\nOr\\nTo"}'
+b'{"generated_text": "Once upon a time in a galaxy far away\\n\\nThe Universe is a big and massive place. How can you feel any of this? Your body doesn\'t make sense if the Universe is in full swing \\u2014 you don\'t have to remember whether the"}'
 
 ```
 
@@ -95,26 +95,25 @@ seldon model unload text-gen
 ### Custom Text Generation Model
 
 ```bash
-cat ./models/hf-custom-text-gen.yaml
+cat ./models/hf-text-gen-custom-tiny-stories.yaml
 ```
 
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
-  name: custom-text-gen
+  name: custom-tiny-stories-text-gen
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/custom-text-generation-huggingface"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.3.5/huggingface-text-gen-custom-tiny-stories"
   requirements:
     - huggingface
-  memory: 3Gi
 
 ```
 
 Load the model
 
 ```bash
-seldon model load -f ./models/hf-custom-text-gen.yaml
+seldon model load -f ./models/hf-text-gen-custom-tiny-stories.yaml
 ```
 
 ```json
@@ -123,7 +122,7 @@ seldon model load -f ./models/hf-custom-text-gen.yaml
 ```
 
 ```bash
-seldon model status custom-text-gen -w ModelAvailable | jq -M .
+seldon model status custom-tiny-stories-text-gen -w ModelAvailable | jq -M .
 ```
 
 ```json
@@ -132,15 +131,15 @@ seldon model status custom-text-gen -w ModelAvailable | jq -M .
 ```
 
 ```bash
-seldon model infer custom-text-gen \
+seldon model infer custom-tiny-stories-text-gen \
   '{"inputs": [{"name": "args","shape": [1],"datatype": "BYTES","data": ["Once upon a time in a galaxy far away"]}]}'
 ```
 
 ```json
 {
-	"model_name": "custom-text-gen_1",
+	"model_name": "custom-tiny-stories-text-gen_1",
 	"model_version": "1",
-	"id": "ea5d4209-a5cf-4179-ba81-87b8bcfdf894",
+	"id": "d0fce59c-76e2-4f81-9711-1c93d08bcbf9",
 	"parameters": {},
 	"outputs": [
 		{
@@ -154,7 +153,7 @@ seldon model infer custom-text-gen \
 				"content_type": "hg_jsonlist"
 			},
 			"data": [
-				"{\"generated_text\": \"Once upon a time in a galaxy far away, scientists in the universe are told the universe is on a collision course with stars, and the result is the emergence of new universes. This has been possible for, say, the distant history of the Milky\"}"
+				"{\"generated_text\": \"Once upon a time in a galaxy far away. It was a very special place to live.\\n\"}"
 			]
 		}
 	]
@@ -163,8 +162,8 @@ seldon model infer custom-text-gen \
 ```
 
 ```python
-res = !seldon model infer custom-text-gen --inference-mode grpc \
-   '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZQo="]},"datatype":"BYTES","shape":[1]}]}'
+res = !seldon model infer custom-tiny-stories-text-gen --inference-mode grpc \
+   '{"inputs":[{"name":"args","contents":{"bytes_contents":["T25jZSB1cG9uIGEgdGltZSBpbiBhIGdhbGF4eSBmYXIgYXdheQo="]},"datatype":"BYTES","shape":[1]}]}'
 ```
 
 ```python
@@ -175,12 +174,16 @@ base64.b64decode(r["outputs"][0]["contents"]["bytesContents"][0])
 ```
 
 ```
-b'{"generated_text": "Once upon a time\\n\\nand again\\n\\nwe took care not a minute of\\n\\nbeing alone in a\\n\\nworld that we had not seen\\n\\nfor\\n\\nten thousand years\\n\\nbefore it occurred to our\\n\\nmind that"}'
+b'{"generated_text": "Once upon a time in a galaxy far away\\nOne night, a little girl named Lily went to"}'
 
 ```
 
 Unload the model
 
 ```bash
-seldon model unload custom-text-gen
+seldon model unload custom-tiny-stories-text-gen
 ```
+
+````
+As a next step, why not try running a larger-scale model? You can find a definition for one in ./models/hf-text-gen-custom-gpt2.yaml. However, you may need to request and allocate more memory!
+````

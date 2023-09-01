@@ -15,5 +15,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    print("Building a custom HuggingFace model...")
+    print("Building a custom GPT2 HuggingFace model...")
     main()
