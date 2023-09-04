@@ -21,9 +21,8 @@ typealias FilePath = String
 data class SaslConfig(
     val mechanism: KafkaSaslMechanisms,
     val username: String,
-    val passwordSecret: String,
-    val passwordPath: FilePath,
-    val oauthSecret: String,
+    val passwordField: String,
+    val credentialsSecret: String,
 )
 
 enum class KafkaSaslMechanisms(private val mechanism: String) {
