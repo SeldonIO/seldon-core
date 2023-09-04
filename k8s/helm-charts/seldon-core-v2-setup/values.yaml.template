@@ -25,7 +25,6 @@ security:
         username: seldon
         secret:
         passwordPath: /tmp/sasl/kafka/client/password
-        oauthSecret:
     ssl:
       client:
         secret:

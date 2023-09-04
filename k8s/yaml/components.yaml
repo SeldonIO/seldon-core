@@ -1027,8 +1027,6 @@ spec:
           value: ''
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: '/tmp/sasl/kafka/client/password'
-        - name: SELDON_KAFKA_SASL_OAUTH_SECRET
-          value: ''
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
         - name: SELDON_CORES_COUNT
