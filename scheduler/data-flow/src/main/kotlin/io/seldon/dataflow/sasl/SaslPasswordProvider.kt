@@ -17,7 +17,6 @@ limitations under the License.
 package io.seldon.dataflow.sasl
 
 import io.klogging.noCoLogger
-import io.seldon.dataflow.kafka.security.FilePath
 import io.seldon.dataflow.kafka.security.SaslConfig
 
 class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
@@ -29,10 +28,10 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
         return extractPassword(config.passwordSecret, secret, config.passwordPath)
     }
 
-    private fun extractPassword(secretName: String, secret: Map<String, ByteArray>, path: FilePath): String {
-        return when (val password = secret[path]) {
+    private fun extractPassword(secretName: String, secret: Map<String, ByteArray>, fieldName: String): String {
+        return when (val password = secret[fieldName]) {
             null -> {
-                logger.warn("unable to retrieve password from secret $secretName at path $path")
+                logger.warn("unable to retrieve password from secret $secretName at path $fieldName")
                 ""
             }
             else -> {
