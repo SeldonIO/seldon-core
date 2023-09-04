@@ -26,17 +26,17 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
         logger.info("retrieving password for SASL user")
 
         val secret = secretsProvider.getSecret(config.passwordSecret)
-        return extractPassword(secret, config.passwordPath)
+        return extractPassword(config.passwordSecret, secret, config.passwordPath)
     }
 
-    private fun extractPassword(secret: Map<String, ByteArray>, path: FilePath): String {
+    private fun extractPassword(secretName: String, secret: Map<String, ByteArray>, path: FilePath): String {
         return when (val password = secret[path]) {
             null -> {
-                logger.warn("unable to retrieve password from secret $secret at path $path")
+                logger.warn("unable to retrieve password from secret $secretName at path $path")
                 ""
             }
             else -> {
-                logger.info("retrieved password from secret $secret")
+                logger.info("retrieved password from secret $secretName")
                 String(password)
             }
         }
