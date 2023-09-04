@@ -16,8 +16,6 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka.security
 
-typealias FilePath = String
-
 data class SaslConfig(
     val mechanism: KafkaSaslMechanisms,
     val username: String,
