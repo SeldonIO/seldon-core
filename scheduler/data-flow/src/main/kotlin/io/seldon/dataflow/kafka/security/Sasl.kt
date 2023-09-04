@@ -16,12 +16,38 @@ limitations under the License.
 
 package io.seldon.dataflow.kafka.security
 
-data class SaslConfig(
+sealed class SaslConfig(
     val mechanism: KafkaSaslMechanisms,
-    val username: String,
-    val passwordField: String,
-    val credentialsSecret: String,
-)
+) {
+    class Oauth(
+        val secretName: String,
+    ): SaslConfig(KafkaSaslMechanisms.OAUTH_BEARER)
+
+    sealed class Password(
+        mechanism: KafkaSaslMechanisms,
+        val secretName: String,
+        val username: String,
+        val passwordField: String,
+    ) : SaslConfig(mechanism) {
+        class Plain(
+            secretName: String,
+            username: String,
+            passwordField: String,
+        ) : Password(KafkaSaslMechanisms.PLAIN, secretName, username, passwordField)
+
+        class Scram256(
+            secretName: String,
+            username: String,
+            passwordField: String,
+        ): Password(KafkaSaslMechanisms.SCRAM_SHA_256, secretName, username, passwordField)
+
+        class Scram512(
+            secretName: String,
+            username: String,
+            passwordField: String,
+        ): Password(KafkaSaslMechanisms.SCRAM_SHA_512, secretName, username, passwordField)
+    }
+}
 
 enum class KafkaSaslMechanisms(private val mechanism: String) {
     PLAIN("PLAIN"),

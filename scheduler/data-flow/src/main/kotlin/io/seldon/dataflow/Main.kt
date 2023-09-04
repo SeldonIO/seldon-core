@@ -18,6 +18,7 @@ package io.seldon.dataflow
 
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.*
+import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.kafka.security.SaslConfig
 import kotlinx.coroutines.runBlocking
@@ -48,12 +49,26 @@ object Main {
             endpointIdentificationAlgorithm = config[Cli.endpointIdentificationAlgorithm],
         )
 
-        val saslConfig = SaslConfig(
-            mechanism = config[Cli.saslMechanism],
-            username = config[Cli.saslUsername],
-            credentialsSecret = config[Cli.saslSecret],
-            passwordField = config[Cli.saslPasswordPath],
-        )
+        val saslConfig = when (config[Cli.saslMechanism]) {
+            KafkaSaslMechanisms.PLAIN -> SaslConfig.Password.Plain(
+                secretName = config[Cli.saslSecret],
+                username = config[Cli.saslUsername],
+                passwordField = config[Cli.saslPasswordPath],
+            )
+            KafkaSaslMechanisms.SCRAM_SHA_256 -> SaslConfig.Password.Scram256(
+                secretName = config[Cli.saslSecret],
+                username = config[Cli.saslUsername],
+                passwordField = config[Cli.saslPasswordPath],
+            )
+            KafkaSaslMechanisms.SCRAM_SHA_512 -> SaslConfig.Password.Scram512(
+                secretName = config[Cli.saslSecret],
+                username = config[Cli.saslUsername],
+                passwordField = config[Cli.saslPasswordPath],
+            )
+            KafkaSaslMechanisms.OAUTH_BEARER -> SaslConfig.Oauth(
+                secretName = config[Cli.saslSecret],
+            )
+        }
 
         val kafkaSecurityParams = KafkaSecurityParams(
             securityProtocol = config[Cli.kafkaSecurityProtocol],

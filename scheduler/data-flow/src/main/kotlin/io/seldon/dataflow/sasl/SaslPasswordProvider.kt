@@ -21,11 +21,11 @@ import io.seldon.dataflow.kafka.security.SaslConfig
 
 class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
 
-    fun getPassword(config: SaslConfig): String {
+    fun getPassword(config: SaslConfig.Password): String {
         logger.info("retrieving password for SASL user")
 
-        val secret = secretsProvider.getSecret(config.credentialsSecret)
-        return extractPassword(config.credentialsSecret, secret, config.passwordField)
+        val secret = secretsProvider.getSecret(config.secretName)
+        return extractPassword(config.secretName, secret, config.passwordField)
     }
 
     private fun extractPassword(secretName: String, secret: Map<String, ByteArray>, fieldName: String): String {

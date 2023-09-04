@@ -28,10 +28,10 @@ data class SaslOauthConfig(
 )
 
 class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
-    fun getOauthConfig(config: SaslConfig): SaslOauthConfig {
+    fun getOauthConfig(config: SaslConfig.Oauth): SaslOauthConfig {
         logger.info("retrieving OAuth config for SASL user")
 
-        val secret = secretsProvider.getSecret(config.credentialsSecret)
+        val secret = secretsProvider.getSecret(config.secretName)
 
         return secret.withDefault { byteArrayOf() }.toOauthConfig()
     }

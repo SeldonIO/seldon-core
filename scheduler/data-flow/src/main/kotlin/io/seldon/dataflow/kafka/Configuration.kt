@@ -43,7 +43,7 @@ data class KafkaStreamsParams(
 data class KafkaSecurityParams(
     val securityProtocol: SecurityProtocol,
     val certConfig: CertificateConfig,
-    val saslConfig: SaslConfig
+    val saslConfig: SaslConfig,
 )
 
 data class KafkaDomainParams(
@@ -112,23 +112,29 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
 
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
 
-        when (params.security.saslConfig.mechanism) {
-            KafkaSaslMechanisms.PLAIN -> {
+        when (params.security.saslConfig) {
+            is SaslConfig.Password.Plain -> {
                 val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
                 this[SaslConfigs.SASL_JAAS_CONFIG] =
                     "org.apache.kafka.common.security.plain.PlainLoginModule required" +
                             """ username="${params.security.saslConfig.username}"""" +
                             """ password="$password";"""
             }
-            KafkaSaslMechanisms.SCRAM_SHA_256,
-            KafkaSaslMechanisms.SCRAM_SHA_512 -> {
+            is SaslConfig.Password.Scram256 -> {
                 val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
                 this[SaslConfigs.SASL_JAAS_CONFIG] =
                     "org.apache.kafka.common.security.scram.ScramLoginModule required" +
                             """ username="${params.security.saslConfig.username}"""" +
                             """ password="$password";"""
             }
-            KafkaSaslMechanisms.OAUTH_BEARER -> {
+            is SaslConfig.Password.Scram512 -> {
+                val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
+                this[SaslConfigs.SASL_JAAS_CONFIG] =
+                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
+                            """ username="${params.security.saslConfig.username}"""" +
+                            """ password="$password";"""
+            }
+            is SaslConfig.Oauth -> {
                 val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
 
                 val jaasConfig = buildString {
