@@ -37,7 +37,7 @@ stringData:
   client_secret: <client secret>
   token_endpoint_url: <token endpoint url>
   extensions: logicalCluster=<cluster id>,identityPoolId=<identity pool id>
-  scope: openid
+  scope: ""
 ```
 
 You will need following information from Confluent Cloud:
