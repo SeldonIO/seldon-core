@@ -113,26 +113,17 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
 
         when (params.security.saslConfig) {
-            is SaslConfig.Password.Plain -> {
+            is SaslConfig.Password -> {
+                val module = when (params.security.saslConfig) {
+                    is SaslConfig.Password.Plain -> "org.apache.kafka.common.security.plain.PlainLoginModule required"
+                    is SaslConfig.Password.Scram256,
+                    is SaslConfig.Password.Scram512 -> "org.apache.kafka.common.security.scram.ScramLoginModule required"
+                }
                 val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
-                this[SaslConfigs.SASL_JAAS_CONFIG] =
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required" +
-                            """ username="${params.security.saslConfig.username}"""" +
-                            """ password="$password";"""
-            }
-            is SaslConfig.Password.Scram256 -> {
-                val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
-                this[SaslConfigs.SASL_JAAS_CONFIG] =
-                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
-                            """ username="${params.security.saslConfig.username}"""" +
-                            """ password="$password";"""
-            }
-            is SaslConfig.Password.Scram512 -> {
-                val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
-                this[SaslConfigs.SASL_JAAS_CONFIG] =
-                    "org.apache.kafka.common.security.scram.ScramLoginModule required" +
-                            """ username="${params.security.saslConfig.username}"""" +
-                            """ password="$password";"""
+
+                this[SaslConfigs.SASL_JAAS_CONFIG] = module +
+                        """ username="${params.security.saslConfig.username}"""" +
+                        """ password="$password";"""
             }
             is SaslConfig.Oauth -> {
                 val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
