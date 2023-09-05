@@ -63,11 +63,12 @@ helm_setup:
 
 .PHONY: install_ambassador
 install_ambassador:
-	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/3.1.0/aes-crds.yaml
+	kubectl apply -f https://app.getambassador.io/yaml/emissary/3.8.0/emissary-crds.yaml
 	kubectl wait --timeout=2m --for=condition=available deployment emissary-apiext -n emissary-system
-	helm install -n ambassador --create-namespace edge-stack datawire/edge-stack \
+	helm upgrade --install -n ambassador --create-namespace emissary datawire/emissary-ingress \
 		-f ../resources/ambassador_values.yaml
-	kubectl rollout status  -n ambassador deployment/edge-stack -w --timeout=2m
+	kubectl wait --timeout=2m --for=condition=available deploy \
+		-lapp.kubernetes.io/instance=emissary -n ambassador  
 	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
 .PHONY: install_jaeger
@@ -81,7 +82,8 @@ install_jaeger:
 
 
 install_cert_manager:
-	helm install \
+	helm upgrade \
+			--install \
 	    cert-manager jetstack/cert-manager \
 	    --namespace cert-manager \
 	    --create-namespace \
@@ -134,7 +136,7 @@ install_metrics:
 kind_setup: create_namespaces helm_setup install_cert_manager install_ambassador install_istio install_keda install_jaeger install_seldon set_namespace install_metrics
 
 port-forward-ambassador:
-	kubectl port-forward $$(kubectl get pods -n ambassador -l app.kubernetes.io/instance=edge-stack  -o jsonpath='{.items[0].metadata.name}') -n ambassador 8005:8080
+	kubectl port-forward $$(kubectl get pods -n ambassador -lapp.kubernetes.io/instance=emissary -o jsonpath='{.items[0].metadata.name}') -n ambassador 8005:8080
 
 .PHONY: s2i_build_base_images
 s2i_build_base_images:
