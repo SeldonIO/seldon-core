@@ -35,6 +35,8 @@ broker:
   tmpDirSizeLimit: 100Mi
 
   pvcSize: 100Gi
+
+  messageMaxBytes: 1000000000
   
   resources:
     cpu:      200m                                                                                                         
