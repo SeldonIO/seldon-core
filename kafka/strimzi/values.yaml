@@ -35,10 +35,12 @@ broker:
   tmpDirSizeLimit: 100Mi
 
   pvcSize: 100Gi
+
+  messageMaxBytes: 1000000000
   
   resources:
     cpu:      200m                                                                                                         
-    memory:   1Gi
+    memory:   2Gi
 
 topic:
   autoCreate: true
