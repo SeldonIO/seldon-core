@@ -10,7 +10,6 @@ In this example we use [Oauth 2.0 security mechanism](https://docs.confluent.io/
 
 In your Confluent Cloud Console go to [Account & Access / Identity providers](https://confluent.cloud/settings/org/identity_providers) and register your Identity Provider.
 
-
 See Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/access-management/authenticate/oauth/identity-providers.html) for further details.
 
 
