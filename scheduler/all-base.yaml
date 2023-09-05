@@ -107,8 +107,8 @@ services:
   kafka:
     image: "${KAFKA_IMAGE_AND_TAG}"
     environment:
-    - KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES=1000000000
-    - KAFKA_CFG_MESSAGE_MAX_BYTES=1000000000
+    - KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES=${KAFKA_MESSAGE_MAX_BYTES}
+    - KAFKA_CFG_MESSAGE_MAX_BYTES=${KAFKA_MESSAGE_MAX_BYTES}
     volumes:
       - "kafka_data:/bitnami"
     depends_on:
