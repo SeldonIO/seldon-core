@@ -43,6 +43,7 @@ spec:
       default.replication.factor: {{ .Values.topic.defaultReplicationFactor }}
       min.insync.replicas: {{ .Values.topic.minISR }}
       inter.broker.protocol.version: {{ .Values.broker.interBrokerProtocolVersion }}
+      message.max.bytes: {{ .Values.broker.messageMaxBytes }}
     template:
       pod:
         tmpDirSizeLimit: {{ .Values.broker.tmpDirSizeLimit }}
