@@ -40,7 +40,7 @@ spec:
       command:
         - /bin/agent
       args:
-        - --tracing-config-path=/mnt/tracing/tracing.json 
+        - --tracing-config-path=/mnt/tracing/tracing.json
       name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
@@ -56,11 +56,11 @@ spec:
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
-        value: "9500"          
+        value: "9500"
       - name: SELDON_REVERSE_PROXY_HTTP_PORT
         value: "9001"
       - name: SELDON_REVERSE_PROXY_GRPC_PORT
-        value: "9501"          
+        value: "9501"
       - name: SELDON_SCHEDULER_HOST
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
@@ -153,7 +153,7 @@ spec:
           path: /v2/health/live
           port: server-http
         initialDelaySeconds: 5
-        periodSeconds: 5          
+        periodSeconds: 5
       startupProbe:
         httpGet:
           path: /v2/health/live
@@ -168,6 +168,8 @@ spec:
       - containerPort: 9000
         name: server-http
         protocol: TCP
+      - containerPort: 8082
+        name: server-metrics
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models

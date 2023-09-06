@@ -37,6 +37,7 @@ Examples are shown below:
  * [SASL PLAIN with Azure Event Hub](azure-event-hub-sasl.md) example
  * [SASL SCRAM with Strimzi](strimzi-sasl.md) example
  * [SASL SCRAM with AWS MSK](aws-msk-sasl.md) example
+ * [SASL OAUTH with Confluent Cloud](confluent-oauth.md) example
 
 ## Data Plane
 
@@ -95,6 +96,7 @@ helm install seldon-v2-certs k8s/helm-charts/seldon-core-v2-certs/ -n seldon-mes
 strimzi-mtls.md
 strimzi-sasl.md
 confluent-sasl.md
+confluent-oauth.md
 azure-event-hub-sasl.md
 aws-msk-sasl.md
 aws-msk-mtls.md

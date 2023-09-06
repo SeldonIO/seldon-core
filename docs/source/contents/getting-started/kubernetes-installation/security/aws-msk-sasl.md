@@ -24,6 +24,8 @@ kubectl create secret generic aws-msk-kafka-secret -n seldon-mesh --from-literal
 
 ## Configure Seldon Core v2
 
+Configure Seldon Core v2 by setting following Helm values:
+
 ```{literalinclude} ../../../../../../k8s/samples/values-aws-msk-kafka-sasl-scram.yaml.tmpl
 :language: yaml
 ```

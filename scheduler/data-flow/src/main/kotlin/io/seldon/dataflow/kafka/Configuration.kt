@@ -21,7 +21,8 @@ import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
 import io.seldon.dataflow.mtls.Provider
-import io.seldon.dataflow.sasl.K8sPasswordSecretsProvider
+import io.seldon.dataflow.sasl.SaslOauthProvider
+import io.seldon.dataflow.sasl.SaslPasswordProvider
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SaslConfigs
@@ -42,7 +43,7 @@ data class KafkaStreamsParams(
 data class KafkaSecurityParams(
     val securityProtocol: SecurityProtocol,
     val certConfig: CertificateConfig,
-    val saslConfig: SaslConfig
+    val saslConfig: SaslConfig,
 )
 
 data class KafkaDomainParams(
@@ -103,25 +104,50 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
             K8sCertSecretsProvider.downloadCertsFromSecrets(params.security.certConfig)
         }
 
-        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
-            params.security.certConfig.endpointIdentificationAlgorithm
-
         val trustStoreConfig = Provider.trustStoreFromCertificates(params.security.certConfig)
         this[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = trustStoreConfig.trustStoreLocation
         this[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = trustStoreConfig.trustStorePassword
+        this[SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG] =
+            params.security.certConfig.endpointIdentificationAlgorithm
 
-        val password = K8sPasswordSecretsProvider.downloadPasswordFromSecret(params.security.saslConfig)
         this[SaslConfigs.SASL_MECHANISM] = params.security.saslConfig.mechanism.toString()
-        this[SaslConfigs.SASL_JAAS_CONFIG] = when (params.security.saslConfig.mechanism) {
-            KafkaSaslMechanisms.PLAIN ->
-                "org.apache.kafka.common.security.plain.PlainLoginModule required" +
+
+        when (params.security.saslConfig) {
+            is SaslConfig.Password -> {
+                val module = when (params.security.saslConfig) {
+                    is SaslConfig.Password.Plain -> "org.apache.kafka.common.security.plain.PlainLoginModule required"
+                    is SaslConfig.Password.Scram256,
+                    is SaslConfig.Password.Scram512 -> "org.apache.kafka.common.security.scram.ScramLoginModule required"
+                }
+                val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
+
+                this[SaslConfigs.SASL_JAAS_CONFIG] = module +
                         """ username="${params.security.saslConfig.username}"""" +
                         """ password="$password";"""
-            KafkaSaslMechanisms.SCRAM_SHA_256,
-            KafkaSaslMechanisms.SCRAM_SHA_512 ->
-                "org.apache.kafka.common.security.scram.ScramLoginModule required" +
-                        """ username="${params.security.saslConfig.username}"""" +
-                        """ password="$password";"""
+            }
+            is SaslConfig.Oauth -> {
+                val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
+
+                val jaasConfig = buildString {
+                    append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
+                    append(""" clientId="${oauthConfig.clientId}"""")
+                    append(""" clientSecret="${oauthConfig.clientSecret}"""")
+                    oauthConfig.scope?.let {
+                        append(""" scope="$it"""")
+                    }
+                    oauthConfig.extensions?.let { extensions ->
+                        extensions.forEach {
+                            append(""" $it""")
+                        }
+                    }
+                    append(";")
+                }
+
+                this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig
+                this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = oauthConfig.tokenUrl
+                this[SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS] =
+                    "org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler"
+            }
         }
     }
 }
@@ -158,17 +184,17 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
 
 fun KafkaProperties.withAppId(namespace: String, consumerGroupIdPrefix: String, name: String): KafkaProperties {
     val properties = KafkaProperties()
-
     properties.putAll(this.toMap())
-    val str = StringBuilder()
+
+    val appId = StringBuilder()
     if (consumerGroupIdPrefix.isNotEmpty()) {
-        str.append(consumerGroupIdPrefix+"-")
+        appId.append("$consumerGroupIdPrefix-")
     }
     if (namespace.isNotEmpty()) {
-        str.append(namespace+"-")
+        appId.append("$namespace-")
     }
-    str.append("seldon-dataflow-"+name)
-    properties[StreamsConfig.APPLICATION_ID_CONFIG] = str.toString()
+    appId.append("seldon-dataflow-$name")
+    properties[StreamsConfig.APPLICATION_ID_CONFIG] = appId.toString()
 
     // TODO add k8s host name to ensure static membership is only used for consumers from the same pod restarting?
     //

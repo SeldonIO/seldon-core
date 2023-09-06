@@ -32,6 +32,17 @@ undeploy-k8s:
 # Dev
 #
 
+
+init-go-modules:
+	go work init || echo "go modules already initialized"
+	go work use operator
+	go work use scheduler
+	go work use apis/go
+	go work use components/tls
+	go work use hodometer
+	go work use tests/integration
+
+
 # use -W option for warnings as errors
 docs_build_html:
 	cd docs && \
