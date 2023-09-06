@@ -24,14 +24,17 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config/oauth"
 )
 
 const (
-	EnvKafkaClientPrefix      = "KAFKA_CLIENT"
-	EnvKafkaBrokerPrefix      = "KAFKA_BROKER"
-	EnvSASLUsernameSuffix     = "_SASL_USERNAME"
-	EnvPasswordLocationSuffix = "_SASL_PASSWORD_LOCATION"
-	DefaultSASLUsername       = "seldon"
+	EnvKafkaClientPrefix         = "KAFKA_CLIENT"
+	EnvKafkaBrokerPrefix         = "KAFKA_BROKER"
+	EnvSASLUsernameSuffix        = "_SASL_USERNAME"
+	EnvPasswordLocationSuffix    = "_SASL_PASSWORD_LOCATION"
+	EnvOAUTHConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
+	DefaultSASLUsername          = "seldon"
 )
 
 func AddKafkaSSLOptions(config kafka.ConfigMap) error {
@@ -39,7 +42,7 @@ func AddKafkaSSLOptions(config kafka.ConfigMap) error {
 	switch protocol {
 	case tls.SecurityProtocolSSL:
 		return setupTLSAuthentication(config)
-	case tls.SecurityProtocolSASLSSL: // Note: we don't support SASL_PLAINTXT
+	case tls.SecurityProtocolSASLSSL: // Note: we don't support SASL_PLAINTEXT
 		return setupSASLSSLAuthentication(config)
 	case tls.SecurityProtocolPlaintxt:
 		return nil
@@ -48,17 +51,35 @@ func AddKafkaSSLOptions(config kafka.ConfigMap) error {
 }
 
 func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
-	// Set the SASL mechanism
+
 	mechanism := tls.GetSASLMechanismFromEnv(tls.EnvSecurityPrefixKafka)
-	if (mechanism != tls.SASLMechanismPlain) && (mechanism != tls.SASLMechanismSCRAMSHA256) && (mechanism != tls.SASLMechanismSCRAMSHA512) {
-		return fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
+
+	var err error
+	switch mechanism {
+	case tls.SASLMechanismPlain:
+		// for PLAIN mechanism the logic is similar as for SCRAM
+		err = configureSASLSSLSCRAM(mechanism, config)
+	case tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
+		err = configureSASLSSLSCRAM(mechanism, config)
+	case tls.SASLMechanismOAUTHBEARER:
+		err = configureSASLSSLOAUTHBEARER(mechanism, config)
+	default:
+		err = fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
 	}
+
+	return err
+}
+
+func configureSASLSSLSCRAM(mechanism string, config kafka.ConfigMap) error {
+	// Set the SASL mechanism
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = mechanism
 
 	// Set the SASL username and password
-	ps, err := password.NewPasswordStore(password.Prefix(EnvKafkaClientPrefix),
-		password.LocationSuffix(EnvPasswordLocationSuffix))
+	ps, err := password.NewPasswordStore(
+		password.Prefix(EnvKafkaClientPrefix),
+		password.LocationSuffix(EnvPasswordLocationSuffix),
+	)
 	if err != nil {
 		return err
 	}
@@ -85,6 +106,49 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafkaClient)
 	config["ssl.endpoint.identification.algorithm"] = endpointMechanism
+	return nil
+}
+
+func configureSASLSSLOAUTHBEARER(mechanism string, config kafka.ConfigMap) error {
+	// Set the SASL mechanism
+	config["security.protocol"] = "SASL_SSL"
+	config["sasl.mechanism"] = "OAUTHBEARER"
+
+	// Set OAUTH Configuration
+	oauthStore, err := oauth.NewOAUTHStore(
+		oauth.Prefix(EnvKafkaClientPrefix),
+		oauth.LocationSuffix(EnvOAUTHConfigLocationSuffix),
+	)
+	if err != nil {
+		return err
+	}
+
+	oauthConfig := oauthStore.GetOAUTHConfig()
+
+	config["sasl.oauthbearer.method"] = oauthConfig.Method
+	config["sasl.oauthbearer.client.id"] = oauthConfig.ClientID
+	config["sasl.oauthbearer.client.secret"] = oauthConfig.ClientSecret
+	config["sasl.oauthbearer.scope"] = oauthConfig.Scope
+	config["sasl.oauthbearer.token.endpoint.url"] = oauthConfig.TokenEndpointURL
+	config["sasl.oauthbearer.extensions"] = oauthConfig.Extensions
+
+	// Set the TLS Certificate
+	cs, err := tls.NewCertificateStore(
+		tls.ValidationOnly(true),
+		tls.ValidationPrefix(EnvKafkaBrokerPrefix),
+	)
+	if err != nil {
+		return err
+	}
+	caCert := cs.GetValidationCertificate()
+	// issue is that ca.pem does not work with multiple certificates defined
+	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and testing in our code)
+
+	config["ssl.ca.location"] = caCert.CaPath
+
+	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafkaClient)
+	config["ssl.endpoint.identification.algorithm"] = endpointMechanism
+
 	return nil
 }
 

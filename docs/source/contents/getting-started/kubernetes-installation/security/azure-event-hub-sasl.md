@@ -46,6 +46,8 @@ kubectl create secret generic azure-kafka-secret -n seldon-mesh --from-literal p
 
 ## Configure Seldon Core v2
 
+Configure Seldon Core v2 by setting following Helm values:
+
 ```{literalinclude} ../../../../../../k8s/samples/values-azure-event-hub-sasl.yaml.tmpl
 :language: yaml
 ```

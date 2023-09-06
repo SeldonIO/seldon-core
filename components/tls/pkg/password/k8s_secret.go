@@ -106,7 +106,7 @@ func (s *PasswordSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	logger := s.logger.WithField("func", "onUpdate")
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("TLS Secret %s updated", s.secretName)
+		logger.Infof("Password Secret %s updated", s.secretName)
 		err := s.savePasswordFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract password from secret %s", secret.Name)

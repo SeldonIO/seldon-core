@@ -3,6 +3,7 @@
 > New in Seldon Core 2.5.0
 
 Seldon Core v2 can integrate with Confluent Cloud managed Kafka.
+In this example we use SASL security mechanism.
 
 
 ## Create API Keys
@@ -22,10 +23,12 @@ See Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/clie
 
 Seldon Core v2 expects password to be in form of K8s secret
 ```bash
-kubectl create secret generic confluent-kafka-secret -n seldon-mesh --from-literal password="<Confluent Cloud API Secret>"
+kubectl create secret generic confluent-kafka-sasl -n seldon-mesh --from-literal password="<Confluent Cloud API Secret>"
 ```
 
 ## Configure Seldon Core v2
+
+Configure Seldon Core v2 by setting following Helm values:
 
 ```{literalinclude} ../../../../../../k8s/samples/values-confluent-kafka-sasl.yaml.tmpl
 :language: yaml

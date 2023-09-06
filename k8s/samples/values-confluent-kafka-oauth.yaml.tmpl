@@ -12,10 +12,9 @@ security:
   kafka:
     protocol: SASL_SSL
     sasl:
-      mechanism: "PLAIN"
+      mechanism: OAUTHBEARER
       client:
-        username: < username >
-        secret: confluent-kafka-sasl
+          secret: confluent-kafka-oauth
     ssl:
       client:
         secret:

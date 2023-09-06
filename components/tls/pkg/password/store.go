@@ -31,16 +31,16 @@ const (
 	envNamespace    = "POD_NAMESPACE"
 )
 
-type funcTLSServerOption struct {
+type funcPasswordServerOption struct {
 	f func(options *PasswordStoreOptions)
 }
 
-func (fdo *funcTLSServerOption) apply(do *PasswordStoreOptions) {
+func (fdo *funcPasswordServerOption) apply(do *PasswordStoreOptions) {
 	fdo.f(do)
 }
 
-func newFuncServerOption(f func(options *PasswordStoreOptions)) *funcTLSServerOption {
-	return &funcTLSServerOption{
+func newFuncServerOption(f func(options *PasswordStoreOptions)) *funcPasswordServerOption {
+	return &funcPasswordServerOption{
 		f: f,
 	}
 }
@@ -61,8 +61,8 @@ type PasswordStoreOptions struct {
 }
 
 func (c PasswordStoreOptions) String() string {
-	return fmt.Sprintf("prefix=%s clientset=%v",
-		c.prefix, c.clientset)
+	return fmt.Sprintf("prefix=%s locationSuffix=%s clientset=%v",
+		c.prefix, c.locationSuffix, c.clientset)
 }
 
 func getDefaultPasswordStoreOptions() PasswordStoreOptions {
@@ -96,8 +96,9 @@ func NewPasswordStore(opt ...PasswordStoreOption) (PasswordStore, error) {
 	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
 		logger.Infof("Starting new password k8s secret store for %s from secret %s", opts.prefix, secretName)
 		namespace, ok := os.LookupEnv(envNamespace)
+		logger.Infof("Namespace %s", namespace)
 		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for secret TLS", envNamespace)
+			return nil, fmt.Errorf("Namespace env var %s not found and needed for password secret", envNamespace)
 		}
 		ps, err := NewPasswordSecretHandler(secretName, opts.clientset, namespace, opts.prefix, opts.locationSuffix, logger)
 		if err != nil {

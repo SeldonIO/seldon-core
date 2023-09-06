@@ -30,6 +30,7 @@ const (
 	EnvSASLMechanismSuffix   = "_SASL_MECHANISM"
 	SASLMechanismSCRAMSHA512 = "SCRAM-SHA-512"
 	SASLMechanismSCRAMSHA256 = "SCRAM-SHA-256"
+	SASLMechanismOAUTHBEARER = "OAUTHBEARER"
 	SASLMechanismPlain       = "PLAIN"
 
 	EnvEndpointIdentificationMechanismSuffix = "_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM"
