@@ -21,7 +21,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -54,14 +53,20 @@ func moveStringDataToData(secret *v1.Secret) {
 }
 
 func TestNewOAuthStoreWithSecret(t *testing.T) {
-	secretData, err := os.ReadFile("testdata/k8s_secret.yaml")
-	assert.NoError(t, err)
-
-	secret := &v1.Secret{}
-	err = unMarshallYamlStrict(secretData, secret)
-	assert.NoError(t, err)
-
-	moveStringDataToData(secret)
+	secret := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cc-oauth-test-secret",
+			Namespace: "default",
+		},
+		Data: map[string][]byte{
+			fieldMethod:       []byte("OIDC"),
+			fieldClientID:     []byte("test-client-id"),
+			fieldClientSecret: []byte("test-client-secret"),
+			fieldTokenURL:     []byte("https://example.com/openid-connect/token"),
+			fieldExtensions:   []byte("logicalCluster=logic-1234,identityPoolId=pool-1234"),
+			fieldScope:        []byte("test_scope"),
+		},
+	}
 
 	prefix := "prefix"
 
@@ -76,13 +81,9 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	assert.Equal(t, "OIDC", oauthConfig.Method)
 	assert.Equal(t, "test-client-id", oauthConfig.ClientID)
 	assert.Equal(t, "test-client-secret", oauthConfig.ClientSecret)
-	assert.Equal(t, "test scope", oauthConfig.Scope)
+	assert.Equal(t, "test_scope", oauthConfig.Scope)
 	assert.Equal(t, "logicalCluster=logic-1234,identityPoolId=pool-1234", oauthConfig.Extensions)
-	assert.Equal(
-		t,
-		"https://keycloak.example.com/auth/realms/example-realm/protocol/openid-connect/token",
-		oauthConfig.TokenEndpointURL,
-	)
+	assert.Equal(t, "https://example.com/openid-connect/token", oauthConfig.TokenEndpointURL)
 
 	newClientID := "new-client-id"
 	secret.Data[fieldClientID] = []byte(newClientID)
