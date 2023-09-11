@@ -82,7 +82,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	g.Expect(oauthConfig.Extensions).To(Equal("logicalCluster=logic-1234,identityPoolId=pool-1234"))
 
 	newClientID := "new-client-id"
-	secret.Data["client_id"] = []byte(newClientID)
+	secret.Data[fieldClientID] = []byte(newClientID)
 
 	_, err = clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
 	g.Expect(err).To(BeNil())
