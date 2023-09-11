@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -54,13 +54,12 @@ func moveStringDataToData(secret *v1.Secret) {
 }
 
 func TestNewOAuthStoreWithSecret(t *testing.T) {
-	g := NewGomegaWithT(t)
 	secretData, err := os.ReadFile("testdata/k8s_secret.yaml")
-	g.Expect(err).To(BeNil())
+	assert.NoError(t, err)
 
 	secret := &v1.Secret{}
 	err = unMarshallYamlStrict(secretData, secret)
-	g.Expect(err).To(BeNil())
+	assert.NoError(t, err)
 
 	moveStringDataToData(secret)
 
@@ -71,24 +70,28 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(secret)
 	ps, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
-	g.Expect(err).To(BeNil())
+	assert.NoError(t, err)
 
 	oauthConfig := ps.GetOAuthConfig()
-	g.Expect(oauthConfig.Method).To(Equal("OIDC"))
-	g.Expect(oauthConfig.ClientID).To(Equal("test-client-id"))
-	g.Expect(oauthConfig.ClientSecret).To(Equal("test-client-secret"))
-	g.Expect(oauthConfig.Scope).To(Equal("test scope"))
-	g.Expect(oauthConfig.TokenEndpointURL).To(Equal("https://keycloak.example.com/auth/realms/example-realm/protocol/openid-connect/token"))
-	g.Expect(oauthConfig.Extensions).To(Equal("logicalCluster=logic-1234,identityPoolId=pool-1234"))
+	assert.Equal(t, "OIDC", oauthConfig.Method)
+	assert.Equal(t, "test-client-id", oauthConfig.ClientID)
+	assert.Equal(t, "test-client-secret", oauthConfig.ClientSecret)
+	assert.Equal(t, "test scope", oauthConfig.Scope)
+	assert.Equal(t, "logicalCluster=logic-1234,identityPoolId=pool-1234", oauthConfig.Extensions)
+	assert.Equal(
+		t,
+		"https://keycloak.example.com/auth/realms/example-realm/protocol/openid-connect/token",
+		oauthConfig.TokenEndpointURL,
+	)
 
 	newClientID := "new-client-id"
 	secret.Data[fieldClientID] = []byte(newClientID)
 
 	_, err = clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
-	g.Expect(err).To(BeNil())
+	assert.NoError(t, err)
 	time.Sleep(time.Millisecond * 500)
 
 	oauthConfig = ps.GetOAuthConfig()
-	g.Expect(oauthConfig.ClientID).To(Equal(newClientID))
+	assert.Equal(t, newClientID, oauthConfig.ClientID)
 	ps.Stop()
 }
