@@ -31,6 +31,15 @@ const (
 	envNamespace    = "POD_NAMESPACE"
 )
 
+type OAuthConfig struct {
+	Method           string
+	ClientID         string
+	ClientSecret     string
+	Scope            string
+	TokenEndpointURL string
+	Extensions       string
+}
+
 type funcOAuthServerOption struct {
 	f func(options *OAuthStoreOptions)
 }

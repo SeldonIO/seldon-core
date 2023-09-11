@@ -15,12 +15,3 @@ limitations under the License.
 */
 
 package oauth
-
-type OAuthConfig struct {
-	Method           string
-	ClientID         string
-	ClientSecret     string
-	Scope            string
-	TokenEndpointURL string
-	Extensions       string
-}
