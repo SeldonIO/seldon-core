@@ -33,7 +33,7 @@ const (
 	EnvKafkaBrokerPrefix         = "KAFKA_BROKER"
 	EnvSASLUsernameSuffix        = "_SASL_USERNAME"
 	EnvPasswordLocationSuffix    = "_SASL_PASSWORD_LOCATION"
-	EnvOAUTHConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
+	EnvOAuthConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
 	DefaultSASLUsername          = "seldon"
 )
 
@@ -112,16 +112,16 @@ func withOAuth(mechanism string, config kafka.ConfigMap) error {
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = "OAUTHBEARER"
 
-	// Set OAUTH Configuration
-	oauthStore, err := oauth.NewOAUTHStore(
+	// Set OAuth Configuration
+	oauthStore, err := oauth.NewOAuthStore(
 		oauth.Prefix(EnvKafkaClientPrefix),
-		oauth.LocationSuffix(EnvOAUTHConfigLocationSuffix),
+		oauth.LocationSuffix(EnvOAuthConfigLocationSuffix),
 	)
 	if err != nil {
 		return err
 	}
 
-	oauthConfig := oauthStore.GetOAUTHConfig()
+	oauthConfig := oauthStore.GetOAuthConfig()
 
 	config["sasl.oauthbearer.method"] = oauthConfig.Method
 	config["sasl.oauthbearer.client.id"] = oauthConfig.ClientID

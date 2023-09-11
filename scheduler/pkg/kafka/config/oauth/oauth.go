@@ -25,7 +25,7 @@ const (
 	SecretKeyExtensions       = "extensions"
 )
 
-type OAUTHConfig struct {
+type OAuthConfig struct {
 	Method           string
 	ClientID         string
 	ClientSecret     string

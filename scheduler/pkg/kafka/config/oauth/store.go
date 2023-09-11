@@ -31,86 +31,86 @@ const (
 	envNamespace    = "POD_NAMESPACE"
 )
 
-type funcOAUTHServerOption struct {
-	f func(options *OAUTHStoreOptions)
+type funcOAuthServerOption struct {
+	f func(options *OAuthStoreOptions)
 }
 
-func (fdo *funcOAUTHServerOption) apply(do *OAUTHStoreOptions) {
+func (fdo *funcOAuthServerOption) apply(do *OAuthStoreOptions) {
 	fdo.f(do)
 }
 
-func newFuncServerOption(f func(options *OAUTHStoreOptions)) *funcOAUTHServerOption {
-	return &funcOAUTHServerOption{
+func newFuncServerOption(f func(options *OAuthStoreOptions)) *funcOAuthServerOption {
+	return &funcOAuthServerOption{
 		f: f,
 	}
 }
 
-type OAUTHStore interface {
-	GetOAUTHConfig() OAUTHConfig
+type OAuthStore interface {
+	GetOAuthConfig() OAuthConfig
 	Stop()
 }
 
-type OAUTHStoreOption interface {
-	apply(options *OAUTHStoreOptions)
+type OAuthStoreOption interface {
+	apply(options *OAuthStoreOptions)
 }
 
-type OAUTHStoreOptions struct {
+type OAuthStoreOptions struct {
 	prefix         string
 	locationSuffix string
 	clientset      kubernetes.Interface
 }
 
-func (c OAUTHStoreOptions) String() string {
+func (c OAuthStoreOptions) String() string {
 	return fmt.Sprintf("prefix=%s locationSuffix=%s clientset=%v",
 		c.prefix, c.locationSuffix, c.clientset)
 }
 
-func getDefaultOAUTHStoreOptions() OAUTHStoreOptions {
-	return OAUTHStoreOptions{}
+func getDefaultOAuthStoreOptions() OAuthStoreOptions {
+	return OAuthStoreOptions{}
 }
 
-func Prefix(prefix string) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
+func Prefix(prefix string) OAuthStoreOption {
+	return newFuncServerOption(func(o *OAuthStoreOptions) {
 		o.prefix = prefix
 	})
 }
 
-func LocationSuffix(suffix string) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
+func LocationSuffix(suffix string) OAuthStoreOption {
+	return newFuncServerOption(func(o *OAuthStoreOptions) {
 		o.locationSuffix = suffix
 	})
 }
-func ClientSet(clientSet kubernetes.Interface) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
+func ClientSet(clientSet kubernetes.Interface) OAuthStoreOption {
+	return newFuncServerOption(func(o *OAuthStoreOptions) {
 		o.clientset = clientSet
 	})
 }
 
-func NewOAUTHStore(opt ...OAUTHStoreOption) (OAUTHStore, error) {
-	opts := getDefaultOAUTHStoreOptions()
+func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
+	opts := getDefaultOAuthStoreOptions()
 	for _, o := range opt {
 		o.apply(&opts)
 	}
-	logger := logrus.New().WithField("source", "OAUTHStore")
+	logger := logrus.New().WithField("source", "OAuthStore")
 	logger.Infof("Options:%s", opts.String())
 	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new OAUTH k8s secret store for %s from secret %s", opts.prefix, secretName)
+		logger.Infof("Starting new OAuth k8s secret store for %s from secret %s", opts.prefix, secretName)
 		namespace, ok := os.LookupEnv(envNamespace)
 		logger.Infof("Namespace %s", namespace)
 		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAUTH secret", envNamespace)
+			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
 		}
-		ps, err := NewOAUTHSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
+		ps, err := NewOAuthSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
 		if err != nil {
 			return nil, err
 		}
-		err = ps.GetOAUTHAndWatch()
+		err = ps.GetOAuthAndWatch()
 		if err != nil {
 			return nil, err
 		}
 		return ps, nil
 	} else {
 		// NOT IMPLEMENTED ERROR
-		return nil, fmt.Errorf("OAUTH mechanism is currently only supported on K8s")
+		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
 	}
 }

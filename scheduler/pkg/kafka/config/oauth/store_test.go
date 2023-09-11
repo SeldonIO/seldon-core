@@ -53,7 +53,7 @@ func moveStringDataToData(secret *v1.Secret) {
 	}
 }
 
-func TestNewOAUTHStoreWithSecret(t *testing.T) {
+func TestNewOAuthStoreWithSecret(t *testing.T) {
 	g := NewGomegaWithT(t)
 	secretData, err := os.ReadFile("testdata/k8s_secret.yaml")
 	g.Expect(err).To(BeNil())
@@ -70,10 +70,10 @@ func TestNewOAUTHStoreWithSecret(t *testing.T) {
 	t.Setenv(envNamespace, secret.Namespace)
 
 	clientset := fake.NewSimpleClientset(secret)
-	ps, err := NewOAUTHStore(Prefix(prefix), ClientSet(clientset))
+	ps, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
 	g.Expect(err).To(BeNil())
 
-	oauthConfig := ps.GetOAUTHConfig()
+	oauthConfig := ps.GetOAuthConfig()
 	g.Expect(oauthConfig.Method).To(Equal("OIDC"))
 	g.Expect(oauthConfig.ClientID).To(Equal("test-client-id"))
 	g.Expect(oauthConfig.ClientSecret).To(Equal("test-client-secret"))
@@ -88,7 +88,7 @@ func TestNewOAUTHStoreWithSecret(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	time.Sleep(time.Millisecond * 500)
 
-	oauthConfig = ps.GetOAUTHConfig()
+	oauthConfig = ps.GetOAuthConfig()
 	g.Expect(oauthConfig.ClientID).To(Equal("new-client-id"))
 	ps.Stop()
 }

@@ -31,26 +31,26 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 )
 
-type OAUTHSecretHandler struct {
+type OAuthSecretHandler struct {
 	clientset   kubernetes.Interface
 	secretName  string
 	namespace   string
 	stopper     chan struct{}
 	logger      log.FieldLogger
 	mu          sync.RWMutex
-	oauthConfig OAUTHConfig
+	oauthConfig OAuthConfig
 }
 
-func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, logger log.FieldLogger) (*OAUTHSecretHandler, error) {
+func NewOAuthSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, logger log.FieldLogger) (*OAuthSecretHandler, error) {
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
 		if err != nil {
-			logger.WithError(err).Error("Failed to create clientset for OAUTH secret handler")
+			logger.WithError(err).Error("Failed to create clientset for OAuth secret handler")
 			return nil, err
 		}
 	}
-	return &OAUTHSecretHandler{
+	return &OAuthSecretHandler{
 		clientset:  clientset,
 		secretName: secretName,
 		namespace:  namespace,
@@ -59,17 +59,17 @@ func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, na
 	}, nil
 }
 
-func (s *OAUTHSecretHandler) GetOAUTHConfig() OAUTHConfig {
+func (s *OAuthSecretHandler) GetOAuthConfig() OAuthConfig {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.oauthConfig
 }
 
-func (s *OAUTHSecretHandler) Stop() {
+func (s *OAuthSecretHandler) Stop() {
 	close(s.stopper)
 }
 
-func (s *OAUTHSecretHandler) saveOAUTHFromSecret(secret *corev1.Secret) error {
+func (s *OAuthSecretHandler) saveOAuthFromSecret(secret *corev1.Secret) error {
 	// Read and Save oauthbearer method
 	method, ok := secret.Data[SecretKeyMethod]
 	if !ok {
@@ -115,35 +115,35 @@ func (s *OAUTHSecretHandler) saveOAUTHFromSecret(secret *corev1.Secret) error {
 	return nil
 }
 
-func (s *OAUTHSecretHandler) onAdd(obj interface{}) {
+func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onAdd")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAUTH Secret %s added", s.secretName)
-		err := s.saveOAUTHFromSecret(secret)
+		logger.Infof("OAuth Secret %s added", s.secretName)
+		err := s.saveOAuthFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAUTH from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *OAUTHSecretHandler) onUpdate(oldObj, newObj interface{}) {
+func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onUpdate")
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAUTH Secret %s updated", s.secretName)
-		err := s.saveOAUTHFromSecret(secret)
+		logger.Infof("OAuth Secret %s updated", s.secretName)
+		err := s.saveOAuthFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAUTH from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *OAUTHSecretHandler) onDelete(obj interface{}) {
+func (s *OAuthSecretHandler) onDelete(obj interface{}) {
 	logger := s.logger.WithField("func", "onDelete")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
@@ -151,18 +151,18 @@ func (s *OAUTHSecretHandler) onDelete(obj interface{}) {
 	}
 }
 
-func (s *OAUTHSecretHandler) loadOAUTH(secretName string) error {
+func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
 	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	return s.saveOAUTHFromSecret(secret)
+	return s.saveOAuthFromSecret(secret)
 }
 
-func (s *OAUTHSecretHandler) GetOAUTHAndWatch() error {
+func (s *OAuthSecretHandler) GetOAuthAndWatch() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	err := s.loadOAUTH(s.secretName)
+	err := s.loadOAuth(s.secretName)
 	if err != nil {
 		return err
 	}
