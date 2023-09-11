@@ -31,6 +31,15 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 )
 
+const (
+	SecretKeyMethod           = "method"
+	SecretKeyClientID         = "client_id"
+	SecretKeyClientSecret     = "client_secret"
+	SecretKeyScope            = "scope"
+	SecretKeyTokenEndpointURL = "token_endpoint_url"
+	SecretKeyExtensions       = "extensions"
+)
+
 type OAuthSecretHandler struct {
 	clientset   kubernetes.Interface
 	secretName  string

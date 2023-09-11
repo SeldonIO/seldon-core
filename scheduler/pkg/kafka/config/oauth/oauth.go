@@ -16,15 +16,6 @@ limitations under the License.
 
 package oauth
 
-const (
-	SecretKeyMethod           = "method"
-	SecretKeyClientID         = "client_id"
-	SecretKeyClientSecret     = "client_secret"
-	SecretKeyScope            = "scope"
-	SecretKeyTokenEndpointURL = "token_endpoint_url"
-	SecretKeyExtensions       = "extensions"
-)
-
 type OAuthConfig struct {
 	Method           string
 	ClientID         string
