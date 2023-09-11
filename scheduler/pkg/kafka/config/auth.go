@@ -58,9 +58,9 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	switch mechanism {
 	// PLAIN and SCRAM are password-based mechanisms handled in the same way
 	case tls.SASLMechanismPlain, tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
-		err = configureSASLSSLSCRAM(mechanism, config)
+		err = withPasswordAuth(mechanism, config)
 	case tls.SASLMechanismOAUTHBEARER:
-		err = configureSASLSSLOAUTHBEARER(mechanism, config)
+		err = withOAuth(mechanism, config)
 	default:
 		err = fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
 	}
@@ -68,7 +68,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	return err
 }
 
-func configureSASLSSLSCRAM(mechanism string, config kafka.ConfigMap) error {
+func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 	// Set the SASL mechanism
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = mechanism
@@ -107,7 +107,7 @@ func configureSASLSSLSCRAM(mechanism string, config kafka.ConfigMap) error {
 	return nil
 }
 
-func configureSASLSSLOAUTHBEARER(mechanism string, config kafka.ConfigMap) error {
+func withOAuth(mechanism string, config kafka.ConfigMap) error {
 	// Set the SASL mechanism
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = "OAUTHBEARER"
