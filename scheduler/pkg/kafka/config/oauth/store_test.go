@@ -54,29 +54,38 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 			fieldScope:        []byte(expectedExisting.Scope),
 		},
 	}
+	clientset := fake.NewSimpleClientset(secret)
 
 	prefix := "prefix"
-
 	t.Setenv(fmt.Sprintf("%s%s", prefix, envSecretSuffix), secret.Name)
 	t.Setenv(envNamespace, secret.Namespace)
 
-	clientset := fake.NewSimpleClientset(secret)
 	store, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
 	assert.NoError(t, err)
+	defer store.Stop()
 
-	oauthConfig := store.GetOAuthConfig()
-	assert.Equal(t, expectedExisting, oauthConfig)
+	t.Run(
+		"get existing config",
+		func(t *testing.T) {
+			oauthConfig := store.GetOAuthConfig()
+			assert.Equal(t, expectedExisting, oauthConfig)
+		},
+	)
 
-	secret.Data[fieldClientID] = []byte(expectedUpdate.ClientID)
+	t.Run(
+		"get updated config",
+		func(t *testing.T) {
+			secret.Data[fieldClientID] = []byte(expectedUpdate.ClientID)
 
-	_, err = clientset.
-		CoreV1().
-		Secrets(secret.Namespace).
-		Update(context.Background(), secret, metav1.UpdateOptions{})
-	assert.NoError(t, err)
-	time.Sleep(time.Millisecond * 500)
+			_, err = clientset.
+				CoreV1().
+				Secrets(secret.Namespace).
+				Update(context.Background(), secret, metav1.UpdateOptions{})
+			assert.NoError(t, err)
+			time.Sleep(time.Millisecond * 500)
 
-	oauthConfig = store.GetOAuthConfig()
-	assert.Equal(t, expectedUpdate, oauthConfig)
-	store.Stop()
+			oauthConfig := store.GetOAuthConfig()
+			assert.Equal(t, expectedUpdate, oauthConfig)
+		},
+	)
 }
