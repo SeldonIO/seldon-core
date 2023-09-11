@@ -56,10 +56,8 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 	var err error
 	switch mechanism {
-	case tls.SASLMechanismPlain:
-		// for PLAIN mechanism the logic is similar as for SCRAM
-		err = configureSASLSSLSCRAM(mechanism, config)
-	case tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
+	// PLAIN and SCRAM are password-based mechanisms handled in the same way
+	case tls.SASLMechanismPlain, tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
 		err = configureSASLSSLSCRAM(mechanism, config)
 	case tls.SASLMechanismOAUTHBEARER:
 		err = configureSASLSSLOAUTHBEARER(mechanism, config)
