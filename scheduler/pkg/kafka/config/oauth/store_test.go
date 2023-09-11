@@ -69,10 +69,10 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	t.Setenv(envNamespace, secret.Namespace)
 
 	clientset := fake.NewSimpleClientset(secret)
-	ps, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
+	store, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
 	assert.NoError(t, err)
 
-	oauthConfig := ps.GetOAuthConfig()
+	oauthConfig := store.GetOAuthConfig()
 	assert.Equal(t, "OIDC", oauthConfig.Method)
 	assert.Equal(t, "test-client-id", oauthConfig.ClientID)
 	assert.Equal(t, "test-client-secret", oauthConfig.ClientSecret)
@@ -91,7 +91,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond * 500)
 
-	oauthConfig = ps.GetOAuthConfig()
+	oauthConfig = store.GetOAuthConfig()
 	assert.Equal(t, newClientID, oauthConfig.ClientID)
-	ps.Stop()
+	store.Stop()
 }
