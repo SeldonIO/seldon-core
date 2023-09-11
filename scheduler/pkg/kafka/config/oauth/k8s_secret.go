@@ -79,42 +79,36 @@ func (s *OAuthSecretHandler) Stop() {
 }
 
 func (s *OAuthSecretHandler) saveOAuthFromSecret(secret *corev1.Secret) error {
-	// Read and Save oauthbearer method
 	method, ok := secret.Data[fieldMethod]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldMethod, secret.Name)
 	}
 	s.oauthConfig.Method = string(method)
 
-	// Read and Save oauthbearer client id
 	clientID, ok := secret.Data[fieldClientID]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldClientID, secret.Name)
 	}
 	s.oauthConfig.ClientID = string(clientID)
 
-	// Read and Save oauthbearer client secret
 	clientSecret, ok := secret.Data[fieldClientSecret]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldClientSecret, secret.Name)
 	}
 	s.oauthConfig.ClientSecret = string(clientSecret)
 
-	// Read and Save oauthbearer scope
 	scope, ok := secret.Data[fieldScope]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldScope, secret.Name)
 	}
 	s.oauthConfig.Scope = string(scope)
 
-	// Read and Save oauthbearer token endpoint url
 	tokenEndpointURL, ok := secret.Data[fieldTokenURL]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldTokenURL, secret.Name)
 	}
 	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
 
-	// Read and Save oauthbearer extensions
 	extensions, ok := secret.Data[fieldExtensions]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", fieldExtensions, secret.Name)
