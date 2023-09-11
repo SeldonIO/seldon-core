@@ -89,6 +89,6 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	time.Sleep(time.Millisecond * 500)
 
 	oauthConfig = ps.GetOAuthConfig()
-	g.Expect(oauthConfig.ClientID).To(Equal("new-client-id"))
+	g.Expect(oauthConfig.ClientID).To(Equal(newClientID))
 	ps.Stop()
 }
