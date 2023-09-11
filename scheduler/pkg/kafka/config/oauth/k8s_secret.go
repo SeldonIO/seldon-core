@@ -32,12 +32,12 @@ import (
 )
 
 const (
-	SecretKeyMethod           = "method"
-	SecretKeyClientID         = "client_id"
-	SecretKeyClientSecret     = "client_secret"
-	SecretKeyScope            = "scope"
-	SecretKeyTokenEndpointURL = "token_endpoint_url"
-	SecretKeyExtensions       = "extensions"
+	secretKeyMethod           = "method"
+	secretKeyClientID         = "client_id"
+	secretKeyClientSecret     = "client_secret"
+	secretKeyScope            = "scope"
+	secretKeyTokenEndpointURL = "token_endpoint_url"
+	secretKeyExtensions       = "extensions"
 )
 
 type OAuthSecretHandler struct {
@@ -80,44 +80,44 @@ func (s *OAuthSecretHandler) Stop() {
 
 func (s *OAuthSecretHandler) saveOAuthFromSecret(secret *corev1.Secret) error {
 	// Read and Save oauthbearer method
-	method, ok := secret.Data[SecretKeyMethod]
+	method, ok := secret.Data[secretKeyMethod]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyMethod, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyMethod, secret.Name)
 	}
 	s.oauthConfig.Method = string(method)
 
 	// Read and Save oauthbearer client id
-	clientID, ok := secret.Data[SecretKeyClientID]
+	clientID, ok := secret.Data[secretKeyClientID]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientID, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyClientID, secret.Name)
 	}
 	s.oauthConfig.ClientID = string(clientID)
 
 	// Read and Save oauthbearer client secret
-	clientSecret, ok := secret.Data[SecretKeyClientSecret]
+	clientSecret, ok := secret.Data[secretKeyClientSecret]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientSecret, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyClientSecret, secret.Name)
 	}
 	s.oauthConfig.ClientSecret = string(clientSecret)
 
 	// Read and Save oauthbearer scope
-	scope, ok := secret.Data[SecretKeyScope]
+	scope, ok := secret.Data[secretKeyScope]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyScope, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyScope, secret.Name)
 	}
 	s.oauthConfig.Scope = string(scope)
 
 	// Read and Save oauthbearer token endpoint url
-	tokenEndpointURL, ok := secret.Data[SecretKeyTokenEndpointURL]
+	tokenEndpointURL, ok := secret.Data[secretKeyTokenEndpointURL]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyTokenEndpointURL, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyTokenEndpointURL, secret.Name)
 	}
 	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
 
 	// Read and Save oauthbearer extensions
-	extensions, ok := secret.Data[SecretKeyExtensions]
+	extensions, ok := secret.Data[secretKeyExtensions]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyExtensions, secret.Name)
+		return fmt.Errorf("Failed to find %s in secret %s", secretKeyExtensions, secret.Name)
 	}
 	s.oauthConfig.Extensions = string(extensions)
 
