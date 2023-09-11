@@ -17,40 +17,16 @@ limitations under the License.
 package oauth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
-
-func unMarshallYamlStrict(data []byte, msg interface{}) error {
-	jsonData, err := yaml.YAMLToJSON(data)
-	if err != nil {
-		return err
-	}
-	d := json.NewDecoder(bytes.NewReader(jsonData))
-	d.DisallowUnknownFields() // So we fail if not exactly as required in schema
-	err = d.Decode(msg)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func moveStringDataToData(secret *v1.Secret) {
-	secret.Data = make(map[string][]byte)
-	for key, val := range secret.StringData {
-		secret.Data[key] = []byte(val)
-	}
-}
 
 func TestNewOAuthStoreWithSecret(t *testing.T) {
 	secret := &v1.Secret{
