@@ -29,7 +29,7 @@ import (
 )
 
 func TestNewOAuthStoreWithSecret(t *testing.T) {
-	expected := OAuthConfig{
+	expectedExisting := OAuthConfig{
 		Method:           "OIDC",
 		ClientID:         "test-client-id",
 		ClientSecret:     "test-client-secret",
@@ -37,6 +37,8 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 		Extensions:       "logicalCluster=logic-1234,identityPoolId=pool-1234",
 		Scope:            "test_scope",
 	}
+	expectedUpdate := expectedExisting
+	expectedUpdate.ClientID = "new-client-id"
 
 	secret := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -44,12 +46,12 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 			Namespace: "default",
 		},
 		Data: map[string][]byte{
-			fieldMethod:       []byte(expected.Method),
-			fieldClientID:     []byte(expected.ClientID),
-			fieldClientSecret: []byte(expected.ClientSecret),
-			fieldTokenURL:     []byte(expected.TokenEndpointURL),
-			fieldExtensions:   []byte(expected.Extensions),
-			fieldScope:        []byte(expected.Scope),
+			fieldMethod:       []byte(expectedExisting.Method),
+			fieldClientID:     []byte(expectedExisting.ClientID),
+			fieldClientSecret: []byte(expectedExisting.ClientSecret),
+			fieldTokenURL:     []byte(expectedExisting.TokenEndpointURL),
+			fieldExtensions:   []byte(expectedExisting.Extensions),
+			fieldScope:        []byte(expectedExisting.Scope),
 		},
 	}
 
@@ -63,16 +65,15 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	assert.NoError(t, err)
 
 	oauthConfig := store.GetOAuthConfig()
-	assert.Equal(t, expected, oauthConfig)
+	assert.Equal(t, expectedExisting, oauthConfig)
 
-	newClientID := "new-client-id"
-	secret.Data[fieldClientID] = []byte(newClientID)
+	secret.Data[fieldClientID] = []byte(expectedUpdate.ClientID)
 
 	_, err = clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond * 500)
 
 	oauthConfig = store.GetOAuthConfig()
-	assert.Equal(t, newClientID, oauthConfig.ClientID)
+	assert.Equal(t, expectedUpdate, oauthConfig)
 	store.Stop()
 }
