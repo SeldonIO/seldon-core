@@ -69,7 +69,10 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 
 	secret.Data[fieldClientID] = []byte(expectedUpdate.ClientID)
 
-	_, err = clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
+	_, err = clientset.
+		CoreV1().
+		Secrets(secret.Namespace).
+		Update(context.Background(), secret, metav1.UpdateOptions{})
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond * 500)
 
