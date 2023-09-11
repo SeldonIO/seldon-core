@@ -29,18 +29,27 @@ import (
 )
 
 func TestNewOAuthStoreWithSecret(t *testing.T) {
+	expected := OAuthConfig{
+		Method:           "OIDC",
+		ClientID:         "test-client-id",
+		ClientSecret:     "test-client-secret",
+		TokenEndpointURL: "https://example.com/openid-connect/token",
+		Extensions:       "logicalCluster=logic-1234,identityPoolId=pool-1234",
+		Scope:            "test_scope",
+	}
+
 	secret := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "cc-oauth-test-secret",
 			Namespace: "default",
 		},
 		Data: map[string][]byte{
-			fieldMethod:       []byte("OIDC"),
-			fieldClientID:     []byte("test-client-id"),
-			fieldClientSecret: []byte("test-client-secret"),
-			fieldTokenURL:     []byte("https://example.com/openid-connect/token"),
-			fieldExtensions:   []byte("logicalCluster=logic-1234,identityPoolId=pool-1234"),
-			fieldScope:        []byte("test_scope"),
+			fieldMethod:       []byte(expected.Method),
+			fieldClientID:     []byte(expected.ClientID),
+			fieldClientSecret: []byte(expected.ClientSecret),
+			fieldTokenURL:     []byte(expected.TokenEndpointURL),
+			fieldExtensions:   []byte(expected.Extensions),
+			fieldScope:        []byte(expected.Scope),
 		},
 	}
 
@@ -54,12 +63,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	assert.NoError(t, err)
 
 	oauthConfig := store.GetOAuthConfig()
-	assert.Equal(t, "OIDC", oauthConfig.Method)
-	assert.Equal(t, "test-client-id", oauthConfig.ClientID)
-	assert.Equal(t, "test-client-secret", oauthConfig.ClientSecret)
-	assert.Equal(t, "test_scope", oauthConfig.Scope)
-	assert.Equal(t, "logicalCluster=logic-1234,identityPoolId=pool-1234", oauthConfig.Extensions)
-	assert.Equal(t, "https://example.com/openid-connect/token", oauthConfig.TokenEndpointURL)
+	assert.Equal(t, expected, oauthConfig)
 
 	newClientID := "new-client-id"
 	secret.Data[fieldClientID] = []byte(newClientID)
