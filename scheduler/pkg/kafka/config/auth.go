@@ -109,8 +109,8 @@ func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 
 func withOAuth(config kafka.ConfigMap) error {
 	// Set the SASL mechanism
-	config["security.protocol"] = "SASL_SSL"
-	config["sasl.mechanism"] = "OAUTHBEARER"
+	config["security.protocol"] = tls.SecurityProtocolSASLSSL
+	config["sasl.mechanism"] = tls.SASLMechanismOAUTHBEARER
 
 	// Set OAuth Configuration
 	oauthStore, err := oauth.NewOAuthStore(
