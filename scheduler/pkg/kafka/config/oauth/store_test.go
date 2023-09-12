@@ -18,7 +18,6 @@ package oauth
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -57,7 +56,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	clientset := fake.NewSimpleClientset(secret)
 
 	prefix := "prefix"
-	t.Setenv(fmt.Sprintf("%s%s", prefix, envSecretSuffix), secret.Name)
+	t.Setenv(prefix+envSecretSuffix, secret.Name)
 	t.Setenv(envNamespace, secret.Namespace)
 
 	store, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
