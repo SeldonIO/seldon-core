@@ -100,23 +100,29 @@ func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
 	for _, o := range opt {
 		o.apply(&opts)
 	}
+
 	logger := logrus.New().WithField("source", "OAuthStore")
 	logger.Infof("Options:%s", opts.String())
+
 	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
 		logger.Infof("Starting new OAuth k8s secret store for %s from secret %s", opts.prefix, secretName)
+
 		namespace, ok := os.LookupEnv(envNamespace)
-		logger.Infof("Namespace %s", namespace)
 		if !ok {
 			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
 		}
+		logger.Infof("Namespace %s", namespace)
+
 		store, err := NewOAuthSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
 		if err != nil {
 			return nil, err
 		}
+
 		err = store.GetOAuthAndWatch()
 		if err != nil {
 			return nil, err
 		}
+
 		return store, nil
 	} else {
 		// NOT IMPLEMENTED ERROR
