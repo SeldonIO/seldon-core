@@ -60,7 +60,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	case tls.SASLMechanismPlain, tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
 		err = withPasswordAuth(mechanism, config)
 	case tls.SASLMechanismOAUTHBEARER:
-		err = withOAuth(mechanism, config)
+		err = withOAuth(config)
 	default:
 		err = fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
 	}
@@ -107,7 +107,7 @@ func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 	return nil
 }
 
-func withOAuth(mechanism string, config kafka.ConfigMap) error {
+func withOAuth(config kafka.ConfigMap) error {
 	// Set the SASL mechanism
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = "OAUTHBEARER"
