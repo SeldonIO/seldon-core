@@ -109,15 +109,15 @@ func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
 		if !ok {
 			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
 		}
-		ps, err := NewOAuthSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
+		store, err := NewOAuthSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
 		if err != nil {
 			return nil, err
 		}
-		err = ps.GetOAuthAndWatch()
+		err = store.GetOAuthAndWatch()
 		if err != nil {
 			return nil, err
 		}
-		return ps, nil
+		return store, nil
 	} else {
 		// NOT IMPLEMENTED ERROR
 		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
