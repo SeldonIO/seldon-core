@@ -125,7 +125,6 @@ func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
 
 		return store, nil
 	} else {
-		// NOT IMPLEMENTED ERROR
 		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
 	}
 }
