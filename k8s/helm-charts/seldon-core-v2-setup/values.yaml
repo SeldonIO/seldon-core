@@ -83,7 +83,7 @@ hodometer:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-hodometer
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   logLevel: info
   metricsLevel: feature
   extraPublishUrls: ""
@@ -120,7 +120,7 @@ modelgateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-modelgateway
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   workers: 8
   resources:
     cpu: 100m
@@ -136,7 +136,7 @@ pipelinegateway:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-pipelinegateway
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   resources:
     cpu: 100m
     memory: 1G
@@ -151,7 +151,7 @@ dataflow:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-dataflow-engine
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   cores: 4
   resources:
     cpu: 100m
@@ -168,7 +168,7 @@ controller:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldonv2-controller
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   resources:
     cpu: 10m
     memory: 64Mi
@@ -183,7 +183,7 @@ envoy:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-envoy
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   resources:
     cpu: 100m
     memory: 128Mi
@@ -200,7 +200,7 @@ scheduler:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: seldonio/seldon-scheduler
-    tag: 2.7.0-rc1
+    tag: 2.7.0-rc2
   resources:
     cpu: 100m
     memory: 1Gi
@@ -227,7 +227,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-rclone
-      tag: 2.7.0-rc1
+      tag: 2.7.0-rc2
     resources:
       cpu: 50m
       memory: 128Mi
@@ -237,7 +237,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/seldon-agent
-      tag: 2.7.0-rc1
+      tag: 2.7.0-rc2
     overcommitPercentage: "10"
     scalingStatsPeriodSeconds: "20"
     modelInferenceLagThreshold: "30"
