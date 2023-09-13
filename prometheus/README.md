@@ -31,6 +31,7 @@ Includes:
  * Agent pod monitor. Monitors the metrics port of server inference pods.
  * Server pod monitor. Monitors the server-metrics port of server inference pods.
  * Envoy service monitor. Monitors the Envoy proxies.
+* Pipeline gateway service monitor. Monitors seldon defined metrics for pipelines on the metrics port of pipeline gateway pods.
 
 Pod monitors were chosen as ports for metrics are not exposed at service level as we do not have a top level service for server replicas but 1 headless service per replica. Future discussions could reference [this](https://github.com/prometheus-operator/prometheus-operator/issues/3119).
 
