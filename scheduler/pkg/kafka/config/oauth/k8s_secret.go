@@ -85,51 +85,59 @@ func (s *OAuthSecretHandler) Stop() {
 }
 
 func (s *OAuthSecretHandler) updateFromSecret(secret *corev1.Secret) error {
+	newConfig, err := s.getConfigFromSecret(secret)
+	if err != nil {
+		return err
+	}
+
+	s.oauthConfig = *newConfig
+
+	return nil
+}
+
+func (s *OAuthSecretHandler) getConfigFromSecret(secret *corev1.Secret) (*OAuthConfig, error) {
+	config := &OAuthConfig{}
 	noSuchFieldError := func(fieldName string) error {
 		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
 	}
 
-	newConfig := OAuthConfig{}
-
 	method, ok := secret.Data[fieldMethod]
 	if !ok {
-		return noSuchFieldError(fieldMethod)
+		return nil, noSuchFieldError(fieldMethod)
 	}
-	newConfig.Method = string(method)
+	config.Method = string(method)
 
 	clientID, ok := secret.Data[fieldClientID]
 	if !ok {
-		return noSuchFieldError(fieldClientID)
+		return nil, noSuchFieldError(fieldClientID)
 	}
-	newConfig.ClientID = string(clientID)
+	config.ClientID = string(clientID)
 
 	clientSecret, ok := secret.Data[fieldClientSecret]
 	if !ok {
-		return noSuchFieldError(fieldClientSecret)
+		return nil, noSuchFieldError(fieldClientSecret)
 	}
-	newConfig.ClientSecret = string(clientSecret)
+	config.ClientSecret = string(clientSecret)
 
 	scope, ok := secret.Data[fieldScope]
 	if !ok {
-		return noSuchFieldError(fieldScope)
+		return nil, noSuchFieldError(fieldScope)
 	}
-	newConfig.Scope = string(scope)
+	config.Scope = string(scope)
 
 	tokenEndpointURL, ok := secret.Data[fieldTokenURL]
 	if !ok {
-		return noSuchFieldError(fieldTokenURL)
+		return nil, noSuchFieldError(fieldTokenURL)
 	}
-	newConfig.TokenEndpointURL = string(tokenEndpointURL)
+	config.TokenEndpointURL = string(tokenEndpointURL)
 
 	extensions, ok := secret.Data[fieldExtensions]
 	if !ok {
-		return noSuchFieldError(fieldExtensions)
+		return nil, noSuchFieldError(fieldExtensions)
 	}
-	newConfig.Extensions = string(extensions)
+	config.Extensions = string(extensions)
 
-	s.oauthConfig = newConfig
-
-	return nil
+	return config, nil
 }
 
 func (s *OAuthSecretHandler) onAdd(obj interface{}) {
