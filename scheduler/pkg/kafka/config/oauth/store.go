@@ -77,7 +77,7 @@ func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
 			return nil, err
 		}
 
-		err = store.GetOAuthAndWatch()
+		err = store.LoadAndWatchConfig()
 		if err != nil {
 			return nil, err
 		}

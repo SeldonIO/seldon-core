@@ -178,7 +178,7 @@ func (s *OAuthSecretHandler) onDelete(obj interface{}) {
 	}
 }
 
-func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
+func (s *OAuthSecretHandler) loadOAuthConfig(secretName string) error {
 	secret, err := s.clientset.
 		CoreV1().
 		Secrets(s.namespace).
@@ -189,11 +189,11 @@ func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
 	return s.updateFromSecret(secret)
 }
 
-func (s *OAuthSecretHandler) GetOAuthAndWatch() error {
+func (s *OAuthSecretHandler) LoadAndWatchConfig() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	err := s.loadOAuth(s.secretName)
+	err := s.loadOAuthConfig(s.secretName)
 	if err != nil {
 		return err
 	}
