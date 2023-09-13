@@ -79,39 +79,43 @@ func (s *OAuthSecretHandler) Stop() {
 }
 
 func (s *OAuthSecretHandler) saveOAuthFromSecret(secret *corev1.Secret) error {
+	noSuchFieldError := func(fieldName string) error {
+		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
+	}
+
 	method, ok := secret.Data[fieldMethod]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldMethod, secret.Name)
+		return noSuchFieldError(fieldMethod)
 	}
 	s.oauthConfig.Method = string(method)
 
 	clientID, ok := secret.Data[fieldClientID]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldClientID, secret.Name)
+		return noSuchFieldError(fieldClientID)
 	}
 	s.oauthConfig.ClientID = string(clientID)
 
 	clientSecret, ok := secret.Data[fieldClientSecret]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldClientSecret, secret.Name)
+		return noSuchFieldError(fieldClientSecret)
 	}
 	s.oauthConfig.ClientSecret = string(clientSecret)
 
 	scope, ok := secret.Data[fieldScope]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldScope, secret.Name)
+		return noSuchFieldError(fieldScope)
 	}
 	s.oauthConfig.Scope = string(scope)
 
 	tokenEndpointURL, ok := secret.Data[fieldTokenURL]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldTokenURL, secret.Name)
+		return noSuchFieldError(fieldTokenURL)
 	}
 	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
 
 	extensions, ok := secret.Data[fieldExtensions]
 	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", fieldExtensions, secret.Name)
+		return noSuchFieldError(fieldExtensions)
 	}
 	s.oauthConfig.Extensions = string(extensions)
 
