@@ -84,7 +84,7 @@ func (s *OAuthSecretHandler) Stop() {
 	close(s.stopper)
 }
 
-func (s *OAuthSecretHandler) saveOAuthFromSecret(secret *corev1.Secret) error {
+func (s *OAuthSecretHandler) updateFromSecret(secret *corev1.Secret) error {
 	noSuchFieldError := func(fieldName string) error {
 		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
 	}
@@ -136,7 +136,7 @@ func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 	if secret.Name == s.secretName {
 		logger.Infof("OAuth Secret %s added", s.secretName)
 
-		err := s.saveOAuthFromSecret(secret)
+		err := s.updateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
 		}
@@ -151,7 +151,7 @@ func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	if secret.Name == s.secretName {
 		logger.Infof("OAuth Secret %s updated", s.secretName)
 
-		err := s.saveOAuthFromSecret(secret)
+		err := s.updateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
 		}
@@ -174,7 +174,7 @@ func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
 	if err != nil {
 		return err
 	}
-	return s.saveOAuthFromSecret(secret)
+	return s.updateFromSecret(secret)
 }
 
 func (s *OAuthSecretHandler) GetOAuthAndWatch() error {
