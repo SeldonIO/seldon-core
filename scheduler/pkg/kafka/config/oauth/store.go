@@ -57,24 +57,22 @@ func (c OAuthStoreOptions) String() string {
 }
 
 func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
-	logger := logrus.New().WithField("source", "OAuthStore")
-	logger.WithField("options", opts.String()).Info("creating new store")
-
 	secretName, ok := util.GetEnv(opts.Prefix, envSecretSuffix)
 	if !ok {
 		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
 	}
 
-	logger.
-		WithField("secret", secretName).
-		WithField("prefix", opts.Prefix).
-		Info("creating store from secret")
-
 	namespace, ok := os.LookupEnv(envNamespace)
 	if !ok {
 		return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
 	}
-	logger.WithField("namespace", namespace).Info("determined namespace from env var")
+
+	logger := logrus.New().WithField("source", "OAuthStore")
+	logger.
+		WithField("namespace", namespace).
+		WithField("secret", secretName).
+		WithField("options", opts.String()).
+		Info("creating store from secret")
 
 	store, err := NewOAuthSecretHandler(secretName, opts.Clientset, namespace, opts.Prefix, logger)
 	if err != nil {
