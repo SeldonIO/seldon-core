@@ -50,7 +50,13 @@ type OAuthSecretHandler struct {
 	oauthConfig OAuthConfig
 }
 
-func NewOAuthSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, logger log.FieldLogger) (*OAuthSecretHandler, error) {
+func NewOAuthSecretHandler(
+	secretName string,
+	clientset kubernetes.Interface,
+	namespace string,
+	prefix string,
+	logger log.FieldLogger,
+) (*OAuthSecretHandler, error) {
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
@@ -129,6 +135,7 @@ func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("OAuth Secret %s added", s.secretName)
+
 		err := s.saveOAuthFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
@@ -143,6 +150,7 @@ func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
 		logger.Infof("OAuth Secret %s updated", s.secretName)
+
 		err := s.saveOAuthFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
@@ -159,7 +167,10 @@ func (s *OAuthSecretHandler) onDelete(obj interface{}) {
 }
 
 func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
-	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+	secret, err := s.clientset.
+		CoreV1().
+		Secrets(s.namespace).
+		Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -169,17 +180,26 @@ func (s *OAuthSecretHandler) loadOAuth(secretName string) error {
 func (s *OAuthSecretHandler) GetOAuthAndWatch() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	err := s.loadOAuth(s.secretName)
 	if err != nil {
 		return err
 	}
-	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.clientset, 0, informers.WithNamespace(s.namespace))
-	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    s.onAdd,
-		UpdateFunc: s.onUpdate,
-		DeleteFunc: s.onDelete,
-	})
+
+	coreInformers := informers.NewSharedInformerFactoryWithOptions(
+		s.clientset,
+		0,
+		informers.WithNamespace(s.namespace),
+	)
+	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(
+		cache.ResourceEventHandlerFuncs{
+			AddFunc:    s.onAdd,
+			UpdateFunc: s.onUpdate,
+			DeleteFunc: s.onDelete,
+		},
+	)
 	coreInformers.WaitForCacheSync(s.stopper)
 	coreInformers.Start(s.stopper)
+
 	return nil
 }
