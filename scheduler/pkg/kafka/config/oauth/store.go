@@ -40,72 +40,28 @@ type OAuthConfig struct {
 	Extensions       string
 }
 
-type funcOAuthServerOption struct {
-	f func(options *OAuthStoreOptions)
-}
-
-func (fdo *funcOAuthServerOption) apply(do *OAuthStoreOptions) {
-	fdo.f(do)
-}
-
-func newFuncServerOption(f func(options *OAuthStoreOptions)) *funcOAuthServerOption {
-	return &funcOAuthServerOption{
-		f: f,
-	}
-}
-
 type OAuthStore interface {
 	GetOAuthConfig() OAuthConfig
 	Stop()
 }
 
-type OAuthStoreOption interface {
-	apply(options *OAuthStoreOptions)
-}
-
 type OAuthStoreOptions struct {
-	prefix         string
-	locationSuffix string
-	clientset      kubernetes.Interface
+	Prefix         string
+	LocationSuffix string
+	Clientset      kubernetes.Interface
 }
 
 func (c OAuthStoreOptions) String() string {
 	return fmt.Sprintf("prefix=%s locationSuffix=%s clientset=%v",
-		c.prefix, c.locationSuffix, c.clientset)
+		c.Prefix, c.LocationSuffix, c.Clientset)
 }
 
-func getDefaultOAuthStoreOptions() OAuthStoreOptions {
-	return OAuthStoreOptions{}
-}
-
-func Prefix(prefix string) OAuthStoreOption {
-	return newFuncServerOption(func(o *OAuthStoreOptions) {
-		o.prefix = prefix
-	})
-}
-
-func LocationSuffix(suffix string) OAuthStoreOption {
-	return newFuncServerOption(func(o *OAuthStoreOptions) {
-		o.locationSuffix = suffix
-	})
-}
-func ClientSet(clientSet kubernetes.Interface) OAuthStoreOption {
-	return newFuncServerOption(func(o *OAuthStoreOptions) {
-		o.clientset = clientSet
-	})
-}
-
-func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
-	opts := getDefaultOAuthStoreOptions()
-	for _, o := range opt {
-		o.apply(&opts)
-	}
-
+func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
 	logger := logrus.New().WithField("source", "OAuthStore")
 	logger.Infof("Options:%s", opts.String())
 
-	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new OAuth k8s secret store for %s from secret %s", opts.prefix, secretName)
+	if secretName, ok := util.GetEnv(opts.Prefix, envSecretSuffix); ok {
+		logger.Infof("Starting new OAuth k8s secret store for %s from secret %s", opts.Prefix, secretName)
 
 		namespace, ok := os.LookupEnv(envNamespace)
 		if !ok {
@@ -113,7 +69,7 @@ func NewOAuthStore(opt ...OAuthStoreOption) (OAuthStore, error) {
 		}
 		logger.Infof("Namespace %s", namespace)
 
-		store, err := NewOAuthSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
+		store, err := NewOAuthSecretHandler(secretName, opts.Clientset, namespace, opts.Prefix, logger)
 		if err != nil {
 			return nil, err
 		}

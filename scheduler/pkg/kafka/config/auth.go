@@ -114,8 +114,10 @@ func withOAuth(config kafka.ConfigMap) error {
 
 	// Set OAuth Configuration
 	oauthStore, err := oauth.NewOAuthStore(
-		oauth.Prefix(EnvKafkaClientPrefix),
-		oauth.LocationSuffix(EnvOAuthConfigLocationSuffix),
+		oauth.OAuthStoreOptions{
+			Prefix:         EnvKafkaClientPrefix,
+			LocationSuffix: EnvOAuthConfigLocationSuffix,
+		},
 	)
 	if err != nil {
 		return err
