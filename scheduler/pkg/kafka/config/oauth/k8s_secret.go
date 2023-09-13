@@ -89,41 +89,45 @@ func (s *OAuthSecretHandler) updateFromSecret(secret *corev1.Secret) error {
 		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
 	}
 
+	newConfig := OAuthConfig{}
+
 	method, ok := secret.Data[fieldMethod]
 	if !ok {
 		return noSuchFieldError(fieldMethod)
 	}
-	s.oauthConfig.Method = string(method)
+	newConfig.Method = string(method)
 
 	clientID, ok := secret.Data[fieldClientID]
 	if !ok {
 		return noSuchFieldError(fieldClientID)
 	}
-	s.oauthConfig.ClientID = string(clientID)
+	newConfig.ClientID = string(clientID)
 
 	clientSecret, ok := secret.Data[fieldClientSecret]
 	if !ok {
 		return noSuchFieldError(fieldClientSecret)
 	}
-	s.oauthConfig.ClientSecret = string(clientSecret)
+	newConfig.ClientSecret = string(clientSecret)
 
 	scope, ok := secret.Data[fieldScope]
 	if !ok {
 		return noSuchFieldError(fieldScope)
 	}
-	s.oauthConfig.Scope = string(scope)
+	newConfig.Scope = string(scope)
 
 	tokenEndpointURL, ok := secret.Data[fieldTokenURL]
 	if !ok {
 		return noSuchFieldError(fieldTokenURL)
 	}
-	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
+	newConfig.TokenEndpointURL = string(tokenEndpointURL)
 
 	extensions, ok := secret.Data[fieldExtensions]
 	if !ok {
 		return noSuchFieldError(fieldExtensions)
 	}
-	s.oauthConfig.Extensions = string(extensions)
+	newConfig.Extensions = string(extensions)
+
+	s.oauthConfig = newConfig
 
 	return nil
 }
