@@ -59,7 +59,12 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 	t.Setenv(prefix+envSecretSuffix, secret.Name)
 	t.Setenv(envNamespace, secret.Namespace)
 
-	store, err := NewOAuthStore(Prefix(prefix), ClientSet(clientset))
+	store, err := NewOAuthStore(
+		OAuthStoreOptions{
+			Prefix:    prefix,
+			Clientset: clientset,
+		},
+	)
 	assert.NoError(t, err)
 	defer store.Stop()
 
