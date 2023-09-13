@@ -60,30 +60,31 @@ func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
 	logger := logrus.New().WithField("source", "OAuthStore")
 	logger.WithField("options", opts.String()).Info("creating new store")
 
-	if secretName, ok := util.GetEnv(opts.Prefix, envSecretSuffix); ok {
-		logger.
-			WithField("secret", secretName).
-			WithField("prefix", opts.Prefix).
-			Info("creating store from secret")
-
-		namespace, ok := os.LookupEnv(envNamespace)
-		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
-		}
-		logger.WithField("namespace", namespace).Info("determined namespace from env var")
-
-		store, err := NewOAuthSecretHandler(secretName, opts.Clientset, namespace, opts.Prefix, logger)
-		if err != nil {
-			return nil, err
-		}
-
-		err = store.LoadAndWatchConfig()
-		if err != nil {
-			return nil, err
-		}
-
-		return store, nil
-	} else {
+	secretName, ok := util.GetEnv(opts.Prefix, envSecretSuffix)
+	if !ok {
 		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
 	}
+
+	logger.
+		WithField("secret", secretName).
+		WithField("prefix", opts.Prefix).
+		Info("creating store from secret")
+
+	namespace, ok := os.LookupEnv(envNamespace)
+	if !ok {
+		return nil, fmt.Errorf("Namespace env var %s not found and needed for OAuth secret", envNamespace)
+	}
+	logger.WithField("namespace", namespace).Info("determined namespace from env var")
+
+	store, err := NewOAuthSecretHandler(secretName, opts.Clientset, namespace, opts.Prefix, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	err = store.LoadAndWatchConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return store, nil
 }
