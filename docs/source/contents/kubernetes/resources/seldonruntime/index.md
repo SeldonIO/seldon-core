@@ -24,7 +24,7 @@ spec:
   seldonConfig: default
 ```
 
-The helm chart `seldon-core-v2-runtime` allows easy creation of this resource and associated defualt Servers for an installation of Seldon in a particular namespace.
+The helm chart `seldon-core-v2-runtime` allows easy creation of this resource and associated default Servers for an installation of Seldon in a particular namespace.
 
 ## SeldonConfig Update Propogation
 
