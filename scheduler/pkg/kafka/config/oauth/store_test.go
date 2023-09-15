@@ -86,10 +86,12 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 				Secrets(secret.Namespace).
 				Update(context.Background(), secret, metav1.UpdateOptions{})
 			assert.NoError(t, err)
-			time.Sleep(time.Millisecond * 500)
 
-			oauthConfig := store.GetOAuthConfig()
-			assert.Equal(t, expectedUpdate, oauthConfig)
+			checkForUpdate := func(c *assert.CollectT) {
+				oauthConfig := store.GetOAuthConfig()
+				assert.Equal(c, expectedUpdate, oauthConfig)
+			}
+			assert.EventuallyWithT(t, checkForUpdate, 100*time.Millisecond, 5*time.Millisecond)
 		},
 	)
 }
