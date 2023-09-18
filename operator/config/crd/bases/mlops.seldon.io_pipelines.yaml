@@ -140,9 +140,6 @@ spec:
                       type: integer
                     name:
                       description: Name of the step
-                      maxLength: 253
-                      minLength: 1
-                      pattern: ^[a-z0-9][a-z0-9\-\.]+[a-z0-9]+$
                       type: string
                     tensorMap:
                       additionalProperties:
