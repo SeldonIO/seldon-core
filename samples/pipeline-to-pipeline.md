@@ -83,7 +83,7 @@ seldon pipeline load -f ./pipelines/tfsimple.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady| jq -M .
+seldon pipeline status tfsimple -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -215,7 +215,7 @@ seldon pipeline load -f ./pipelines/tfsimple-extended.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple-extended -w PipelineReady| jq -M .
+seldon pipeline status tfsimple-extended -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -437,7 +437,7 @@ seldon pipeline load -f ./pipelines/tfsimple.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady| jq -M .
+seldon pipeline status tfsimple -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -826,7 +826,7 @@ seldon pipeline load -f ./pipelines/tfsimple.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady| jq -M .
+seldon pipeline status tfsimple -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -1221,7 +1221,7 @@ seldon pipeline load -f ./pipelines/tfsimple.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady| jq -M .
+seldon pipeline status tfsimple -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -1358,7 +1358,7 @@ seldon pipeline load -f ./pipelines/tfsimple-extended-step.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple-extended-step -w PipelineReady| jq -M .
+seldon pipeline status tfsimple-extended-step -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -1597,7 +1597,7 @@ seldon pipeline load -f ./pipelines/tfsimple.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady| jq -M .
+seldon pipeline status tfsimple -w PipelineReady | jq -M .
 ```
 
 ```json

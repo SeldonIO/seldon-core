@@ -211,7 +211,7 @@ seldon pipeline load -f ../../pipelines/cifar10.yaml
 ```
 
 ```bash
-seldon pipeline status cifar10-production -w PipelineReady| jq -M .
+seldon pipeline status cifar10-production -w PipelineReady | jq -M .
 ```
 
 ```json
