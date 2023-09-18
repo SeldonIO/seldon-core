@@ -83,7 +83,7 @@ seldon pipeline load -f ./pipelines/tfsimples.yaml
 ```
 
 ```bash
-seldon pipeline status tfsimples -w PipelineReady| jq -M .
+seldon pipeline status tfsimples -w PipelineReady | jq -M .
 ```
 
 ```json

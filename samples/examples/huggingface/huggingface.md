@@ -294,7 +294,7 @@ seldon pipeline load -f ../../pipelines/sentiment-explain.yaml
 ```
 
 ```bash
-seldon pipeline status sentiment-explain -w PipelineReady| jq -M .
+seldon pipeline status sentiment-explain -w PipelineReady | jq -M .
 ```
 
 ```json
@@ -414,7 +414,7 @@ seldon pipeline load -f ../../pipelines/speech-to-sentiment.yaml
 ```
 
 ```bash
-seldon pipeline status speech-to-sentiment -w PipelineReady| jq -M .
+seldon pipeline status speech-to-sentiment -w PipelineReady | jq -M .
 ```
 
 ```json

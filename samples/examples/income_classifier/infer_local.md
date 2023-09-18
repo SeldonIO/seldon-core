@@ -108,7 +108,7 @@ seldon pipeline load -f ../../pipelines/income.yaml
 ```
 
 ```bash
-seldon pipeline status income-production -w PipelineReady| jq -M .
+seldon pipeline status income-production -w PipelineReady | jq -M .
 ```
 
 ```json
