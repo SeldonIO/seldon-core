@@ -34,13 +34,13 @@ These defaults will be correct when Seldon Core v2 is installed locally as per t
 
 ### Inference Service
 
-For a default install into the `seldon-mesh` namespace if you have exposed the inference svc as a loadbalancer you will find it at:
+For a default install into the `seldon-mesh` namespace if you have exposed the inference `svc` as a loadbalancer you will find it at:
 
 ```
 kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-So use above ip at port 80:
+Use above IP at port 80:
 
 ```
 export SELDON_INFER_HOST=<ip>:80
@@ -51,18 +51,18 @@ export SELDON_INFER_HOST=<ip>:80
 For a default install into the `seldon-mesh` namespace if you have exposed the scheduler svc as a loadbalancer you will find it at:
 
 ```
-kubectl get svc seldon-scheduler -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}
+kubectl get svc seldon-scheduler -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 ```
 
-So use above ip at port 9000:
+Use above IP at port 9004:
 
 ```
-export SELDON_SCHEDULE_HOST=<ip>:80
+export SELDON_SCHEDULE_HOST=<ip>:9004
 ```
 
 ### Kafka Broker
 
-The kafka broker will depend on how you have installed Kafka into your Kubernetes cluster. Find the broker IP and use
+The Kafka broker will depend on how you have installed Kafka into your Kubernetes cluster. Find the broker IP and use:
 
 ```
 export SELDON_KAFKA_BROKER=<ip>:<port>
@@ -183,4 +183,3 @@ docs/seldon_pipeline_unload.md
 docs/seldon_pipeline_inspect.md
 docs/seldon_server_status.md
 ```
-
