@@ -8,7 +8,7 @@ An example drift detection model from the CIFAR10 image classification example i
 :language: yaml
 ```
 
-Usually you would run these model in an asynchronous part of a Pipeline, i.e. they are not connected to the output of the Pipeline which defines the synchronous path. For example the CIFAR10 image detection example uses a pipeline as shown below:
+Usually you would run these models in an asynchronous part of a Pipeline, i.e. they are not connected to the output of the Pipeline which defines the synchronous path. For example, the CIFAR-10 image detection example uses a pipeline as shown below:
 
 ```{literalinclude} ../../../../samples/pipelines/cifar10.yaml
 :language: yaml

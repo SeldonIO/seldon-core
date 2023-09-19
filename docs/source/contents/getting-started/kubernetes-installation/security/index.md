@@ -6,7 +6,7 @@ Seldon can be run with secure control plane and data plane operations. There are
  * [Kafka](#kafka)
  * [Data Plane](#data-plane)
 
-The various communication points between services is shown in the diagram below:
+The various communication points between services are shown in the diagram below:
 
 ![networking](networking.jpg)
 

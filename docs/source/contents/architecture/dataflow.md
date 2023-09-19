@@ -8,7 +8,7 @@ Initial release of Seldon Core introduced a concept of an _inference graph_, whi
 
 ![inference_graph](inference_graph.png)
 
-In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transformations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between response and requests as necessary. Here is how the picture looks under the hood:
+In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transformations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between requests and responses as necessary. Here is how the picture looks under the hood:
 
 ![orchestrator](orchestrator-inference-graph.png)
 
