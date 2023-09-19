@@ -38,7 +38,7 @@ Currently, models scheduled to a server can only scale up to the server replica 
 
 ## Internal Components
 
-Seldon Core v2 runs with several control and dataplane components. The scaling of these resurces is discussed below:
+Seldon Core v2 runs with several control and dataplane components. The scaling of these resources is discussed below:
 
 - Pipeline gateway.
     - This pipeline gateway handles REST and gRPC synchronous requests to Pipelines. It is stateless and can be scaled based on traffic demand.
@@ -56,6 +56,6 @@ Seldon Core v2 runs with several control and dataplane components. The scaling o
 
 ### Future Enhancements
 
- * Allow confguration of partition factor for data plane consistent hashing load balancer.
+ * Allow configuration of partition factor for data plane consistent hashing load balancer.
  * Allow Model gateway and Pipeline gateway to use consistent hashing load balancer.
  * Consider control plane scaling options.

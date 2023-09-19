@@ -1,5 +1,5 @@
 # Performance tests
-This section describes how a user can run performance tests to understand the limits of a particular SCv2 deployement.
+This section describes how a user can run performance tests to understand the limits of a particular SCv2 deployment.
 
 The base directly is `tests/k6`
 

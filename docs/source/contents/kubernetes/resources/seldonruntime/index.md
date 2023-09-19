@@ -24,8 +24,8 @@ spec:
   seldonConfig: default
 ```
 
-The helm chart `seldon-core-v2-runtime` allows easy creation of this resource and associated defualt Servers for an installation of Seldon in a particular namespace.
+The helm chart `seldon-core-v2-runtime` allows easy creation of this resource and associated default Servers for an installation of Seldon in a particular namespace.
 
-## SeldonConfig Update Propogation
+## SeldonConfig Update Propagation
 
 When a [SeldonConfig](../seldonconfig/index.md) resource changes any SeldonRuntime resources that reference the changed SeldonConfig will also be updated immediately. If this behaviour is not desired you can set `spec.disableAutoUpdate` in the SeldonRuntime resource for it not be be updated immediately but only when it changes or any owned resource changes.
