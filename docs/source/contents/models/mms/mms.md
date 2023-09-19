@@ -18,7 +18,7 @@ In the below example, given that the model is `tensorflow`, the system will depl
 :language: yaml
 ```
 
-All models are loaded and active on this model server. Inference requests for these models are served concurrently and the hardware resources are shared to fullfil these inference requests.
+All models are loaded and active on this model server. Inference requests for these models are served concurrently and the hardware resources are shared to fulfil these inference requests.
 
 ## Overcommit
 

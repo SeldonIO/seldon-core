@@ -179,7 +179,7 @@ The simplest way is to create a model that outputs different named tensors based
 ```
 In the above we have a step `conditional` that either outputs a tensor named `OUTPUT0` or a tensor named `OUTPUT1`. The `mul10` step depends on an output in `OUTPUT0` while the add10 step depends on an output from `OUTPUT1`.
 
-Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputing fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.
+Note, we also have a final Pipeline output step that does an `any` join on these two models essentially outputting fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit solutions where you want to route traffic dynamically.
 
 This example can be found in the [pipeline-examples examples](../examples/pipeline-examples.md#conditional).
 
@@ -368,7 +368,7 @@ Present caveats:
 
 ## Data Centric Implementation
 
-Internally Pipelines are implemented using Kafka. Each input and output to a pipeline step has an associated Kafka topic. This has many advantages and allows auditing, replay and debugging easier as data is preseved from every step in your pipeline.
+Internally Pipelines are implemented using Kafka. Each input and output to a pipeline step has an associated Kafka topic. This has many advantages and allows auditing, replay and debugging easier as data is preserved from every step in your pipeline.
 
 Tracing allows you to monitor the processing latency of your pipelines.
 

@@ -33,8 +33,8 @@ kafka-acls.sh --bootstrap-server <mTKS endpoint>  --add --allow-principal User:C
 
 Create a secret for the client certificate you created. If you followed the [AWS MSK mTLS guide](https://docs.aws.amazon.com/msk/latest/developerguide/msk-authentication.html) you will need to export your private key from the JKS keystore. The certificate and chain will be provided in PEM format when you get the certificate signed. You can use these to create a secret with:
 
-  * tls.key : PEM formated private key
-  * tls.crt : PEM formated certificate
+  * tls.key : PEM formatted private key
+  * tls.crt : PEM formatted certificate
   * ca.crt : Certificate chain
 
 ```

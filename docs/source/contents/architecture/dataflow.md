@@ -8,7 +8,7 @@ Initial release of Seldon Core introduced a concept of an _inference graph_, whi
 
 ![inference_graph](inference_graph.png)
 
-In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transofrmations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between response and requests as necessary. Here is how the picture looks under the hood:
+In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transformations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between requests and responses as necessary. Here is how the picture looks under the hood:
 
 ![orchestrator](orchestrator-inference-graph.png)
 
@@ -18,7 +18,7 @@ While this is a convenient way of implementing evaluation graph with microservic
 
 The realisation of this disparity led to a new approach towards inference graph evaluation in v2, based on the data flow paradigm. Data flow is a well known concept in software engineering, known from 1960s. In contrast to services, that model programs as a control flow, focusing on the order of operations, data flow proposes to model software systems as a series of connections that modify incoming data, focusing on data flowing through the system. A particular flavor of data flow paradigm used by v2 is known as flow-based programming, FBP. FBP defines software applications as a set of processes which exchange data via connections that are external to those processes. Connections are made via named ports, which promotes data coupling between components of the system.
 
-Data flow design makes data in software the top priority. That is one of the key messages of the so called "data-centric AI" idea, which is becoming increasingly popular within the ML comunity. Data is a key component of a successful ML project. Data needs to be discovered, described, cleaned, understood, monitored and verified. Consequently, there is a growing demand for data-centric platforms and solutions. Making Seldon Core data-centric was one of the key goals of the v2 design.
+Data flow design makes data in software the top priority. That is one of the key messages of the so called "data-centric AI" idea, which is becoming increasingly popular within the ML community. Data is a key component of a successful ML project. Data needs to be discovered, described, cleaned, understood, monitored and verified. Consequently, there is a growing demand for data-centric platforms and solutions. Making Seldon Core data-centric was one of the key goals of the v2 design.
 
 ## Seldon Core v2
 
@@ -37,7 +37,7 @@ Thirdly, data flow means intermediate data can be accessed at any arbitrary step
 * Reducing false positive rates of alerts as different slices of the data can be investigated
 * Enabling reproducing of results as fined-grained lineage of computation and associated data transformation are tracked by design
 
-Finally, inference graph can now be extended with adding new nodes at arbitrary places, all without affecting the pipeline execution. This kind of flexiblity was not possible with v1. This also allows multiple pipelines to share common nodes and therefore optimising resources usage.
+Finally, inference graph can now be extended with adding new nodes at arbitrary places, all without affecting the pipeline execution. This kind of flexibility was not possible with v1. This also allows multiple pipelines to share common nodes and therefore optimising resources usage.
 
 ## References
 

@@ -4,7 +4,7 @@ We provide several Helm charts.
 
  * `seldon-core-v2-crds` : cluster wide install of custom resources.
  * `seldon-core-v2-setup` : installation of the manager to manage resources in the namespace or clusterwide. This also installs default **SeldonConfig** and **ServerConfig** resources which allow Runtimes and Servers to be installed easily on demand.
- * `seldon-core-v2-runtime` : this installs a **SeldonRuntime** custom reosurce which creates the core components in a namespace.
+ * `seldon-core-v2-runtime` : this installs a **SeldonRuntime** custom resource which creates the core components in a namespace.
  * `seldon-core-v2-servers` : this installs **Server** custom resources which provide example core servers to load models.
  * `seldon-core-v2-certs` : a default set of certificates for TLS.
 
