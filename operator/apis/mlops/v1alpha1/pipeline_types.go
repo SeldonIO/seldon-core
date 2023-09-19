@@ -25,83 +25,6 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
-// PipelineSpec defines the desired state of Pipeline
-type PipelineSpec struct {
-	// External inputs to this pipeline, optional
-	Input *PipelineInput `json:"input,omitempty"`
-	// The steps of this inference graph pipeline
-	Steps []PipelineStep `json:"steps"`
-	// Synchronous output from this pipeline, optional
-	Output *PipelineOutput `json:"output,omitempty"`
-}
-
-type JoinType string
-
-const (
-	JoinTypeInner JoinType = "inner"
-	JoinTypeOuter JoinType = "outer"
-	JoinTypeAny   JoinType = "any"
-)
-
-type PipelineStep struct {
-	// Name of the step
-	Name string `json:"name"`
-	// Previous step to receive data from
-	Inputs []string `json:"inputs,omitempty"`
-	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
-	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
-	// Map of tensor name conversions to use e.g. output1 -> input1
-	TensorMap map[string]string `json:"tensorMap,omitempty"`
-	// Triggers required to activate step
-	Triggers []string `json:"triggers,omitempty"`
-	// One of inner (default), outer, or any
-	// inner - do an inner join: data must be available from all inputs
-	// outer - do an outer join: data will include any data from any inputs at end of window
-	// any - first data input that arrives will be forwarded
-	InputsJoinType *JoinType `json:"inputsJoinType,omitempty"`
-	// One of inner (default), outer, or any (see above for details)
-	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
-	// Batch size of request required before data will be sent to this step
-	Batch *PipelineBatch `json:"batch,omitempty"`
-}
-
-type PipelineBatch struct {
-	Size     *uint32 `json:"size,omitempty"`
-	WindowMs *uint32 `json:"windowMs,omitempty"`
-	Rolling  bool    `json:"rolling,omitempty"`
-}
-
-type PipelineInput struct {
-	// Previous external pipeline steps to receive data from
-	ExternalInputs []string `json:"externalInputs,omitempty"`
-	// Triggers required to activate inputs
-	ExternalTriggers []string `json:"externalTriggers,omitempty"`
-	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
-	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
-	// One of inner (default), outer, or any (see above for details)
-	JoinType *JoinType `json:"joinType,omitempty"`
-	// One of inner (default), outer, or any (see above for details)
-	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
-	// Map of tensor name conversions to use e.g. output1 -> input1
-	TensorMap map[string]string `json:"tensorMap,omitempty"`
-}
-
-type PipelineOutput struct {
-	// Previous step to receive data from
-	Steps []string `json:"steps,omitempty"`
-	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
-	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
-	// One of inner (default), outer, or any (see above for details)
-	StepsJoin *JoinType `json:"stepsJoin,omitempty"`
-	// Map of tensor name conversions to use e.g. output1 -> input1
-	TensorMap map[string]string `json:"tensorMap,omitempty"`
-}
-
-// PipelineStatus defines the observed state of Pipeline
-type PipelineStatus struct {
-	duckv1.Status `json:",inline"`
-}
-
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlp
@@ -121,7 +44,102 @@ type Pipeline struct {
 type PipelineList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Pipeline `json:"items"`
+
+	Items []Pipeline `json:"items"`
+}
+
+// PipelineSpec defines the desired state of Pipeline
+type PipelineSpec struct {
+	// External inputs to this pipeline, optional
+	Input *PipelineInput `json:"input,omitempty"`
+
+	// The steps of this inference graph pipeline
+	Steps []PipelineStep `json:"steps"`
+
+	// Synchronous output from this pipeline, optional
+	Output *PipelineOutput `json:"output,omitempty"`
+}
+
+// +kubebuilder:validation:Enum=inner;outer;any
+type JoinType string
+
+const (
+	// data must be available from all inputs
+	JoinTypeInner JoinType = "inner"
+	// data will include any data from any inputs at end of window
+	JoinTypeOuter JoinType = "outer"
+	// first data input that arrives will be forwarded
+	JoinTypeAny JoinType = "any"
+)
+
+type PipelineStep struct {
+	// Name of the step
+	Name string `json:"name"`
+
+	// Previous step to receive data from
+	Inputs []string `json:"inputs,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+
+	// Triggers required to activate step
+	Triggers []string `json:"triggers,omitempty"`
+
+	// +kubebuilder:default=inner
+	InputsJoinType *JoinType `json:"inputsJoinType,omitempty"`
+
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+
+	// Batch size of request required before data will be sent to this step
+	Batch *PipelineBatch `json:"batch,omitempty"`
+}
+
+type PipelineBatch struct {
+	Size     *uint32 `json:"size,omitempty"`
+	WindowMs *uint32 `json:"windowMs,omitempty"`
+	Rolling  bool    `json:"rolling,omitempty"`
+}
+
+type PipelineInput struct {
+	// Previous external pipeline steps to receive data from
+	ExternalInputs []string `json:"externalInputs,omitempty"`
+
+	// Triggers required to activate inputs
+	ExternalTriggers []string `json:"externalTriggers,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+
+	// +kubebuilder:default=inner
+	JoinType *JoinType `json:"joinType,omitempty"`
+
+	// +kubebuilder:default=inner
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+}
+
+type PipelineOutput struct {
+	// Previous step to receive data from
+	Steps []string `json:"steps,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
+
+	// +kubebuilder:default=inner
+	StepsJoin *JoinType `json:"stepsJoin,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+}
+
+// PipelineStatus defines the observed state of Pipeline
+type PipelineStatus struct {
+	duckv1.Status `json:",inline"`
 }
 
 func init() {
