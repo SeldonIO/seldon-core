@@ -29,7 +29,7 @@ Servers can be defined with a `capabilities` field to indicate custom configurat
 :language: yaml
 ```
 
-These `capabilities` overrride the ones from the `serverConfig: mlserver`. A model that takes advantage of this is shown below:
+These `capabilities` override the ones from the `serverConfig: mlserver`. A model that takes advantage of this is shown below:
 
 ```{literalinclude} ../../../../samples/models/iris-custom-requirements.yaml
 :language: yaml

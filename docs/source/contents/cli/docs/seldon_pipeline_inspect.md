@@ -4,7 +4,7 @@ inspect data in a pipeline
 
 ### Synopsis
 
-inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or pipeineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName
+inspect data in a pipeline. Specify as pipelineName or pipelineName.(inputs|outputs) or pipelineName.stepName or pipelineName.stepName.(inputs|outputs) or pipelineName.stepName.(inputs|outputs).tensorName
 
 ```
 seldon pipeline inspect <expression> [flags]
