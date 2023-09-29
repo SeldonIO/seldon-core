@@ -617,60 +617,84 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
+
+	models, evts, err := m.removeServerReplicaImpl(serverName, replicaIdx)
+	if err != nil {
+		return nil, err
+	}
+	if m.eventHub != nil {
+		for _, evt := range evts {
+			m.eventHub.PublishModelEvent(
+				modelUpdateEventSource,
+				evt,
+			)
+		}
+	}
+	return models, nil
+}
+
+func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, []coordinator.ModelEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	return m.removeServerReplicaImpl(serverName, replicaIdx)
-}
-
-func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	server, ok := m.store.servers[serverName]
 	if !ok {
-		return nil, fmt.Errorf("Failed to find server %s", serverName)
+		return nil, nil, fmt.Errorf("Failed to find server %s", serverName)
 	}
 	serverReplica, ok := server.replicas[replicaIdx]
 	if !ok {
-		return nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
+		return nil, nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
 	}
 	delete(server.replicas, replicaIdx)
 	//TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
 	if len(server.replicas) == 0 {
 		delete(m.store.servers, serverName)
 	}
-	loadedModelsRemoved := m.removeModelfromServerReplica(serverReplica.loadedModels, replicaIdx)
-	loadingModelsRemoved := m.removeModelfromServerReplica(serverReplica.loadingModels, replicaIdx)
+	loadedModelsRemoved, loadedEvts := m.removeModelfromServerReplica(serverReplica.loadedModels, replicaIdx)
+	loadingModelsRemoved, loadingEtvs := m.removeModelfromServerReplica(serverReplica.loadingModels, replicaIdx)
 
 	modelsRemoved := append(loadedModelsRemoved, loadingModelsRemoved...)
+	evts := append(loadedEvts, loadingEtvs...)
 
-	return modelsRemoved, nil
+	return modelsRemoved, evts, nil
 }
 
-func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bool, replicaIdx int) []string {
+func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bool, replicaIdx int) ([]string, []coordinator.ModelEventMsg) {
 	logger := m.logger.WithField("func", "RemoveServerReplica")
 	var modelNames []string
+	var evts []coordinator.ModelEventMsg
 	// Find models to reschedule due to this server replica being removed
 	for modelVersionID := range lModels {
 		model, ok := m.store.models[modelVersionID.Name]
 		if ok {
-			if model.IsDeleted() {
-				// In some cases we found that the user can ask for a model to be deleted and the model replica
-				// is still in the process of being loaded. In this case we should not reschedule the model.
-				logger.Debugf(
-					"Model %s is being deleted, skipping",
-					modelVersionID.Name,
-				)
-				continue
-			}
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
 				modelVersion.DeleteReplica(replicaIdx)
-				modelNames = append(modelNames, modelVersionID.Name)
+				if model.IsDeleted() {
+					// In some cases we found that the user can ask for a model to be deleted and the model replica
+					// is still in the process of being loaded. In this case we should not reschedule the model.
+					logger.Debugf(
+						"Model %s is being deleted and server replica %d is disconnected, skipping",
+						modelVersionID.Name, replicaIdx,
+					)
+					modelVersion.SetReplicaState(replicaIdx, Unloaded, "model is being deleted and server replica was removed")
+					// send an event to progress the deletion
+					evts = append(
+						evts,
+						coordinator.ModelEventMsg{
+							ModelName:    modelVersion.GetMeta().GetName(),
+							ModelVersion: modelVersion.GetVersion(),
+						},
+					)
+				} else {
+					modelNames = append(modelNames, modelVersionID.Name)
+				}
 			} else {
 				logger.Warnf("Can't find model version %s", modelVersionID.String())
 			}
 		}
 	}
-	return modelNames
+	return modelNames, evts
 }
 
 func (m *MemoryStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
