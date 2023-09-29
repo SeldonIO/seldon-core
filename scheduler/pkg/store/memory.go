@@ -652,6 +652,13 @@ func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bo
 	for modelVersionID := range lModels {
 		model, ok := m.store.models[modelVersionID.Name]
 		if ok {
+			if model.IsDeleted() {
+				logger.Debugf(
+					"Model %s is being deleted, skipping",
+					modelVersionID.Name,
+				)
+				continue
+			}
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
 				modelVersion.DeleteReplica(replicaIdx)
