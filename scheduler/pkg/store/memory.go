@@ -653,6 +653,8 @@ func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bo
 		model, ok := m.store.models[modelVersionID.Name]
 		if ok {
 			if model.IsDeleted() {
+				// In some cases we found that the user can ask for a model to be deleted and the model replica
+				// is still in the process of being loaded. In this case we should not reschedule the model.
 				logger.Debugf(
 					"Model %s is being deleted, skipping",
 					modelVersionID.Name,
