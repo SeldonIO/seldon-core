@@ -10,7 +10,7 @@ security:
       client:
         username: seldon
         secret: seldon
-        passwordPath: /tmp/sasl/kafka/client/password
+        passwordPath: password
     ssl:
       client:
         brokerValidationSecret: seldon-cluster-ca-cert
