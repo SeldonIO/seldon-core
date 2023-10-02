@@ -682,7 +682,7 @@ func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bo
 					m.updateModelStatus(
 						model.Latest().GetVersion() == modelVersion.GetVersion(),
 						model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
-						m.UnlockModel(modelVersionID.Name)
+					m.UnlockModel(modelVersionID.Name)
 					// send an event to progress the deletion
 					evts = append(
 						evts,
