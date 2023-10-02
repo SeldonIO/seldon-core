@@ -11,7 +11,7 @@ spec:
       resources:
         requests:
           nvidia.com/gpu: 1
-          memory: 5Gi
+          memory: 8Gi
         limits:
           nvidia.com/gpu: 1
-          memory: 10Gi
+          memory: 8Gi
