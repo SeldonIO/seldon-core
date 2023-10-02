@@ -146,7 +146,7 @@ func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 	logger := s.logger.WithField("func", "onAdd")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAuth Secret %s added", s.secretName)
+		logger.Infof("OAuth secret %s added", s.secretName)
 
 		err := s.updateFromSecret(secret)
 		if err != nil {
@@ -161,7 +161,7 @@ func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	logger := s.logger.WithField("func", "onUpdate")
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAuth Secret %s updated", s.secretName)
+		logger.Infof("OAuth secret %s updated", s.secretName)
 
 		err := s.updateFromSecret(secret)
 		if err != nil {
@@ -174,7 +174,7 @@ func (s *OAuthSecretHandler) onDelete(obj interface{}) {
 	logger := s.logger.WithField("func", "onDelete")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Warnf("Secret %s deleted", secret.Name)
+		logger.Warnf("OAuth secret %s deleted", secret.Name)
 	}
 }
 
