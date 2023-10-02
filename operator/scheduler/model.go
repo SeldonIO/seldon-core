@@ -196,9 +196,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 				)
 				return nil
 			}
-			if !latestModel.ObjectMeta.DeletionTimestamp.IsZero() { // Model is being deleted
-				return nil
-			}
 
 			// Handle status update
 			modelStatus := latestVersionStatus.GetState()
