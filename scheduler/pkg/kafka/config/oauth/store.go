@@ -74,7 +74,7 @@ func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
 		WithField("options", opts.String()).
 		Info("creating store from secret")
 
-	store, err := NewOAuthSecretHandler(secretName, opts.Clientset, namespace, opts.Prefix, logger)
+	store, err := newK8sSecretStore(secretName, opts.Clientset, namespace, opts.Prefix, logger)
 	if err != nil {
 		return nil, err
 	}

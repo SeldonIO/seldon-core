@@ -40,7 +40,7 @@ const (
 	fieldExtensions   = "extensions"
 )
 
-type OAuthSecretHandler struct {
+type k8sSecretStore struct {
 	clientset   kubernetes.Interface
 	secretName  string
 	namespace   string
@@ -50,13 +50,13 @@ type OAuthSecretHandler struct {
 	oauthConfig OAuthConfig
 }
 
-func NewOAuthSecretHandler(
+func newK8sSecretStore(
 	secretName string,
 	clientset kubernetes.Interface,
 	namespace string,
 	prefix string,
 	logger log.FieldLogger,
-) (*OAuthSecretHandler, error) {
+) (*k8sSecretStore, error) {
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
@@ -65,7 +65,7 @@ func NewOAuthSecretHandler(
 			return nil, err
 		}
 	}
-	return &OAuthSecretHandler{
+	return &k8sSecretStore{
 		clientset:  clientset,
 		secretName: secretName,
 		namespace:  namespace,
@@ -74,17 +74,17 @@ func NewOAuthSecretHandler(
 	}, nil
 }
 
-func (s *OAuthSecretHandler) GetOAuthConfig() OAuthConfig {
+func (s *k8sSecretStore) GetOAuthConfig() OAuthConfig {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.oauthConfig
 }
 
-func (s *OAuthSecretHandler) Stop() {
+func (s *k8sSecretStore) Stop() {
 	close(s.stopper)
 }
 
-func (s *OAuthSecretHandler) updateFromSecret(secret *corev1.Secret) error {
+func (s *k8sSecretStore) updateFromSecret(secret *corev1.Secret) error {
 	newConfig, err := s.getConfigFromSecret(secret)
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ func (s *OAuthSecretHandler) updateFromSecret(secret *corev1.Secret) error {
 	return nil
 }
 
-func (s *OAuthSecretHandler) getConfigFromSecret(secret *corev1.Secret) (*OAuthConfig, error) {
+func (s *k8sSecretStore) getConfigFromSecret(secret *corev1.Secret) (*OAuthConfig, error) {
 	config := &OAuthConfig{}
 	noSuchFieldError := func(fieldName string) error {
 		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
@@ -140,7 +140,7 @@ func (s *OAuthSecretHandler) getConfigFromSecret(secret *corev1.Secret) (*OAuthC
 	return config, nil
 }
 
-func (s *OAuthSecretHandler) onAdd(obj interface{}) {
+func (s *k8sSecretStore) onAdd(obj interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onAdd")
@@ -155,7 +155,7 @@ func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 	}
 }
 
-func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
+func (s *k8sSecretStore) onUpdate(oldObj, newObj interface{}) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	logger := s.logger.WithField("func", "onUpdate")
@@ -170,7 +170,7 @@ func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 	}
 }
 
-func (s *OAuthSecretHandler) onDelete(obj interface{}) {
+func (s *k8sSecretStore) onDelete(obj interface{}) {
 	logger := s.logger.WithField("func", "onDelete")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
@@ -178,7 +178,7 @@ func (s *OAuthSecretHandler) onDelete(obj interface{}) {
 	}
 }
 
-func (s *OAuthSecretHandler) loadOAuthConfig(secretName string) error {
+func (s *k8sSecretStore) loadOAuthConfig(secretName string) error {
 	secret, err := s.clientset.
 		CoreV1().
 		Secrets(s.namespace).
@@ -189,7 +189,7 @@ func (s *OAuthSecretHandler) loadOAuthConfig(secretName string) error {
 	return s.updateFromSecret(secret)
 }
 
-func (s *OAuthSecretHandler) LoadAndWatchConfig() error {
+func (s *k8sSecretStore) LoadAndWatchConfig() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
