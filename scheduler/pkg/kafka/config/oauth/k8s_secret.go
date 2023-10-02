@@ -150,7 +150,7 @@ func (s *OAuthSecretHandler) onAdd(obj interface{}) {
 
 		err := s.updateFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth config from secret %s", secret.Name)
 		}
 	}
 }
@@ -165,7 +165,7 @@ func (s *OAuthSecretHandler) onUpdate(oldObj, newObj interface{}) {
 
 		err := s.updateFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAuth from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth config from secret %s", secret.Name)
 		}
 	}
 }
