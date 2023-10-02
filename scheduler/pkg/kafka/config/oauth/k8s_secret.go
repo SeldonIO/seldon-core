@@ -189,7 +189,7 @@ func (s *k8sSecretStore) loadOAuthConfig(secretName string) error {
 	return s.updateFromSecret(secret)
 }
 
-func (s *k8sSecretStore) LoadAndWatchConfig() error {
+func (s *k8sSecretStore) loadAndWatchConfig() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
