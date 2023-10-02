@@ -196,7 +196,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 				)
 				return nil
 			}
-			
+
 			// Handle status update
 			modelStatus := latestVersionStatus.GetState()
 			switch modelStatus.GetState() {
