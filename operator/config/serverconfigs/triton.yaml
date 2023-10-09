@@ -116,14 +116,10 @@ spec:
         mountPath: /mnt/tracing
     - image: triton:latest
       command:
-      - /opt/tritonserver/bin/tritonserver
+      - bash
       args:
-      - --model-repository=$(SERVER_MODELS_DIR)
-      - --http-port=$(SERVER_HTTP_PORT)
-      - --grpc-port=$(SERVER_GRPC_PORT)
-      - --log-verbose=1
-      - --model-control-mode=explicit
-      - --backend-config=python,shm-default-byte-size=16777216
+      - -c
+      - tritonserver --model-repository=$(SERVER_MODELS_DIR) --http-port=$(SERVER_HTTP_PORT) --grpc-port=$(SERVER_GRPC_PORT) --log-verbose=1 --model-control-mode=explicit --backend-config=python,shm-default-byte-size=16777216
       imagePullPolicy: IfNotPresent
       env:
       - name: SERVER_HTTP_PORT
