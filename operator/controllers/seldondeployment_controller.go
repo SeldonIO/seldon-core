@@ -1730,14 +1730,14 @@ func (r *SeldonDeploymentReconciler) createDeployments(components *components, i
 			}
 			if !patchResult.IsEmpty() {
 				log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-				log.V(5).Info("Deployment differs", "patch result", patchResult.String())
+				log.V(1).Info("Deployment differs", "patch result", patchResult.String())
 				b, err := json.Marshal(deploy.Spec.Template.Spec)
 				if err == nil {
-					log.V(5).Info("Deployment differs", "existing", string(b))
+					log.V(1).Info("Deployment differs", "existing", string(b))
 				}
 				b2, err := json.Marshal(found.Spec.Template.Spec)
 				if err == nil {
-					log.V(5).Info("Deployment differs", "found", string(b2))
+					log.V(1).Info("Deployment differs", "found", string(b2))
 				}
 
 				desiredDeployment := found.DeepCopy()
