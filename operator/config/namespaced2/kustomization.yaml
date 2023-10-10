@@ -9,7 +9,7 @@ bases:
 
 # Fix to get around bug in Kustomize that adds prefix to namespace name
 # See https://github.com/kubernetes-sigs/kustomize/issues/235
-patchesJson6902:
+patches:
 - target:
     version: v1
     kind: Namespace

@@ -18,7 +18,7 @@ patchesStrategicMerge:
 configurations:
 - webhook-config.yaml
 
-patchesJson6902:
+patches:
 - target:
     group: admissionregistration.k8s.io
     version: v1

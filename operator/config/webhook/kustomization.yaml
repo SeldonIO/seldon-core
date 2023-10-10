@@ -6,7 +6,7 @@ configurations:
 - kustomizeconfig.yaml
 
 # Comment this if you have a k8s cluster < 1.15 as objectSelector is only available in >=1.15
-patchesJson6902:
+patches:
 - target:
     group: admissionregistration.k8s.io
     version: v1
