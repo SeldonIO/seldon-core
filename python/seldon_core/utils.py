@@ -484,8 +484,8 @@ def construct_response_json(
 
     request_path = {**get_request_path(), **request_path}
     if request_path:
-        response["meta"]["requestPath"] = request_path
-
+        # response["meta"]["requestPath"] = request_path
+        response["meta"]["requestPath"] = {}  # not accept display requestPath
     return response
 
 

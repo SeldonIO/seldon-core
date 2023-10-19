@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union, Iterator
 
 import numpy as np
 import yaml
@@ -27,6 +27,7 @@ from seldon_core.user_model import (
     client_custom_metrics,
     client_health_status,
     client_predict,
+    client_stream_predict,
     client_route,
     client_send_feedback,
     client_transform_input,
@@ -73,7 +74,7 @@ def predict(
     user_model: Any,
     request: Union[prediction_pb2.SeldonMessage, List, Dict, bytes],
     seldon_metrics: SeldonMetrics,
-) -> Union[prediction_pb2.SeldonMessage, List, Dict, bytes]:
+) -> Union[prediction_pb2.SeldonMessage, List, Dict, bytes, Iterator]:
     """
     Call the user model to get a prediction and package the response
 
@@ -83,7 +84,10 @@ def predict(
        User defined class instance
     request
        The incoming request
-
+    seldon_metrics
+        metric
+    response_type
+        The response type of http request
     Returns
     -------
       The prediction
@@ -156,6 +160,81 @@ def predict(
                 metrics,
                 client_response.tags,
             )
+
+
+# [ADD: stream-predict]
+def stream_predict(
+        user_model: Any,
+        request: Union[prediction_pb2.SeldonMessage, List, Dict, bytes],
+        seldon_metrics: SeldonMetrics,
+) -> Iterator:
+    """
+    Call the user model to get a prediction and package the response
+
+    Parameters
+    ----------
+    user_model
+       User defined class instance
+    request
+       The incoming request
+
+    Returns
+    -------
+      The prediction
+    """
+    # TODO: Find a way to choose predict_rest or predict_grpc when payload is
+    # not decoded
+    is_proto = isinstance(request, prediction_pb2.SeldonMessage)
+
+    if hasattr(user_model, "predict_rest") and not is_proto:
+        logger.warning("predict_rest is deprecated. Please use predict_raw")
+        return user_model.predict_rest(request)
+    elif hasattr(user_model, "predict_grpc") and is_proto:
+        logger.warning("predict_grpc is deprecated. Please use predict_raw")
+        return user_model.predict_grpc(request)
+    else:
+        if hasattr(user_model, "predict_raw"):
+            try:
+                response = user_model.predict_raw(request)
+                handle_raw_custom_metrics(
+                    response, seldon_metrics, is_proto, PREDICT_METRIC_METHOD_TAG
+                )
+                return response
+            except SeldonNotImplementedError:
+                pass
+
+        if is_proto:
+            (features, meta, datadef, data_type) = extract_request_parts(request)
+
+            client_response = client_predict(
+                user_model, features, datadef.names, meta=meta
+            )
+
+            metrics = client_custom_metrics(
+                user_model,
+                seldon_metrics,
+                PREDICT_METRIC_METHOD_TAG,
+                client_response.metrics,
+            )
+
+            return construct_response(
+                user_model,
+                False,
+                request,
+                client_response.data,
+                meta,
+                metrics,
+                client_response.tags,
+            )
+        else:
+            (features, meta, datadef, data_type) = extract_request_parts_json(request)
+            class_names = datadef["names"] if datadef and "names" in datadef else []
+
+            client_response = client_stream_predict(
+                user_model, features, class_names, seldon_metrics, meta=meta
+            )
+
+            return client_response
 
 
 def send_feedback(

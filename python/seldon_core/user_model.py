@@ -2,7 +2,7 @@ import inspect
 import json
 import logging
 import os
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import Dict, Iterable, List, Tuple, Union, Iterator
 
 import numpy as np
 
@@ -242,6 +242,50 @@ def client_predict(
             pass
     logger.debug("predict is not implemented")
     return SeldonResponse.create([])
+
+
+# [ADD: stream-predict]
+def client_stream_predict(
+        user_model: SeldonComponent,
+        features: Union[np.ndarray, str, bytes],
+        feature_names: Iterable[str],
+        seldon_metrics: SeldonMetrics,
+        **kwargs: Dict,
+) -> Iterator:
+    """
+    Get prediction from user model
+
+    Parameters
+    ----------
+    user_model
+       A seldon user model
+    features
+       The data payload
+    feature_names
+       The feature names in the payload
+    kwargs
+       Optional keyword arguments
+    Returns
+    -------
+       A prediction from the user model
+    """
+    if hasattr(user_model, "predict"):
+        try:
+            try:
+                client_response = user_model.predict(features, feature_names, **kwargs)
+            except TypeError:
+                client_response = user_model.predict(features, feature_names)
+            client_custom_metrics(
+                user_model,
+                seldon_metrics,
+                "predict",
+                [],
+            )
+            return client_response
+        except SeldonNotImplementedError:
+            pass
+    logger.debug("predict is not implemented")
+    return 'data: {}\n\n'  # None
 
 
 def client_transform_input(
