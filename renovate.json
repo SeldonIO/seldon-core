@@ -54,7 +54,7 @@
         "docker"
       ],
       "matchPackagePatterns": [
-        "quay.io/domino/distroless.base-debian11"
+        "quay.io/domino/distroless.base-debian12"
       ],
       "pinDigests": true,
       "versioning": "docker"
