@@ -48,8 +48,10 @@ spec:
         ports:
         - containerPort: 9000
           name: http
+          protocol: TCP
         - containerPort: 9003
           name: envoy-admin
+          protocol: TCP
         resources:
           limits:
             memory: 128Mi
@@ -217,16 +219,22 @@ spec:
         ports:
         - containerPort: 9002
           name: xds
+          protocol: TCP
         - containerPort: 9004
           name: scheduler
+          protocol: TCP
         - containerPort: 9044
           name: scheduler-mtls
+          protocol: TCP
         - containerPort: 9005
           name: agent
+          protocol: TCP
         - containerPort: 9055
           name: agent-mtls
+          protocol: TCP
         - containerPort: 9008
           name: dataflow
+          protocol: TCP
         resources:
           limits:
             memory: 1G
