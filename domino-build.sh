@@ -29,7 +29,7 @@ SOURCE_IMAGE_TAG="$(<version.txt)"
 TARGET_GIT_REV_TAG="${SOURCE_IMAGE_TAG}-$(git rev-parse --short HEAD)"
 TARGET_IMAGE_TAGS=("${TARGET_GIT_REV_TAG}")
 
-BRANCH_NAME="$(git symbolic-ref --short --quiet HEAD)"
+BRANCH_NAME="$(git symbolic-ref --short --quiet HEAD || echo "")"
 if [ -n "${BRANCH_NAME}" ]; then
   TARGET_IMAGE_TAGS+=("${SOURCE_IMAGE_TAG}-${BRANCH_NAME}.latest")
 fi
