@@ -115,6 +115,7 @@ github.com/elastic/go-elasticsearch/v7
 github.com/elazarl/goproxy
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful-swagger12
+github.com/emicklei/go-restful/v3
 github.com/emissary-ingress/emissary/v3
 github.com/envoyproxy/go-control-plane
 github.com/envoyproxy/protoc-gen-validate

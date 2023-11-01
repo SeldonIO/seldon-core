@@ -34,7 +34,7 @@ jobs:
           command: docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run:
           name: "Seldon-core Domino Build & Push Script"
-          command: ./domino-build.sh
+          command: ./domino-build.sh -a
       - persist_to_workspace:
           root: ~/
           paths:
@@ -53,11 +53,11 @@ jobs:
           at: ~/
       - checkout
       - helm/install-helm-client:
-          version: v3.6.3
+          version: v3.13.1
       - run:
           name: Install and Launch Kubernetes
           command: |
-            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.24.3+k3s1 sh -x -
+            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.28.3+k3s1 sh -x -
             sleep 10
             kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
       - run:
@@ -94,7 +94,7 @@ workflows:
             - org-global
           filters:
             tags:
-              only: /v\d+(\.\d+)*(-.*)*/
+              only: /\d+(\.\d+)*(-.*)*-rabbitmq(-.*)*/
       - test:
           context:
             - org-global
@@ -102,4 +102,4 @@ workflows:
             - build-and-push
           filters:
             tags:
-              only: /v\d+(\.\d+)*(-.*)*/
+              only: /\d+(\.\d+)*(-.*)*-rabbitmq(-.*)*/

@@ -2,9 +2,9 @@ name: V1 Security Tests
 
 on:
   push:
-    branches: [ master, rabbitmq* ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, rabbitmq*  ]
+    branches: [ master  ]
   workflow_dispatch:
 
 jobs:

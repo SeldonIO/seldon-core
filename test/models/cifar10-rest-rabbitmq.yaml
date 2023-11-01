@@ -1,5 +1,31 @@
 # Source: https://docs.seldon.io/projects/seldon-core/en/latest/streaming/kafka.html
 ---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: cifar10-rest-input
+  namespace: seldon-regression-test
+spec:
+  name: cifar10-rest-input
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: cifar10-rest-output
+  namespace: seldon-regression-test
+spec:
+  name: cifar10-rest-output
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq
+---
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:

@@ -1,6 +1,32 @@
 # Iris sample model
 # Source: https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html#deploy-your-model-using-pre-packaged-model-servers
 ---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: iris-model-rabbitmq-input
+  namespace: seldon-regression-test
+spec:
+  name: iris-model-rabbitmq-input
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: iris-model-rabbitmq-output
+  namespace: seldon-regression-test
+spec:
+  name: iris-model-rabbitmq-output
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-cluster
+    namespace: rabbitmq
+---
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
