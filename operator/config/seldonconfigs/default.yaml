@@ -56,6 +56,13 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: envoy-admin
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
       terminationGracePeriodSeconds: 5
   - name: hodometer
     replicas: 1
