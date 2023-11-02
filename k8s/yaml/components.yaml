@@ -976,6 +976,13 @@ spec:
           name: http
         - containerPort: 9003
           name: envoy-admin
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: envoy-admin
+          initialDelaySeconds: 10
+          periodSeconds: 5
         resources:
           limits:
             memory: '128Mi'
