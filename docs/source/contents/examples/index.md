@@ -12,6 +12,7 @@ This section will provide some examples to allow operations with Seldon to be te
  * [Huggingface models](huggingface.md)
  * [Model zoo](model-zoo.md)
  * [Artifact versions](multi-version.md)
+ * [Kubernetes load balance over model replicas](k8s-loadbalance.md) 
 
 ## Pipelines
 
@@ -64,6 +65,7 @@ k8s-examples.md
 huggingface.md
 model-zoo.md
 multi-version.md
+k8s-loadbalance.md
 pipeline-examples.md
 pipeline-to-pipeline.md
 explainer-examples.md
