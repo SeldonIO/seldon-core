@@ -85,7 +85,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
 	// Run rclone copy sync
-	rclonePath, err := r.rcloneClient.Copy(modelName, srcUri, config)
+	rclonePath, err := r.rcloneClient.Copy(modelName, srcUri, artifactVersion, config)
 	if err != nil {
 		return nil, err
 	}
@@ -100,11 +100,16 @@ func (r *V2ModelRepository) DownloadModelVersion(
 		return nil, err
 	}
 
+	artifactVersionInt := 0
+	if artifactVersion != nil {
+		artifactVersionInt = int(*artifactVersion)
+	}
+
 	logger.Debugf(
 		"Found model %s:%d artifactVersion %d for %s at %s ",
 		modelName,
 		version,
-		artifactVersion,
+		artifactVersionInt,
 		srcUri,
 		modelVersionFolder,
 	)
