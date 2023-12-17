@@ -12,7 +12,7 @@ parameters:
 jobs:
   build-and-push:
     docker:
-     - image: cimg/base:2022.08@sha256:35e5e29930ab565475a4f2aa9b4124998ed67dbc7b0e2dd5f420a4189d08d0d2
+     - image: cimg/base:2022.12@sha256:dc4d22de8262c8d50f86987ba49d5d122cfec6b7c7443e181e70cc2314486e12
     resource_class: medium
     steps:
       - go/install:
