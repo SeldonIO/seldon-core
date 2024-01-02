@@ -1,5 +1,6 @@
 # Build the manager binary
-FROM golang:1.20.10-bookworm as builder
+# 1.20-bookworm image points to the latest go 1.20.x
+FROM golang:1.20-bookworm as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
