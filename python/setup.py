@@ -35,7 +35,7 @@ setup(
         "grpcio-reflection < 2.0.0",
         "gunicorn >= 19.9.0, < 20.2.0",
         "setuptools >= 65.5.1",
-        "prometheus_client >= 0.7.1, < 0.9.0",
+        "prometheus_client >= 0.7.1, <= 0.19.0",
         "werkzeug >= 2.1.1, < 2.3",
         # Addresses CVE SNYK-PYTHON-CRYPTOGRAPHY-3315328
         "cryptography >= 39.0.1, < 41.1",
