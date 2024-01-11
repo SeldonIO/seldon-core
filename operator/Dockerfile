@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.17.7-buster as builder
+FROM golang:1.20.9 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -18,7 +18,7 @@ COPY constants/ constants/
 COPY client/ client/
 
 # Build
-RUN go build -a -o manager main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
 # Get MPL licensed dependencies
 RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
@@ -45,9 +45,8 @@ RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master
 RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
 RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/base-debian11:latest
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY licenses/license.txt licenses/license.txt
@@ -56,4 +55,9 @@ COPY generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_se
 COPY generated/v1_service_seldon-webhook-service.yaml /tmp/operator-resources/service.yaml
 COPY generated/v1_configmap_seldon-config.yaml /tmp/operator-resources/configmap.yaml
 COPY generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml /tmp/operator-resources/crd-v1.yaml
+
+# Run update to pickup any necessary security updates
+RUN microdnf update -y
+
+USER 8888
 ENTRYPOINT ["/manager"]

@@ -8,7 +8,7 @@ info:
     email: hello@seldon.io
   description: REST protocol to interact with inference servers.
   license:
-    name: Apache 2.0
+    name: Business Source License 1.1
 servers: []
 paths:
   /v2/health/live:

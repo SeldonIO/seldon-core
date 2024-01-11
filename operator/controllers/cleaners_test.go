@@ -99,7 +99,7 @@ func createTestVirtualService(instance *machinelearningv1.SeldonDeployment, sche
 func TestCleanVirtualServices(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme = createScheme()
-	client := fake.NewFakeClientWithScheme(scheme)
+	client := fake.NewClientBuilder().WithScheme(scheme).Build()
 
 	mlDepName := "mymodel"
 	namespace := "default"

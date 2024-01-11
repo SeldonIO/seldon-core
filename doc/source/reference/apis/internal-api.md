@@ -8,7 +8,7 @@ To add microservice components to a runtime prediction graph users need to creat
  * [Router](#router)
  * [Combiner](#combiner)
  * [Transformer](#transformer)
- * [Output_Transformer](#output_transformer)
+ * [Output_Transformer](#output-transformer)
 
 See full [proto definition](./prediction.md#proto-buffer-and-grpc-definition).
 
@@ -43,7 +43,7 @@ service Model {
 }
 ```
 
-## Route
+## Router
 
 A service to route requests to one of its children and receive feedback rewards for them.
 
@@ -171,7 +171,7 @@ service Transformer {
 ```
 
 
-## Output_Transformer
+## Output Transformer
 
 A service to transform the response from its child.
 

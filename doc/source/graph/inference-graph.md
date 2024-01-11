@@ -82,9 +82,9 @@ spec:
 
 It's possible to define complex graphs with ROUTERS, COMBINERS, and other components. You can find more of these specialised examples in our [examples section](../examples/notebooks.rst).
 
-## Learn about all types through GoLang Reference
+## Learn about all types through Go Reference
 
-You can learn more about the SeldonDeployment YAML definition by reading the content on our [Kubernetes Seldon Deployment GoLang Types file](../reference/seldon-deployment.rst).
+You can learn more about the SeldonDeployment YAML definition by reading the content on our [Kubernetes Seldon Deployment Go Types file](../reference/seldon-deployment.rst).
 
 
 ## Image UserIds
@@ -117,5 +117,3 @@ spec:
 ```
 
 The above example makes the classifier container run with userId 1000. We recommend that all containers run with a non-root userid. On Openshift clusters this is usually enforced automatically.
-
-

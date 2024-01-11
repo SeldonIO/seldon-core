@@ -15,6 +15,7 @@
 import os
 import sys
 import sphinx_material
+from sphinx.errors import NoUri
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -50,7 +51,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
-    #    'recommonmark',
+    # TODO Switch from M2R2 to MyST Parser
     "m2r2",
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
@@ -64,8 +65,8 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx_search.extension",
     "sphinx_copybutton",
-    "sphinx_panels",
     "sphinxcontrib.youtube",
+    "sphinx_design",
 ]
 
 # Copybutton regex to pick up bash, jupyter, python etc.. (not needed if we standardise)
@@ -87,6 +88,12 @@ nitpick_ignore = [
     ("py:class", "proto.prediction_pb2.SeldonMessageList"),
     ("py:class", "proto.prediction_pb2.SeldonModelMetadata"),
     ("py:data", "google.protobuf.any_pb2.Any"),
+]
+
+# We did generate IDs for code cells that were missing them in their metadata.
+# This is a temporary suppressing of the warning.
+nitpick_ignore_regex = [
+    (r'.*', r'MissingIDFieldWarning: Code cell is missing an id field.*'),
 ]
 
 # Avoid "Duplicate explicit target name" warnings
@@ -131,19 +138,25 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# Ignore building, and thus warnings/errors for various scenarios
+
+# Scenario: slow and many examples
 is_fast_build = os.environ.get("FAST_BUILD", "False")
 if is_fast_build.lower() == "true":
+    print("Excluding slow files")
     exclude_patterns = ["examples", "python/api"]
 
+# Scenario: When running the linkcheck command
 is_linkcheck = os.environ.get("LINKCHECK", "False")
 if is_linkcheck.lower() == "true":
+    print("Excluding allowable linkcheck files")
     exclude_patterns = [
         # Ignore all PR and issues links
         "reference/changelog.rst",
@@ -155,6 +168,7 @@ if is_linkcheck.lower() == "true":
         "reference/release-0.3.0.md",
         "reference/release-0.4.0.md",
         "python/api",
+        "reference/release-0.4.0.md",
     ]
 
 linkcheck_ignore = [
@@ -170,6 +184,14 @@ linkcheck_ignore = [
     "https://calendar.google.com",
     # Ignore the following, which identify our request as a false DDoS
     "https://danielfrg.com/blog/2018/10/model-management-polyaxon-argo-seldon/",
+    # They don't like the linkcheck bot and return 403s
+    r"https://.*\.intel\.com.*",
+    # They don't like the linkcheck bot and return 403s
+    "https://keras.io/",
+    # Getting false reports like:
+    # https://x.com/seldon_io: 400 Client Error: Bad Request for url: https://twitter.com/seldon_io
+    "https://x.com/seldon_io",
+    "https://x.com/SeldonResearch",
 ]
 # Ignore anchors, as they doesn't seem to work very well
 linkcheck_anchors_ignore = [".*"]
@@ -360,7 +382,7 @@ epub_exclude_files = ["search.html"]
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"https://docs.python.org/": None}
+intersphinx_mapping = {'<name>': ('https://docs.python.org/', None)}
 
 # -- Options for todo extension ----------------------------------------------
 
@@ -377,6 +399,46 @@ nbsphinx_link_target_root = repo
 
 # from https://github.com/vidartf/nbsphinx-link/blob/master/docs/source/conf.py for custom tags
 import subprocess
+
+# Known Protobuf scalar  types
+protobuf_scalar_types = [
+    f"/reference/apis/v2-protocol.md#{pstype}"
+    for pstype in [
+        "bool",
+        "string",
+        "bytes",
+        "uint32",
+        "uint64",
+        "int32",
+        "int64",
+    ]
+]
+
+
+# Manually handle some missing reference scenarios.
+#
+# [1] https://www.sphinx-doc.org/en/master/extdev/appapi.html#event-missing-reference
+def on_missing_reference(app, env, node, contnode):
+    # Scenario: Generated OIP v2 Protobuf README
+    #
+    # The template anchor is valid, in that the in-document hyperlinks
+    # do work, but, the Sphinx build process isn't happy with the exact format.
+    #
+    # Suppress the missing reference warnings.
+    if node["reftarget"] in protobuf_scalar_types:
+        # Prevent other handlers in trying and suppress a warning
+        # about this cross-reference being unresolved.
+        #
+        # TODO: Properly resolve them so that the scalar type links work
+        return NoUri
+    else:
+        # Let other handlers try
+        return None
+
+
+def setup(app):
+    app.connect("missing-reference", on_missing_reference)
+
 
 try:
     git_rev = subprocess.check_output(

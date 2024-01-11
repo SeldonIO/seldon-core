@@ -6,6 +6,17 @@ If you were running our Openshift 0.4.2 certified operator and are looking to up
 
 Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
 
+## Upgrading to 1.18
+
+Please be advised that license under which Seldon Core is released changes to BSL 1.1 in Seldon Core 1.18.0.
+See the LICENSE file in our root folder for more details.
+
+There's no specific work needed for upgrade from 1.17 to 1.18.
+
+## Upgrading to 1.17
+
+There's no specific work needed for upgrade from 1.16 to 1.17.
+
 ## Upgrading to 1.16
 
 ### Kubernetes version upgrade
@@ -43,7 +54,7 @@ The label on services pointing to containers for each node in your inference gra
 ### OpenShift default storage initializer
 
 In this patch release we fixed the default storage initializer used on OpenShift (both Community and Certified operators).
-The image used now is `seldonio/rclone-storage-initializer:1.18.0-dev` which is the same as one used for the non-OpenShift releases (*).
+The image used now is `seldonio/rclone-storage-initializer:1.18.0` which is the same as one used for the non-OpenShift releases (*).
 
 For Certified operator you will find this image defined as
 ```yaml
@@ -164,7 +175,7 @@ In Seldon Core 1.8 the rclone-based [storage initializer](https://github.com/Sel
 The storage initailizer image that is being used is controlled by the helm value:
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.18.0-dev
+  image: seldonio/rclone-storage-initializer:1.18.0
 ```
 and can be customised on per-deployment basis as described in [Prepackaged Model Servers](../servers/overview.md) documentation by setting value of `storageInitializerImage` variable in the graph definition.
 

@@ -66,7 +66,6 @@ Unload a model.
 
 
 
-------
 ### Messages
 
 
@@ -120,6 +119,11 @@ ModelInfer messages.
 | parameters | [map ModelInferRequest.ParametersEntry](#modelinferrequest-parametersentry) | Optional inference parameters. |
 | inputs | [repeated ModelInferRequest.InferInputTensor](#modelinferrequest-inferinputtensor) | The input tensors for the inference. |
 | outputs | [repeated ModelInferRequest.InferRequestedOutputTensor](#modelinferrequest-inferrequestedoutputtensor) | The requested output tensors for the inference. Optional, if not specified all outputs produced by the model will be returned. |
+| raw_input_contents | [repeated bytes](#bytes) | The data contained in an input tensor can be represented in "raw" bytes form or in the repeated type that matches the tensor's data type. Using the "raw" bytes form will typically allow higher performance due to the way protobuf allocation and reuse interacts with GRPC. For example, see https://github.com/grpc/grpc/issues/23231.
+
+To use the raw representation 'raw_input_contents' must be initialized with data for each tensor in the same order as 'inputs'. For each tensor, the size of this content must match what is expected by the tensor's shape and data type. The raw data must be the flattened, one-dimensional, row-major order of the tensor elements without any stride or padding between the elements. Note that the FP16 and BF16 data types must be represented as raw content as there is no specific data type for a 16-bit float type.
+
+If this field is specified then InferInputTensor::contents must not be specified for any input tensor. |
 
 
 
@@ -135,7 +139,7 @@ An input tensor for an inference request.
 | datatype | [string](#string) | The tensor data type. |
 | shape | [repeated int64](#int64) | The tensor shape. |
 | parameters | [map ModelInferRequest.InferInputTensor.ParametersEntry](#modelinferrequest-inferinputtensor-parametersentry) | Optional inference input tensor parameters. |
-| contents | [InferTensorContents](#infertensorcontents) | The input tensor data. |
+| contents | [InferTensorContents](#infertensorcontents) | The input tensor data. This field must not be specified if tensor contents are being specified in ModelInferRequest.raw_input_contents. |
 
 
 
@@ -204,6 +208,11 @@ An output tensor requested for an inference request.
 | id | [string](#string) | The id of the inference request if one was specified. |
 | parameters | [map ModelInferResponse.ParametersEntry](#modelinferresponse-parametersentry) | Optional inference response parameters. |
 | outputs | [repeated ModelInferResponse.InferOutputTensor](#modelinferresponse-inferoutputtensor) | The output tensors holding inference results. |
+| raw_output_contents | [repeated bytes](#bytes) | The data contained in an output tensor can be represented in "raw" bytes form or in the repeated type that matches the tensor's data type. Using the "raw" bytes form will typically allow higher performance due to the way protobuf allocation and reuse interacts with GRPC. For example, see https://github.com/grpc/grpc/issues/23231.
+
+To use the raw representation 'raw_output_contents' must be initialized with data for each tensor in the same order as 'outputs'. For each tensor, the size of this content must match what is expected by the tensor's shape and data type. The raw data must be the flattened, one-dimensional, row-major order of the tensor elements without any stride or padding between the elements. Note that the FP16 and BF16 data types must be represented as raw content as there is no specific data type for a 16-bit float type.
+
+If this field is specified then InferOutputTensor::contents must not be specified for any output tensor. |
 
 
 
@@ -219,7 +228,7 @@ An output tensor returned for an inference request.
 | datatype | [string](#string) | The tensor data type. |
 | shape | [repeated int64](#int64) | The tensor shape. |
 | parameters | [map ModelInferResponse.InferOutputTensor.ParametersEntry](#modelinferresponse-inferoutputtensor-parametersentry) | Optional output tensor parameters. |
-| contents | [InferTensorContents](#infertensorcontents) | The output tensor data. |
+| contents | [InferTensorContents](#infertensorcontents) | The output tensor data. This field must not be specified if tensor contents are being specified in ModelInferResponse.raw_output_contents. |
 
 
 
@@ -528,4 +537,83 @@ ServerReady messages.
 
 
 
+
+
+# Scalar Value Types
+
+
+## double
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  |  | double | double | float |
+
+## float
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  |  | float | float | float |
+
+## int32
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32 | int | int |
+
+## int64
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64 | long | int/long |
+
+## uint32
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. | uint32 | int | int/long |
+
+## uint64
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. | uint64 | long | int/long |
+
+## sint32
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s. | int32 | int | int |
+
+## sint64
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s. | int64 | long | int/long |
+
+## fixed32
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Always four bytes. More efficient than uint32 if values are often greater than 2^28. | uint32 | int | int |
+
+## fixed64
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Always eight bytes. More efficient than uint64 if values are often greater than 2^56. | uint64 | long | int/long |
+
+## sfixed32
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Always four bytes. | int32 | int | int |
+
+## sfixed64
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | Always eight bytes. | int64 | long | int/long |
+
+## bool
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  |  | bool | boolean | boolean |
+
+## string
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode |
+
+## bytes
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | May contain any arbitrary sequence of bytes. | string | ByteString | str |
 

@@ -19,8 +19,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
   </organization>
   <licenses>
     <license>
-      <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <name>Business Source License 1.1</name>
+      <url>https://github.com/SeldonIO/seldon-core/blob/master/LICENSE</url>
     </license>
   </licenses>
   <developers>

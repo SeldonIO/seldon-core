@@ -13,7 +13,6 @@
 {{end}}
 {{end}}
 
-------
 ### Messages
 
 {{range .Messages}}
@@ -31,4 +30,13 @@
 {{end}}
 {{end}}
 
+{{end}}
+
+# Scalar Value Types
+
+{{range .Scalars}}
+## {{.ProtoType}}
+| Notes | C++ Type | Java Type | Python Type |
+| ----- | -------- | --------- | ----------- |
+  | {{.Notes}} | {{.CppType}} | {{.JavaType}} | {{.PythonType}} |
 {{end}}

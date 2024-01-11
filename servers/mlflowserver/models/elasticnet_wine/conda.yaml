@@ -2,7 +2,7 @@ name: mlflow-elasticnet-wines
 channels:
 - defaults
 dependencies:
-- python=3.7.10
+- python=3.8.10
 - scikit-learn=0.24.2
 - pip
 - pip:

@@ -1,17 +1,10 @@
 /*
-Copyright 2019 The Seldon Authors.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package controllers
@@ -19,11 +12,12 @@ package controllers
 import (
 	"context"
 	"fmt"
-	autoscaling "k8s.io/api/autoscaling/v2"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	autoscaling "k8s.io/api/autoscaling/v2"
 
 	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
@@ -42,7 +36,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
@@ -61,9 +54,8 @@ var clientset *kubernetes.Clientset
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
-		[]Reporter{printer.NewlineReporter{}})
+	RunSpecs(t,
+		"Controller Suite")
 }
 
 var configs = map[string]string{

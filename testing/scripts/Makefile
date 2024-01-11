@@ -29,10 +29,10 @@ kind_build_test_models:
 
 .PHONY: kind_build_prepackaged
 kind_build_prepackaged:
-	cd ../../servers/sklearnserver && make kind_load
-	cd ../../servers/xgboostserver && make kind_load
-	cd ../../servers/mlflowserver && make kind_load
-	cd ../../servers/tfserving_proxy && make kind_load
+	cd ../../servers/sklearnserver && make kind-load
+	cd ../../servers/xgboostserver && make kind-load
+	cd ../../servers/mlflowserver && make kind-load
+	cd ../../servers/tfserving_proxy && make kind-load
 
 .PHONY: kind_build_alibi_explain
 kind_build_alibi_explain:
@@ -51,7 +51,10 @@ kind_build_misc:
 	cd ../../components/routers/epsilon-greedy && make kind_load
 
 .PHONY: kind_build_images
-kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_test_models kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer kind_build_misc
+kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer
+
+.PHONY: kind_build_test_images
+kind_build_test_images: make kind_build_test_models kind_build_misc
 
 .PHONY: helm_setup
 helm_setup:
@@ -68,13 +71,13 @@ install_ambassador:
 	helm upgrade --install -n ambassador --create-namespace emissary datawire/emissary-ingress \
 		-f ../resources/ambassador_values.yaml
 	kubectl wait --timeout=2m --for=condition=available deploy \
-		-lapp.kubernetes.io/instance=emissary -n ambassador  
+		-lapp.kubernetes.io/instance=emissary -n ambassador
 	kubectl apply -f ../resources/ambassador_nontls_setup.yaml -n ambassador
 
 .PHONY: install_jaeger
 install_jaeger:
 	kubectl create namespace observability || echo "namespace observability exists"
-	kubectl create -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
+	kubectl apply -f https://github.com/jaegertracing/jaeger-operator/releases/download/v1.38.0/jaeger-operator.yaml -n observability
 	kubectl wait  --timeout=90s --for condition=Available -n observability deployment/jaeger-operator
 	sleep 20 # hack as Available condition does not seem to be enough for operator to be ready
 	kubectl create namespace seldon-system || echo "namespace seldon-system exists"
@@ -112,7 +115,7 @@ install_istio:
 	curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.16.2 TARGET_ARCH=x86_64 sh -
 	istio-1.16.2/bin/istioctl install -y --set profile=demo
 	kubectl patch svc istio-ingressgateway -n istio-system --patch "$$(cat ../resources/istio-ingressgateway-patch.yaml)"
-	kubectl create -f ../resources/seldon-gateway.yaml -n istio-system
+	kubectl apply -f ../resources/seldon-gateway.yaml -n istio-system
 
 .PHONY: install_keda
 install_keda:

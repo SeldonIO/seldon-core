@@ -28,21 +28,21 @@ Kind
 ^^^^^^^^^^^^^
 `Kind <https://kind.sigs.k8s.io/>`_ is a tool for running Kubernetes clusters locally. We'll use it to create a cluster on your machine so that you can install Seldon Core in to it. If don't already have `kind <https://kind.sigs.k8s.io/>`_ installed on your machine, you'll need to follow their installation guide:
 
-* `Install Kind <https://kind.sigs.k8s.io/docs/user/quick-start/#installation>`_ 
+* `Install Kind <https://kind.sigs.k8s.io/docs/user/quick-start/#installation>`_
 
 Kubectl
 ^^^^^^^^^^^^^
-`kubectl <https://kubernetes.io/docs/reference/kubectl/overview/>`_ is the Kubernetes command-line tool. It allows you to run commands against Kubernetes clusters, which we'll need to do as part of setting up Seldon Core. 
+`kubectl <https://kubernetes.io/docs/reference/kubectl/overview/>`_ is the Kubernetes command-line tool. It allows you to run commands against Kubernetes clusters, which we'll need to do as part of setting up Seldon Core.
 
-* `Install kubectl on Linux <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux>`_ 
-* `Install kubectl on macOS <https://kubernetes.io/docs/tasks/tools/install-kubectl-macos>`_ 
-* `Install kubectl on Windows <https://kubernetes.io/docs/tasks/tools/install-kubectl-windows>`_ 
+* `Install kubectl on Linux <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux>`_
+* `Install kubectl on macOS <https://kubernetes.io/docs/tasks/tools/install-kubectl-macos>`_
+* `Install kubectl on Windows <https://kubernetes.io/docs/tasks/tools/install-kubectl-windows>`_
 
 Helm
 ^^^^^^^^^^^^^
 `Helm <https://helm.sh/>`_ is a package manager that makes it easy to find, share and use software built for Kubernetes. If you don't already have Helm installed locally, you can install it here:
 
-* `Install Helm <https://helm.sh/docs/intro/install/>`_ 
+* `Install Helm <https://helm.sh/docs/intro/install/>`_
 
 Set Up Kind
 ----------------
@@ -51,35 +51,37 @@ Set Up Kind
 
 Once kind is installed on your system you can create a new Kubernetes cluster by running
 
-.. tabbed:: Istio 
+.. tab-set::
 
-    .. code-block:: bash
+    .. tab-item:: Istio
 
-        kind create cluster --name seldon
+        .. code-block:: bash
 
-.. tabbed:: Ambassador
+            kind create cluster --name seldon
 
-    .. code-block:: bash 
+    .. tab-item:: Ambassador
 
-        cat <<EOF | kind create cluster --name seldon --config=-
-        kind: Cluster
-        apiVersion: kind.x-k8s.io/v1alpha4
-        nodes:
-        - role: control-plane
-          kubeadmConfigPatches:
-          - |
-            kind: InitConfiguration
-            nodeRegistration:
-              kubeletExtraArgs:
-                node-labels: "ingress-ready=true"
-          extraPortMappings:
-          - containerPort: 80
-            hostPort: 80
-            protocol: TCP
-          - containerPort: 443
-            hostPort: 443
-            protocol: TCP
-        EOF
+        .. code-block:: bash
+
+            cat <<EOF | kind create cluster --name seldon --config=-
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            nodes:
+            - role: control-plane
+            kubeadmConfigPatches:
+            - |
+                kind: InitConfiguration
+                nodeRegistration:
+                kubeletExtraArgs:
+                    node-labels: "ingress-ready=true"
+            extraPortMappings:
+            - containerPort: 80
+                hostPort: 80
+                protocol: TCP
+            - containerPort: 443
+                hostPort: 443
+                protocol: TCP
+            EOF
 
 After ``kind`` has created your cluster, you can configure ``kubectl`` to use the cluster by setting the context:
 
@@ -87,7 +89,7 @@ After ``kind`` has created your cluster, you can configure ``kubectl`` to use th
 
     kubectl cluster-info --context kind-seldon
 
-From now on, all commands run using ``kubectl`` will be directed at your ``kind`` cluster. 
+From now on, all commands run using ``kubectl`` will be directed at your ``kind`` cluster.
 
 .. note:: Kind prefixes your cluster names with ``kind-`` so your cluster context is ``kind-seldon`` and not just ``seldon``
 
@@ -98,75 +100,77 @@ Install Cluster Ingress
 
 Seldon Core supports using either `Istio <https://istio.io/>`_ or `Ambassador <https://www.getambassador.io/>`_ to manage incomming traffic. Seldon Core automatically creates the objects and rules required to route traffic to your deployed machine learning models.
 
-.. tabbed:: Istio
+.. tab-set::
 
-    Istio is an open source service mesh. If the term *service mesh* is unfamiliar to you, it's worth reading `a little more about Istio <https://istio.io/latest/about/service-mesh/>`_.
+    .. tab-item:: Istio
 
-    **Download Istio**
+        Istio is an open source service mesh. If the term *service mesh* is unfamiliar to you, it's worth reading `a little more about Istio <https://istio.io/latest/about/service-mesh/>`_.
 
-    For Linux and macOS, the easiest way to download Istio is using the following command:
+        **Download Istio**
 
-    .. code-block:: bash 
+        For Linux and macOS, the easiest way to download Istio is using the following command:
 
-        curl -L https://istio.io/downloadIstio | sh -
+        .. code-block:: bash
 
-    Move to the Istio package directory. For example, if the package is ``istio-1.11.4``:
+            curl -L https://istio.io/downloadIstio | sh -
 
-    .. code-block:: bash
+        Move to the Istio package directory. For example, if the package is ``istio-1.11.4``:
 
-        cd istio-1.11.4
+        .. code-block:: bash
 
-    Add the istioctl client to your path (Linux or macOS):
+            cd istio-1.11.4
 
-    .. code-block:: bash
+        Add the istioctl client to your path (Linux or macOS):
 
-        export PATH=$PWD/bin:$PATH
+        .. code-block:: bash
 
-    **Install Istio**
+            export PATH=$PWD/bin:$PATH
 
-    Istio provides a command line tool ``istioctl`` to make the installation process easy. The ``demo`` `configuration profile <https://istio.io/latest/docs/setup/additional-setup/config-profiles/>`_ has a good set of defaults that will work on your local cluster.
+        **Install Istio**
 
-    .. code-block:: bash
+        Istio provides a command line tool ``istioctl`` to make the installation process easy. The ``demo`` `configuration profile <https://istio.io/latest/docs/setup/additional-setup/config-profiles/>`_ has a good set of defaults that will work on your local cluster.
 
-        istioctl install --set profile=demo -y
+        .. code-block:: bash
 
-    The namespace label ``istio-injection=enabled`` instructs Istio to automatically inject proxies alongside anything we deploy in that namespace. We'll set it up for our ``default`` namespace:
+            istioctl install --set profile=demo -y
 
-    .. code-block:: bash 
+        The namespace label ``istio-injection=enabled`` instructs Istio to automatically inject proxies alongside anything we deploy in that namespace. We'll set it up for our ``default`` namespace:
 
-        kubectl label namespace default istio-injection=enabled
+        .. code-block:: bash
 
-    **Create Istio Gateway**
+            kubectl label namespace default istio-injection=enabled
 
-    In order for Seldon Core to use Istio's features to manage cluster traffic, we need to create an `Istio Gateway <https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/>`_ by running the following command:
+        **Create Istio Gateway**
 
-    .. warning:: You will need to copy the entire command from the code block below
-    
-    .. code-block:: yaml
+        In order for Seldon Core to use Istio's features to manage cluster traffic, we need to create an `Istio Gateway <https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/>`_ by running the following command:
 
-        kubectl apply -f - << END
-        apiVersion: networking.istio.io/v1alpha3
-        kind: Gateway
-        metadata:
-          name: seldon-gateway
-          namespace: istio-system
-        spec:
-          selector:
-            istio: ingressgateway # use istio default controller
-          servers:
-          - port:
-              number: 80
-              name: http
-              protocol: HTTP
-            hosts:
-            - "*"
-        END
-    
-    For custom configuration and more details on installing seldon core with Istio please see the `Istio Ingress <../ingress/istio.md>`_ page.
+        .. warning:: You will need to copy the entire command from the code block below
 
-.. tabbed:: Ambassador
+        .. code-block:: yaml
 
-    `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. Install Ambassador following their docs.
+            kubectl apply -f - << END
+            apiVersion: networking.istio.io/v1alpha3
+            kind: Gateway
+            metadata:
+            name: seldon-gateway
+            namespace: istio-system
+            spec:
+            selector:
+                istio: ingressgateway # use istio default controller
+            servers:
+            - port:
+                number: 80
+                name: http
+                protocol: HTTP
+                hosts:
+                - "*"
+            END
+
+        For custom configuration and more details on installing seldon core with Istio please see the `Istio Ingress <../ingress/istio.md>`_ page.
+
+    .. tab-item:: Ambassador
+
+        `Ambassador <https://www.getambassador.io/>`_ is a Kubernetes ingress controller and API gateway. It routes incomming traffic to the underlying kubernetes workloads through configuration. Install Ambassador following their docs.
 
 Install Seldon Core
 ----------------------------
@@ -179,25 +183,27 @@ Before we install Seldon Core, we'll create a new namespace ``seldon-system`` fo
 
 We're now ready to install Seldon Core in our cluster. Run the following command for your choice of Ingress:
 
-.. tabbed:: Istio
+.. tab-set::
 
-    .. code:: bash
+    .. tab-item:: Istio
 
-        helm install seldon-core seldon-core-operator \
-            --repo https://storage.googleapis.com/seldon-charts \
-            --set usageMetrics.enabled=true \
-            --set istio.enabled=true \
-            --namespace seldon-system
+        .. code:: bash
 
-.. tabbed:: Ambassador
+            helm install seldon-core seldon-core-operator \
+                --repo https://storage.googleapis.com/seldon-charts \
+                --set usageMetrics.enabled=true \
+                --set istio.enabled=true \
+                --namespace seldon-system
 
-    .. code:: bash
+    .. tab-item:: Ambassador
 
-        helm install seldon-core seldon-core-operator \
-            --repo https://storage.googleapis.com/seldon-charts \
-            --set usageMetrics.enabled=true \
-            --set ambassador.enabled=true \
-            --namespace seldon-system
+        .. code:: bash
+
+            helm install seldon-core seldon-core-operator \
+                --repo https://storage.googleapis.com/seldon-charts \
+                --set usageMetrics.enabled=true \
+                --set ambassador.enabled=true \
+                --namespace seldon-system
 
 You can check that your Seldon Controller is running by doing:
 
@@ -212,17 +218,19 @@ Local Port Forwarding
 
 Because your kubernetes cluster is running locally, we need to forward a port on your local machine to one in the cluster for us to be able to access it externally. You can do this by running:
 
-.. tabbed:: Istio
+.. tab-set::
 
-    .. code-block:: bash
+    .. tab-item:: Istio
 
-        kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
+        .. code-block:: bash
 
-.. tabbed:: Ambassador
+            kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 
-    .. code-block:: bash 
+    .. tab-item:: Ambassador
 
-        kubectl port-forward -n ambassador svc/ambassador 8080:80
+        .. code-block:: bash
+
+            kubectl port-forward -n ambassador svc/ambassador 8080:80
 
 This will forward any traffic from port 8080 on your local machine to port 80 inside your cluster.
 

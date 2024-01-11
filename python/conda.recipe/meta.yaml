@@ -49,7 +49,7 @@ test:
 about:
   home: https://github.com/SeldonIO/seldon-core
   dev_url: https://github.com/SeldonIO/seldon-core
-  license: Apache 2.0
-  license_family: Apache
+  license: Business Source License 1.1
+  license_family: Business Source License
   license_file: LICENSE
   summary: Seldon Core client and microservice wrapper

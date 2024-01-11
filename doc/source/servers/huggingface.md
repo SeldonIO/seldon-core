@@ -85,7 +85,7 @@ spec:
   - graph:
       name: transformer
       implementation: HUGGINGFACE_SERVER
-      modelUri: gs://seldon-models/v1.18.0-dev/huggingface/text-gen-custom-tiny-stories
+      modelUri: gs://seldon-models/v1.18.0/huggingface/text-gen-custom-tiny-stories
       parameters:
       - name: task
         type: STRING
@@ -94,6 +94,5 @@ spec:
     replicas: 1
 ```
 
-````{note}
-As a next step, why not try running a larger-scale model? You can find one in gs://seldon-models/v1.18.0-dev/huggingface/text-gen-custom-gpt2. However, you may need to request more memory!
-````
+.. note::
+  As a next step, why not try running a larger-scale model? You can find one in gs://seldon-models/v1.18.0/huggingface/text-gen-custom-gpt2. However, you may need to request more memory!

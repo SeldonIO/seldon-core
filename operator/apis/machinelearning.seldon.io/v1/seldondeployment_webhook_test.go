@@ -95,7 +95,7 @@ func createScheme() *runtime.Scheme {
 
 func setupTestConfigMap() error {
 	scheme := createScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	testConfigMap1 := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ControllerConfigMapName,
@@ -587,7 +587,7 @@ func TestMetricsPortAddedTwoComponentSpecsTwoContainers(t *testing.T) {
 func TestOverrideMetricsPortName(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
 	spec := &SeldonDeploymentSpec{
 		Predictors: []PredictorSpec{
@@ -1288,7 +1288,7 @@ func TestValidateV2ProtocolNormal(t *testing.T) {
 func TestPredictorNoGraph(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	spec := &SeldonDeploymentSpec{
 		Transport: TransportGrpc,
 		Predictors: []PredictorSpec{
@@ -1306,7 +1306,7 @@ func TestPredictorNoGraph(t *testing.T) {
 func TestShadowPredictor(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	err := setupTestConfigMap()
 	g.Expect(err).To(BeNil())
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
@@ -1333,7 +1333,7 @@ func TestShadowPredictor(t *testing.T) {
 func TestNoPredictors(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	spec := &SeldonDeploymentSpec{
 		Transport:  TransportGrpc,
 		Predictors: []PredictorSpec{},
@@ -1479,7 +1479,7 @@ func TestValidateTwoPrepackTwoPods(t *testing.T) {
 func TestSvcNameAnnotationDuplicate(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	err := setupTestConfigMap()
 	g.Expect(err).To(BeNil())
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)
@@ -1521,7 +1521,7 @@ func TestSvcNameAnnotationDuplicate(t *testing.T) {
 func TestSvcNameAnnotationNotDuplicate(t *testing.T) {
 	g := NewGomegaWithT(t)
 	scheme := runtime.NewScheme()
-	C = fake.NewFakeClientWithScheme(scheme)
+	C = fake.NewClientBuilder().WithScheme(scheme).Build()
 	err := setupTestConfigMap()
 	g.Expect(err).To(BeNil())
 	impl := PredictiveUnitImplementation(constants.PrePackedServerTensorflow)

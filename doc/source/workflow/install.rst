@@ -23,7 +23,7 @@ Kubernetes Compatibility Matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Seldon Core 1.16 bumps minimum Kubernetes version to 1.23.
-This is because as part of making Seldon Core compatible with Kubernetes 1.25 we moved from autoscaling/v2beta1 apiVersion of HorizontalPodAutoscaler to autoscaling/v2 (see this [PR](https://github.com/SeldonIO/seldon-core/pull/4172) for further details).
+This is because as part of making Seldon Core compatible with Kubernetes 1.25 we moved from autoscaling/v2beta1 apiVersion of HorizontalPodAutoscaler to autoscaling/v2 (see this `PR <https://github.com/SeldonIO/seldon-core/pull/4172>`__ for further details).
 
 Following table provides a summary of Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
 
@@ -41,6 +41,8 @@ Following table provides a summary of Seldon Core / Kubernetes version compatibi
 | 1.15                       | ✓    | ✓    | ✓    | ✓    |      |      |
 +----------------------------+------+------+------+------+------+------+
 | 1.16                       |      |      | ✓    | ✓    | ✓    | ✓    |
++----------------------------+------+------+------+------+------+------+
+| 1.17                       |      |      | ✓    | ✓    | ✓    | ✓    |
 +----------------------------+------+------+------+------+------+------+
 
 It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
@@ -80,25 +82,27 @@ The namespace ``seldon-system`` is preferred, so we can create it:
 
 Now we can install Seldon Core in the ``seldon-system`` namespace.
 
-.. tabbed:: Istio
+.. tab-set::
 
-    .. code:: bash
+    .. tab-item:: Istio
 
-        helm install seldon-core seldon-core-operator \
-            --repo https://storage.googleapis.com/seldon-charts \
-            --set usageMetrics.enabled=true \
-            --set istio.enabled=true \
-            --namespace seldon-system
+        .. code:: bash
 
-.. tabbed:: Ambassador
+            helm install seldon-core seldon-core-operator \
+                --repo https://storage.googleapis.com/seldon-charts \
+                --set usageMetrics.enabled=true \
+                --set istio.enabled=true \
+                --namespace seldon-system
 
-    .. code:: bash
+    .. tab-item:: Ambassador
 
-        helm install seldon-core seldon-core-operator \
-            --repo https://storage.googleapis.com/seldon-charts \
-            --set usageMetrics.enabled=true \
-            --set ambassador.enabled=true \
-            --namespace seldon-system
+        .. code:: bash
+
+            helm install seldon-core seldon-core-operator \
+                --repo https://storage.googleapis.com/seldon-charts \
+                --set usageMetrics.enabled=true \
+                --set ambassador.enabled=true \
+                --namespace seldon-system
 
 
 For full instructions on installation with Istio and Ambassador read the
@@ -147,7 +151,7 @@ Install with cert-manager
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can follow `the cert manager documentation to install
-it <https://cert-manager.io/docs/installation/kubernetes/>`__.
+it <https://cert-manager.io/docs/installation/>`__.
 
 You can then install seldon-core with:
 
@@ -204,7 +208,7 @@ Install with Kubeflow
 ^^^^^^^^^^^^^^^^^^^^^
 
 -  `Install Seldon as part of
-   Kubeflow. <https://www.kubeflow.org/docs/guides/components/seldon/#seldon-serving>`__
+   Kubeflow. <https://www.kubeflow.org/docs/external-add-ons/serving/seldon/>`__
 
 GCP MarketPlace
 ^^^^^^^^^^^^^^^
@@ -344,6 +348,6 @@ You could see this error:
 To fix this, ensure the ``no_proxy`` environment variable for the
 ``kube-apiserver`` includes ``.svc,.svc.cluster.local``. See `this
 Github Issue
-Comment <https://github.com/jetstack/cert-manager/issues/2640#issuecomment-601872165>`__
+Comment <https://github.com/cert-manager/cert-manager/issues/2640#issuecomment-601872165>`__
 for reference. As described there, the error could also occur for the
 ``cert-manager-webhook``.

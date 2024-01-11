@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}:${VERSION} as base
 ARG VERSION
 LABEL name="Seldon Alibi Detect Server" \
       vendor="Seldon Technologies" \
-      version="1.18.0-dev" \
+      version="1.18.0" \
       release="1" \
       summary="Alibi Detect Server for Seldon Core" \
       description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
@@ -21,10 +21,10 @@ RUN microdnf update -y && \
       gcc-c++
 
 # Install Rclone Binary to be present in the image
-RUN wget https://downloads.rclone.org/v1.62.2/rclone-v1.62.2-linux-amd64.zip && \
-    unzip rclone-v1.62.2-linux-amd64.zip && \
-    mv rclone-v1.62.2-linux-amd64/rclone /usr/bin/rclone && \
-    rm -rf rclone-v1.62.2-linux-amd64.zip rclone-v1.62.2-linux-amd64
+RUN wget https://downloads.rclone.org/v1.64.2/rclone-v1.64.2-linux-amd64.zip && \
+    unzip rclone-v1.64.2-linux-amd64.zip && \
+    mv rclone-v1.64.2-linux-amd64/rclone /usr/bin/rclone && \
+    rm -rf rclone-v1.64.2-linux-amd64.zip rclone-v1.64.2-linux-amd64
 
 # Note that we need to force Conda to use the system's std-c++ library, as
 # otherwise PyStan won't compile with Conda's older stdc++ library:
@@ -70,8 +70,10 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
+
 ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
-    RCLONE_CONFIG_GS_ANONYMOUS="true"
+    RCLONE_CONFIG_GS_ANONYMOUS="true" \
+    DRIFT_ARTIFACTS_DIR="/mnt/artifacts/"
 
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
 RUN microdnf install -y mesa-libGL
@@ -87,6 +89,10 @@ ENV NUMBA_CACHE_DIR /tmp/numba-cache
 RUN mkdir /.cache && \
     chown -R 8888:0 /.cache && \
     chmod -R 776 /.cache
+
+RUN mkdir -p /mnt/artifacts && \
+    chown -R 8888:0 /mnt/artifacts && \
+    chmod -R 776 /mnt/artifacts
 
 USER 8888
 ENTRYPOINT ["python", "-m", "adserver"]

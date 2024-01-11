@@ -68,7 +68,7 @@ We provide optimized model servers for some of the most popular Deep Learning an
 You only have to upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
 
 ```console
-gs://seldon-models/v1.18.0-dev/sklearn/iris/model.joblib
+gs://seldon-models/v1.18.0/sklearn/iris/model.joblib
 ```
 
 Create a namespace to run your model in:
@@ -91,7 +91,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.18.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.18.0/sklearn/iris
       name: classifier
     name: default
     replicas: 1
@@ -282,7 +282,6 @@ Below are some of the core components together with link to the logs that provid
   </tr>
 </table>
 
-
 ## Where to go from here
 
 ### Getting Started
@@ -375,11 +374,9 @@ Below are some of the core components together with link to the logs that provid
 * [Roadmap ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html)
 * [Build using private repo ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html)
 
-
-
 ## About the name "Seldon Core"
 
-The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scifi Novel)](https://en.wikipedia.org/wiki/Foundation_series) where it's premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
+The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Sci-fi novels)](https://en.wikipedia.org/wiki/Foundation_series) where its premise consists of a mathematician called "Hari Seldon" who spends his life developing a theory of Psychohistory, a new and effective mathematical sociology which allows for the future to be predicted extremely accurate through long periods of time (across hundreds of thousands of years).
 
 ## Commercial Support
 
@@ -387,3 +384,6 @@ The name Seldon (ˈSɛldən) Core was inspired from [the Foundation Series (Scif
 
 We offer commercial support via our enterprise product Seldon Deploy. Please visit [https://www.seldon.io/](https://www.seldon.io/) for details and a trial.
 
+## License
+
+[License](LICENSE)

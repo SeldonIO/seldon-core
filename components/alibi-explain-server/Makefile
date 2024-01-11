@@ -1,13 +1,11 @@
 SELDON_CORE_DIR=../..
 SHELL := /bin/bash
 
-VERSION := $(shell cat ../../version.txt)
-REPO=seldonio
-IMAGE=alibiexplainer
+VERSION ?= $(shell cat ../../version.txt)
+DOCKER_REGISTRY ?= seldonio
 
-BASE_IMAGE ?= ${REPO}/conda-ubi8
-PYTHON_VERSION ?= 3.8.16
-
+BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi8
+IMAGE ?= ${DOCKER_REGISTRY}/alibiexplainer
 KIND_NAME ?= kind
 
 #
@@ -31,10 +29,6 @@ build_apis: get_apis
 		./proto/prediction.proto
 	sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
 
-
-environment:
-	conda create --yes --prefix ./venv python=${PYTHON_VERSION} || echo "already exists"
-
 dev_install:
 	poetry install
 
@@ -52,28 +46,28 @@ fmt:
 	isort . --profile black --skip proto --skip .eggs --skip .tox
 	black . --exclude "(proto|.eggs|.tox)"
 
-docker-build: build_apis
-	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
+docker-build:
+	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
 docker-build-gpu:
-	docker build --file=Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .
+	docker build --file=Dockerfile.gpu -t ${IMAGE}-gpu:${VERSION} .
 
 docker-push:
-	docker push ${REPO}/${IMAGE}:${VERSION}
+	docker push ${IMAGE}:${VERSION}
 
 docker-push-gpu:
-	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
+	docker push ${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image ${REPO}/${IMAGE}:${VERSION} --name ${KIND_NAME}
+	kind load docker-image ${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 # password can be found at: https://connect.redhat.com/projects/5e9c884a014eb1d2cfa8f217/overview
 project=5e9c884a014eb1d2cfa8f217
 redhat-image-scan:
-	docker pull ${REPO}/${IMAGE}:${VERSION}
+	docker pull ${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_alibi_explain} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${REPO}/${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
@@ -103,7 +97,7 @@ anchor_tabular: test_models/explainers/anchor_tabular
 	python -m alibiexplainer --model_name iris --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_docker: test_models/explainers/anchor_tabular
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/anchor_tabular --predictor_host localhost:9000 AnchorTabular
 
 anchor_tabular_explain:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -129,7 +123,7 @@ anchor_text:
 	python -m alibiexplainer --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
 
 anchor_text_docker:
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 ${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --predictor_host localhost:9000 AnchorText
 
 anchor_text_explain:
 	curl -d '{"data": {"ndarray":["a visually exquisite but narratively opaque and emotionally vapid experience of style and mystification"]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -159,7 +153,7 @@ anchor_images: test_models/explainers/anchor_image
 	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri "${PWD}/test_models/explainers/anchor_image" --predictor_host localhost:8501 AnchorImages
 
 anchor_images_docker: test_models/explainers/anchor_image
-	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:8501 AnchorImages
+	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name resnet32 --protocol tensorflow.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:8501 AnchorImages
 
 anchor_images_explain:
 	curl -d @./tests/data/input.json  -X POST http://localhost:8080/v1/models/resnet32:explain    -H "Content-Type: application/json"
@@ -190,7 +184,7 @@ kernel_shap: test_models/explainers/kernel_shap
 
 
 kernel_shap_docker: test_models/explainers/kernel_shap
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri /models/explainers/kernel_shap --predictor_host localhost:9000 KernelShap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name wine --protocol seldon.http --storage_uri /models/explainers/kernel_shap --predictor_host localhost:9000 KernelShap
 
 
 kernel_shap_explain:
@@ -209,7 +203,7 @@ integrated_gradients: test_models/keras/imdb
 
 
 integrated_gradients_docker: test_models/keras/imdb
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/keras/imdb IntegratedGradients --layer 1
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/keras/imdb IntegratedGradients --layer 1
 
 integrated_gradients_explain:
 	curl -d '{"data": {"ndarray":[[   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    1, 591,  202,   14,   31,    6,  717,   10,   10,    2,    2,    5, 4,  360,    7,    4,  177, 5760,  394,  354,    4,  123,    9, 1035, 1035, 1035,   10,   10,   13,   92,  124,   89,  488, 7944, 100,   28, 1668,   14,   31,   23,   27, 7479,   29,  220,  468, 8,  124,   14,  286,  170,    8,  157,   46,    5,   27,  239, 16,  179,    2,   38,   32,   25, 7944,  451,  202,   14,    6, 717]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -228,7 +222,7 @@ tree_shap: test_models/explainers/tree_shap
 	python -m alibiexplainer --model_name adult --protocol seldon.http --storage_uri ${PWD}/test_models/explainers/tree_shap TreeShap
 
 tree_shap_docker: test_models/explainers/tree_shap
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/explainers/tree_shap TreeShap
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name adult --protocol seldon.http --storage_uri /models/explainers/tree_shap TreeShap
 
 tree_shap_explain:
 	curl -d '{"data": {"ndarray":[[39, 7, 1, 1, 1, 1, 4, 1, 2174, 0, 40, 9]]}}'    -X POST http://localhost:8080/api/v1.0/explain    -H "Content-Type: application/json"
@@ -257,7 +251,7 @@ ale: test_models/explainers/ale
 
 
 ale_docker: test_models/explainers/ale
-	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/ale --predictor_host localhost:9000 ALE
+	docker run -it --rm  --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name iris --protocol seldon.http --storage_uri /models/explainers/ale --predictor_host localhost:9000 ALE
 
 
 ale_explain:
@@ -288,7 +282,7 @@ ale_explain:
 #
 #
 #anchor_images_triton_docker: test_models/explainers/anchor_image
-#	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${REPO}/${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
+#	docker run -it --rm --name "explainer" --network=host -p 8080:8080 -v ${PWD}/test_models:/models ${IMAGE}:${VERSION} --model_name cifar10 --protocol kfserving.http --storage_uri /models/explainers/anchor_image --predictor_host localhost:9000 AnchorImages
 #
 #
 #anchor_images_triton_explain:

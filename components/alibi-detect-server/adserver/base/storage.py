@@ -4,6 +4,7 @@ import logging
 import tempfile
 from distutils.util import strtobool
 
+ARTIFACT_DOWNLOAD_LOCATION = os.environ.get("DRIFT_ARTIFACTS_DIR", "/tmp")
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class Rclone:
             )
 
         if dest is None:
-            dest = tempfile.mkdtemp()
+            dest = tempfile.mkdtemp(dir=ARTIFACT_DOWNLOAD_LOCATION)
 
         args = ["-vv"]
         kwargs = {}
