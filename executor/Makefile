@@ -1,22 +1,22 @@
 SHELL := /bin/bash
-VERSION := $(shell cat ../version.txt)
+VERSION ?= $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
-IMAGE_NAME_BASE=seldon-core-executor
-IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 
-IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
+DOCKER_REGISTRY ?= seldonio
+
+IMAGE_NAME_BASE=seldon-core-executor
+IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
 EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
 
 KIND_NAME ?= kind
 
-# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
-else
-GOBIN=$(shell go env GOBIN)
-endif
+# # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+# ifeq (,$(shell go env GOBIN))
+# GOBIN=$(shell go env GOPATH)/bin
+# else
+# GOBIN=$(shell go env GOBIN)
+# endif
 
 # Run go fmt against code
 fmt:
@@ -29,7 +29,7 @@ vet:
 
 # Build manager binary
 executor: copy_operator fmt vet
-	go build -o executor cmd/executor/main.go
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o executor cmd/executor/main.go
 
 
 kafka-proxy: copy_operator fmt vet
@@ -93,37 +93,28 @@ copy_openapi_resources:
 	cp ../openapi/v2/dataplane.yaml api/rest/openapi/open-inference/dataplane.yaml
 
 # Build the docker image
-docker-build: test copy_openapi_resources
+docker-build: copy_operator copy_openapi_resources
 	docker build -f Dockerfile.executor -t ${IMG} .
 
-# Build the docker image for Redhat
-docker-build-redhat: test copy_openapi_resources
-	docker build -f Dockerfile.executor.redhat -t ${IMG_REDHAT} .
-
-# Push the docker image
 docker-push:
 	docker push ${IMG}
 
-# Push the docker image
-docker-push-redhat:
-	docker push ${IMG_REDHAT}
+
+# Red Hat Related
 
 # password can be found at: https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/overview
 project=5e9b34726c2dde3913c2bb65
 redhat-image-scan:
-	docker pull ${IMG_REDHAT}
+	docker pull ${IMG}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_executor} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${IMG_REDHAT} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
-
-kind-image-install-redhat: docker-build-redhat
-	kind load -v 3 docker-image ${IMG_REDHAT} --name ${KIND_NAME}
 
 
 .PHONY: clean

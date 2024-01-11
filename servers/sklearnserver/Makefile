@@ -1,20 +1,23 @@
 SHELL := /bin/bash
-VERSION := $(shell cat ../../version.txt)
-IMAGE_NAME_BASE=sklearnserver
-IMAGE_NAME=seldonio/${IMAGE_NAME_BASE}
+VERSION ?= $(shell cat ../../version.txt)
+
+DOCKER_REGISTRY ?= seldonio
+
+IMAGE_NAME_BASE = sklearnserver
+IMAGE_NAME = ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}
 KIND_NAME ?= kind
 
-build:
+docker-build:
 	s2i build \
 		-E environment \
 		./sklearnserver \
-		seldonio/seldon-core-s2i-python38-ubi8:${VERSION} \
+		${DOCKER_REGISTRY}/seldon-core-s2i-python38:${VERSION} \
 		${IMAGE_NAME}:${VERSION}
 
-push:
+docker-push:
 	docker push ${IMAGE_NAME}:${VERSION}
 
-kind_load: build
+kind-load: docker-build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
 
 # password can be found at: https://connect.redhat.com/projects/5fb94ae7888dca360c9231e1/overview

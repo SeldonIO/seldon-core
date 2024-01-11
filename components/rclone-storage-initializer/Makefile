@@ -1,17 +1,18 @@
 SHELL := /bin/bash
 IMAGE := rclone-storage-initializer
-VERSION := $(shell cat ../../version.txt)
+VERSION ?= $(shell cat ../../version.txt)
 
+DOCKER_REGISTRY ?= seldonio
 KIND_NAME ?= kind
 
 docker-build:
-	docker build --file=Dockerfile --force-rm=true -t seldonio/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile --force-rm=true -t ${DOCKER_REGISTRY}/${IMAGE}:${VERSION} .
 
 docker-push:
-	docker push seldonio/${IMAGE}:${VERSION}
+	docker push ${DOCKER_REGISTRY}/${IMAGE}:${VERSION}
 
 kind-load: docker-build
-	kind load docker-image seldonio/${IMAGE}:${VERSION} --name ${KIND_NAME}
+	kind load docker-image ${DOCKER_REGISTRY}/${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 # password can be found at: https://connect.redhat.com/projects/622b6fcf8a65f13d3bd4172f/overview
 project=622b6fcf8a65f13d3bd4172f

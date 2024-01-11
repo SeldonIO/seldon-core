@@ -7,10 +7,10 @@ spec:
   - graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.18.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.18.0/sklearn/iris
     name: default
     replicas: 1
-    svcOrchSpec: 
-      env: 
+    svcOrchSpec:
+      env:
       - name: SELDON_LOG_LEVEL
         value: DEBUG

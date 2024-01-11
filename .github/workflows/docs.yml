@@ -13,7 +13,7 @@ jobs:
     container: seldonio/core-builder:0.30
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: docs-link-step
       run: |
         make -C doc install-dev linkcheck
@@ -23,8 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     container: seldonio/core-builder:0.30
 
+    # TODO Re-generate OpenInference Protocol v2 README
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: docs-build-step
       run: |
         make -C doc install-dev html

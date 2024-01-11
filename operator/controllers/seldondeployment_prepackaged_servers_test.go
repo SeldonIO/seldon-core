@@ -1415,7 +1415,7 @@ func getNumInitContainers(c *components) int {
 
 func setupTestConfigMap() error {
 	scheme := createScheme()
-	machinelearningv1.C = crfake.NewFakeClientWithScheme(scheme)
+	machinelearningv1.C = crfake.NewClientBuilder().WithScheme(scheme).Build()
 	testConfigMap1 := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ControllerConfigMapName,

@@ -7,7 +7,7 @@ Seldon Core.
 It is a microservice to route requests to one of its children and optionally
 receive feedback rewards for making the routing choices.
 The REST and gRPC internal APIs that the router components must conform to are
-covered in the [internal API](../reference/apis/internal-api.md#route)
+covered in the [internal API](../reference/apis/internal-api.md#router)
 reference.
 
 ## Implementations
@@ -43,4 +43,4 @@ Because routers are generic components that only need to implement the `Route` m
 
 ## Limitations
 
-The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823). 
+The current default orchestrator in Go the "executor" does not return routing meta data in request calls. This is a [known issue](https://github.com/SeldonIO/seldon-core/issues/1823).

@@ -23,6 +23,9 @@ proto:
 
 apis: openapi proto
 
+build-dev:
+	pip-compile requirements.in
+
 install-dev:
 	pip install -r requirements.txt
 	# Install local version of seldon_core as well

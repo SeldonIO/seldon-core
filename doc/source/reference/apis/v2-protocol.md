@@ -40,4 +40,3 @@ window.onload = function () {
 ## gRPC
 
 .. mdinclude:: ../../../../proto/v2/README.md
-

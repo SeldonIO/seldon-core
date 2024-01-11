@@ -9,10 +9,6 @@ build:
   tools:
     python: "3.8"
 
-formats:
-  - pdf
-  - epub
-
 python:
   install:
     - method: pip

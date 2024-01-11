@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "alibiexplainer"
-version = "1.18.0-dev"
+version = "1.18.0"
 description = "Model Explanation Server"
 authors = ["Seldon Technologies Ltd. <hello@seldon.io>"]
-license = "Apache-2.0"
+license = "Business Source License 1.1"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

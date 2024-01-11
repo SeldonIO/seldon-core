@@ -74,3 +74,6 @@ pip install pip-licenses
 mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 mv ./licenses /licenses
+
+# Fix permissions issues caused by running assemble as root user
+chown -R 8888 /microservice

@@ -1,17 +1,10 @@
 /*
-Copyright 2019 The Seldon Authors.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package v1alpha2
@@ -22,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 var (
@@ -43,21 +37,21 @@ func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateCreate() error {
+func (r *SeldonDeployment) ValidateCreate() (warnings admission.Warnings, err error) {
 	seldondeploymentLog.Info("Validating v1alpha2 Webhook called for CREATE", "name", r.Name)
-	return r.Spec.ValidateSeldonDeployment()
+	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
+func (r *SeldonDeployment) ValidateUpdate(_ runtime.Object) (warnings admission.Warnings, err error) {
 	seldondeploymentLog.Info("Validating v1alpha2 webhook called for UPDATE", "name", r.Name)
-	return r.Spec.ValidateSeldonDeployment()
+	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateDelete() error {
+func (r *SeldonDeployment) ValidateDelete() (warnings admission.Warnings, err error) {
 	seldondeploymentLog.Info("Validating v1alpha2 webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return []string{}, nil
 }

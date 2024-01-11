@@ -1,17 +1,10 @@
 /*
-Copyright 2019 The Seldon Authors.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package main
@@ -21,6 +14,10 @@ import (
 	"flag"
 	"os"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"k8s.io/client-go/kubernetes"
 
@@ -163,9 +160,10 @@ func main() {
 		setupLog.Error(err, "failed to set GOMAXPROCS")
 	}
 
-	//Override operator namespace from environment variable as the source of truth
+	// Override operator namespace from environment variable as the source of truth
 	operatorNamespace = utils.GetEnv("POD_NAMESPACE", operatorNamespace)
 
+	// This environment variable overwrites the namespace flag above
 	watchNamespace := utils.GetEnv("WATCH_NAMESPACE", "")
 	if watchNamespace != "" {
 		setupLog.Info("Overriding namespace from WATCH_NAMESPACE", "watchNamespace", watchNamespace)
@@ -205,18 +203,25 @@ func main() {
 		"renew deadline", leaderElectionRenewDeadlineSecs,
 		"retry period", leaderElectionRetryPeriodSecs)
 
-	mgr, err := ctrl.NewManager(config, ctrl.Options{
+	options := ctrl.Options{
 		Scheme:                     scheme,
-		MetricsBindAddress:         metricsAddr,
+		Metrics:                    server.Options{BindAddress: metricsAddr},
 		LeaderElection:             enableLeaderElection,
 		LeaderElectionID:           leaderElectionID,
 		LeaderElectionResourceLock: leaderElectionResourceLock,
 		LeaseDuration:              leaderElectionLeaseDuration,
 		RenewDeadline:              leaderElectionRenewDeadlineDuration,
 		RetryPeriod:                leaderElectionRetryPeriodDuration,
-		Port:                       webHookPort,
-		Namespace:                  namespace,
-	})
+		WebhookServer:              webhook.NewServer(webhook.Options{Port: webHookPort}),
+	}
+	// If the restricted namespace flag or watch env var is set, then restrict the cache to that namespace
+	if namespace != "" {
+		options.Cache = cache.Options{
+			DefaultNamespaces: map[string]cache.Config{namespace: {}},
+		}
+	}
+
+	mgr, err := ctrl.NewManager(config, options)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)

@@ -1,11 +1,11 @@
 SHELL := /bin/bash
-VERSION := $(shell cat ../version.txt)
+VERSION ?= $(shell cat ../version.txt)
 # Image URL to use all building/pushing image targets
-IMAGE_NAME_BASE=seldon-core-operator
-IMAGE_NAME_BASE_REDHAT=${IMAGE_NAME_BASE}-ubi8
 
-IMG ?= seldonio/${IMAGE_NAME_BASE}:${VERSION}
-IMG_REDHAT ?= seldonio/${IMAGE_NAME_BASE_REDHAT}:${VERSION}
+DOCKER_REGISTRY ?= seldonio
+
+IMAGE_NAME_BASE=seldon-core-operator
+IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
 ENVTEST_K8S_VERSION = 1.24
 KIND_NAME ?= kind
@@ -38,7 +38,7 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: install-ginkgo generate fmt vet manifests_all generate-resources envtest
+test: kustomize install-ginkgo generate fmt vet manifests_all generate-resources envtest
 	ACK_GINKGO_RC=true \
 	ACK_GINKGO_DEPRECATIONS=1.16.4 \
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
@@ -141,6 +141,12 @@ fmt:
 vet:
 	go vet ./...
 
+# Getting Kustomize
+KUSTOMIZE = $(shell pwd)/bin/kustomize
+.PHONY: kustomize
+kustomize: ## Download kustomize locally if necessary.
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.4)
+
 # Generate code
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./apis/machinelearning.seldon.io/..."
@@ -150,34 +156,15 @@ create-client: test
 	./hack/update-codegen.sh
 
 # Build the docker image
-docker-build: test generate-resources
+docker-build: kustomize generate-resources
 	docker build . -t ${IMG}
 
-# Build the docker image without testing
-docker-build-no-test: generate-resources
-	docker build . -t ${IMG}
-
-# Build the docker image for Redhat
-docker-build-redhat: test generate-resources
-	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
-
-docker-build-redhat-no-test: generate-resources
-	docker build -f Dockerfile.redhat -t ${IMG_REDHAT} .
-
-# Push the docker image
 docker-push:
 	docker push ${IMG}
 
-# Push the docker image
-docker-push-redhat:
-	docker push ${IMG_REDHAT}
-
-kind-image-install: docker-build-no-test
+# Installing Images in Kind CLusters
+kind-image-install: docker-build
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
-
-kind-image-install-redhat: docker-build-redhat
-	docker save ${IMG_REDHAT} > operator.tar
-	kind load image-archive operator.tar --name ${KIND_NAME}
 
 # find or download controller-gn
 # download controller-gen if necessary
@@ -260,7 +247,7 @@ licenses: licenses/dep.txt
 generate-resources:
 	rm -rf generated
 	mkdir generated
-	kustomize build config/default/ -o generated
+	$(KUSTOMIZE) build config/default/ -o generated
 	cp generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
 
 config/crd/patches/graph_children.yaml:
@@ -375,10 +362,10 @@ update_openshift_certified: create_certified_bundle_image push_certified_bundle_
 # password can be found at: https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview
 project=5e6352370307ea9e345f6084
 redhat-image-scan:
-	docker pull ${IMG_REDHAT}
+	docker pull ${IMG}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_operator} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${IMG_REDHAT} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit

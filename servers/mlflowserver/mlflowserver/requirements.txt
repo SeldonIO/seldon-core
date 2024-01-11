@@ -1,8 +1,10 @@
 # Addresses CVE SNYK-PYTHON-PYYAML-590151
-PyYAML >= 5.4, <= 6.0
+PyYAML >= 5.4, < 6.0
 requests <= 2.31.0
-mlflow <= 2.5.0
 pandas <= 2.0.0
+
+# CVE-2023-47248, CVE-2023-6753, CVE-2023-6709
+mlflow >= 2.9.2, < 3.0
 
 # CVE-2023-38325
 pyopenssl >= 23.2.0

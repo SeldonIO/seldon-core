@@ -18,7 +18,7 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
 
 ### REST API Control
 
-.. Note:: 
+.. Note::
    When using REST APIs, timeouts will only apply to each node and not to the
    full inference graph.
    Therefore, each sub-request for each individual node in the graph will be
@@ -26,7 +26,7 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
 
 * ```seldon.io/rest-timeout``` : REST timeout (msecs)
   * Locations : SeldonDeployment.spec.annotations
-  * Default is no overall timeout but will use GoLang's default transport settings which include a 30 sec connection timeout.
+  * Default is no overall timeout but will use Go's default transport settings which include a 30 sec connection timeout.
   * [REST timeout example](model_rest_grpc_settings.md)
 
 
@@ -47,4 +47,3 @@ You can configure aspects of Seldon Core via annotations in the SeldonDeployment
  * ```seldon.io/svc-name``` : Custom service name for predictor. You will be responsible that it doesn't clash with any existing service name in the namespace of the deployed SeldonDeployment.
    * Locations : SeldonDeployment.spec.predictors[].annotations
    * [custom service name example](custom_svc_name.md)
-

@@ -1,12 +1,14 @@
 SHELL := /bin/bash
-VERSION := $(shell cat ../../version.txt)
-REPO=seldonio
-IMAGE=alibi-detect-server
-KIND_NAME=kind
+
+VERSION ?= $(shell cat ../../version.txt)
+DOCKER_REGISTRY ?= seldonio
+
+BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi8
+IMAGE ?= ${DOCKER_REGISTRY}/alibi-detect-server
+KIND_NAME ?= kind
 
 SELDON_CORE_DIR=../..
 
-BASE_IMAGE ?= seldonio/conda-ubi8
 
 get_local_repo: clean
 	cp $(SELDON_CORE_DIR)/version.txt version.txt
@@ -51,13 +53,13 @@ run-metrics-server:
 #
 
 docker-run-outlier-detector-tensorflow:
-	docker run --name cifar10od -it --rm -p 8080:8080 ${REPO}/${IMAGE}:${VERSION} --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
+	docker run --name cifar10od -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
 docker-run-drift-detector-tensorflow:
-	docker run --name cifar10cd  -it --rm -p 8080:8080 ${REPO}/${IMAGE}:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/ks/cifar10-0_4_3 --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
+	docker run --name cifar10cd  -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/ks/cifar10-0_4_3 --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
 
 docker-run-drift-detector-torch:
-	docker run --name cifar10cd  -it --rm -p 8080:8080 ${REPO}/${IMAGE}-gpu:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/mmd/cifar10_mmd_torch --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
+	docker run --name cifar10cd  -it --rm -p 8080:8080 ${IMAGE}-gpu:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/mmd/cifar10_mmd_torch --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
 
 
 #
@@ -97,19 +99,19 @@ curl-metrics-server-metrics:
 # image building logic
 
 docker-build: get_local_repo
-	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${REPO}/${IMAGE}:${VERSION} .
+	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
 docker-build-gpu:
-	docker build -f Dockerfile.gpu -t ${REPO}/${IMAGE}-gpu:${VERSION} .
+	docker build -f Dockerfile.gpu -t ${IMAGE}-gpu:${VERSION} .
 
 docker-push:
-	docker push ${REPO}/${IMAGE}:${VERSION}
+	docker push ${IMAGE}:${VERSION}
 
 docker-push-gpu:
-	docker push ${REPO}/${IMAGE}-gpu:${VERSION}
+	docker push ${IMAGE}-gpu:${VERSION}
 
 kind_load: docker-build
-	kind load docker-image ${REPO}/${IMAGE}:${VERSION} --name ${KIND_NAME}
+	kind load docker-image ${IMAGE}:${VERSION} --name ${KIND_NAME}
 
 #
 # RedHat
@@ -118,10 +120,10 @@ kind_load: docker-build
 # password can be found at: https://connect.redhat.com/projects/5e9d53076c2dde3913c2bb66/overview
 project=5e9d53076c2dde3913c2bb66
 redhat-image-scan:
-	docker pull ${REPO}/${IMAGE}:${VERSION}
+	docker pull ${IMAGE}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_alibi_detect} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${REPO}/${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${IMAGE}:${VERSION} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit

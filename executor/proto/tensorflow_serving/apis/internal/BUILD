@@ -7,7 +7,7 @@ package(
     features = ["-layering_check"],
 )
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])  # Business Source License 1.1
 
 load("//tensorflow_serving:serving.bzl", "serving_proto_library")
 

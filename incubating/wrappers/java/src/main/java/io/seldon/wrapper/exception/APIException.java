@@ -1,22 +1,19 @@
 /*
- * Seldon -- open source prediction engine
+ * Seldon -- prediction engine
  * =======================================
  *
  * Copyright 2011-2017 Seldon Technologies Ltd and Rummble Ltd (http://www.seldon.io/)
  *
  * ********************************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * 
+ * Copyright (c) 2024 Seldon Technologies Ltd.
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ * Use of this software is governed BY
+ * (1) the license included in the LICENSE file or
+ * (2) if the license included in the LICENSE file is the Business Source License 1.1,
+ * the Change License after the Change Date as each is defined in accordance with the LICENSE file.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  *
  * ********************************************************************************************
  */
