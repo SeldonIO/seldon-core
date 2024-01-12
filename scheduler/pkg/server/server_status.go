@@ -38,6 +38,14 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	s.modelEventStream.mu.Unlock()
 
 	ctx := stream.Context()
+
+	go func() {
+		err := s.sendCurrentModelStatuses(stream)
+		if err != nil && ctx.Err() == nil {
+			logger.WithError(err).Errorf("failed to send current model statuses to subscriber %s", req.GetSubscriberName())
+		}
+	}()
+
 	// Keep this scope alive because once this scope exits - the stream is closed
 	for {
 		select {
