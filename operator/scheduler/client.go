@@ -133,15 +133,14 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 // A smoke test allows us to quickly check if we actually have a functional grpc connection to the scheduler
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grcpClient := scheduler.NewSchedulerClient(conn)
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
 
-	stream, err := grcpClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	_, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager smoke test"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
-	err = stream.CloseSend()
-	if err != nil {
-		return err
-	}
+
 	return nil
 }
 
