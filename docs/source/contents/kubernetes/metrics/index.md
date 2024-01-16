@@ -9,7 +9,7 @@ We recommend to install [kube-prometheus](https://github.com/prometheus-operator
 
 ### RBAC
 
-You will need to modify the default RBAC installed by kube-prometheus as described [here](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md#enable-rbac-rules-for-prometheus-pods).
+You will need to modify the default RBAC installed by kube-prometheus as described [here](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md#deploying-prometheus).
 
 From the `prometheus` folder in the project run:
 
@@ -30,6 +30,7 @@ Includes:
  * Agent pod monitor. Monitors the metrics port of server inference pods.
  * Server pod monitor. Monitors the server-metrics port of inference server pods.
  * Envoy service monitor. Monitors the Envoy gateway proxies.
+ * Pipeline gateway pod monitor. Monitors the metrics port of pipeline gateway pods.
 
 Pod monitors were chosen as ports for metrics are not exposed at service level as we do not have a top level service for server replicas but 1 headless service per replica. Future discussions could reference [this](https://github.com/prometheus-operator/prometheus-operator/issues/3119).
 

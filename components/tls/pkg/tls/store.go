@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package tls
@@ -118,7 +111,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 	var manager CertificateManager
 	var validationManager CertificateManager
 	if !opts.validationOnly {
-		if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
+		if secretName, ok := util.GetNonEmptyEnv(opts.prefix, envSecretSuffix); ok {
 			logger.Infof("Starting new certificate store for %s from secret %s", opts.prefix, secretName)
 			namespace := opts.Namespace
 			if namespace == "" {
@@ -134,7 +127,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 
 			// optionally add a validation secret ca
 			if opts.validationPrefix != "" {
-				if secretName, ok := util.GetEnv(opts.validationPrefix, envSecretSuffix); ok {
+				if secretName, ok := util.GetNonEmptyEnv(opts.validationPrefix, envSecretSuffix); ok {
 					logger.Infof("Starting new certificate store for %s from secret %s", opts.validationPrefix, secretName)
 					validationManager, err = NewTlsSecretHandler(secretName, opts.clientset, namespace, opts.validationPrefix, true, logger)
 					if err != nil {
@@ -157,7 +150,7 @@ func NewCertificateStore(opt ...TLSServerOption) (*CertificateStore, error) {
 		}
 	} else if opts.validationPrefix != "" {
 		logger.Info("Just looking for validation cert")
-		if secretName, ok := util.GetEnv(opts.validationPrefix, envSecretSuffix); ok {
+		if secretName, ok := util.GetNonEmptyEnv(opts.validationPrefix, envSecretSuffix); ok {
 			namespace := opts.Namespace
 			if namespace == "" {
 				namespace, ok = os.LookupEnv(envNamespace)

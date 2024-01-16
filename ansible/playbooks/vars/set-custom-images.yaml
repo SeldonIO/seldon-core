@@ -1,0 +1,86 @@
+# 1. Modify this file with desired component image customisations and
+#    secret details. Replace elements in CAPS and between square brackets
+#    with actual values
+#
+# 2. Pass this file as an ansible extra_vars file when running the setup-seldon
+#    or seldon-all playbooks:
+#
+#    > ansible_playbook playbooks/setup-seldon.yaml -e @playbooks/vars/set-custom-images.yaml
+
+
+# By configuring `custom_image_config`, you can customise image properties
+# for sets of seldon components. For example, fetching images with particular
+# tags or configuring private registries. Any missing components will remain
+# with their default setup.
+#
+# This is a list, where each items specifies:
+# - a target: whether the component is configured at the root-level in
+#             helm-charts (set target to "core") or under serverConfig
+#             (set target to "serverConfig")
+# - components: list of components with a particular image customisation
+#               possible list elements for target "core":
+#                - hodometer
+#                - modelgateway
+#                - pipelinegateway
+#                - dataflow
+#                - controller
+#                - envoy
+#                - scheduler
+#               possible list elements for target "serverConfig":
+#                - mlserver
+#                - triton
+#                - rclone
+#                - agent
+# - image: the keys to overwrite the existing "image" helm-chart values for a
+#          component
+custom_image_config:
+  - target: core
+    components:
+      - hodometer
+      - modelgateway
+      - pipelinegateway
+      - dataflow
+      - controller
+      - envoy
+      - scheduler
+    image:
+      registry: [CORE_REGISTRY_NAME]
+      tag: [TAG_NAME1]
+  - target: serverConfig
+    components:
+      - mlserver
+    image:
+      registry: [MLSERVER_REGISTRY_NAME]
+      tag: [TAG_NAME2]
+
+# For repository definitions, each component will have its own name, depending
+# on the registry configuration. Set the core component to registry name
+# mapping here; missing components remain with their default names.
+core_custom_image_repository:
+  hodometer: seldon-hodometer
+  modelgateway: seldon-modelgateway
+  pipelinegateway: seldon-pipelinegateway
+  dataflow: seldon-dataflow-engine
+  controller: seldonv2-controller
+  envoy: seldon-envoy
+  scheduler: seldon-scheduler
+
+# For repository definitions, each component will have its own name, depending
+# on the registry configuration. Set the server component to registry name
+# mapping here; missing components remain with their default names.
+server_custom_image_repository:
+  mlserver: mlserver
+
+# Define the custom secret to be created or updated in k8s for access to private
+# registries.
+#
+# This assumes you already have the service account created and you have fetched
+# its key in JSON format. Authenticate the docker CLI with this key, i.e:
+#
+# > cat access-seldon-registry.json | docker login -u _json_key --password-stdin europe-west2-docker.pkg.dev
+#
+# then configure the dockerconfigjson property below with the resulting docker config.json
+custom_image_pull_secrets:
+  name: private-registry
+  dockerconfigjson: ~/.docker/config.json
+

@@ -35,7 +35,7 @@ cloud.google.com/go/dataform
 cloud.google.com/go/datafusion
 cloud.google.com/go/datalabeling
 cloud.google.com/go/dataplex
-cloud.google.com/go/dataproc
+cloud.google.com/go/dataproc/v2
 cloud.google.com/go/dataqna
 cloud.google.com/go/datastore
 cloud.google.com/go/datastream
@@ -51,7 +51,6 @@ cloud.google.com/go/eventarc
 cloud.google.com/go/filestore
 cloud.google.com/go/firestore
 cloud.google.com/go/functions
-cloud.google.com/go/gaming
 cloud.google.com/go/gkebackup
 cloud.google.com/go/gkeconnect
 cloud.google.com/go/gkehub
@@ -458,7 +457,6 @@ go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/exporters/otlp
-go.opentelemetry.io/otel/exporters/otlp/internal/retry
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
 go.opentelemetry.io/otel/metric

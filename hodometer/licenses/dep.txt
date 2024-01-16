@@ -2,6 +2,7 @@ github.com/seldonio/seldon-core/hodometer/v2
 cloud.google.com/go
 cloud.google.com/go/bigquery
 cloud.google.com/go/compute
+cloud.google.com/go/compute/metadata
 cloud.google.com/go/datastore
 cloud.google.com/go/firestore
 cloud.google.com/go/logging
@@ -264,6 +265,8 @@ gomodules.xyz/jsonpatch/v2
 google.golang.org/api
 google.golang.org/appengine
 google.golang.org/genproto
+google.golang.org/genproto/googleapis/api
+google.golang.org/genproto/googleapis/rpc
 google.golang.org/grpc
 google.golang.org/grpc/cmd/protoc-gen-go-grpc
 google.golang.org/protobuf

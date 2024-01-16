@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package rclone
@@ -27,6 +20,8 @@ import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 )
 
 func createTestRCloneMockRespondersBasic(host string, port int, status int, body string) {
@@ -61,7 +56,8 @@ func createFakeRcloneClient(status int, body string) *RCloneClient {
 	log.SetLevel(log.DebugLevel)
 	host := "rclone-server"
 	port := 5572
-	r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
+	config, _ := config.NewAgentConfigHandler("", "", logger, nil)
+	r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default", config)
 	createTestRCloneMockRespondersBasic(host, port, status, body)
 	return r
 }
@@ -71,7 +67,8 @@ func createFakeRcloneClientForCopy(t *testing.T, status int, body string, create
 	log.SetLevel(log.DebugLevel)
 	host := "rclone-server"
 	port := 5572
-	r := NewRCloneClient(host, port, t.TempDir(), logger, "default")
+	config, _ := config.NewAgentConfigHandler("", "", logger, nil)
+	r := NewRCloneClient(host, port, t.TempDir(), logger, "default", config)
 	createTestRCloneMockResponders(host, port, status, body, createLocalFolder)
 	return r
 }
@@ -96,6 +93,7 @@ func TestRcloneCopy(t *testing.T) {
 		status            int
 		expectError       bool
 		body              string
+		expectedCallCount int
 	}
 
 	tests := []test{
@@ -106,6 +104,8 @@ func TestRcloneCopy(t *testing.T) {
 			status:            200,
 			body:              "{}",
 			createLocalFolder: true,
+			expectError:       false,
+			expectedCallCount: 1,
 		},
 		{
 			name:              "badResponse",
@@ -115,6 +115,7 @@ func TestRcloneCopy(t *testing.T) {
 			body:              "{}",
 			createLocalFolder: true,
 			expectError:       true,
+			expectedCallCount: 2, // for config resync
 		},
 		{
 			name:              "noFiles",
@@ -124,6 +125,7 @@ func TestRcloneCopy(t *testing.T) {
 			body:              "{}",
 			createLocalFolder: false,
 			expectError:       true,
+			expectedCallCount: 1,
 		},
 	}
 
@@ -143,7 +145,8 @@ func TestRcloneCopy(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
-			g.Expect(httpmock.GetTotalCallCount()).To(Equal(1))
+			g.Expect(httpmock.GetTotalCallCount()).To(Equal(test.expectedCallCount))
+
 		})
 	}
 }
@@ -216,7 +219,7 @@ func TestRcloneConfig(t *testing.T) {
 			log.SetLevel(log.DebugLevel)
 			host := "rclone-server"
 			port := 5572
-			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
+			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default", nil)
 
 			httpmock.RegisterResponder(
 				"POST",
@@ -339,7 +342,7 @@ func TestCreateUriWithConfig(t *testing.T) {
 			log.SetLevel(log.DebugLevel)
 			host := "rclone-server"
 			port := 5572
-			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
+			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default", nil)
 			res, err := r.createUriWithConfig(test.uri, test.config)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -385,7 +388,7 @@ func TestListRemotes(t *testing.T) {
 			log.SetLevel(log.DebugLevel)
 			host := "rclone-server"
 			port := 5572
-			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default")
+			r := NewRCloneClient(host, port, "/tmp/rclone", logger, "default", nil)
 			b, err := json.Marshal(test.rcloneResponse)
 			g.Expect(err).To(BeNil())
 			httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d%s", host, port, "/config/listremotes"),

@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package io.seldon.dataflow.kafka
@@ -45,8 +38,9 @@ class Pipeline(
     val size: Int,
 ) : StateListener {
     private val latch = CountDownLatch(1)
+    private var errorOrShutdown = false
 
-    fun start() {
+    fun start() : Boolean {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
@@ -60,6 +54,8 @@ class Pipeline(
 
         // Do not allow pipeline to be marked as ready until it has successfully rebalanced.
         latch.await()
+
+        return !errorOrShutdown
     }
 
     fun stop() {
@@ -72,7 +68,19 @@ class Pipeline(
         logger.info { "pipeline ${metadata.name} (v${metadata.version}) changing to state $newState" }
         if (newState == KafkaStreams.State.RUNNING) {
             latch.countDown()
+            return
         }
+        // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
+        // are the only non-error states. Everything else indicates an error or shutdown
+        // and we should release the lock on which start() awaits and return an error.
+        // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
+        if (newState != KafkaStreams.State.CREATED && newState != KafkaStreams.State.REBALANCING) {
+            errorOrShutdown = true
+            latch.countDown()
+        }
+
+        // TODO: propagate pipeline state after initial startup (i.e. if the pipeline moves
+        //       from RUNNING to REBALANCING or from RUNNING to an Error state)
     }
 
     companion object {

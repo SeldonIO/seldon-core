@@ -1,0 +1,5 @@
+---
+
+- ansible.builtin.import_playbook: kind-cluster.yaml
+- ansible.builtin.import_playbook: setup-ecosystem.yaml
+- ansible.builtin.import_playbook: setup-seldon.yaml

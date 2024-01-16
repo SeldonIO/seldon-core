@@ -22,7 +22,7 @@ jobs:
         run: echo "${{ toJSON(github.event.inputs) }}"
 
       - name: Checkout Git Commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -31,7 +31,7 @@ jobs:
         run: |
           set -e
 
-          RELEASE_BRANCH=$(echo ${GITHUB_REF#refs/heads/})
+          RELEASE_BRANCH=${GITHUB_REF_NAME}
           RELEASE_TAG="${{ github.event.inputs.version }}"
 
           # Ensure that we do not run on master
@@ -64,17 +64,18 @@ jobs:
           git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 14
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: '~1.19.0'
+          go-version: '1.20.11'
+          cache: false
 
       - name: Setup Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
           version: "${{ env.HELM_VERSION }}"
 

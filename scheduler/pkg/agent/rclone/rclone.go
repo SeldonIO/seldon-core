@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package rclone
@@ -50,14 +43,15 @@ const (
 )
 
 type RCloneClient struct {
-	host       string
-	port       int
-	localPath  string
-	httpClient *http.Client
-	logger     log.FieldLogger
-	validate   *validator.Validate
-	namespace  string
-	configChan chan config.AgentConfiguration
+	host          string
+	port          int
+	localPath     string
+	httpClient    *http.Client
+	logger        log.FieldLogger
+	validate      *validator.Validate
+	namespace     string
+	configChan    chan config.AgentConfiguration
+	configHandler *config.AgentConfigHandler
 }
 
 type Noop struct {
@@ -115,27 +109,29 @@ func NewRCloneClient(
 	localPath string,
 	logger log.FieldLogger,
 	namespace string,
+	configHandler *config.AgentConfigHandler,
 ) *RCloneClient {
 	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
-		host:       host,
-		port:       port,
-		localPath:  localPath,
-		httpClient: http.DefaultClient,
-		logger:     logger.WithField("Source", "RCloneClient"),
-		validate:   validator.New(),
-		namespace:  namespace,
-		configChan: make(chan config.AgentConfiguration),
+		host:          host,
+		port:          port,
+		localPath:     localPath,
+		httpClient:    http.DefaultClient,
+		logger:        logger.WithField("Source", "RCloneClient"),
+		validate:      validator.New(),
+		namespace:     namespace,
+		configChan:    make(chan config.AgentConfiguration),
+		configHandler: configHandler,
 	}
 }
 
-func (r *RCloneClient) StartConfigListener(configHandler *config.AgentConfigHandler) error {
+func (r *RCloneClient) StartConfigListener() error {
 	logger := r.logger.WithField("func", "StartConfigListener")
 	// Start config listener
 	go r.listenForConfigUpdates()
 	// Add ourself as listener on channel and handle initial config
 	logger.Info("Loading initial rclone configuration")
-	err := r.loadRcloneConfiguration(configHandler.AddListener(r.configChan))
+	err := r.loadRcloneConfiguration(r.configHandler.AddListener(r.configChan))
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to load rclone defaults")
 		return err
@@ -356,7 +352,9 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		return "", err
 	}
 
-	_, err = r.call(b, RcloneSyncCopyPath)
+	// It might be the case that rclone server restarted and we have not set it up yet
+	// with the config, so we try one more time
+	err = r.copyWithConfigResync(b)
 	if err != nil {
 		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUri, dst, err)
 	}
@@ -371,6 +369,22 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	}
 
 	return dst, nil
+}
+
+func (r *RCloneClient) copyWithConfigResync(b []byte) error {
+	_, err := r.call(b, RcloneSyncCopyPath)
+	if err != nil {
+		rcloneConfigErr := r.loadRcloneConfiguration(r.configHandler.GetConfiguration())
+		if rcloneConfigErr != nil {
+			return rcloneConfigErr
+		} else {
+			_, err = r.call(b, RcloneSyncCopyPath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (r *RCloneClient) PurgeLocal(path string) error {

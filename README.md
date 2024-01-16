@@ -82,4 +82,4 @@ make undeploy-k8s
 
 ## License
 
-[Apache License 2.0](LICENSE)
+[License](LICENSE)

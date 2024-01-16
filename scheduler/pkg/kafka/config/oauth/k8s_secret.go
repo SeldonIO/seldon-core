@@ -1,17 +1,10 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package oauth
@@ -31,26 +24,44 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 )
 
-type OAUTHSecretHandler struct {
+const (
+	fieldMethod       = "method"
+	fieldClientID     = "client_id"
+	fieldClientSecret = "client_secret"
+	fieldScope        = "scope"
+	fieldTokenURL     = "token_endpoint_url"
+	fieldExtensions   = "extensions"
+)
+
+type k8sSecretStore struct {
 	clientset   kubernetes.Interface
 	secretName  string
 	namespace   string
 	stopper     chan struct{}
 	logger      log.FieldLogger
 	mu          sync.RWMutex
-	oauthConfig OAUTHConfig
+	oauthConfig OAuthConfig
 }
 
-func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, logger log.FieldLogger) (*OAUTHSecretHandler, error) {
+func newK8sSecretStore(
+	secretName string,
+	clientset kubernetes.Interface,
+	namespace string,
+	prefix string,
+	logger log.FieldLogger,
+) (*k8sSecretStore, error) {
+	logger = logger.WithField("source", "SecretOAuthStore")
+
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
 		if err != nil {
-			logger.WithError(err).Error("Failed to create clientset for OAUTH secret handler")
+			logger.WithError(err).Error("Failed to create clientset for OAuth secret handler")
 			return nil, err
 		}
 	}
-	return &OAUTHSecretHandler{
+
+	return &k8sSecretStore{
 		clientset:  clientset,
 		secretName: secretName,
 		namespace:  namespace,
@@ -59,120 +70,139 @@ func NewOAUTHSecretHandler(secretName string, clientset kubernetes.Interface, na
 	}, nil
 }
 
-func (s *OAUTHSecretHandler) GetOAUTHConfig() OAUTHConfig {
+func (s *k8sSecretStore) GetOAuthConfig() OAuthConfig {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.oauthConfig
 }
 
-func (s *OAUTHSecretHandler) Stop() {
+func (s *k8sSecretStore) Stop() {
 	close(s.stopper)
 }
 
-func (s *OAUTHSecretHandler) saveOAUTHFromSecret(secret *corev1.Secret) error {
-	// Read and Save oauthbearer method
-	method, ok := secret.Data[SecretKeyMethod]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyMethod, secret.Name)
+func (s *k8sSecretStore) updateFromSecret(secret *corev1.Secret) error {
+	newConfig, err := s.getConfigFromSecret(secret)
+	if err != nil {
+		return err
 	}
-	s.oauthConfig.Method = string(method)
 
-	// Read and Save oauthbearer client id
-	clientID, ok := secret.Data[SecretKeyClientID]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientID, secret.Name)
-	}
-	s.oauthConfig.ClientID = string(clientID)
-
-	// Read and Save oauthbearer client secret
-	clientSecret, ok := secret.Data[SecretKeyClientSecret]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyClientSecret, secret.Name)
-	}
-	s.oauthConfig.ClientSecret = string(clientSecret)
-
-	// Read and Save oauthbearer scope
-	scope, ok := secret.Data[SecretKeyScope]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyScope, secret.Name)
-	}
-	s.oauthConfig.Scope = string(scope)
-
-	// Read and Save oauthbearer token endpoint url
-	tokenEndpointURL, ok := secret.Data[SecretKeyTokenEndpointURL]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyTokenEndpointURL, secret.Name)
-	}
-	s.oauthConfig.TokenEndpointURL = string(tokenEndpointURL)
-
-	// Read and Save oauthbearer extensions
-	extensions, ok := secret.Data[SecretKeyExtensions]
-	if !ok {
-		return fmt.Errorf("Failed to find %s in secret %s", SecretKeyExtensions, secret.Name)
-	}
-	s.oauthConfig.Extensions = string(extensions)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.oauthConfig = *newConfig
 
 	return nil
 }
 
-func (s *OAUTHSecretHandler) onAdd(obj interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *k8sSecretStore) getConfigFromSecret(secret *corev1.Secret) (*OAuthConfig, error) {
+	config := &OAuthConfig{}
+	noSuchFieldError := func(fieldName string) error {
+		return fmt.Errorf("Failed to find field %s in secret %s", fieldName, secret.Name)
+	}
+
+	method, ok := secret.Data[fieldMethod]
+	if !ok {
+		return nil, noSuchFieldError(fieldMethod)
+	}
+	config.Method = string(method)
+
+	clientID, ok := secret.Data[fieldClientID]
+	if !ok {
+		return nil, noSuchFieldError(fieldClientID)
+	}
+	config.ClientID = string(clientID)
+
+	clientSecret, ok := secret.Data[fieldClientSecret]
+	if !ok {
+		return nil, noSuchFieldError(fieldClientSecret)
+	}
+	config.ClientSecret = string(clientSecret)
+
+	scope, ok := secret.Data[fieldScope]
+	if !ok {
+		return nil, noSuchFieldError(fieldScope)
+	}
+	config.Scope = string(scope)
+
+	tokenEndpointURL, ok := secret.Data[fieldTokenURL]
+	if !ok {
+		return nil, noSuchFieldError(fieldTokenURL)
+	}
+	config.TokenEndpointURL = string(tokenEndpointURL)
+
+	extensions, ok := secret.Data[fieldExtensions]
+	if !ok {
+		return nil, noSuchFieldError(fieldExtensions)
+	}
+	config.Extensions = string(extensions)
+
+	return config, nil
+}
+
+func (s *k8sSecretStore) onAdd(obj interface{}) {
 	logger := s.logger.WithField("func", "onAdd")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAUTH Secret %s added", s.secretName)
-		err := s.saveOAUTHFromSecret(secret)
+		logger.Infof("OAuth secret %s added", s.secretName)
+
+		err := s.updateFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAUTH from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth config from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *OAUTHSecretHandler) onUpdate(oldObj, newObj interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *k8sSecretStore) onUpdate(oldObj, newObj interface{}) {
 	logger := s.logger.WithField("func", "onUpdate")
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("OAUTH Secret %s updated", s.secretName)
-		err := s.saveOAUTHFromSecret(secret)
+		logger.Infof("OAuth secret %s updated", s.secretName)
+
+		err := s.updateFromSecret(secret)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to extract OAUTH from secret %s", secret.Name)
+			logger.WithError(err).Errorf("Failed to extract OAuth config from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *OAUTHSecretHandler) onDelete(obj interface{}) {
+func (s *k8sSecretStore) onDelete(obj interface{}) {
 	logger := s.logger.WithField("func", "onDelete")
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Warnf("Secret %s deleted", secret.Name)
+		logger.Warnf("OAuth secret %s deleted", secret.Name)
 	}
 }
 
-func (s *OAUTHSecretHandler) loadOAUTH(secretName string) error {
-	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+func (s *k8sSecretStore) loadOAuthConfig(secretName string) error {
+	secret, err := s.clientset.
+		CoreV1().
+		Secrets(s.namespace).
+		Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	return s.saveOAUTHFromSecret(secret)
+	return s.updateFromSecret(secret)
 }
 
-func (s *OAUTHSecretHandler) GetOAUTHAndWatch() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	err := s.loadOAUTH(s.secretName)
+func (s *k8sSecretStore) loadAndWatchConfig() error {
+	err := s.loadOAuthConfig(s.secretName)
 	if err != nil {
 		return err
 	}
-	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.clientset, 0, informers.WithNamespace(s.namespace))
-	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    s.onAdd,
-		UpdateFunc: s.onUpdate,
-		DeleteFunc: s.onDelete,
-	})
+
+	coreInformers := informers.NewSharedInformerFactoryWithOptions(
+		s.clientset,
+		0,
+		informers.WithNamespace(s.namespace),
+	)
+	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(
+		cache.ResourceEventHandlerFuncs{
+			AddFunc:    s.onAdd,
+			UpdateFunc: s.onUpdate,
+			DeleteFunc: s.onDelete,
+		},
+	)
 	coreInformers.WaitForCacheSync(s.stopper)
 	coreInformers.Start(s.stopper)
+
 	return nil
 }

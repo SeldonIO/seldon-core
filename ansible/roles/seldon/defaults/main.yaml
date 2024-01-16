@@ -9,5 +9,8 @@ seldon_install_servers: true
 
 seldon_force_install_crds: false
 seldon_core_v2_timeout_helm: "480s"
+save_helm_components_overrides: false
+save_helm_components_overrides_file: "{{ ansible_env.HOME }}/seldon_helm_comp_values.yaml"
 
 seldon_core_v2_component_values: {}
+seldon_core_v2_servers_values: {}

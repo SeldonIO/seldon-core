@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.19.10 as builder
+FROM golang:1.20.11 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -18,7 +18,7 @@ COPY operator/main.go main.go
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.2-9
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-6
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532

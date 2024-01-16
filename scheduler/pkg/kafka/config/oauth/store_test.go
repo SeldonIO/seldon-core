@@ -1,94 +1,90 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package oauth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/ghodss/yaml"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func unMarshallYamlStrict(data []byte, msg interface{}) error {
-	jsonData, err := yaml.YAMLToJSON(data)
-	if err != nil {
-		return err
+func TestNewOAuthStoreWithSecret(t *testing.T) {
+	expectedExisting := OAuthConfig{
+		Method:           "OIDC",
+		ClientID:         "test-client-id",
+		ClientSecret:     "test-client-secret",
+		TokenEndpointURL: "https://example.com/openid-connect/token",
+		Extensions:       "logicalCluster=logic-1234,identityPoolId=pool-1234",
+		Scope:            "test_scope",
 	}
-	d := json.NewDecoder(bytes.NewReader(jsonData))
-	d.DisallowUnknownFields() // So we fail if not exactly as required in schema
-	err = d.Decode(msg)
-	if err != nil {
-		return err
+	expectedUpdate := expectedExisting
+	expectedUpdate.ClientID = "new-client-id"
+
+	secret := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "cc-oauth-test-secret",
+			Namespace: "default",
+		},
+		Data: map[string][]byte{
+			fieldMethod:       []byte(expectedExisting.Method),
+			fieldClientID:     []byte(expectedExisting.ClientID),
+			fieldClientSecret: []byte(expectedExisting.ClientSecret),
+			fieldTokenURL:     []byte(expectedExisting.TokenEndpointURL),
+			fieldExtensions:   []byte(expectedExisting.Extensions),
+			fieldScope:        []byte(expectedExisting.Scope),
+		},
 	}
-	return nil
-}
-
-func moveStringDataToData(secret *v1.Secret) {
-	secret.Data = make(map[string][]byte)
-	for key, val := range secret.StringData {
-		secret.Data[key] = []byte(val)
-	}
-}
-
-func TestNewOAUTHStoreWithSecret(t *testing.T) {
-	g := NewGomegaWithT(t)
-	secretData, err := os.ReadFile("testdata/k8s_secret.yaml")
-	g.Expect(err).To(BeNil())
-
-	secret := &v1.Secret{}
-	err = unMarshallYamlStrict(secretData, secret)
-	g.Expect(err).To(BeNil())
-
-	moveStringDataToData(secret)
+	clientset := fake.NewSimpleClientset(secret)
 
 	prefix := "prefix"
-
-	t.Setenv(fmt.Sprintf("%s%s", prefix, envSecretSuffix), secret.Name)
+	t.Setenv(prefix+envSecretSuffix, secret.Name)
 	t.Setenv(envNamespace, secret.Namespace)
 
-	clientset := fake.NewSimpleClientset(secret)
-	ps, err := NewOAUTHStore(Prefix(prefix), ClientSet(clientset))
-	g.Expect(err).To(BeNil())
+	store, err := NewOAuthStore(
+		OAuthStoreOptions{
+			Prefix:    prefix,
+			Clientset: clientset,
+		},
+	)
+	assert.NoError(t, err)
+	defer store.Stop()
 
-	oauthConfig := ps.GetOAUTHConfig()
-	g.Expect(oauthConfig.Method).To(Equal("OIDC"))
-	g.Expect(oauthConfig.ClientID).To(Equal("test-client-id"))
-	g.Expect(oauthConfig.ClientSecret).To(Equal("test-client-secret"))
-	g.Expect(oauthConfig.Scope).To(Equal("test scope"))
-	g.Expect(oauthConfig.TokenEndpointURL).To(Equal("https://keycloak.example.com/auth/realms/example-realm/protocol/openid-connect/token"))
-	g.Expect(oauthConfig.Extensions).To(Equal("logicalCluster=logic-1234,identityPoolId=pool-1234"))
+	t.Run(
+		"get existing config",
+		func(t *testing.T) {
+			oauthConfig := store.GetOAuthConfig()
+			assert.Equal(t, expectedExisting, oauthConfig)
+		},
+	)
 
-	newClientID := "new-client-id"
-	secret.Data["client_id"] = []byte(newClientID)
+	t.Run(
+		"get updated config",
+		func(t *testing.T) {
+			secret.Data[fieldClientID] = []byte(expectedUpdate.ClientID)
 
-	_, err = clientset.CoreV1().Secrets(secret.Namespace).Update(context.Background(), secret, metav1.UpdateOptions{})
-	g.Expect(err).To(BeNil())
-	time.Sleep(time.Millisecond * 500)
+			_, err = clientset.
+				CoreV1().
+				Secrets(secret.Namespace).
+				Update(context.Background(), secret, metav1.UpdateOptions{})
+			assert.NoError(t, err)
 
-	oauthConfig = ps.GetOAUTHConfig()
-	g.Expect(oauthConfig.ClientID).To(Equal("new-client-id"))
-	ps.Stop()
+			checkForUpdate := func(c *assert.CollectT) {
+				oauthConfig := store.GetOAuthConfig()
+				assert.Equal(c, expectedUpdate, oauthConfig)
+			}
+			assert.EventuallyWithT(t, checkForUpdate, 100*time.Millisecond, 5*time.Millisecond)
+		},
+	)
 }

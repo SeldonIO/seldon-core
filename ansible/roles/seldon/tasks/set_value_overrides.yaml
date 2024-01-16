@@ -1,0 +1,55 @@
+---
+- name: Apply custom artifact repo config to core components
+  ansible.builtin.set_fact:
+    seldon_core_v2_component_values: >-
+      {{ seldon_core_v2_component_values |
+         combine(
+           { item.1:
+             { 'image': item.0.image |
+                          combine(
+                            {'repository': core_custom_image_repository[item.1] }
+                              if (core_custom_image_repository is defined and
+                                  core_custom_image_repository[item.1] is defined)
+                              else
+                                {}
+                          )
+             }
+           },
+           recursive=true)}}
+  when: item.0.target == "core"
+  with_subelements:
+    - "{{ custom_image_config | default({}) }}"
+    - components
+
+- name: Apply custom artifact repo config to server components
+  ansible.builtin.set_fact:
+    seldon_core_v2_component_values: >-
+      {{ seldon_core_v2_component_values |
+         combine(
+           { 'serverConfig':
+             {item.1:
+                { 'image': item.0.image |
+                              combine(
+                                {'repository': server_custom_image_repository[item.1] }
+                                  if (server_custom_image_repository is defined and
+                                      server_custom_image_repository[item.1] is defined)
+                                  else
+                                    {}
+                              )
+                }
+             }
+           },
+           recursive=true)}}
+  when: item.0.target == "serverConfig"
+  with_subelements:
+    - "{{ custom_image_config | default({}) }}"
+    - components
+
+- name: Apply custom imagePullSecrets config
+  ansible.builtin.set_fact:
+    seldon_core_v2_component_values: >-
+      {{ seldon_core_v2_component_values |
+         combine(
+           {'imagePullSecrets': [{ 'name': custom_image_pull_secrets.name }]},
+           recursive=true, list_merge="append")}}
+  when: custom_image_pull_secrets is defined

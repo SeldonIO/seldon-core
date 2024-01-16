@@ -1,17 +1,10 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package password
@@ -32,18 +25,27 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/k8s"
 )
 
-type PasswordSecretHandler struct {
+type k8sSecretStore struct {
 	clientset     kubernetes.Interface
 	secretName    string
 	namespace     string
 	stopper       chan struct{}
 	logger        log.FieldLogger
 	password      string
-	folderHandler *PasswordFolderHandler
+	folderHandler *fileStore
 	mu            sync.RWMutex
 }
 
-func NewPasswordSecretHandler(secretName string, clientset kubernetes.Interface, namespace string, prefix string, locationSuffix string, logger log.FieldLogger) (*PasswordSecretHandler, error) {
+func newK8sSecretStore(
+	secretName string,
+	clientset kubernetes.Interface,
+	namespace string,
+	prefix string,
+	locationSuffix string,
+	logger log.FieldLogger,
+) (*k8sSecretStore, error) {
+	logger = logger.WithField("source", "SecretPasswordStore")
+
 	if clientset == nil {
 		var err error
 		clientset, err = k8s.CreateClientset()
@@ -52,11 +54,11 @@ func NewPasswordSecretHandler(secretName string, clientset kubernetes.Interface,
 			return nil, err
 		}
 	}
-	folderHandler, err := NewPasswordFolderHandler(prefix, locationSuffix, logger)
+	folderHandler, err := newFileStore(prefix, locationSuffix, logger)
 	if err != nil {
 		return nil, err
 	}
-	return &PasswordSecretHandler{
+	return &k8sSecretStore{
 		clientset:     clientset,
 		secretName:    secretName,
 		namespace:     namespace,
@@ -66,84 +68,96 @@ func NewPasswordSecretHandler(secretName string, clientset kubernetes.Interface,
 	}, nil
 }
 
-func (s *PasswordSecretHandler) GetPassword() string {
+func (s *k8sSecretStore) GetPassword() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.password
 }
 
-func (s *PasswordSecretHandler) Stop() {
+func (s *k8sSecretStore) Stop() {
 	close(s.stopper)
 }
 
-func (s *PasswordSecretHandler) savePasswordFromSecret(secret *corev1.Secret) error {
+func (s *k8sSecretStore) updateFromSecret(secret *corev1.Secret) error {
 	dataKey := filepath.Base(s.folderHandler.passwordFilePath)
 	password, ok := secret.Data[dataKey]
 	if !ok {
 		return fmt.Errorf("Failed to find %s in secret %s", dataKey, secret.Name)
 	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.password = string(password)
+
 	return nil
 }
 
-func (s *PasswordSecretHandler) onAdd(obj interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	logger := s.logger.WithField("func", "onAdd")
+func (s *k8sSecretStore) onAdd(obj interface{}) {
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("TLS Secret %s added", s.secretName)
-		err := s.savePasswordFromSecret(secret)
+		logger := s.logger.WithField("func", "onAdd")
+		logger.Infof("Password secret %s added", s.secretName)
+
+		err := s.updateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract password from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *PasswordSecretHandler) onUpdate(oldObj, newObj interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	logger := s.logger.WithField("func", "onUpdate")
+func (s *k8sSecretStore) onUpdate(oldObj, newObj interface{}) {
 	secret := newObj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Infof("Password Secret %s updated", s.secretName)
-		err := s.savePasswordFromSecret(secret)
+		logger := s.logger.WithField("func", "onUpdate")
+		logger.Infof("Password secret %s updated", s.secretName)
+
+		err := s.updateFromSecret(secret)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to extract password from secret %s", secret.Name)
 		}
 	}
 }
 
-func (s *PasswordSecretHandler) onDelete(obj interface{}) {
-	logger := s.logger.WithField("func", "onDelete")
+func (s *k8sSecretStore) onDelete(obj interface{}) {
 	secret := obj.(*corev1.Secret)
 	if secret.Name == s.secretName {
-		logger.Warnf("Secret %s deleted", secret.Name)
+		logger := s.logger.WithField("func", "onDelete")
+		logger.Warnf("Password secret %s deleted", secret.Name)
 	}
 }
 
-func (s *PasswordSecretHandler) loadPassword(secretName string) error {
-	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+func (s *k8sSecretStore) loadPassword(secretName string) error {
+	secret, err := s.clientset.
+		CoreV1().
+		Secrets(s.namespace).
+		Get(context.Background(), secretName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	return s.savePasswordFromSecret(secret)
+
+	return s.updateFromSecret(secret)
 }
 
-func (s *PasswordSecretHandler) GetPasswordAndWatch() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *k8sSecretStore) loadAndWatchPassword() error {
 	err := s.loadPassword(s.secretName)
 	if err != nil {
 		return err
 	}
-	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.clientset, 0, informers.WithNamespace(s.namespace))
-	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    s.onAdd,
-		UpdateFunc: s.onUpdate,
-		DeleteFunc: s.onDelete,
-	})
+
+	coreInformers := informers.NewSharedInformerFactoryWithOptions(
+		s.clientset,
+		0,
+		informers.WithNamespace(s.namespace),
+	)
+	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(
+		cache.ResourceEventHandlerFuncs{
+			AddFunc:    s.onAdd,
+			UpdateFunc: s.onUpdate,
+			DeleteFunc: s.onDelete,
+		},
+	)
 	coreInformers.WaitForCacheSync(s.stopper)
 	coreInformers.Start(s.stopper)
+
 	return nil
 }

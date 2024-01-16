@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package config
@@ -33,7 +26,7 @@ const (
 	EnvKafkaBrokerPrefix         = "KAFKA_BROKER"
 	EnvSASLUsernameSuffix        = "_SASL_USERNAME"
 	EnvPasswordLocationSuffix    = "_SASL_PASSWORD_LOCATION"
-	EnvOAUTHConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
+	EnvOAuthConfigLocationSuffix = "_OAUTH_CONFIG_LOCATION"
 	DefaultSASLUsername          = "seldon"
 )
 
@@ -56,13 +49,11 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 	var err error
 	switch mechanism {
-	case tls.SASLMechanismPlain:
-		// for PLAIN mechanism the logic is similar as for SCRAM
-		err = configureSASLSSLSCRAM(mechanism, config)
-	case tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
-		err = configureSASLSSLSCRAM(mechanism, config)
+	// PLAIN and SCRAM are password-based mechanisms handled in the same way
+	case tls.SASLMechanismPlain, tls.SASLMechanismSCRAMSHA256, tls.SASLMechanismSCRAMSHA512:
+		err = withPasswordAuth(mechanism, config)
 	case tls.SASLMechanismOAUTHBEARER:
-		err = configureSASLSSLOAUTHBEARER(mechanism, config)
+		err = withOAuth(config)
 	default:
 		err = fmt.Errorf("Provided SASL mechanism %s is not supported", mechanism)
 	}
@@ -70,25 +61,29 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 	return err
 }
 
-func configureSASLSSLSCRAM(mechanism string, config kafka.ConfigMap) error {
+func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 	// Set the SASL mechanism
 	config["security.protocol"] = "SASL_SSL"
 	config["sasl.mechanism"] = mechanism
 
 	// Set the SASL username and password
-	ps, err := password.NewPasswordStore(
-		password.Prefix(EnvKafkaClientPrefix),
-		password.LocationSuffix(EnvPasswordLocationSuffix),
+	passwordStore, err := password.NewPasswordStore(
+		password.PasswordStoreOptions{
+			Prefix:         EnvKafkaClientPrefix,
+			LocationSuffix: EnvPasswordLocationSuffix,
+		},
 	)
 	if err != nil {
 		return err
 	}
-	username, found := util.GetEnv(EnvKafkaClientPrefix, EnvSASLUsernameSuffix)
+
+	username, found := util.GetNonEmptyEnv(EnvKafkaClientPrefix, EnvSASLUsernameSuffix)
 	if !found {
 		username = DefaultSASLUsername
 	}
+
 	config["sasl.username"] = username
-	config["sasl.password"] = ps.GetPassword()
+	config["sasl.password"] = passwordStore.GetPassword()
 
 	// Set the TLS Certificate
 	cs, err := tls.NewCertificateStore(
@@ -98,32 +93,35 @@ func configureSASLSSLSCRAM(mechanism string, config kafka.ConfigMap) error {
 	if err != nil {
 		return err
 	}
-	caCert := cs.GetValidationCertificate()
+
 	// issue is that ca.pem does not work with multiple certificates defined
 	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and testing in our code)
-
+	caCert := cs.GetValidationCertificate()
 	config["ssl.ca.location"] = caCert.CaPath
 
 	endpointMechanism := tls.GetEndpointIdentificationMechanismFromEnv(tls.EnvSecurityPrefixKafkaClient)
 	config["ssl.endpoint.identification.algorithm"] = endpointMechanism
+
 	return nil
 }
 
-func configureSASLSSLOAUTHBEARER(mechanism string, config kafka.ConfigMap) error {
+func withOAuth(config kafka.ConfigMap) error {
 	// Set the SASL mechanism
-	config["security.protocol"] = "SASL_SSL"
-	config["sasl.mechanism"] = "OAUTHBEARER"
+	config["security.protocol"] = tls.SecurityProtocolSASLSSL
+	config["sasl.mechanism"] = tls.SASLMechanismOAUTHBEARER
 
-	// Set OAUTH Configuration
-	oauthStore, err := oauth.NewOAUTHStore(
-		oauth.Prefix(EnvKafkaClientPrefix),
-		oauth.LocationSuffix(EnvOAUTHConfigLocationSuffix),
+	// Set OAuth Configuration
+	oauthStore, err := oauth.NewOAuthStore(
+		oauth.OAuthStoreOptions{
+			Prefix:         EnvKafkaClientPrefix,
+			LocationSuffix: EnvOAuthConfigLocationSuffix,
+		},
 	)
 	if err != nil {
 		return err
 	}
 
-	oauthConfig := oauthStore.GetOAUTHConfig()
+	oauthConfig := oauthStore.GetOAuthConfig()
 
 	config["sasl.oauthbearer.method"] = oauthConfig.Method
 	config["sasl.oauthbearer.client.id"] = oauthConfig.ClientID

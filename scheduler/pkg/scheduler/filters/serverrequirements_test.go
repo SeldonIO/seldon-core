@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package filters
@@ -53,13 +46,13 @@ func TestServerRequirementFilter(t *testing.T) {
 		return store.NewServerReplica("svc", 8080, 5001, 1, store.NewServer("server", true), capabilities, 100, 100, 0, nil, 100)
 	}
 
-	makeServer := func(replicas int, capabilities []string) *store.ServerSnapshot {
+	makeServer := func(replicas int, capabilities []string, startIdx int) *store.ServerSnapshot {
 		server := store.NewServer("server", true)
 		snapshot := server.CreateSnapshot(false, false)
 
 		for i := 0; i < replicas; i++ {
 			replica := makeServerReplica(server, capabilities)
-			snapshot.Replicas[i] = replica
+			snapshot.Replicas[i+startIdx] = replica
 		}
 
 		return snapshot
@@ -76,49 +69,55 @@ func TestServerRequirementFilter(t *testing.T) {
 		{
 			name:     "NoReplicas",
 			model:    makeModel([]string{"sklearn"}),
-			server:   makeServer(0, []string{}),
+			server:   makeServer(0, []string{}, 0),
 			expected: false,
 		},
 		{
 			name:     "Match",
 			model:    makeModel([]string{"sklearn"}),
-			server:   makeServer(1, []string{"sklearn"}),
+			server:   makeServer(1, []string{"sklearn"}, 0),
+			expected: true,
+		},
+		{
+			name:     "MatchNonZeroReplicaIdx",
+			model:    makeModel([]string{"sklearn"}),
+			server:   makeServer(1, []string{"sklearn"}, 10),
 			expected: true,
 		},
 		{
 			name:     "Mismatch",
 			model:    makeModel([]string{"sklearn"}),
-			server:   makeServer(1, []string{"xgboost"}),
+			server:   makeServer(1, []string{"xgboost"}, 0),
 			expected: false,
 		},
 		{
 			name:     "PartialMatch",
 			model:    makeModel([]string{"sklearn", "xgboost"}),
-			server:   makeServer(1, []string{"xgboost"}),
+			server:   makeServer(1, []string{"xgboost"}, 0),
 			expected: false,
 		},
 		{
 			name:     "MultiMatch",
 			model:    makeModel([]string{"sklearn", "xgboost"}),
-			server:   makeServer(1, []string{"xgboost", "sklearn", "tensorflow"}),
+			server:   makeServer(1, []string{"xgboost", "sklearn", "tensorflow"}, 0),
 			expected: true,
 		},
 		{
 			name:     "Duplicates",
 			model:    makeModel([]string{"sklearn", "xgboost", "sklearn"}),
-			server:   makeServer(1, []string{"xgboost", "sklearn", "tensorflow"}),
+			server:   makeServer(1, []string{"xgboost", "sklearn", "tensorflow"}, 0),
 			expected: true,
 		},
 		{
 			name:     "MultipleReplicasMatch",
 			model:    makeModel([]string{"sklearn"}),
-			server:   makeServer(2, []string{"xgboost", "sklearn", "tensorflow"}),
+			server:   makeServer(2, []string{"xgboost", "sklearn", "tensorflow"}, 0),
 			expected: true,
 		},
 		{
 			name:     "MultipleReplicasMismatch",
 			model:    makeModel([]string{"sklearn"}),
-			server:   makeServer(2, []string{"xgboost"}),
+			server:   makeServer(2, []string{"xgboost"}, 0),
 			expected: false,
 		},
 	}

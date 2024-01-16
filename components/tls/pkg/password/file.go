@@ -1,17 +1,10 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package password
@@ -28,7 +21,7 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
 )
 
-type PasswordFolderHandler struct {
+type fileStore struct {
 	passwordFilePath string
 	logger           log.FieldLogger
 	watcher          filewatcher.FileWatcher
@@ -36,53 +29,57 @@ type PasswordFolderHandler struct {
 	mu               sync.RWMutex
 }
 
-func NewPasswordFolderHandler(prefix string, suffix string, logger log.FieldLogger) (*PasswordFolderHandler, error) {
-	passwordFilePath, ok := util.GetEnv(prefix, suffix)
+func newFileStore(prefix string, suffix string, logger log.FieldLogger) (*fileStore, error) {
+	logger = logger.WithField("source", "FilePasswordStore")
+
+	passwordFilePath, ok := util.GetNonEmptyEnv(prefix, suffix)
 	if !ok {
 		return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, suffix)
 	}
 
-	return &PasswordFolderHandler{
+	return &fileStore{
 		passwordFilePath: passwordFilePath,
 		watcher:          filewatcher.NewWatcher(),
 		logger:           logger,
 	}, nil
 }
 
-func (s *PasswordFolderHandler) GetPassword() string {
+func (s *fileStore) GetPassword() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.password
 }
 
-func (t *PasswordFolderHandler) loadPassword() error {
-	var err error
+func (t *fileStore) loadPassword() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	logger := t.logger.WithField("func", "loadPassword")
+
 	passwordRaw, err := os.ReadFile(t.passwordFilePath)
 	if err != nil {
+		logger.WithError(err).Error("failed to load password")
 		return err
 	}
+
 	t.password = string(passwordRaw)
 	return nil
 }
 
-func (t *PasswordFolderHandler) reloadPassword() {
-	logger := t.logger.WithField("func", "reloadPassword")
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	err := t.loadPassword()
-	if err != nil {
-		logger.WithError(err).Error("Failed to reload password")
-	}
-}
-
-func (t *PasswordFolderHandler) GetPasswordAndWatch() error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+func (t *fileStore) loadAndWatchPassword() error {
 	err := t.loadPassword()
 	if err != nil {
 		return err
 	}
-	addFileWatcher(t.watcher, t.passwordFilePath, t.reloadPassword)
+
+	addFileWatcher(
+		t.watcher,
+		t.passwordFilePath,
+		func() {
+			t.logger.Info("file has changed; reloading password")
+			_ = t.loadPassword()
+		},
+	)
 	return nil
 }
 
@@ -107,7 +104,7 @@ func addFileWatcher(fileWatcher filewatcher.FileWatcher, file string, callback f
 	}()
 }
 
-func (t *PasswordFolderHandler) Stop() {
+func (t *fileStore) Stop() {
 	logger := t.logger.WithField("func", "Stop")
 	err := t.watcher.Remove(t.passwordFilePath)
 	if err != nil {
