@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package filters
@@ -36,7 +29,9 @@ func (s ServerRequirementFilter) Filter(model *store.ModelVersion, server *store
 	}
 
 	requirements := model.GetRequirements()
-	capabilities := server.Replicas[0].GetCapabilities()
+
+	// get the capabilities of the first available replica
+	capabilities := getFirstAvailableReplicaCapabilities(server.Replicas)
 
 	for _, r := range requirements {
 		if !contains(capabilities, r) {
@@ -57,6 +52,13 @@ func contains(capabilities []string, requirement string) bool {
 	return false
 }
 
+func getFirstAvailableReplicaCapabilities(replicas map[int]*store.ServerReplica) []string {
+	for _, replica := range replicas {
+		return replica.GetCapabilities()
+	}
+	return []string{}
+}
+
 func (s ServerRequirementFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
 	requirements := model.GetRequirements()
 
@@ -65,6 +67,6 @@ func (s ServerRequirementFilter) Description(model *store.ModelVersion, server *
 		return fmt.Sprintf("model requirements %v, server capabilities unknown", requirements)
 	}
 
-	capabilities := replicas[0].GetCapabilities()
+	capabilities := getFirstAvailableReplicaCapabilities(replicas)
 	return fmt.Sprintf("model requirements %v, server capabilities %v", requirements, capabilities)
 }

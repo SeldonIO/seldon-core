@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package tls
@@ -52,16 +45,16 @@ func NewTlsFolderHandler(prefix string, validation bool, logger log.FieldLogger)
 	var certFilePath, keyFilePath string
 	var ok bool
 	if !validation {
-		certFilePath, ok = util.GetEnv(prefix, EnvCrtLocationSuffix)
+		certFilePath, ok = util.GetNonEmptyEnv(prefix, EnvCrtLocationSuffix)
 		if !ok {
 			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvCrtLocationSuffix)
 		}
-		keyFilePath, ok = util.GetEnv(prefix, EnvKeyLocationSuffix)
+		keyFilePath, ok = util.GetNonEmptyEnv(prefix, EnvKeyLocationSuffix)
 		if !ok {
 			return nil, fmt.Errorf("Failed to find %s%s or empty value", prefix, EnvKeyLocationSuffix)
 		}
 	}
-	caFilePath, ok := util.GetEnv(prefix, EnvCaLocationSuffix)
+	caFilePath, ok := util.GetNonEmptyEnv(prefix, EnvCaLocationSuffix)
 	if !ok {
 		if validation {
 			return nil, nil // Allow ca only to be optional and return nil

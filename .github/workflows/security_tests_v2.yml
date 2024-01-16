@@ -13,9 +13,9 @@ on:
 jobs:
   security-operator:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang-1.19
+    container: snyk/snyk:golang-1.20
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -25,9 +25,9 @@ jobs:
 
   security-scheduler:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang-1.19
+    container: snyk/snyk:golang-1.20
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: security-golang
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -38,12 +38,12 @@ jobs:
   security-image-operator:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -55,12 +55,12 @@ jobs:
   security-image-scheduler:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -72,12 +72,12 @@ jobs:
   security-image-data-flow-engine:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -89,12 +89,12 @@ jobs:
   security-image-envoy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -106,12 +106,12 @@ jobs:
   security-image-modelgateway:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -123,12 +123,12 @@ jobs:
   security-image-pipelinegateway:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -140,12 +140,12 @@ jobs:
   security-image-agent:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -157,12 +157,12 @@ jobs:
   security-image-rclone:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:
@@ -174,12 +174,12 @@ jobs:
   security-image-hodometer:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set default docker tag for builds from v2 branch
       id: docker-tag
       run: |
         USER_INPUT="${{ github.event.inputs.docker-tag }}"
-        echo ::set-output name=value::${USER_INPUT:-"latest"}
+        echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
     - name: security-docker-image
       uses: snyk/actions/docker@master
       env:

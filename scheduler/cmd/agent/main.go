@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package main
@@ -183,7 +176,7 @@ func main() {
 	}()
 
 	// Create Rclone client
-	rcloneClient := rclone.NewRCloneClient(cli.RcloneHost, cli.RclonePort, rcloneRepositoryDir, logger, cli.Namespace)
+	rcloneClient := rclone.NewRCloneClient(cli.RcloneHost, cli.RclonePort, rcloneRepositoryDir, logger, cli.Namespace, agentConfigHandler)
 
 	// Create Model Repository
 	modelRepository := repository.NewModelRepository(
@@ -195,7 +188,7 @@ func main() {
 		cli.EnvoyPort,
 	)
 
-	// Create moddel server control plane client
+	// Create model server control plane client
 	modelServerControlPlaneClient, err := controlplane_factory.CreateModelServerControlPlane(
 		cli.ServerType,
 		interfaces.ModelServerConfig{
@@ -306,7 +299,7 @@ func main() {
 	}
 
 	// Now we are ready start config listener
-	err = rcloneClient.StartConfigListener(agentConfigHandler)
+	err = rcloneClient.StartConfigListener()
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to initialise rclone config listener")
 		close(done)

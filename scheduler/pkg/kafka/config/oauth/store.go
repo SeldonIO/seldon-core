@@ -1,24 +1,16 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package oauth
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
@@ -31,86 +23,59 @@ const (
 	envNamespace    = "POD_NAMESPACE"
 )
 
-type funcOAUTHServerOption struct {
-	f func(options *OAUTHStoreOptions)
+type OAuthConfig struct {
+	Method           string
+	ClientID         string
+	ClientSecret     string
+	Scope            string
+	TokenEndpointURL string
+	Extensions       string
 }
 
-func (fdo *funcOAUTHServerOption) apply(do *OAUTHStoreOptions) {
-	fdo.f(do)
-}
-
-func newFuncServerOption(f func(options *OAUTHStoreOptions)) *funcOAUTHServerOption {
-	return &funcOAUTHServerOption{
-		f: f,
-	}
-}
-
-type OAUTHStore interface {
-	GetOAUTHConfig() OAUTHConfig
+type OAuthStore interface {
+	GetOAuthConfig() OAuthConfig
 	Stop()
 }
 
-type OAUTHStoreOption interface {
-	apply(options *OAUTHStoreOptions)
+type OAuthStoreOptions struct {
+	Prefix         string
+	LocationSuffix string
+	Clientset      kubernetes.Interface
 }
 
-type OAUTHStoreOptions struct {
-	prefix         string
-	locationSuffix string
-	clientset      kubernetes.Interface
-}
-
-func (c OAUTHStoreOptions) String() string {
+func (c OAuthStoreOptions) String() string {
 	return fmt.Sprintf("prefix=%s locationSuffix=%s clientset=%v",
-		c.prefix, c.locationSuffix, c.clientset)
+		c.Prefix, c.LocationSuffix, c.Clientset)
 }
 
-func getDefaultOAUTHStoreOptions() OAUTHStoreOptions {
-	return OAUTHStoreOptions{}
-}
-
-func Prefix(prefix string) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
-		o.prefix = prefix
-	})
-}
-
-func LocationSuffix(suffix string) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
-		o.locationSuffix = suffix
-	})
-}
-func ClientSet(clientSet kubernetes.Interface) OAUTHStoreOption {
-	return newFuncServerOption(func(o *OAUTHStoreOptions) {
-		o.clientset = clientSet
-	})
-}
-
-func NewOAUTHStore(opt ...OAUTHStoreOption) (OAUTHStore, error) {
-	opts := getDefaultOAUTHStoreOptions()
-	for _, o := range opt {
-		o.apply(&opts)
+func NewOAuthStore(opts OAuthStoreOptions) (OAuthStore, error) {
+	secretName, ok := util.GetNonEmptyEnv(opts.Prefix, envSecretSuffix)
+	if !ok {
+		return nil, fmt.Errorf("OAuth mechanism is currently only supported on K8s")
 	}
-	logger := logrus.New().WithField("source", "OAUTHStore")
-	logger.Infof("Options:%s", opts.String())
-	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new OAUTH k8s secret store for %s from secret %s", opts.prefix, secretName)
-		namespace, ok := os.LookupEnv(envNamespace)
-		logger.Infof("Namespace %s", namespace)
-		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for OAUTH secret", envNamespace)
-		}
-		ps, err := NewOAUTHSecretHandler(secretName, opts.clientset, namespace, opts.prefix, logger)
-		if err != nil {
-			return nil, err
-		}
-		err = ps.GetOAUTHAndWatch()
-		if err != nil {
-			return nil, err
-		}
-		return ps, nil
-	} else {
-		// NOT IMPLEMENTED ERROR
-		return nil, fmt.Errorf("OAUTH mechanism is currently only supported on K8s")
+
+	namespace, ok := util.GetNonEmptyEnv("", envNamespace)
+	if !ok {
+		return nil, fmt.Errorf("%s not found but required for OAuth secret", envNamespace)
 	}
+
+	baseLogger := logrus.New()
+	logger := baseLogger.WithField("source", "OAuthStore")
+	logger.
+		WithField("namespace", namespace).
+		WithField("secret", secretName).
+		WithField("options", opts.String()).
+		Info("creating store from secret")
+
+	store, err := newK8sSecretStore(secretName, opts.Clientset, namespace, opts.Prefix, baseLogger)
+	if err != nil {
+		return nil, err
+	}
+
+	err = store.loadAndWatchConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return store, nil
 }

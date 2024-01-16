@@ -1,24 +1,16 @@
 /*
-Copyright 2023 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package password
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
@@ -31,94 +23,82 @@ const (
 	envNamespace    = "POD_NAMESPACE"
 )
 
-type funcPasswordServerOption struct {
-	f func(options *PasswordStoreOptions)
-}
-
-func (fdo *funcPasswordServerOption) apply(do *PasswordStoreOptions) {
-	fdo.f(do)
-}
-
-func newFuncServerOption(f func(options *PasswordStoreOptions)) *funcPasswordServerOption {
-	return &funcPasswordServerOption{
-		f: f,
-	}
-}
-
 type PasswordStore interface {
 	GetPassword() string
 	Stop()
 }
 
-type PasswordStoreOption interface {
-	apply(options *PasswordStoreOptions)
-}
-
 type PasswordStoreOptions struct {
-	prefix         string
-	locationSuffix string
-	clientset      kubernetes.Interface
+	Prefix         string
+	LocationSuffix string
+	Clientset      kubernetes.Interface
 }
 
 func (c PasswordStoreOptions) String() string {
 	return fmt.Sprintf("prefix=%s locationSuffix=%s clientset=%v",
-		c.prefix, c.locationSuffix, c.clientset)
+		c.Prefix, c.LocationSuffix, c.Clientset)
 }
 
-func getDefaultPasswordStoreOptions() PasswordStoreOptions {
-	return PasswordStoreOptions{}
-}
-
-func Prefix(prefix string) PasswordStoreOption {
-	return newFuncServerOption(func(o *PasswordStoreOptions) {
-		o.prefix = prefix
-	})
-}
-
-func LocationSuffix(suffix string) PasswordStoreOption {
-	return newFuncServerOption(func(o *PasswordStoreOptions) {
-		o.locationSuffix = suffix
-	})
-}
-func ClientSet(clientSet kubernetes.Interface) PasswordStoreOption {
-	return newFuncServerOption(func(o *PasswordStoreOptions) {
-		o.clientset = clientSet
-	})
-}
-
-func NewPasswordStore(opt ...PasswordStoreOption) (PasswordStore, error) {
-	opts := getDefaultPasswordStoreOptions()
-	for _, o := range opt {
-		o.apply(&opts)
-	}
-	logger := logrus.New().WithField("source", "PasswordStore")
-	logger.Infof("Options:%s", opts.String())
-	if secretName, ok := util.GetEnv(opts.prefix, envSecretSuffix); ok {
-		logger.Infof("Starting new password k8s secret store for %s from secret %s", opts.prefix, secretName)
-		namespace, ok := os.LookupEnv(envNamespace)
-		logger.Infof("Namespace %s", namespace)
-		if !ok {
-			return nil, fmt.Errorf("Namespace env var %s not found and needed for password secret", envNamespace)
-		}
-		ps, err := NewPasswordSecretHandler(secretName, opts.clientset, namespace, opts.prefix, opts.locationSuffix, logger)
-		if err != nil {
-			return nil, err
-		}
-		err = ps.GetPasswordAndWatch()
-		if err != nil {
-			return nil, err
-		}
-		return ps, nil
+func NewPasswordStore(opts PasswordStoreOptions) (PasswordStore, error) {
+	secretName, ok := util.GetNonEmptyEnv(opts.Prefix, envSecretSuffix)
+	if ok {
+		return newPasswordStoreFromSecret(secretName, opts)
 	} else {
-		logger.Infof("Starting new password folder store for prefix %s", opts.prefix)
-		fs, err := NewPasswordFolderHandler(opts.prefix, opts.locationSuffix, logger)
-		if err != nil {
-			return nil, err
-		}
-		err = fs.GetPasswordAndWatch()
-		if err != nil {
-			return nil, err
-		}
-		return fs, nil
+		return newPasswordStoreFromFile(opts)
 	}
+}
+
+func newPasswordStoreFromSecret(secretName string, opts PasswordStoreOptions) (PasswordStore, error) {
+	baseLogger := logrus.New()
+	logger := baseLogger.WithField("source", "PasswordStore")
+
+	namespace, ok := util.GetNonEmptyEnv("", envNamespace)
+	if !ok {
+		return nil, fmt.Errorf("%s not found but required for password secret", envNamespace)
+	}
+
+	logger.
+		WithField("namespace", namespace).
+		WithField("secret", secretName).
+		WithField("options", opts.String()).
+		Info("creating store from secret")
+
+	store, err := newK8sSecretStore(
+		secretName,
+		opts.Clientset,
+		namespace,
+		opts.Prefix,
+		opts.LocationSuffix,
+		baseLogger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = store.loadAndWatchPassword()
+	if err != nil {
+		return nil, err
+	}
+
+	return store, nil
+}
+
+func newPasswordStoreFromFile(opts PasswordStoreOptions) (PasswordStore, error) {
+	baseLogger := logrus.New()
+	logger := baseLogger.WithField("source", "PasswordStore")
+	logger.
+		WithField("options", opts.String()).
+		Info("creating store from file")
+
+	fs, err := newFileStore(opts.Prefix, opts.LocationSuffix, baseLogger)
+	if err != nil {
+		return nil, err
+	}
+
+	err = fs.loadAndWatchPassword()
+	if err != nil {
+		return nil, err
+	}
+
+	return fs, nil
 }

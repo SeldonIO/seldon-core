@@ -1,17 +1,10 @@
 /*
-Copyright 2022 Seldon Technologies Ltd.
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
 package io.seldon.dataflow
@@ -140,9 +133,14 @@ class PipelineSubscriber(
         }
 
         val previous = pipelines.putIfAbsent(metadata.id, pipeline)
+        var pipelineStarted = false
+        var updateEventReason = "created pipeline"
         if (previous == null) {
             kafkaAdmin.ensureTopicsExist(steps)
-            pipeline.start()
+            pipelineStarted = pipeline.start()
+            if (pipelineStarted == false) {
+                updateEventReason = "kafka topic error"
+            }
         } else {
             logger.warn("pipeline ${metadata.id} already exists")
         }
@@ -151,8 +149,8 @@ class PipelineSubscriber(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
-                success = true,
-                reason = "created pipeline"
+                success = pipelineStarted,
+                reason = updateEventReason
             )
         )
     }

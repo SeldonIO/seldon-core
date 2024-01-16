@@ -115,3 +115,5 @@ https://github.com/go-mgo/mgo/blob/v2-unstable/LICENSE,BSD 2-Clause "Simplified"
 https://github.com/go-retry/retry/blob/v1/LICENSE,The GNU lesser General Public License Version 3.0 with exceptions for static and dynamic linking
 https://github.com/kubernetes-sigs/json/blob/main/LICENSE,Apache License 2.0
 https://github.com/smarty/assertions/blob/master/LICENSE.md,MIT License
+https://github.com/hashicorp/consul/blob/main/LICENSE,Mozilla Public License 2.0
+https://github.com/pelletier/go-toml/blob/v2/LICENSE,The MIT License (MIT)

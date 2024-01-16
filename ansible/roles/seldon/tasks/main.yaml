@@ -2,6 +2,19 @@
 - name: "Create namespaces"
   import_tasks: namespaces.yaml
 
+- name: "Set helm value overrides"
+  import_tasks: set_value_overrides.yaml
+
+- name: "Save helm values"
+  import_tasks: save_helm_values.yaml
+  when: save_helm_components_overrides | bool
+
+- name: "Import custom registry secrets"
+  import_tasks: registry_secrets.yaml
+  when:
+    - custom_image_pull_secrets is defined
+    - seldon_install_components | bool
+
 - name: "Install CRDs"
   import_tasks: install_crds.yaml
   when: seldon_install_crds | bool
