@@ -3,7 +3,7 @@
 ![cat](cat.png)
 ![explanation](cat_explanation.png)
 
-Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi)  Open Source library.
+Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi) library.
 
 We support explainers saved using python 3.7 in v1 explainer server. However, for v2 protocol (using MLServer) this is not a requirement anymore.
 

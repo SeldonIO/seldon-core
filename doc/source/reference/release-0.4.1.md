@@ -4,7 +4,7 @@ A summary of the main contributions to the [Seldon Core release 0.4.1](https://g
 
 ## Black Box Model Explanations
 
-By utlizing Seldon'sopen source Model Explanation library [Alibi](https://github.com/SeldonIO/alibi) we provide the ability to launch a model and an associated explainer for that model. At present we support the [Anchors](https://homes.cs.washington.edu/~marcotcr/aaai18.pdf) explanation technique for tabular text and image examples.
+By utlizing Seldon's open source Model Explanation library [Alibi](https://github.com/SeldonIO/alibi) we provide the ability to launch a model and an associated explainer for that model. At present we support the [Anchors](https://homes.cs.washington.edu/~marcotcr/aaai18.pdf) explanation technique for tabular text and image examples.
 
 An example SeldonDeployment for an image model with associated explainer is shown below:
 
@@ -63,10 +63,3 @@ We provide [an example notebook with tabular, text and image model examples](../
  * We are available on the [RedHat Container Catalog](https://access.redhat.com/containers/?tab=overview#/registry.connect.redhat.com/seldonio/seldon-operator-0-4-0). Update to 0.4.1 soon.
 
 [Join our slack community to discuss](https://join.slack.com/t/seldondev/shared_invite/enQtMzA2Mzk1Mzg0NjczLTJlNjQ1NTE5Y2MzMWIwMGUzYjNmZGFjZjUxODU5Y2EyMDY0M2U3ZmRiYTBkOTRjMzZhZjA4NjJkNDkxZTA2YmU).
-
-
-
-
-
-
-
