@@ -34,6 +34,7 @@ updates:
     reviewers:
       - sakoush
 
+
   - package-ecosystem: "gomod"
     directory: "/scheduler"
     target-branch: "v2"
