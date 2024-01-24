@@ -108,6 +108,7 @@ updates:
       interval: "weekly"
     labels:
       - "v2"
+
       - "dependencies"
     reviewers:
       - sakoush
