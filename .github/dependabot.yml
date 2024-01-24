@@ -80,8 +80,30 @@ updates:
       - sakoush
 
   - package-ecosystem: "docker"
-    target-branch: "master-copy"
-    directory: "v2"
+    directory: "/scheduler"
+    target-branch: "v2"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "v2"
+      - "dependencies"
+    reviewers:
+      - sakoush
+
+  - package-ecosystem: "docker"
+    directory: "/operator"
+    target-branch: "v2"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "v2"
+      - "dependencies"
+    reviewers:
+      - sakoush
+
+  - package-ecosystem: "docker"
+    directory: "/hodometer"
+    target-branch: "v2"
     schedule:
       interval: "weekly"
     labels:
