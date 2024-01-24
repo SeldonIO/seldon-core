@@ -32,7 +32,7 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:1.57.2")
     runtimeOnly("io.grpc:grpc-netty-shaded:1.44.1")
     implementation("com.google.protobuf:protobuf-java:3.21.7")
-    implementation("com.google.protobuf:protobuf-kotlin:3.21.7")
+    implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
