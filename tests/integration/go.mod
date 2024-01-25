@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/tests/integration/v2
 go 1.19
 
 require (
-	github.com/docker/docker v24.0.2+incompatible
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/onsi/gomega v1.23.0
 	github.com/seldonio/seldon-core/operator/v2 v2.0.0-00010101000000-000000000000
 	k8s.io/api v0.24.4
@@ -51,8 +51,8 @@ require (
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	golang.org/x/tools v0.6.0 // indirect
