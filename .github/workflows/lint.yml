@@ -4,7 +4,7 @@ on:
 jobs:
   lint:
     name: lint
-    if: github.repository == 'sakoush/seldon-core' # Do not run this on forks.
+    if: github.repository == 'SeldonIO/seldon-core' # Do not run this on forks.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
