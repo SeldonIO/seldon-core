@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/hodometer/v2
 go 1.20
 
 require (
-	github.com/dukex/mixpanel v0.0.0-20220410140740-e82251311162
+	github.com/dukex/mixpanel v1.0.1
 	github.com/google/uuid v1.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
