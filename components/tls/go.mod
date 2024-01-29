@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/onsi/gomega v1.18.1
 	github.com/otiai10/copy v1.7.0
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/grpc v1.56.3
 	istio.io/pkg v0.0.0-20220805133948-6c7080d8dec5
 	k8s.io/api v0.23.5
