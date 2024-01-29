@@ -202,7 +202,7 @@ func (km *KafkaManager) Infer(
 		km.mu.RUnlock()
 		return nil, err
 	}
-	key := requestId
+	key := fmt.Sprintf("%s.%s", resourceName, requestId)
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
@@ -228,7 +228,7 @@ func (km *KafkaManager) Infer(
 	}
 
 	ctx, span := km.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(util.RequestIdHeader, key))
+	span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	// Add trace headers
 	carrier := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)
@@ -246,9 +246,9 @@ func (km *KafkaManager) Infer(
 		span.End()
 	}()
 	km.mu.RUnlock()
-	logger.Debugf("Waiting for response for key %s", key)
+	logger.Debugf("Waiting for response for request id %s", requestId)
 	request.wg.Wait()
-	logger.Debugf("Got response for key %s", key)
+	logger.Debugf("Got response for request id %s", requestId)
 	return request, nil
 }
 
