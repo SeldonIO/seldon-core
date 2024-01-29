@@ -18,7 +18,7 @@ require (
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mustafaturan/bus/v3 v3.0.3
-	github.com/onsi/gomega v1.18.1
+	github.com/onsi/gomega v1.31.1
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/otiai10/copy v1.14.0
 	github.com/prometheus/client_golang v1.12.1
