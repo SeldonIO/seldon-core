@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/operator/v2
 go 1.20
 
 require (
-	emperror.dev/errors v0.8.0
+	emperror.dev/errors v0.8.1
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/ghodss/yaml v1.0.0
