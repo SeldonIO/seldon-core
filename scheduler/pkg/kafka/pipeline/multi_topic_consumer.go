@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -161,7 +162,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 				_, span := c.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
+				span.SetAttributes(attribute.String(util.RequestIdHeader, strings.Split(string(e.Key), ".")[1])) // set original requestId
 
 				request := val.(*Request)
 				request.mu.Lock()
