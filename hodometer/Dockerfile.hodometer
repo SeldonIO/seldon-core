@@ -22,7 +22,7 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-9
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-13
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 ARG UID=1000
