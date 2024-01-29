@@ -7,7 +7,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/dgraph-io/badger/v3 v3.2103.2
-	github.com/envoyproxy/go-control-plane v0.11.1
+	github.com/envoyproxy/go-control-plane v0.12.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/golang/protobuf v1.5.3
@@ -83,7 +83,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.4.0 // indirect
+	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/signalfx/splunk-otel-go/instrumentation/internal v1.12.0 // indirect
