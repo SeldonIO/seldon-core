@@ -10,7 +10,7 @@ require (
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.61.0
 	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.2
