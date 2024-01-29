@@ -1,4 +1,4 @@
-FROM rclone/rclone:1.65.1 as builder
+FROM rclone/rclone:1.65.2 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
