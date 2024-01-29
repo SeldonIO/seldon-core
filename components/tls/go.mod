@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/components/tls/v2
 
-go 1.19
+go 1.20
 
 require (
 	github.com/onsi/gomega v1.18.1
