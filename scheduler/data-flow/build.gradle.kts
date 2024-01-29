@@ -19,11 +19,11 @@ repositories {
 
 dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.klogging:klogging-jvm:0.4.4")
+    implementation("io.klogging:klogging-jvm:0.5.8")
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:3.4.0")
-    implementation("io.klogging:slf4j-klogging:0.2.5")
+    implementation("io.klogging:slf4j-klogging:0.5.8")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.0")
 
     // gRPC

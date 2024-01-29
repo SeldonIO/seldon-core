@@ -19,7 +19,7 @@ object Logging {
 
     fun configure(appLevel: Level = Level.INFO, kafkaLevel: Level = Level.WARN) =
         loggingConfiguration {
-            kloggingMinLevel(appLevel)
+            kloggingMinLogLevel(appLevel)
             sink(stdoutSink, RENDER_ANSI, STDOUT)
             logging {
                 fromLoggerBase("io.seldon")
