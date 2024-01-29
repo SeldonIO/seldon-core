@@ -8,7 +8,7 @@ require (
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	github.com/envoyproxy/go-control-plane v0.12.0
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-playground/validator/v10 v10.17.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.6.0
