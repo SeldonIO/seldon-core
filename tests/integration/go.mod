@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/docker/docker v24.0.7+incompatible
-	github.com/onsi/gomega v1.23.0
+	github.com/onsi/gomega v1.31.1
 	github.com/seldonio/seldon-core/operator/v2 v2.0.0-00010101000000-000000000000
 	k8s.io/api v0.24.4
 	k8s.io/apimachinery v0.24.4
@@ -25,14 +25,14 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -48,14 +48,14 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.11.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/tools v0.16.1 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
