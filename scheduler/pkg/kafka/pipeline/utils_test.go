@@ -259,3 +259,47 @@ func TestAddRequestIdToKafkaHeaders(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRequestIdFromKafkaheaders(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name              string
+		headers           []kafka.Header
+		expectedRequestId string
+	}
+
+	tests := []test{
+		{
+			name: "request id header exists",
+			headers: []kafka.Header{
+				{
+					Key:   "a",
+					Value: []byte("v1"),
+				},
+				{
+					Key:   util.RequestIdHeader,
+					Value: []byte("bar"),
+				},
+			},
+			expectedRequestId: "bar",
+		},
+		{
+			name: "request id header does not exists",
+			headers: []kafka.Header{
+				{
+					Key:   "a",
+					Value: []byte("v1"),
+				},
+			},
+			expectedRequestId: "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			requestId := getRequestIdFromKafkaHeaders(test.headers)
+			g.Expect(requestId).To(Equal(test.expectedRequestId))
+		})
+	}
+}
