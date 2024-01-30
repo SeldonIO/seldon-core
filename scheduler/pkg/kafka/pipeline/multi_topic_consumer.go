@@ -11,7 +11,6 @@ package pipeline
 
 import (
 	"context"
-	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -157,12 +156,17 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				Debugf("received message")
 
 			if val, ok := c.requests.Get(string(e.Key)); ok {
-				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+
+				// Add tracing span
 				_, span := c.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(util.RequestIdHeader, strings.Split(string(e.Key), ".")[1])) // set original requestId
+				requestId := getRequestIdFromKafkaHeaders(e.Headers)
+				if requestId == "" {
+					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
+				}
+				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
 				request := val.(*Request)
 				request.mu.Lock()

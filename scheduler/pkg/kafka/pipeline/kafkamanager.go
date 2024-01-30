@@ -202,7 +202,7 @@ func (km *KafkaManager) Infer(
 		km.mu.RUnlock()
 		return nil, err
 	}
-	key := fmt.Sprintf("%s.%s", resourceName, requestId)
+	key := getCompositeKey(resourceName, requestId, ".")
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
