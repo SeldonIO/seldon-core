@@ -37,9 +37,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -264,7 +264,11 @@ func (iw *InferWorker) produce(
 	}
 
 	ctx, span := iw.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(util.RequestIdHeader, string(job.msg.Key)))
+	requestId := pipeline.GetRequestIdFromKafkaHeaders(kafkaHeaders)
+	if requestId == "" {
+		logger.Warnf("Missing request id in Kafka headers for key %s", string(job.msg.Key))
+	}
+	span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	carrierOut := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrierOut)
 
