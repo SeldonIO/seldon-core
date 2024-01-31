@@ -1,3 +1,11 @@
+if [ -z "$1" ]
+then
+      sleepTime=5
+else
+      sleepTime=$1
+fi
+
+
 seldon model load -f ./models/tfsimple1.yaml
 seldon model load -f ./models/tfsimple2.yaml
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
@@ -10,6 +18,7 @@ seldon pipeline unload tfsimples
 seldon model unload tfsimple1
 seldon model unload tfsimple2
 
+sleep $sleepTime
 
 seldon model load -f ./models/tfsimple1.yaml
 seldon model load -f ./models/tfsimple2.yaml
@@ -24,6 +33,8 @@ seldon pipeline unload join
 seldon model unload tfsimple1
 seldon model unload tfsimple2
 seldon model unload tfsimple3
+
+sleep $sleepTime
 
 seldon model load -f ./models/conditional.yaml
 seldon model load -f ./models/add10.yaml
@@ -40,6 +51,7 @@ seldon model unload conditional
 seldon model unload add10
 seldon model unload mul10
 
+sleep $sleepTime
 
 seldon model load -f ./models/outlier-error.yaml
 seldon model status outlier-error -w ModelAvailable | jq -M .
@@ -50,6 +62,7 @@ seldon pipeline infer error --inference-mode grpc     '{"model_name":"outlier","
 seldon pipeline unload error
 seldon model unload outlier-error
 
+sleep $sleepTime
 
 seldon model load -f ./models/tfsimple1.yaml
 seldon model load -f ./models/tfsimple2.yaml
@@ -69,6 +82,7 @@ seldon model unload tfsimple2
 seldon model unload tfsimple3
 seldon model unload check
 
+sleep $sleepTime
 
 seldon model load -f ./models/mul10.yaml
 seldon model load -f ./models/add10.yaml
@@ -81,6 +95,7 @@ seldon pipeline unload pipeline-inputs
 seldon model unload mul10
 seldon model unload add10
 
+sleep $sleepTime
 
 seldon model load -f ./models/mul10.yaml
 seldon model load -f ./models/add10.yaml
