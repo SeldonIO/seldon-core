@@ -30,8 +30,8 @@ RUN mkdir -p /tmp/certs/kafka/broker/ && \
 USER default
 
 WORKDIR /app
-COPY --from=builder /build/src/data-flow/build/libs/*.jar .
+COPY --from=builder /build/src/data-flow/build/libs/*-all.jar .
 COPY scheduler/data-flow/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
 # TODO - inject JAR name & version from build pipeline
-ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT-all.jar"]

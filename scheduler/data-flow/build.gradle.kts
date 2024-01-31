@@ -1,8 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "1.8.20"
+
+    java
     application
 }
 
@@ -27,20 +32,20 @@ dependencies {
     testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.0")
 
     // gRPC
-    implementation("io.grpc:grpc-kotlin-stub:1.2.1")
-    implementation("io.grpc:grpc-stub:1.57.2")
-    implementation("io.grpc:grpc-protobuf:1.57.2")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.44.1")
-    implementation("com.google.protobuf:protobuf-java:3.21.7")
-    implementation("com.google.protobuf:protobuf-kotlin:3.21.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+    implementation("io.grpc:grpc-stub:1.61.0")
+    implementation("io.grpc:grpc-protobuf:1.61.0")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.61.0")
+    implementation("com.google.protobuf:protobuf-java:3.25.2")
+    implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
-    implementation("io.kubernetes:client-java:18.0.0")
+    implementation("io.kubernetes:client-java:19.0.0")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
     testImplementation("io.strikt:strikt-core:0.34.1")
 }
 
@@ -71,26 +76,13 @@ tasks.withType<KotlinCompile> {
 
 val dataflowMainClass = "io.seldon.dataflow.Main"
 
-tasks.withType<Jar> {
-
-    manifest {
-        attributes["Main-Class"] = dataflowMainClass
-    }
-
-    from(
-        configurations.runtimeClasspath
-            .get()
-            .map { if (it is Directory) it else zipTree(it) }
-    ) { exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")}
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-}
-
 application {
     mainClass.set(dataflowMainClass)
 }
 
+tasks.named<ShadowJar>("shadowJar") {
+    mergeServiceFiles()
+}
 
 downloadLicenses {
     includeProjectDependencies = true
