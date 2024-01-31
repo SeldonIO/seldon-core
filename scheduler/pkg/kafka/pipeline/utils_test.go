@@ -298,7 +298,7 @@ func TestGetRequestIdFromKafkaheaders(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			requestId := getRequestIdFromKafkaHeaders(test.headers)
+			requestId := GetRequestIdFromKafkaHeaders(test.headers)
 			g.Expect(requestId).To(Equal(test.expectedRequestId))
 		})
 	}

@@ -163,7 +163,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				// Add tracing span
 				_, span := c.tracer.Start(ctx, "Consume")
 				// Use the original request id from kafka headers, as key here is a composite key with the resource name
-				requestId := getRequestIdFromKafkaHeaders(e.Headers)
+				requestId := GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
 					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
 				}
