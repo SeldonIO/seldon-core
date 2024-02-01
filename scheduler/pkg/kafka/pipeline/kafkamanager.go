@@ -202,33 +202,34 @@ func (km *KafkaManager) Infer(
 		km.mu.RUnlock()
 		return nil, err
 	}
-	key := requestId
+	// Use composite key to differentiate multiple piplines (i.e. mirror) using the same message
+	compositeKey := getCompositeKey(resourceName, requestId, ".")
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
-		key:    key,
+		key:    compositeKey,
 	}
-	pipeline.consumer.requests.Set(key, request)
-	defer pipeline.consumer.requests.Remove(key)
+	pipeline.consumer.requests.Set(compositeKey, request)
+	defer pipeline.consumer.requests.Remove(compositeKey)
 	request.wg.Add(1)
 
 	outputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
 	if isModel {
 		outputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
 	}
-	logger.Debugf("Produce on topic %s with key %s", outputTopic, key)
+	logger.Debugf("Produce on topic %s with key %s", outputTopic, compositeKey)
 	kafkaHeaders := append(headers, kafka.Header{Key: resources.SeldonPipelineHeader, Value: []byte(resourceName)})
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &outputTopic, Partition: kafka.PartitionAny},
-		Key:            []byte(key),
+		Key:            []byte(compositeKey),
 		Value:          data,
 		Headers:        kafkaHeaders,
 	}
 
 	ctx, span := km.tracer.Start(ctx, "Produce")
-	span.SetAttributes(attribute.String(util.RequestIdHeader, key))
+	span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	// Add trace headers
 	carrier := splunkkafka.NewMessageCarrier(msg)
 	otel.GetTextMapPropagator().Inject(ctx, carrier)
@@ -246,9 +247,9 @@ func (km *KafkaManager) Infer(
 		span.End()
 	}()
 	km.mu.RUnlock()
-	logger.Debugf("Waiting for response for key %s", key)
+	logger.Debugf("Waiting for response for request id %s for resource %s", requestId, resourceName)
 	request.wg.Wait()
-	logger.Debugf("Got response for key %s", key)
+	logger.Debugf("Got response for request id %s for resource %s", requestId, resourceName)
 	return request, nil
 }
 

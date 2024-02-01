@@ -156,12 +156,18 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				Debugf("received message")
 
 			if val, ok := c.requests.Get(string(e.Key)); ok {
-				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+
+				// Add tracing span
 				_, span := c.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
+				// Use the original request id from kafka headers, as key here is a composite key with the resource name
+				requestId := GetRequestIdFromKafkaHeaders(e.Headers)
+				if requestId == "" {
+					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
+				}
+				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
 				request := val.(*Request)
 				request.mu.Lock()

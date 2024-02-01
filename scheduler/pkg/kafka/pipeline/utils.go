@@ -107,3 +107,16 @@ func convertKafkaHeadersToGrpcMetadata(kafkaHeaders []kafka.Header) metadata.MD 
 	}
 	return grpcMetadata
 }
+
+func getCompositeKey(key1 string, key2 string, separator string) string {
+	return fmt.Sprintf("%s%s%s", key1, separator, key2)
+}
+
+func GetRequestIdFromKafkaHeaders(headers []kafka.Header) string {
+	for _, kafkaHeader := range headers {
+		if kafkaHeader.Key == util.RequestIdHeader {
+			return string(kafkaHeader.Value)
+		}
+	}
+	return ""
+}

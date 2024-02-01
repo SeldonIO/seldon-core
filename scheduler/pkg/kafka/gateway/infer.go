@@ -25,6 +25,7 @@ import (
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -313,8 +314,11 @@ func (kc *InferKafkaHandler) Serve() {
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 				_, span := kc.tracer.Start(ctx, "Consume")
-				span.SetAttributes(attribute.String(util.RequestIdHeader, string(e.Key)))
-
+				requestId := pipeline.GetRequestIdFromKafkaHeaders(e.Headers)
+				if requestId == "" {
+					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
+				}
+				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 				headers := collectHeaders(e.Headers)
 				logger.Debugf("Headers received from kafka for model %s %v", modelName, e.Headers)
 
