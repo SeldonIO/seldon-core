@@ -37,6 +37,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
