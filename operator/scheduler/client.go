@@ -44,7 +44,7 @@ type SchedulerClient struct {
 	mu               sync.Mutex
 }
 
-//  connect on demand by add getConnection(namespace) which if not existing calls connect to sheduler.
+//  connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
 
@@ -67,6 +67,11 @@ func getSchedulerHost(namespace string) string {
 	return fmt.Sprintf("seldon-scheduler.%s", namespace)
 }
 
+// startEventHanders starts the grpc stream connections to the scheduler for the different resources we care about
+// we also add a retry mechanism to reconnect if the connection is lost, this can happen if the scheduler is restarted
+// or if the network connection is lost. We use an exponential backoff to retry the connection.
+// note that when the scheduler is completely dead we will be not be able to reconnect and these go routines will retry forever
+// TODO: add a max retry count and report back to the caller.
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
 	retryFn := func(fn func(context context.Context, conn *grpc.ClientConn) error, context context.Context, conn *grpc.ClientConn) error {
 		logFailure := func(err error, delay time.Duration) {
