@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	backoff "github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -43,7 +44,7 @@ type SchedulerClient struct {
 	mu               sync.Mutex
 }
 
-//  connect on demand by add getConnection(namespace) which if not existing calls connect to sheduler.
+//  connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
 
@@ -66,30 +67,68 @@ func getSchedulerHost(namespace string) string {
 	return fmt.Sprintf("seldon-scheduler.%s", namespace)
 }
 
+// startEventHanders starts the grpc stream connections to the scheduler for the different resources we care about
+// we also add a retry mechanism to reconnect if the connection is lost, this can happen if the scheduler is restarted
+// or if the network connection is lost. We use an exponential backoff to retry the connection.
+// note that when the scheduler is completely dead we will be not be able to reconnect and these go routines will retry forever
+// TODO: add a max retry count and report back to the caller.
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
+	retryFn := func(fn func(context context.Context, conn *grpc.ClientConn) error, context context.Context, conn *grpc.ClientConn) error {
+		logFailure := func(err error, delay time.Duration) {
+			s.logger.Error(err, "Scheduler not ready")
+		}
+		backOffExp := backoff.NewExponentialBackOff()
+		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		fnWithArgs := func() error {
+			return fn(context, conn)
+		}
+		err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
+		if err != nil {
+			s.logger.Error(err, "Failed to connect to scheduler", "namespace", namespace)
+			return err
+		}
+		return nil
+	}
+
 	// Subscribe the event streams from scheduler
 	go func() {
-		err := s.SubscribeModelEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeModelEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for model events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for model events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribeServerEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeServerEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for server events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for server events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribePipelineEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribePipelineEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for pipeline events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for pipeline events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribeExperimentEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeExperimentEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for experiment events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for experiment events", "namespace", namespace)
+			}
 		}
 	}()
 }
@@ -106,7 +145,7 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 	}
 }
 
-// A smoke test allows us to quicky check if we actually have a functional grpc connection to the scheduler
+// A smoke test allows us to quickly check if we actually have a functional grpc connection to the scheduler
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grcpClient := scheduler.NewSchedulerClient(conn)
 

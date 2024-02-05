@@ -9,11 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
-import com.github.michaelbull.retry.ContinueRetrying
-import com.github.michaelbull.retry.StopRetrying
-import com.github.michaelbull.retry.policy.RetryPolicy
 import com.github.michaelbull.retry.policy.binaryExponentialBackoff
-import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusException
@@ -55,19 +51,13 @@ class PipelineSubscriber(
     private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
 
     private val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
-    private val grpcFailurePolicy: RetryPolicy<Throwable> = {
-        when (reason) {
-            is StatusException,
-            is StatusRuntimeException -> ContinueRetrying
-            else -> StopRetrying
-            // TODO - be more intelligent about non-retryable errors (e.g. not implemented)
-        }
-    }
 
     suspend fun subscribe() {
         logger.info("will connect to ${upstreamHost}:${upstreamPort}")
-        retry(grpcFailurePolicy + binaryExponentialBackoff(50..5_000L)) {
-            subscribePipelines(kafkaConsumerGroupIdPrefix, namespace)
+        while (true) {
+            retry(binaryExponentialBackoff(50..5_000L)) {
+                subscribePipelines(kafkaConsumerGroupIdPrefix, namespace)
+            }
         }
     }
 
@@ -97,8 +87,12 @@ class PipelineSubscriber(
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
             }
-            .onCompletion {
-                logger.info("pipeline subscription terminated")
+            .onCompletion { cause ->
+                if (cause == null) {
+                    logger.info("pipeline subscription completed successfully")
+                } else {
+                    logger.error("pipeline subscription terminated with error ${cause}")
+                }
             }
             .collect()
         // TODO - error handling?
