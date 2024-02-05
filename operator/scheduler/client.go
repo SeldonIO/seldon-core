@@ -74,7 +74,10 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 		}
 		backOffExp := backoff.NewExponentialBackOff()
 		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		err := backoff.RetryNotify(fn, backOffExp, logFailure)
+		fnWithArgs := func() error {
+			return fn(context, conn)
+		}
+		err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 		if err != nil {
 			s.logger.Error(err, "Failed to connect to scheduler", "namespace", namespace)
 			return err
