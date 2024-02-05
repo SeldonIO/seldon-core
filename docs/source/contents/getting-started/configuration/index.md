@@ -79,6 +79,10 @@ The top level keys are:
 
  * `enable` : whether to enable tracing
  * `otelExporterEndpoint` : The host and port for the OTEL exporter
+ * `otelExporterProtocol` : The protocol for the OTEL exporter. Currently used for
+     jvm-based components only (such as dataflow-engine), because `opentelemetry-java-instrumentation`
+     requires a http(s) URI for the endpoint but defaults to `http/protobuf` as a protocol.
+     Because of this, gRPC connections (over http) can only be set up by setting this option to `grpc`
  * `ratio` : The ratio of requests to trace. Takes values between 0 and 1 inclusive.
 
 

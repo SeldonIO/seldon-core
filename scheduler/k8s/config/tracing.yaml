@@ -7,7 +7,9 @@ data:
    {
      "enable": true,
      "otelExporterEndpoint": "seldon-collector:4317",
+     "otelExporterProtocol": "grpc",
      "ratio": "1"
    }
   OTEL_JAVAAGENT_ENABLED: "true"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://seldon-collector:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"

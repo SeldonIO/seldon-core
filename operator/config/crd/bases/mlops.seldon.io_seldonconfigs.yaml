@@ -7614,6 +7614,8 @@ spec:
                         type: boolean
                       otelExporterEndpoint:
                         type: string
+                      otelExporterProtocol:
+                        type: string
                       ratio:
                         type: string
                     type: object

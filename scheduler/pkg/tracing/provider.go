@@ -42,6 +42,7 @@ type TracerProvider struct {
 type TracingConfig struct {
 	Disable              bool   `json:"disable"`
 	OtelExporterEndpoint string `json:"otelExporterEndpoint"`
+	OtelExporterProtocol string `json:"otelExporterProtocol"`
 	Ratio                string `json:"Ratio"`
 }
 

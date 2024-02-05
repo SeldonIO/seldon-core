@@ -32,6 +32,7 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 			defaults: SeldonConfiguration{
 				TracingConfig: TracingConfig{
 					OtelExporterEndpoint: "foo",
+					OtelExporterProtocol: "foo",
 					Ratio:                "0.5",
 				},
 			},
@@ -39,6 +40,7 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 				TracingConfig: TracingConfig{
 					Disable:              true,
 					OtelExporterEndpoint: "bar",
+					OtelExporterProtocol: "bar",
 				},
 				KafkaConfig: KafkaConfig{},
 			},
@@ -46,6 +48,7 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 				TracingConfig: TracingConfig{
 					Disable:              true,
 					OtelExporterEndpoint: "bar",
+					OtelExporterProtocol: "bar",
 					Ratio:                "0.5",
 				},
 			},
@@ -56,6 +59,7 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 				TracingConfig: TracingConfig{
 					Disable:              false,
 					OtelExporterEndpoint: "foo",
+					OtelExporterProtocol: "foo",
 					Ratio:                "0.5",
 				},
 			},
@@ -64,6 +68,7 @@ func TestSeldonConfigurationAddDefaults(t *testing.T) {
 				TracingConfig: TracingConfig{
 					Disable:              false,
 					OtelExporterEndpoint: "foo",
+					OtelExporterProtocol: "foo",
 					Ratio:                "0.5",
 				},
 			},

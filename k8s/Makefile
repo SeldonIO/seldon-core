@@ -25,7 +25,7 @@ create-helm-charts:
 
 .PHONY: create-yaml
 create-yaml:
-	helm template seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs | grep -v "namespace:" > yaml/certs.yaml
+	helm template -n seldon-mesh seldon-core-v2-certs ./helm-charts/seldon-core-v2-certs | grep -v "namespace:" > yaml/certs.yaml
 	helm template seldon-core-v2-crds ./helm-charts/seldon-core-v2-crds > yaml/crds.yaml
 	helm template seldon-core-v2-components ./helm-charts/seldon-core-v2-setup  | grep -v "namespace:" > yaml/components.yaml
 	helm template seldon-core-v2-runtime ./helm-charts/seldon-core-v2-runtime  | grep -v "namespace:" > yaml/runtime.yaml

@@ -370,8 +370,13 @@ spec:
                       type: string
                     type: array
                   joinType:
+                    default: inner
                     description: One of inner (default), outer, or any (see above
                       for details)
+                    enum:
+                    - inner
+                    - outer
+                    - any
                     type: string
                   joinWindowMs:
                     description: msecs to wait for messages from multiple inputs to
@@ -385,8 +390,13 @@ spec:
                       -> input1
                     type: object
                   triggersJoinType:
+                    default: inner
                     description: One of inner (default), outer, or any (see above
                       for details)
+                    enum:
+                    - inner
+                    - outer
+                    - any
                     type: string
                 type: object
               output:
@@ -403,8 +413,13 @@ spec:
                       type: string
                     type: array
                   stepsJoin:
+                    default: inner
                     description: One of inner (default), outer, or any (see above
                       for details)
+                    enum:
+                    - inner
+                    - outer
+                    - any
                     type: string
                   tensorMap:
                     additionalProperties:
@@ -436,11 +451,16 @@ spec:
                         type: string
                       type: array
                     inputsJoinType:
+                      default: inner
                       description: 'One of inner (default), outer, or any inner -
                         do an inner join: data must be available from all inputs outer
                         - do an outer join: data will include any data from any inputs
                         at end of window any - first data input that arrives will
                         be forwarded'
+                      enum:
+                      - inner
+                      - outer
+                      - any
                       type: string
                     joinWindowMs:
                       description: msecs to wait for messages from multiple inputs
@@ -464,6 +484,10 @@ spec:
                     triggersJoinType:
                       description: One of inner (default), outer, or any (see above
                         for details)
+                      enum:
+                      - inner
+                      - outer
+                      - any
                       type: string
                   required:
                   - name
@@ -8145,6 +8169,8 @@ spec:
                         type: boolean
                       otelExporterEndpoint:
                         type: string
+                      otelExporterProtocol:
+                        type: string
                       ratio:
                         type: string
                     type: object
@@ -8257,6 +8283,8 @@ spec:
                       disable:
                         type: boolean
                       otelExporterEndpoint:
+                        type: string
+                      otelExporterProtocol:
                         type: string
                       ratio:
                         type: string

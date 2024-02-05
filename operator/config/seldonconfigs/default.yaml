@@ -23,6 +23,11 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+              name: seldon-tracing
         - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -40,7 +45,7 @@ spec:
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy
     replicas: 1
-    podSpec:      
+    podSpec:
       containers:
       - image: seldonio/seldon-envoy:latest
         imagePullPolicy: Always

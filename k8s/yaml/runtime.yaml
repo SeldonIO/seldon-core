@@ -26,19 +26,19 @@ spec:
     replicas: 1
   - name: seldon-scheduler
     disable: false
-    serviceType: LoadBalancer    
+    serviceType: LoadBalancer
   - name: seldon-envoy
     disable: false
     replicas: 1
-    serviceType: LoadBalancer    
+    serviceType: LoadBalancer
   - name: seldon-dataflow-engine
     disable: false
-    replicas: 1    
+    replicas: 1
   - name: seldon-modelgateway
     disable: false
-    replicas: 1    
+    replicas: 1
   - name: seldon-pipelinegateway
-    disable: false    
+    disable: false
     replicas: 1
   config:
     agentConfig:
@@ -57,4 +57,5 @@ spec:
     tracingConfig:
       disable: 
       otelExporterEndpoint: 
+      otelExporterProtocol: 
       ratio:
