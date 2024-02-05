@@ -106,7 +106,7 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 	}
 }
 
-// A smoke test allows us to quicky check if we actually have a functional grpc connection to the scheduler
+// A smoke test allows us to quickly check if we actually have a functional grpc connection to the scheduler
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
