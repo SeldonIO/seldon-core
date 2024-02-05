@@ -29,7 +29,7 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:3.4.0")
     implementation("io.klogging:slf4j-klogging:0.5.8")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.0")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.5.3-ce")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
