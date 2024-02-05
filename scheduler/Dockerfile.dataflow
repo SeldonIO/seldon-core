@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:17-latest AS builder
+FROM azul/zulu-openjdk-alpine:21-latest AS builder
 
 COPY --from=gradle:8.5.0-jdk17-alpine /opt/gradle /opt/gradle
 RUN ln -s /opt/gradle/bin/gradle /usr/bin/gradle
