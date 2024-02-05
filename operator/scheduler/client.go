@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	backoff "github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -67,29 +68,59 @@ func getSchedulerHost(namespace string) string {
 }
 
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
+	retryFn := func(fn func(context context.Context, conn *grpc.ClientConn) error, context context.Context, conn *grpc.ClientConn) error {
+		logFailure := func(err error, delay time.Duration) {
+			s.logger.Error(err, "Scheduler not ready")
+		}
+		backOffExp := backoff.NewExponentialBackOff()
+		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		err := backoff.RetryNotify(fn, backOffExp, logFailure)
+		if err != nil {
+			s.logger.Error(err, "Failed to connect to scheduler", "namespace", namespace)
+			return err
+		}
+		return nil
+	}
+
 	// Subscribe the event streams from scheduler
 	go func() {
-		err := s.SubscribeModelEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeModelEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for model events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for model events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribeServerEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeServerEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for server events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for server events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribePipelineEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribePipelineEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for pipeline events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for pipeline events", "namespace", namespace)
+			}
 		}
 	}()
 	go func() {
-		err := s.SubscribeExperimentEvents(context.Background(), conn)
-		if err != nil {
-			s.RemoveConnection(namespace)
+		for {
+			err := retryFn(s.SubscribeExperimentEvents, context.Background(), conn)
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for experiment events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for experiment events", "namespace", namespace)
+			}
 		}
 	}()
 }
