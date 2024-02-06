@@ -137,6 +137,7 @@ class PipelineSubscriber(
                 updateEventReason = "kafka topic error"
             }
         } else {
+            pipelineStarted = true
             logger.warn("pipeline ${metadata.id} already exists")
         }
 
