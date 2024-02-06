@@ -34,6 +34,8 @@ Following table provides a summary of Seldon Core / Kubernetes version compatibi
 |                        1.14 | ✓    | ✓    | ✓    | ✓    |      |      |
 |                        1.15 | ✓    | ✓    | ✓    | ✓    |      |      |
 |                        1.16 |      |      | ✓    | ✓    | ✓    | ✓    |
+|                        1.17 |      |      | ✓    | ✓    | ✓    | ✓    |
+|                        1.18 |      |      | ✓    | ✓    | ✓    | ✓    |
 
 It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
 
