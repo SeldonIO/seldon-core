@@ -331,7 +331,7 @@ func TestMergePodSpecs(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			podSpec, err := mergePodSpecs(test.serverPodSpec, test.override)
+			podSpec, err := common.MergePodSpecs(test.serverPodSpec, test.override)
 			g.Expect(err).To(BeNil())
 			g.Expect(equality.Semantic.DeepEqual(podSpec, test.expected)).To(BeTrue())
 		})
@@ -554,7 +554,7 @@ func TestMergeContainers(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			containers, err := mergeContainers(test.existing, test.override)
+			containers, err := common.MergeContainers(test.existing, test.override)
 			g.Expect(err).To(BeNil())
 			g.Expect(equality.Semantic.DeepEqual(containers, test.expected)).To(BeTrue())
 		})

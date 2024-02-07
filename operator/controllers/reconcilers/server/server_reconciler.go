@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	"github.com/imdario/mergo"
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -124,7 +123,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	}
 
 	//Merge specs
-	podSpec, err := mergePodSpecs(&serverConfig.Spec.PodSpec, server.Spec.PodSpec)
+	podSpec, err := common.MergePodSpecs(&serverConfig.Spec.PodSpec, server.Spec.PodSpec)
 	if err != nil {
 		return nil, err
 	}
@@ -141,66 +140,4 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 		serverConfig.ObjectMeta,
 		annotator)
 	return statefulSetReconciler, nil
-}
-
-// TODO only containers are handled correctly for merging via the name of the container. Need to hande other slices
-func mergePodSpecs(serverConfigPodSpec *v1.PodSpec, override *mlopsv1alpha1.PodSpec) (*v1.PodSpec, error) {
-	dst := serverConfigPodSpec.DeepCopy()
-	if override != nil {
-		v1PodSpecOverride, err := override.ToV1PodSpec()
-		if err != nil {
-			return nil, err
-		}
-
-		// remove and copy existing containers
-		existingContainers := serverConfigPodSpec.Containers
-		err = mergo.Merge(dst, v1PodSpecOverride, mergo.WithOverride, mergo.WithAppendSlice)
-		if err != nil {
-			return nil, err
-		}
-
-		// merge containers
-		updatedConatiners, err := mergeContainers(existingContainers, override.Containers)
-		if err != nil {
-			return nil, err
-		}
-		dst.Containers = updatedConatiners
-
-		return dst, nil
-	} else {
-		return dst, nil
-	}
-}
-
-// Allow containers to be overridden. As containers are keys by name we need to merge by this key.
-func mergeContainers(existing []v1.Container, overrides []v1.Container) ([]v1.Container, error) {
-	var containersNew []v1.Container
-	for _, containerOverride := range overrides {
-		found := false
-		for _, containerExisting := range existing {
-			if containerOverride.Name == containerExisting.Name {
-				found = true
-				err := mergo.Merge(&containerExisting, containerOverride, mergo.WithOverride, mergo.WithAppendSlice)
-				if err != nil {
-					return nil, err
-				}
-				containersNew = append(containersNew, containerExisting)
-			}
-		}
-		if !found {
-			containersNew = append(containersNew, containerOverride)
-		}
-	}
-	for _, containerExisting := range existing {
-		found := false
-		for _, containerOverride := range overrides {
-			if containerExisting.Name == containerOverride.Name {
-				found = true
-			}
-		}
-		if !found {
-			containersNew = append(containersNew, containerExisting)
-		}
-	}
-	return containersNew, nil
 }
