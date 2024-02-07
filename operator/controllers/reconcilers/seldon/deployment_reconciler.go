@@ -82,6 +82,14 @@ func toDeployment(
 	} else {
 		replicas = 1
 	}
+	// Merge specs
+	if override != nil && override.PodSpec != nil {
+		var err error
+		podSpec, err = common.MergePodSpecs(podSpec, override.PodSpec)
+		if err != nil {
+			return nil, err
+		}
+	}
 	// Envoy annotations
 	if name == mlopsv1alpha1.EnvoyName {
 		annotations = addEnvoyAnnotations(annotations)
