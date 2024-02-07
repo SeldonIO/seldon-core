@@ -226,7 +226,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		}
 		lastState := lastPipelineVersion.State
 		switch lastState.Status {
-		case PipelineTerminate:
+		case PipelineTerminating:
 			return nil, &PipelineTerminatingErr{pipeline: name}
 		case PipelineTerminated:
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
