@@ -43,16 +43,19 @@ func NewComponentDeploymentReconciler(
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
-) *ComponentDeploymentReconciler {
+) (*ComponentDeploymentReconciler, error) {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
-
+	deployment, err := toDeployment(name, meta, podSpec, override, labels, annotations)
+	if err != nil {
+		return nil, err
+	}
 	return &ComponentDeploymentReconciler{
 		ReconcilerConfig: common,
 		Name:             name,
-		Deployment:       toDeployment(name, meta, podSpec, override, labels, annotations),
+		Deployment:       deployment,
 		Annotator:        annotator,
-	}
+	}, nil
 }
 
 func (s *ComponentDeploymentReconciler) GetResources() []client.Object {
@@ -72,7 +75,7 @@ func toDeployment(
 	podSpec *v1.PodSpec,
 	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
-	annotations map[string]string) *appsv1.Deployment {
+	annotations map[string]string) (*appsv1.Deployment, error) {
 	var replicas int32
 	if override != nil && override.Replicas != nil {
 		replicas = *override.Replicas
@@ -109,7 +112,7 @@ func toDeployment(
 		},
 	}
 
-	return d
+	return d, nil
 }
 
 func (s *ComponentDeploymentReconciler) GetLabelSelector() string {

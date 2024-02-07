@@ -84,7 +84,7 @@ func TestDeploymentReconcile(t *testing.T) {
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
-			sr := NewComponentDeploymentReconciler(
+			sr, _ := NewComponentDeploymentReconciler(
 				test.deploymentName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,

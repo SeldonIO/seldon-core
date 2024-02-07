@@ -476,7 +476,7 @@ func (in *OverrideSpec) DeepCopyInto(out *OverrideSpec) {
 	}
 	if in.PodSpec != nil {
 		in, out := &in.PodSpec, &out.PodSpec
-		*out = new(v1.PodSpec)
+		*out = new(PodSpec)
 		(*in).DeepCopyInto(*out)
 	}
 }

@@ -32,7 +32,7 @@ type OverrideSpec struct {
 	Disable     bool           `json:"disable,omitempty"`
 	Replicas    *int32         `json:"replicas,omitempty"`
 	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
-	PodSpec     *v1.PodSpec    `json:"podSpec,omitempty"`
+	PodSpec     *PodSpec       `json:"podSpec,omitempty"`
 }
 
 // SeldonRuntimeStatus defines the observed state of SeldonRuntime

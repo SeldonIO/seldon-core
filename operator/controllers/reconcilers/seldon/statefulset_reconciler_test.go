@@ -72,7 +72,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
-			sr := NewComponentStatefulSetReconciler(
+			sr, _ := NewComponentStatefulSetReconciler(
 				test.statefulSetName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
