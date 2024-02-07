@@ -325,8 +325,10 @@ func contains(slice []string, val string) bool {
 
 func (c *ChainerServer) rebalance() {
 	logger := c.logger.WithField("func", "rebalance")
+	// note that we are not retrying PipelineFailed pipelines, consider adding this
 	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
 	for _, event := range evts {
+		c.logger.Debugf("Rebalancing pipeline %s:%d with state $s", event.PipelineName, event.PipelineVersion)
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
