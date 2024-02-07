@@ -395,12 +395,17 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			errMsg := "no dataflow engines available to handle pipeline"
 			logger.WithField("pipeline", event.PipelineName).Warn(errMsg)
 
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pv.State.Status, errMsg, sourceChainerServer)
+			status := pv.State.Status
+			// if not dataflow engines available then we think we can terminate. however it might be a networking glitch
+			if pv.State.Status == pipeline.PipelineTerminating {
+				status = pipeline.PipelineTerminated
+			}
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, status, errMsg, sourceChainerServer)
 			if err != nil {
 				logger.
 					WithError(err).
 					WithField("pipeline", pv.String()).
-					WithField("status", pv.State.Status).
+					WithField("status", status).
 					Error("failed to set pipeline state")
 			}
 
@@ -422,7 +427,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
-			msg := c.createPipelineMessage(pv)
+			msg := c.createPipelineMessage(pv) // note pv is a copy and does not include the new change to terminating state
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()
