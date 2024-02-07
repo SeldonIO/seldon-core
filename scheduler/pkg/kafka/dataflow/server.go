@@ -396,7 +396,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			logger.WithField("pipeline", event.PipelineName).Warn(errMsg)
 
 			status := pv.State.Status
-			// if not dataflow engines available then we think we can terminate. however it might be a networking glitch
+			// if no dataflow engines available then we think we can terminate. however it might be a networking glitch
 			if pv.State.Status == pipeline.PipelineTerminating {
 				status = pipeline.PipelineTerminated
 			}
