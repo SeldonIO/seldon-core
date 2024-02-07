@@ -13,7 +13,6 @@ import "os"
 
 const (
 	ModelFinalizerName      = "seldon.model.finalizer"
-	ServerFinalizerName     = "seldon.server.finalizer"
 	PipelineFinalizerName   = "seldon.pipeline.finalizer"
 	ExperimentFinalizerName = "seldon.experiment.finalizer"
 	RuntimeFinalizerName    = "seldon.runtime.finalizer"
