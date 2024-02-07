@@ -12,6 +12,7 @@ package constants
 import "os"
 
 const (
+	// note: we do not have a finalizer for servers as we rely on the draining logic to reschedule models
 	ModelFinalizerName      = "seldon.model.finalizer"
 	PipelineFinalizerName   = "seldon.pipeline.finalizer"
 	ExperimentFinalizerName = "seldon.experiment.finalizer"
