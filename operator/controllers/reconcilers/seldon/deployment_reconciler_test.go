@@ -19,6 +19,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -64,6 +65,39 @@ func TestDeploymentReconcile(t *testing.T) {
 			override:         &mlopsv1alpha1.OverrideSpec{},
 			seldonConfigMeta: metav1.ObjectMeta{},
 		},
+		{
+			name:           "scheduler",
+			deploymentName: mlopsv1alpha1.SchedulerName,
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceCPU:    resource.MustParse("1"),
+								v1.ResourceMemory: resource.MustParse("1Gi"),
+							},
+							Limits: v1.ResourceList{
+								v1.ResourceMemory: resource.MustParse("1Gi"),
+							},
+						},
+					},
+				},
+			},
+			override: &mlopsv1alpha1.OverrideSpec{
+				PodSpec: &mlopsv1alpha1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceCPU: resource.MustParse("1"),
+								},
+							},
+						},
+					},
+				},
+			},
+			seldonConfigMeta: metav1.ObjectMeta{},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -84,7 +118,7 @@ func TestDeploymentReconcile(t *testing.T) {
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
-			sr, _ := NewComponentDeploymentReconciler(
+			sr, err := NewComponentDeploymentReconciler(
 				test.deploymentName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
