@@ -231,14 +231,9 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		case PipelineTerminated:
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
-			if ps.db != nil {
-				err := ps.db.delete(pipeline)
-				if err != nil {
-					return nil, err
-				}
-			}
 			pipeline.Deleted = true
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
+			ps.db.save(pipeline)
 			return &coordinator.PipelineEventMsg{
 				PipelineName:    lastPipelineVersion.Name,
 				PipelineVersion: lastPipelineVersion.Version,
