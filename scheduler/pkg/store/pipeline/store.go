@@ -293,7 +293,7 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
 		switch pv.State.Status {
-		case PipelineCreate, PipelineCreating, PipelineReady:
+		case PipelineCreate, PipelineCreating, PipelineReady, PipelineTerminating:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,
 				PipelineVersion: pv.Version,

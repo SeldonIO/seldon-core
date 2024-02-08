@@ -336,11 +336,16 @@ func (c *ChainerServer) rebalance() {
 		c.logger.Debugf("Rebalancing pipeline %s:%d with state", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
 		c.mu.Lock()
 		if len(c.streams) == 0 {
+			pipelineState := pipeline.PipelineCreate
+			if pv.State.Status == pipeline.PipelineTerminating {
+				pipelineState = pipeline.PipelineTerminated
+			}
+			c.logger.Debugf("No dataflow engines available to handle pipeline %s, setting state to %s", pv.String(), pipelineState.String())
 			if err := c.pipelineHandler.SetPipelineState(
 				pv.Name,
 				pv.Version,
 				pv.UID,
-				pipeline.PipelineCreate,
+				pipelineState,
 				"no dataflow engines available to handle pipeline",
 				sourceChainerServer,
 			); err != nil {
