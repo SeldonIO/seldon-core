@@ -6,7 +6,7 @@ Triton, etc.) and orchestrating frameworks (e.g. Seldon Core, KServe, etc.).
 The spec of the Open Inference Protocol defines both the endpoints and payload
 schemas for REST and gRPC interfaces.
 
-As part of the Open Inference Protocol definition, you can find dedicated endpoints to:
+As part of the Open Inference Protocol definition, you can find dedicated endpoints for:
 
 - Health: Assess liveness and readiness of your model.
 - Model controls: Interact with your model, load and unload models dynamically
