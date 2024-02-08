@@ -8,11 +8,10 @@ schemas for REST and gRPC interfaces.
 
 As part of the Open Inference Protocol definition, you can find dedicated endpoints to:
 
-- Assess liveness and readiness of your model.
-- Interact with your model.
-- Query your model metadata (e.g. expected inputs, expected
+- Health: Assess liveness and readiness of your model.
+- Model controls: Interact with your model, load and unload models dynamically
+- Metadata: Query your model metadata (e.g. expected inputs, expected
   outputs, etc.).
-- Load and unload models dynamically.
 
 
 ## REST
