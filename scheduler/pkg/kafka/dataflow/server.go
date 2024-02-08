@@ -328,12 +328,12 @@ func (c *ChainerServer) rebalance() {
 	// note that we are not retrying PipelineFailed pipelines, consider adding this
 	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
 	for _, event := range evts {
-		c.logger.Debugf("Rebalancing pipeline %s:%d with state $s", event.PipelineName, event.PipelineVersion)
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			continue
 		}
+		c.logger.Debugf("Rebalancing pipeline %s:%d with state", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
 		c.mu.Lock()
 		if len(c.streams) == 0 {
 			if err := c.pipelineHandler.SetPipelineState(
