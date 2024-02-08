@@ -138,7 +138,7 @@ class PipelineSubscriber(
             }
         } else {
             pipelineStarted = true
-            logger.warn("pipeline ${metadata.id} already exists")
+            logger.warn("pipeline ${metadata.name} with id ${metadata.id} already exists")
         }
 
         client.pipelineUpdateEvent(
