@@ -1,18 +1,18 @@
-# V2 Inference Protocol
+# Open Inference Protocol
 
-The V2 Inference Protocol is an industry-wide effort to provide an standardised
+The Open Inference Protocol is an industry-wide effort to provide a standardized
 protocol to communicate with different inference servers (e.g. MLServer,
 Triton, etc.) and orchestrating frameworks (e.g. Seldon Core, KServe, etc.).
-The spec of the V2 Inference Protocol defines both the endpoints and payload
+The spec of the Open Inference Protocol defines both the endpoints and payload
 schemas for REST and gRPC interfaces.
 
-As part of the V2 Protocol definition, you can find dedicated endpoints for:
+As part of the Open Inference Protocol definition, you can find dedicated endpoints to:
 
-- Health endpoints, to assess liveness and readiness of your model.
-- Inference endpoints, to interact with your model.
-- Metadata endpoints, to query your model metadata (e.g. expected inputs, expected
+- Assess liveness and readiness of your model.
+- Interact with your model.
+- Query your model metadata (e.g. expected inputs, expected
   outputs, etc.).
-- Model repository endpoints, to load and unload models dynamically.
+- Load and unload models dynamically.
 
 
 ## REST
