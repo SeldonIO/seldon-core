@@ -250,6 +250,7 @@ func (s *SchedulerClient) updatePipelineStatusImpl(pipeline *v1alpha1.Pipeline) 
 
 func canRemovePipelineFinalizer(state scheduler.PipelineVersionState_PipelineStatus) bool {
 	switch state {
+	// we should wait if the state is not terminal for deleting the finalizer, it should be Terminated in the case of delete
 	case scheduler.PipelineVersionState_PipelineTerminating, scheduler.PipelineVersionState_PipelineTerminate:
 		return false
 	default:
