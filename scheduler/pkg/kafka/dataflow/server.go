@@ -333,7 +333,7 @@ func (c *ChainerServer) rebalance() {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			continue
 		}
-		c.logger.Debugf("Rebalancing pipeline %s:%d with state", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
+		c.logger.Debugf("Rebalancing pipeline %s:%d with state %s", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
 		c.mu.Lock()
 		if len(c.streams) == 0 {
 			pipelineState := pipeline.PipelineCreate
