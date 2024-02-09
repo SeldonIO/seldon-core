@@ -68,13 +68,13 @@ type PipelineStatus uint32
 
 const (
 	PipelineStatusUnknown PipelineStatus = iota
-	PipelineCreate
-	PipelineCreating
-	PipelineReady
-	PipelineFailed
-	PipelineTerminate
-	PipelineTerminating
-	PipelineTerminated
+	PipelineCreate                       // Received signal to create pipeline.
+	PipelineCreating                     // In the process of creating pipeline.
+	PipelineReady                        // Pipeline is ready to be used.
+	PipelineFailed                       // Pipeline creation/deletion failed.
+	PipelineTerminate                    // Received signal that pipeline should be terminated.
+	PipelineTerminating                  // In the process of doing cleanup/housekeeping for pipeline termination.
+	PipelineTerminated                   // Pipeline has been terminated.
 )
 
 type PipelineState struct {
