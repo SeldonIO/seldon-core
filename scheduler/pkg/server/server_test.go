@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -529,6 +530,8 @@ func TestUnloadPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			_ = test.server.pipelineHandler.(*pipeline.PipelineStore).InitialiseOrRestoreDB(path)
 			if test.loadReq != nil {
 				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
 				g.Expect(err).To(BeNil())

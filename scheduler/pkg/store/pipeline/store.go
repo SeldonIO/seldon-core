@@ -226,19 +226,17 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		}
 		lastState := lastPipelineVersion.State
 		switch lastState.Status {
-		case PipelineTerminate:
+		case PipelineTerminating:
 			return nil, &PipelineTerminatingErr{pipeline: name}
 		case PipelineTerminated:
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
-			if ps.db != nil {
-				err := ps.db.delete(pipeline)
-				if err != nil {
-					return nil, err
-				}
-			}
 			pipeline.Deleted = true
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
+			if err := ps.db.save(pipeline); err != nil {
+				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
+				return nil, err
+			}
 			return &coordinator.PipelineEventMsg{
 				PipelineName:    lastPipelineVersion.Name,
 				PipelineVersion: lastPipelineVersion.Version,
@@ -293,7 +291,8 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
 		switch pv.State.Status {
-		case PipelineCreate, PipelineCreating, PipelineReady:
+		// we consider PipelineTerminating as running as it is still active
+		case PipelineCreate, PipelineCreating, PipelineReady, PipelineTerminating:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,
 				PipelineVersion: pv.Version,
@@ -310,13 +309,11 @@ func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
 
 	foundPipelines := []*Pipeline{}
 	for _, p := range ps.pipelines {
-		if !p.Deleted {
-			copied, err := copystructure.Copy(p)
-			if err != nil {
-				return nil, err
-			}
-			foundPipelines = append(foundPipelines, copied.(*Pipeline))
+		copied, err := copystructure.Copy(p)
+		if err != nil {
+			return nil, err
 		}
+		foundPipelines = append(foundPipelines, copied.(*Pipeline))
 	}
 
 	return foundPipelines, nil

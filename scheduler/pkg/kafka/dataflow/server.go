@@ -325,6 +325,7 @@ func contains(slice []string, val string) bool {
 
 func (c *ChainerServer) rebalance() {
 	logger := c.logger.WithField("func", "rebalance")
+	// note that we are not retrying PipelineFailed pipelines, consider adding this
 	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
 	for _, event := range evts {
 		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
@@ -332,13 +333,20 @@ func (c *ChainerServer) rebalance() {
 			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 			continue
 		}
+		c.logger.Debugf("Rebalancing pipeline %s:%d with state %s", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
 		c.mu.Lock()
 		if len(c.streams) == 0 {
+			pipelineState := pipeline.PipelineCreate
+			// if no dataflow engines available then we think we can terminate pipelines.
+			if pv.State.Status == pipeline.PipelineTerminating {
+				pipelineState = pipeline.PipelineTerminated
+			}
+			c.logger.Debugf("No dataflow engines available to handle pipeline %s, setting state to %s", pv.String(), pipelineState.String())
 			if err := c.pipelineHandler.SetPipelineState(
 				pv.Name,
 				pv.Version,
 				pv.UID,
-				pipeline.PipelineCreate,
+				pipelineState,
 				"no dataflow engines available to handle pipeline",
 				sourceChainerServer,
 			); err != nil {
@@ -393,12 +401,18 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			errMsg := "no dataflow engines available to handle pipeline"
 			logger.WithField("pipeline", event.PipelineName).Warn(errMsg)
 
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pv.State.Status, errMsg, sourceChainerServer)
+			status := pv.State.Status
+			// if no dataflow engines available then we think we can terminate pipelines.
+			// TODO: however it might be a networking glitch and we need to handle this better in future
+			if pv.State.Status == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
+				status = pipeline.PipelineTerminated
+			}
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, status, errMsg, sourceChainerServer)
 			if err != nil {
 				logger.
 					WithError(err).
 					WithField("pipeline", pv.String()).
-					WithField("status", pv.State.Status).
+					WithField("status", status).
 					Error("failed to set pipeline state")
 			}
 
@@ -420,7 +434,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
-			msg := c.createPipelineMessage(pv)
+			msg := c.createPipelineMessage(pv) // note pv is a copy and does not include the new change to terminating state
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()

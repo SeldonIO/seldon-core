@@ -132,7 +132,11 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grp
 		}
 
 		if !pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
-			logger.Info("Pipeline is pending deletion", "pipeline", pipeline.Name)
+			logger.Info(
+				"Pipeline is pending deletion",
+				"pipeline", pipeline.Name,
+				"state", pv.State.Status.String(),
+			)
 			if canRemovePipelineFinalizer(pv.State.Status) {
 				retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 					latestPipeline := &v1alpha1.Pipeline{}
@@ -246,7 +250,8 @@ func (s *SchedulerClient) updatePipelineStatusImpl(pipeline *v1alpha1.Pipeline) 
 
 func canRemovePipelineFinalizer(state scheduler.PipelineVersionState_PipelineStatus) bool {
 	switch state {
-	case scheduler.PipelineVersionState_PipelineTerminating:
+	// we should wait if the state is not terminal for deleting the finalizer, it should be Terminated in the case of delete
+	case scheduler.PipelineVersionState_PipelineTerminating, scheduler.PipelineVersionState_PipelineTerminate:
 		return false
 	default:
 		return true

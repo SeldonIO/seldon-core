@@ -53,9 +53,10 @@ class PipelineSubscriber(
     private val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
 
     suspend fun subscribe() {
-        logger.info("will connect to ${upstreamHost}:${upstreamPort}")
         while (true) {
+            logger.info("will connect to ${upstreamHost}:${upstreamPort}")
             retry(binaryExponentialBackoff(50..5_000L)) {
+                logger.debug("retrying to connect to ${upstreamHost}:${upstreamPort}")
                 subscribePipelines(kafkaConsumerGroupIdPrefix, namespace)
             }
         }
@@ -136,7 +137,8 @@ class PipelineSubscriber(
                 updateEventReason = "kafka topic error"
             }
         } else {
-            logger.warn("pipeline ${metadata.id} already exists")
+            pipelineStarted = true
+            logger.warn("pipeline ${metadata.name} with id ${metadata.id} already exists")
         }
 
         client.pipelineUpdateEvent(

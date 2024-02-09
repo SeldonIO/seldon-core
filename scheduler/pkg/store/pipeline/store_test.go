@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -289,6 +290,7 @@ func TestRemovePipeline(t *testing.T) {
 					},
 				},
 			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
 		},
 		{
 			name:         "pipeline terminated err",
@@ -368,6 +370,10 @@ func TestRemovePipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := logrus.New()
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			test.store.db = db
 			err := test.store.RemovePipeline(test.pipelineName)
 			if test.err == nil {
 				p := test.store.pipelines[test.pipelineName]
@@ -375,9 +381,24 @@ func TestRemovePipeline(t *testing.T) {
 				pv := p.GetLatestPipelineVersion()
 				g.Expect(pv).ToNot(BeNil())
 				g.Expect(pv.State.Status).To(Equal(PipelineTerminate))
+
+				// check db contains pipeline
+				pipelines := map[string]*Pipeline{}
+				restoreCb := func(pipeline *Pipeline) {
+					pipelines[pipeline.Name] = pipeline
+				}
+				_ = test.store.db.restore(restoreCb)
+				actualPipeline := pipelines[test.pipelineName]
+				expectedPipeline := test.store.pipelines[test.pipelineName]
+				// TODO: check all fields
+				g.Expect(actualPipeline.Deleted).To(Equal(expectedPipeline.Deleted))
+				g.Expect(actualPipeline.LastVersion).To(Equal(expectedPipeline.LastVersion))
+				g.Expect(len(actualPipeline.Versions)).To(Equal(len(expectedPipeline.Versions)))
+				g.Expect(len(actualPipeline.Versions)).To(Equal(len(expectedPipeline.Versions)))
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}
+			_ = test.store.db.Stop()
 		})
 	}
 }
