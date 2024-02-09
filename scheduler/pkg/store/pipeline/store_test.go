@@ -398,7 +398,7 @@ func TestRemovePipeline(t *testing.T) {
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}
-			test.store.db.Stop()
+			_ = test.store.db.Stop()
 		})
 	}
 }

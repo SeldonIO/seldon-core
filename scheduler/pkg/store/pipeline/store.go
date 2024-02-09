@@ -233,7 +233,10 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		default:
 			pipeline.Deleted = true
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
-			ps.db.save(pipeline)
+			if err := ps.db.save(pipeline); err != nil {
+				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
+				return nil, err
+			}
 			return &coordinator.PipelineEventMsg{
 				PipelineName:    lastPipelineVersion.Name,
 				PipelineVersion: lastPipelineVersion.Version,
@@ -288,6 +291,7 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
 		switch pv.State.Status {
+		// we consider PipelineTerminating as running as it is still active
 		case PipelineCreate, PipelineCreating, PipelineReady, PipelineTerminating:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,

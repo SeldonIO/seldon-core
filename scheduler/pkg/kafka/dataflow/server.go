@@ -337,6 +337,7 @@ func (c *ChainerServer) rebalance() {
 		c.mu.Lock()
 		if len(c.streams) == 0 {
 			pipelineState := pipeline.PipelineCreate
+			// if no dataflow engines available then we think we can terminate pipelines.
 			if pv.State.Status == pipeline.PipelineTerminating {
 				pipelineState = pipeline.PipelineTerminated
 			}
