@@ -309,13 +309,11 @@ func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
 
 	foundPipelines := []*Pipeline{}
 	for _, p := range ps.pipelines {
-		if !p.Deleted {
-			copied, err := copystructure.Copy(p)
-			if err != nil {
-				return nil, err
-			}
-			foundPipelines = append(foundPipelines, copied.(*Pipeline))
+		copied, err := copystructure.Copy(p)
+		if err != nil {
+			return nil, err
 		}
+		foundPipelines = append(foundPipelines, copied.(*Pipeline))
 	}
 
 	return foundPipelines, nil
