@@ -371,8 +371,6 @@ spec:
                     type: array
                   joinType:
                     default: inner
-                    description: One of inner (default), outer, or any (see above
-                      for details)
                     enum:
                     - inner
                     - outer
@@ -391,8 +389,6 @@ spec:
                     type: object
                   triggersJoinType:
                     default: inner
-                    description: One of inner (default), outer, or any (see above
-                      for details)
                     enum:
                     - inner
                     - outer
@@ -414,8 +410,6 @@ spec:
                     type: array
                   stepsJoin:
                     default: inner
-                    description: One of inner (default), outer, or any (see above
-                      for details)
                     enum:
                     - inner
                     - outer
@@ -452,11 +446,6 @@ spec:
                       type: array
                     inputsJoinType:
                       default: inner
-                      description: 'One of inner (default), outer, or any inner -
-                        do an inner join: data must be available from all inputs outer
-                        - do an outer join: data will include any data from any inputs
-                        at end of window any - first data input that arrives will
-                        be forwarded'
                       enum:
                       - inner
                       - outer
@@ -482,8 +471,6 @@ spec:
                         type: string
                       type: array
                     triggersJoinType:
-                      description: One of inner (default), outer, or any (see above
-                        for details)
                       enum:
                       - inner
                       - outer
