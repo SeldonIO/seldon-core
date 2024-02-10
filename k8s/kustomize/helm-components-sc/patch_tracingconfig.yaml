@@ -8,4 +8,5 @@ spec:
     tracingConfig:
       disable: HACK_REMOVE_ME{{ .Values.opentelemetry.disable }}
       otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+      otelExporterProtocol: '{{ .Values.opentelemetry.protocol }}'
       ratio: '{{ .Values.opentelemetry.ratio }}'

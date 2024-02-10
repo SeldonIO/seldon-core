@@ -1052,6 +1052,11 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+              name: seldon-tracing
         - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1097,6 +1102,7 @@ spec:
     tracingConfig:
       disable: false
       otelExporterEndpoint: 'seldon-collector.seldon-mesh:4317'
+      otelExporterProtocol: 'grpc'
       ratio: '1'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml

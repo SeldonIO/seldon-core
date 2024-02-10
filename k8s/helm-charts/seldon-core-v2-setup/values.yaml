@@ -75,6 +75,7 @@ imagePullSecrets:
 opentelemetry:
   # This will need to be customized to your open telemetry installation endpoint
   endpoint: seldon-collector.seldon-mesh:4317
+  protocol: grpc
   disable: false
   ratio: 1
 

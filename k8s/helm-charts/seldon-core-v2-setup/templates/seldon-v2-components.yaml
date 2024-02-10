@@ -1432,6 +1432,11 @@ spec:
             configMapKeyRef:
               key: OTEL_EXPORTER_OTLP_ENDPOINT
               name: seldon-tracing
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+              name: seldon-tracing
         - name: SELDON_POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1480,6 +1485,7 @@ spec:
     tracingConfig:
       disable: {{ .Values.opentelemetry.disable }}
       otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
+      otelExporterProtocol: '{{ .Values.opentelemetry.protocol }}'
       ratio: '{{ .Values.opentelemetry.ratio }}'
 ---
 apiVersion: mlops.seldon.io/v1alpha1

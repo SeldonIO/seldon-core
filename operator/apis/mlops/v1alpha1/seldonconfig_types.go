@@ -74,6 +74,7 @@ type RcloneConfiguration struct {
 type TracingConfig struct {
 	Disable              bool   `json:"disable,omitempty"`
 	OtelExporterEndpoint string `json:"otelExporterEndpoint,omitempty"`
+	OtelExporterProtocol string `json:"otelExporterProtocol,omitempty"`
 	Ratio                string `json:"ratio,omitempty"`
 }
 
@@ -187,6 +188,9 @@ func (t *TracingConfig) addDefaults(defaults TracingConfig) {
 	}
 	if t.OtelExporterEndpoint == "" {
 		t.OtelExporterEndpoint = defaults.OtelExporterEndpoint
+	}
+	if t.OtelExporterProtocol == "" {
+		t.OtelExporterProtocol = defaults.OtelExporterProtocol
 	}
 }
 

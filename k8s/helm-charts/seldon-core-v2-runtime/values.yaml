@@ -42,6 +42,7 @@ config:
   tracingConfig:
     disable:
     otelExporterEndpoint:
+    otelExporterProtocol:
     ratio:
   serviceConfig:
     serviceGRPCPrefix:

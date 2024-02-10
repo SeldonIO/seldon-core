@@ -1,5 +1,6 @@
 {
   "disable": false,
   "otelExporterEndpoint": "0.0.0.0:4317",
+  "otelExporterProtocol": "grpc",
   "ratio": "1"
 }

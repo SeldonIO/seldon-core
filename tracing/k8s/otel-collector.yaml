@@ -12,16 +12,25 @@ spec:
       batch:
 
     exporters:
-      logging:
-        
-      jaeger:
-        endpoint: simplest-collector:14250
+      debug:
+
+      otlp:
+        endpoint: simplest-collector:4317
         tls:
           insecure: true
-      
+
     service:
       pipelines:
         traces:
           receivers: [otlp]
           processors: [batch]
-          exporters: [logging, jaeger]
+          exporters: [debug, otlp]
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug]
+
