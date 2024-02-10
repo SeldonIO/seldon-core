@@ -25,7 +25,7 @@ repositories {
 dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
     implementation("io.klogging:klogging-jvm:0.5.8")
-    implementation("io.klogging:slf4j-klogging:0.5.8")
+    implementation("io.klogging:slf4j-klogging:0.5.10")
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:3.4.0")
