@@ -40,6 +40,7 @@ function load() {
 }
 
 function unload() {
+  # note that in k8s we need to use the filepath (3rd argument)
   if [ $cmd == "kubectl" ]
   then
       kubectl delete -f $3 -n $namespace
@@ -62,13 +63,13 @@ function status() {
   then
       if [ $1 == "model" ]
       then
-            kubectl wait --for condition=ready --timeout=300s model --all -n $namespace
+            kubectl wait --for condition=ready --timeout=300s model $2 -n $namespace
       elif [ $1 == "pipeline" ]
       then
-            kubectl wait --for condition=ready --timeout=300s pipeline --all -n $namespace
+            kubectl wait --for condition=ready --timeout=300s pipeline $2 -n $namespace
       elif [ $1 == "experiment" ]
       then
-            kubectl wait --for condition=ready --timeout=300s experiment --all -n $namespace
+            kubectl wait --for condition=ready --timeout=300s experiment $2 -n $namespace
       fi
   else
       if [ $1 == "model" ]
@@ -87,10 +88,10 @@ function status() {
 
 load model ./models/tfsimple1.yaml
 load model ./models/tfsimple2.yaml
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
+status model tfsimple1
+status model tfsimple2 
 load "pipeline" ./pipelines/tfsimples.yaml
-seldon pipeline status tfsimples -w PipelineReady | jq -M .
+status pipeline tfsimples
 seldon pipeline infer tfsimples '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 seldon pipeline infer tfsimples --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 unload pipeline tfsimples  ./pipelines/tfsimples.yaml
@@ -102,11 +103,11 @@ sleep $sleepTime
 load model ./models/tfsimple1.yaml
 load model ./models/tfsimple2.yaml
 load model ./models/tfsimple3.yaml
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
-seldon model status tfsimple3 -w ModelAvailable | jq -M .
+status model tfsimple1
+status model tfsimple2
+status model tfsimple3
 load pipeline ./pipelines/tfsimples-join.yaml
-seldon pipeline status join -w PipelineReady | jq -M .
+status pipeline join
 seldon pipeline infer join --inference-mode grpc     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 unload pipeline join ./pipelines/tfsimples-join.yaml
 unload model tfsimple1 ./models/tfsimple1.yaml
@@ -118,11 +119,11 @@ sleep $sleepTime
 load model ./models/conditional.yaml
 load model ./models/add10.yaml
 load model ./models/mul10.yaml
-seldon model status conditional -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
-seldon model status mul10 -w ModelAvailable | jq -M .
+status model conditional
+status model add10
+status model mul10
 load pipeline ./pipelines/conditional.yaml
-seldon pipeline status tfsimple-conditional -w PipelineReady | jq -M .
+status pipeline tfsimple-conditional
 seldon pipeline infer tfsimple-conditional --inference-mode grpc  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 seldon pipeline infer tfsimple-conditional --inference-mode grpc  '{"model_name":"outlier","inputs":[{"name":"CHOICE","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 unload pipeline tfsimple-conditional ./pipelines/conditional.yaml
@@ -133,9 +134,9 @@ unload model mul10 ./models/mul10.yaml
 sleep $sleepTime
 
 load model ./models/outlier-error.yaml
-seldon model status outlier-error -w ModelAvailable | jq -M .
+status model outlier-error
 load pipeline ./pipelines/error.yaml
-seldon pipeline status error -w PipelineReady | jq -M .
+status pipeline error
 seldon pipeline infer error --inference-mode grpc     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 seldon pipeline infer error --inference-mode grpc     '{"model_name":"outlier","inputs":[{"name":"INPUT","contents":{"fp32_contents":[100,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 unload pipeline error ./models/outlier-error.yaml
@@ -147,12 +148,12 @@ load model ./models/tfsimple1.yaml
 load model ./models/tfsimple2.yaml
 load model ./models/tfsimple3.yaml
 load model ./models/check.yaml
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
-seldon model status tfsimple3 -w ModelAvailable | jq -M .
-seldon model status check -w ModelAvailable | jq -M .
+status model tfsimple1
+status model tfsimple2
+status model tfsimple3
+status model check
 load pipeline ./pipelines/tfsimples-join-outlier.yaml
-seldon pipeline status joincheck -w PipelineReady | jq -M .
+status pipeline joincheck
 seldon pipeline infer joincheck --inference-mode grpc  '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]},"datatype":"INT32","shape":[1,16]}]}'
 seldon pipeline infer joincheck --inference-mode grpc     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
 unload pipeline joincheck ./pipelines/tfsimples-join-outlier.yaml
@@ -165,10 +166,10 @@ sleep $sleepTime
 
 load model ./models/mul10.yaml
 load model ./models/add10.yaml
-seldon model status mul10 -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
+status model mul10
+status model add10
 load pipeline ./pipelines/pipeline-inputs.yaml
-seldon pipeline status pipeline-inputs -w PipelineReady | jq -M .
+status pipeline pipeline-inputs
 seldon pipeline infer pipeline-inputs --inference-mode grpc  '{"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}' | jq -M .
 unload pipeline pipeline-inputs ./pipelines/pipeline-inputs.yaml
 unload model mul10 ./models/mul10.yaml
@@ -178,10 +179,10 @@ sleep $sleepTime
 
 load model ./models/mul10.yaml
 load model ./models/add10.yaml
-seldon model status mul10 -w ModelAvailable | jq -M .
-seldon model status add10 -w ModelAvailable | jq -M .
+status model mul10
+status model add10
 load pipeline ./pipelines/trigger-joins.yaml
-seldon pipeline status trigger-joins -w PipelineReady | jq -M .
+status pipeline trigger-joins
 seldon pipeline infer trigger-joins --inference-mode grpc  '{"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 seldon pipeline infer trigger-joins --inference-mode grpc  '{"model_name":"pipeline","inputs":[{"name":"ok3","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 unload pipeline trigger-joins ./pipelines/trigger-joins.yaml
@@ -192,7 +193,7 @@ unload model add10 ./models/add10.yaml
 # MLServer
 sleep $sleepTime
 load model ./models/sklearn-iris-gs.yaml
-seldon model status iris -w ModelAvailable | jq -M .
+status model iris
 seldon model infer iris '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
 seldon model infer iris --inference-mode grpc \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
@@ -202,14 +203,14 @@ unload model iris ./models/sklearn-iris-gs.yaml
 # Experiments
 load model ./models/sklearn1.yaml
 load model ./models/sklearn2.yaml
-seldon model status iris -w ModelAvailable
-seldon model status iris2 -w ModelAvailable
+status model iris
+status model iris2
 seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 load experiment ./experiments/ab-default-model.yaml 
-seldon experiment status experiment-sample -w | jq -M .
+status experiment experiment-sample
 seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 seldon model infer iris --show-headers \
