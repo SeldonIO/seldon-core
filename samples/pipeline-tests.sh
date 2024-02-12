@@ -57,6 +57,33 @@ function unload() {
   fi
 }
 
+function status() {
+  if [ $cmd == "kubectl" ]
+  then
+      if [ $1 == "model" ]
+      then
+            kubectl wait --for condition=ready --timeout=300s model --all -n $namespace
+      elif [ $1 == "pipeline" ]
+      then
+            kubectl wait --for condition=ready --timeout=300s pipeline --all -n $namespace
+      elif [ $1 == "experiment" ]
+      then
+            kubectl wait --for condition=ready --timeout=300s experiment --all -n $namespace
+      fi
+  else
+      if [ $1 == "model" ]
+      then
+            seldon model status $2 -w ModelAvailable | jq -M .
+      elif [ $1 == "pipeline" ]
+      then
+            seldon pipeline status $2 -w PipelineReady | jq -M .
+      elif [ $1 == "experiment" ]
+      then
+            seldon experiment status $2 -w | jq -M .
+      fi
+  fi
+}
+
 
 load model ./models/tfsimple1.yaml
 load model ./models/tfsimple2.yaml
