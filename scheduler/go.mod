@@ -35,7 +35,7 @@ require (
 	go.opentelemetry.io/otel v1.23.1
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.22.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.22.0
-	go.opentelemetry.io/otel/sdk v1.22.0
+	go.opentelemetry.io/otel/sdk v1.23.1
 	go.opentelemetry.io/otel/trace v1.23.1
 	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
