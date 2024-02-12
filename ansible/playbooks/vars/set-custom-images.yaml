@@ -1,24 +1,92 @@
+# Configure your custom seldon deployment via ansible
+#
+# WARNING: This file is just a sample configuration showcasing as many of the different options
+#          that can be configured as possible. It can not be used as-is because it refers
+#          to inexistent paths and private registries. Typical configuration files will be
+#          significantly shorter.
+#
+#          For a simple working example that builds all the core images from the local worktree,
+#          please see set-dev-images.yaml
+#
 # 1. Modify this file with desired component image customisations and
-#    secret details. Replace elements in CAPS and between square brackets
-#    with actual values
+#    k8s secret details (in the case of images pulled from private registries)
 #
-# 2. Pass this file as an ansible extra_vars file when running the setup-seldon
-#    or seldon-all playbooks:
+# 2. Pass this file as an ansible extra_vars file when running the setup_seldon
+#    playbook or other playbooks that in turn include setup_seldon (such as seldon-all):
 #
-#    > ansible_playbook playbooks/setup-seldon.yaml -e @playbooks/vars/set-custom-images.yaml
+#    > ansible_playbook playbooks/setup_seldon.yaml -e @playbooks/vars/set-private-registry.yaml
+#
+# 3. This file is ONLY used when passed with -e @...
+#
+
+# Override any of the seldon ansible playbook variables
+#install_kafka: false
+#configure_kafka: false
 
 
-# By configuring `custom_image_config`, you can customise image properties
-# for sets of seldon components. For example, fetching images with particular
-# tags or configuring private registries. Any missing components will remain
-# with their default setup.
+# The `seldon_dev` dictionary holds dev options relating to
+#   - image building & deployment into a kind k8s custer
+#   - saving the current customisation as a helm values file for reuse outside ansible
 #
-# This is a list, where each items specifies:
-# - a target: whether the component is configured at the root-level in
-#             helm-charts (set target to "core") or under serverConfig
-#             (set target to "serverConfig")
-# - components: list of components with a particular image customisation
-#               possible list elements for target "core":
+# Not providing `seldon_dev` at all is the same as leaving all keys to their default values.
+#
+# The following keys may be configured:
+#
+#     - dockerhub_user:    [optional, default: seldonio]
+#                          The name of the registry user to be used when building images
+#
+#     - skip_build_images: [optional, default: false]
+#                          Whether to skip builing a docker image from local sources if one with
+#                          the same tag already exists as a local docker image.
+#
+#                          Only applies to components with `dev_img_set: true` in
+#                          `custom_image_config` (documented further down)
+#
+#     - install_kind_images: [optional, default: true]
+#                            Whether to copy the configured dev images into the local kind
+#                            cluster
+#
+#                            Only applies to components with `dev_img_set: true` in
+#                            `custom_image_config` (documented further down)
+#
+#     - save_helm_components_overrides: [optional, default: false]
+#                                       Whether to save a helm values file with images
+#                                       pre-configured to the config described in
+#                                       `custom_image_config` below. Useful for using outside
+#                                       ansible
+#
+#     - save_helm_components_overrides_file: [optional, default: "${HOME}/seldon_helm_comp_values.yaml"]
+#                                            Path & filename for saving helm value overrides
+#
+seldon_dev:
+  dockerhub_user: seldondev
+  skip_build_images: false
+  install_kind_images: true
+  save_helm_components_overrides: false
+
+
+# By configuring `custom_image_config`, you customise image properties for sets of seldon
+# components. For example, fetching images with particular tags, configuring private registries
+# or referring to local dev sources.
+#
+# Any components not specified will be deployed with their default setup.
+#
+# This is a list, where each item is a dictionary with the following keys:
+# - dev_img_set : [optional, default: false]
+#                 Whether the components listed in `components` are to be considered local dev
+#                 images that should be built & deployed (when true) or pre-built images to be
+#                 fetched externally (when false)
+#
+#                 If `seldon_dev.skip_build_images` is true, `dev_img_set is true` and an image
+#                 with the given tag is not present amongst the local docker images for a
+#                 component in the `components` list, that image will be built. If all images
+#                 exist, those will be used.
+#
+#                 Set `seldon_dev.skip_build_images` to false to force images to be rebuilt even
+#                 if local docker images with the same tag already exist.
+#
+# - components: [required, default: []]
+#               List of components with a common image customisation. Possible list items are:
 #                - hodometer
 #                - modelgateway
 #                - pipelinegateway
@@ -26,50 +94,113 @@
 #                - controller
 #                - envoy
 #                - scheduler
-#               possible list elements for target "serverConfig":
 #                - mlserver
-#                - triton
+#                - triton (supported with `dev_img_set: false` only)
 #                - rclone
 #                - agent
-# - image: the keys to overwrite the existing "image" helm-chart values for a
-#          component
+#
+# - image: [optional] the keys to overwrite in the existing "image" helm-chart values for each
+#          component in the `components` list
+#
+# - repository_img_prefix: [optional, default: `seldon_dev.dockerhub_user`]
+#                          The repository prefix that should be applied to the docker image
+#                          name. Typically the dockerhub user.
 custom_image_config:
-  - target: core
+
+  - dev_img_set: true
     components:
-      - hodometer
+      - dataflow
+    image:
+      tag: "dev.seldon.df-test"   # when dev_img_set is true, an image with this tag is built
+                                  # locally as `[seldon_dev.dockerhub_user]/[component-name]:
+                                  # dev.seldon.df-test` for each of the listed components
+
+  - dev_img_set: true
+    components:
       - modelgateway
       - pipelinegateway
-      - dataflow
-      - controller
-      - envoy
       - scheduler
+      - controller
     image:
-      registry: [CORE_REGISTRY_NAME]
-      tag: [TAG_NAME1]
-  - target: serverConfig
-    components:
+      tag: "dev.seldon.core-test" # different set of components can be built locally with
+                                  # a different tag
+  - components:
+      - hodometer
+      - envoy
+    repository_img_prefix: "seldonio"  # use upstream images for those components, namely
+                                       # seldonio/[component-name]:latest
+  - components:
+      - agent
+    image:
+      tag: "2.7.0"
+    repository_img_prefix: "seldonio"  # use upstream image for this component, with custom tag
+                                       # seldonio/[component-name]:2.7.0
+  - components:
       - mlserver
+    repository_img_prefix: ""
     image:
-      registry: [MLSERVER_REGISTRY_NAME]
-      tag: [TAG_NAME2]
+      registry: private-registry/mlserver  # image from private-registry. also configure
+                                           # `custom_image_pull_secrets` to ensure that k8s has
+                                           # access to the right secret for pulling this image
+      tag: 1.4.0.rc9
 
-# For repository definitions, each component will have its own name, depending
-# on the registry configuration. Set the core component to registry name
-# mapping here; missing components remain with their default names.
-core_custom_image_repository:
-  hodometer: seldon-hodometer
-  modelgateway: seldon-modelgateway
-  pipelinegateway: seldon-pipelinegateway
-  dataflow: seldon-dataflow-engine
-  controller: seldonv2-controller
-  envoy: seldon-envoy
-  scheduler: seldon-scheduler
 
-# For repository definitions, each component will have its own name, depending
-# on the registry configuration. Set the server component to registry name
-# mapping here; missing components remain with their default names.
-server_custom_image_repository:
-  mlserver: mlserver
+# `custom_components_values` provides custom config for the seldon-core-v2-setup helm chart
+# see [core_v2_src]/k8s/helm-charts/seldon-core-v2-setup/values.yaml.template
+# for possible configuration options
+#
+# Image-related options (key/value pairs defined under the `image` key) also configured in
+# `custom_image_config` above take precedence to the ones defined here.
+#
+# The commented example below sets a confluent cloud cluster as the kafka deployment, together
+# with OAUTH authentication. Typically this will also require setting a secret containing
+# authentication details (see `custom_secrets` below):
+#
+####
+#
+# custom_components_values:
+#   kafka:
+#     bootstrap: pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092
+#     topics:
+#       replicationFactor: 3
+#       numPartitions: 4
+#     consumer:
+#       messageMaxBytes: 8388608
+#     producer:
+#       messageMaxBytes: 8388608
+#   security:
+#     kafka:
+#       protocol: SASL_SSL
+#       sasl:
+#         mechanism: OAUTHBEARER
+#         client:
+#             secret: kafka-oauth
+#       ssl:
+#         client:
+#           secret:
+#           brokerValidationSecret:
+#           endpointIdentificationAlgorithm: https
+
+
+# For private repository definitions, each component will have its own name, depending
+# on the registry configuration. You may configure custom names in `custom_image_repository`
+#
+# Set the core component to registry name mapping here; The defaults are the ones listed below
+# for reference.
+#
+####
+#
+# custom_image_repository:
+#   hodometer: "seldon-hodometer"
+#   modelgateway: "seldon-modelgateway"
+#   pipelinegateway: "seldon-pipelinegateway"
+#   dataflow: "seldon-dataflow-engine"
+#   controller: "seldonv2-controller"
+#   envoy: "seldon-envoy"
+#   scheduler: "seldon-scheduler"
+#   rclone: "seldon-rclone"
+#   agent: "seldon-agent"
+#   mlserver: "mlserver"
 
 # Define the custom secret to be created or updated in k8s for access to private
 # registries.
@@ -77,10 +208,32 @@ server_custom_image_repository:
 # This assumes you already have the service account created and you have fetched
 # its key in JSON format. Authenticate the docker CLI with this key, i.e:
 #
-# > cat access-seldon-registry.json | docker login -u _json_key --password-stdin europe-west2-docker.pkg.dev
+# > cat access-seldon-registry.json | docker login -u _json_key --password-stdin [private-reg]
 #
 # then configure the dockerconfigjson property below with the resulting docker config.json
 custom_image_pull_secrets:
   name: private-registry
   dockerconfigjson: ~/.docker/config.json
 
+
+# `custom_secrets` defines a list of secrets that should be loaded into various namespaces
+# of the deployment.
+#
+# Each element of the list is a dictionary containing the following items:
+#
+#   - name: [mandatory]
+#           the name of the secret
+#   - template: [mandatory]
+#               path to a file containing the secret template (yaml, no need to specify name
+#               and namespace)
+#   - namespaces: [optional, default:[{{ seldon_mesh_namespace }}]]
+#                 list of namespaces to which this secret should be added to
+#
+# An example below assuming you want to use the same secret name as the one defined in the
+# custom_components_values:
+#
+####
+#
+# custom_secrets:
+#   - name: "{{ custom_components_values.security.kafka.sasl.client.secret }}"
+#     template: "[path-to-secrets-template.yaml]"
