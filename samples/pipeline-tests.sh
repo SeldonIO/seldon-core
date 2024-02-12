@@ -32,6 +32,9 @@ function load() {
       elif [ $1 == "pipeline" ]
       then
             seldon pipeline load -f $2
+      elif [ $1 == "experiment" ]
+      then
+            seldon experiment start -f $2
       fi
   fi
 }
@@ -47,6 +50,9 @@ function unload() {
       elif [ $1 == "pipeline" ]
       then
             seldon pipeline unload $2
+      elif [ $1 == "experiment" ]
+      then
+            seldon experiment stop $2
       fi
   fi
 }
@@ -167,3 +173,24 @@ unload model iris ./models/sklearn-iris-gs.yaml
 
 
 # Experiments
+load model ./models/sklearn1.yaml
+load model ./models/sklearn2.yaml
+seldon model status iris -w ModelAvailable
+seldon model status iris2 -w ModelAvailable
+seldon model infer iris -i 50 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+seldon model infer iris2 -i 50 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+load experiment ./experiments/ab-default-model.yaml 
+seldon experiment status experiment-sample -w | jq -M .
+seldon model infer iris -i 50 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+seldon model infer iris --show-headers \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+seldon model infer iris -s -i 50 \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+seldon model infer iris --inference-mode grpc -s -i 50\
+   '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+unload experiment experiment-sample ./experiments/ab-default-model.yaml
+unload model iris ./models/sklearn1.yaml
+unload model iris2 ./models/sklearn2.yaml
