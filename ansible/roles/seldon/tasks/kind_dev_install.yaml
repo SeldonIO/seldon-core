@@ -1,0 +1,72 @@
+---
+
+- name: Check for existing local docker images
+  ansible.builtin.shell: "docker images {{ _docker_user }}/{{ _image_repo }}:{{ _image_tag }}"
+  vars:
+    _docker_user: "{{ item.0.repository_img_prefix | split('/') | first }}"
+    _image_tag: "{{ item.0.image.tag | default('latest') }}"
+    _image_repo: "{{ custom_image_repository_u[item.1] }}"
+  when:
+    - item.0.dev_img_set is true
+  loop: "{{ custom_image_config_u | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"
+  register: local_docker_img_cmd
+
+- name: Collect missing local docker images
+  ansible.builtin.set_fact:
+    dev_existing_in_local_docker: >-
+      {{ dev_existing_in_local_docker | default([]) +
+         [_component] if _img_exists else []
+      }}
+  vars:
+    _component: "{{ res.item | last }}"
+    _img_exists: "{{ ((res.stdout_lines | length) > 1) | bool}}"
+  when: res.skipped | default(false) is false
+  loop: "{{ local_docker_img_cmd.results }}"
+  loop_control:
+    loop_var: res
+    label: "{{ res.item | last }}"
+
+- name: Existing docker images
+  ansible.builtin.debug:
+    var: dev_existing_in_local_docker
+  when: dev_existing_in_local_docker is defined
+
+- name: Build docker images
+  ansible.builtin.command:
+    argv:
+      - make
+      - "{{ seldon_images[item.1].build_target }}"
+    chdir: "{{ seldon_images[item.1].src }}"
+  when:
+    - item.0.dev_img_set is true
+    - (seldon_dev_u.skip_build_images is false) or item.1 not in dev_existing_in_local_docker
+  environment:
+    CUSTOM_IMAGE_TAG: "{{ item.0.image.tag | default('latest') }}"
+    DOCKERHUB_USERNAME: "{{ item.0.repository_img_prefix | split('/') | first }}"
+  loop: "{{ custom_image_config_u | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"
+
+- name: Copy core docker images into kind
+  ansible.builtin.command:
+    argv:
+      - kind
+      - load
+      - -v
+      - 3
+      - docker-image
+      - "{{ _docker_user }}/{{ _image_repo }}:{{ _image_tag }}"
+      - --name
+      - seldon
+    chdir: "{{ seldon_images[item.1].src }}"
+  vars:
+    _docker_user: "{{ item.0.repository_img_prefix | split('/') | first }}"
+    _image_tag: "{{ item.0.image.tag | default('latest') }}"
+    _image_repo: "{{ custom_image_repository_u[item.1] }}"
+  when:
+    - item.0.dev_img_set is true
+  loop: "{{ custom_image_config_u | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"

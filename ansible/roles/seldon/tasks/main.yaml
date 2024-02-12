@@ -7,7 +7,7 @@
 
 - name: "Save helm values"
   import_tasks: save_helm_values.yaml
-  when: save_helm_components_overrides | bool
+  when: seldon_dev_u.save_helm_components_overrides | bool
 
 - name: "Import custom registry secrets"
   import_tasks: registry_secrets.yaml
@@ -18,6 +18,10 @@
 - name: "Install CRDs"
   import_tasks: install_crds.yaml
   when: seldon_install_crds | bool
+
+- name: "Install dev images in kind"
+  import_tasks: kind_dev_install.yaml
+  when: seldon_dev_u.install_kind_images | bool
 
 - name: "Install components"
   import_tasks: install_components.yaml

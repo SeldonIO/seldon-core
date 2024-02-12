@@ -1,4 +1,54 @@
 ---
+
+- name: Apply defaults to seldon_dev
+  ansible.builtin.set_fact:
+    seldon_dev_u: >-
+      {{ seldon_default_dev | combine(seldon_dev | default({}), recursive=true) }}
+
+- name: Set default img_set keys
+  ansible.builtin.set_fact:
+    seldon_default_img_set:
+      dev_img_set: false
+      components: []
+      repository_img_prefix: "{{ seldon_dev_u.dockerhub_user }}"
+      image: "{{ seldon_default_image_config }}"
+
+- name: Apply defaults to custom_image_config
+  ansible.builtin.set_fact:
+    custom_image_config_u: >-
+      {{ custom_image_config_u +
+      [ seldon_default_img_set | combine(cic, recursive=true) ] }}
+  loop: "{{ custom_image_config }}"
+  loop_control:
+    loop_var: cic
+    index_var: cic_i
+    label: "dev_img_set {{ cic_i }}"
+
+- name: Apply defaults to custom_image_repository
+  ansible.builtin.set_fact:
+    custom_image_repository_u: >-
+      {{ custom_image_repository_u |
+         combine(
+          { si.key: si.value.image_repository },
+          { si.key: custom_image_repository[si.key] }
+            if custom_image_repository is not undefined and si.key in custom_image_repository
+            else {},
+          recursive=true
+         )
+      }}
+  loop: "{{ lookup('dict', seldon_images) }}"
+  loop_control:
+    loop_var: si
+    label: "{{ si.key }}"
+
+- name: Set custom component values
+  ansible.builtin.set_fact:
+    seldon_core_v2_component_values: "{{ seldon_core_v2_component_values | combine(custom_components_values, recursive=true) }}"
+
+- name: Component values
+  ansible.builtin.debug:
+    var: seldon_core_v2_component_values
+
 - name: Apply custom artifact repo config to core components
   ansible.builtin.set_fact:
     seldon_core_v2_component_values: >-
@@ -7,19 +57,21 @@
            { item.1:
              { 'image': item.0.image |
                           combine(
-                            {'repository': core_custom_image_repository[item.1] }
-                              if (core_custom_image_repository is defined and
-                                  core_custom_image_repository[item.1] is defined)
-                              else
-                                {}
+                            {'repository':
+                                item.0.repository_img_prefix +
+                                ('/' if item.0.repository_img_prefix != "" else '') +
+                                _image_repo
+                            }
                           )
              }
            },
            recursive=true)}}
-  when: item.0.target == "core"
-  with_subelements:
-    - "{{ custom_image_config | default({}) }}"
-    - components
+  vars:
+    _image_repo: "{{ custom_image_repository_u[item.1] }}"
+  when: seldon_images[item.1].helm_config_type == "core"
+  loop: "{{ custom_image_config_u | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"
 
 - name: Apply custom artifact repo config to server components
   ansible.builtin.set_fact:
@@ -30,20 +82,22 @@
              {item.1:
                 { 'image': item.0.image |
                               combine(
-                                {'repository': server_custom_image_repository[item.1] }
-                                  if (server_custom_image_repository is defined and
-                                      server_custom_image_repository[item.1] is defined)
-                                  else
-                                    {}
+                                {'repository':
+                                    item.0.repository_img_prefix +
+                                    ('/' if item.0.repository_img_prefix != "" else '') +
+                                    _image_repo
+                                }
                               )
                 }
              }
            },
            recursive=true)}}
-  when: item.0.target == "serverConfig"
-  with_subelements:
-    - "{{ custom_image_config | default({}) }}"
-    - components
+  vars:
+    _image_repo: "{{ custom_image_repository_u[item.1] }}"
+  when: seldon_images[item.1].helm_config_type == "serverConfig"
+  loop: "{{ custom_image_config_u | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"
 
 - name: Apply custom imagePullSecrets config
   ansible.builtin.set_fact:
@@ -53,3 +107,7 @@
            {'imagePullSecrets': [{ 'name': custom_image_pull_secrets.name }]},
            recursive=true, list_merge="append")}}
   when: custom_image_pull_secrets is defined
+
+# - name: Debug
+#   ansible.builtin.debug:
+#     var: seldon_core_v2_component_values

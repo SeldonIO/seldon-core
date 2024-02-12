@@ -6,7 +6,6 @@
   with_items:
     - "{{ opentelemetry_yaml }}"
 
-
 - name: Sleep for 1s before waiting for CRDs
   wait_for:
     timeout: 1

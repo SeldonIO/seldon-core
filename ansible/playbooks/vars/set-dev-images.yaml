@@ -1,0 +1,103 @@
+# Extra-config file for building all core images from local worktree and deploying into local
+# kind cluster
+#
+# INFO: For help with all the options that can be configured, please see `set-custom-images.yaml`
+#
+# Pass this file as an ansible extra_vars file when running the setup_seldon playbook or other
+# playbooks that in turn include setup_seldon (such as seldon-all):
+#
+# > ansible_playbook playbooks/setup_seldon.yaml -e @playbooks/vars/set-dev-images.yaml
+#
+# 3. This file is ONLY used when passed with -e @...
+#
+#
+
+seldon_dev:
+  dockerhub_user: seldondev
+
+custom_image_config:
+  - dev_img_set: true
+    components:  # components not specified below remain with their default helm image & config
+      - dataflow
+      - modelgateway
+      - pipelinegateway
+      - scheduler
+      - controller
+    image:
+      tag: "dev.seldon.1.core-test"
+
+# Typical workflows:
+#
+# 1. Keep images from a previous dev build with the exception of one
+#
+# The resulting config would look like this (say, if rebuilding dataflow):
+#
+# seldon_dev:
+#   dockerhub_user: seldondev
+#   skip_build_images: true
+#
+# custom_image_config:
+#   - dev_img_set: true
+#     components:
+#       - dataflow
+#     image:
+#       tag: "dev.seldon.2.core-test"  # this is a tag never used before
+#
+#   - dev_img_set: true
+#     components:
+#       - modelgateway
+#       - pipelinegateway
+#       - scheduler
+#       - controller
+#     image:
+#       tag: "dev.seldon.1.core-test" # this tag was used in previous builds (local docker images
+#                                     # already exist)
+#
+# Explanation:
+#
+# Setting `seldon_dev.skip_build_images: true` will not rebuild local docker images if an existing
+# image with that tag already exists. This means that if we leave all the components but one
+# with a previously-built tag, the previous images will be used for those components.
+#
+# We add a new dictionary entry in the `custom_image_config` list for the component we want to
+# rebuild.
+#
+# IMPORTANT: In order to keep rebuilding that component every time we run the playbook, we need
+# to always change the tag to one that hasn't been used before. Setting
+# `seldon_dev.skip_build_images: false` will also achieve that even without updating the tag
+# each time, but will also rebuild all the other components for which `dev_img_set: true`
+#
+# If you want a new image for particular components on every playbook run, you can randomise the
+# tag like this:
+#
+# custom_image_config:
+#   - dev_img_set: true
+#     components:
+#       - dataflow
+#     image:
+#       tag: "dev.seldon.{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+#
+# This will provide a new random suffix of 8 characters to the tag every time the playbook is
+# run, thus ensuring that the image doesn't already exist in docker and gets rebuilt
+# irrespective of the `seldon_dev.skip_build_images`.
+#
+#
+# 2. Set some components to use existing dockerhub images
+#
+# custom_image_config:
+#   - dev_img_set: true
+#     components:
+#       - dataflow
+#     image:
+#       tag: "dev.seldon.2.core-test"  # this is a tag never used before
+#
+#   - dev_img_set: true
+#     components:
+#       - modelgateway
+#       - pipelinegateway
+#       - scheduler
+#       - controller
+#     image:
+#       tag: "dev.seldon.1.core-test" # this tag was used in previous builds (local docker images
+#                                     # already exist)
+#
