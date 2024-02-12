@@ -154,3 +154,16 @@ seldon pipeline infer trigger-joins --inference-mode grpc  '{"model_name":"pipel
 unload pipeline trigger-joins ./pipelines/trigger-joins.yaml
 unload model mul10 ./models/mul10.yaml
 unload model add10 ./models/add10.yaml
+
+
+# MLServer
+sleep $sleepTime
+load model ./models/sklearn-iris-gs.yaml
+seldon model status iris -w ModelAvailable | jq -M .
+seldon model infer iris '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+seldon model infer iris --inference-mode grpc \
+   '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
+unload model iris ./models/sklearn-iris-gs.yaml
+
+
+# Experiments
