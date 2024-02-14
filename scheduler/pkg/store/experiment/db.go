@@ -49,12 +49,15 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 	})
 }
 
-func (edb *ExperimentDBManager) delete(experiment *Experiment) error {
-	return edb.db.Update(func(txn *badger.Txn) error {
-		err := txn.Delete([]byte(experiment.Name))
-		return err
-	})
-}
+// TODO: as with pipeline deletion, we should also delete the experiment from the db once we guarantee that
+// the event has been consumed by all relevant subscribers (e.g. controller, etc.)
+// currently we want to replay all events on reconnection
+// func (edb *ExperimentDBManager) delete(experiment *Experiment) error {
+// 	return edb.db.Update(func(txn *badger.Txn) error {
+// 		err := txn.Delete([]byte(experiment.Name))
+// 		return err
+// 	})
+// }
 
 func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) error) error {
 	return edb.db.View(func(txn *badger.Txn) error {
