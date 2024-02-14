@@ -432,14 +432,12 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 
 	foundExperiments := []*Experiment{}
 	for _, e := range es.experiments {
-		if !e.Deleted {
-			copied, err := copystructure.Copy(e)
-			if err != nil {
-				return nil, err
-			}
-
-			foundExperiments = append(foundExperiments, copied.(*Experiment))
+		copied, err := copystructure.Copy(e)
+		if err != nil {
+			return nil, err
 		}
+
+		foundExperiments = append(foundExperiments, copied.(*Experiment))
 	}
 	return foundExperiments, nil
 }
