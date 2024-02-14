@@ -14,6 +14,7 @@ import (
 	"os"
 
 	//+kubebuilder:scaffold:imports
+	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -54,6 +55,7 @@ func main() {
 	flag.BoolVar(&clusterwide, "clusterwide", false, "Allow clusterwide operations")
 	opts := zap.Options{
 		Development: true,
+		TimeEncoder: zapcore.ISO8601TimeEncoder,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
