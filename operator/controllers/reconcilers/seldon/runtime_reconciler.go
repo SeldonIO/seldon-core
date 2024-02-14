@@ -52,26 +52,35 @@ func NewSeldonRuntimeReconciler(
 		if override == nil || !override.Disable {
 			commonConfig.Logger.Info("Creating component", "name", c.Name)
 			if len(c.VolumeClaimTemplates) > 0 {
-				componentReconcilers = append(componentReconcilers,
-					NewComponentStatefulSetReconciler(
-						c.Name,
-						commonConfig,
-						runtime.ObjectMeta,
-						c.PodSpec,
-						c.VolumeClaimTemplates,
-						overrides[c.Name],
-						seldonConfig.ObjectMeta,
-						annotator))
+				statefulSetReconcilor, err := NewComponentStatefulSetReconciler(
+					c.Name,
+					commonConfig,
+					runtime.ObjectMeta,
+					c.PodSpec,
+					c.VolumeClaimTemplates,
+					overrides[c.Name],
+					seldonConfig.ObjectMeta,
+					annotator,
+				)
+				if err != nil {
+					return nil, err
+				}
+				componentReconcilers = append(componentReconcilers, statefulSetReconcilor)
+
 			} else {
-				componentReconcilers = append(componentReconcilers,
-					NewComponentDeploymentReconciler(
-						c.Name,
-						commonConfig,
-						runtime.ObjectMeta,
-						c.PodSpec,
-						overrides[c.Name],
-						seldonConfig.ObjectMeta,
-						annotator))
+				deploymentReconcilor, err := NewComponentDeploymentReconciler(
+					c.Name,
+					commonConfig,
+					runtime.ObjectMeta,
+					c.PodSpec,
+					overrides[c.Name],
+					seldonConfig.ObjectMeta,
+					annotator,
+				)
+				if err != nil {
+					return nil, err
+				}
+				componentReconcilers = append(componentReconcilers, deploymentReconcilor)
 			}
 		} else {
 			commonConfig.Logger.Info("Disabling component", "name", c.Name)

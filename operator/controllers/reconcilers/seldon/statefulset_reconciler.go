@@ -49,15 +49,19 @@ func NewComponentStatefulSetReconciler(
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
-) *ComponentStatefulSetReconciler {
+) (*ComponentStatefulSetReconciler, error) {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
+	statefulSet, err := toStatefulSet(name, meta, podSpec, volumeClaimTemplates, override, labels, annotations)
+	if err != nil {
+		return nil, err
+	}
 	return &ComponentStatefulSetReconciler{
 		ReconcilerConfig: common,
 		Name:             name,
-		StatefulSet:      toStatefulSet(name, meta, podSpec, volumeClaimTemplates, override, labels, annotations),
+		StatefulSet:      statefulSet,
 		Annotator:        annotator,
-	}
+	}, nil
 }
 
 func (s *ComponentStatefulSetReconciler) GetResources() []client.Object {
@@ -72,7 +76,7 @@ func toStatefulSet(
 	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
 	annotations map[string]string,
-) *appsv1.StatefulSet {
+) (*appsv1.StatefulSet, error) {
 	var replicas int32
 	if override != nil && override.Replicas != nil {
 		replicas = *override.Replicas
@@ -116,7 +120,7 @@ func toStatefulSet(
 			Spec: vct.Spec,
 		})
 	}
-	return ss
+	return ss, nil
 }
 
 func (s *ComponentStatefulSetReconciler) GetLabelSelector() string {
