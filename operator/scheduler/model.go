@@ -73,7 +73,6 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 			Generation: model.Generation,
 		},
 	}
-	logger.Info("Unload", "model name", model.Name)
 	_, err = grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
