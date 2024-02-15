@@ -119,7 +119,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 
 func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionRequest, stream pb.Scheduler_SubscribeServerStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
-	logger.Infof("Received server subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
 	fin := make(chan bool)
 

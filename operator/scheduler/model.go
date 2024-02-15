@@ -239,10 +239,10 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 }
 
 func (s *SchedulerClient) handlePendingDeleteModels(
-	ctx context.Context, err error, namespace string) {
+	ctx context.Context, namespace string) {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
-	err = s.List(
+	err := s.List(
 		ctx,
 		modelList,
 		client.InNamespace(namespace),
@@ -258,8 +258,9 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
 			for i := 0; i < numRetries; i++ {
-				if err, retry := s.UnloadModel(ctx, &model); err != nil {
-					if retry {
+				if err, retryUnload := s.UnloadModel(ctx, &model); err != nil {
+					if retryUnload {
+						s.logger.Info("Failed to unload model, retrying", "model", model.Name, "retry", i)
 						time.Sleep(sleepBetweenReries * time.Second)
 						continue
 					} else {
@@ -267,14 +268,23 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 						// we can remove
 						// note that there is still the chance the model is not updated from the different model servers
 						// upon reconnection of the scheduler
-						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
-							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+						retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+							model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+							if errUpdate := s.Update(ctx, &model); errUpdate != nil {
+								s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+								return errUpdate
+							}
+							s.logger.Info("Removed finalizer", "model", model.Name)
+							return nil
+						})
+						if retryErr != nil {
+							s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
 						}
-						s.logger.Info("Removed finalizer", "model", model.Name)
 					}
+				} else {
+					// if the model exists in the scheduler so we wait until we get the event from the subscription stream
+					s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
 				}
-				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
 				break
 			}
 		}

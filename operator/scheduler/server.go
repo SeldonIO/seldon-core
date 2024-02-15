@@ -62,7 +62,11 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.
 	logger := s.logger.WithName("SubscribeServerEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	stream, err := grcpClient.SubscribeServerStatus(
+		ctx,
+		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+	)
 	if err != nil {
 		return err
 	}
