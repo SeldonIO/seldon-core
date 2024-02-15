@@ -66,7 +66,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grpc.ClientConn) error {
+// namespace is not used in this function
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 

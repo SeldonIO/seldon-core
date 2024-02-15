@@ -81,7 +81,7 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return nil, false
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
@@ -100,7 +100,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	err = s.List(
 		ctx,
 		modelList,
-		//TODO: which namespace should we use here?
+		client.InNamespace(namespace),
 	)
 	if err != nil {
 		return err
