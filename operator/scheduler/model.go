@@ -251,7 +251,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	}
 
 	// TODO: make this configurable and add exponential backoff
-	numRetries := 3
+	numRetries := 20
 	sleepBetweenReries := 1 * time.Second
 	// Check if any models are being deleted
 	for _, model := range modelList.Items {
@@ -260,7 +260,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 				if err, retryUnload := s.UnloadModel(ctx, &model); err != nil {
 					if retryUnload {
 						s.logger.Info("Failed to unload model, retrying", "model", model.Name, "retry", i)
-						time.Sleep(sleepBetweenReries * time.Second)
+						time.Sleep(sleepBetweenReries)
 						continue
 					} else {
 						// this is essentially a failed pre-condition (model does not exist in scheduler)
