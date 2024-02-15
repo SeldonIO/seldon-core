@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
