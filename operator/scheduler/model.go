@@ -94,6 +94,30 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 		return err
 	}
 
+	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
+	//TODO: refactor to a separate function
+	modelList := &v1alpha1.ModelList{}
+	err = s.List(
+		ctx,
+		modelList,
+		//TODO: which namespace should we use here?
+	)
+	if err != nil {
+		return err
+	}
+	for _, model := range modelList.Items {
+		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
+			model.ObjectMeta.Finalizers = utils.RemoveStr(
+				model.ObjectMeta.Finalizers,
+				constants.ModelFinalizerName,
+			)
+			if err := s.Update(ctx, &model); err != nil {
+				logger.Error(err, "Failed to remove finalizer", "model", model.GetName())
+				return err
+			}
+		}
+	}
+
 	for {
 		event, err := stream.Recv()
 		if err != nil {
