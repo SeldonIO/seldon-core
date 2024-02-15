@@ -19,7 +19,7 @@ seldon_core_v2_servers_values: {}
 seldon_default_dev:
   dockerhub_user: "seldonio"
   install_kind_images: true
-  skip_build_images: false
+  build_skip_existing_images: false
   save_helm_components_overrides: false
   save_helm_components_overrides_file: "{{ ansible_env.HOME }}/seldon_helm_comp_values.yaml"
 

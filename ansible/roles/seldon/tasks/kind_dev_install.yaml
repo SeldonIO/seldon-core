@@ -16,8 +16,8 @@
 - name: Collect missing local docker images
   ansible.builtin.set_fact:
     dev_existing_in_local_docker: >-
-      {{ dev_existing_in_local_docker | default([]) +
-         [_component] if _img_exists else []
+      {{ (dev_existing_in_local_docker | default([])) +
+         ([_component] if _img_exists else [])
       }}
   vars:
     _component: "{{ res.item | last }}"
@@ -41,10 +41,12 @@
     chdir: "{{ seldon_images[item.1].src }}"
   when:
     - item.0.dev_img_set is true
-    - (seldon_dev_u.skip_build_images is false) or item.1 not in dev_existing_in_local_docker
+    - (seldon_dev_u.build_skip_existing_images is false) or item.1 not in dev_existing_in_local_docker
   environment:
     CUSTOM_IMAGE_TAG: "{{ item.0.image.tag | default('latest') }}"
+    IMAGE_TAG: "{{ item.0.image.tag | default('latest') }}"
     DOCKERHUB_USERNAME: "{{ item.0.repository_img_prefix | split('/') | first }}"
+    DOCKER_REPO: "{{ item.0.repository_img_prefix | split('/') | first }}"
   loop: "{{ custom_image_config_u | subelements('components') }}"
   loop_control:
     label: "{{ item.1 }}"

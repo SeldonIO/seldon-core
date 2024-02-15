@@ -34,7 +34,7 @@ custom_image_config:
 #
 # seldon_dev:
 #   dockerhub_user: seldondev
-#   skip_build_images: true
+#   build_skip_existing_images: true
 #
 # custom_image_config:
 #   - dev_img_set: true
@@ -55,17 +55,17 @@ custom_image_config:
 #
 # Explanation:
 #
-# Setting `seldon_dev.skip_build_images: true` will not rebuild local docker images if an existing
-# image with that tag already exists. This means that if we leave all the components but one
-# with a previously-built tag, the previous images will be used for those components.
+# Setting `seldon_dev.build_skip_existing_images: true` will not rebuild local docker images if
+# an existing image with that tag already exists. This means that if we leave all the components
+# but one with a previously-built tag, the previous images will be used for those components.
 #
 # We add a new dictionary entry in the `custom_image_config` list for the component we want to
 # rebuild.
 #
 # IMPORTANT: In order to keep rebuilding that component every time we run the playbook, we need
 # to always change the tag to one that hasn't been used before. Setting
-# `seldon_dev.skip_build_images: false` will also achieve that even without updating the tag
-# each time, but will also rebuild all the other components for which `dev_img_set: true`
+# `seldon_dev.build_skip_existing_images: false` will also achieve that even without updating the
+# tag each time, but will also rebuild all the other components for which `dev_img_set: true`
 #
 # If you want a new image for particular components on every playbook run, you can randomise the
 # tag like this:
@@ -79,7 +79,7 @@ custom_image_config:
 #
 # This will provide a new random suffix of 8 characters to the tag every time the playbook is
 # run, thus ensuring that the image doesn't already exist in docker and gets rebuilt
-# irrespective of the `seldon_dev.skip_build_images`.
+# irrespective of the `seldon_dev.build_skip_existing_images`.
 #
 #
 # 2. Set some components to use existing dockerhub images

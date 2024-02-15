@@ -35,7 +35,7 @@
 #     - dockerhub_user:    [optional, default: seldonio]
 #                          The name of the registry user to be used when building images
 #
-#     - skip_build_images: [optional, default: false]
+#     - build_skip_existing_images: [optional, default: false]
 #                          Whether to skip builing a docker image from local sources if one with
 #                          the same tag already exists as a local docker image.
 #
@@ -60,7 +60,7 @@
 #
 seldon_dev:
   dockerhub_user: seldondev
-  skip_build_images: false
+  build_skip_existing_images: false
   install_kind_images: true
   save_helm_components_overrides: false
 
@@ -77,13 +77,13 @@ seldon_dev:
 #                 images that should be built & deployed (when true) or pre-built images to be
 #                 fetched externally (when false)
 #
-#                 If `seldon_dev.skip_build_images` is true, `dev_img_set is true` and an image
-#                 with the given tag is not present amongst the local docker images for a
-#                 component in the `components` list, that image will be built. If all images
+#                 If `seldon_dev.build_skip_existing_images` is true, `dev_img_set is true` and
+#                 an image with the given tag is not present amongst the local docker images for
+#                 a component in the `components` list, that image will be built. If all images
 #                 exist, those will be used.
 #
-#                 Set `seldon_dev.skip_build_images` to false to force images to be rebuilt even
-#                 if local docker images with the same tag already exist.
+#                 Set `seldon_dev.build_skip_existing_images` to false to force images to be
+#                 rebuilt even if local docker images with the same tag already exist.
 #
 # - components: [required, default: []]
 #               List of components with a common image customisation. Possible list items are:
