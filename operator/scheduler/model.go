@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -95,28 +96,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	}
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	//TODO: refactor to a separate function
-	modelList := &v1alpha1.ModelList{}
-	err = s.List(
-		ctx,
-		modelList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return err
-	}
-	for _, model := range modelList.Items {
-		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
-			model.ObjectMeta.Finalizers = utils.RemoveStr(
-				model.ObjectMeta.Finalizers,
-				constants.ModelFinalizerName,
-			)
-			if err := s.Update(ctx, &model); err != nil {
-				logger.Error(err, "Failed to remove finalizer", "model", model.GetName())
-				return err
-			}
-		}
-	}
+	s.handlePendingDeleteModels(ctx, namespace)
 
 	for {
 		event, err := stream.Recv()
@@ -256,6 +236,49 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 
 	}
 	return nil
+}
+
+func (s *SchedulerClient) handlePendingDeleteModels(
+	ctx context.Context, err error, namespace string) {
+	modelList := &v1alpha1.ModelList{}
+	// Get all models in the namespace
+	err = s.List(
+		ctx,
+		modelList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	// TODO: make this configurable and add exponential backoff
+	numRetries := 3
+	sleepBetweenReries := 1 * time.Second
+	// Check if any models are being deleted
+	for _, model := range modelList.Items {
+		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
+			for i := 0; i < numRetries; i++ {
+				if err, retry := s.UnloadModel(ctx, &model); err != nil {
+					if retry {
+						time.Sleep(sleepBetweenReries * time.Second)
+						continue
+					} else {
+						// this is essentially a failed pre-condition (model does not exist in scheduler)
+						// we can remove
+						// note that there is still the chance the model is not updated from the different model servers
+						// upon reconnection of the scheduler
+						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
+							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+						}
+						s.logger.Info("Removed finalizer", "model", model.Name)
+					}
+				}
+				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
+				break
+			}
+		}
+	}
 }
 
 func canRemoveFinalizer(state scheduler.ModelStatus_ModelState) bool {
