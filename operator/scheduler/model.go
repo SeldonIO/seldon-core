@@ -271,7 +271,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
 			if err, retryUnload := s.UnloadModel(ctx, &model, conn); err != nil {
 				if retryUnload {
-					s.logger.Info("Failed to unload model, retrying", "model", model.Name)
+					s.logger.Info("Failed to call unload model", "model", model.Name)
 					continue
 				} else {
 					// this is essentially a failed pre-condition (model does not exist in scheduler)

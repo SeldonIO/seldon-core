@@ -31,7 +31,8 @@ import (
 )
 
 const (
-	SchedulerConnectMaxRetries    = 6
+	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
+	SchedulerConnectMaxRetries    = 12
 	SchedulerConnectBackoffScalar = 200 * time.Millisecond
 )
 
