@@ -402,12 +402,6 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
 			}
 		}
-		if es.db != nil {
-			err := es.db.delete(experiment)
-			if err != nil {
-				return nil, nil, nil, err
-			}
-		}
 		return es.createExperimentEventMsg(experiment, true), modelEvt, pipelineEvt, nil
 	} else {
 		return nil, nil, nil, &ExperimentNotFound{
@@ -438,14 +432,12 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 
 	foundExperiments := []*Experiment{}
 	for _, e := range es.experiments {
-		if !e.Deleted {
-			copied, err := copystructure.Copy(e)
-			if err != nil {
-				return nil, err
-			}
-
-			foundExperiments = append(foundExperiments, copied.(*Experiment))
+		copied, err := copystructure.Copy(e)
+		if err != nil {
+			return nil, err
 		}
+
+		foundExperiments = append(foundExperiments, copied.(*Experiment))
 	}
 	return foundExperiments, nil
 }

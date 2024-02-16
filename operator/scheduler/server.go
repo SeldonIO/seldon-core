@@ -50,18 +50,29 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
-	_, err = grcpClient.ServerNotify(ctx, request, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	_, err = grcpClient.ServerNotify(
+		ctx,
+		request,
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.ClientConn) error {
+// note: namespace is not used in this function
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeServerStatus(ctx, &scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	stream, err := grcpClient.SubscribeServerStatus(
+		ctx,
+		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	if err != nil {
 		return err
 	}
