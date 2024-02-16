@@ -37,7 +37,12 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err = grcpClient.StartExperiment(ctx, req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	_, err = grcpClient.StartExperiment(
+		ctx, 
+		req, 
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 
@@ -52,7 +57,12 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err = grcpClient.StopExperiment(ctx, req, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	_, err = grcpClient.StopExperiment(
+		ctx, 
+		req, 
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
 }
 

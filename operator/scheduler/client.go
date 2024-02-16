@@ -31,7 +31,8 @@ import (
 )
 
 const (
-	SchedulerConnectMaxRetries = 2
+	SchedulerConnectMaxRetries    = 6
+	SchedulerConnectBackoffScalar = 200 * time.Millisecond
 )
 
 type SchedulerClient struct {

@@ -13,7 +13,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -48,7 +47,12 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 		Model: md,
 	}
 
-	_, err = grcpClient.LoadModel(ctx, &loadModelRequest, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	_, err = grcpClient.LoadModel(
+		ctx,
+		&loadModelRequest,
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
@@ -79,7 +83,12 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	}
 
 	grcpClient := scheduler.NewSchedulerClient(conn)
-	_, err = grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(SchedulerConnectMaxRetries))
+	_, err = grcpClient.UnloadModel(
+		ctx,
+		modelRef,
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
@@ -95,6 +104,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err
@@ -256,42 +266,36 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 		return
 	}
 
-	// TODO: make this configurable and add exponential backoff
-	numRetries := 20
-	sleepBetweenReries := 1 * time.Second
 	// Check if any models are being deleted
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
-			for i := 0; i < numRetries; i++ {
-				if err, retryUnload := s.UnloadModel(ctx, &model, conn); err != nil {
-					if retryUnload {
-						s.logger.Info("Failed to unload model, retrying", "model", model.Name, "retry", i)
-						time.Sleep(sleepBetweenReries)
-						continue
-					} else {
-						// this is essentially a failed pre-condition (model does not exist in scheduler)
-						// we can remove
-						// note that there is still the chance the model is not updated from the different model servers
-						// upon reconnection of the scheduler
-						retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-							model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-							if errUpdate := s.Update(ctx, &model); errUpdate != nil {
-								s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
-								return errUpdate
-							}
-							s.logger.Info("Removed finalizer", "model", model.Name)
-							return nil
-						})
-						if retryErr != nil {
-							s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
-						}
-					}
+			if err, retryUnload := s.UnloadModel(ctx, &model, conn); err != nil {
+				if retryUnload {
+					s.logger.Info("Failed to unload model, retrying", "model", model.Name)
+					continue
 				} else {
-					// if the model exists in the scheduler so we wait until we get the event from the subscription stream
-					s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
+					// this is essentially a failed pre-condition (model does not exist in scheduler)
+					// we can remove
+					// note that there is still the chance the model is not updated from the different model servers
+					// upon reconnection of the scheduler
+					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
+							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+							return errUpdate
+						}
+						s.logger.Info("Removed finalizer", "model", model.Name)
+						return nil
+					})
+					if retryErr != nil {
+						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
+					}
 				}
-				break
+			} else {
+				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
+				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
 			}
+			break
 		}
 	}
 }
