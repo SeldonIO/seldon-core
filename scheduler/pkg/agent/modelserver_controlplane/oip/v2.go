@@ -91,7 +91,8 @@ func (v *V2Client) LoadModel(name string) *interfaces.ControlPlaneErr {
 }
 
 func (v *V2Client) loadModelGrpc(name string) *interfaces.ControlPlaneErr {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), util.GrpcModelServerLoadTimeout)
+	defer cancel()
 
 	req := &v2.RepositoryModelLoadRequest{
 		ModelName: name,
@@ -122,7 +123,8 @@ func (v *V2Client) UnloadModel(name string) *interfaces.ControlPlaneErr {
 }
 
 func (v *V2Client) unloadModelGrpc(name string) *interfaces.ControlPlaneErr {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), util.GrpcModelServerUnloadTimeout)
+	defer cancel()
 
 	req := &v2.RepositoryModelUnloadRequest{
 		ModelName: name,
