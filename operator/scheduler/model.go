@@ -101,7 +101,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	}
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	s.handlePendingDeleteModels(ctx, namespace, conn)
+	go s.handlePendingDeleteModels(ctx, namespace, conn)
 
 	for {
 		event, err := stream.Recv()
