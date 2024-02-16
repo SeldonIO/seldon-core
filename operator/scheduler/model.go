@@ -60,15 +60,22 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 	return nil, false
 }
 
+
+// UnloadModel unloads a model from the scheduler
+// If the connection is not provided, get a new one
+// In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
+// For the cases we think we should retry, check logic in `checkErrorRetryable`
 func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
 
 	// If the connection is not provided, get a new one
 	var err error
+	retryableError := false
 	if conn == nil {
 		conn, err = s.getConnection(model.Namespace)
 		if err != nil {
-			return err, true
+			retryableError = true
+			return err, retryableError
 		}
 	}
 	logger.Info("Unload", "model name", model.Name)
@@ -92,8 +99,7 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
 	}
-
-	return nil, false
+	return nil, retryableError
 }
 
 func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
