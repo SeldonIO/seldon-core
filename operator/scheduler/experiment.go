@@ -38,8 +38,8 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
 	_, err = grcpClient.StartExperiment(
-		ctx, 
-		req, 
+		ctx,
+		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
@@ -58,8 +58,8 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
 	_, err = grcpClient.StopExperiment(
-		ctx, 
-		req, 
+		ctx,
+		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)

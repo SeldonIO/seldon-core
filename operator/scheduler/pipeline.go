@@ -38,8 +38,8 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
 	_, err = grcpClient.LoadPipeline(
-		ctx, 
-		&req, 
+		ctx,
+		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
@@ -58,8 +58,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
 	_, err = grcpClient.UnloadPipeline(
-		ctx, 
-		&req, 
+		ctx,
+		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
