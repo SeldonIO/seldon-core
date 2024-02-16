@@ -65,7 +65,7 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
-func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (error, bool) {
+func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (bool, error) {
 	logger := s.logger.WithName("UnloadModel")
 
 	// If the connection is not provided, get a new one
@@ -75,7 +75,7 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		conn, err = s.getConnection(model.Namespace)
 		if err != nil {
 			retryableError = true
-			return err, retryableError
+			return retryableError, err
 		}
 	}
 	logger.Info("Unload", "model name", model.Name)
@@ -97,9 +97,9 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
-		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
+		return s.checkErrorRetryable(model.Kind, model.Name, err), err
 	}
-	return nil, retryableError
+	return retryableError, nil
 }
 
 func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
@@ -275,7 +275,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	// Check if any models are being deleted
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
-			if err, retryUnload := s.UnloadModel(ctx, &model, conn); err != nil {
+			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
 				if retryUnload {
 					s.logger.Info("Failed to call unload model", "model", model.Name)
 					continue

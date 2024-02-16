@@ -53,8 +53,8 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logge
 	} else { // model is being deleted
 		if utils.ContainsStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName) {
 			// Handle unload in scheduler
-			if err, retry := r.Scheduler.UnloadModel(ctx, model, nil); err != nil {
-				if retry {
+			if retryUnload, err := r.Scheduler.UnloadModel(ctx, model, nil); err != nil {
+				if retryUnload {
 					return true, err
 				} else {
 					model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
