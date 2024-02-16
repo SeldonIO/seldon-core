@@ -60,7 +60,6 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 	return nil, false
 }
 
-
 // UnloadModel unloads a model from the scheduler
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
