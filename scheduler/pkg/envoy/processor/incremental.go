@@ -53,7 +53,7 @@ type IncrementalProcessor struct {
 	pipelineHandler      pipeline.PipelineHandler
 	runEnvoyBatchUpdates bool
 	batchTrigger         *time.Timer
-	batchWaitMillis      time.Duration
+	batchWait            time.Duration
 	pendingModelVersions []*pendingModelVersion
 	versionCleaner       cleaner.ModelVersionCleaner
 	batchTriggerManual   *time.Time
@@ -86,7 +86,7 @@ func NewIncrementalProcessor(
 		pipelineHandler:      pipelineHandler,
 		runEnvoyBatchUpdates: true,
 		batchTrigger:         nil,
-		batchWaitMillis:      util.EnvoyUpdateDefaultBatchWaitMillis,
+		batchWait:            util.EnvoyUpdateDefaultBatchWait,
 		versionCleaner:       versionCleaner,
 		batchTriggerManual:   nil,
 	}
@@ -629,7 +629,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	if !triggered {
 		// we still need to enable the cron timer as there is no guarantee that the manual trigger will be called
 		if p.batchTrigger == nil && p.runEnvoyBatchUpdates {
-			p.batchTrigger = time.AfterFunc(p.batchWaitMillis, p.modelSyncWithLock)
+			p.batchTrigger = time.AfterFunc(p.batchWait, p.modelSyncWithLock)
 		}
 	}
 
@@ -653,7 +653,7 @@ func (p *IncrementalProcessor) triggerModelSyncIfNeeded() bool {
 		p.batchTriggerManual = new(time.Time)
 		*p.batchTriggerManual = time.Now()
 	}
-	if time.Since(*p.batchTriggerManual) > p.batchWaitMillis {
+	if time.Since(*p.batchTriggerManual) > p.batchWait {
 		// we have waited long enough so we can trigger the batch update
 		// we do this inline so that we do not require to release and reacquire the lock
 		// which under heavy load there is no guarantee of order and therefore could lead

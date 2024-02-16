@@ -141,7 +141,7 @@ func benchmarkModelUpdate(
 		)
 		require.NoError(b, err)
 
-		ip.batchWaitMillis = time.Duration(batchWaitMillis) * time.Millisecond
+		ip.batchWait = time.Duration(batchWaitMillis) * time.Millisecond
 
 		addServer(ip, serverName, numServerReplicas, b)
 
