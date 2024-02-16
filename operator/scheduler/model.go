@@ -56,13 +56,17 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 	return nil, false
 }
 
-func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
+func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (error, bool) {
 	logger := s.logger.WithName("UnloadModel")
-	conn, err := s.getConnection(model.Namespace)
-	if err != nil {
-		return err, true
+
+	// If the connection is not provided, get a new one
+	var err error
+	if conn == nil {
+		conn, err = s.getConnection(model.Namespace)
+		if err != nil {
+			return err, true
+		}
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	logger.Info("Unload", "model name", model.Name)
 	modelRef := &scheduler.UnloadModelRequest{
 		Model: &scheduler.ModelReference{
@@ -73,6 +77,8 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 			Generation: model.Generation,
 		},
 	}
+
+	grcpClient := scheduler.NewSchedulerClient(conn)
 	_, err = grcpClient.UnloadModel(ctx, modelRef, grpc_retry.WithMax(SchedulerConnectMaxRetries))
 	if err != nil {
 		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
@@ -95,7 +101,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	}
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	s.handlePendingDeleteModels(ctx, namespace)
+	s.handlePendingDeleteModels(ctx, namespace, conn)
 
 	for {
 		event, err := stream.Recv()
@@ -238,7 +244,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 }
 
 func (s *SchedulerClient) handlePendingDeleteModels(
-	ctx context.Context, namespace string) {
+	ctx context.Context, namespace string, conn *grpc.ClientConn) {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -257,7 +263,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
 			for i := 0; i < numRetries; i++ {
-				if err, retryUnload := s.UnloadModel(ctx, &model); err != nil {
+				if err, retryUnload := s.UnloadModel(ctx, &model, conn); err != nil {
 					if retryUnload {
 						s.logger.Info("Failed to unload model, retrying", "model", model.Name, "retry", i)
 						time.Sleep(sleepBetweenReries)
