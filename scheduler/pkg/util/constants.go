@@ -28,5 +28,5 @@ const (
 	GrpcMaxMsgSizeBytes          = 1000 * 1024 * 1024
 	EnvoyUpdateDefaultBatchWait  = 250 * time.Millisecond
 	GrpcModelServerLoadTimeout   = 30 * time.Minute // How long to wait for a model to load? think of LLM Load, maybe should be a config
-	GrpcModelServerUnloadTimeout = 1 * time.Minute
+	GrpcModelServerUnloadTimeout = 2 * time.Minute
 )
