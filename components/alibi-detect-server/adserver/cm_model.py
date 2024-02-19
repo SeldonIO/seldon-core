@@ -21,7 +21,7 @@ SELDON_MODEL_ID = DEFAULT_LABELS["model_name"]
 SELDON_PREDICTOR_ID = DEFAULT_LABELS["predictor_name"]
 
 
-def _load_class_module(module_path: str) -> str:
+def _load_class_module(module_path: str):
     components = module_path.split(".")
     mod = __import__(".".join(components[:-1]))
     for comp in components[1:]:
@@ -32,7 +32,7 @@ def _load_class_module(module_path: str) -> str:
 
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
     def __init__(
-        self, name: str, storage_uri: str, elasticsearch_uri: str = None, model=None
+        self, name: str, storage_uri: str, elasticsearch_uri: Optional[str] = None, model=None
     ):
         """
         Custom Metrics Model

@@ -39,7 +39,7 @@ class CEServer(object):
         event_type: str,
         event_source: str,
         http_port: int = DEFAULT_HTTP_PORT,
-        reply_url: str = None,
+        reply_url: Optional[str] = None,
     ):
         """
         CloudEvents server
