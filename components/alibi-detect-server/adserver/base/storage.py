@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import tempfile
-from distutils.util import strtobool
+from typing import Optional
 
 ARTIFACT_DOWNLOAD_LOCATION = os.environ.get("DRIFT_ARTIFACTS_DIR", "/tmp")
 
@@ -18,13 +18,13 @@ except ImportError:
 
 
 class Rclone:
-    def __init__(self, cfg_file: str = None):
+    def __init__(self, cfg_file: Optional[str] = None):
         self.cfg_file = cfg_file
 
-    def copy(self, src: str, dest: str = None):
+    def copy(self, src: str, dest: Optional[str] = None):
         if rclone is None:
             raise RuntimeError(
-                "rclone binary not found - rclone-based storage funcionality disabled"
+                "rclone binary not found - rclone-based storage functionality disabled"
             )
 
         if dest is None:
