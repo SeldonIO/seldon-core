@@ -21,6 +21,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestCommunicationErrors(t *testing.T) {
@@ -119,6 +120,20 @@ func TestGRPCV2Timeout(t *testing.T) {
 	g.Expect(err).NotTo(BeNil())
 	e, _ = status.FromError(err)
 	g.Expect(e.Code()).To(Equal(codes.DeadlineExceeded))
+}
+
+func TestDefaultV2Config(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	v2Config := GetV2ConfigWithDefaults("", 0)
+	g.Expect(v2Config.GRPCModelServerLoadTimeout).To(Equal(util.GRPCModelServerLoadTimeout))
+	g.Expect(v2Config.GRPCModelServerUnloadTimeout).To(Equal(util.GRPCModelServerUnloadTimeout))
+	g.Expect(v2Config.GRPCMaxMsgSizeBytes).To(Equal(util.GRPCMaxMsgSizeBytes))
+	g.Expect(v2Config.GRPCControlPlaneTimeout).To(Equal(util.GRPCControlPlaneTimeout))
+	g.Expect(v2Config.GRPCRetryBackoff).To(Equal(util.GRPCRetryBackoff))
+	g.Expect(v2Config.GRPRetryMaxCount).To(Equal(uint(util.GRPCRetryMaxCount)))
+	g.Expect(v2Config.Host).To(Equal(""))
+	g.Expect(v2Config.GRPCPort).To(Equal(0))
 }
 
 func TestGrpcV2WithError(t *testing.T) {
