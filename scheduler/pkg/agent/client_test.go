@@ -797,7 +797,8 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 
 			time.Sleep(50 * time.Millisecond)
 
-			v2Client := oip.NewV2Client("", backEndGRPCPort, log.New())
+			v2Client := oip.NewV2Client(
+				oip.GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
 
 			modelRepository := FakeModelRepository{}
 			rpHTTP := FakeDependencyService{err: nil}

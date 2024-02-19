@@ -27,27 +27,36 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+type V2Config struct {
+	Host                         string
+	GRPCPort                     int
+	GRPCRetryBackoff             time.Duration
+	GRPRetryMaxCount             uint
+	GRPCMaxMsgSizeBytes          int
+	GRPCModelServerLoadTimeout   time.Duration
+	GRPcModelServerUnloadTimeout time.Duration
+}
+
 type V2Client struct {
 	grpcClient v2.GRPCInferenceServiceClient
-	host       string
-	grpcPort   int
+	v2Config   V2Config
 	logger     log.FieldLogger
 }
 
-func CreateV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, error) {
+func CreateV2GrpcConnection(v2Config V2Config) (*grpc.ClientConn, error) {
 	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-		grpc_retry.WithMax(util.GrpcRetryMaxCount),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(v2Config.GRPCRetryBackoff)),
+		grpc_retry.WithMax(v2Config.GRPRetryMaxCount),
 	}
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(util.GrpcMaxMsgSizeBytes), grpc.MaxCallSendMsgSize(util.GrpcMaxMsgSizeBytes)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(v2Config.GRPCMaxMsgSizeBytes), grpc.MaxCallSendMsgSize(v2Config.GRPCMaxMsgSizeBytes)),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, plainTxtPort), opts...)
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", v2Config.Host, v2Config.GRPCPort), opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +64,8 @@ func CreateV2GrpcConnection(host string, plainTxtPort int) (*grpc.ClientConn, er
 	return conn, nil
 }
 
-func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
-	conn, err := CreateV2GrpcConnection(host, port)
+func createV2ControlPlaneClient(v2Config V2Config) (v2.GRPCInferenceServiceClient, error) {
+	conn, err := CreateV2GrpcConnection(v2Config)
 	if err != nil {
 		// TODO: this could fail in later iterations, so close earlier connections
 		conn.Close()
@@ -67,17 +76,28 @@ func createV2ControlPlaneClient(host string, port int) (v2.GRPCInferenceServiceC
 	return client, nil
 }
 
-func NewV2Client(host string, port int, logger log.FieldLogger) *V2Client {
-	logger.Infof("V2 (OIP) Inference Server %s:%d", host, port)
+func GetV2ConfigWithDefaults(host string, port int) V2Config {
+	return V2Config{
+		Host:                         host,
+		GRPCPort:                     port,
+		GRPCRetryBackoff:             util.GRPCRetryBackoff,
+		GRPRetryMaxCount:             util.GRPCRetryMaxCount,
+		GRPCMaxMsgSizeBytes:          util.GRPCMaxMsgSizeBytes,
+		GRPCModelServerLoadTimeout:   util.GRPCModelServerLoadTimeout,
+		GRPcModelServerUnloadTimeout: util.GRPCModelServerUnloadTimeout,
+	}
+}
 
-	grpcClient, err := createV2ControlPlaneClient(host, port)
+func NewV2Client(v2Config V2Config, logger log.FieldLogger) *V2Client {
+	logger.Infof("V2 (OIP) Inference Server %s:%d", v2Config.Host, v2Config.GRPCPort)
+
+	grpcClient, err := createV2ControlPlaneClient(v2Config)
 	if err != nil {
 		return nil
 	}
 
 	return &V2Client{
-		host:       host,
-		grpcPort:   port,
+		v2Config:   v2Config,
 		grpcClient: grpcClient,
 		logger:     logger.WithField("Source", "V2InferenceServerClientGrpc"),
 	}
@@ -91,7 +111,7 @@ func (v *V2Client) LoadModel(name string) *interfaces.ControlPlaneErr {
 }
 
 func (v *V2Client) loadModelGrpc(name string) *interfaces.ControlPlaneErr {
-	ctx, cancel := context.WithTimeout(context.Background(), util.GrpcModelServerLoadTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPCModelServerLoadTimeout)
 	defer cancel()
 
 	req := &v2.RepositoryModelLoadRequest{
@@ -123,7 +143,7 @@ func (v *V2Client) UnloadModel(name string) *interfaces.ControlPlaneErr {
 }
 
 func (v *V2Client) unloadModelGrpc(name string) *interfaces.ControlPlaneErr {
-	ctx, cancel := context.WithTimeout(context.Background(), util.GrpcModelServerUnloadTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPcModelServerUnloadTimeout)
 	defer cancel()
 
 	req := &v2.RepositoryModelUnloadRequest{

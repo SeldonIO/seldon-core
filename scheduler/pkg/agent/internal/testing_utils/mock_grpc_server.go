@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/jarcoal/httpmock"
 	"google.golang.org/grpc"
@@ -74,10 +75,12 @@ func (s *V2State) IsModelLoaded(modelId string) bool {
 }
 
 type MockGRPCMLServer struct {
-	listener net.Listener
-	server   *grpc.Server
-	models   []interfaces.ServerModelInfo
-	isReady  bool
+	listener    net.Listener
+	server      *grpc.Server
+	models      []interfaces.ServerModelInfo
+	isReady     bool
+	LoadSleep   time.Duration
+	UnloadSleep time.Duration
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -124,10 +127,12 @@ func (m *MockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveReque
 }
 
 func (m *MockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
+	time.Sleep(m.LoadSleep)
 	return &v2.RepositoryModelLoadResponse{}, nil
 }
 
 func (m *MockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.RepositoryModelUnloadRequest) (*v2.RepositoryModelUnloadResponse, error) {
+	time.Sleep(m.UnloadSleep)
 	if r.ModelName == ModelNameMissing {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found", r.ModelName))
 	}

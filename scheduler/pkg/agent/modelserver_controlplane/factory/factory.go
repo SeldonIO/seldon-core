@@ -19,5 +19,6 @@ func CreateModelServerControlPlane(
 	config interfaces.ModelServerConfig,
 ) (interfaces.ModelServerControlPlaneClient, error) {
 	// we only support v2 for now
-	return oip.NewV2Client(config.Host, config.Port, config.Logger), nil
+	return oip.NewV2Client(
+		oip.GetV2ConfigWithDefaults(config.Host, config.Port), config.Logger), nil
 }
