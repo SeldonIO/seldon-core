@@ -15,6 +15,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
@@ -30,7 +31,7 @@ func TestCommunicationErrors(t *testing.T) {
 	g.Expect(err.ErrCode).To(Equal(interfaces.V2CommunicationErrCode))
 }
 
-func TestGrpcV2(t *testing.T) {
+func TestGRPCV2(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	mockMLServer := &testing_utils.MockGRPCMLServer{}
@@ -46,7 +47,7 @@ func TestGrpcV2(t *testing.T) {
 
 	time.Sleep(10 * time.Millisecond)
 
-	v2Client := NewV2Client("", backEndGRPCPort, log.New())
+	v2Client := NewV2Client(GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
 
 	dummModel := "dummy"
 
@@ -72,6 +73,40 @@ func TestGrpcV2(t *testing.T) {
 
 }
 
+func TestGRPCV2Timeout(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	unloadSleep := 10 * time.Second
+	loadSleep := 5 * time.Second
+	mockMLServer := &testing_utils.MockGRPCMLServer{UnloadSleep: unloadSleep, LoadSleep: loadSleep}
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = mockMLServer.Setup(uint(backEndGRPCPort))
+	go func() {
+		_ = mockMLServer.Start()
+	}()
+	defer mockMLServer.Stop()
+
+	time.Sleep(10 * time.Millisecond)
+
+	v2Config := GetV2ConfigWithDefaults("", backEndGRPCPort)
+	v2Config.GRPCModelServerUnloadTimeout = unloadSleep / 2
+	v2Config.GRPCModelServerLoadTimeout = loadSleep / 2
+	v2Client := NewV2Client(v2Config, log.New())
+
+	dummModel := "dummy"
+
+	v2Err := v2Client.LoadModel(dummModel)
+	g.Expect(v2Err).NotTo(BeNil())
+	g.Expect(v2Err.ErrCode).To(Equal(int(codes.DeadlineExceeded)))
+
+	v2Err = v2Client.UnloadModel(dummModel)
+	g.Expect(v2Err).NotTo(BeNil())
+	g.Expect(v2Err.ErrCode).To(Equal(int(codes.DeadlineExceeded)))
+}
+
 func TestGrpcV2WithError(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -81,7 +116,7 @@ func TestGrpcV2WithError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	v2Client := NewV2Client("", backEndGRPCPort, log.New())
+	v2Client := NewV2Client(GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
 
 	dummModel := "dummy"
 
@@ -110,7 +145,7 @@ func TestGrpcV2WithRetry(t *testing.T) {
 	go func() {
 		_ = mockMLServer.Start()
 	}()
-	v2Client := NewV2Client("", backEndGRPCPort, log.New())
+	v2Client := NewV2Client(GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
 	err = v2Client.Live()
 	g.Expect(err).To(BeNil())
 	mockMLServer.Stop()

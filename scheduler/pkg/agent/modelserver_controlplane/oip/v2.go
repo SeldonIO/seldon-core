@@ -34,7 +34,7 @@ type V2Config struct {
 	GRPRetryMaxCount             uint
 	GRPCMaxMsgSizeBytes          int
 	GRPCModelServerLoadTimeout   time.Duration
-	GRPcModelServerUnloadTimeout time.Duration
+	GRPCModelServerUnloadTimeout time.Duration
 }
 
 type V2Client struct {
@@ -84,7 +84,7 @@ func GetV2ConfigWithDefaults(host string, port int) V2Config {
 		GRPRetryMaxCount:             util.GRPCRetryMaxCount,
 		GRPCMaxMsgSizeBytes:          util.GRPCMaxMsgSizeBytes,
 		GRPCModelServerLoadTimeout:   util.GRPCModelServerLoadTimeout,
-		GRPcModelServerUnloadTimeout: util.GRPCModelServerUnloadTimeout,
+		GRPCModelServerUnloadTimeout: util.GRPCModelServerUnloadTimeout,
 	}
 }
 
@@ -143,7 +143,7 @@ func (v *V2Client) UnloadModel(name string) *interfaces.ControlPlaneErr {
 }
 
 func (v *V2Client) unloadModelGrpc(name string) *interfaces.ControlPlaneErr {
-	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPcModelServerUnloadTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPCModelServerUnloadTimeout)
 	defer cancel()
 
 	req := &v2.RepositoryModelUnloadRequest{

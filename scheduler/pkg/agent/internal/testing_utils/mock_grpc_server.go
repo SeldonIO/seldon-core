@@ -127,11 +127,13 @@ func (m *MockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveReque
 }
 
 func (m *MockGRPCMLServer) RepositoryModelLoad(ctx context.Context, r *v2.RepositoryModelLoadRequest) (*v2.RepositoryModelLoadResponse, error) {
+	// by default LoadSleep is 0
 	time.Sleep(m.LoadSleep)
 	return &v2.RepositoryModelLoadResponse{}, nil
 }
 
 func (m *MockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.RepositoryModelUnloadRequest) (*v2.RepositoryModelUnloadResponse, error) {
+	// by default UnloadSleep is 0
 	time.Sleep(m.UnloadSleep)
 	if r.ModelName == ModelNameMissing {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found", r.ModelName))
