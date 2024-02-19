@@ -29,4 +29,5 @@ const (
 	EnvoyUpdateDefaultBatchWait  = 250 * time.Millisecond
 	GRPCModelServerLoadTimeout   = 30 * time.Minute // How long to wait for a model to load? think of LLM Load, maybe should be a config
 	GRPCModelServerUnloadTimeout = 2 * time.Minute
+	GRPCControlPlaneTimeout      = 1 * time.Minute // For control plane operations except load/unload
 )

@@ -35,6 +35,7 @@ type V2Config struct {
 	GRPCMaxMsgSizeBytes          int
 	GRPCModelServerLoadTimeout   time.Duration
 	GRPCModelServerUnloadTimeout time.Duration
+	GRPCControlPlaneTimeout      time.Duration
 }
 
 type V2Client struct {
@@ -85,6 +86,7 @@ func GetV2ConfigWithDefaults(host string, port int) V2Config {
 		GRPCMaxMsgSizeBytes:          util.GRPCMaxMsgSizeBytes,
 		GRPCModelServerLoadTimeout:   util.GRPCModelServerLoadTimeout,
 		GRPCModelServerUnloadTimeout: util.GRPCModelServerUnloadTimeout,
+		GRPCControlPlaneTimeout:      util.GRPCControlPlaneTimeout,
 	}
 }
 
@@ -187,7 +189,9 @@ func (v *V2Client) Live() error {
 }
 
 func (v *V2Client) liveGrpc() (bool, error) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPCControlPlaneTimeout)
+	defer cancel()
+
 	req := &v2.ServerLiveRequest{}
 
 	res, err := v.grpcClient.ServerLive(ctx, req)
@@ -202,8 +206,10 @@ func (v *V2Client) GetModels() ([]interfaces.ServerModelInfo, error) {
 }
 
 func (v *V2Client) getModelsGrpc() ([]interfaces.ServerModelInfo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), v.v2Config.GRPCControlPlaneTimeout)
+	defer cancel()
+
 	var models []interfaces.ServerModelInfo
-	ctx := context.Background()
 	req := &v2.RepositoryIndexRequest{}
 
 	res, err := v.grpcClient.RepositoryIndex(ctx, req)
