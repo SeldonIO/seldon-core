@@ -75,12 +75,13 @@ func (s *V2State) IsModelLoaded(modelId string) bool {
 }
 
 type MockGRPCMLServer struct {
-	listener    net.Listener
-	server      *grpc.Server
-	models      []interfaces.ServerModelInfo
-	isReady     bool
-	LoadSleep   time.Duration
-	UnloadSleep time.Duration
+	listener          net.Listener
+	server            *grpc.Server
+	models            []interfaces.ServerModelInfo
+	isReady           bool
+	LoadSleep         time.Duration
+	UnloadSleep       time.Duration
+	ControlPlaneSleep time.Duration
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -123,6 +124,8 @@ func (m *MockGRPCMLServer) ServerReady(ctx context.Context, r *v2.ServerReadyReq
 }
 
 func (m *MockGRPCMLServer) ServerLive(ctx context.Context, r *v2.ServerLiveRequest) (*v2.ServerLiveResponse, error) {
+	// by default ControlPlaneSleep is 0
+	time.Sleep(m.ControlPlaneSleep)
 	return &v2.ServerLiveResponse{Live: true}, nil
 }
 
@@ -142,6 +145,8 @@ func (m *MockGRPCMLServer) RepositoryModelUnload(ctx context.Context, r *v2.Repo
 }
 
 func (m *MockGRPCMLServer) RepositoryIndex(ctx context.Context, r *v2.RepositoryIndexRequest) (*v2.RepositoryIndexResponse, error) {
+	// by default ControlPlaneSleep is 0
+	time.Sleep(m.ControlPlaneSleep)
 	ret := make([]*v2.RepositoryIndexResponse_ModelIndex, len(m.models))
 	for idx, model := range m.models {
 		ret[idx] = &v2.RepositoryIndexResponse_ModelIndex{Name: model.Name, State: string(model.State)}
