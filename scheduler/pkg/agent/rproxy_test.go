@@ -387,7 +387,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 				_ = mlserver.ListenAndServe()
 			}()
 
-			time.Sleep(util.GrpcRetryBackoffMillisecs * time.Millisecond)
+			time.Sleep(util.GRPCRetryBackoff)
 
 			defer func() {
 				_ = mlserver.Shutdown(context.Background())

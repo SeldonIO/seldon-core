@@ -489,7 +489,7 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 	s.waiter.wait(serverName, serverReplicaIdx)
 
 	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
-	time.Sleep(util.EnvoyUpdateDefaultBatchWaitMillis + (time.Millisecond * serverDrainingExtraWaitMillis))
+	time.Sleep(util.EnvoyUpdateDefaultBatchWait + (time.Millisecond * serverDrainingExtraWaitMillis))
 	s.logger.Debugf("Finished draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 }
 

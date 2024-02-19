@@ -110,8 +110,8 @@ func (rp *reverseGRPCProxy) Start() error {
 		opts = append(opts, grpc.Creds(rp.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcProxyMaxConcurrentStreams))
-	opts = append(opts, grpc.MaxRecvMsgSize(util.GrpcMaxMsgSizeBytes))
-	opts = append(opts, grpc.MaxSendMsgSize(util.GrpcMaxMsgSizeBytes))
+	opts = append(opts, grpc.MaxRecvMsgSize(util.GRPCMaxMsgSizeBytes))
+	opts = append(opts, grpc.MaxSendMsgSize(util.GRPCMaxMsgSizeBytes))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	opts = append(opts, grpc.UnaryInterceptor(rp.metrics.UnaryServerInterceptor()))
 	grpcServer := grpc.NewServer(opts...)
@@ -322,7 +322,8 @@ func (rp *reverseGRPCProxy) createV2CRPCClients(backendGRPCServerHost string, ba
 		return nil, nil, err
 	}
 	for i := 0; i < size; i++ {
-		conn, err := oip.CreateV2GrpcConnection(backendGRPCServerHost, backendGRPCServerPort)
+		conn, err := oip.CreateV2GrpcConnection(
+			oip.GetV2ConfigWithDefaults(backendGRPCServerHost, backendGRPCServerPort))
 
 		if err != nil {
 			// TODO: this could fail in later iterations, so close earlier connections

@@ -20,7 +20,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -111,8 +110,8 @@ func getRestUrl(tls bool, host string, port int, modelName string) *url.URL {
 func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
 	logger := iw.logger.WithField("func", "getGrpcClient")
 	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GrpcRetryBackoffMillisecs * time.Millisecond)),
-		grpc_retry.WithMax(util.GrpcRetryMaxCount), // retry envoy connection
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GRPCRetryBackoff)),
+		grpc_retry.WithMax(util.GRPCRetryMaxCount), // retry envoy connection
 	}
 
 	var creds credentials.TransportCredentials
@@ -127,8 +126,8 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
 		grpc.WithDefaultCallOptions(
-			grpc.MaxCallRecvMsgSize(util.GrpcMaxMsgSizeBytes),
-			grpc.MaxCallSendMsgSize(util.GrpcMaxMsgSizeBytes),
+			grpc.MaxCallRecvMsgSize(util.GRPCMaxMsgSizeBytes),
+			grpc.MaxCallSendMsgSize(util.GRPCMaxMsgSizeBytes),
 		),
 		grpc.WithStatsHandler(
 			otelgrpc.NewClientHandler(),
