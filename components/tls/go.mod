@@ -6,7 +6,7 @@ require (
 	github.com/onsi/gomega v1.18.1
 	github.com/otiai10/copy v1.14.0
 	github.com/sirupsen/logrus v1.8.1
-	google.golang.org/grpc v1.61.0
+	google.golang.org/grpc v1.61.1
 	istio.io/pkg v0.0.0-20220805133948-6c7080d8dec5
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
