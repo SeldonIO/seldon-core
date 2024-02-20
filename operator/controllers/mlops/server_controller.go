@@ -74,6 +74,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification), and we can get them
 			// on deleted requests.
+			logger.Error(err, "server not found", "name", req.Name, "namespace", req.Namespace)
 			return reconcile.Result{}, nil
 		}
 		logger.Error(err, "unable to fetch Server", "name", req.Name, "namespace", req.Namespace)
