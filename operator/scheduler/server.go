@@ -110,8 +110,6 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.
 				return nil
 			}
 			// Handle status update
-			// This is key for finalizer to remove server when loaded models is zero
-			// note: now we are not using finalizers for servers
 			server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
 			return s.updateServerStatus(server)
 		})
