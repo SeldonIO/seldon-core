@@ -260,10 +260,10 @@ class EventHandler(tornado.web.RequestHandler):
 
             if not self.reply_url == "":
                 logging.debug(json.dumps(revent.Properties()))
-                logging.info("binary CloudEvent")
+                logging.debug("binary CloudEvent")
                 for k, v in revent_headers.items():
-                    logging.info("{0}: {1}\r\n".format(k, v))
-                logging.info(revent_data)
+                    logging.debug("{0}: {1}\r\n".format(k, v))
+                logging.debug(revent_data)
                 forward_request(revent_headers, revent_data, self.reply_url)
 
             self.set_header("Content-Type", "application/json")
