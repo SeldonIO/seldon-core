@@ -132,7 +132,10 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	s.serverEventStream.mu.Unlock()
 
 	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
-	s.sendCurrentServerStatuses(stream)
+	err := s.sendCurrentServerStatuses(stream)
+	if err != nil {
+		return err
+	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
