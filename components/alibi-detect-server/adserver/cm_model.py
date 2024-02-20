@@ -97,8 +97,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         """
         logging.info("PROCESSING Feedback Event.")
-        logging.info(str(headers))
-        logging.info("----")
+        logging.debug(str(headers))
 
         metrics: List[Dict] = []
         output: Dict = {}
@@ -161,7 +160,7 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                 error, status_code=400, reason="METRICS_SERVER_ERROR"
             )
 
-        logging.error(f"{truth}, {response}")
+        logging.info(f"truth: {truth}, response: {response}")
         metrics_transformed = self.model.transform(truth, response)
 
         metrics.extend(metrics_transformed.metrics)
