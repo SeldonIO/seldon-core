@@ -734,8 +734,11 @@ func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) 
 }
 
 func (m *MemoryStore) ServerNotify(request *pb.ServerNotifyRequest) error {
+	logger := m.logger.WithField("func", "MemoryServerNotify")
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	logger.Debugf("ServerNotify %v", request)
 
 	server, ok := m.store.servers[request.Name]
 	if !ok {
