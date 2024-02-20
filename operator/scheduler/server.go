@@ -57,6 +57,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
+		logger.Error(err, "Failed to send notify server to scheduler", "name", server.GetName(), "namespace", server.GetNamespace())
 		return err
 	}
 	return nil
