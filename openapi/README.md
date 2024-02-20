@@ -9,14 +9,14 @@ You will find the API Specs at runtime at the `/seldon.json` path of your API en
 
 You will need to be running 0.2.4-SNAPSHOT or later for this endpoint to be active.
 
-## Viewing/Testing via Swagger-UI
+## Viewing/Testing via Swagger UI
 
 You can view the APIs using the [Swagger UI tool](https://swagger.io/tools/swagger-ui/).
 
-You can run this via Docker with:
+You can run this via Docker, from the [`seldon-core/openapi` directory](https://github.com/SeldonIO/seldon-core/tree/master/openapi), with:
 
 ```bash
-docker run --network host --rm  swaggerapi/swagger-editor
+docker run -p 8080:8080 --rm -e URL=/custom.yaml -v ./wrapper.oas3.json:/usr/share/nginx/html/custom.yaml swaggerapi/swagger-ui
 ```
 
 It will be reachable at http://localhost:8080/
@@ -39,5 +39,3 @@ For using the Swagger "try it out" feature there are some caveats due to Swagger
 We welcome contributions to improving these initial API specifications.
 
 We plan to investigate how these APIs can be customized to show the acceptable payloads for a particular machine learning inference graph running under Seldon Core. Suggestions welcome.
-
-
