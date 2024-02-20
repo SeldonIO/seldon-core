@@ -84,7 +84,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Check if we are being deleted and return if so
 	// Cleanup of server is handled by the server pod itself informing the scheduler and waiting as models are
-	// recheculed (if possible).
+	// rescheduled (if possible).
 	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
 		return reconcile.Result{}, nil
 	}
