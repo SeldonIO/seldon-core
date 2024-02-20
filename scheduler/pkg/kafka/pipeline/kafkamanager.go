@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

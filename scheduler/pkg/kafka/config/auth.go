@@ -12,7 +12,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
