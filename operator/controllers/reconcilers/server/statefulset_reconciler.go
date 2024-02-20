@@ -177,14 +177,14 @@ func (s *ServerStatefulSetReconciler) Reconcile() error {
 		logger.V(1).Info("StatefulSet Create", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 		err = s.Client.Create(s.Ctx, s.StatefulSet)
 		if err != nil {
-			logger.Error(err, "Failed to create statefuleset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
+			logger.Error(err, "Failed to create statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
 		logger.V(1).Info("StatefulSet Update", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 		err = s.Client.Update(s.Ctx, s.StatefulSet)
 		if err != nil {
-			logger.Error(err, "Failed to update statefuleset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
+			logger.Error(err, "Failed to update statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err
 		}
 	case constants.ReconcileNoChange:
