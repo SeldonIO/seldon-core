@@ -9,9 +9,16 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
+import io.klogging.Klogger
+import io.klogging.NoCoLogger
+import io.klogging.NoCoLogging
 import io.klogging.noCoLogger
+import io.seldon.dataflow.DataflowStatus
 import io.seldon.dataflow.hashutils.HashUtils
+import io.seldon.dataflow.withException
+import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
+import org.apache.kafka.streams.errors.StreamsException
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.KafkaStreams.StateListener
@@ -31,36 +38,32 @@ data class PipelineMetadata(
     val version: Int,
 )
 
-sealed class PipelineStatus(val state: State?, val isError: Boolean) {
-    class StreamStopped() : PipelineStatus(null, false) {
+open class PipelineStatus(val state: State?, var isError: Boolean) : DataflowStatus {
+    // Keep the previous state in case we're stopping the stream so that we can determine
+    // _why_ the stream was stopped.
+    class StreamStopped(var prevState: PipelineStatus?) : PipelineStatus(null, false) {
+        override var message: String? = "pipeline data streams: stopped"
+
         init {
-            this.message="pipeline data streams: stopped"
+            // Avoid nesting stopped states
+            if (this.prevState is StreamStopped) {
+                this.prevState = null
+            }
         }
+    }
+    class StreamStopping() : PipelineStatus(null, false) {
+        override var message: String? = "pipeline data streams: stopping"
     }
     class StreamStarting() : PipelineStatus(null, false) {
-        init {
-            this.message="pipeline data streams: initializing"
-        }
+        override var message: String? = "pipeline data streams: initializing"
     }
     class Started() : PipelineStatus(null, false) {
-        init {
-            this.message="pipeline data streams: ready"
-        }
+        override var message: String? = "pipeline data streams: ready"
     }
-    data class Error(val currentState: State?): PipelineStatus(currentState,true)
+    data class Error(val errorState: State?): PipelineStatus(errorState,true)
 
-    var exception: Exception? = null
-    var message: String? = null
-
-    fun withException(e: Exception) : PipelineStatus {
-        this.exception = e
-        return this
-    }
-
-    fun withMessage(msg: String): PipelineStatus {
-        this.message = msg
-        return this
-    }
+    override var exception: Exception? = null
+    override var message: String? = null
 
 }
 
@@ -74,45 +77,70 @@ class Pipeline(
     val size: Int,
 ) : StateListener {
     private val latch = CountDownLatch(1)
-    // ensure that if pipeline never gets to start we still clear up the associated kafka stream
+    // Never update status properties in-place, because we need it to have atomic
+    // properties. Instead, just assign new values to it.
     @Volatile
-    var status : PipelineStatus = PipelineStatus.StreamStopped()
+    var status : PipelineStatus = PipelineStatus.StreamStopped(null)
 
     fun start() : PipelineStatus {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
-        logger.info {
-            "starting pipeline ${metadata.name} (${metadata.id})" +
-                    "\n" +
-                    topology.describe()
-        }
+        logger.info("starting pipeline {pipelineName}, ({pipelineId})", metadata.name, metadata.id)
+        logger.debug { topology.describe() }
         streams.setStateListener(this)
-        streams.start()
+        try {
+            streams.start()
+        } catch (e: Exception) {
+            streams.close()
+            streams.cleanUp()
+            status = PipelineStatus.Error(State.NOT_RUNNING)
+                .withException(e)
+                .withMessage("kafka streams: failed to start")
+            return status
+        }
         status = PipelineStatus.StreamStarting()
 
-        // Do not allow pipeline to be marked as ready until it has successfully rebalanced.
+        // Wait until the pipeline is successfully rebalanced or reaches an error state.
+        // The pipeline status will be updated by the onChange callback, or by the stop() function
+        //
+        // Note: stop() may be called asynchronously at any point, if the process is signaled
+        // to stop. Therefore, it possible for the start function to return with status
+        // PipelineStatus.StreamStopped.
         latch.await()
 
         return status
     }
 
     fun stop() {
-        // defend against stop() being called while start() is still waiting on the latch
-        latch.countDown()
-
-        // close needs to be called even if streams.start() never gets called
+        val prevStatus = status
+        status = PipelineStatus.StreamStopping()
+        // Close needs to be called even if streams.start() never gets called
         streams.close()
         // Does not clean up everything see https://issues.apache.org/jira/browse/KAFKA-13787
         streams.cleanUp()
-        status = PipelineStatus.StreamStopped()
+        status = PipelineStatus.StreamStopped(prevStatus)
+
+        // if stop() is called while start() is still waiting on the latch, release it so that
+        // it may return the stopped status
+        latch.countDown()
     }
 
     override fun onChange(newState: State?, oldState: State?) {
-        logger.info { "pipeline ${metadata.name} (v${metadata.version}) changing to state $newState" }
+        logger.info {
+            e("pipeline {pipelineName} (v{pipelineVersion}) changing to state $newState",
+                metadata.name,
+                metadata.version)
+        }
         if (newState == State.RUNNING) {
-            status = PipelineStatus.Started()
-            latch.countDown()
+            // Only update the status if the pipeline is not already being stopped
+            // we wouldn't want the status to transition to Started after it was
+            // marked as StreamStopping. If status is StreamStopping, we guarantee
+            // that latch.countDown() will be called.
+            if (status !is PipelineStatus.StreamStopping) {
+                status = PipelineStatus.Started()
+                latch.countDown()
+            }
             return
         }
         // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
@@ -120,8 +148,11 @@ class Pipeline(
         // and we should release the lock on which start() awaits and return an error.
         // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
         if (newState != State.CREATED && newState != State.REBALANCING) {
-            status = PipelineStatus.Error(newState).withMessage("pipeline data streams error: kafka streams state: $newState")
-            latch.countDown()
+            if (status !is PipelineStatus.StreamStopping) {
+                status = PipelineStatus.Error(newState)
+                    .withMessage("pipeline data streams error: kafka streams state: $newState")
+                latch.countDown()
+            }
         }
 
         // TODO: propagate pipeline state after initial startup (i.e. if the pipeline moves
@@ -138,12 +169,21 @@ class Pipeline(
             kafkaDomainParams: KafkaDomainParams,
             kafkaConsumerGroupIdPrefix: String,
             namespace: String,
-        ): Pipeline {
+        ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-            val streamsApp = KafkaStreams(topology, pipelineProperties)
+            var streamsApp : KafkaStreams? = null
+            var pipelineError: PipelineStatus.Error? = null
+            try {
+                streamsApp = KafkaStreams(topology, pipelineProperties)
+            } catch (e: StreamsException) {
+                pipelineError = PipelineStatus.Error(null)
+                    .withException(e)
+                    .withMessage("failed to initialize kafka streams app")
+                return null to pipelineError
+            }
             logger.info("Create pipeline stream for name:${metadata.name} id:${metadata.id} version:${metadata.version} stream with kstream app id:${pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]}")
-            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps)
+            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
 
         private fun buildTopology(

@@ -14,6 +14,7 @@ import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusException
 import io.grpc.StatusRuntimeException
+import io.klogging.Level
 import io.seldon.dataflow.kafka.*
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.*
@@ -94,10 +95,11 @@ class PipelineSubscriber(
                 } else {
                     pipelines
                         .onEach {
-                            // Leave working pipelines running, stop failed ones so that kafka streams may clean up
-                            // resources (including temporary files). Without this cleanup, the same pipelines will fail
-                            // again immediately on retry, forever.
+                            // Defend against any existing pipelines that have failed but are not yet stopped, so that
+                            // kafka streams may clean up resources (including temporary files). This is a catch-all
+                            // and indicates we've missed calling stop in a failure case.
                             if(it.value.status.isError) {
+                                logger.debug("(bug) pipeline in error state when subscription terminates with error. pipeline id: {pipelineId}", it.key)
                                 it.value.stop()
                             }
                         }
@@ -122,8 +124,24 @@ class PipelineSubscriber(
         namespace: String,
     ) {
         logger.info("Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id)
-        val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
+        val (pipeline, err) = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
+        if (err != null) {
+            err.log(logger, Level.ERROR)
+            client.pipelineUpdateEvent(
+                makePipelineUpdateEvent(
+                    metadata = metadata,
+                    operation = PipelineOperation.Create,
+                    success = false,
+                    reason = err.getDescription() ?: "failed to initialize dataflow engine"
+                )
+            )
+
+            return
+        }
+
+        pipeline!!  //assert pipeline is not null when err is null
         if (pipeline.size != steps.size) {
+            pipeline.stop()
             client.pipelineUpdateEvent(
                 makePipelineUpdateEvent(
                     metadata = metadata,
@@ -137,21 +155,44 @@ class PipelineSubscriber(
         }
 
         val previous = pipelines.putIfAbsent(metadata.id, pipeline)
-        var pipelineStatus : PipelineStatus
+        var pipelineStatus: PipelineStatus
         if (previous == null) {
             kafkaAdmin.ensureTopicsExist(steps)
             pipelineStatus = pipeline.start()
+            if (pipelineStatus.isError) {
+                pipeline.stop()
+            }
         } else {
             pipelineStatus = previous.status
             logger.warn("pipeline {pipelineName} with id {pipelineId} already exists", metadata.name, metadata.id)
+            if (pipelineStatus.isError) {
+                // do not try to resuscitate an existing pipeline if in a failed state
+                // it's up to the scheduler to delete it & reinitialize it, as it might require
+                // coordination with {model, pipeline}gateway
+                previous.stop()
+            }
         }
 
+        // There are two cases where we reach this point with pipelineStatus being PipelineState.StreamStopped():
+        //
+        // 1. There is a small chance that pipeline.start() returned a status of PipelineState.StreamStopped(),
+        // if the process is being signalled to shutdown during its execution, and calls pipeline.stop()
+        //
+        // 2. We get a PipelineOperation.Create command on a pipeline that already exists, but has been already
+        // been stopped after reaching an error state.
+        //
+        // For those cases, we don't want to mark the Create operation as successful, so we force the state
+        // to be an error before sending the update to the scheduler. Failed/stopped pipelines need to be
+        // deleted and added again via the scheduler.
+        if(pipelineStatus is PipelineStatus.StreamStopped) {
+            pipelineStatus.isError = true
+        }
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
                 success = !pipelineStatus.isError,
-                reason = pipelineStatus.message ?: "pipeline created"
+                reason = pipelineStatus.getDescription() ?: "pipeline created"
             )
         )
     }
