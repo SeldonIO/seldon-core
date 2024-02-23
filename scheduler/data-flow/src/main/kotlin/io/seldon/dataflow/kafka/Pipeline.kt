@@ -13,6 +13,7 @@ import io.klogging.noCoLogger
 import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.KafkaStreams.StateListener
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
@@ -30,6 +31,41 @@ data class PipelineMetadata(
     val version: Int,
 )
 
+sealed class PipelineStatus(val state: State?, val isError: Boolean) {
+    class StreamStopped() : PipelineStatus(null, false) {
+        init {
+            this.message="pipeline data streams: stopped"
+        }
+    }
+    class StreamStarting() : PipelineStatus(null, false) {
+        init {
+            this.message="pipeline data streams: initializing"
+        }
+    }
+    class Started() : PipelineStatus(null, false) {
+        init {
+            this.message="pipeline data streams: ready"
+        }
+    }
+    data class Error(val currentState: State?): PipelineStatus(currentState,true)
+
+    var exception: Exception? = null
+    var message: String? = null
+
+    fun withException(e: Exception) : PipelineStatus {
+        this.exception = e
+        return this
+    }
+
+    fun withMessage(msg: String): PipelineStatus {
+        this.message = msg
+        return this
+    }
+
+}
+
+
+
 class Pipeline(
     private val metadata: PipelineMetadata,
     private val topology: Topology,
@@ -38,9 +74,11 @@ class Pipeline(
     val size: Int,
 ) : StateListener {
     private val latch = CountDownLatch(1)
-    private var errorOrShutdown = false
+    // ensure that if pipeline never gets to start we still clear up the associated kafka stream
+    @Volatile
+    var status : PipelineStatus = PipelineStatus.StreamStopped()
 
-    fun start() : Boolean {
+    fun start() : PipelineStatus {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
@@ -51,22 +89,29 @@ class Pipeline(
         }
         streams.setStateListener(this)
         streams.start()
+        status = PipelineStatus.StreamStarting()
 
         // Do not allow pipeline to be marked as ready until it has successfully rebalanced.
         latch.await()
 
-        return !errorOrShutdown
+        return status
     }
 
     fun stop() {
+        // defend against stop() being called while start() is still waiting on the latch
+        latch.countDown()
+
+        // close needs to be called even if streams.start() never gets called
         streams.close()
         // Does not clean up everything see https://issues.apache.org/jira/browse/KAFKA-13787
         streams.cleanUp()
+        status = PipelineStatus.StreamStopped()
     }
 
-    override fun onChange(newState: KafkaStreams.State?, oldState: KafkaStreams.State?) {
+    override fun onChange(newState: State?, oldState: State?) {
         logger.info { "pipeline ${metadata.name} (v${metadata.version}) changing to state $newState" }
-        if (newState == KafkaStreams.State.RUNNING) {
+        if (newState == State.RUNNING) {
+            status = PipelineStatus.Started()
             latch.countDown()
             return
         }
@@ -74,8 +119,8 @@ class Pipeline(
         // are the only non-error states. Everything else indicates an error or shutdown
         // and we should release the lock on which start() awaits and return an error.
         // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
-        if (newState != KafkaStreams.State.CREATED && newState != KafkaStreams.State.REBALANCING) {
-            errorOrShutdown = true
+        if (newState != State.CREATED && newState != State.REBALANCING) {
+            status = PipelineStatus.Error(newState).withMessage("pipeline data streams error: kafka streams state: $newState")
             latch.countDown()
         }
 

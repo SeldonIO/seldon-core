@@ -92,6 +92,15 @@ class PipelineSubscriber(
                 if (cause == null) {
                     logger.info("pipeline subscription completed successfully")
                 } else {
+                    pipelines
+                        .onEach {
+                            // Leave working pipelines running, stop failed ones so that kafka streams may clean up
+                            // resources (including temporary files). Without this cleanup, the same pipelines will fail
+                            // again immediately on retry, forever.
+                            if(it.value.status.isError) {
+                                it.value.stop()
+                            }
+                        }
                     logger.error("pipeline subscription terminated with error ${cause}")
                 }
             }
@@ -112,7 +121,7 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        logger.info("Create pipeline ${metadata.name} version: ${metadata.version} id: ${metadata.id}")
+        logger.info("Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id)
         val pipeline = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
         if (pipeline.size != steps.size) {
             client.pipelineUpdateEvent(
@@ -128,31 +137,27 @@ class PipelineSubscriber(
         }
 
         val previous = pipelines.putIfAbsent(metadata.id, pipeline)
-        var pipelineStarted = false
-        var updateEventReason = "created pipeline"
+        var pipelineStatus : PipelineStatus
         if (previous == null) {
             kafkaAdmin.ensureTopicsExist(steps)
-            pipelineStarted = pipeline.start()
-            if (pipelineStarted == false) {
-                updateEventReason = "kafka topic error"
-            }
+            pipelineStatus = pipeline.start()
         } else {
-            pipelineStarted = true
-            logger.warn("pipeline ${metadata.name} with id ${metadata.id} already exists")
+            pipelineStatus = previous.status
+            logger.warn("pipeline {pipelineName} with id {pipelineId} already exists", metadata.name, metadata.id)
         }
 
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
-                success = pipelineStarted,
-                reason = updateEventReason
+                success = !pipelineStatus.isError,
+                reason = pipelineStatus.message ?: "pipeline created"
             )
         )
     }
 
     private suspend fun handleDelete(metadata: PipelineMetadata) {
-        logger.info("Delete pipeline ${metadata.name} version: ${metadata.version} id: ${metadata.id}")
+        logger.info("Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id )
         pipelines
             .remove(metadata.id)
             ?.also { pipeline ->
