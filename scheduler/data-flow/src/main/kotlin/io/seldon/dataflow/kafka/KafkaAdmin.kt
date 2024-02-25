@@ -9,12 +9,22 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
+import com.github.michaelbull.retry.ContinueRetrying
+import com.github.michaelbull.retry.policy.RetryPolicy
+import com.github.michaelbull.retry.policy.constantDelay
+import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.retry
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import org.apache.kafka.clients.admin.Admin
+import org.apache.kafka.clients.admin.CreateTopicsOptions
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.common.KafkaFuture
+import org.apache.kafka.common.errors.TimeoutException
 import org.apache.kafka.common.errors.TopicExistsException
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 import io.klogging.logger as coLogger
 
 class KafkaAdmin(
@@ -26,6 +36,17 @@ class KafkaAdmin(
     suspend fun ensureTopicsExist(
         steps: List<PipelineStepUpdate>,
     ) : Exception? {
+        val missingTopicRetryPolicy: RetryPolicy<Throwable> = {
+            when (reason) {
+                is TimeoutException,
+                is UnknownTopicOrPartitionException -> ContinueRetrying
+                else -> {
+                    logger.warn("ignoring exception while waiting for topic creation: ${reason.message}")
+                    ContinueRetrying
+                }
+            }
+        }
+
         try {
             steps
                 .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
@@ -46,12 +67,17 @@ class KafkaAdmin(
                     )
                 }
                 .run {
-                    adminClient.createTopics(this)
+                    adminClient.createTopics(this, CreateTopicsOptions().timeoutMs(60_000))
                 }
                 .values()
                 .also { topicCreations ->
-                    topicCreations.entries.forEach { creationResult ->
-                        awaitKafkaResult(creationResult)
+                    logger.info("Waiting for kafka topic creation")
+                    // We repeatedly attempt to describe all topics as a way of blocking until they exist at least on
+                    // one broker. This is because the call to createTopics above returns before topics can actually
+                    // be subscribed to.
+                    retry(missingTopicRetryPolicy + limitAttempts(60) + constantDelay(delayMillis = 1000L)) {
+                        logger.debug("Still waiting for all topics to be created...")
+                        adminClient.describeTopics(topicCreations.keys).allTopicNames().get(500, TimeUnit.MILLISECONDS)
                     }
                 }
         } catch (e: Exception) {
@@ -62,20 +88,8 @@ class KafkaAdmin(
             return e
         }
 
+        logger.info("All topics created")
         return null
-    }
-
-    private suspend fun awaitKafkaResult(result: Map.Entry<String, KafkaFuture<Void>>) {
-        try {
-            result.value.get()
-            logger.info("Topic created ${result.key}")
-        } catch (e: ExecutionException) {
-            if (e.cause is TopicExistsException) {
-                logger.info("Topic already exists ${result.key}")
-            } else {
-                throw e
-            }
-        }
     }
 
     companion object {

@@ -105,7 +105,6 @@ class PipelineSubscriber(
                 }
             }
             .collect()
-        // TODO - error handling?
         // TODO - use supervisor job(s) for spawning coroutines?
     }
 
@@ -121,8 +120,20 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        logger.info("Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id)
-        val (pipeline, err) = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
+        logger.info(
+            "Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id
+        )
+        val (pipeline, err) = Pipeline.forSteps(
+            metadata,
+            steps,
+            kafkaProperties,
+            kafkaDomainParams,
+            kafkaConsumerGroupIdPrefix,
+            namespace
+        )
         if (err != null) {
             err.log(logger, Level.ERROR)
             client.pipelineUpdateEvent(
