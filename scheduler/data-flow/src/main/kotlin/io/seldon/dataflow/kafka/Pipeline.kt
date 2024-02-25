@@ -9,22 +9,19 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import io.klogging.Klogger
-import io.klogging.NoCoLogger
-import io.klogging.NoCoLogging
 import io.klogging.noCoLogger
-import io.seldon.dataflow.DataflowStatus
 import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.dataflow.withException
 import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
-import org.apache.kafka.streams.errors.StreamsException
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.KafkaStreams.StateListener
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.errors.StreamsException
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
 import kotlin.math.log2
@@ -37,36 +34,6 @@ data class PipelineMetadata(
     val name: String,
     val version: Int,
 )
-
-open class PipelineStatus(val state: State?, var isError: Boolean) : DataflowStatus {
-    // Keep the previous state in case we're stopping the stream so that we can determine
-    // _why_ the stream was stopped.
-    class StreamStopped(var prevState: PipelineStatus?) : PipelineStatus(null, false) {
-        override var message: String? = "pipeline data streams: stopped"
-
-        init {
-            // Avoid nesting stopped states
-            if (this.prevState is StreamStopped) {
-                this.prevState = null
-            }
-        }
-    }
-    class StreamStopping() : PipelineStatus(null, false) {
-        override var message: String? = "pipeline data streams: stopping"
-    }
-    class StreamStarting() : PipelineStatus(null, false) {
-        override var message: String? = "pipeline data streams: initializing"
-    }
-    class Started() : PipelineStatus(null, false) {
-        override var message: String? = "pipeline data streams: ready"
-    }
-    data class Error(val errorState: State?): PipelineStatus(errorState,true)
-
-    override var exception: Exception? = null
-    override var message: String? = null
-
-}
-
 
 
 class Pipeline(
@@ -141,6 +108,7 @@ class Pipeline(
                 status = PipelineStatus.Started()
                 latch.countDown()
             }
+
             return
         }
         // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
@@ -182,7 +150,19 @@ class Pipeline(
                     .withMessage("failed to initialize kafka streams app")
                 return null to pipelineError
             }
-            logger.info("Create pipeline stream for name:${metadata.name} id:${metadata.id} version:${metadata.version} stream with kstream app id:${pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]}")
+
+            val uncaughtExceptionHandlerClass = pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
+            uncaughtExceptionHandlerClass?.let{
+                logger.info("Setting custom Kafka streams uncaught exception handler")
+                streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
+            }
+            logger.info(
+                "Create pipeline stream for name:{pipelineName} id:{pipelineId} version:{pipelineVersion} stream with kstream app id:{kstreamAppId}",
+                metadata.name,
+                metadata.id,
+                metadata.version,
+                pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]
+            )
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
 
@@ -226,6 +206,11 @@ class Pipeline(
                 )
                 .withStreamThreads(
                     getNumThreadsFor(numSteps),
+                )
+                .withErrorHandlers(
+                    StreamErrorHandling.StreamsDeserializationErrorHandler(),
+                    StreamErrorHandling.StreamsCustomUncaughtExceptionHandler(),
+                    StreamErrorHandling.StreamsRecordProducerErrorHandler()
                 )
         }
 

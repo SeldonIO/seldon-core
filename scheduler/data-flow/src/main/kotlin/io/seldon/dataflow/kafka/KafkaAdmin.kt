@@ -25,32 +25,44 @@ class KafkaAdmin(
 
     suspend fun ensureTopicsExist(
         steps: List<PipelineStepUpdate>,
-    ) {
-        steps
-            .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
-            .map { topicName -> parseSource(topicName).first }
-            .toSet()
-            .also {
-                logger.info("Topics found are $it")
-            }
-            .map { topicName ->
-                NewTopic(
-                    topicName,
-                    streamsConfig.numPartitions,
-                    streamsConfig.replicationFactor.toShort(),
-                ).configs(
-                    kafkaTopicConfig(
-                        streamsConfig.maxMessageSizeBytes,
-                    ),
-                )
-            }
-            .run { adminClient.createTopics(this) }
-            .values()
-            .also { topicCreations ->
-                topicCreations.entries.forEach { creationResult ->
-                    awaitKafkaResult(creationResult)
+    ) : Exception? {
+        try {
+            steps
+                .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
+                .map { topicName -> parseSource(topicName).first }
+                .toSet()
+                .also {
+                    logger.info("Topics found are $it")
                 }
-            }
+                .map { topicName ->
+                    NewTopic(
+                        topicName,
+                        streamsConfig.numPartitions,
+                        streamsConfig.replicationFactor.toShort(),
+                    ).configs(
+                        kafkaTopicConfig(
+                            streamsConfig.maxMessageSizeBytes,
+                        ),
+                    )
+                }
+                .run {
+                    adminClient.createTopics(this)
+                }
+                .values()
+                .also { topicCreations ->
+                    topicCreations.entries.forEach { creationResult ->
+                        awaitKafkaResult(creationResult)
+                    }
+                }
+        } catch (e: Exception) {
+            // we catch all exceptions here and return them instead, because we want to handle
+            // errors as part of programming logic, instead of them bubbling up to the scheduler
+            // subscription event loop. This way, errors for one pipeline don't interfere in the
+            // execution of others.
+            return e
+        }
+
+        return null
     }
 
     private suspend fun awaitKafkaResult(result: Map.Entry<String, KafkaFuture<Void>>) {

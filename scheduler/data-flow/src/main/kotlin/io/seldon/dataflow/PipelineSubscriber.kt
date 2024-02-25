@@ -12,8 +12,6 @@ package io.seldon.dataflow
 import com.github.michaelbull.retry.policy.binaryExponentialBackoff
 import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
-import io.grpc.StatusException
-import io.grpc.StatusRuntimeException
 import io.klogging.Level
 import io.seldon.dataflow.kafka.*
 import io.seldon.mlops.chainer.ChainerGrpcKt
@@ -157,9 +155,13 @@ class PipelineSubscriber(
         val previous = pipelines.putIfAbsent(metadata.id, pipeline)
         var pipelineStatus: PipelineStatus
         if (previous == null) {
-            kafkaAdmin.ensureTopicsExist(steps)
-            pipelineStatus = pipeline.start()
-            if (pipelineStatus.isError) {
+            val err = kafkaAdmin.ensureTopicsExist(steps)
+            if (err == null) {
+                pipelineStatus = pipeline.start()
+            } else {
+                pipelineStatus = PipelineStatus.Error(null)
+                    .withException(err)
+                    .withMessage("kafka streams topic creation error")
                 pipeline.stop()
             }
         } else {
@@ -173,20 +175,15 @@ class PipelineSubscriber(
             }
         }
 
-        // There are two cases where we reach this point with pipelineStatus being PipelineState.StreamStopped():
-        //
-        // 1. There is a small chance that pipeline.start() returned a status of PipelineState.StreamStopped(),
+        // There is a small chance that pipeline.start() returned a status of PipelineState.StreamStopped(),
         // if the process is being signalled to shutdown during its execution, and calls pipeline.stop()
         //
-        // 2. We get a PipelineOperation.Create command on a pipeline that already exists, but has been already
-        // been stopped after reaching an error state.
-        //
-        // For those cases, we don't want to mark the Create operation as successful, so we force the state
-        // to be an error before sending the update to the scheduler. Failed/stopped pipelines need to be
-        // deleted and added again via the scheduler.
+        // For this case, we don't want to mark the Create operation as successful, so we force the state
+        // to be an error (despite no actual error having occurred) before sending the update to the scheduler.
         if(pipelineStatus is PipelineStatus.StreamStopped) {
             pipelineStatus.isError = true
         }
+        pipelineStatus.log(logger, Level.INFO)
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,

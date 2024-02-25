@@ -9,7 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
+import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
 import io.seldon.dataflow.mtls.K8sCertSecretsProvider
@@ -23,7 +23,12 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.security.auth.SecurityProtocol
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.errors.DeserializationExceptionHandler
+import org.apache.kafka.streams.errors.ProductionExceptionHandler
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import java.util.*
+
+const val KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG = "default.processing.exception.handler"
 
 data class KafkaStreamsParams(
     val bootstrapServers: String,
@@ -49,6 +54,8 @@ val kafkaTopicConfig = { maxMessageSizeBytes: Int ->
         TopicConfig.MAX_MESSAGE_BYTES_CONFIG to maxMessageSizeBytes.toString(),
     )
 }
+
+private val logger = noCoLogger(Pipeline::class)
 
 fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
     return getSecurityProperties(params).apply {
@@ -156,10 +163,11 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
         this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = 1
         this[StreamsConfig.SEND_BUFFER_CONFIG] = params.maxMessageSizeBytes
         this[StreamsConfig.RECEIVE_BUFFER_CONFIG] = params.maxMessageSizeBytes
+        // tell Kafka Streams to optimize the topology
+        this[StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG] = StreamsConfig.OPTIMIZE
 
         // Testing
         this[StreamsConfig.REPLICATION_FACTOR_CONFIG] = params.replicationFactor
-        this[StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG] = 0
         this[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = 10_000
 
         this[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
@@ -201,7 +209,20 @@ fun KafkaProperties.withStreamThreads(n: Int): KafkaProperties {
     val properties = KafkaProperties()
 
     properties.putAll(this.toMap())
-    this[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = n
+    properties[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = n
+
+    return properties
+}
+
+fun KafkaProperties.withErrorHandlers(deserializationExceptionHdl: DeserializationExceptionHandler?,
+                                      streamExceptionHdl: StreamsUncaughtExceptionHandler?,
+                                      productionExceptionHdl: ProductionExceptionHandler?): KafkaProperties {
+    val properties = KafkaProperties()
+    properties.putAll(this.toMap())
+
+    deserializationExceptionHdl?.let  { properties[StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java }
+    streamExceptionHdl?.let           { properties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java                        }
+    productionExceptionHdl?.let       { properties[StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java      }
 
     return properties
 }
