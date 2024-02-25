@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
@@ -194,7 +195,7 @@ func (kc *InferKafkaHandler) GetNumModels() int {
 func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	logger := kc.logger.WithField("func", "createTopics")
 	if kc.adminClient == nil {
-		logger.Warnf("Can't create topics %v as no admin client", topicNames)
+		logger.Warnf("no kafka admin client, can't create any of the following topics: %v", topicNames)
 		return nil
 	}
 	t1 := time.Now()
@@ -216,14 +217,44 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 		return err
 	}
 
+	// Wait for topic creation
+	logFailure := func(err error, delay time.Duration) {
+		logger.WithError(err).Errorf("waiting for topic creation")
+	}
+
+	logger.Infof("waiting for topic creation...")
+	retryPolicy := backoff.WithMaxRetries(backoff.NewConstantBackOff(1*time.Second), 60)
+	err = backoff.RetryNotify(
+		func() error {
+			return kc.ensureTopicsExist(topicNames)
+		},
+		retryPolicy,
+		logFailure)
+
+	if err != nil {
+		logger.WithError(err).Errorf("some topics not created, giving up")
+	} else {
+		logger.Infof("all topics created")
+	}
+
 	for _, result := range results {
-		logger.Debugf("Topic result for %s", result.String())
+		logger.Debugf("topic result for %s", result.String())
 	}
 
 	t2 := time.Now()
-	logger.Infof("Topic created in %d millis", t2.Sub(t1).Milliseconds())
+	logger.Infof("kafka topics created in %d millis", t2.Sub(t1).Milliseconds())
 
 	return nil
+}
+
+func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
+		ctx, cancel := context.WithTimeout(context.Background(), 2 * time.Second)
+		defer cancel()
+		_, err := kc.adminClient.DescribeTopics(
+			ctx,
+			kafka.NewTopicCollectionOfTopicNames(topicNames),
+			kafka.SetAdminOptionIncludeAuthorizedOperations(false))
+		return err
 }
 
 func (kc *InferKafkaHandler) AddModel(modelName string) error {
@@ -241,7 +272,7 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	kc.subscribedTopics[inputTopic] = true
 	err := kc.subscribeTopics()
 	if err != nil {
-		kc.logger.WithError(err).Warn("Failed to subscribe to topics")
+		kc.logger.WithError(err).Errorf("failed to subscribe to topics")
 		return nil
 	}
 	return nil
@@ -255,7 +286,7 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
 	if len(kc.subscribedTopics) > 0 {
 		err := kc.subscribeTopics()
 		if err != nil {
-			kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
+			kc.logger.WithError(err).Errorf("failed to subscribe to topics")
 			return nil
 		}
 	}

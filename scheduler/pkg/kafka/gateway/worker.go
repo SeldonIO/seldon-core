@@ -243,7 +243,7 @@ func (iw *InferWorker) produce(
 	for k, vs := range headers {
 		for _, v := range vs {
 			if !existsKafkaHeader(kafkaHeaders, k, v) {
-				logger.Infof("Adding header to kafka response %s:%s", k, v)
+				logger.Debugf("Adding header to kafka response %s:%s", k, v)
 				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(v)})
 			}
 		}
