@@ -41,7 +41,7 @@ interface DataflowStatus {
         }
     }
 
-    // leg status when logger is outside coroutines
+    // log status when logger is outside coroutines
     fun log(logger: NoCoLogger, levelIfNoException: Level) {
         val exceptionMsg = this.exception?.message
         val exceptionCause = this.exception?.cause ?: Exception("")

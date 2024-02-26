@@ -25,7 +25,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         override fun getDescription() : String? {
             val exceptionMsg = this.exception?.message
             var statusMsg = this.message
-            val prevStateDescription = prevState?.getDescription()
+            val prevStateDescription = this.prevState?.getDescription()
             prevStateDescription?.let {
                 statusMsg += ", before stop: $prevStateDescription"
             }
@@ -41,7 +41,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             var exceptionMsg = this.exception?.message
             var exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
-            val prevStateDescription = prevState?.getDescription()
+            val prevStateDescription = this.prevState?.getDescription()
             prevStateDescription?.let {
                 statusMsg += ", before stop: $prevStateDescription"
             }
@@ -56,12 +56,12 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             }
         }
 
-        // leg status when logger is outside coroutines
+        // log status when logger is outside coroutines
         override fun log(logger: NoCoLogger, level: Level) {
             val exceptionMsg = this.exception?.message
             val exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
-            val prevStateDescription = prevState?.getDescription()
+            val prevStateDescription = this.prevState?.getDescription()
             prevStateDescription?.let {
                 statusMsg += ", stop cause: $prevStateDescription"
             }
@@ -85,7 +85,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         override var message: String? = "pipeline data streams: ready"
     }
 
-    data class Error(val errorState: KafkaStreams.State?): PipelineStatus(errorState,true)
+    data class Error(val errorState: KafkaStreams.State?): PipelineStatus(errorState, true)
 
     override var exception: Exception? = null
     override var message: String? = null

@@ -153,7 +153,7 @@ class Pipeline(
 
             val uncaughtExceptionHandlerClass = pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
             uncaughtExceptionHandlerClass?.let{
-                logger.info("Setting custom Kafka streams uncaught exception handler")
+                logger.debug("Setting custom Kafka streams uncaught exception handler")
                 streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
             }
             logger.info(
