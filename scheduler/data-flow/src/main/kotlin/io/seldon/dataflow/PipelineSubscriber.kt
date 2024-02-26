@@ -34,13 +34,14 @@ class PipelineSubscriber(
     kafkaAdminProperties: KafkaAdminProperties,
     kafkaStreamsParams: KafkaStreamsParams,
     private val kafkaDomainParams: KafkaDomainParams,
+    private val topicWaitRetryParams: TopicWaitRetryParams,
     private val upstreamHost: String,
     private val upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
 ) {
-    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams)
+    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)
@@ -144,7 +145,6 @@ class PipelineSubscriber(
                     reason = err.getDescription() ?: "failed to initialize dataflow engine"
                 )
             )
-
             return
         }
 

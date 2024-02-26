@@ -37,7 +37,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         }
 
         // log status when logger is in a coroutine
-        override fun log(logger: Klogger, level: Level) {
+        override fun log(logger: Klogger, levelIfNoException: Level) {
             var exceptionMsg = this.exception?.message
             var exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
@@ -47,17 +47,17 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             }
             if (exceptionMsg != null) {
                 runBlocking {
-                    logger.log(level, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
+                    logger.log(levelIfNoException, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
                 }
             } else {
                 runBlocking {
-                    logger.log(level, "$statusMsg")
+                    logger.log(levelIfNoException, "$statusMsg")
                 }
             }
         }
 
         // log status when logger is outside coroutines
-        override fun log(logger: NoCoLogger, level: Level) {
+        override fun log(logger: NoCoLogger, levelIfNoException: Level) {
             val exceptionMsg = this.exception?.message
             val exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
@@ -66,9 +66,9 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
                 statusMsg += ", stop cause: $prevStateDescription"
             }
             if (exceptionMsg != null) {
-                logger.log(level, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
+                logger.log(levelIfNoException, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
             } else {
-                logger.log(level, "$statusMsg")
+                logger.log(levelIfNoException, "$statusMsg")
             }
         }
     }

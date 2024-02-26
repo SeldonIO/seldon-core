@@ -47,6 +47,12 @@ object Cli {
     val brokerSecret = Key("kafka.tls.broker.secret", stringType)
     val endpointIdentificationAlgorithm = Key("kafka.tls.endpoint.identification.algorithm", stringType)
 
+    // Kafka waiting for topic creation
+    val topicCreateTimeoutMillis = Key("topic.create.timeout.millis", intType)
+    val topicDescribeTimeoutMillis = Key("topic.describe.timeout.millis", longType)
+    val topicDescribeRetries = Key("topic.describe.retry.attempts", intType)
+    val topicDescribeRetryDelayMillis = Key("topic.describe.retry.delay.millis", longType)
+
     // Kafka SASL
     val saslUsername = Key("kafka.sasl.username", stringType)
     val saslSecret = Key("kafka.sasl.secret", stringType)
@@ -75,6 +81,10 @@ object Cli {
             clientSecret,
             brokerSecret,
             endpointIdentificationAlgorithm,
+            topicCreateTimeoutMillis,
+            topicDescribeTimeoutMillis,
+            topicDescribeRetries,
+            topicDescribeRetryDelayMillis,
             saslUsername,
             saslSecret,
             saslPasswordPath,

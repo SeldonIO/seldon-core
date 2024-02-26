@@ -49,6 +49,13 @@ data class KafkaDomainParams(
     val joinWindowMillis: Long,
 )
 
+data class TopicWaitRetryParams(
+    val createTimeoutMillis: Int, // int required by the underlying kafka-streams library
+    val describeTimeoutMillis: Long,
+    val describeRetries: Int,
+    val describeRetryDelayMillis: Long
+)
+
 val kafkaTopicConfig = { maxMessageSizeBytes: Int ->
     mapOf(
         TopicConfig.MAX_MESSAGE_BYTES_CONFIG to maxMessageSizeBytes.toString(),

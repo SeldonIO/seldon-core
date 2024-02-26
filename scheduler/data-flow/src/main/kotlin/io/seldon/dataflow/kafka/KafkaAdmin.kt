@@ -30,6 +30,7 @@ import io.klogging.logger as coLogger
 class KafkaAdmin(
     adminConfig: KafkaAdminProperties,
     private val streamsConfig: KafkaStreamsParams,
+    private val topicWaitRetryParams: TopicWaitRetryParams,
 ) {
     private val adminClient = Admin.create(adminConfig)
 
@@ -37,7 +38,7 @@ class KafkaAdmin(
         steps: List<PipelineStepUpdate>,
     ) : Exception? {
         val missingTopicRetryPolicy: RetryPolicy<Throwable> = {
-            when (reason) {
+            when (reason.cause) {
                 is TimeoutException,
                 is UnknownTopicOrPartitionException -> ContinueRetrying
                 else -> {
@@ -67,7 +68,10 @@ class KafkaAdmin(
                     )
                 }
                 .run {
-                    adminClient.createTopics(this, CreateTopicsOptions().timeoutMs(60_000))
+                    adminClient.createTopics(
+                        this,
+                        CreateTopicsOptions().timeoutMs(topicWaitRetryParams.createTimeoutMillis)
+                    )
                 }
                 .values()
                 .also { topicCreations ->
@@ -75,9 +79,16 @@ class KafkaAdmin(
                     // We repeatedly attempt to describe all topics as a way of blocking until they exist at least on
                     // one broker. This is because the call to createTopics above returns before topics can actually
                     // be subscribed to.
-                    retry(missingTopicRetryPolicy + limitAttempts(60) + constantDelay(delayMillis = 1000L)) {
+                    retry(
+                        missingTopicRetryPolicy + limitAttempts(topicWaitRetryParams.describeRetries) + constantDelay(
+                            topicWaitRetryParams.describeRetryDelayMillis
+                        )
+                    ) {
                         logger.debug("Still waiting for all topics to be created...")
-                        adminClient.describeTopics(topicCreations.keys).allTopicNames().get(500, TimeUnit.MILLISECONDS)
+                        // the KafkaFuture retrieved via .allTopicNames() only succeeds if all the topic
+                        // descriptions succeed, so there is no need to check topic descriptions individually
+                        adminClient.describeTopics(topicCreations.keys).allTopicNames()
+                            .get(topicWaitRetryParams.describeTimeoutMillis, TimeUnit.MILLISECONDS)
                     }
                 }
         } catch (e: Exception) {
