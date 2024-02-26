@@ -11,6 +11,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -250,11 +251,22 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 2 * time.Second)
 		defer cancel()
-		_, err := kc.adminClient.DescribeTopics(
+		topicsDescResult, err := kc.adminClient.DescribeTopics(
 			ctx,
 			kafka.NewTopicCollectionOfTopicNames(topicNames),
 			kafka.SetAdminOptionIncludeAuthorizedOperations(false))
-		return err
+
+		if err != nil {
+			return err
+		}
+
+		for _, topicDescription := range topicsDescResult.TopicDescriptions {
+			if topicDescription.Error.Code() != kafka.ErrNoError {
+				return errors.New(fmt.Sprintf("topic description failure: %s", topicDescription.Error.Error))
+			}
+		}
+
+		return nil
 }
 
 func (kc *InferKafkaHandler) AddModel(modelName string) error {
