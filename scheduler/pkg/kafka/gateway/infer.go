@@ -11,7 +11,6 @@ package gateway
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -265,7 +264,7 @@ func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 
 	for _, topicDescription := range topicsDescResult.TopicDescriptions {
 		if topicDescription.Error.Code() != kafka.ErrNoError {
-			return fmt.Errorf("topic description failure: %s", topicDescription.Error.Error)
+			return fmt.Errorf("topic description failure: %s", topicDescription.Error.Error())
 		}
 	}
 
