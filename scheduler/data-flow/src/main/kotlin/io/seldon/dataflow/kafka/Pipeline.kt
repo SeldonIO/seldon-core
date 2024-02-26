@@ -140,8 +140,8 @@ class Pipeline(
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-            var streamsApp : KafkaStreams? = null
-            var pipelineError: PipelineStatus.Error? = null
+            var streamsApp : KafkaStreams?
+            var pipelineError: PipelineStatus.Error?
             try {
                 streamsApp = KafkaStreams(topology, pipelineProperties)
             } catch (e: StreamsException) {

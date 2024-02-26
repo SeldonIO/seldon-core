@@ -34,13 +34,14 @@ class PipelineSubscriber(
     kafkaAdminProperties: KafkaAdminProperties,
     kafkaStreamsParams: KafkaStreamsParams,
     private val kafkaDomainParams: KafkaDomainParams,
+    private val topicWaitRetryParams: TopicWaitRetryParams,
     private val upstreamHost: String,
     private val upstreamPort: Int,
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
 ) {
-    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams)
+    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel = ManagedChannelBuilder
         .forAddress(upstreamHost, upstreamPort)
         .defaultServiceConfig(grpcServiceConfig)
@@ -105,7 +106,6 @@ class PipelineSubscriber(
                 }
             }
             .collect()
-        // TODO - error handling?
         // TODO - use supervisor job(s) for spawning coroutines?
     }
 
@@ -121,8 +121,20 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        logger.info("Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id)
-        val (pipeline, err) = Pipeline.forSteps(metadata, steps, kafkaProperties, kafkaDomainParams, kafkaConsumerGroupIdPrefix, namespace)
+        logger.info(
+            "Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id
+        )
+        val (pipeline, err) = Pipeline.forSteps(
+            metadata,
+            steps,
+            kafkaProperties,
+            kafkaDomainParams,
+            kafkaConsumerGroupIdPrefix,
+            namespace
+        )
         if (err != null) {
             err.log(logger, Level.ERROR)
             client.pipelineUpdateEvent(
@@ -133,7 +145,6 @@ class PipelineSubscriber(
                     reason = err.getDescription() ?: "failed to initialize dataflow engine"
                 )
             )
-
             return
         }
 
