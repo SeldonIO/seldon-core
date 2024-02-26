@@ -167,7 +167,6 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 		if err != nil {
 			return nil, err
 		}
-
 		pipeline.wg.Add(1) // wait set to allow consumer to say when started
 
 		val, loaded := km.pipelines.LoadOrStore(key, pipeline)
