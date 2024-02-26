@@ -197,7 +197,7 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	logger := kc.logger.WithField("func", "createTopics")
 	if kc.adminClient == nil {
 		logger.Warnf("no kafka admin client, can't create any of the following topics: %v", topicNames)
-		return nil
+		return fmt.Errorf("no kafka admin client")
 	}
 	t1 := time.Now()
 
@@ -212,7 +212,7 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	results, err := kc.adminClient.CreateTopics(
 		context.Background(),
 		topicSpecs,
-		kafka.SetAdminOperationTimeout(time.Minute),
+		kafka.SetAdminOperationTimeout(TopicCreateTimeout),
 	)
 	if err != nil {
 		return err
@@ -220,11 +220,14 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 
 	// Wait for topic creation
 	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("waiting for topic creation")
+		logger.WithError(err).Errorf("still waiting for all topics to be created...")
 	}
 
-	logger.Infof("waiting for topic creation...")
-	retryPolicy := backoff.WithMaxRetries(backoff.NewConstantBackOff(1*time.Second), 60)
+	logger.Infof("waiting for kafka topic creation")
+	retryPolicy := backoff.WithMaxRetries(
+		backoff.NewConstantBackOff(TopicDescribeRetryDelay),
+		TopicDescribeMaxRetries,
+	)
 	err = backoff.RetryNotify(
 		func() error {
 			return kc.ensureTopicsExist(topicNames)
@@ -234,6 +237,7 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 
 	if err != nil {
 		logger.WithError(err).Errorf("some topics not created, giving up")
+		return err
 	} else {
 		logger.Infof("all topics created")
 	}
@@ -243,19 +247,18 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	}
 
 	t2 := time.Now()
-	logger.Infof("kafka topics created in %d millis", t2.Sub(t1).Milliseconds())
+	logger.Debugf("kafka topics created in %d millis", t2.Sub(t1).Milliseconds())
 
 	return nil
 }
 
 func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TopicDescribeTimeout)
 	defer cancel()
 	topicsDescResult, err := kc.adminClient.DescribeTopics(
 		ctx,
 		kafka.NewTopicCollectionOfTopicNames(topicNames),
 		kafka.SetAdminOptionIncludeAuthorizedOperations(false))
-
 	if err != nil {
 		return err
 	}
@@ -319,7 +322,7 @@ func (kc *InferKafkaHandler) Serve() {
 	for run {
 		select {
 		case <-kc.done:
-			logger.Infof("Stopping consumer %s", kc.consumer.String())
+			logger.Infof("stopping consumer %s", kc.consumer.String())
 			kc.producerActive.Store(false)
 			run = false
 		default:

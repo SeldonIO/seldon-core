@@ -9,10 +9,18 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package gateway
 
+import "time"
+
 const (
 	HeaderKeyType       = "seldon-infer-type"
 	HeaderValueJsonReq  = "json/inferModelRequest"
 	HeaderValueJsonRes  = "json/inferModelResponse"
 	HeaderValueProtoReq = "proto/InferModelRequest"
 	HeaderValueProtoRes = "proto/InferModelResponse"
+
+	// Topic creation retries
+	TopicCreateTimeout = time.Minute
+	TopicDescribeTimeout = time.Second
+	TopicDescribeMaxRetries = 60
+	TopicDescribeRetryDelay = time.Second
 )
