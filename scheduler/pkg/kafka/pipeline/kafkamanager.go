@@ -168,11 +168,12 @@ func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (
 			return nil, err
 		}
 
+		pipeline.wg.Add(1) // wait set to allow consumer to say when started
+
 		val, loaded := km.pipelines.LoadOrStore(key, pipeline)
 		if loaded { // we can still have a race condition where multiple "create" are happening, we have to store the first one
 			pipeline = val.(*Pipeline)
 		} else {
-			pipeline.wg.Add(1) // wait set to allow consumer to say when started
 			go func() {
 				err := km.consume(pipeline)
 				if err != nil {
