@@ -38,7 +38,7 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:1.61.0")
     implementation("com.google.protobuf:protobuf-java:3.25.2")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
