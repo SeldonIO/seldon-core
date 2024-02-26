@@ -11,7 +11,7 @@ package io.seldon.dataflow
 
 import io.klogging.Level
 import io.klogging.config.loggingConfiguration
-import io.klogging.rendering.RENDER_ANSI
+import io.klogging.rendering.RENDER_ISO8601
 import io.klogging.sending.STDOUT
 
 object Logging {
@@ -20,7 +20,7 @@ object Logging {
     fun configure(appLevel: Level = Level.INFO, kafkaLevel: Level = Level.WARN) =
         loggingConfiguration {
             kloggingMinLogLevel(appLevel)
-            sink(stdoutSink, RENDER_ANSI, STDOUT)
+            sink(stdoutSink, RENDER_ISO8601, STDOUT)
             logging {
                 fromLoggerBase("io.seldon")
                 toSink(stdoutSink)
