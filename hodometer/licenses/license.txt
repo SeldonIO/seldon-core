@@ -4,7 +4,7 @@ seldonio/seldon-core  Business Source License 1.1  https://github.com/SeldonIO/s
 Parameters
 
 Licensor:		Seldon Technologies Limited
-Licensed Work:	Seldon Core v2
+Licensed Work:	Seldon Core v1
                       		The Licensed Work is (c) January 2024 Seldon Technologies Limited
 
 Additional Use Grant:	Non-profit educational institutions may use the Licensed Work for production use; provided, that such use does not include commercializing the Licensed Work or incorporating or including the Licensed Work into any models, products or services sold, licensed, marketed, or offered for sale to third-parties
@@ -52,31 +52,6 @@ In consideration of the right to use this License’s text and the “Business S
 3. To specify a Change Date.
 
 4. Not to modify this License in any other way.
-
---------------------------------------------------------------------------------
-Azure/go-ansiterm  MIT License  https://github.com/Azure/go-ansiterm/blob/master/LICENSE
---------------------------------------------------------------------------------
-The MIT License (MIT)
-
-Copyright (c) 2015 Microsoft Corporation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 Azure/go-ansiterm  MIT License  https://github.com/Azure/go-ansiterm/blob/master/LICENSE
@@ -9187,7 +9162,7 @@ License text copyright (c) 2020 MariaDB Corporation Ab, All Rights Reserved.
 Parameters
 
 Licensor:             HashiCorp, Inc.
-Licensed Work:        Consul Version 1.17.0 or later. The Licensed Work is (c) 2023
+Licensed Work:        Consul Version 1.17.0 or later. The Licensed Work is (c) 2024
                       HashiCorp, Inc.
 Additional Use Grant: You may make production use of the Licensed Work, provided
                       Your use does not include offering the Licensed Work to third

@@ -5,12 +5,15 @@ Azure/go-ansiterm
 Azure/go-autorest
 BurntSushi/toml
 BurntSushi/xgb
+Microsoft/go-winio
+Microsoft/hcsshim
 NYTimes/gziphandler
 OneOfOne/xxhash
 PuerkitoBio/purell
 PuerkitoBio/urlesc
 Shopify/sarama
 Shopify/toxiproxy
+actgardner/gogen-avro
 alecthomas/jsonschema
 alecthomas/template
 alecthomas/units
@@ -30,6 +33,7 @@ blang/semver
 blendle/zapdriver
 bmizerany/perks
 c2h5oh/datasize
+cenkalti/backoff
 census-instrumentation/opencensus-proto
 certifi/gocertifi
 cespare/xxhash
@@ -43,6 +47,8 @@ cockroachdb/datadriven
 cockroachdb/errors
 cockroachdb/logtags
 confluentinc/confluent-kafka-go
+containerd/cgroups
+containerd/containerd
 coreos/bbolt
 coreos/etcd
 coreos/go-oidc
@@ -56,6 +62,10 @@ dgrijalva/jwt-go
 dgryski/go-gk
 dgryski/go-lttb
 dgryski/go-sip13
+docker/distribution
+docker/docker
+docker/go-connections
+docker/go-units
 docker/spdystream
 docopt/docopt-go
 dustin/go-humanize
@@ -150,11 +160,14 @@ hashicorp/logutils
 hashicorp/mdns
 hashicorp/memberlist
 hashicorp/serf
+heetch/avro
 hpcloud/tail
+iancoleman/orderedmap
 ianlancetaylor/demangle
 imdario/mergo
 inconshreveable/mousetrap
 influxdata/tdigest
+invopop/jsonschema
 jcmturner/aescts
 jcmturner/dnsutils
 jcmturner/gofork
@@ -162,6 +175,7 @@ jcmturner/goidentity
 jcmturner/gokrb5
 jcmturner/rpc
 jessevdk/go-flags
+jhump/protoreflect
 jonboulle/clockwork
 josharian/intern
 jpillora/backoff
@@ -194,9 +208,11 @@ mitchellh/gox
 mitchellh/iochan
 mitchellh/mapstructure
 moby/spdystream
+moby/sys
 moby/term
 modern-go/concurrent
 modern-go/reflect2
+morikuni/aec
 munnerz/goautoneg
 mwitkow/go-conntrack
 mxk/go-flowrate
@@ -207,6 +223,9 @@ oklog/ulid
 olekukonko/tablewriter
 onsi/ginkgo
 onsi/gomega
+opencontainers/go-digest
+opencontainers/image-spec
+opencontainers/runc
 opentracing/opentracing-go
 openzipkin/zipkin-go
 otiai10/copy
@@ -214,6 +233,7 @@ pascaldekloe/goe
 pelletier/go-toml
 peterbourgon/diskv
 pierrec/lz4
+pkg/diff
 pkg/errors
 pkg/profile
 pkg/sftp
@@ -233,6 +253,7 @@ rogpeppe/fastuuid
 rogpeppe/go-internal
 russross/blackfriday
 ryanuber/columnize
+santhosh-tekuri/jsonschema
 sean-/seed
 shurcooL/sanitized_anchor_name
 sirupsen/logrus
@@ -252,6 +273,7 @@ streadway/quantile
 stretchr/objx
 stretchr/testify
 subosito/gotenv
+testcontainers/testcontainers-go
 tmc/grpc-websocket-proxy
 tsenart/go-tsz
 tsenart/vegeta

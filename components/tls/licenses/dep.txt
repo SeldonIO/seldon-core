@@ -2,6 +2,7 @@ github.com/seldonio/seldon-core/components/tls/v2
 cloud.google.com/go
 cloud.google.com/go/bigquery
 cloud.google.com/go/compute
+cloud.google.com/go/compute/metadata
 cloud.google.com/go/datastore
 cloud.google.com/go/firestore
 cloud.google.com/go/logging
@@ -177,7 +178,6 @@ github.com/onsi/ginkgo/v2
 github.com/onsi/gomega
 github.com/opentracing/opentracing-go
 github.com/otiai10/copy
-github.com/otiai10/curr
 github.com/otiai10/mint
 github.com/pascaldekloe/goe
 github.com/pelletier/go-toml
@@ -261,6 +261,8 @@ gomodules.xyz/jsonpatch/v2
 google.golang.org/api
 google.golang.org/appengine
 google.golang.org/genproto
+google.golang.org/genproto/googleapis/api
+google.golang.org/genproto/googleapis/rpc
 google.golang.org/grpc
 google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
