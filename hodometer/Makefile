@@ -105,7 +105,7 @@ licenses: licenses/dep.txt
 		-o licenses/repo.txt \
 		--manual-dep-repo-mapping ../licenses/dep_repo.manual.csv \
 		licenses/dep.txt
-	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt --branch-refs ../licenses/branch_refs.manual.csv
 	python -m 'patch_additional_license_info' \
 		licenses/license_info.csv \
 		../licenses/additional_license_info.csv
