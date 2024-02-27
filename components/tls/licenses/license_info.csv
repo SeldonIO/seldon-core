@@ -1,4 +1,4 @@
-seldonio/seldon-core,https://github.com/SeldonIO/seldon-core/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/SeldonIO/seldon-core/master/LICENSE
+seldonio/seldon-core,https://github.com/SeldonIO/seldon-core/blob/master/LICENSE,Business Source License 1.1,https://raw.githubusercontent.com/SeldonIO/seldon-core/master/LICENSE
 Azure/go-ansiterm,https://github.com/Azure/go-ansiterm/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/go-ansiterm/master/LICENSE
 Azure/go-autorest,https://github.com/Azure/go-autorest/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/Azure/go-autorest/main/LICENSE
 BurntSushi/toml,https://github.com/BurntSushi/toml/blob/master/COPYING,MIT License,https://raw.githubusercontent.com/BurntSushi/toml/master/COPYING
@@ -156,7 +156,6 @@ onsi/ginkgo,https://github.com/onsi/ginkgo/blob/master/LICENSE,MIT License,https
 onsi/gomega,https://github.com/onsi/gomega/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/onsi/gomega/master/LICENSE
 opentracing/opentracing-go,https://github.com/opentracing/opentracing-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/opentracing/opentracing-go/master/LICENSE
 otiai10/copy,https://github.com/otiai10/copy/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/copy/main/LICENSE
-otiai10/curr,https://github.com/otiai10/curr/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/curr/main/LICENSE
 otiai10/mint,https://github.com/otiai10/mint/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/otiai10/mint/main/LICENSE
 pascaldekloe/goe,https://github.com/pascaldekloe/goe/blob/master/LICENSE,Creative Commons Zero v1.0 Universal,https://raw.githubusercontent.com/pascaldekloe/goe/master/LICENSE
 pelletier/go-toml,https://github.com/pelletier/go-toml/blob/v2/LICENSE,The MIT License (MIT),https://raw.githubusercontent.com/pelletier/go-toml/v2/LICENSE

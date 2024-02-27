@@ -1,6 +1,6 @@
 <licenses>
   <license name='GNU General Public License, version 2' url='http://www.gnu.org/licenses/gpl-2.0.html'>
-    <dependency>rocksdbjni-7.1.2.jar</dependency>
+    <dependency>rocksdbjni-7.9.2.jar</dependency>
   </license>
   <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
     <dependency>logging-interceptor-4.11.0.jar</dependency>
@@ -25,13 +25,13 @@
     <dependency>kotlinx-coroutines-core-jvm-1.7.3.jar</dependency>
   </license>
   <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0'>
-    <dependency>grpc-stub-1.61.0.jar</dependency>
-    <dependency>grpc-api-1.61.0.jar</dependency>
-    <dependency>grpc-kotlin-stub-1.2.1.jar</dependency>
-    <dependency>grpc-protobuf-1.61.0.jar</dependency>
+    <dependency>grpc-protobuf-1.61.1.jar</dependency>
+    <dependency>grpc-api-1.61.1.jar</dependency>
+    <dependency>grpc-stub-1.61.1.jar</dependency>
+    <dependency>grpc-kotlin-stub-1.4.1.jar</dependency>
   </license>
   <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html'>
-    <dependency>rocksdbjni-7.1.2.jar</dependency>
+    <dependency>rocksdbjni-7.9.2.jar</dependency>
     <dependency>swagger-annotations-1.6.11.jar</dependency>
   </license>
   <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
@@ -43,14 +43,14 @@
     <dependency>kotlin-retry-1.0.9.jar</dependency>
   </license>
   <license name='MIT License' url='http://www.opensource.org/licenses/mit-license.php'>
-    <dependency>slf4j-api-2.0.9.jar</dependency>
+    <dependency>slf4j-api-2.0.12.jar</dependency>
   </license>
   <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt'>
     <dependency>kotlin-stdlib-jdk7-1.8.20.jar</dependency>
-    <dependency>kotlin-stdlib-1.8.20.jar</dependency>
-    <dependency>kafka-streams-3.4.0.jar</dependency>
-    <dependency>kotlin-stdlib-common-1.8.20.jar</dependency>
-    <dependency>kafka-clients-3.4.0.jar</dependency>
+    <dependency>kotlinx-datetime-jvm-0.5.0.jar</dependency>
+    <dependency>kafka-clients-7.6.0-ccs.jar</dependency>
+    <dependency>kotlin-stdlib-1.9.22.jar</dependency>
+    <dependency>kafka-streams-7.6.0-ccs.jar</dependency>
     <dependency>kotlin-stdlib-jdk8-1.8.20.jar</dependency>
   </license>
   <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt'>
@@ -74,8 +74,8 @@
     <dependency>error_prone_annotations-2.23.0.jar</dependency>
   </license>
   <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt'>
-    <dependency>slf4j-klogging-0.2.5.jar</dependency>
-    <dependency>klogging-jvm-0.4.4.jar</dependency>
+    <dependency>slf4j-klogging-0.5.11.jar</dependency>
+    <dependency>klogging-jvm-0.5.11.jar</dependency>
   </license>
   <license name='The MIT License' url='http://opensource.org/licenses/MIT'>
     <dependency>checker-qual-3.37.0.jar</dependency>
