@@ -21,6 +21,9 @@ RUN make build-receiver
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-13
 COPY --from=builder /build/bin/receiver /bin/receiver
 
+# Copy licenses
+COPY hodometer/licenses/ /licenses/
+
 ARG UID=1000
 ARG GID=1000
 USER ${UID}:${GID}
