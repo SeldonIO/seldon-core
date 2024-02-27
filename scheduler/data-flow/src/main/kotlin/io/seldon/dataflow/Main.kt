@@ -81,12 +81,19 @@ object Main {
             useCleanState = config[Cli.kafkaUseCleanState],
             joinWindowMillis = config[Cli.kafkaJoinWindowMillis],
         )
+        val topicWaitRetryParams = TopicWaitRetryParams(
+            createTimeoutMillis = config[Cli.topicCreateTimeoutMillis],
+            describeTimeoutMillis = config[Cli.topicDescribeTimeoutMillis],
+            describeRetries = config[Cli.topicDescribeRetries],
+            describeRetryDelayMillis = config[Cli.topicDescribeRetryDelayMillis]
+        )
         val subscriber = PipelineSubscriber(
             "seldon-dataflow-engine",
             kafkaProperties,
             kafkaAdminProperties,
             kafkaStreamsParams,
             kafkaDomainParams,
+            topicWaitRetryParams,
             config[Cli.upstreamHost],
             config[Cli.upstreamPort],
             GrpcServiceConfigProvider.config,

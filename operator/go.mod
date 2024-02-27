@@ -5,7 +5,7 @@ go 1.20
 require (
 	emperror.dev/errors v0.8.1
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
-	github.com/confluentinc/confluent-kafka-go v1.9.2
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.4.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -25,6 +25,12 @@ require (
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	knative.dev/pkg v0.0.0-20211203062937-d37811b71d6a
 	sigs.k8s.io/controller-runtime v0.12.3
+)
+
+require (
+	github.com/google/pprof v0.0.0-20211008130755-947d60d73cc0 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
 )
 
 require (
@@ -76,7 +82,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.21.0 // indirect
+	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect

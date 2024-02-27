@@ -291,7 +291,7 @@ func (m ModelReplicaState) UnloadingOrUnloaded() bool {
 }
 
 func (m ModelReplicaState) Inactive() bool {
-	return (m == Unloaded || m == UnloadFailed || m == ModelReplicaStateUnknown)
+	return (m == Unloaded || m == UnloadFailed || m == ModelReplicaStateUnknown || m == LoadFailed)
 }
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {

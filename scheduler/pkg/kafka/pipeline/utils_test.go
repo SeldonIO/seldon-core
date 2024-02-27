@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc/metadata"
 

@@ -131,6 +131,12 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	}
 	s.serverEventStream.mu.Unlock()
 
+	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
+	err := s.sendCurrentServerStatuses(stream)
+	if err != nil {
+		return err
+	}
+
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
 	for {
@@ -187,6 +193,7 @@ func (s *SchedulerServer) updateServerStatus(evt coordinator.ModelEventMsg) erro
 	}
 
 	s.serverEventStream.pendingLock.Lock()
+	// we are coalescing events so we only send one event (the latest status) per server
 	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
 	if s.serverEventStream.trigger == nil {
 		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWaitMillis, s.sendServerStatus)
@@ -224,4 +231,22 @@ func (s *SchedulerServer) sendServerStatus() {
 		}
 	}
 	s.serverEventStream.mu.Unlock()
+}
+
+// initial send of server statuses to a new controller
+func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerStatusServer) error {
+	servers, err := s.modelStore.GetServers(true, true) // shallow, with model details
+	if err != nil {
+		return err
+	}
+	for _, server := range servers {
+		ssr := createServerStatusResponse(server)
+
+		err := stream.Send(ssr)
+		if err != nil {
+			s.logger.WithError(err).Errorf("Failed to send server status event for %s", server.Name)
+		}
+
+	}
+	return nil
 }

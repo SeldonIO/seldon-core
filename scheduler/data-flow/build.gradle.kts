@@ -24,18 +24,18 @@ repositories {
 
 dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.klogging:klogging-jvm:0.5.8")
-    implementation("io.klogging:slf4j-klogging:0.5.8")
+    implementation("io.klogging:klogging-jvm:0.5.11")
+    implementation("io.klogging:slf4j-klogging:0.5.11")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:3.4.0")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.5.0")
+    implementation("org.apache.kafka:kafka-streams:7.6.0-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.0-ccs")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.61.0")
-    implementation("io.grpc:grpc-protobuf:1.61.0")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.61.0")
+    implementation("io.grpc:grpc-stub:1.61.1")
+    implementation("io.grpc:grpc-protobuf:1.61.1")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.61.1")
     implementation("com.google.protobuf:protobuf-java:3.25.2")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -45,8 +45,9 @@ dependencies {
     implementation("io.kubernetes:client-java:19.0.0")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testImplementation("io.strikt:strikt-core:0.34.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 sourceSets {

@@ -12,7 +12,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
@@ -63,7 +63,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 	// Set the SASL mechanism
-	config["security.protocol"] = "SASL_SSL"
+	config["security.protocol"] = tls.SecurityProtocolSASLSSL
 	config["sasl.mechanism"] = mechanism
 
 	// Set the SASL username and password

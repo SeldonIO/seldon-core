@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"

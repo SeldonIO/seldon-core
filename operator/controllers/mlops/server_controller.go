@@ -74,6 +74,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification), and we can get them
 			// on deleted requests.
+			logger.Error(err, "server not found, ignoring error", "name", req.Name, "namespace", req.Namespace)
 			return reconcile.Result{}, nil
 		}
 		logger.Error(err, "unable to fetch Server", "name", req.Name, "namespace", req.Namespace)
@@ -84,7 +85,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Check if we are being deleted and return if so
 	// Cleanup of server is handled by the server pod itself informing the scheduler and waiting as models are
-	// recheculed (if possible).
+	// rescheduled (if possible).
 	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
 		return reconcile.Result{}, nil
 	}

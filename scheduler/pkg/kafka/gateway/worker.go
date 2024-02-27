@@ -21,9 +21,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/kafka/splunkkafka"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
@@ -243,7 +243,7 @@ func (iw *InferWorker) produce(
 	for k, vs := range headers {
 		for _, v := range vs {
 			if !existsKafkaHeader(kafkaHeaders, k, v) {
-				logger.Infof("Adding header to kafka response %s:%s", k, v)
+				logger.Debugf("Adding header to kafka response %s:%s", k, v)
 				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(v)})
 			}
 		}
