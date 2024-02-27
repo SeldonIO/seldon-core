@@ -13,4 +13,3 @@ golang.org/x/text,https://github.com/golang/go
 golang.org/x/time,https://github.com/golang/go
 golang.org/x/tools,https://github.com/golang/go
 golang.org/x/xerrors,https://github.com/golang/go
-seldonio/seldon-core,https://github.com/SeldonIO/seldon-core/tree/v2
