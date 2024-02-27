@@ -19,8 +19,8 @@ const (
 	HeaderValueProtoRes = "proto/InferModelResponse"
 
 	// Topic creation retries
-	TopicCreateTimeout = time.Minute
-	TopicDescribeTimeout = time.Second
+	TopicCreateTimeout      = time.Minute
+	TopicDescribeTimeout    = time.Second
 	TopicDescribeMaxRetries = 60
 	TopicDescribeRetryDelay = time.Second
 )
