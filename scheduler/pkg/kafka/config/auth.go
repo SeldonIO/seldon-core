@@ -63,7 +63,7 @@ func setupSASLSSLAuthentication(config kafka.ConfigMap) error {
 
 func withPasswordAuth(mechanism string, config kafka.ConfigMap) error {
 	// Set the SASL mechanism
-	config["security.protocol"] = "SASL_SSL"
+	config["security.protocol"] = tls.SecurityProtocolSASLSSL
 	config["sasl.mechanism"] = mechanism
 
 	// Set the SASL username and password
