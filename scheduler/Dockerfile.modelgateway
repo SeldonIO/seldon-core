@@ -21,4 +21,8 @@ COPY --from=certs /etc/ssl/certs/ca-bundle.crt /etc/pki/tls/certs/ca-bundle.crt
 COPY --from=certs /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt
 RUN chmod -R 777 /tmp/certs/
 COPY --from=builder /build/scheduler/bin/modelgateway /bin/modelgateway
+
+# Copy licenses
+COPY scheduler/licenses/ /licenses/
+
 ENTRYPOINT ["/bin/modelgateway"]

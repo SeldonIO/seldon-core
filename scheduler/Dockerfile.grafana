@@ -13,3 +13,6 @@ ADD ./scheduler/config/grafana/provisioning /etc/grafana/provisioning
 ADD ./scheduler/config/grafana/grafana.ini /etc/grafana/grafana.ini
 # Add dashboard json files
 ADD ./scheduler/config/grafana/dashboards /etc/grafana/dashboards
+
+# Copy license
+COPY LICENSE /licenses/license.txt
