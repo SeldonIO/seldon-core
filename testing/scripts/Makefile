@@ -54,7 +54,7 @@ kind_build_misc:
 kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer
 
 .PHONY: kind_build_test_images
-kind_build_test_images: make kind_build_test_models kind_build_misc
+kind_build_test_images: kind_build_test_models kind_build_misc
 
 .PHONY: helm_setup
 helm_setup:

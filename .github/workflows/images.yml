@@ -1,6 +1,9 @@
-name: V2 Build docker images
+name: Build & Push Docker Images
 
 on:
+  push:
+    branches: [ master ]
+
   workflow_dispatch:
     inputs:
       docker-tag:
@@ -8,11 +11,194 @@ on:
         default: 'latest'
         required: false
 
+env:
+  GOLANG_VERSION: 1.20.9
+
 jobs:
-  placeholder:
-    name: placeholder
+  operator:
     runs-on: ubuntu-latest
-    if: github.repository == 'seldonio/seldon-core' # Do not run this on forks.
     steps:
-    - name: Echo Message
-      run: echo "This is to make workflow available for V2 releases"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+
+      - name: Set default docker tag for builds from master
+        id: docker-tag
+        run: |
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
+          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
+
+
+      - name: Build and push
+        working-directory: ./operator/
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build docker-push
+
+  executor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+
+      - name: Set default docker tag for builds from master
+        id: docker-tag
+        run: |
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
+          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        working-directory: ./executor/
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build docker-push
+
+  rclone-storage-initializer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Git Commit
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+
+      - name: Set default docker tag for builds from master
+        id: docker-tag
+        run: |
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
+          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
+
+      - name: Build and push (Rclone Storage Initializer)
+        working-directory: ./components/rclone-storage-initializer
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build docker-push
+
+  s2i-wrapper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Git Commit
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+
+      - name: Set default docker tag for builds from master
+        id: docker-tag
+        run: |
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
+          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
+
+      - name: Build and push (Conda Base Image)
+        working-directory: ./wrappers/s2i/python
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build-conda-base docker-push-conda-base
+
+      - name: Build and push (Base Wrapper)
+        working-directory: ./wrappers/s2i/python
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build docker-push PYTHON_VERSION=3.8.10
+          make docker-tag-base-python docker-push-base-python PYTHON_VERSION=3.8.10
+          docker save -o /tmp/base-wrapper.tar ${DOCKER_REGISTRY}/seldon-core-s2i-python38:${VERSION}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: base-wrapper
+          path: /tmp/base-wrapper.tar
+
+  prepackaged-components:
+    runs-on: ubuntu-latest
+    needs: s2i-wrapper
+    strategy:
+      matrix:
+        server:
+        - servers/sklearnserver
+        - servers/xgboostserver
+        - servers/mlflowserver
+        - servers/tfserving_proxy
+        - components/alibi-explain-server
+        - components/alibi-detect-server
+    steps:
+      - name: Checkout Git Commit
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+
+      - name: Set default docker tag for builds from master
+        id: docker-tag
+        run: |
+          USER_INPUT="${{ github.event.inputs.docker-tag }}"
+          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
+
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          github_pat: ${{ github.token }}
+          source: "github"
+          s2i: "latest"
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: base-wrapper
+          path: /tmp
+
+      - name: Load image
+        run: |
+          docker load --input /tmp/base-wrapper.tar
+
+      - name: Build and push (Prepackaged Server Image)
+        working-directory: ./${{ matrix.server }}/
+        env:
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          make docker-build docker-push
