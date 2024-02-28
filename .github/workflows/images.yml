@@ -3,6 +3,7 @@ name: Build & Push Docker Images
 on:
   push:
     branches: [ master ]
+
   workflow_dispatch:
     inputs:
       docker-tag:
