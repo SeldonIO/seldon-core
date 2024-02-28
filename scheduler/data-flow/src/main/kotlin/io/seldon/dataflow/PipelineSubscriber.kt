@@ -186,12 +186,11 @@ class PipelineSubscriber(
             }
         }
 
-        // There is a small chance that pipeline.start() returned a status of PipelineState.StreamStopped(),
-        // if the process is being signalled to shutdown during its execution, and calls pipeline.stop()
-        //
-        // For this case, we don't want to mark the Create operation as successful, so we force the state
-        // to be an error (despite no actual error having occurred) before sending the update to the scheduler.
-        if(pipelineStatus is PipelineStatus.StreamStopped) {
+        // We don't want to mark the PipelineOperation.Create as successful unless the
+        // pipeline has started. While states such as "StreamStarting" or "StreamStopped" are
+        // not in themselves errors, if the pipeline is not running here then it can't
+        // be marked as ready.
+        if(pipelineStatus !is PipelineStatus.Started) {
             pipelineStatus.isError = true
         }
         pipelineStatus.log(logger, Level.INFO)
