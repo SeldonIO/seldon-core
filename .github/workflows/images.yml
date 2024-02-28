@@ -2,7 +2,7 @@ name: Build & Push Docker Images
 
 on:
   push:
-    branches: [ master, v2 ]
+    branches: [ master ]
   workflow_dispatch:
     inputs:
       docker-tag:
