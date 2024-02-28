@@ -9,9 +9,6 @@ on:
         description: 'Docker tag for push (e.g. 2.0.0)'
         default: 'latest'
         required: false
-      environment:
-        type: environment
-        description: Select the environment to run task against
 
 env:
   GOLANG_VERSION: 1.20.9
