@@ -13,5 +13,6 @@ COPY --from=builder /build/scheduler/bin/scheduler /bin/scheduler
 
 # Copy licenses
 COPY scheduler/licenses/ /licenses/
+COPY components/tls/licenses/ /licenses/seldontls/
 
 ENTRYPOINT ["/bin/scheduler"]

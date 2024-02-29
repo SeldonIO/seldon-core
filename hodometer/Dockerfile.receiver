@@ -23,6 +23,7 @@ COPY --from=builder /build/bin/receiver /bin/receiver
 
 # Copy licenses
 COPY hodometer/licenses/ /licenses/
+COPY components/tls/licenses/ /licenses/seldontls/
 
 ARG UID=1000
 ARG GID=1000

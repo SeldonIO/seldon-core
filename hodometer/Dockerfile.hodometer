@@ -27,6 +27,7 @@ COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 # Copy licenses
 COPY hodometer/licenses/ /licenses/
+COPY components/tls/licenses/ /licenses/seldontls/
 
 ARG UID=1000
 ARG GID=1000
