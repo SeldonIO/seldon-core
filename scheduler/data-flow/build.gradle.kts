@@ -48,6 +48,13 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testImplementation("io.strikt:strikt-core:0.34.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // transitive dependencies constraints
+    constraints {
+        implementation("org.apache.commons:commons-compress:1.26.0") {
+            because("version 1.24.0 pulled by io.kubernetes:client-java contains high CVEs")
+        }
+    }
 }
 
 sourceSets {
