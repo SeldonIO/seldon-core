@@ -10,14 +10,24 @@
     seldon_default_img_set:
       dev_img_set: false
       components: []
+      repository_img_prefix: "{{ seldon_default_dev.dockerhub_user }}"
+      image: "{{ seldon_default_image_config }}"
+
+- name: Set default dev img_set keys
+  ansible.builtin.set_fact:
+    seldon_default_dev_img_set:
+      dev_img_set: true
+      components: []
       repository_img_prefix: "{{ seldon_dev_u.dockerhub_user }}"
       image: "{{ seldon_default_image_config }}"
 
 - name: Apply defaults to custom_image_config
   ansible.builtin.set_fact:
     custom_image_config_u: >-
-      {{ custom_image_config_u +
-      [ seldon_default_img_set | combine(cic, recursive=true) ] }}
+      {{ custom_image_config_u + (
+         [ seldon_default_dev_img_set | combine(cic, recursive=true) ]
+          if cic.dev_img_set is true
+          else [ seldon_default_img_set | combine(cic, recursive=true) ] ) }}
   loop: "{{ custom_image_config }}"
   loop_control:
     loop_var: cic
