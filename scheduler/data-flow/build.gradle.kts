@@ -35,7 +35,7 @@ dependencies {
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
     implementation("io.grpc:grpc-stub:1.61.1")
     implementation("io.grpc:grpc-protobuf:1.61.1")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.61.1")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.62.2")
     implementation("com.google.protobuf:protobuf-java:3.25.2")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
