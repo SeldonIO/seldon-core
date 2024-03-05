@@ -4,11 +4,12 @@ MLSERVER_FOLDER = mlserver_${MLSERVER_VERSION}
 TRITON_VERSION=$(shell grep 'nvidia/tritonserver' ../../../scheduler/Makefile | cut -d':' -f2 | cut -d'-' -f1 | tr '.' '-')
 TRITON_FOLDER=triton_${TRITON_VERSION}
 
+# note that income-lgb fails with new version of lightgbm
 .PHONY: train-all
-train-all: iris huggingface-text-gen-gpt2 huggingface-text-gen-tiny-stories moviesentiment income income-xgb income-lgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
+train-all: iris huggingface-text-gen-gpt2 huggingface-text-gen-tiny-stories moviesentiment income income-xgb download-mnist-onnx download-cifar10-tensorflow wine-mlflow mnist-pytorch
 
 .PHONY: upload-all
-upload-all: upload-iris upload-huggingface-text-gen-gpt2 upload-huggingface-text-gen-tiny-stories upload-moviesentiment upload-income upload-income-xgb upload-income-lgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
+upload-all: upload-iris upload-huggingface-text-gen-gpt2 upload-huggingface-text-gen-tiny-stories upload-moviesentiment upload-income upload-income-xgb upload-mnist-onnx upload-cifar10-tensorflow upload-wine-mlflow upload-mnist-pytorch
 
 .PHONY: env
 env:
@@ -103,6 +104,7 @@ upload-income-xgb:
 
 #
 # Income lightgbm model
+# note: this fails with current version of lightgbm
 #
 
 .PHONY: income-lgb
