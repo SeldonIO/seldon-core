@@ -121,7 +121,7 @@ upload-income-lgb:
 
 .PHONY: download-mnist-onnx
 download-mnist-onnx:
-	wget https://github.com/onnx/models/raw/main/vision/classification/mnist/model/mnist-12.onnx -O mnist-onnx/model.onnx
+	wget https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-12.onnx -O mnist-onnx/model.onnx
 
 .PHONY: upload-mnist-onnx
 upload-mnist-onnx:
