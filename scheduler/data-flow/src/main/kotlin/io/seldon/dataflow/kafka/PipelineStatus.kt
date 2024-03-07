@@ -30,7 +30,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
                 statusMsg += ", before stop: $prevStateDescription"
             }
             return if (exceptionMsg != null) {
-                "$statusMsg Exception: $exceptionMsg"
+                "$statusMsg, exception: $exceptionMsg"
             } else {
                 statusMsg
             }
@@ -47,7 +47,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             }
             if (exceptionMsg != null) {
                 runBlocking {
-                    logger.log(levelIfNoException, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
+                    logger.log(levelIfNoException, exceptionCause, "$statusMsg, exception: {exception}", exceptionMsg)
                 }
             } else {
                 runBlocking {
@@ -66,7 +66,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
                 statusMsg += ", stop cause: $prevStateDescription"
             }
             if (exceptionMsg != null) {
-                logger.log(levelIfNoException, exceptionCause, "$statusMsg, Exception: {exception}", exceptionMsg)
+                logger.log(levelIfNoException, exceptionCause, "$statusMsg, exception: {exception}", exceptionMsg)
             } else {
                 logger.log(levelIfNoException, "$statusMsg")
             }

@@ -144,10 +144,10 @@ class Pipeline(
             var pipelineError: PipelineStatus.Error?
             try {
                 streamsApp = KafkaStreams(topology, pipelineProperties)
-            } catch (e: StreamsException) {
+            } catch (e: Exception) {
                 pipelineError = PipelineStatus.Error(null)
                     .withException(e)
-                    .withMessage("failed to initialize kafka streams app")
+                    .withMessage("failed to initialize kafka streams for pipeline")
                 return null to pipelineError
             }
 
