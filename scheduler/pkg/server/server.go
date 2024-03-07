@@ -35,12 +35,12 @@ import (
 
 const (
 	grpcMaxConcurrentStreams       = 1_000_000
-	pendingEventsQueueSize     int = 10
+	pendingEventsQueueSize     int = 1000
 	modelEventHandlerName          = "scheduler.server.models"
 	serverEventHandlerName         = "scheduler.server.servers"
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
-	defaultBatchWaitMillis         = 250 * time.Millisecond
+	defaultBatchWait               = 250 * time.Millisecond
 )
 
 var (
@@ -183,7 +183,7 @@ func NewSchedulerServer(
 		},
 		serverEventStream: ServerEventStream{
 			streams:         make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
-			batchWaitMillis: defaultBatchWaitMillis,
+			batchWaitMillis: defaultBatchWait,
 			trigger:         nil,
 			pendingEvents:   map[string]struct{}{},
 		},

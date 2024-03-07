@@ -32,7 +32,7 @@ import (
 const (
 	grpcMaxConcurrentStreams     = 1_000_000
 	pipelineEventHandlerName     = "kafka.dataflow.server.pipelines"
-	pendingEventsQueueSize   int = 10
+	pendingEventsQueueSize   int = 1000
 	sourceChainerServer          = "chainer-server"
 )
 
