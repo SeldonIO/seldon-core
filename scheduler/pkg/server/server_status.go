@@ -196,7 +196,7 @@ func (s *SchedulerServer) updateServerStatus(evt coordinator.ModelEventMsg) erro
 	// we are coalescing events so we only send one event (the latest status) per server
 	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
 	if s.serverEventStream.trigger == nil {
-		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWaitMillis, s.sendServerStatus)
+		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
 	}
 	s.serverEventStream.pendingLock.Unlock()
 
