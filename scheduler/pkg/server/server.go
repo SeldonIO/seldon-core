@@ -35,7 +35,7 @@ import (
 
 const (
 	grpcMaxConcurrentStreams       = 1_000_000
-	pendingEventsQueueSize     int = 10
+	pendingEventsQueueSize     int = 1000
 	modelEventHandlerName          = "scheduler.server.models"
 	serverEventHandlerName         = "scheduler.server.servers"
 	experimentEventHandlerName     = "scheduler.server.experiments"
