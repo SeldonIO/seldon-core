@@ -31,17 +31,24 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) (error, bool) {
+func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (bool, error) {
 	logger := s.logger.WithName("LoadModel")
-	conn, err := s.getConnection(model.Namespace)
-	if err != nil {
-		return err, true
+	retryableError := false
+
+	// If the connection is not provided, get a new one
+	var err error
+	if conn == nil {
+		conn, err = s.getConnection(model.Namespace)
+		if err != nil {
+			retryableError = true
+			return retryableError, err
+		}
 	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 	logger.Info("Load", "model name", model.Name)
 	md, err := model.AsSchedulerModel()
 	if err != nil {
-		return err, false
+		return retryableError, err
 	}
 	loadModelRequest := scheduler.LoadModelRequest{
 		Model: md,
@@ -54,10 +61,10 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
-		return err, s.checkErrorRetryable(model.Kind, model.Name, err)
+		return s.checkErrorRetryable(model.Kind, model.Name, err), err
 	}
 
-	return nil, false
+	return retryableError, nil
 }
 
 // UnloadModel unloads a model from the scheduler
@@ -66,10 +73,10 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model) 
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
 func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (bool, error) {
 	logger := s.logger.WithName("UnloadModel")
+	retryableError := false
 
 	// If the connection is not provided, get a new one
 	var err error
-	retryableError := false
 	if conn == nil {
 		conn, err = s.getConnection(model.Namespace)
 		if err != nil {
@@ -256,6 +263,53 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 
 	}
 	return nil
+}
+
+func (s *SchedulerClient) reconcileLoadedModels(
+	ctx context.Context, namespace string, conn *grpc.ClientConn) {
+	modelList := &v1alpha1.ModelList{}
+	// Get all models in the namespace
+	err := s.List(
+		ctx,
+		modelList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	// Check if any models are being deleted
+	for _, model := range modelList.Items {
+		if model.ObjectMeta.DeletionTimestamp.IsZero() {
+			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
+				if retryUnload {
+					s.logger.Info("Failed to call unload model", "model", model.Name)
+					continue
+				} else {
+					// this is essentially a failed pre-condition (model does not exist in scheduler)
+					// we can remove
+					// note that there is still the chance the model is not updated from the different model servers
+					// upon reconnection of the scheduler
+					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
+						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
+							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
+							return errUpdate
+						}
+						s.logger.Info("Removed finalizer", "model", model.Name)
+						return nil
+					})
+					if retryErr != nil {
+						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
+					}
+				}
+			} else {
+				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
+				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
+			}
+			break
+		}
+	}
 }
 
 func (s *SchedulerClient) handlePendingDeleteModels(
