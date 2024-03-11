@@ -10,7 +10,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.12.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-playground/validator/v10 v10.19.0
-	github.com/golang/protobuf v1.5.3
+	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
@@ -38,7 +38,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.24.0
 	go.opentelemetry.io/otel/trace v1.24.0
 	google.golang.org/grpc v1.62.1
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
