@@ -334,7 +334,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	// Check if any models are being deleted
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.Info("Calling Unload model (on reconnect)", "model", model.Name)
+			s.logger.V(1).Info("Calling Unload model (on reconnect)", "model", model.Name)
 			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
 				if retryUnload {
 					// caller will retry as this method is called on connection reconnect
@@ -363,7 +363,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
 			}
 		} else {
-			s.logger.Info("Model is not being deleted, not unloading", "model", model.Name)
+			s.logger.V(1).Info("Model is not being deleted, not unloading", "model", model.Name)
 		}
 	}
 }
@@ -386,15 +386,15 @@ func (s *SchedulerClient) handleLoadedModels(
 	for _, model := range modelList.Items {
 		// models that are not in the process of being deleted has DeletionTimestamp as zero
 		if model.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.Info("Calling Load model (on reconnect)", "model", model.Name)
+			s.logger.V(1).Info("Calling Load model (on reconnect)", "model", model.Name)
 			if _, err := s.LoadModel(ctx, &model, conn); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
 			} else {
-				s.logger.Info("Load model called successfully", "model", model.Name)
+				s.logger.V(1).Info("Load model called successfully", "model", model.Name)
 			}
 		} else {
-			s.logger.Info("Model is being deleted, not loading", "model", model.Name)
+			s.logger.V(1).Info("Model is being deleted, not loading", "model", model.Name)
 		}
 	}
 }
