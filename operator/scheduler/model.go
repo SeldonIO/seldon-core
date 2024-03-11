@@ -128,6 +128,8 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
 	go s.handlePendingDeleteModels(ctx, namespace, conn)
+	// on new reconnects we reload the models that are marked as loaded in k8s as the scheduler might have lost the state
+	go s.handleLoadedModels(ctx, namespace, conn)
 
 	for {
 		event, err := stream.Recv()
@@ -334,7 +336,8 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
 			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
 				if retryUnload {
-					s.logger.Info("Failed to call unload model", "model", model.Name)
+					// caller will retry as this method is called on connection reconnect
+					s.logger.Error(err, "Failed to call unload model", "model", model.Name)
 					continue
 				} else {
 					// this is essentially a failed pre-condition (model does not exist in scheduler)
@@ -381,31 +384,11 @@ func (s *SchedulerClient) handleLoadedModels(
 	for _, model := range modelList.Items {
 		// models that are not in the process of being deleted has DeletionTimestamp as zero
 		if model.ObjectMeta.DeletionTimestamp.IsZero() {
-			if retryLoad, err := s.LoadModel(ctx, &model, conn); err != nil {
-				if retryLoad {
-					s.logger.Info("Failed to call load model", "model", model.Name)
-					continue
-				} else {
-					// this is essentially a failed pre-condition (model does not exist in scheduler)
-					// we can remove
-					// note that there is still the chance the model is not updated from the different model servers
-					// upon reconnection of the scheduler
-					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
-							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
-							return errUpdate
-						}
-						s.logger.Info("Removed finalizer", "model", model.Name)
-						return nil
-					})
-					if retryErr != nil {
-						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
-					}
-				}
+			if _, err := s.LoadModel(ctx, &model, conn); err != nil {
+				// if this is a retryable error, we will retry on the next connection reconnect
+				s.logger.Error(err, "Failed to call load model", "model", model.Name)
 			} else {
-				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
-				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
+				s.logger.Info("Load model called successfully", "model", model.Name)
 			}
 			break
 		}
