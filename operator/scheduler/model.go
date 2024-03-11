@@ -271,53 +271,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	return nil
 }
 
-func (s *SchedulerClient) reconcileLoadedModels(
-	ctx context.Context, namespace string, conn *grpc.ClientConn) {
-	modelList := &v1alpha1.ModelList{}
-	// Get all models in the namespace
-	err := s.List(
-		ctx,
-		modelList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	// Check if any models are being deleted
-	for _, model := range modelList.Items {
-		if model.ObjectMeta.DeletionTimestamp.IsZero() {
-			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
-				if retryUnload {
-					s.logger.Info("Failed to call unload model", "model", model.Name)
-					continue
-				} else {
-					// this is essentially a failed pre-condition (model does not exist in scheduler)
-					// we can remove
-					// note that there is still the chance the model is not updated from the different model servers
-					// upon reconnection of the scheduler
-					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
-							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
-							return errUpdate
-						}
-						s.logger.Info("Removed finalizer", "model", model.Name)
-						return nil
-					})
-					if retryErr != nil {
-						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
-					}
-				}
-			} else {
-				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
-				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
-			}
-			break
-		}
-	}
-}
-
 func (s *SchedulerClient) handlePendingDeleteModels(
 	ctx context.Context, namespace string, conn *grpc.ClientConn) {
 	modelList := &v1alpha1.ModelList{}
