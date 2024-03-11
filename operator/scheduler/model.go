@@ -362,7 +362,8 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
 				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
 			}
-			break
+		} else {
+			s.logger.Info("Model is not being deleted, not unloading", "model", model.Name)
 		}
 	}
 }
@@ -392,7 +393,8 @@ func (s *SchedulerClient) handleLoadedModels(
 			} else {
 				s.logger.Info("Load model called successfully", "model", model.Name)
 			}
-			break
+		} else {
+			s.logger.Info("Model is being deleted, not loading", "model", model.Name)
 		}
 	}
 }
