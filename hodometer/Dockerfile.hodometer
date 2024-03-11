@@ -22,7 +22,7 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-13
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-15
 COPY --from=builder /build/bin/hodometer /bin/hodometer
 
 # Copy licenses
