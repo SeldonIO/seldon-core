@@ -19,12 +19,19 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
-func TestModelLastUsedSimple(t *testing.T) {
+func setLastUsed(luKeeper *modelReplicaLastUsedKeeper, modelName string, ts uint32) error {
+	if err := luKeeper.pq.Update(modelName, -int64(ts)); err != nil {
+		return luKeeper.pq.Add(modelName, -int64(ts))
+	} else {
+		return err
+	}
+}
 
+func TestModelLastUsedSimple(t *testing.T) {
+	type operation uint
 	const (
 		inc operation = iota
 		del
-		set
 		add
 	)
 
@@ -50,18 +57,6 @@ func TestModelLastUsedSimple(t *testing.T) {
 			modelName: dummyModel,
 			op:        inc,
 			initial:   0,
-		},
-		{
-			name:      "set",
-			modelName: dummyModel,
-			op:        set,
-			initial:   0,
-		},
-		{
-			name:      "set new",
-			modelName: dummyModel,
-			op:        set,
-			initial:   1,
 		},
 		{
 			name:      "delete not there",
@@ -93,16 +88,14 @@ func TestModelLastUsedSimple(t *testing.T) {
 			lu := NewModelReplicaLastUsedKeeper()
 
 			if test.initial > 0 {
-				err := lu.Set(test.modelName, uint32(time.Now().Unix()))
+				err := setLastUsed(lu, test.modelName, uint32(time.Now().Unix()))
 				g.Expect(err).To(BeNil())
 			}
 			switch test.op {
 			case inc:
-				err := lu.IncDefault(test.modelName)
+				err := lu.ModelInferEnter(test.modelName, "")
 				g.Expect(err).To(BeNil())
-			case set:
-				err := lu.Set(test.modelName, uint32(time.Now().Unix()))
-				g.Expect(err).To(BeNil())
+
 			case del:
 				err := lu.Delete(test.modelName)
 				if test.initial > 0 {
@@ -157,14 +150,14 @@ func TestModelLastUsedThreshold(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			lu := NewModelReplicaLastUsedKeeper()
 			for i := 0; i < numModels/2; i++ {
-				err := lu.IncDefault(strconv.Itoa(i))
+				err := lu.ModelInferEnter(strconv.Itoa(i), "")
 				g.Expect(err).To(BeNil())
 			}
 
 			time.Sleep(time.Second * 1)
 
 			for i := numModels / 2; i < numModels; i++ {
-				err := lu.IncDefault(strconv.Itoa(i))
+				err := lu.ModelInferEnter(strconv.Itoa(i), "")
 				g.Expect(err).To(BeNil())
 			}
 

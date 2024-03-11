@@ -20,53 +20,55 @@ import (
 )
 
 const (
-	envServerHttpPort                = "SELDON_SERVER_HTTP_PORT"
-	envServerGrpcPort                = "SELDON_SERVER_GRPC_PORT"
-	envReverseProxyHttpPort          = "SELDON_REVERSE_PROXY_HTTP_PORT"
-	envReverseProxyGrpcPort          = "SELDON_REVERSE_PROXY_GRPC_PORT"
-	envDebugGrpcPort                 = "SELDON_DEBUG_GRPC_PORT"
-	envMetricsPort                   = "SELDON_METRICS_PORT"
-	envPodName                       = "POD_NAME"
-	envSchedulerHost                 = "SELDON_SCHEDULER_HOST"
-	envSchedulerPort                 = "SELDON_SCHEDULER_PORT"
-	envSchedulerTlsPort              = "SELDON_SCHEDULER_TLS_PORT"
-	envReplicaConfig                 = "SELDON_REPLICA_CONFIG"
-	envLogLevel                      = "SELDON_LOG_LEVEL"
-	envServerType                    = "SELDON_SERVER_TYPE"
-	envMemoryRequest                 = "MEMORY_REQUEST"
-	envCapabilities                  = "SELDON_SERVER_CAPABILITIES"
-	envOverCommitPercentage          = "SELDON_OVERCOMMIT_PERCENTAGE"
-	envEnvoyHost                     = "SELDON_ENVOY_HOST"
-	envEnvoyPort                     = "SELDON_ENVOY_PORT"
-	envDrainerServicePort            = "SELDON_DRAINER_PORT"
-	envModelInferenceLagThreshold    = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
-	envModelInactiveSecondsThreshold = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
-	envScalingStatsPeriodSeconds     = "SELDON_SCALING_STATS_PERIOD_SECONDS"
+	envServerHttpPort                 = "SELDON_SERVER_HTTP_PORT"
+	envServerGrpcPort                 = "SELDON_SERVER_GRPC_PORT"
+	envReverseProxyHttpPort           = "SELDON_REVERSE_PROXY_HTTP_PORT"
+	envReverseProxyGrpcPort           = "SELDON_REVERSE_PROXY_GRPC_PORT"
+	envDebugGrpcPort                  = "SELDON_DEBUG_GRPC_PORT"
+	envMetricsPort                    = "SELDON_METRICS_PORT"
+	envPodName                        = "POD_NAME"
+	envSchedulerHost                  = "SELDON_SCHEDULER_HOST"
+	envSchedulerPort                  = "SELDON_SCHEDULER_PORT"
+	envSchedulerTlsPort               = "SELDON_SCHEDULER_TLS_PORT"
+	envReplicaConfig                  = "SELDON_REPLICA_CONFIG"
+	envLogLevel                       = "SELDON_LOG_LEVEL"
+	envServerType                     = "SELDON_SERVER_TYPE"
+	envMemoryRequest                  = "MEMORY_REQUEST"
+	envCapabilities                   = "SELDON_SERVER_CAPABILITIES"
+	envOverCommitPercentage           = "SELDON_OVERCOMMIT_PERCENTAGE"
+	envEnvoyHost                      = "SELDON_ENVOY_HOST"
+	envEnvoyPort                      = "SELDON_ENVOY_PORT"
+	envDrainerServicePort             = "SELDON_DRAINER_PORT"
+	envModelInferenceLagThreshold     = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
+	envModelInferenceDelayMSThreshold = "SELDON_MODEL_INFERENCE_DELAY_MS_THRESHOLD"
+	envModelInactiveSecondsThreshold  = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
+	envScalingStatsPeriodSeconds      = "SELDON_SCALING_STATS_PERIOD_SECONDS"
 
-	flagSchedulerHost                 = "scheduler-host"
-	flagSchedulerPlaintxtPort         = "scheduler-port"
-	flagSchedulerTlsPort              = "scheduler-tls-port"
-	flagServerName                    = "server-name"
-	flagServerIdx                     = "server-idx"
-	flagInferenceHttpPort             = "inference-http-port"
-	flagInferenceGrpcPort             = "inference-grpc-port"
-	flagReverseProxyHttpPort          = "reverse-proxy-http-port"
-	flagReverseProxyGrpcPort          = "reverse-proxy-grpc-port"
-	flagDebugGrpcPort                 = "debug-grpc-port"
-	flagMetricsPort                   = "metrics-port"
-	flagReplicaConfig                 = "replica-config"
-	flagLogLevel                      = "log-level"
-	flagServerType                    = "server-type"
-	flagMemoryBytes                   = "memory-bytes"
-	flagCapabilities                  = "capabilities"
-	flagOverCommitPercentage          = "over-commit-percentage"
-	flagTracingConfigPath             = "tracing-config-path"
-	flagEnvoyHost                     = "envoy-host"
-	flagEnvoyPort                     = "envoy-port"
-	flagDrainerServicePort            = "drainer-port"
-	flagModelInferenceLagThreshold    = "model-inference-lag-threshold"
-	flagModelInactiveSecondsThreshold = "model-inactive-seconds-threshold"
-	flagScalingStatsPeriodSeconds     = "scaling-stats-period-seconds"
+	flagSchedulerHost                  = "scheduler-host"
+	flagSchedulerPlaintxtPort          = "scheduler-port"
+	flagSchedulerTlsPort               = "scheduler-tls-port"
+	flagServerName                     = "server-name"
+	flagServerIdx                      = "server-idx"
+	flagInferenceHttpPort              = "inference-http-port"
+	flagInferenceGrpcPort              = "inference-grpc-port"
+	flagReverseProxyHttpPort           = "reverse-proxy-http-port"
+	flagReverseProxyGrpcPort           = "reverse-proxy-grpc-port"
+	flagDebugGrpcPort                  = "debug-grpc-port"
+	flagMetricsPort                    = "metrics-port"
+	flagReplicaConfig                  = "replica-config"
+	flagLogLevel                       = "log-level"
+	flagServerType                     = "server-type"
+	flagMemoryBytes                    = "memory-bytes"
+	flagCapabilities                   = "capabilities"
+	flagOverCommitPercentage           = "over-commit-percentage"
+	flagTracingConfigPath              = "tracing-config-path"
+	flagEnvoyHost                      = "envoy-host"
+	flagEnvoyPort                      = "envoy-port"
+	flagDrainerServicePort             = "drainer-port"
+	flagModelInferenceLagThreshold     = "model-inference-lag-threshold"
+	flagModelInferenceDelayMSThreshold = "model-inference-delay-ms-threshold"
+	flagModelInactiveSecondsThreshold  = "model-inactive-seconds-threshold"
+	flagScalingStatsPeriodSeconds      = "scaling-stats-period-seconds"
 )
 
 const (
@@ -81,45 +83,47 @@ const (
 	defaultDrainerServicePort       = 9007
 	statsPeriodSecondsDefault       = 5
 	lagThresholdDefault             = 30
+	delayMSThresholdDefault         = 1000
 	lastUsedThresholdSecondsDefault = 30
 )
 
 var (
-	agentHost                     string
-	ServerName                    string
-	ReplicaIdx                    uint
-	SchedulerHost                 string
-	SchedulerPort                 int
-	SchedulerTlsPort              int
-	RcloneHost                    string
-	RclonePort                    int
-	InferenceHost                 string
-	InferenceHttpPort             int
-	InferenceGrpcPort             int
-	ReverseProxyHttpPort          int
-	ReverseProxyGrpcPort          int
-	DebugGrpcPort                 int
-	MetricsPort                   int
-	AgentFolder                   string
-	Namespace                     string
-	ReplicaConfigStr              string
-	InferenceSvcName              string
-	ConfigPath                    string
-	LogLevel                      string
-	ServerType                    string
-	memoryBytes                   int
-	MemoryBytes64                 uint64
-	capabilitiesList              string
-	Capabilities                  []string
-	OverCommitPercentage          int
-	serverTypes                   = [...]string{"mlserver", "triton"}
-	TracingConfigPath             string
-	EnvoyHost                     string
-	EnvoyPort                     int
-	DrainerServicePort            int
-	ModelInferenceLagThreshold    int
-	ModelInactiveSecondsThreshold int
-	ScalingStatsPeriodSeconds     int
+	agentHost                      string
+	ServerName                     string
+	ReplicaIdx                     uint
+	SchedulerHost                  string
+	SchedulerPort                  int
+	SchedulerTlsPort               int
+	RcloneHost                     string
+	RclonePort                     int
+	InferenceHost                  string
+	InferenceHttpPort              int
+	InferenceGrpcPort              int
+	ReverseProxyHttpPort           int
+	ReverseProxyGrpcPort           int
+	DebugGrpcPort                  int
+	MetricsPort                    int
+	AgentFolder                    string
+	Namespace                      string
+	ReplicaConfigStr               string
+	InferenceSvcName               string
+	ConfigPath                     string
+	LogLevel                       string
+	ServerType                     string
+	memoryBytes                    int
+	MemoryBytes64                  uint64
+	capabilitiesList               string
+	Capabilities                   []string
+	OverCommitPercentage           int
+	serverTypes                    = [...]string{"mlserver", "triton"}
+	TracingConfigPath              string
+	EnvoyHost                      string
+	EnvoyPort                      int
+	DrainerServicePort             int
+	ModelInferenceLagThreshold     int
+	ModelInferenceDelayMSThreshold int
+	ModelInactiveSecondsThreshold  int
+	ScalingStatsPeriodSeconds      int
 )
 
 func init() {
@@ -154,6 +158,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateEnvoyPort()
 	maybeUpdateDrainerPort()
 	maybeUpdateModelInferenceLagThreshold()
+	maybeUpdateModelInferenceDelayMSThreshold()
 	maybeUpdateModelInactiveSecondsThreshold()
 	maybeUpdateScalingStatsPeriodSeconds()
 }
@@ -164,6 +169,15 @@ func maybeUpdateModelInferenceLagThreshold() {
 		envModelInferenceLagThreshold,
 		&ModelInferenceLagThreshold,
 		"inference lag threshold",
+	)
+}
+
+func maybeUpdateModelInferenceDelayMSThreshold() {
+	maybeUpdateFromIntEnv(
+		flagModelInferenceDelayMSThreshold,
+		envModelInferenceDelayMSThreshold,
+		&ModelInferenceDelayMSThreshold,
+		"inference delay threshold in milliseconds",
 	)
 }
 

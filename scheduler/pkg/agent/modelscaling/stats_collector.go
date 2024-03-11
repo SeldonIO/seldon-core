@@ -10,35 +10,44 @@ the Change License after the Change Date as each is defined in accordance with t
 package modelscaling
 
 import (
-	"sync"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
+	log "github.com/sirupsen/logrus"
 )
 
-// TODO: this has tight-coupling with specific metrics, how can we do it more generally?
 type DataPlaneStatsCollector struct {
-	ModelLagStats      interfaces.ModelScalingStats
-	ModelLastUsedStats interfaces.ModelScalingStats
+	logger      log.FieldLogger
+	StatKeepers []interfaces.ModelStatsKeeper
 }
 
-func NewDataPlaneStatsCollector(modelLagStats, modelLastUsedStats interfaces.ModelScalingStats) *DataPlaneStatsCollector {
+func NewDataPlaneStatsCollector(statKeepers []interfaces.ModelStatsKeeper, logger log.FieldLogger) *DataPlaneStatsCollector {
 	return &DataPlaneStatsCollector{
-		ModelLagStats:      modelLagStats,
-		ModelLastUsedStats: modelLastUsedStats,
+		logger:      logger,
+		StatKeepers: statKeepers,
 	}
 }
 
-func (c *DataPlaneStatsCollector) ScalingMetricsSetup(wg *sync.WaitGroup, internalModelName string) error {
-
-	err := c.ModelLagStats.IncDefault(internalModelName)
-	wg.Done()
-	if err != nil {
-		return err
+func (c *DataPlaneStatsCollector) ModelInferEnter(internalModelName, requestId string) error {
+	var err error
+	c.logger.Infof("ModelInferEnter for model %s request %s", internalModelName, requestId)
+	for _, stat := range c.StatKeepers {
+		err = stat.ModelInferEnter(internalModelName, requestId)
+		if err != nil {
+			c.logger.WithError(err).Warnf("model stats error for model %s request %s", internalModelName, requestId)
+		}
 	}
-	return c.ModelLastUsedStats.IncDefault(internalModelName)
+
+	return nil
 }
 
-func (c *DataPlaneStatsCollector) ScalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string) error {
-	wg.Wait() // make sure that Inc is called first
-	return c.ModelLagStats.DecDefault(internalModelName)
+func (c *DataPlaneStatsCollector) ModelInferExit(internalModelName, requestId string) error {
+	var err error
+	c.logger.Infof("ModelInferExit for model %s request %s", internalModelName, requestId)
+	for _, stat := range c.StatKeepers {
+		err = stat.ModelInferExit(internalModelName, requestId)
+		if err != nil {
+			c.logger.WithError(err).Warnf("model stats error for model %s request %s", internalModelName, requestId)
+		}
+
+	}
+	return nil
 }

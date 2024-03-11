@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package modelscaling
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"testing"
@@ -28,13 +29,13 @@ const (
 )
 
 func scalingMetricsSetup(
-	wg *sync.WaitGroup, internalModelName string, modelScalingStatsCollector *DataPlaneStatsCollector) error {
-	return modelScalingStatsCollector.ScalingMetricsSetup(wg, internalModelName)
+	internalModelName string, requestId string, modelScalingStatsCollector *DataPlaneStatsCollector) error {
+	return modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId)
 }
 
-func scalingMetricsTearDown(wg *sync.WaitGroup, internalModelName string,
+func scalingMetricsTearDown(internalModelName string, requestId string,
 	jobsWg *sync.WaitGroup, modelScalingStatsCollector *DataPlaneStatsCollector) error {
-	err := modelScalingStatsCollector.ScalingMetricsTearDown(wg, internalModelName)
+	err := modelScalingStatsCollector.ModelInferExit(internalModelName, requestId)
 	jobsWg.Done()
 	return err
 }
@@ -50,18 +51,18 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	service := NewStatsAnalyserService(
 		[]ModelScalingStatsWrapper{
 			{
-				Stats:     lags,
-				Operator:  interfaces.Gte,
-				Threshold: lagThresholdDefault,
-				Reset:     true,
-				EventType: ScaleUpEvent,
+				StatsKeeper: lags,
+				Operator:    interfaces.Gte,
+				Threshold:   lagThresholdDefault,
+				Reset:       true,
+				EventType:   ScaleUpEvent,
 			},
 			{
-				Stats:     lastUsed,
-				Operator:  interfaces.Gte,
-				Threshold: lastUsedThresholdSecondsDefault,
-				Reset:     false,
-				EventType: ScaleDownEvent,
+				StatsKeeper: lastUsed,
+				Operator:    interfaces.Gte,
+				Threshold:   lastUsedThresholdSecondsDefault,
+				Reset:       false,
+				EventType:   ScaleDownEvent,
 			},
 		},
 		log.New(),
@@ -86,22 +87,16 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	err = service.AddModel(dummyModelPrefix + "3")
 	g.Expect(err).To(BeNil())
+	lags.ModelInferEnter(dummyModelPrefix+"0", "")
+	lags.stats[dummyModelPrefix+"1"].(*lagStats).lag = lagThresholdDefault + 1
 
-	err = lags.Set(dummyModelPrefix+"0", lagThresholdDefault-1)
-	g.Expect(err).To(BeNil())
-	err = lags.Set(dummyModelPrefix+"1", lagThresholdDefault+1)
-	g.Expect(err).To(BeNil())
-	err = lags.Set(dummyModelPrefix+"2", lagThresholdDefault+1) //  model 2 not added so will not get returned to ch
-	g.Expect(err).To(BeNil())
 	event := <-ch
 	g.Expect(event.StatsData.ModelName).To(Equal(dummyModelPrefix + "1"))
 	g.Expect(event.StatsData.Value).To(Equal(uint32(lagThresholdDefault + 1)))
 	g.Expect(event.EventType).To(Equal(ScaleUpEvent))
 
 	t.Logf("Test last used")
-	err = lastUsed.Set(dummyModelPrefix+"3", uint32(time.Now().Unix())-lastUsedThresholdSecondsDefault)
-	g.Expect(err).To(BeNil())
-	err = lastUsed.Set(dummyModelPrefix+"4", uint32(time.Now().Unix())-lastUsedThresholdSecondsDefault) // model 4 not added
+	err = setLastUsed(lastUsed, dummyModelPrefix+"3", uint32(time.Now().Unix())-lastUsedThresholdSecondsDefault)
 	g.Expect(err).To(BeNil())
 	event = <-ch
 	g.Expect(event.StatsData.ModelName).To(Equal(dummyModelPrefix + "3"))
@@ -124,18 +119,18 @@ func TestStatsAnalyserEarlyStop(t *testing.T) {
 	service := NewStatsAnalyserService(
 		[]ModelScalingStatsWrapper{
 			{
-				Stats:     lags,
-				Operator:  interfaces.Gte,
-				Threshold: lagThresholdDefault,
-				Reset:     true,
-				EventType: ScaleUpEvent,
+				StatsKeeper: lags,
+				Operator:    interfaces.Gte,
+				Threshold:   lagThresholdDefault,
+				Reset:       true,
+				EventType:   ScaleUpEvent,
 			},
 			{
-				Stats:     lastUsed,
-				Operator:  interfaces.Gte,
-				Threshold: lastUsedThresholdSecondsDefault,
-				Reset:     false,
-				EventType: ScaleDownEvent,
+				StatsKeeper: lastUsed,
+				Operator:    interfaces.Gte,
+				Threshold:   lastUsedThresholdSecondsDefault,
+				Reset:       false,
+				EventType:   ScaleDownEvent,
 			},
 		},
 		log.New(),
@@ -158,25 +153,26 @@ func TestStatsAnalyserSoak(t *testing.T) {
 
 	lags := NewModelReplicaLagsKeeper()
 	lastUsed := NewModelReplicaLastUsedKeeper()
-	modelScalingStatsCollector := NewDataPlaneStatsCollector(lags, lastUsed)
+	logger := log.New()
+	modelScalingStatsCollector := NewDataPlaneStatsCollector([]interfaces.ModelStatsKeeper{lags, lastUsed}, logger)
 	service := NewStatsAnalyserService(
 		[]ModelScalingStatsWrapper{
 			{
-				Stats:     lags,
-				Operator:  interfaces.Gte,
-				Threshold: lagThresholdDefault,
-				Reset:     true,
-				EventType: ScaleUpEvent,
+				StatsKeeper: lags,
+				Operator:    interfaces.Gte,
+				Threshold:   lagThresholdDefault,
+				Reset:       true,
+				EventType:   ScaleUpEvent,
 			},
 			{
-				Stats:     lastUsed,
-				Operator:  interfaces.Gte,
-				Threshold: lastUsedThresholdSecondsDefault,
-				Reset:     false,
-				EventType: ScaleDownEvent,
+				StatsKeeper: lastUsed,
+				Operator:    interfaces.Gte,
+				Threshold:   lastUsedThresholdSecondsDefault,
+				Reset:       false,
+				EventType:   ScaleDownEvent,
 			},
 		},
-		log.New(),
+		logger,
 		statsPeriodSecondsDefault,
 	)
 
@@ -199,14 +195,18 @@ func TestStatsAnalyserSoak(t *testing.T) {
 
 	for i := 0; i < numberIterations; i++ {
 		for j := 0; j < numberModels; j++ {
+			requestId := fmt.Sprintf("request_id_%d_%d", i, j)
 			var wg sync.WaitGroup
 			wg.Add(1)
+
 			setupFn := func(x int) {
-				err := scalingMetricsSetup(&wg, dummyModelPrefix+strconv.Itoa(x), modelScalingStatsCollector)
+				err := scalingMetricsSetup(dummyModelPrefix+strconv.Itoa(x), requestId, modelScalingStatsCollector)
+				wg.Done()
 				g.Expect(err).To(BeNil())
 			}
 			teardownFn := func(x int) {
-				err := scalingMetricsTearDown(&wg, dummyModelPrefix+strconv.Itoa(x), &jobsWg, modelScalingStatsCollector)
+				wg.Wait()
+				err := scalingMetricsTearDown(dummyModelPrefix+strconv.Itoa(x), requestId, &jobsWg, modelScalingStatsCollector)
 				g.Expect(err).To(BeNil())
 			}
 			go setupFn(j)

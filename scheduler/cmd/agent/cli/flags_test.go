@@ -24,75 +24,77 @@ func TestAgentCliArgsDefault(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                                  string
-		args                                  []string
-		envs                                  []string
-		expectedAgentHost                     string
-		expectedServerName                    string
-		expectedReplicaIdx                    uint
-		expectedSchedulerHost                 string
-		expectedSchedulerPort                 int
-		expectedSchedulerTlsPort              int
-		expectedRcloneHost                    string
-		expectedRclonePort                    int
-		expectedInferenceHost                 string
-		expectedInferenceHttpPort             int
-		expectedInferenceGrpcPort             int
-		expectedReverseProxyHttpPort          int
-		expectedReverseProxyGrpcPort          int
-		expectedDebugGrpcPort                 int
-		expectedMetricsPort                   int
-		expectedAgentFolder                   string
-		expectedReplicaConfigStr              string
-		expectedNamespace                     string
-		expectedConfigPath                    string
-		expectedLogLevel                      string
-		expectedServerType                    string
-		expectedMemoryRequest                 uint64
-		expectedCapabilities                  []string
-		expectedOverCommitPercentage          int
-		expectedEnvoyHost                     string
-		expectedEnvoyPort                     int
-		expectedDrainerPort                   int
-		expectedModelInferenceLagThreshold    int
-		expectedModelInactiveSecondsThreshold int
-		expectedScalingStatsPeriodSeconds     int
+		name                                   string
+		args                                   []string
+		envs                                   []string
+		expectedAgentHost                      string
+		expectedServerName                     string
+		expectedReplicaIdx                     uint
+		expectedSchedulerHost                  string
+		expectedSchedulerPort                  int
+		expectedSchedulerTlsPort               int
+		expectedRcloneHost                     string
+		expectedRclonePort                     int
+		expectedInferenceHost                  string
+		expectedInferenceHttpPort              int
+		expectedInferenceGrpcPort              int
+		expectedReverseProxyHttpPort           int
+		expectedReverseProxyGrpcPort           int
+		expectedDebugGrpcPort                  int
+		expectedMetricsPort                    int
+		expectedAgentFolder                    string
+		expectedReplicaConfigStr               string
+		expectedNamespace                      string
+		expectedConfigPath                     string
+		expectedLogLevel                       string
+		expectedServerType                     string
+		expectedMemoryRequest                  uint64
+		expectedCapabilities                   []string
+		expectedOverCommitPercentage           int
+		expectedEnvoyHost                      string
+		expectedEnvoyPort                      int
+		expectedDrainerPort                    int
+		expectedModelInferenceLagThreshold     int
+		expectedModelInferenceDelayMSThreshold int
+		expectedModelInactiveSecondsThreshold  int
+		expectedScalingStatsPeriodSeconds      int
 	}
 	tests := []test{
 		{
-			name:                                  "default args",
-			args:                                  []string{},
-			envs:                                  []string{},
-			expectedAgentHost:                     "0.0.0.0",
-			expectedServerName:                    "mlserver",
-			expectedReplicaIdx:                    0,
-			expectedSchedulerHost:                 "0.0.0.0",
-			expectedSchedulerPort:                 defaultSchedulerPort,
-			expectedSchedulerTlsPort:              defaultSchedulerTlsPort,
-			expectedRcloneHost:                    "0.0.0.0",
-			expectedRclonePort:                    defaultRclonePort,
-			expectedInferenceHost:                 "0.0.0.0",
-			expectedInferenceHttpPort:             defaultInferenceHttpPort,
-			expectedInferenceGrpcPort:             defaultInferenceGrpcPort,
-			expectedReverseProxyHttpPort:          9999,
-			expectedReverseProxyGrpcPort:          9998,
-			expectedDebugGrpcPort:                 agent.GRPCDebugServicePort,
-			expectedMetricsPort:                   defaultMetricsPort,
-			expectedAgentFolder:                   "/mnt/agent",
-			expectedReplicaConfigStr:              "",
-			expectedNamespace:                     "",
-			expectedConfigPath:                    "/mnt/config",
-			expectedLogLevel:                      "debug",
-			expectedServerType:                    "mlserver",
-			expectedMemoryRequest:                 1000000,
-			expectedCapabilities:                  []string{"sklearn", "xgboost"},
-			expectedOverCommitPercentage:          0,
-			expectedEnvoyHost:                     defaultEnvoyHost,
-			expectedEnvoyPort:                     defaultEnvoyPort,
-			expectedDrainerPort:                   defaultDrainerServicePort,
-			expectedModelInferenceLagThreshold:    lagThresholdDefault,
-			expectedModelInactiveSecondsThreshold: lastUsedThresholdSecondsDefault,
-			expectedScalingStatsPeriodSeconds:     statsPeriodSecondsDefault,
+			name:                                   "default args",
+			args:                                   []string{},
+			envs:                                   []string{},
+			expectedAgentHost:                      "0.0.0.0",
+			expectedServerName:                     "mlserver",
+			expectedReplicaIdx:                     0,
+			expectedSchedulerHost:                  "0.0.0.0",
+			expectedSchedulerPort:                  defaultSchedulerPort,
+			expectedSchedulerTlsPort:               defaultSchedulerTlsPort,
+			expectedRcloneHost:                     "0.0.0.0",
+			expectedRclonePort:                     defaultRclonePort,
+			expectedInferenceHost:                  "0.0.0.0",
+			expectedInferenceHttpPort:              defaultInferenceHttpPort,
+			expectedInferenceGrpcPort:              defaultInferenceGrpcPort,
+			expectedReverseProxyHttpPort:           9999,
+			expectedReverseProxyGrpcPort:           9998,
+			expectedDebugGrpcPort:                  agent.GRPCDebugServicePort,
+			expectedMetricsPort:                    defaultMetricsPort,
+			expectedAgentFolder:                    "/mnt/agent",
+			expectedReplicaConfigStr:               "",
+			expectedNamespace:                      "",
+			expectedConfigPath:                     "/mnt/config",
+			expectedLogLevel:                       "debug",
+			expectedServerType:                     "mlserver",
+			expectedMemoryRequest:                  1000000,
+			expectedCapabilities:                   []string{"sklearn", "xgboost"},
+			expectedOverCommitPercentage:           0,
+			expectedEnvoyHost:                      defaultEnvoyHost,
+			expectedEnvoyPort:                      defaultEnvoyPort,
+			expectedDrainerPort:                    defaultDrainerServicePort,
+			expectedModelInferenceLagThreshold:     lagThresholdDefault,
+			expectedModelInferenceDelayMSThreshold: delayMSThresholdDefault,
+			expectedModelInactiveSecondsThreshold:  lastUsedThresholdSecondsDefault,
+			expectedScalingStatsPeriodSeconds:      statsPeriodSecondsDefault,
 		},
 		{
 			name: "good args",
@@ -125,40 +127,42 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"--envoy-port=2000",
 				"--drainer-port=2001",
 				"--model-inference-lag-threshold=20",
+				"--model-inference-delay-ms-threshold=2000",
 				"--model-inactive-seconds-threshold=30",
 				"--scaling-stats-period-seconds=40",
 			},
-			envs:                                  []string{},
-			expectedAgentHost:                     "1.1.1.1",
-			expectedServerName:                    "triton",
-			expectedReplicaIdx:                    1,
-			expectedSchedulerHost:                 "10.10.10.10",
-			expectedSchedulerPort:                 10,
-			expectedSchedulerTlsPort:              20,
-			expectedRcloneHost:                    "11.11.11.11",
-			expectedRclonePort:                    11,
-			expectedInferenceHost:                 "12.12.12.12",
-			expectedInferenceHttpPort:             12,
-			expectedInferenceGrpcPort:             122,
-			expectedReverseProxyHttpPort:          13,
-			expectedReverseProxyGrpcPort:          133,
-			expectedDebugGrpcPort:                 14,
-			expectedMetricsPort:                   15,
-			expectedAgentFolder:                   "/tmp",
-			expectedReplicaConfigStr:              "config",
-			expectedNamespace:                     "namespace",
-			expectedConfigPath:                    "/config",
-			expectedLogLevel:                      "info",
-			expectedServerType:                    "triton",
-			expectedMemoryRequest:                 300,
-			expectedCapabilities:                  []string{"a", "b"},
-			expectedOverCommitPercentage:          10,
-			expectedEnvoyHost:                     "2.2.2.2",
-			expectedEnvoyPort:                     2000,
-			expectedDrainerPort:                   2001,
-			expectedModelInferenceLagThreshold:    20,
-			expectedModelInactiveSecondsThreshold: 30,
-			expectedScalingStatsPeriodSeconds:     40,
+			envs:                                   []string{},
+			expectedAgentHost:                      "1.1.1.1",
+			expectedServerName:                     "triton",
+			expectedReplicaIdx:                     1,
+			expectedSchedulerHost:                  "10.10.10.10",
+			expectedSchedulerPort:                  10,
+			expectedSchedulerTlsPort:               20,
+			expectedRcloneHost:                     "11.11.11.11",
+			expectedRclonePort:                     11,
+			expectedInferenceHost:                  "12.12.12.12",
+			expectedInferenceHttpPort:              12,
+			expectedInferenceGrpcPort:              122,
+			expectedReverseProxyHttpPort:           13,
+			expectedReverseProxyGrpcPort:           133,
+			expectedDebugGrpcPort:                  14,
+			expectedMetricsPort:                    15,
+			expectedAgentFolder:                    "/tmp",
+			expectedReplicaConfigStr:               "config",
+			expectedNamespace:                      "namespace",
+			expectedConfigPath:                     "/config",
+			expectedLogLevel:                       "info",
+			expectedServerType:                     "triton",
+			expectedMemoryRequest:                  300,
+			expectedCapabilities:                   []string{"a", "b"},
+			expectedOverCommitPercentage:           10,
+			expectedEnvoyHost:                      "2.2.2.2",
+			expectedEnvoyPort:                      2000,
+			expectedDrainerPort:                    2001,
+			expectedModelInferenceLagThreshold:     20,
+			expectedModelInferenceDelayMSThreshold: 2000,
+			expectedModelInactiveSecondsThreshold:  30,
+			expectedScalingStatsPeriodSeconds:      40,
 		},
 		{
 			name: "good envs",
@@ -183,39 +187,41 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"SELDON_ENVOY_PORT=3000",
 				"SELDON_DRAINER_PORT=3001",
 				"SELDON_MODEL_INFERENCE_LAG_THRESHOLD=50",
+				"SELDON_MODEL_INFERENCE_DELAY_MS_THRESHOLD=3000",
 				"SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD=60",
 				"SELDON_SCALING_STATS_PERIOD_SECONDS=70",
 			},
-			expectedAgentHost:                     "0.0.0.0",
-			expectedServerName:                    "mlserver",
-			expectedReplicaIdx:                    0,
-			expectedSchedulerHost:                 "10.10.10.10",
-			expectedSchedulerPort:                 100,
-			expectedSchedulerTlsPort:              111,
-			expectedRcloneHost:                    "0.0.0.0",
-			expectedRclonePort:                    defaultRclonePort,
-			expectedInferenceHost:                 "0.0.0.0",
-			expectedInferenceHttpPort:             10,
-			expectedInferenceGrpcPort:             20,
-			expectedReverseProxyHttpPort:          11,
-			expectedReverseProxyGrpcPort:          21,
-			expectedDebugGrpcPort:                 30,
-			expectedMetricsPort:                   40,
-			expectedAgentFolder:                   "/mnt/agent",
-			expectedReplicaConfigStr:              "config",
-			expectedNamespace:                     "",
-			expectedConfigPath:                    "/mnt/config",
-			expectedLogLevel:                      "info",
-			expectedServerType:                    "mlserver",
-			expectedMemoryRequest:                 400,
-			expectedCapabilities:                  []string{"c", "d"},
-			expectedOverCommitPercentage:          30,
-			expectedEnvoyHost:                     "3.3.3.3",
-			expectedEnvoyPort:                     3000,
-			expectedDrainerPort:                   3001,
-			expectedModelInferenceLagThreshold:    50,
-			expectedModelInactiveSecondsThreshold: 60,
-			expectedScalingStatsPeriodSeconds:     70,
+			expectedAgentHost:                      "0.0.0.0",
+			expectedServerName:                     "mlserver",
+			expectedReplicaIdx:                     0,
+			expectedSchedulerHost:                  "10.10.10.10",
+			expectedSchedulerPort:                  100,
+			expectedSchedulerTlsPort:               111,
+			expectedRcloneHost:                     "0.0.0.0",
+			expectedRclonePort:                     defaultRclonePort,
+			expectedInferenceHost:                  "0.0.0.0",
+			expectedInferenceHttpPort:              10,
+			expectedInferenceGrpcPort:              20,
+			expectedReverseProxyHttpPort:           11,
+			expectedReverseProxyGrpcPort:           21,
+			expectedDebugGrpcPort:                  30,
+			expectedMetricsPort:                    40,
+			expectedAgentFolder:                    "/mnt/agent",
+			expectedReplicaConfigStr:               "config",
+			expectedNamespace:                      "",
+			expectedConfigPath:                     "/mnt/config",
+			expectedLogLevel:                       "info",
+			expectedServerType:                     "mlserver",
+			expectedMemoryRequest:                  400,
+			expectedCapabilities:                   []string{"c", "d"},
+			expectedOverCommitPercentage:           30,
+			expectedEnvoyHost:                      "3.3.3.3",
+			expectedEnvoyPort:                      3000,
+			expectedDrainerPort:                    3001,
+			expectedModelInferenceLagThreshold:     50,
+			expectedModelInferenceDelayMSThreshold: 3000,
+			expectedModelInactiveSecondsThreshold:  60,
+			expectedScalingStatsPeriodSeconds:      70,
 		},
 	}
 

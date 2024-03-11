@@ -24,6 +24,7 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
@@ -38,7 +39,8 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 	v2Client := testing_utils.NewV2RestClientForTest("localhost", backEndServerPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
-		modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(),
+		[]interfaces.ModelStatsKeeper{modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper()},
+		logger,
 	)
 	rp := NewReverseGRPCProxy(
 		newFakeMetricsHandler(),
@@ -142,8 +144,8 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model scaling stats")
-	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
-	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+	g.Expect(rpGRPC.modelScalingStatsCollector.StatKeepers[0].Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
+	g.Expect(rpGRPC.modelScalingStatsCollector.StatKeepers[1].Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
 	responseMeta, errMeta := doMeta("_0")
 	g.Expect(responseMeta.Name).To(Equal(dummyModelNamePrefix + "_0"))

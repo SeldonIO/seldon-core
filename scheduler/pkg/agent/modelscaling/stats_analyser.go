@@ -37,11 +37,11 @@ type ModelScalingEvent struct {
 }
 
 type ModelScalingStatsWrapper struct {
-	Stats     interfaces.ModelScalingStats
-	Operator  interfaces.LogicOperation
-	Threshold uint
-	Reset     bool
-	EventType ModelScalingEventType
+	StatsKeeper interfaces.ModelStatsKeeper
+	Operator    interfaces.LogicOperation
+	Threshold   uint
+	Reset       bool
+	EventType   ModelScalingEventType
 }
 
 type StatsAnalyserService struct {
@@ -108,7 +108,7 @@ func (ss *StatsAnalyserService) DeleteModel(modelName string) error {
 		// delete from list of models to report back
 		ss.modelsEnabled.Delete(modelName)
 
-		if err := stats.Stats.Delete(modelName); err != nil {
+		if err := stats.StatsKeeper.Delete(modelName); err != nil {
 			return err
 		}
 	}
@@ -124,7 +124,7 @@ func (ss *StatsAnalyserService) AddModel(modelName string) error {
 		// add to list pf models to report back
 		ss.modelsEnabled.Store(modelName, struct{}{})
 
-		if err := stats.Stats.Add(modelName); err != nil {
+		if err := stats.StatsKeeper.Add(modelName); err != nil {
 			return err
 		}
 	}
@@ -175,7 +175,7 @@ func (ss *StatsAnalyserService) process() error {
 }
 
 func (ss *StatsAnalyserService) processImpl(statsWrapper ModelScalingStatsWrapper, timer *time.Timer) error {
-	modelsToScale, err := statsWrapper.Stats.GetAll(
+	modelsToScale, err := statsWrapper.StatsKeeper.GetAll(
 		uint32(statsWrapper.Threshold), statsWrapper.Operator, statsWrapper.Reset)
 	if err != nil {
 		return err
