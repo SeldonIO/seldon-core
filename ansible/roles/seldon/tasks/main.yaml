@@ -15,6 +15,11 @@
     - custom_image_pull_secrets is defined
     - seldon_install_components | bool
 
+- name: "Import custom secrets"
+  import_tasks: custom_secrets.yaml
+  when:
+    - custom_secrets is defined
+
 - name: "Install CRDs"
   import_tasks: install_crds.yaml
   when: seldon_install_crds | bool
