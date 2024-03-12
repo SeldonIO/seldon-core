@@ -796,7 +796,7 @@ spec:
           value: '8'
         - name: KAFKA_DEFAULT_REPLICATION_FACTOR
           value: '1'
-        - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+        - name: KAFKA_DEFAULT_NUM_PARTITIONS
           value: '1'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
