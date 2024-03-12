@@ -44,14 +44,14 @@ object K8sCertSecretsProvider {
         Configuration.setDefaultApiClient(client)
 
         if (certs.clientSecret.isNotEmpty()) {
-            val clientSecret = CoreV1Api().readNamespacedSecret(certs.clientSecret, namespace, null)
+            val clientSecret = CoreV1Api().readNamespacedSecret(certs.clientSecret, namespace).execute()
             extractCertAndStore(clientSecret, certs.keyPath)
             extractCertAndStore(clientSecret, certs.certPath)
             extractCertAndStore(clientSecret, certs.caCertPath)
         }
 
         if (certs.brokerSecret.isNotEmpty()) {
-            val brokerSecret = CoreV1Api().readNamespacedSecret(certs.brokerSecret, namespace, null)
+            val brokerSecret = CoreV1Api().readNamespacedSecret(certs.brokerSecret, namespace).execute()
             extractCertAndStore(brokerSecret, certs.brokerCaCertPath)
         }
     }
