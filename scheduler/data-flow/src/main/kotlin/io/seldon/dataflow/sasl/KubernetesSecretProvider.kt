@@ -30,7 +30,7 @@ object KubernetesSecretProvider : SecretsProvider {
 
         return try {
             Configuration.setDefaultApiClient(client)
-            val secret = CoreV1Api().readNamespacedSecret(name, namespace, null)
+            val secret = CoreV1Api().readNamespacedSecret(name, namespace).execute()
             secret.data ?: mapOf()
         } catch (e: ApiException) {
             logger.warn("unable to read secret $name from namespace $namespace")

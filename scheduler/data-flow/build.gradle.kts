@@ -33,16 +33,16 @@ dependencies {
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.61.1")
-    implementation("io.grpc:grpc-protobuf:1.61.1")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.61.1")
-    implementation("com.google.protobuf:protobuf-java:3.25.2")
-    implementation("com.google.protobuf:protobuf-kotlin:3.25.2")
+    implementation("io.grpc:grpc-stub:1.62.2")
+    implementation("io.grpc:grpc-protobuf:1.62.2")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.62.2")
+    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
-    implementation("io.kubernetes:client-java:19.0.0")
+    implementation("io.kubernetes:client-java:20.0.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
@@ -51,8 +51,8 @@ dependencies {
 
     // transitive dependencies constraints
     constraints {
-        implementation("org.apache.commons:commons-compress:1.26.0") {
-            because("version 1.24.0 pulled by io.kubernetes:client-java contains high CVEs")
+        implementation("org.apache.commons:commons-compress:1.26.1") {
+            because("version 1.25.0 pulled by io.kubernetes:client-java contains high CVEs")
         }
     }
 }
