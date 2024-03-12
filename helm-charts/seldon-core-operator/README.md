@@ -56,6 +56,7 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | istio.tlsMode | string | `""` |  |
 | keda.enabled | bool | `false` |  |
 | kubeflow | bool | `false` |  |
+| manager.affinity | object | `{}` | Affinity rules for scheduling the manager pod. |
 | manager.annotations | object | `{}` |  |
 | manager.containerSecurityContext | object | `{}` |  |
 | manager.cpuLimit | string | `"500m"` |  |
@@ -69,7 +70,9 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | manager.logLevel | string | `"INFO"` |  |
 | manager.memoryLimit | string | `"300Mi"` |  |
 | manager.memoryRequest | string | `"200Mi"` |  |
+| manager.nodeSelector | object | `{}` | Node selectors to schedule the manager pod to nodes with labels. |
 | manager.priorityClassName | string | `nil` |  |
+| manager.tolerations | list | `[]` | Tolerations to allow the pod to be scheduled to nodes with taints. |
 | managerCreateResources | bool | `false` |  |
 | managerUserID | int | `8888` |  |
 | metrics.port | int | `8080` |  |
@@ -111,4 +114,8 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |
+| usageMetrics.spartakus.affinity | object | `{}` | Affinity rules for scheduling the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.nodeSelector | object | `{}` | Node selectors to schedule the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.resources | object | `{}` | Resources for the spartakus pod, if usageMetrics is enabled. |
+| usageMetrics.spartakus.tolerations | list | `[]` | Tolerations to allow the spartakus pod to be scheduled to nodes with taints, if usageMetrics is enabled. |
 | webhook.port | int | `4443` |  |

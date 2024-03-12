@@ -63,8 +63,8 @@ executor:
   serviceAccount:
     name: default
   user: 8888
-# If you want to make available your own request logger for ELK integration you can set this
-# For more information see the Production Integration for Payload Request Logging with ELK in the docs
+  # If you want to make available your own request logger for ELK integration you can set this
+  # For more information see the Production Integration for Payload Request Logging with ELK in the docs
   requestLogger:
     defaultEndpoint: 'http://default-broker'
     workQueueSize: 10000
@@ -94,6 +94,12 @@ manager:
   containerSecurityContext: {}
   deploymentNameAsPrefix: false
   priorityClassName:
+  # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+  # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  nodeSelector: {}
+  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
 rbac:
   configmap:
     create: true
@@ -110,6 +116,14 @@ storageInitializer:
   memoryRequest: 100Mi
 usageMetrics:
   enabled: false
+  spartakus:
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+    affinity: {}
+    # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+    nodeSelector: {}
+    resources: {}
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
 # In scenarios like EKS with non-standard CNI plugin like calico, the control plane cannot reach the webhook
 # hence it is needed to set hostNetwork: true
 hostNetwork: false
@@ -151,7 +165,7 @@ predictor_servers:
         image: seldonio/tfserving-proxy
       tensorflow:
         defaultImageVersion: 2.1.0
-        image:  tensorflow/serving
+        image: tensorflow/serving
   XGBOOST_SERVER:
     protocols:
       seldon:
