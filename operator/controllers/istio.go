@@ -10,4 +10,5 @@ const (
 	ANNOTATION_ISTIO_RETRIES         = "seldon.io/istio-retries"
 	ANNOTATION_ISTIO_RETRIES_TIMEOUT = "seldon.io/istio-retries-timeout"
 	ANNOTATION_ISTIO_HOST            = "seldon.io/istio-host"
+	ANNOTATION_ISTIO_HOST_SEPARATOR  = ","
 )
