@@ -127,7 +127,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	logger.Infof("Created consumer %s", kc.consumer.String())
 
 	if kc.consumerConfig.SeldonKafkaConfig.HasKafkaBootstrapServer() {
-		kc.adminClient, err = kafka.NewAdminClient(&consumerConfig)
+		kc.adminClient, err = kafka.NewAdminClientFromProducer(kc.producer)
 		if err != nil {
 			return err
 		}
