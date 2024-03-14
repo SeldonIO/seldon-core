@@ -11,8 +11,11 @@ package server
 
 import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 )
 
 func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscriptionRequest, stream pb.Scheduler_SubscribeExperimentStatusServer) error {
@@ -28,6 +31,11 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 		fin:    fin,
 	}
 	s.experimentEventStream.mu.Unlock()
+
+	err := s.sendCurrentExperimentStatuses(stream)
+	if err != nil {
+		return err
+	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -51,6 +59,40 @@ func asKubernetesMeta(event coordinator.ExperimentEventMsg) *pb.KubernetesMeta {
 		return &pb.KubernetesMeta{
 			Namespace:  event.KubernetesMeta.Namespace,
 			Generation: event.KubernetesMeta.Generation,
+		}
+	}
+	return nil
+}
+
+func asKubernetesMetaFromExperiment(meta *experiment.KubernetesMeta) *pb.KubernetesMeta {
+	if meta != nil {
+		return &pb.KubernetesMeta{
+			Namespace:  meta.Namespace,
+			Generation: meta.Generation,
+		}
+	}
+	return nil
+}
+
+func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_ExperimentStatusServer) error {
+	experiments, err := s.experimentServer.GetExperiments()
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, err.Error())
+	}
+	for _, exp := range experiments {
+		s.logger.Debugf("Sending experiments status %s", exp.Name)
+		s.experimentEventStream.mu.Lock()
+		err = stream.Send(&pb.ExperimentStatusResponse{
+			ExperimentName:    exp.Name,
+			Active:            exp.Active,
+			CandidatesReady:   exp.AreCandidatesReady(),
+			MirrorReady:       exp.IsMirrorReady(),
+			StatusDescription: exp.StatusDescription,
+			KubernetesMeta:    asKubernetesMetaFromExperiment(exp.KubernetesMeta),
+		})
+		s.experimentEventStream.mu.Unlock()
+		if err != nil {
+			return status.Errorf(codes.Internal, err.Error())
 		}
 	}
 	return nil
