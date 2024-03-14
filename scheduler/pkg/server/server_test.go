@@ -746,6 +746,76 @@ func TestPipelineStatusStream(t *testing.T) {
 	}
 }
 
+func TestModelsStatusStream(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+		server  *SchedulerServer
+		timeout time.Duration
+		err     bool
+	}
+
+	tests := []test{
+		{
+			name: "model ok",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+			},
+			timeout: 10 * time.Millisecond,
+		},
+		{
+			name: "timeout",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+			},
+			timeout: 1 * time.Millisecond,
+			err:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.modelStore.UpdateModel(test.loadReq)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			err := test.server.sendCurrentModelStatuses(stream, test.timeout)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+
+				var msr *pb.ModelStatusResponse
+				select {
+				case next := <-stream.msgs:
+					msr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.Versions).To(HaveLen(1))
+				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			}
+		})
+	}
+}
+
 type stubPipelineStatusServer struct {
 	msgs      chan *pb.PipelineStatusResponse
 	sleepTime time.Duration
@@ -762,6 +832,27 @@ func newStubPipelineStatusServer(capacity int, sleepTime time.Duration) *stubPip
 }
 
 func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
+
+type stubModelStatusServer struct {
+	msgs      chan *pb.ModelStatusResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_ModelStatusServer = (*stubModelStatusServer)(nil)
+
+func newStubModelStatusServer(capacity int, sleepTime time.Duration) *stubModelStatusServer {
+	return &stubModelStatusServer{
+		msgs:      make(chan *pb.ModelStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubModelStatusServer) Send(r *pb.ModelStatusResponse) error {
 	time.Sleep(s.sleepTime)
 	s.msgs <- r
 	return nil

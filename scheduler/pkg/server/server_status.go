@@ -21,7 +21,7 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	err := s.sendCurrentModelStatuses(stream)
+	err := s.sendCurrentModelStatuses(stream, sendTimeout)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
 		return err
@@ -55,7 +55,7 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 }
 
 // TODO as this could be 1000s of models may need to look at ways to optimize?
-func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
+func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer, timeout time.Duration) error {
 	modelNames := s.modelStore.GetAllModels()
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
@@ -67,7 +67,7 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 			return err
 		}
 		// no need to have a lock here as we are in the initial setup
-		_, err = sentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
+		_, err = sentWithTimeout(func() error { return stream.Send(ms) }, timeout)
 		if err != nil {
 			return err
 		}
