@@ -67,12 +67,12 @@ type ModelEventStream struct {
 }
 
 type ServerEventStream struct {
-	mu              sync.Mutex
-	streams         map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
-	batchWaitMillis time.Duration
-	trigger         *time.Timer
-	pendingEvents   map[string]struct{}
-	pendingLock     sync.Mutex
+	mu            sync.Mutex
+	streams       map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+	batchWait     time.Duration
+	trigger       *time.Timer
+	pendingEvents map[string]struct{}
+	pendingLock   sync.Mutex
 }
 
 type ExperimentEventStream struct {
@@ -182,10 +182,10 @@ func NewSchedulerServer(
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
 		serverEventStream: ServerEventStream{
-			streams:         make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
-			batchWaitMillis: defaultBatchWait,
-			trigger:         nil,
-			pendingEvents:   map[string]struct{}{},
+			streams:       make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+			batchWait:     defaultBatchWait,
+			trigger:       nil,
+			pendingEvents: map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
