@@ -23,6 +23,11 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	err := s.sendCurrentPipelineStatuses(stream, false)
+	if err != nil {
+		return err
+	}
+
 	fin := make(chan bool)
 
 	s.pipelineEventStream.mu.Lock()
@@ -32,11 +37,6 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 		fin:    fin,
 	}
 	s.pipelineEventStream.mu.Unlock()
-
-	err := s.sendCurrentPipelineStatuses(stream, false)
-	if err != nil {
-		return err
-	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -63,11 +63,10 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(stream pb.Scheduler_Subscr
 	for _, p := range pipelines {
 		resp := createPipelineStatus(p, allVersions)
 		s.logger.Debugf("Sending pipeline status %s", resp.String())
-		s.pipelineEventStream.mu.Lock()
-		err = stream.Send(resp)
-		s.pipelineEventStream.mu.Unlock()
+
+		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, sendTimeout)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return err
 		}
 	}
 	return nil
@@ -100,7 +99,13 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 	for stream, subscription := range s.pipelineEventStream.streams {
-		if err := stream.Send(status); err != nil {
+		hasExpired, err := sentWithTimeout(func() error { return stream.Send(status) }, sendTimeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.pipelineEventStream.streams, stream)
+		}
+		if err != nil {
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}

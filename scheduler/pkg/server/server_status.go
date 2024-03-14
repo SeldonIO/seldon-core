@@ -131,6 +131,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
 	err := s.sendCurrentServerStatuses(stream)
 	if err != nil {
+		logger.WithError(err).Errorf("Failed to send current server statuses to %s", req.GetSubscriberName())
 		return err
 	}
 
@@ -252,10 +253,9 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	}
 	for _, server := range servers {
 		ssr := createServerStatusResponse(server)
-
 		_, err := sentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
 		if err != nil {
-			s.logger.WithError(err).Errorf("Failed to send server status event for %s", server.Name)
+			return err
 		}
 
 	}
