@@ -128,6 +128,12 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
+	err := s.sendCurrentServerStatuses(stream)
+	if err != nil {
+		return err
+	}
+
 	fin := make(chan bool)
 
 	s.serverEventStream.mu.Lock()
@@ -137,12 +143,6 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 		fin:    fin,
 	}
 	s.serverEventStream.mu.Unlock()
-
-	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
-	err := s.sendCurrentServerStatuses(stream)
-	if err != nil {
-		return err
-	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -166,8 +166,6 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server state change for %s", event.String())
 
-	// TODO - Should this spawn a goroutine?
-	// Surely if we do we're risking reordering of events, e.g. load/unload -> unload/load?
 	err := s.updateServerStatus(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
@@ -222,6 +220,7 @@ func (s *SchedulerServer) sendServerStatus() {
 
 	// Inform subscriber
 	s.serverEventStream.mu.Lock()
+	defer s.serverEventStream.mu.Unlock()
 	for serverName := range pendingServers {
 		server, err := s.modelStore.GetServer(serverName, true, true)
 		if err != nil {
@@ -231,13 +230,18 @@ func (s *SchedulerServer) sendServerStatus() {
 		ssr := createServerStatusResponse(server)
 
 		for stream, subscription := range s.serverEventStream.streams {
-			err := stream.Send(ssr)
+			hasExpired, err := SentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
+			if hasExpired {
+				// this should trigger a reconnect from the client
+				close(subscription.fin)
+				delete(s.serverEventStream.streams, stream)
+			}
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
 			}
 		}
 	}
-	s.serverEventStream.mu.Unlock()
+
 }
 
 // initial send of server statuses to a new controller
@@ -246,16 +250,14 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	if err != nil {
 		return err
 	}
-	s.serverEventStream.mu.Lock()
 	for _, server := range servers {
 		ssr := createServerStatusResponse(server)
 
-		err := stream.Send(ssr)
+		_, err := SentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
 		if err != nil {
 			s.logger.WithError(err).Errorf("Failed to send server status event for %s", server.Name)
 		}
 
 	}
-	s.serverEventStream.mu.Unlock()
 	return nil
 }
