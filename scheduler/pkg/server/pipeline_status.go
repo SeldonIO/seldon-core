@@ -63,7 +63,9 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(stream pb.Scheduler_Subscr
 	for _, p := range pipelines {
 		resp := createPipelineStatus(p, allVersions)
 		s.logger.Debugf("Sending pipeline status %s", resp.String())
+		s.pipelineEventStream.mu.Lock()
 		err = stream.Send(resp)
+		s.pipelineEventStream.mu.Unlock()
 		if err != nil {
 			return status.Errorf(codes.Internal, err.Error())
 		}
