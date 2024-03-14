@@ -41,7 +41,7 @@ const (
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
 	defaultBatchWait               = 250 * time.Millisecond
-	sendTimeout                    = 5 * time.Second
+	sendTimeout                    = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
 var (
