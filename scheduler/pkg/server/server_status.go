@@ -67,7 +67,7 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 			return err
 		}
 		// no need to have a lock here as we are in the initial setup
-		_, err = SentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
+		_, err = sentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		s.modelEventStream.mu.Lock()
 		defer s.modelEventStream.mu.Unlock()
 		for stream, subscription := range s.modelEventStream.streams {
-			hasExpired, err := SentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
+			hasExpired, err := sentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
 			if hasExpired {
 				// this should trigger a reconnect from the client
 				close(subscription.fin)
@@ -230,7 +230,7 @@ func (s *SchedulerServer) sendServerStatus() {
 		ssr := createServerStatusResponse(server)
 
 		for stream, subscription := range s.serverEventStream.streams {
-			hasExpired, err := SentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
+			hasExpired, err := sentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
 			if hasExpired {
 				// this should trigger a reconnect from the client
 				close(subscription.fin)
@@ -253,7 +253,7 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	for _, server := range servers {
 		ssr := createServerStatusResponse(server)
 
-		_, err := SentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
+		_, err := sentWithTimeout(func() error { return stream.Send(ssr) }, sendTimeout)
 		if err != nil {
 			s.logger.WithError(err).Errorf("Failed to send server status event for %s", server.Name)
 		}

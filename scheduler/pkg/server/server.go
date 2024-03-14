@@ -594,7 +594,7 @@ func (s *SchedulerServer) SchedulerStatus(ctx context.Context, req *pb.Scheduler
 	}, nil
 }
 
-func SentWithTimeout(f func() error, d time.Duration) (bool, error) {
+func sentWithTimeout(f func() error, d time.Duration) (bool, error) {
 	errChan := make(chan error, 1)
 	go func() {
 		errChan <- f()
