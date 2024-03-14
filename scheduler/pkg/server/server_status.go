@@ -21,6 +21,12 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	err := s.sendCurrentModelStatuses(stream)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
+		return err
+	}
+
 	fin := make(chan bool)
 
 	s.modelEventStream.mu.Lock()
@@ -30,11 +36,6 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 		fin:    fin,
 	}
 	s.modelEventStream.mu.Unlock()
-
-	err := s.sendCurrentModelStatuses(stream)
-	if err != nil {
-		return err
-	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -65,9 +66,8 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		s.modelEventStream.mu.Lock()
-		err = stream.Send(ms)
-		s.modelEventStream.mu.Unlock()
+		// no need to have a lock here as we are in the initial setup
+		_, err = SentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,12 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		s.modelEventStream.mu.Lock()
 		defer s.modelEventStream.mu.Unlock()
 		for stream, subscription := range s.modelEventStream.streams {
-			err := stream.Send(ms)
+			hasExpired, err := SentWithTimeout(func() error { return stream.Send(ms) }, sendTimeout)
+			if hasExpired {
+				// this should trigger a reconnect from the client
+				close(subscription.fin)
+				delete(s.modelEventStream.streams, stream)
+			}
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
 			}

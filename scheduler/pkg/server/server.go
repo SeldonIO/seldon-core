@@ -41,6 +41,7 @@ const (
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
 	defaultBatchWait               = 250 * time.Millisecond
+	sendTimeout                    = 5 * time.Second
 )
 
 var (
@@ -591,4 +592,22 @@ func (s *SchedulerServer) SchedulerStatus(ctx context.Context, req *pb.Scheduler
 	return &pb.SchedulerStatusResponse{
 		ApplicationVersion: "0.0.1",
 	}, nil
+}
+
+func SentWithTimeout(f func() error, d time.Duration) (bool, error) {
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- f()
+		close(errChan)
+	}()
+	t := time.NewTimer(d)
+	select {
+	case <-t.C:
+		return true, status.Errorf(codes.DeadlineExceeded, "Failed to send event within timeout")
+	case err := <-errChan:
+		if !t.Stop() {
+			<-t.C
+		}
+		return false, err
+	}
 }
