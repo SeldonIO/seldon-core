@@ -25,6 +25,75 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
+func TestModelsStatusStream(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+		server  *SchedulerServer
+		err     bool
+	}
+
+	tests := []test{
+		{
+			name: "model ok",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    10 * time.Millisecond,
+			},
+		},
+		{
+			name: "timeout",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    1 * time.Millisecond,
+			},
+			err: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.modelStore.UpdateModel(test.loadReq)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			err := test.server.sendCurrentModelStatuses(stream)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+
+				var msr *pb.ModelStatusResponse
+				select {
+				case next := <-stream.msgs:
+					msr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.Versions).To(HaveLen(1))
+				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			}
+		})
+	}
+}
+
 func TestModelsStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -52,6 +121,7 @@ func TestModelsStatusEvents(t *testing.T) {
 		name    string
 		loadReq *pb.LoadModelRequest
 		timeout time.Duration
+		err     bool
 	}
 
 	tests := []test{
@@ -62,19 +132,31 @@ func TestModelsStatusEvents(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo"},
 				},
 			},
+			timeout: 10 * time.Millisecond,
+			err:     false,
+		},
+		{
+			name: "timeout",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
 			timeout: 1 * time.Millisecond,
+			err:     true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s, hub := createTestScheduler()
+			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.modelStore.UpdateModel(test.loadReq)
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubModelStatusServer(1, test.timeout)
+			stream := newStubModelStatusServer(1, 5*time.Millisecond)
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -87,18 +169,23 @@ func TestModelsStatusEvents(t *testing.T) {
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
-			var msr *pb.ModelStatusResponse
-			select {
-			case next := <-stream.msgs:
-				msr = next
-			default:
-				t.Fail()
+			if test.err {
+				g.Expect(s.modelEventStream.streams).To(HaveLen(0))
+			} else {
+
+				var msr *pb.ModelStatusResponse
+				select {
+				case next := <-stream.msgs:
+					msr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.Versions).To(HaveLen(1))
+				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+				g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 			}
-
-			g.Expect(msr).ToNot(BeNil())
-			g.Expect(msr.Versions).To(HaveLen(1))
-			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
-
 		})
 	}
 }

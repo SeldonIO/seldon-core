@@ -90,7 +90,7 @@ func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_Expe
 			StatusDescription: exp.StatusDescription,
 			KubernetesMeta:    asKubernetesMetaFromExperiment(exp.KubernetesMeta),
 		}
-		_, err := sentWithTimeout(func() error { return stream.Send(msg) }, sendTimeout)
+		_, err := sentWithTimeout(func() error { return stream.Send(msg) }, s.timeout)
 		if err != nil {
 			return err
 		}
@@ -119,7 +119,7 @@ func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEvent
 			StatusDescription: event.Status.StatusDescription,
 			KubernetesMeta:    asKubernetesMeta(event),
 		}
-		hasExpired, err := sentWithTimeout(func() error { return stream.Send(msg) }, sendTimeout)
+		hasExpired, err := sentWithTimeout(func() error { return stream.Send(msg) }, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)

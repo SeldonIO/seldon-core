@@ -10,8 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
-	"time"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -25,7 +23,7 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	err := s.sendCurrentPipelineStatuses(stream, false, sendTimeout)
+	err := s.sendCurrentPipelineStatuses(stream, false)
 	if err != nil {
 		return err
 	}
@@ -60,7 +58,6 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 func (s *SchedulerServer) sendCurrentPipelineStatuses(
 	stream pb.Scheduler_SubscribePipelineStatusServer,
 	allVersions bool,
-	timeout time.Duration,
 ) error {
 	pipelines, err := s.pipelineHandler.GetPipelines()
 	if err != nil {
@@ -70,7 +67,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 		resp := createPipelineStatus(p, allVersions)
 		s.logger.Debugf("Sending pipeline status %s", resp.String())
 
-		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, timeout)
+		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, s.timeout)
 		if err != nil {
 			return err
 		}
@@ -105,7 +102,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 	for stream, subscription := range s.pipelineEventStream.streams {
-		hasExpired, err := sentWithTimeout(func() error { return stream.Send(status) }, sendTimeout)
+		hasExpired, err := sentWithTimeout(func() error { return stream.Send(status) }, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
