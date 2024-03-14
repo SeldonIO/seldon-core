@@ -98,26 +98,6 @@ func TestModelsStatusStream(t *testing.T) {
 func TestModelsStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *coordinator.EventHub) {
-		logger := log.New()
-		logger.SetLevel(log.WarnLevel)
-
-		eventHub, err := coordinator.NewEventHub(logger)
-		g.Expect(err).To(BeNil())
-
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-
-		scheduler := scheduler2.NewSimpleScheduler(
-			logger,
-			schedulerStore,
-			scheduler2.DefaultSchedulerConfig(schedulerStore),
-		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
-
-		return s, eventHub
-	}
 	type test struct {
 		name    string
 		loadReq *pb.LoadModelRequest
@@ -258,26 +238,6 @@ func TestServersStatusStream(t *testing.T) {
 func TestServersStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *coordinator.EventHub) {
-		logger := log.New()
-		logger.SetLevel(log.WarnLevel)
-
-		eventHub, err := coordinator.NewEventHub(logger)
-		g.Expect(err).To(BeNil())
-
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-
-		scheduler := scheduler2.NewSimpleScheduler(
-			logger,
-			schedulerStore,
-			scheduler2.DefaultSchedulerConfig(schedulerStore),
-		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
-
-		return s, eventHub
-	}
 	type test struct {
 		name    string
 		loadReq *pba.AgentSubscribeRequest
@@ -356,4 +316,24 @@ func TestServersStatusEvents(t *testing.T) {
 			}
 		})
 	}
+}
+
+func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
+	logger := log.New()
+	logger.SetLevel(log.WarnLevel)
+
+	eventHub, _ := coordinator.NewEventHub(logger)
+
+	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
+	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+
+	scheduler := scheduler2.NewSimpleScheduler(
+		logger,
+		schedulerStore,
+		scheduler2.DefaultSchedulerConfig(schedulerStore),
+	)
+	s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
+
+	return s, eventHub
 }

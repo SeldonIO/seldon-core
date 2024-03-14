@@ -19,9 +19,6 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -119,26 +116,6 @@ func TestPipelineStatusStream(t *testing.T) {
 func TestPipelineStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *coordinator.EventHub) {
-		logger := log.New()
-		logger.SetLevel(log.WarnLevel)
-
-		eventHub, err := coordinator.NewEventHub(logger)
-		g.Expect(err).To(BeNil())
-
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-
-		scheduler := scheduler2.NewSimpleScheduler(
-			logger,
-			schedulerStore,
-			scheduler2.DefaultSchedulerConfig(schedulerStore),
-		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
-
-		return s, eventHub
-	}
 	type test struct {
 		name    string
 		loadReq *pb.LoadPipelineRequest

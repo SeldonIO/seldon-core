@@ -716,3 +716,24 @@ func (s *stubServerStatusServer) Send(r *pb.ServerStatusResponse) error {
 	s.msgs <- r
 	return nil
 }
+
+type stubExperimentStatusServer struct {
+	msgs      chan *pb.ExperimentStatusResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_ExperimentStatusServer = (*stubExperimentStatusServer)(nil)
+
+func newStubExperimentStatusServer(capacity int, sleepTime time.Duration) *stubExperimentStatusServer {
+	return &stubExperimentStatusServer{
+		msgs:      make(chan *pb.ExperimentStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubExperimentStatusServer) Send(r *pb.ExperimentStatusResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
