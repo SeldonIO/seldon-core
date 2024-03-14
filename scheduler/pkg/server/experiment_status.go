@@ -80,7 +80,7 @@ func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_Expe
 		return status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	for _, exp := range experiments {
-		s.logger.Debugf("Sending experiments status %s", exp.Name)
+		s.logger.Debugf("Sending experiments status for %s", exp.Name)
 		s.experimentEventStream.mu.Lock()
 		err = stream.Send(&pb.ExperimentStatusResponse{
 			ExperimentName:    exp.Name,
