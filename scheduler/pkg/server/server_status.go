@@ -239,6 +239,7 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	if err != nil {
 		return err
 	}
+	s.serverEventStream.mu.Lock()
 	for _, server := range servers {
 		ssr := createServerStatusResponse(server)
 
@@ -248,5 +249,6 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 		}
 
 	}
+	s.serverEventStream.mu.Unlock()
 	return nil
 }
