@@ -16,6 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -185,6 +186,173 @@ func TestModelsStatusEvents(t *testing.T) {
 				g.Expect(msr.Versions).To(HaveLen(1))
 				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
 				g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+			}
+		})
+	}
+}
+
+func TestServersStatusStream(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq *pba.AgentSubscribeRequest
+		server  *SchedulerServer
+		err     bool
+	}
+
+	tests := []test{
+		{
+			name: "server ok",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    10 * time.Millisecond,
+			},
+		},
+		{
+			name: "timeout",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    1 * time.Millisecond,
+			},
+			err: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.modelStore.AddServerReplica(test.loadReq)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			err := test.server.sendCurrentServerStatuses(stream)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+
+				var ssr *pb.ServerStatusResponse
+				select {
+				case next := <-stream.msgs:
+					ssr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(ssr).ToNot(BeNil())
+				g.Expect(ssr.ServerName).To(Equal("foo"))
+			}
+		})
+	}
+}
+
+func TestServersStatusEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	createTestScheduler := func() (*SchedulerServer, *coordinator.EventHub) {
+		logger := log.New()
+		logger.SetLevel(log.WarnLevel)
+
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
+
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+
+		scheduler := scheduler2.NewSimpleScheduler(
+			logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+		)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
+
+		return s, eventHub
+	}
+	type test struct {
+		name    string
+		loadReq *pba.AgentSubscribeRequest
+		timeout time.Duration
+		err     bool
+	}
+
+	tests := []test{
+		{
+			name: "server ok",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			timeout: 10 * time.Millisecond,
+			err:     false,
+		},
+		{
+			name: "timeout",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			timeout: 1 * time.Millisecond,
+			err:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler()
+			s.timeout = test.timeout
+			if test.loadReq != nil {
+				err := s.modelStore.AddServerReplica(test.loadReq)
+				g.Expect(err).To(BeNil())
+				err = s.modelStore.UpdateModel(&pb.LoadModelRequest{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				})
+				g.Expect(err).To(BeNil())
+				err = s.modelStore.UpdateLoadedModels(
+					"foo", 1, "foo", []*store.ServerReplica{
+						store.NewServerReplica("", 8080, 5001, 0, store.NewServer("foo", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100),
+					},
+				)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			s.serverEventStream.streams[stream] = &ServerSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
+			hub.PublishModelEvent(serverEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: "foo", ModelVersion: 1})
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if test.err {
+				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
+			} else {
+
+				var ssr *pb.ServerStatusResponse
+				select {
+				case next := <-stream.msgs:
+					ssr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(ssr).ToNot(BeNil())
+				g.Expect(ssr.ServerName).To(Equal("foo"))
+				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
 			}
 		})
 	}
