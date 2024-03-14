@@ -22,6 +22,12 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 	logger := s.logger.WithField("func", "SubscribeExperimentStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	err := s.sendCurrentExperimentStatuses(stream)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to send current experiment statuses to %s", req.GetSubscriberName())
+		return err
+	}
+
 	fin := make(chan bool)
 
 	s.experimentEventStream.mu.Lock()
@@ -31,11 +37,6 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 		fin:    fin,
 	}
 	s.experimentEventStream.mu.Unlock()
-
-	err := s.sendCurrentExperimentStatuses(stream)
-	if err != nil {
-		return err
-	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -80,19 +81,17 @@ func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_Expe
 		return status.Errorf(codes.FailedPrecondition, err.Error())
 	}
 	for _, exp := range experiments {
-		s.logger.Debugf("Sending experiments status for %s", exp.Name)
-		s.experimentEventStream.mu.Lock()
-		err = stream.Send(&pb.ExperimentStatusResponse{
+		msg := &pb.ExperimentStatusResponse{
 			ExperimentName:    exp.Name,
 			Active:            exp.Active,
 			CandidatesReady:   exp.AreCandidatesReady(),
 			MirrorReady:       exp.IsMirrorReady(),
 			StatusDescription: exp.StatusDescription,
 			KubernetesMeta:    asKubernetesMetaFromExperiment(exp.KubernetesMeta),
-		})
-		s.experimentEventStream.mu.Unlock()
+		}
+		_, err := sentWithTimeout(func() error { return stream.Send(msg) }, sendTimeout)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return err
 		}
 	}
 	return nil
@@ -111,14 +110,20 @@ func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEvent
 	s.experimentEventStream.mu.Lock()
 	defer s.experimentEventStream.mu.Unlock()
 	for stream, subscription := range s.experimentEventStream.streams {
-		err := stream.Send(&pb.ExperimentStatusResponse{
+		msg := &pb.ExperimentStatusResponse{
 			ExperimentName:    event.ExperimentName,
 			Active:            event.Status.Active,
 			CandidatesReady:   event.Status.CandidatesReady,
 			MirrorReady:       event.Status.MirrorReady,
 			StatusDescription: event.Status.StatusDescription,
 			KubernetesMeta:    asKubernetesMeta(event),
-		})
+		}
+		hasExpired, err := sentWithTimeout(func() error { return stream.Send(msg) }, sendTimeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.experimentEventStream.streams, stream)
+		}
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())
 		}
