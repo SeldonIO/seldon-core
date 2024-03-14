@@ -816,6 +816,84 @@ func TestModelsStatusStream(t *testing.T) {
 	}
 }
 
+func TestModelsStatusEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	createTestScheduler := func() (*SchedulerServer, *coordinator.EventHub) {
+		logger := log.New()
+		logger.SetLevel(log.WarnLevel)
+
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
+
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+
+		scheduler := scheduler2.NewSimpleScheduler(
+			logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+		)
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
+
+		return s, eventHub
+	}
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+		timeout time.Duration
+	}
+
+	tests := []test{
+		{
+			name: "model ok",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			timeout: 1 * time.Millisecond,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler()
+			if test.loadReq != nil {
+				err := s.modelStore.UpdateModel(test.loadReq)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubModelStatusServer(1, test.timeout)
+			s.modelEventStream.streams[stream] = &ModelSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: "foo", ModelVersion: 1})
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			var msr *pb.ModelStatusResponse
+			select {
+			case next := <-stream.msgs:
+				msr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+
+		})
+	}
+}
+
 type stubPipelineStatusServer struct {
 	msgs      chan *pb.PipelineStatusResponse
 	sleepTime time.Duration
