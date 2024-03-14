@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -627,7 +628,7 @@ func TestPipelineStatus(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubPipelineStatusServer(1)
+			stream := newStubPipelineStatusServer(1, 1*time.Millisecond)
 			err := test.server.PipelineStatus(test.statusReq, stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -651,23 +652,117 @@ func TestPipelineStatus(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestPipelineStatusStreamTimeout(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq *pb.LoadPipelineRequest
+		server  *SchedulerServer
+		timeout time.Duration
+		err     bool
+	}
+
+	tests := []test{
+		{
+			name: "pipeline ok",
+			loadReq: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name:    "foo",
+					Version: 1,
+					Uid:     "x",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a.outputs"},
+						},
+					},
+				},
+			},
+			server: &SchedulerServer{
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil),
+				logger:          log.New(),
+			},
+			timeout: 10 * time.Millisecond,
+		},
+		{
+			name: "timeout",
+			loadReq: &pb.LoadPipelineRequest{
+				Pipeline: &pb.Pipeline{
+					Name:    "foo",
+					Version: 1,
+					Uid:     "x",
+					Steps: []*pb.PipelineStep{
+						{
+							Name: "a",
+						},
+						{
+							Name:   "b",
+							Inputs: []string{"a.outputs"},
+						},
+					},
+				},
+			},
+			server: &SchedulerServer{
+				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil),
+				logger:          log.New(),
+			},
+			timeout: 1 * time.Millisecond,
+			err:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.loadReq != nil {
+				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			err := test.server.sendCurrentPipelineStatuses(stream, false, test.timeout)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+
+				var psr *pb.PipelineStatusResponse
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(psr).ToNot(BeNil())
+				g.Expect(psr.Versions).To(HaveLen(1))
+				g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
+			}
+		})
+	}
 }
 
 type stubPipelineStatusServer struct {
-	msgs chan *pb.PipelineStatusResponse
+	msgs      chan *pb.PipelineStatusResponse
+	sleepTime time.Duration
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_PipelineStatusServer = (*stubPipelineStatusServer)(nil)
 
-func newStubPipelineStatusServer(capacity int) *stubPipelineStatusServer {
+func newStubPipelineStatusServer(capacity int, sleepTime time.Duration) *stubPipelineStatusServer {
 	return &stubPipelineStatusServer{
-		msgs: make(chan *pb.PipelineStatusResponse, capacity),
+		msgs:      make(chan *pb.PipelineStatusResponse, capacity),
+		sleepTime: sleepTime,
 	}
 }
 
 func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
+	time.Sleep(s.sleepTime)
 	s.msgs <- r
 	return nil
 }

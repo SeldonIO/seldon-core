@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"time"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -23,7 +25,7 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	err := s.sendCurrentPipelineStatuses(stream, false)
+	err := s.sendCurrentPipelineStatuses(stream, false, sendTimeout)
 	if err != nil {
 		return err
 	}
@@ -55,7 +57,11 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	}
 }
 
-func (s *SchedulerServer) sendCurrentPipelineStatuses(stream pb.Scheduler_SubscribePipelineStatusServer, allVersions bool) error {
+func (s *SchedulerServer) sendCurrentPipelineStatuses(
+	stream pb.Scheduler_SubscribePipelineStatusServer,
+	allVersions bool,
+	timeout time.Duration,
+) error {
 	pipelines, err := s.pipelineHandler.GetPipelines()
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, err.Error())
@@ -64,7 +70,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(stream pb.Scheduler_Subscr
 		resp := createPipelineStatus(p, allVersions)
 		s.logger.Debugf("Sending pipeline status %s", resp.String())
 
-		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, sendTimeout)
+		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, timeout)
 		if err != nil {
 			return err
 		}
