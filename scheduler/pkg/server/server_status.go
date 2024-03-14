@@ -65,7 +65,9 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
+		s.modelEventStream.mu.Lock()
 		err = stream.Send(ms)
+		s.modelEventStream.mu.Unlock()
 		if err != nil {
 			return err
 		}
