@@ -60,6 +60,7 @@ type SchedulerServer struct {
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
 	certificateStore      *seldontls.CertificateStore
+	timeout               time.Duration
 }
 
 type ModelEventStream struct {
@@ -194,6 +195,7 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
+		timeout: sendTimeout,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -569,7 +571,7 @@ func (s *SchedulerServer) PipelineStatus(
 	logger.Infof("received status request from %s", req.SubscriberName)
 
 	if req.Name == nil {
-		return s.sendCurrentPipelineStatuses(stream, req.AllVersions, sendTimeout)
+		return s.sendCurrentPipelineStatuses(stream, req.AllVersions)
 	} else {
 		// Single pipeline requested
 		p, err := s.pipelineHandler.GetPipeline(req.GetName())
