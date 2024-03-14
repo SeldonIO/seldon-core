@@ -569,7 +569,7 @@ func (s *SchedulerServer) PipelineStatus(
 	logger.Infof("received status request from %s", req.SubscriberName)
 
 	if req.Name == nil {
-		return s.sendCurrentPipelineStatuses(stream, req.AllVersions)
+		return s.sendCurrentPipelineStatuses(stream, req.AllVersions, sendTimeout)
 	} else {
 		// Single pipeline requested
 		p, err := s.pipelineHandler.GetPipeline(req.GetName())
@@ -593,4 +593,3 @@ func (s *SchedulerServer) SchedulerStatus(ctx context.Context, req *pb.Scheduler
 		ApplicationVersion: "0.0.1",
 	}, nil
 }
-

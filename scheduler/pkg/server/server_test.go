@@ -654,7 +654,7 @@ func TestPipelineStatus(t *testing.T) {
 	}
 }
 
-func TestPipelineStatusStreamTimeout(t *testing.T) {
+func TestPipelineStatusStream(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name    string
