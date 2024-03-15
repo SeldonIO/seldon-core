@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -627,7 +628,7 @@ func TestPipelineStatus(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubPipelineStatusServer(1)
+			stream := newStubPipelineStatusServer(1, 1*time.Millisecond)
 			err := test.server.PipelineStatus(test.statusReq, stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -651,23 +652,88 @@ func TestPipelineStatus(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 type stubPipelineStatusServer struct {
-	msgs chan *pb.PipelineStatusResponse
+	msgs      chan *pb.PipelineStatusResponse
+	sleepTime time.Duration
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_PipelineStatusServer = (*stubPipelineStatusServer)(nil)
 
-func newStubPipelineStatusServer(capacity int) *stubPipelineStatusServer {
+func newStubPipelineStatusServer(capacity int, sleepTime time.Duration) *stubPipelineStatusServer {
 	return &stubPipelineStatusServer{
-		msgs: make(chan *pb.PipelineStatusResponse, capacity),
+		msgs:      make(chan *pb.PipelineStatusResponse, capacity),
+		sleepTime: sleepTime,
 	}
 }
 
 func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
+
+type stubModelStatusServer struct {
+	msgs      chan *pb.ModelStatusResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_ModelStatusServer = (*stubModelStatusServer)(nil)
+
+func newStubModelStatusServer(capacity int, sleepTime time.Duration) *stubModelStatusServer {
+	return &stubModelStatusServer{
+		msgs:      make(chan *pb.ModelStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubModelStatusServer) Send(r *pb.ModelStatusResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
+
+type stubServerStatusServer struct {
+	msgs      chan *pb.ServerStatusResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_ServerStatusServer = (*stubServerStatusServer)(nil)
+
+func newStubServerStatusServer(capacity int, sleepTime time.Duration) *stubServerStatusServer {
+	return &stubServerStatusServer{
+		msgs:      make(chan *pb.ServerStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubServerStatusServer) Send(r *pb.ServerStatusResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
+
+type stubExperimentStatusServer struct {
+	msgs      chan *pb.ExperimentStatusResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_ExperimentStatusServer = (*stubExperimentStatusServer)(nil)
+
+func newStubExperimentStatusServer(capacity int, sleepTime time.Duration) *stubExperimentStatusServer {
+	return &stubExperimentStatusServer{
+		msgs:      make(chan *pb.ExperimentStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubExperimentStatusServer) Send(r *pb.ExperimentStatusResponse) error {
+	time.Sleep(s.sleepTime)
 	s.msgs <- r
 	return nil
 }

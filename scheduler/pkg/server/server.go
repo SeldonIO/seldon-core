@@ -41,6 +41,7 @@ const (
 	experimentEventHandlerName     = "scheduler.server.experiments"
 	pipelineEventHandlerName       = "scheduler.server.pipelines"
 	defaultBatchWait               = 250 * time.Millisecond
+	sendTimeout                    = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
 var (
@@ -59,6 +60,7 @@ type SchedulerServer struct {
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
 	certificateStore      *seldontls.CertificateStore
+	timeout               time.Duration
 }
 
 type ModelEventStream struct {
@@ -67,12 +69,12 @@ type ModelEventStream struct {
 }
 
 type ServerEventStream struct {
-	mu              sync.Mutex
-	streams         map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
-	batchWaitMillis time.Duration
-	trigger         *time.Timer
-	pendingEvents   map[string]struct{}
-	pendingLock     sync.Mutex
+	mu            sync.Mutex
+	streams       map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription
+	batchWait     time.Duration
+	trigger       *time.Timer
+	pendingEvents map[string]struct{}
+	pendingLock   sync.Mutex
 }
 
 type ExperimentEventStream struct {
@@ -182,10 +184,10 @@ func NewSchedulerServer(
 			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
 		},
 		serverEventStream: ServerEventStream{
-			streams:         make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
-			batchWaitMillis: defaultBatchWait,
-			trigger:         nil,
-			pendingEvents:   map[string]struct{}{},
+			streams:       make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
+			batchWait:     defaultBatchWait,
+			trigger:       nil,
+			pendingEvents: map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
@@ -193,6 +195,7 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
+		timeout: sendTimeout,
 	}
 
 	eventHub.RegisterModelEventHandler(
