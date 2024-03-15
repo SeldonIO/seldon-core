@@ -1,4 +1,4 @@
-# usage: ./pipeline-tests.sh [count] [kubectl|seldon] [namespace]
+# usage: ./pipeline-tests.sh [count] [kubectl|seldon] [namespace] [model]
 
 if [ -z "$1" ]
 then
@@ -19,6 +19,13 @@ then
       namespace="seldon-mesh"
 else
       namespace=$3
+fi
+
+if [ -z "$4" ]
+then
+      model="tfsimple"
+else
+      model=$4
 fi
 
 function load() {
@@ -85,7 +92,7 @@ function status() {
   fi
 }
 
-function create() {
+function create_tfsimple() {
       echo $i
       sed  's/name: tfsimple1/name: tfsimple'"$1"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${1}.yaml
       load model /tmp/models/tfsimple${1}.yaml
@@ -95,8 +102,18 @@ function create() {
       unload model tfsimple${1} /tmp/models/tfsimple${1}.yaml
 }
 
+function create_iris() {
+      echo $i
+      sed  's/name: iris/name: iris'"$1"'/g' models/iris-v1.yaml > /tmp/models/iris${1}.yaml
+      load model /tmp/models/iris${1}.yaml
+      status model iris${1}
+      seldon model infer iris${1} '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+      seldon model infer iris${1} --inference-mode grpc '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+      unload model iris${1} /tmp/models/iris${1}.yaml
+}
+
 mkdir /tmp/models
 for i in $(seq 1 $count);
 do
-    create $i &
+    create_$model $i &
 done
