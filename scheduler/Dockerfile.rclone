@@ -1,8 +1,8 @@
-FROM rclone/rclone:1.65.2 as builder
+FROM rclone/rclone:1.66.0 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3-1552
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.3-1612
 
 # Run update to pickup any necessary security updates
 RUN microdnf update -y

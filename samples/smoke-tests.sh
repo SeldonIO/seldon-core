@@ -1,4 +1,4 @@
-# usage: ./pipeline-tests.sh [sleepTime] [kubectl|seldon] [namespace]
+# usage: ./smoke-tests.sh [sleepTime] [kubectl|seldon] [namespace]
 
 if [ -z "$1" ]
 then

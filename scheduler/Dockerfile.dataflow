@@ -14,7 +14,7 @@ RUN gradle build --no-daemon --info
 ################################################################################
 
 # Some dependencies require glibc, which Alpine does not provide
-FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.17
+FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.18
 
 # Run update to pickup any necessary security updates
 USER root
@@ -32,6 +32,8 @@ USER default
 WORKDIR /app
 COPY --from=builder /build/src/data-flow/build/libs/*-all.jar .
 COPY scheduler/data-flow/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+
+COPY scheduler/data-flow/licenses/ /licenses/
 
 # TODO - inject JAR name & version from build pipeline
 ENTRYPOINT ["/usr/bin/java", "-XX:+PreserveFramePointer", "-javaagent:./opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=seldon-dataflow", "-jar", "dataflow-1.0-SNAPSHOT-all.jar"]

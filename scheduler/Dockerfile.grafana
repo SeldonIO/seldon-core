@@ -1,4 +1,4 @@
-FROM grafana/grafana:10.3.3
+FROM grafana/grafana:10.4.0
 
 # Disable Login form or not
 ENV GF_AUTH_DISABLE_LOGIN_FORM "true"
@@ -13,3 +13,6 @@ ADD ./scheduler/config/grafana/provisioning /etc/grafana/provisioning
 ADD ./scheduler/config/grafana/grafana.ini /etc/grafana/grafana.ini
 # Add dashboard json files
 ADD ./scheduler/config/grafana/dashboards /etc/grafana/dashboards
+
+# Copy license
+COPY LICENSE /licenses/license.txt

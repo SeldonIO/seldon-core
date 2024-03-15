@@ -1,4 +1,4 @@
-FROM envoyproxy/envoy:v1.26.1 as envoy
+FROM envoyproxy/envoy:v1.29.2 as envoy
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-13
 
@@ -11,5 +11,6 @@ COPY scheduler/config/envoy-tls.yaml /etc/envoy-tls.yaml
 COPY scheduler/envoy/tls_certificate_sds_secret.yaml /etc/tls_certificate_sds_secret.yaml
 COPY scheduler/envoy/validation_context_sds_secret.yaml /etc/validation_context_sds_secret.yaml
 COPY scheduler/envoy/start-envoy.sh /
+COPY LICENSE /licenses/license.txt
 
 CMD /start-envoy.sh

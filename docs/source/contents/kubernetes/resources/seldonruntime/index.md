@@ -2,8 +2,6 @@
 
 The SeldonRuntime resource is used to create an instance of Seldon installed in a particular namespace.
 
-The specification contains overrides for the SeldonConfig chosen.
-
 ```{literalinclude} ../../../../../../operator/apis/mlops/v1alpha1/seldonruntime_types.go
 :language: golang
 :start-after: // SeldonRuntimeSpec
@@ -12,9 +10,33 @@ The specification contains overrides for the SeldonConfig chosen.
 
 For the definition of `SeldonConfiguration` above see the [SeldonConfig resource](../seldonconfig/index.md).
 
-As a minimal use you should just define the SeldonConfig to use as a base for this install, for example to install in the seldon-mesh namespace with the "default" SeldonConfig:
+The specification above contains overrides for the chosen `SeldonConfig`.
+To override the `PodSpec` for a given component, the `overrides` field needs to specify the component name and the `PodSpec` needs to specify the container name, along with fields to override.
 
+For instance, the following overrides the resource limits for `cpu` and `memory` in the `hodometer` component in the `seldon-mesh` namespace, while using values specified in the `seldonConfig` elsewhere (e.g. `default`).
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonRuntime
+metadata:
+  name: seldon
+  namespace: seldon-mesh
+spec:
+  overrides:
+  - name: hodometer
+    podSpec:
+      containers:
+      - name: hodometer
+        resources:
+          limits:
+            memory: 64Mi
+            cpu: 20m
+  seldonConfig: default
 ```
+
+As a minimal use you should just define the `SeldonConfig` to use as a base for this install, for example to install in the `seldon-mesh` namespace with the `SeldonConfig` named `default`:
+
+```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: SeldonRuntime
 metadata:

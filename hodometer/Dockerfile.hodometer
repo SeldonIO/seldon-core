@@ -22,8 +22,12 @@ RUN make build-hodometer
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-13
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.3-15
 COPY --from=builder /build/bin/hodometer /bin/hodometer
+
+# Copy licenses
+COPY hodometer/licenses/ /licenses/
+COPY components/tls/licenses/ /licenses/seldontls/
 
 ARG UID=1000
 ARG GID=1000

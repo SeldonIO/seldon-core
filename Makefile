@@ -102,8 +102,8 @@ update-copyright:
 
 
 install-go-license-tools:
-	pip install \
-		'git+https://github.com/seldonio/kubeflow-testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
+	pip install -U \
+		'git+https://github.com/SeldonIO/kubeflow-testing#egg=go-license-tools&subdirectory=py/kubeflow/testing/go-license-tools'
 
 .PHONY: update-3rd-party-licenses
 update-3rd-party-licenses:

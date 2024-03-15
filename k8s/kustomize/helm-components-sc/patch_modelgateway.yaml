@@ -14,7 +14,7 @@ spec:
             value: '{{ .Values.modelgateway.workers }}'
           - name: KAFKA_DEFAULT_REPLICATION_FACTOR
             value: '{{ .Values.kafka.topics.replicationFactor }}'
-          - name: KAFKA_DEFAULT_PARTITIONS_DEFAULT
+          - name: KAFKA_DEFAULT_NUM_PARTITIONS
             value: '{{ .Values.kafka.topics.numPartitions }}'
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'

@@ -4,7 +4,7 @@ DOCKERHUB_USERNAME ?= seldonio
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-MLSERVER_IMG ?= seldonio/mlserver:1.3.5
+MLSERVER_IMG ?= seldonio/mlserver:1.5.0
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
@@ -213,7 +213,7 @@ licenses: licenses/dep.txt
 		-o licenses/repo.txt \
 		--manual-dep-repo-mapping ../licenses/dep_repo.manual.csv \
 		licenses/dep.txt
-	get-github-license-info -o licenses/license_info.csv licenses/repo.txt
+	get-github-license-info -o licenses/license_info.csv licenses/repo.txt --branch-refs ../licenses/branch_refs.manual.csv
 	python -m 'patch_additional_license_info' \
 		licenses/license_info.csv \
 		../licenses/additional_license_info.csv

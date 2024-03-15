@@ -96,7 +96,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return reconcile.Result{}, err
 	}
 
-	err, retry := r.Scheduler.LoadModel(ctx, model)
+	retry, err := r.Scheduler.LoadModel(ctx, model, nil)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, model, retry, err)
 		if retry {

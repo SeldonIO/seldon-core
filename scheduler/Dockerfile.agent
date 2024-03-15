@@ -14,4 +14,9 @@ RUN mkdir /mnt/agent && chmod o+rwx /mnt/agent
 VOLUME /mnt/agent
 
 COPY --from=builder /build/scheduler/bin/agent /bin/agent
+
+# Copy licenses
+COPY scheduler/licenses/ /licenses/
+COPY components/tls/licenses/ /licenses/seldontls/
+
 ENTRYPOINT ["/bin/agent"]

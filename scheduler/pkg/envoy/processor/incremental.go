@@ -588,6 +588,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 			logger.Debugf("sync: No server - removing for %s", modelName)
 			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+				p.modelStore.UnlockModel(modelName)
 				return err
 			}
 			modelRemoved = true
