@@ -104,7 +104,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "server ok",
+			name: "experiment ok",
 			loadReq: &experiment.Experiment{
 				Name: "foo",
 				Mirror: &experiment.Mirror{
