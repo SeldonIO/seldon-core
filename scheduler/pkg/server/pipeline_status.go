@@ -67,7 +67,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 		resp := createPipelineStatus(p, allVersions)
 		s.logger.Debugf("Sending pipeline status %s", resp.String())
 
-		_, err := sentWithTimeout(func() error { return stream.Send(resp) }, s.timeout)
+		_, err := sendWithTimeout(func() error { return stream.Send(resp) }, s.timeout)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 	for stream, subscription := range s.pipelineEventStream.streams {
-		hasExpired, err := sentWithTimeout(func() error { return stream.Send(status) }, s.timeout)
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(status) }, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)

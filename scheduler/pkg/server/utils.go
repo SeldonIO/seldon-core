@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func sentWithTimeout(f func() error, d time.Duration) (bool, error) {
+func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 	errChan := make(chan error, 1)
 	go func() {
 		errChan <- f()
