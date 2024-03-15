@@ -1,4 +1,9 @@
-# usage: ./stress-tests.sh [count] [kubectl|seldon] [namespace] [model]
+# usage: ./stress-tests.sh [count] [kubectl|seldon] [namespace] [task]
+# task is a name of a function that will be called from the list below
+# tfsimple
+# iris
+# tfsimple_pipeline
+# tfsimple_join_pipeline
 
 if [ -z "$1" ]
 then
@@ -23,9 +28,9 @@ fi
 
 if [ -z "$4" ]
 then
-      model="tfsimple"
+      task="tfsimple"
 else
-      model=$4
+      task=$4
 fi
 
 function load() {
@@ -92,7 +97,10 @@ function status() {
   fi
 }
 
-function create_tfsimple() {
+############################################################################################################
+# The following functions are the `task` options that can be called by the user.
+
+function tfsimple() {
       echo $i
       sed  's/name: tfsimple1/name: tfsimple'"$1"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${1}.yaml
       load model /tmp/models/tfsimple${1}.yaml
@@ -102,7 +110,7 @@ function create_tfsimple() {
       unload model tfsimple${1} /tmp/models/tfsimple${1}.yaml
 }
 
-function create_iris() {
+function iris() {
       echo $i
       sed  's/name: iris/name: iris'"$1"'/g' models/iris-v1.yaml > /tmp/models/iris${1}.yaml
       load model /tmp/models/iris${1}.yaml
@@ -112,7 +120,7 @@ function create_iris() {
       unload model iris${1} /tmp/models/iris${1}.yaml
 }
 
-function create_tfsimple_pipeline() {
+function tfsimple_pipeline() {
       echo $i
       sed  's/name: tfsimples/name: tfsimples'"$1"'/g' pipelines/tfsimples.yaml > /tmp/pipelines/tfsimples${1}.yaml
       load model ./models/tfsimple1.yaml
@@ -130,7 +138,7 @@ function create_tfsimple_pipeline() {
       # unload model tfsimple2 ./models/tfsimple2.yaml
 }
 
-function create_tfsimple_join_pipeline() {
+function tfsimple_join_pipeline() {
       echo $i
       sed  's/name: join/name: join'"$1"'/g' pipelines/tfsimples-join.yaml > /tmp/pipelines/tfsimples-join${1}.yaml
       load model ./models/tfsimple1.yaml
@@ -151,9 +159,11 @@ function create_tfsimple_join_pipeline() {
       # unload model tfsimple3 ./models/tfsimple3.yaml
 }
 
+############################################################################################################
+
 mkdir /tmp/models
 mkdir /tmp/pipelines
 for i in $(seq 1 $count);
 do
-    create_$model $i &
+    $task $i &
 done
