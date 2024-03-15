@@ -1,4 +1,4 @@
-# usage: ./pipeline-tests.sh [count] [kubectl|seldon] [namespace] [model]
+# usage: ./stress-tests.sh [count] [kubectl|seldon] [namespace] [model]
 
 if [ -z "$1" ]
 then
