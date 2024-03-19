@@ -42,7 +42,9 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
 
     // k8s
-    implementation("io.kubernetes:client-java:20.0.0")
+    implementation("io.kubernetes:client-java:20.0.1") {
+        exclude("com.microsoft.azure", "adal4j")
+    }
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")

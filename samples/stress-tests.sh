@@ -1,4 +1,9 @@
-# usage: ./stress-tests.sh [count] [kubectl|seldon] [namespace] [model]
+# usage: ./stress-tests.sh [count] [kubectl|seldon] [namespace] [task]
+# task is a name of a function that will be called from the list below
+# tfsimple
+# iris
+# tfsimple_pipeline
+# tfsimple_join_pipeline
 
 if [ -z "$1" ]
 then
@@ -23,9 +28,9 @@ fi
 
 if [ -z "$4" ]
 then
-      model="tfsimple"
+      task="tfsimple"
 else
-      model=$4
+      task=$4
 fi
 
 function load() {
@@ -92,7 +97,10 @@ function status() {
   fi
 }
 
-function create_tfsimple() {
+############################################################################################################
+# The following functions are the `task` options that can be called by the user.
+
+function tfsimple() {
       echo $i
       sed  's/name: tfsimple1/name: tfsimple'"$1"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${1}.yaml
       load model /tmp/models/tfsimple${1}.yaml
@@ -102,7 +110,7 @@ function create_tfsimple() {
       unload model tfsimple${1} /tmp/models/tfsimple${1}.yaml
 }
 
-function create_iris() {
+function iris() {
       echo $i
       sed  's/name: iris/name: iris'"$1"'/g' models/iris-v1.yaml > /tmp/models/iris${1}.yaml
       load model /tmp/models/iris${1}.yaml
@@ -112,8 +120,50 @@ function create_iris() {
       unload model iris${1} /tmp/models/iris${1}.yaml
 }
 
+function tfsimple_pipeline() {
+      echo $i
+      sed  's/name: tfsimples/name: tfsimples'"$1"'/g' pipelines/tfsimples.yaml > /tmp/pipelines/tfsimples${1}.yaml
+      load model ./models/tfsimple1.yaml
+      load model ./models/tfsimple2.yaml
+      status model tfsimple1
+      status model tfsimple2
+      load pipeline /tmp/pipelines/tfsimples${1}.yaml
+      status pipeline tfsimples${1}
+      seldon pipeline infer tfsimples${1} '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
+      seldon pipeline infer tfsimples${1} --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
+      unload pipeline tfsimples${1} /tmp/pipelines/tfsimples${1}.yaml
+      # we cant unload the models here as they are used by other pipelines
+      # TODO: create sub models for each pipeline?
+      # unload model tfsimple1 ./models/tfsimple1.yaml
+      # unload model tfsimple2 ./models/tfsimple2.yaml
+}
+
+function tfsimple_join_pipeline() {
+      echo $i
+      sed  's/name: join/name: join'"$1"'/g' pipelines/tfsimples-join.yaml > /tmp/pipelines/tfsimples-join${1}.yaml
+      load model ./models/tfsimple1.yaml
+      load model ./models/tfsimple2.yaml
+      load model ./models/tfsimple3.yaml
+      status model tfsimple1
+      status model tfsimple2
+      status model tfsimple3
+      load pipeline /tmp/pipelines/tfsimples-join${1}.yaml
+      status pipeline join${1}
+      seldon pipeline infer join${1} '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
+      seldon pipeline infer join${1} --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
+      unload pipeline join${1} /tmp/pipelines/tfsimples-join${1}.yaml
+      # we cant unload the models here as they are used by other pipelines
+      # TODO: create sub models for each pipeline?
+      # unload model tfsimple1 ./models/tfsimple1.yaml
+      # unload model tfsimple2 ./models/tfsimple2.yaml
+      # unload model tfsimple3 ./models/tfsimple3.yaml
+}
+
+############################################################################################################
+
 mkdir /tmp/models
+mkdir /tmp/pipelines
 for i in $(seq 1 $count);
 do
-    create_$model $i &
+    $task $i &
 done
