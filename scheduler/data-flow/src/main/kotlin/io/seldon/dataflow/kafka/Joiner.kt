@@ -27,6 +27,7 @@ class Joiner(
     internal val outputTopic: TopicForPipeline,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
+    internal val pipelineVersion: Int,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val kafkaDomainParams: KafkaDomainParams,
     internal val joinType: PipelineJoinType,
@@ -46,7 +47,7 @@ class Joiner(
             null
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
