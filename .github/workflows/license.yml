@@ -1,0 +1,13 @@
+name: V2 Generate license
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    name: placeholder
+    runs-on: ubuntu-latest
+    if: github.repository == 'seldonio/seldon-core' # Do not run this on forks.
+    steps:
+    - name: Echo Message
+      run: echo "This is to make workflow available for V2 license.yml"
