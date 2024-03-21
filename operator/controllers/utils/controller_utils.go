@@ -51,6 +51,16 @@ func GetAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey stri
 	}
 }
 
+// Get an annotation array for hosts from the Seldon Deployment given by annotationKey or return the array with fallback.
+func HostsFromAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey string, fallback string) []string {
+	annotation := GetAnnotation(mlDep, annotationKey, fallback)
+	if strings.Contains(annotation, ",") {
+		return strings.Split(annotation, ",")
+	} else {
+		return []string{annotation}
+	}
+}
+
 // get annotations that start with seldon.io/engine
 func GetEngineEnvAnnotations(mlDep *machinelearningv1.SeldonDeployment) []corev1.EnvVar {
 
