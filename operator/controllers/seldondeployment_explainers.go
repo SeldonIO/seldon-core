@@ -328,7 +328,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    utils2.GetAnnotations(mlDep, ANNOTATION_ISTIO_HOST, ANNOTATION_ISTIO_HOST_SEPARATOR, "*"),
+			Hosts:    utils2.HostsFromAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*"),
 			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
@@ -349,7 +349,7 @@ func createExplainerIstioResources(pSvcName string, p *machinelearningv1.Predict
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    utils2.GetAnnotations(mlDep, ANNOTATION_ISTIO_HOST, ANNOTATION_ISTIO_HOST_SEPARATOR, "*"),
+			Hosts:    utils2.HostsFromAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*"),
 			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
