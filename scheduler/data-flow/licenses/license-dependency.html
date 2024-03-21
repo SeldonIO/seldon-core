@@ -54,6 +54,19 @@
         </th>
       </tr>
       <tr>
+        <td class='licenseName'>Apache License, Version 2.0</td>
+        <td class='license'>
+          <a href='https://aws.amazon.com/apache2.0'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>aws-java-sdk-core-1.12.652.jar</li>
+            <li>jmespath-java-1.12.652.jar</li>
+            <li>aws-java-sdk-sts-1.12.652.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
         <td class='licenseName'>GNU General Public License, version 2</td>
         <td class='license'>
           <a href='http://www.gnu.org/licenses/gpl-2.0.html'>License agreement</a>
@@ -71,22 +84,27 @@
         </td>
         <td class='dependencies'>
           <ul>
-            <li>logging-interceptor-4.11.0.jar</li>
-            <li>client-java-proto-19.0.0.jar</li>
-            <li>okio-jvm-3.2.0.jar</li>
+            <li>jackson-core-2.12.7.jar</li>
+            <li>jose4j-0.9.4.jar</li>
+            <li>logging-interceptor-4.12.0.jar</li>
             <li>listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar</li>
+            <li>client-java-proto-20.0.1.jar</li>
+            <li>jackson-databind-2.12.7.1.jar</li>
             <li>simpleclient_tracer_otel-0.16.0.jar</li>
+            <li>commons-logging-1.2.jar</li>
             <li>simpleclient_tracer_otel_agent-0.16.0.jar</li>
             <li>simpleclient-0.16.0.jar</li>
+            <li>jackson-annotations-2.12.7.jar</li>
             <li>simpleclient_common-0.16.0.jar</li>
             <li>simpleclient_httpserver-0.16.0.jar</li>
+            <li>okio-jvm-3.6.0.jar</li>
             <li>simpleclient_tracer_common-0.16.0.jar</li>
+            <li>jackson-dataformat-cbor-2.12.7.jar</li>
             <li>failureaccess-1.0.1.jar</li>
-            <li>jose4j-0.9.3.jar</li>
-            <li>client-java-api-19.0.0.jar</li>
-            <li>okhttp-4.11.0.jar</li>
             <li>jsr305-3.0.2.jar</li>
-            <li>client-java-19.0.0.jar</li>
+            <li>client-java-20.0.1.jar</li>
+            <li>client-java-api-20.0.1.jar</li>
+            <li>okhttp-4.12.0.jar</li>
           </ul>
         </td>
       </tr>
@@ -109,10 +127,10 @@
         </td>
         <td class='dependencies'>
           <ul>
-            <li>grpc-protobuf-1.61.1.jar</li>
-            <li>grpc-api-1.61.1.jar</li>
-            <li>grpc-stub-1.61.1.jar</li>
+            <li>grpc-stub-1.62.2.jar</li>
             <li>grpc-kotlin-stub-1.4.1.jar</li>
+            <li>grpc-protobuf-1.62.2.jar</li>
+            <li>grpc-api-1.62.2.jar</li>
           </ul>
         </td>
       </tr>
@@ -124,7 +142,7 @@
         <td class='dependencies'>
           <ul>
             <li>rocksdbjni-7.9.2.jar</li>
-            <li>swagger-annotations-1.6.11.jar</li>
+            <li>swagger-annotations-1.6.13.jar</li>
           </ul>
         </td>
       </tr>
@@ -136,6 +154,8 @@
         <td class='dependencies'>
           <ul>
             <li>j2objc-annotations-2.8.jar</li>
+            <li>httpcore-4.4.13.jar</li>
+            <li>httpclient-4.5.13.jar</li>
             <li>snakeyaml-2.2.jar</li>
             <li>guava-32.1.3-jre.jar</li>
           </ul>
@@ -164,18 +184,40 @@
         </td>
       </tr>
       <tr>
+        <td class='licenseName'>GPL-2.0-with-classpath-exception</td>
+        <td class='license'>
+          <a href='https://www.gnu.org/software/classpath/license.html'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>jakarta.ws.rs-api-3.1.0.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class='licenseName'>EPL 2.0</td>
+        <td class='license'>
+          <a href='http://www.eclipse.org/legal/epl-2.0'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>jakarta.annotation-api-2.1.1.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
         <td class='licenseName'>The Apache License, Version 2.0</td>
         <td class='license'>
           <a href='http://www.apache.org/licenses/LICENSE-2.0.txt'>License agreement</a>
         </td>
         <td class='dependencies'>
           <ul>
-            <li>kotlin-stdlib-jdk7-1.8.20.jar</li>
+            <li>kotlin-stdlib-jdk8-1.9.10.jar</li>
             <li>kotlinx-datetime-jvm-0.5.0.jar</li>
             <li>kafka-clients-7.6.0-ccs.jar</li>
+            <li>kotlin-stdlib-jdk7-1.9.10.jar</li>
             <li>kotlin-stdlib-1.9.22.jar</li>
             <li>kafka-streams-7.6.0-ccs.jar</li>
-            <li>kotlin-stdlib-jdk8-1.8.20.jar</li>
           </ul>
         </td>
       </tr>
@@ -186,13 +228,24 @@
         </td>
         <td class='dependencies'>
           <ul>
-            <li>commons-io-2.14.0.jar</li>
-            <li>commons-lang3-3.13.0.jar</li>
             <li>proto-google-common-protos-2.29.0.jar</li>
-            <li>commons-codec-1.16.0.jar</li>
-            <li>gson-fire-1.8.5.jar</li>
-            <li>commons-compress-1.24.0.jar</li>
+            <li>gson-fire-1.9.0.jar</li>
+            <li>commons-io-2.15.1.jar</li>
+            <li>commons-codec-1.16.1.jar</li>
+            <li>commons-lang3-3.14.0.jar</li>
+            <li>commons-compress-1.26.1.jar</li>
             <li>gson-2.10.1.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class='licenseName'>EPL-2.0</td>
+        <td class='license'>
+          <a href='http://www.eclipse.org/legal/epl-2.0'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>jakarta.ws.rs-api-3.1.0.jar</li>
           </ul>
         </td>
       </tr>
@@ -208,19 +261,6 @@
         </td>
       </tr>
       <tr>
-        <td class='licenseName'>Bouncy Castle Licence</td>
-        <td class='license'>
-          <a href='https://www.bouncycastle.org/licence.html'>License agreement</a>
-        </td>
-        <td class='dependencies'>
-          <ul>
-            <li>bcutil-jdk18on-1.76.jar</li>
-            <li>bcpkix-jdk18on-1.76.jar</li>
-            <li>bcprov-jdk18on-1.76.jar</li>
-          </ul>
-        </td>
-      </tr>
-      <tr>
         <td class='licenseName'>Apache 2.0</td>
         <td class='license'>
           <a href='http://www.apache.org/licenses/LICENSE-2.0.txt'>License agreement</a>
@@ -228,6 +268,30 @@
         <td class='dependencies'>
           <ul>
             <li>error_prone_annotations-2.23.0.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class='licenseName'>Bouncy Castle Licence</td>
+        <td class='license'>
+          <a href='https://www.bouncycastle.org/licence.html'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>bcpkix-jdk18on-1.77.jar</li>
+            <li>bcutil-jdk18on-1.77.jar</li>
+            <li>bcprov-jdk18on-1.77.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class='licenseName'>Apache 2</td>
+        <td class='license'>
+          <a href='http://www.apache.org/licenses/LICENSE-2.0.txt'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>joda-time-2.8.1.jar</li>
           </ul>
         </td>
       </tr>
@@ -251,6 +315,17 @@
         <td class='dependencies'>
           <ul>
             <li>checker-qual-3.37.0.jar</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class='licenseName'>GPL2 w/ CPE</td>
+        <td class='license'>
+          <a href='https://www.gnu.org/software/classpath/license.html'>License agreement</a>
+        </td>
+        <td class='dependencies'>
+          <ul>
+            <li>jakarta.annotation-api-2.1.1.jar</li>
           </ul>
         </td>
       </tr>
@@ -283,8 +358,8 @@
         </td>
         <td class='dependencies'>
           <ul>
-            <li>protobuf-java-3.25.2.jar</li>
-            <li>protobuf-kotlin-3.25.2.jar</li>
+            <li>protobuf-kotlin-3.25.3.jar</li>
+            <li>protobuf-java-3.25.3.jar</li>
           </ul>
         </td>
       </tr>
