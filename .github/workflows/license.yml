@@ -13,9 +13,7 @@ jobs:
     steps:
       - name: Get github access token
         run: |
-          echo $API_KEY > ~/.github_api_token
-        env:
-            API_KEY : ${{ secrets.GH_API_TOKEN }}
+          echo ${{ secrets.GH_API_TOKEN }} > ~/.github_api_token
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
