@@ -397,10 +397,18 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
 		for _, candidate := range exp.Candidates {
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+			pip, err := p.pipelineHandler.GetPipeline(candidate.Name)
+			if err != nil {
+				return err
+			}
+			p.xdsCache.AddPipelineRoute(routeName, pip.Name, pip.GetLatestPipelineVersion().Version, candidate.Weight, false)
 		}
 		if exp.Mirror != nil {
-			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
+			pip, err := p.pipelineHandler.GetPipeline(exp.Mirror.Name)
+			if err != nil {
+				return err
+			}
+			p.xdsCache.AddPipelineRoute(routeName, pip.Name, pip.GetLatestPipelineVersion().Version, exp.Mirror.Percent, true)
 		}
 	case experiment.ModelResourceType:
 		for _, candidate := range exp.Candidates {
@@ -489,16 +497,26 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 			return fmt.Errorf("Experiment on pipeline %s, but %s is deleted", pip.Name, *exp.Default)
 		}
 		for _, candidate := range exp.Candidates {
-			logger.Infof("Adding pipeline experiment candidate %s %s %d", routeName, candidate.Name, candidate.Weight)
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+			pip, err := p.pipelineHandler.GetPipeline(candidate.Name)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to get candidate pipeline %s", candidate.Name)
+				return err
+			}
+			logger.Infof("Adding pipeline experiment candidate %s %s (version %d) %d", routeName, pip.Name, pip.GetLatestPipelineVersion().Version, candidate.Weight)
+			p.xdsCache.AddPipelineRoute(routeName, pip.Name, pip.GetLatestPipelineVersion().Version, candidate.Weight, false)
 		}
 		if exp.Mirror != nil {
-			logger.Infof("Adding pipeline experiment mirror %s %s %d", routeName, exp.Mirror.Name, exp.Mirror.Percent)
-			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
+			pip, err := p.pipelineHandler.GetPipeline(exp.Mirror.Name)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to get mirror pipeline %s", exp.Mirror.Name)
+				return err
+			}
+			logger.Infof("Adding pipeline experiment mirror %s %s (version %d) %d", routeName, pip.Name, pip.GetLatestPipelineVersion().Version, exp.Mirror.Percent)
+			p.xdsCache.AddPipelineRoute(routeName, pip.Name, pip.GetLatestPipelineVersion().Version, exp.Mirror.Percent, true)
 		}
 	} else {
 		logger.Infof("Adding normal pipeline route %s", routeName)
-		p.xdsCache.AddPipelineRoute(routeName, pip.Name, 100, false)
+		p.xdsCache.AddPipelineRoute(routeName, pip.Name, pip.GetLatestPipelineVersion().Version, 100, false)
 	}
 
 	return p.updateEnvoy()

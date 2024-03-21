@@ -50,6 +50,7 @@ const (
 	EnvoyLogPathPrefix            = "/tmp/request-log"
 	SeldonModelHeader             = "seldon-model"
 	SeldonPipelineHeader          = "pipeline"
+	SeldonPipelineVersionHeader   = "pipeline-version"
 	SeldonInternalModelHeader     = "seldon-internal-model"
 	SeldonRouteHeader             = "x-seldon-route"
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
@@ -420,6 +421,12 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplits
 							Value: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
 						},
 					},
+					{
+						Header: &core.HeaderValue{
+							Key:   SeldonPipelineVersionHeader,
+							Value: fmt.Sprint(clusterTraffic.PipelineVersion),
+						},
+					},
 				},
 			})
 
@@ -537,6 +544,12 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 			Header: &core.HeaderValue{
 				Key:   SeldonRouteHeader,
 				Value: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
+			},
+		},
+		{
+			Header: &core.HeaderValue{
+				Key:   SeldonPipelineVersionHeader,
+				Value: fmt.Sprint(clusterTraffic.PipelineVersion),
 			},
 		},
 	}
