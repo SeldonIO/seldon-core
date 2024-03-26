@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class EpsilonGreedy(object):
-    """ Multi-armed bandit routing using epsilon-greedy strategy.
+    """Multi-armed bandit routing using epsilon-greedy strategy.
 
     This class implements epsilon-greedy routing. The rewards are assumed to
     come from a Bernoulli distribution. The reward is assumed to be a single
@@ -57,8 +57,10 @@ class EpsilonGreedy(object):
 
         try:
             n_branches = int(n_branches)
-            assert n_branches > 0
-        except (TypeError, ValueError, AssertionError) as e:
+
+            if n_branches < 1:
+                raise ValueError("n_branches must be greater than 0")
+        except (TypeError, ValueError) as e:
             logger.exception("n_branches parameter must be given")
             raise
 
