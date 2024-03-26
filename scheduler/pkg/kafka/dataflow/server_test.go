@@ -180,6 +180,7 @@ func TestCreateTriggerSources(t *testing.T) {
 	}
 }
 
+// test to make sure we remove old versions of the pipeline when a new version is added
 func TestPipelineRollingUpgradeEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -187,12 +188,12 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 		name      string
 		loadReqV1 *scheduler.Pipeline
 		loadReqV2 *scheduler.Pipeline
-		err       bool
+		err       bool // when true old version was not marked as ready
 	}
 
 	tests := []test{
 		{
-			name: "pipeline ok",
+			name: "old version removed - was ready",
 			loadReqV1: &scheduler.Pipeline{
 
 				Name:    "foo",
@@ -218,7 +219,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			err: false,
 		},
 		{
-			name: "pipeline ok",
+			name: "old version removed - was not ready",
 			loadReqV1: &scheduler.Pipeline{
 
 				Name:    "foo",
@@ -243,6 +244,21 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			},
 			err: true,
 		},
+		{
+			name: "no new version",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err: false,
+		},
 	}
 
 	for _, test := range tests {
@@ -256,10 +272,13 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 				err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", sourceChainerServer)
 			}
 			g.Expect(err).To(BeNil())
-			err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
-			g.Expect(err).To(BeNil())
-			err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", sourceChainerServer)
-			g.Expect(err).To(BeNil())
+
+			if test.loadReqV2 != nil {
+				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
+				g.Expect(err).To(BeNil())
+				err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", sourceChainerServer)
+				g.Expect(err).To(BeNil())
+			}
 
 			stream := newStubServerStatusServer(1)
 			s.streams[serverName] = &ChainerSubscription{
@@ -272,18 +291,30 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
-			var psr *chainer.PipelineUpdateMessage
-			select {
-			case next := <-stream.msgs:
-				psr = next
-			default:
-				t.Fail()
-			}
+			if test.loadReqV2 != nil {
+				var psr *chainer.PipelineUpdateMessage
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				default:
+					t.Fail()
+				}
 
-			g.Expect(psr).ToNot(BeNil())
-			g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
-			g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
-			g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
+				g.Expect(psr).ToNot(BeNil())
+				g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
+				g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
+				g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
+			} else {
+				var psr *chainer.PipelineUpdateMessage
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				default:
+					psr = nil
+				}
+
+				g.Expect(psr).To(BeNil())
+			}
 
 		})
 	}
