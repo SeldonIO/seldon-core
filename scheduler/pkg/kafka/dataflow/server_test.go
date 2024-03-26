@@ -185,10 +185,11 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name      string
-		loadReqV1 *scheduler.Pipeline
-		loadReqV2 *scheduler.Pipeline
-		err       bool // when true old version was not marked as ready
+		name       string
+		loadReqV1  *scheduler.Pipeline
+		loadReqV2  *scheduler.Pipeline
+		err        bool // when true old version was not marked as ready
+		connection bool
 	}
 
 	tests := []test{
@@ -216,7 +217,8 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 					},
 				},
 			},
-			err: false,
+			err:        false,
+			connection: true,
 		},
 		{
 			name: "old version removed - was not ready",
@@ -242,7 +244,8 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 					},
 				},
 			},
-			err: true,
+			err:        true,
+			connection: true,
 		},
 		{
 			name: "no new version",
@@ -257,7 +260,35 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 					},
 				},
 			},
-			err: false,
+			err:        false,
+			connection: true,
+		},
+		{
+			name: "no connection",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			loadReqV2: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 2,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err:        false,
+			connection: false,
 		},
 	}
 
@@ -281,17 +312,140 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			}
 
 			stream := newStubServerStatusServer(1)
-			s.streams[serverName] = &ChainerSubscription{
-				name:   "dummy",
-				stream: stream,
-				fin:    make(chan bool),
+			if test.connection {
+				s.streams[serverName] = &ChainerSubscription{
+					name:   "dummy",
+					stream: stream,
+					fin:    make(chan bool),
+				}
+				g.Expect(s.streams[serverName]).ToNot(BeNil())
 			}
-			g.Expect(s.streams[serverName]).ToNot(BeNil())
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
-			if test.loadReqV2 != nil {
+			if test.connection {
+				if test.loadReqV2 != nil {
+					var psr *chainer.PipelineUpdateMessage
+					select {
+					case next := <-stream.msgs:
+						psr = next
+					default:
+						t.Fail()
+					}
+
+					g.Expect(psr).ToNot(BeNil())
+					g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
+					g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
+				} else {
+					var psr *chainer.PipelineUpdateMessage
+					select {
+					case next := <-stream.msgs:
+						psr = next
+					default:
+						psr = nil
+					}
+
+					g.Expect(psr).To(BeNil())
+				}
+			} else {
+				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReqV2.Name)
+				g.Expect(err).To(BeNil())
+				// error message should be set
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).ToNot(Equal(""))
+			}
+
+		})
+	}
+}
+
+func TestPipelineEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		loadReq    *scheduler.Pipeline
+		status     pipeline.PipelineStatus
+		connection bool
+	}
+
+	tests := []test{
+		{
+			name: "add new pipeline version",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineCreate,
+			connection: true,
+		},
+		{
+			name: "remove pipeline version",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineTerminate,
+			connection: true,
+		},
+		{
+			name: "no connection",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineTerminate,
+			connection: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			serverName := "dummy"
+			s, _ := createTestScheduler(t, serverName)
+
+			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
+			g.Expect(err).To(BeNil())
+
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			g.Expect(err).To(BeNil())
+
+			stream := newStubServerStatusServer(1)
+			if test.connection {
+				s.streams[serverName] = &ChainerSubscription{
+					name:   "dummy",
+					stream: stream,
+					fin:    make(chan bool),
+				}
+				g.Expect(s.streams[serverName]).ToNot(BeNil())
+			}
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if test.connection {
 				var psr *chainer.PipelineUpdateMessage
 				select {
 				case next := <-stream.msgs:
@@ -301,19 +455,18 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 				}
 
 				g.Expect(psr).ToNot(BeNil())
-				g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
-				g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
-				g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
-			} else {
-				var psr *chainer.PipelineUpdateMessage
-				select {
-				case next := <-stream.msgs:
-					psr = next
-				default:
-					psr = nil
+				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
+				g.Expect(psr.Version).To(Equal(uint32(test.loadReq.Version)))
+				if test.status == pipeline.PipelineCreate {
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
+				} else {
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
 				}
-
-				g.Expect(psr).To(BeNil())
+			} else {
+				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReq.Name)
+				g.Expect(err).To(BeNil())
+				// error message should be set
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).ToNot(Equal(""))
 			}
 
 		})
