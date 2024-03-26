@@ -349,10 +349,12 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 					g.Expect(psr).To(BeNil())
 				}
 			} else {
+				// in this case we have a rolling update to a new version but the connection
+				// to dataflow-engine is not available so we should have an error
 				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReqV2.Name)
 				g.Expect(err).To(BeNil())
 				// error message should be set
-				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).ToNot(Equal(""))
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
 			}
 
 		})
@@ -462,10 +464,11 @@ func TestPipelineEvents(t *testing.T) {
 					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
 				}
 			} else {
+				// in this case we do not have a dataflow-engine connection so we should have an error message
 				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReq.Name)
 				g.Expect(err).To(BeNil())
 				// error message should be set
-				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).ToNot(Equal(""))
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
 			}
 
 		})
