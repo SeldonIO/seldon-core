@@ -19,6 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -27,8 +28,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 )
 
 func TestCreateTopicSources(t *testing.T) {
