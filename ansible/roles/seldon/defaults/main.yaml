@@ -7,10 +7,10 @@ seldon_install_components: true
 seldon_install_runtime: true
 seldon_install_servers: true
 
-seldon_force_install_crds: false
-seldon_force_install_components: false
-seldon_force_install_runtime: false
-seldon_force_install_servers: false
+seldon_force_install_crds: "{{ helm_force_install | default(false) }}"
+seldon_force_install_components: "{{ helm_force_install | default(false) }}"
+seldon_force_install_runtime: "{{ helm_force_install | default(false) }}"
+seldon_force_install_servers: "{{ helm_force_install | default(false) }}"
 seldon_core_v2_timeout_helm: "480s"
 
 seldon_core_v2_component_values: {}
