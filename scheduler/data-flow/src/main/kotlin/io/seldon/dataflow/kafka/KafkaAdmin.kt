@@ -9,11 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import com.github.michaelbull.retry.ContinueRetrying
-import com.github.michaelbull.retry.policy.RetryPolicy
-import com.github.michaelbull.retry.policy.constantDelay
-import com.github.michaelbull.retry.policy.limitAttempts
-import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.*
 import com.github.michaelbull.retry.retry
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import org.apache.kafka.clients.admin.Admin
@@ -26,6 +22,7 @@ import org.apache.kafka.common.errors.UnknownTopicOrPartitionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import io.klogging.logger as coLogger
+import io.klogging.noCoLogger
 
 class KafkaAdmin(
     adminConfig: KafkaAdminProperties,
@@ -37,13 +34,16 @@ class KafkaAdmin(
     suspend fun ensureTopicsExist(
         steps: List<PipelineStepUpdate>,
     ) : Exception? {
-        val missingTopicRetryPolicy: RetryPolicy<Throwable> = {
-            when (reason.cause) {
+        val missingTopicRetryPolicy = continueIf<Throwable> { (failure) ->
+            when (failure) {
                 is TimeoutException,
-                is UnknownTopicOrPartitionException -> ContinueRetrying
+                is UnknownTopicOrPartitionException -> true
                 else -> {
-                    logger.warn("ignoring exception while waiting for topic creation: ${reason.message}")
-                    ContinueRetrying
+                    // We log here for dev purposes, to gather other kinds of exceptions that occur. In time, we should
+                    // collate those and decide which are permanent errors. For permanent errors, it would be worth
+                    // stopping the retries and returning false.
+                    noCoLogger.warn("ignoring exception while waiting for topic creation: ${failure.message}")
+                    true
                 }
             }
         }
@@ -80,7 +80,7 @@ class KafkaAdmin(
                     // one broker. This is because the call to createTopics above returns before topics can actually
                     // be subscribed to.
                     retry(
-                        missingTopicRetryPolicy + limitAttempts(topicWaitRetryParams.describeRetries) + constantDelay(
+                        missingTopicRetryPolicy + stopAtAttempts(topicWaitRetryParams.describeRetries) + constantDelay(
                             topicWaitRetryParams.describeRetryDelayMillis
                         )
                     ) {
@@ -105,5 +105,6 @@ class KafkaAdmin(
 
     companion object {
         private val logger = coLogger(KafkaAdmin::class)
+        private val noCoLogger = noCoLogger(KafkaAdmin::class)
     }
 }

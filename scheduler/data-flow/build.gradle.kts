@@ -5,7 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.20"  // the kotlin version
 
     java
     application
@@ -39,7 +39,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:3.25.3")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.0")
 
     // k8s
     implementation("io.kubernetes:client-java:20.0.1") {
