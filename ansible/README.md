@@ -163,6 +163,9 @@ tag), create a custom images config file following the example in
 ansible-playbook playbooks/setup-seldon.yaml -e @<path-to-custom-images-config.yaml>
 ```
 
+If, instead of pulling images from an external repository you want to build certain components
+locally, please read README.dev.md
+
 ##### Private registries
 
 When using private registries, access needs to be authenticated (typically, via a
