@@ -170,7 +170,7 @@ func (xds *SeldonXDSCache) SecretContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32, isMirror bool) {
+func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, pipelineVersion uint32, trafficWeight uint32, isMirror bool) {
 	pipelineRoute, ok := xds.Pipelines[routeName]
 	if !ok {
 		if isMirror {
@@ -178,8 +178,9 @@ func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName strin
 				RouteName: routeName,
 				Mirrors: []resources.PipelineTrafficSplits{
 					{
-						PipelineName:  pipelineName,
-						TrafficWeight: trafficWeight,
+						PipelineName:    pipelineName,
+						PipelineVersion: pipelineVersion,
+						TrafficWeight:   trafficWeight,
 					},
 				},
 			}
@@ -188,8 +189,9 @@ func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName strin
 				RouteName: routeName,
 				Clusters: []resources.PipelineTrafficSplits{
 					{
-						PipelineName:  pipelineName,
-						TrafficWeight: trafficWeight,
+						PipelineName:    pipelineName,
+						PipelineVersion: pipelineVersion,
+						TrafficWeight:   trafficWeight,
 					},
 				},
 			}
@@ -197,13 +199,15 @@ func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName strin
 	} else {
 		if isMirror {
 			pipelineRoute.Mirrors = append(pipelineRoute.Mirrors, resources.PipelineTrafficSplits{
-				PipelineName:  pipelineName,
-				TrafficWeight: trafficWeight,
+				PipelineName:    pipelineName,
+				PipelineVersion: pipelineVersion,
+				TrafficWeight:   trafficWeight,
 			})
 		} else {
 			pipelineRoute.Clusters = append(pipelineRoute.Clusters, resources.PipelineTrafficSplits{
-				PipelineName:  pipelineName,
-				TrafficWeight: trafficWeight,
+				PipelineName:    pipelineName,
+				PipelineVersion: pipelineVersion,
+				TrafficWeight:   trafficWeight,
 			})
 		}
 		xds.Pipelines[routeName] = pipelineRoute

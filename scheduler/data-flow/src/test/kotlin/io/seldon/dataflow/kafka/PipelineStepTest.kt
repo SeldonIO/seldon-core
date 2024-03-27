@@ -34,6 +34,7 @@ internal class PipelineStepTest {
             stepFor(
                 StreamsBuilder(),
                 defaultPipelineName,
+                defaultPipelineVersion,
                 sources,
                 emptyList(),
                 emptyList(),
@@ -54,6 +55,7 @@ internal class PipelineStepTest {
 
     companion object {
         private const val defaultPipelineName = "some-pipeline"
+        private const val defaultPipelineVersion = 1
         private val defaultPipelineTopic = PipelineTopic.newBuilder()
             .setTopicName("seldon.namespace.sinkModel.inputs")
             .setPipelineName(defaultPipelineName).build()
@@ -148,6 +150,7 @@ internal class PipelineStepTest {
                 inputTopic = inputTopic,
                 tensors = tensors,
                 pipelineName = defaultPipelineName,
+                pipelineVersion = defaultPipelineVersion,
                 outputTopic = defaultSink,
                 tensorRenaming = emptyList(),
                 kafkaDomainParams = kafkaDomainParams,
@@ -166,6 +169,7 @@ internal class PipelineStepTest {
                 inputTopics = inputTopics,
                 tensorsByTopic = tensorsByTopic,
                 pipelineName = defaultPipelineName,
+                pipelineVersion = defaultPipelineVersion,
                 outputTopic = defaultSink,
                 tensorRenaming = emptyList(),
                 kafkaDomainParams = kafkaDomainParams,

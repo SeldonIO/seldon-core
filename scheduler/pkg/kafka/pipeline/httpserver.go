@@ -143,7 +143,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	}
 	dataProto, err := ConvertRequestToV2Bytes(data, "", "")
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to convert bytes to v2 request for resource %s", resourceName)
+		logger.WithField("data", string(data)).WithError(err).Errorf("Failed to convert bytes to v2 request for resource %s", resourceName)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

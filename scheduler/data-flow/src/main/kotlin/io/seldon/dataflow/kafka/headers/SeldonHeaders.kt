@@ -11,6 +11,7 @@ package io.seldon.dataflow.kafka.headers
 
 object SeldonHeaders {
     const val pipelineName = "pipeline"
+    const val pipelineVersion = "pipeline-version"
 
     // Remove headers we do not want transferred between topics.
     // These headers are set in MLServer Alibi-Detect and Alibi-Explain runtimes: https://github.com/SeldonIO/mlserver.

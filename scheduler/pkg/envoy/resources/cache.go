@@ -66,8 +66,9 @@ type PipelineRoute struct {
 }
 
 type PipelineTrafficSplits struct {
-	PipelineName  string
-	TrafficWeight uint32
+	PipelineName    string
+	PipelineVersion uint32
+	TrafficWeight   uint32
 }
 
 type Secret struct {
