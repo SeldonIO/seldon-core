@@ -3,6 +3,6 @@
 - name: Save seldon core helm component values
   ansible.builtin.template:
     src: "{{ role_path }}/files/seldon-components-helm-values.yaml.j2"
-    dest: "{{ save_helm_components_overrides_file }}"
+    dest: "{{ seldon_dev_u.save_helm_components_overrides_file }}"
     mode: '0774'
   delegate_to: localhost
