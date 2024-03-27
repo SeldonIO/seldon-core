@@ -50,7 +50,7 @@ const (
 	EnvoyLogPathPrefix            = "/tmp/request-log"
 	SeldonModelHeader             = "seldon-model"
 	SeldonPipelineHeader          = "pipeline"
-	SeldonPipelineVersionHeader   = "pipeline-version"
+	SeldonPipelineVersionHeader   = "seldon-pipeline-version"
 	SeldonInternalModelHeader     = "seldon-internal-model"
 	SeldonRouteHeader             = "x-seldon-route"
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
