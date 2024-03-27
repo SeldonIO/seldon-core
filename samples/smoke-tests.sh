@@ -1,4 +1,4 @@
-# usage: ./pipeline-tests.sh [sleepTime] [kubectl|seldon] [namespace]
+# usage: ./smoke-tests.sh [sleepTime] [kubectl|seldon] [namespace]
 
 if [ -z "$1" ]
 then
@@ -90,7 +90,7 @@ load model ./models/tfsimple1.yaml
 load model ./models/tfsimple2.yaml
 status model tfsimple1
 status model tfsimple2 
-load "pipeline" ./pipelines/tfsimples.yaml
+load pipeline ./pipelines/tfsimples.yaml
 status pipeline tfsimples
 seldon pipeline infer tfsimples '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 seldon pipeline infer tfsimples --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'

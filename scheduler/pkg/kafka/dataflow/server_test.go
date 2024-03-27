@@ -10,14 +10,24 @@ the Change License after the Change Date as each is defined in accordance with t
 package dataflow
 
 import (
+	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestCreateTopicSources(t *testing.T) {
@@ -167,4 +177,348 @@ func TestCreateTriggerSources(t *testing.T) {
 			g.Expect(sources).To(Equal(test.sources))
 		})
 	}
+}
+
+// test to make sure we remove old versions of the pipeline when a new version is added
+func TestPipelineRollingUpgradeEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		loadReqV1  *scheduler.Pipeline
+		loadReqV2  *scheduler.Pipeline
+		err        bool // when true old version was not marked as ready
+		connection bool
+	}
+
+	tests := []test{
+		{
+			name: "old version removed - was ready",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			loadReqV2: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 2,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err:        false,
+			connection: true,
+		},
+		{
+			name: "old version removed - was not ready",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			loadReqV2: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 2,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err:        true,
+			connection: true,
+		},
+		{
+			name: "no new version",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err:        false,
+			connection: true,
+		},
+		{
+			name: "no connection",
+			loadReqV1: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			loadReqV2: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 2,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			err:        false,
+			connection: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			serverName := "dummy"
+			s, _ := createTestScheduler(t, serverName)
+
+			err := s.pipelineHandler.AddPipeline(test.loadReqV1) // version 1
+			g.Expect(err).To(BeNil())
+			if !test.err {
+				err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", sourceChainerServer)
+			}
+			g.Expect(err).To(BeNil())
+
+			if test.loadReqV2 != nil {
+				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
+				g.Expect(err).To(BeNil())
+				err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", sourceChainerServer)
+				g.Expect(err).To(BeNil())
+			}
+
+			stream := newStubServerStatusServer(1)
+			if test.connection {
+				s.streams[serverName] = &ChainerSubscription{
+					name:   "dummy",
+					stream: stream,
+					fin:    make(chan bool),
+				}
+				g.Expect(s.streams[serverName]).ToNot(BeNil())
+			}
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if test.connection {
+				if test.loadReqV2 != nil {
+					var psr *chainer.PipelineUpdateMessage
+					select {
+					case next := <-stream.msgs:
+						psr = next
+					default:
+						t.Fail()
+					}
+
+					g.Expect(psr).ToNot(BeNil())
+					g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
+					g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
+				} else {
+					var psr *chainer.PipelineUpdateMessage
+					select {
+					case next := <-stream.msgs:
+						psr = next
+					default:
+						psr = nil
+					}
+
+					g.Expect(psr).To(BeNil())
+				}
+			} else {
+				// in this case we have a rolling update to a new version but the connection
+				// to dataflow-engine is not available so we should have an error
+				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReqV2.Name)
+				g.Expect(err).To(BeNil())
+				// error message should be set
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
+			}
+
+		})
+	}
+}
+
+func TestPipelineEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		loadReq    *scheduler.Pipeline
+		status     pipeline.PipelineStatus
+		connection bool
+	}
+
+	tests := []test{
+		{
+			name: "add new pipeline version",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineCreate,
+			connection: true,
+		},
+		{
+			name: "remove pipeline version",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineTerminate,
+			connection: true,
+		},
+		{
+			name: "no connection",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:     pipeline.PipelineTerminate,
+			connection: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			serverName := "dummy"
+			s, _ := createTestScheduler(t, serverName)
+
+			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
+			g.Expect(err).To(BeNil())
+
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			g.Expect(err).To(BeNil())
+
+			stream := newStubServerStatusServer(1)
+			if test.connection {
+				s.streams[serverName] = &ChainerSubscription{
+					name:   "dummy",
+					stream: stream,
+					fin:    make(chan bool),
+				}
+				g.Expect(s.streams[serverName]).ToNot(BeNil())
+			}
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if test.connection {
+				var psr *chainer.PipelineUpdateMessage
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(psr).ToNot(BeNil())
+				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
+				g.Expect(psr.Version).To(Equal(uint32(test.loadReq.Version)))
+				if test.status == pipeline.PipelineCreate {
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
+				} else {
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
+				}
+			} else {
+				// in this case we do not have a dataflow-engine connection so we should have an error message
+				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReq.Name)
+				g.Expect(err).To(BeNil())
+				// error message should be set
+				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
+			}
+
+		})
+	}
+}
+
+type stubChainerServer struct {
+	msgs chan *chainer.PipelineUpdateMessage
+	grpc.ServerStream
+}
+
+var _ chainer.Chainer_SubscribePipelineUpdatesServer = (*stubChainerServer)(nil)
+
+func newStubServerStatusServer(capacity int) *stubChainerServer {
+	return &stubChainerServer{
+		msgs: make(chan *chainer.PipelineUpdateMessage, capacity),
+	}
+}
+
+func (s *stubChainerServer) Send(r *chainer.PipelineUpdateMessage) error {
+	s.msgs <- r
+	return nil
+}
+
+// TODO: this function is defined elsewhere, refactor to avoid duplication
+func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coordinator.EventHub) {
+	logger := log.New()
+	logger.SetLevel(log.WarnLevel)
+
+	eventHub, _ := coordinator.NewEventHub(logger)
+
+	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+
+	data :=
+		`
+	{
+	  "bootstrap.servers":"kafka:9092",
+	  "consumer":{"session.timeout.ms": 6000, "someBool": true, "someString":"foo"},
+	  "producer": {"linger.ms":0},
+	  "streams": {"replication.factor": 1}
+	}
+	`
+	configFilePath := fmt.Sprintf("%s/kafka.json", t.TempDir())
+	_ = os.WriteFile(configFilePath, []byte(data), 0644)
+	kc, _ := config.NewKafkaConfig(configFilePath)
+
+	b := util.NewRingLoadBalancer(1)
+	b.AddServer(serverName)
+	s, _ := NewChainerServer(logger, eventHub, pipelineServer, "test-ns", b, kc)
+
+	return s, eventHub
 }
