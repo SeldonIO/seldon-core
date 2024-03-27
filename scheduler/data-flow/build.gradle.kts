@@ -36,7 +36,7 @@ dependencies {
     implementation("io.grpc:grpc-stub:1.62.2")
     implementation("io.grpc:grpc-protobuf:1.62.2")
     runtimeOnly("io.grpc:grpc-netty-shaded:1.62.2")
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
+    implementation("com.google.protobuf:protobuf-java:4.26.0")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.0")
