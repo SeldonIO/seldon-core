@@ -51,8 +51,9 @@ message PipelineTensorMapping {
 
 message PipelineTopic {
   string pipelineName = 1;
-  string topicName = 2;
-  optional string tensor = 3;
+  int64 pipelineVersion = 2;
+  string topicName = 3;
+  optional string tensor = 4;
 }
 
 message Batch {
