@@ -72,8 +72,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object name_ = "";
+    private volatile java.lang.Object name_;
     /**
      * <code>string name = 1;</code>
      * @return The name.
@@ -297,8 +296,8 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         name_ = "";
+
         return this;
       }
 
@@ -325,16 +324,9 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.name_ = name_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.name_ = name_;
-        }
       }
 
       @java.lang.Override
@@ -383,7 +375,6 @@ public final class ChainerOuterClass {
         if (other == io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
-          bitField0_ |= 0x00000001;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -414,7 +405,7 @@ public final class ChainerOuterClass {
                 break;
               case 10: {
                 name_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000001;
+
                 break;
               } // case 10
               default: {
@@ -432,7 +423,6 @@ public final class ChainerOuterClass {
         } // finally
         return this;
       }
-      private int bitField0_;
 
       private java.lang.Object name_ = "";
       /**
@@ -475,9 +465,11 @@ public final class ChainerOuterClass {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         name_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -486,8 +478,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearName() {
+        
         name_ = getDefaultInstance().getName();
-        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -498,10 +490,12 @@ public final class ChainerOuterClass {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         name_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -800,7 +794,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int OP_FIELD_NUMBER = 1;
-    private int op_ = 0;
+    private int op_;
     /**
      * <code>.seldon.mlops.chainer.PipelineUpdateMessage.PipelineOperation op = 1;</code>
      * @return The enum numeric value on the wire for op.
@@ -813,13 +807,13 @@ public final class ChainerOuterClass {
      * @return The op.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation getOp() {
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.forNumber(op_);
+      @SuppressWarnings("deprecation")
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.valueOf(op_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.UNRECOGNIZED : result;
     }
 
     public static final int PIPELINE_FIELD_NUMBER = 2;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object pipeline_ = "";
+    private volatile java.lang.Object pipeline_;
     /**
      * <code>string pipeline = 2;</code>
      * @return The pipeline.
@@ -857,7 +851,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int VERSION_FIELD_NUMBER = 3;
-    private int version_ = 0;
+    private int version_;
     /**
      * <code>uint32 version = 3;</code>
      * @return The version.
@@ -868,8 +862,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int UID_FIELD_NUMBER = 4;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object uid_ = "";
+    private volatile java.lang.Object uid_;
     /**
      * <code>string uid = 4;</code>
      * @return The uid.
@@ -907,7 +900,6 @@ public final class ChainerOuterClass {
     }
 
     public static final int UPDATES_FIELD_NUMBER = 5;
-    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate> updates_;
     /**
      * <code>repeated .seldon.mlops.chainer.PipelineStepUpdate updates = 5;</code>
@@ -1178,18 +1170,21 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         op_ = 0;
+
         pipeline_ = "";
+
         version_ = 0;
+
         uid_ = "";
+
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
         } else {
           updates_ = null;
           updatesBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000010);
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -1216,38 +1211,22 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage(this);
-        buildPartialRepeatedFields(result);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        onBuilt();
-        return result;
-      }
-
-      private void buildPartialRepeatedFields(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result) {
+        int from_bitField0_ = bitField0_;
+        result.op_ = op_;
+        result.pipeline_ = pipeline_;
+        result.version_ = version_;
+        result.uid_ = uid_;
         if (updatesBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) != 0)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             updates_ = java.util.Collections.unmodifiableList(updates_);
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.updates_ = updates_;
         } else {
           result.updates_ = updatesBuilder_.build();
         }
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.op_ = op_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.pipeline_ = pipeline_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.version_ = version_;
-        }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.uid_ = uid_;
-        }
+        onBuilt();
+        return result;
       }
 
       @java.lang.Override
@@ -1299,7 +1278,6 @@ public final class ChainerOuterClass {
         }
         if (!other.getPipeline().isEmpty()) {
           pipeline_ = other.pipeline_;
-          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (other.getVersion() != 0) {
@@ -1307,14 +1285,13 @@ public final class ChainerOuterClass {
         }
         if (!other.getUid().isEmpty()) {
           uid_ = other.uid_;
-          bitField0_ |= 0x00000008;
           onChanged();
         }
         if (updatesBuilder_ == null) {
           if (!other.updates_.isEmpty()) {
             if (updates_.isEmpty()) {
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureUpdatesIsMutable();
               updates_.addAll(other.updates_);
@@ -1327,7 +1304,7 @@ public final class ChainerOuterClass {
               updatesBuilder_.dispose();
               updatesBuilder_ = null;
               updates_ = other.updates_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000001);
               updatesBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getUpdatesFieldBuilder() : null;
@@ -1364,22 +1341,22 @@ public final class ChainerOuterClass {
                 break;
               case 8: {
                 op_ = input.readEnum();
-                bitField0_ |= 0x00000001;
+
                 break;
               } // case 8
               case 18: {
                 pipeline_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
+
                 break;
               } // case 18
               case 24: {
                 version_ = input.readUInt32();
-                bitField0_ |= 0x00000004;
+
                 break;
               } // case 24
               case 34: {
                 uid_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000008;
+
                 break;
               } // case 34
               case 42: {
@@ -1426,8 +1403,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setOpValue(int value) {
+        
         op_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1437,7 +1414,8 @@ public final class ChainerOuterClass {
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation getOp() {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.forNumber(op_);
+        @SuppressWarnings("deprecation")
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.valueOf(op_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation.UNRECOGNIZED : result;
       }
       /**
@@ -1449,7 +1427,7 @@ public final class ChainerOuterClass {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000001;
+        
         op_ = value.getNumber();
         onChanged();
         return this;
@@ -1459,7 +1437,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearOp() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        
         op_ = 0;
         onChanged();
         return this;
@@ -1506,9 +1484,11 @@ public final class ChainerOuterClass {
        */
       public Builder setPipeline(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         pipeline_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1517,8 +1497,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearPipeline() {
+        
         pipeline_ = getDefaultInstance().getPipeline();
-        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -1529,10 +1509,12 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         pipeline_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1554,7 +1536,6 @@ public final class ChainerOuterClass {
       public Builder setVersion(int value) {
         
         version_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -1563,7 +1544,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        
         version_ = 0;
         onChanged();
         return this;
@@ -1610,9 +1591,11 @@ public final class ChainerOuterClass {
        */
       public Builder setUid(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         uid_ = value;
-        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -1621,8 +1604,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearUid() {
+        
         uid_ = getDefaultInstance().getUid();
-        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
         return this;
       }
@@ -1633,10 +1616,12 @@ public final class ChainerOuterClass {
        */
       public Builder setUidBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         uid_ = value;
-        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -1644,9 +1629,9 @@ public final class ChainerOuterClass {
       private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate> updates_ =
         java.util.Collections.emptyList();
       private void ensureUpdatesIsMutable() {
-        if (!((bitField0_ & 0x00000010) != 0)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           updates_ = new java.util.ArrayList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate>(updates_);
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -1796,7 +1781,7 @@ public final class ChainerOuterClass {
       public Builder clearUpdates() {
         if (updatesBuilder_ == null) {
           updates_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           updatesBuilder_.clear();
@@ -1873,7 +1858,7 @@ public final class ChainerOuterClass {
           updatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate, io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.Builder, io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder>(
                   updates_,
-                  ((bitField0_ & 0x00000010) != 0),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           updates_ = null;
@@ -2336,7 +2321,6 @@ public final class ChainerOuterClass {
 
     private int bitField0_;
     public static final int SOURCES_FIELD_NUMBER = 1;
-    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic> sources_;
     /**
      * <pre>
@@ -2407,7 +2391,6 @@ public final class ChainerOuterClass {
     }
 
     public static final int TRIGGERS_FIELD_NUMBER = 2;
-    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic> triggers_;
     /**
      * <code>repeated .seldon.mlops.chainer.PipelineTopic triggers = 2;</code>
@@ -2470,11 +2453,11 @@ public final class ChainerOuterClass {
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopicOrBuilder getSinkOrBuilder() {
-      return sink_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.getDefaultInstance() : sink_;
+      return getSink();
     }
 
     public static final int INPUTJOINTY_FIELD_NUMBER = 4;
-    private int inputJoinTy_ = 0;
+    private int inputJoinTy_;
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType inputJoinTy = 4;</code>
      * @return The enum numeric value on the wire for inputJoinTy.
@@ -2487,12 +2470,13 @@ public final class ChainerOuterClass {
      * @return The inputJoinTy.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(inputJoinTy_);
+      @SuppressWarnings("deprecation")
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
     }
 
     public static final int TRIGGERSJOINTY_FIELD_NUMBER = 5;
-    private int triggersJoinTy_ = 0;
+    private int triggersJoinTy_;
     /**
      * <code>.seldon.mlops.chainer.PipelineStepUpdate.PipelineJoinType triggersJoinTy = 5;</code>
      * @return The enum numeric value on the wire for triggersJoinTy.
@@ -2505,12 +2489,13 @@ public final class ChainerOuterClass {
      * @return The triggersJoinTy.
      */
     @java.lang.Override public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
-      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(triggersJoinTy_);
+      @SuppressWarnings("deprecation")
+      io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
       return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
     }
 
     public static final int PASSEMPTYRESPONSES_FIELD_NUMBER = 6;
-    private boolean passEmptyResponses_ = false;
+    private boolean passEmptyResponses_;
     /**
      * <pre>
      * Forward empty response to following steps, default false
@@ -2525,7 +2510,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int JOINWINDOWMS_FIELD_NUMBER = 7;
-    private int joinWindowMs_ = 0;
+    private int joinWindowMs_;
     /**
      * <pre>
      * Join window millisecs, some nozero default (TBD)
@@ -2552,7 +2537,6 @@ public final class ChainerOuterClass {
     }
 
     public static final int TENSORMAP_FIELD_NUMBER = 8;
-    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping> tensorMap_;
     /**
      * <pre>
@@ -2647,7 +2631,7 @@ public final class ChainerOuterClass {
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.BatchOrBuilder getBatchOrBuilder() {
-      return batch_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.Batch.getDefaultInstance() : batch_;
+      return getBatch();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2946,7 +2930,6 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         if (sourcesBuilder_ == null) {
           sources_ = java.util.Collections.emptyList();
         } else {
@@ -2961,25 +2944,31 @@ public final class ChainerOuterClass {
           triggersBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
-        sink_ = null;
-        if (sinkBuilder_ != null) {
-          sinkBuilder_.dispose();
+        if (sinkBuilder_ == null) {
+          sink_ = null;
+        } else {
+          sink_ = null;
           sinkBuilder_ = null;
         }
         inputJoinTy_ = 0;
+
         triggersJoinTy_ = 0;
+
         passEmptyResponses_ = false;
+
         joinWindowMs_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (tensorMapBuilder_ == null) {
           tensorMap_ = java.util.Collections.emptyList();
         } else {
           tensorMap_ = null;
           tensorMapBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000080);
-        batch_ = null;
-        if (batchBuilder_ != null) {
-          batchBuilder_.dispose();
+        bitField0_ = (bitField0_ & ~0x00000008);
+        if (batchBuilder_ == null) {
+          batch_ = null;
+        } else {
+          batch_ = null;
           batchBuilder_ = null;
         }
         return this;
@@ -3008,13 +2997,8 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate(this);
-        buildPartialRepeatedFields(result);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        onBuilt();
-        return result;
-      }
-
-      private void buildPartialRepeatedFields(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result) {
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         if (sourcesBuilder_ == null) {
           if (((bitField0_ & 0x00000001) != 0)) {
             sources_ = java.util.Collections.unmodifiableList(sources_);
@@ -3033,44 +3017,35 @@ public final class ChainerOuterClass {
         } else {
           result.triggers_ = triggersBuilder_.build();
         }
+        if (sinkBuilder_ == null) {
+          result.sink_ = sink_;
+        } else {
+          result.sink_ = sinkBuilder_.build();
+        }
+        result.inputJoinTy_ = inputJoinTy_;
+        result.triggersJoinTy_ = triggersJoinTy_;
+        result.passEmptyResponses_ = passEmptyResponses_;
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.joinWindowMs_ = joinWindowMs_;
+          to_bitField0_ |= 0x00000001;
+        }
         if (tensorMapBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) != 0)) {
+          if (((bitField0_ & 0x00000008) != 0)) {
             tensorMap_ = java.util.Collections.unmodifiableList(tensorMap_);
-            bitField0_ = (bitField0_ & ~0x00000080);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.tensorMap_ = tensorMap_;
         } else {
           result.tensorMap_ = tensorMapBuilder_.build();
         }
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.sink_ = sinkBuilder_ == null
-              ? sink_
-              : sinkBuilder_.build();
+        if (batchBuilder_ == null) {
+          result.batch_ = batch_;
+        } else {
+          result.batch_ = batchBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) != 0)) {
-          result.inputJoinTy_ = inputJoinTy_;
-        }
-        if (((from_bitField0_ & 0x00000010) != 0)) {
-          result.triggersJoinTy_ = triggersJoinTy_;
-        }
-        if (((from_bitField0_ & 0x00000020) != 0)) {
-          result.passEmptyResponses_ = passEmptyResponses_;
-        }
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000040) != 0)) {
-          result.joinWindowMs_ = joinWindowMs_;
-          to_bitField0_ |= 0x00000001;
-        }
-        if (((from_bitField0_ & 0x00000100) != 0)) {
-          result.batch_ = batchBuilder_ == null
-              ? batch_
-              : batchBuilder_.build();
-        }
-        result.bitField0_ |= to_bitField0_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
       }
 
       @java.lang.Override
@@ -3188,7 +3163,7 @@ public final class ChainerOuterClass {
           if (!other.tensorMap_.isEmpty()) {
             if (tensorMap_.isEmpty()) {
               tensorMap_ = other.tensorMap_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureTensorMapIsMutable();
               tensorMap_.addAll(other.tensorMap_);
@@ -3201,7 +3176,7 @@ public final class ChainerOuterClass {
               tensorMapBuilder_.dispose();
               tensorMapBuilder_ = null;
               tensorMap_ = other.tensorMap_;
-              bitField0_ = (bitField0_ & ~0x00000080);
+              bitField0_ = (bitField0_ & ~0x00000008);
               tensorMapBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTensorMapFieldBuilder() : null;
@@ -3269,27 +3244,27 @@ public final class ChainerOuterClass {
                 input.readMessage(
                     getSinkFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000004;
+
                 break;
               } // case 26
               case 32: {
                 inputJoinTy_ = input.readEnum();
-                bitField0_ |= 0x00000008;
+
                 break;
               } // case 32
               case 40: {
                 triggersJoinTy_ = input.readEnum();
-                bitField0_ |= 0x00000010;
+
                 break;
               } // case 40
               case 48: {
                 passEmptyResponses_ = input.readBool();
-                bitField0_ |= 0x00000020;
+
                 break;
               } // case 48
               case 56: {
                 joinWindowMs_ = input.readUInt32();
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000004;
                 break;
               } // case 56
               case 66: {
@@ -3309,7 +3284,7 @@ public final class ChainerOuterClass {
                 input.readMessage(
                     getBatchFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000100;
+
                 break;
               } // case 74
               default: {
@@ -3925,7 +3900,7 @@ public final class ChainerOuterClass {
        * @return Whether the sink field is set.
        */
       public boolean hasSink() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return sinkBuilder_ != null || sink_ != null;
       }
       /**
        * <code>.seldon.mlops.chainer.PipelineTopic sink = 3;</code>
@@ -3947,11 +3922,11 @@ public final class ChainerOuterClass {
             throw new NullPointerException();
           }
           sink_ = value;
+          onChanged();
         } else {
           sinkBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -3961,11 +3936,11 @@ public final class ChainerOuterClass {
           io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.Builder builderForValue) {
         if (sinkBuilder_ == null) {
           sink_ = builderForValue.build();
+          onChanged();
         } else {
           sinkBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
@@ -3973,38 +3948,38 @@ public final class ChainerOuterClass {
        */
       public Builder mergeSink(io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic value) {
         if (sinkBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0) &&
-            sink_ != null &&
-            sink_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.getDefaultInstance()) {
-            getSinkBuilder().mergeFrom(value);
+          if (sink_ != null) {
+            sink_ =
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.newBuilder(sink_).mergeFrom(value).buildPartial();
           } else {
             sink_ = value;
           }
+          onChanged();
         } else {
           sinkBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
-        onChanged();
+
         return this;
       }
       /**
        * <code>.seldon.mlops.chainer.PipelineTopic sink = 3;</code>
        */
       public Builder clearSink() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        sink_ = null;
-        if (sinkBuilder_ != null) {
-          sinkBuilder_.dispose();
+        if (sinkBuilder_ == null) {
+          sink_ = null;
+          onChanged();
+        } else {
+          sink_ = null;
           sinkBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
        * <code>.seldon.mlops.chainer.PipelineTopic sink = 3;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.Builder getSinkBuilder() {
-        bitField0_ |= 0x00000004;
+        
         onChanged();
         return getSinkFieldBuilder().getBuilder();
       }
@@ -4050,8 +4025,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setInputJoinTyValue(int value) {
+        
         inputJoinTy_ = value;
-        bitField0_ |= 0x00000008;
         onChanged();
         return this;
       }
@@ -4061,7 +4036,8 @@ public final class ChainerOuterClass {
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getInputJoinTy() {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(inputJoinTy_);
+        @SuppressWarnings("deprecation")
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(inputJoinTy_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
       }
       /**
@@ -4073,7 +4049,7 @@ public final class ChainerOuterClass {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000008;
+        
         inputJoinTy_ = value.getNumber();
         onChanged();
         return this;
@@ -4083,7 +4059,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearInputJoinTy() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        
         inputJoinTy_ = 0;
         onChanged();
         return this;
@@ -4103,8 +4079,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setTriggersJoinTyValue(int value) {
+        
         triggersJoinTy_ = value;
-        bitField0_ |= 0x00000010;
         onChanged();
         return this;
       }
@@ -4114,7 +4090,8 @@ public final class ChainerOuterClass {
        */
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType getTriggersJoinTy() {
-        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.forNumber(triggersJoinTy_);
+        @SuppressWarnings("deprecation")
+        io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType result = io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.valueOf(triggersJoinTy_);
         return result == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.UNRECOGNIZED : result;
       }
       /**
@@ -4126,7 +4103,7 @@ public final class ChainerOuterClass {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000010;
+        
         triggersJoinTy_ = value.getNumber();
         onChanged();
         return this;
@@ -4136,7 +4113,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearTriggersJoinTy() {
-        bitField0_ = (bitField0_ & ~0x00000010);
+        
         triggersJoinTy_ = 0;
         onChanged();
         return this;
@@ -4167,7 +4144,6 @@ public final class ChainerOuterClass {
       public Builder setPassEmptyResponses(boolean value) {
         
         passEmptyResponses_ = value;
-        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -4180,7 +4156,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearPassEmptyResponses() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        
         passEmptyResponses_ = false;
         onChanged();
         return this;
@@ -4197,7 +4173,7 @@ public final class ChainerOuterClass {
        */
       @java.lang.Override
       public boolean hasJoinWindowMs() {
-        return ((bitField0_ & 0x00000040) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -4221,9 +4197,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setJoinWindowMs(int value) {
-        
+        bitField0_ |= 0x00000004;
         joinWindowMs_ = value;
-        bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
@@ -4236,7 +4211,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearJoinWindowMs() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000004);
         joinWindowMs_ = 0;
         onChanged();
         return this;
@@ -4245,9 +4220,9 @@ public final class ChainerOuterClass {
       private java.util.List<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping> tensorMap_ =
         java.util.Collections.emptyList();
       private void ensureTensorMapIsMutable() {
-        if (!((bitField0_ & 0x00000080) != 0)) {
+        if (!((bitField0_ & 0x00000008) != 0)) {
           tensorMap_ = new java.util.ArrayList<io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping>(tensorMap_);
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -4441,7 +4416,7 @@ public final class ChainerOuterClass {
       public Builder clearTensorMap() {
         if (tensorMapBuilder_ == null) {
           tensorMap_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000080);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           tensorMapBuilder_.clear();
@@ -4546,7 +4521,7 @@ public final class ChainerOuterClass {
           tensorMapBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping, io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping.Builder, io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMappingOrBuilder>(
                   tensorMap_,
-                  ((bitField0_ & 0x00000080) != 0),
+                  ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
                   isClean());
           tensorMap_ = null;
@@ -4566,7 +4541,7 @@ public final class ChainerOuterClass {
        * @return Whether the batch field is set.
        */
       public boolean hasBatch() {
-        return ((bitField0_ & 0x00000100) != 0);
+        return batchBuilder_ != null || batch_ != null;
       }
       /**
        * <pre>
@@ -4596,11 +4571,11 @@ public final class ChainerOuterClass {
             throw new NullPointerException();
           }
           batch_ = value;
+          onChanged();
         } else {
           batchBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000100;
-        onChanged();
+
         return this;
       }
       /**
@@ -4614,11 +4589,11 @@ public final class ChainerOuterClass {
           io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder builderForValue) {
         if (batchBuilder_ == null) {
           batch_ = builderForValue.build();
+          onChanged();
         } else {
           batchBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000100;
-        onChanged();
+
         return this;
       }
       /**
@@ -4630,18 +4605,17 @@ public final class ChainerOuterClass {
        */
       public Builder mergeBatch(io.seldon.mlops.chainer.ChainerOuterClass.Batch value) {
         if (batchBuilder_ == null) {
-          if (((bitField0_ & 0x00000100) != 0) &&
-            batch_ != null &&
-            batch_ != io.seldon.mlops.chainer.ChainerOuterClass.Batch.getDefaultInstance()) {
-            getBatchBuilder().mergeFrom(value);
+          if (batch_ != null) {
+            batch_ =
+              io.seldon.mlops.chainer.ChainerOuterClass.Batch.newBuilder(batch_).mergeFrom(value).buildPartial();
           } else {
             batch_ = value;
           }
+          onChanged();
         } else {
           batchBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000100;
-        onChanged();
+
         return this;
       }
       /**
@@ -4652,13 +4626,14 @@ public final class ChainerOuterClass {
        * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public Builder clearBatch() {
-        bitField0_ = (bitField0_ & ~0x00000100);
-        batch_ = null;
-        if (batchBuilder_ != null) {
-          batchBuilder_.dispose();
+        if (batchBuilder_ == null) {
+          batch_ = null;
+          onChanged();
+        } else {
+          batch_ = null;
           batchBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
@@ -4669,7 +4644,7 @@ public final class ChainerOuterClass {
        * <code>.seldon.mlops.chainer.Batch batch = 9;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch.Builder getBatchBuilder() {
-        bitField0_ |= 0x00000100;
+        
         onChanged();
         return getBatchFieldBuilder().getBuilder();
       }
@@ -4856,8 +4831,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int PIPELINENAME_FIELD_NUMBER = 1;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object pipelineName_ = "";
+    private volatile java.lang.Object pipelineName_;
     /**
      * <code>string pipelineName = 1;</code>
      * @return The pipelineName.
@@ -4895,8 +4869,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int TOPICANDTENSOR_FIELD_NUMBER = 2;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object topicAndTensor_ = "";
+    private volatile java.lang.Object topicAndTensor_;
     /**
      * <code>string topicAndTensor = 2;</code>
      * @return The topicAndTensor.
@@ -4934,8 +4907,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int TENSORNAME_FIELD_NUMBER = 3;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object tensorName_ = "";
+    private volatile java.lang.Object tensorName_;
     /**
      * <code>string tensorName = 3;</code>
      * @return The tensorName.
@@ -5179,10 +5151,12 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         pipelineName_ = "";
+
         topicAndTensor_ = "";
+
         tensorName_ = "";
+
         return this;
       }
 
@@ -5209,22 +5183,11 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        result.pipelineName_ = pipelineName_;
+        result.topicAndTensor_ = topicAndTensor_;
+        result.tensorName_ = tensorName_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.pipelineName_ = pipelineName_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.topicAndTensor_ = topicAndTensor_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.tensorName_ = tensorName_;
-        }
       }
 
       @java.lang.Override
@@ -5273,17 +5236,14 @@ public final class ChainerOuterClass {
         if (other == io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping.getDefaultInstance()) return this;
         if (!other.getPipelineName().isEmpty()) {
           pipelineName_ = other.pipelineName_;
-          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getTopicAndTensor().isEmpty()) {
           topicAndTensor_ = other.topicAndTensor_;
-          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (!other.getTensorName().isEmpty()) {
           tensorName_ = other.tensorName_;
-          bitField0_ |= 0x00000004;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -5314,17 +5274,17 @@ public final class ChainerOuterClass {
                 break;
               case 10: {
                 pipelineName_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000001;
+
                 break;
               } // case 10
               case 18: {
                 topicAndTensor_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
+
                 break;
               } // case 18
               case 26: {
                 tensorName_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000004;
+
                 break;
               } // case 26
               default: {
@@ -5342,7 +5302,6 @@ public final class ChainerOuterClass {
         } // finally
         return this;
       }
-      private int bitField0_;
 
       private java.lang.Object pipelineName_ = "";
       /**
@@ -5385,9 +5344,11 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineName(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         pipelineName_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -5396,8 +5357,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearPipelineName() {
+        
         pipelineName_ = getDefaultInstance().getPipelineName();
-        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -5408,10 +5369,12 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         pipelineName_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -5457,9 +5420,11 @@ public final class ChainerOuterClass {
        */
       public Builder setTopicAndTensor(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         topicAndTensor_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -5468,8 +5433,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearTopicAndTensor() {
+        
         topicAndTensor_ = getDefaultInstance().getTopicAndTensor();
-        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -5480,10 +5445,12 @@ public final class ChainerOuterClass {
        */
       public Builder setTopicAndTensorBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         topicAndTensor_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -5529,9 +5496,11 @@ public final class ChainerOuterClass {
        */
       public Builder setTensorName(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         tensorName_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -5540,8 +5509,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearTensorName() {
+        
         tensorName_ = getDefaultInstance().getTensorName();
-        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -5552,10 +5521,12 @@ public final class ChainerOuterClass {
        */
       public Builder setTensorNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         tensorName_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -5640,29 +5611,35 @@ public final class ChainerOuterClass {
         getPipelineNameBytes();
 
     /**
-     * <code>string topicName = 2;</code>
+     * <code>int64 pipelineVersion = 2;</code>
+     * @return The pipelineVersion.
+     */
+    long getPipelineVersion();
+
+    /**
+     * <code>string topicName = 3;</code>
      * @return The topicName.
      */
     java.lang.String getTopicName();
     /**
-     * <code>string topicName = 2;</code>
+     * <code>string topicName = 3;</code>
      * @return The bytes for topicName.
      */
     com.google.protobuf.ByteString
         getTopicNameBytes();
 
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return Whether the tensor field is set.
      */
     boolean hasTensor();
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return The tensor.
      */
     java.lang.String getTensor();
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return The bytes for tensor.
      */
     com.google.protobuf.ByteString
@@ -5713,8 +5690,7 @@ public final class ChainerOuterClass {
 
     private int bitField0_;
     public static final int PIPELINENAME_FIELD_NUMBER = 1;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object pipelineName_ = "";
+    private volatile java.lang.Object pipelineName_;
     /**
      * <code>string pipelineName = 1;</code>
      * @return The pipelineName.
@@ -5751,11 +5727,21 @@ public final class ChainerOuterClass {
       }
     }
 
-    public static final int TOPICNAME_FIELD_NUMBER = 2;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object topicName_ = "";
+    public static final int PIPELINEVERSION_FIELD_NUMBER = 2;
+    private long pipelineVersion_;
     /**
-     * <code>string topicName = 2;</code>
+     * <code>int64 pipelineVersion = 2;</code>
+     * @return The pipelineVersion.
+     */
+    @java.lang.Override
+    public long getPipelineVersion() {
+      return pipelineVersion_;
+    }
+
+    public static final int TOPICNAME_FIELD_NUMBER = 3;
+    private volatile java.lang.Object topicName_;
+    /**
+     * <code>string topicName = 3;</code>
      * @return The topicName.
      */
     @java.lang.Override
@@ -5772,7 +5758,7 @@ public final class ChainerOuterClass {
       }
     }
     /**
-     * <code>string topicName = 2;</code>
+     * <code>string topicName = 3;</code>
      * @return The bytes for topicName.
      */
     @java.lang.Override
@@ -5790,11 +5776,10 @@ public final class ChainerOuterClass {
       }
     }
 
-    public static final int TENSOR_FIELD_NUMBER = 3;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object tensor_ = "";
+    public static final int TENSOR_FIELD_NUMBER = 4;
+    private volatile java.lang.Object tensor_;
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return Whether the tensor field is set.
      */
     @java.lang.Override
@@ -5802,7 +5787,7 @@ public final class ChainerOuterClass {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return The tensor.
      */
     @java.lang.Override
@@ -5819,7 +5804,7 @@ public final class ChainerOuterClass {
       }
     }
     /**
-     * <code>optional string tensor = 3;</code>
+     * <code>optional string tensor = 4;</code>
      * @return The bytes for tensor.
      */
     @java.lang.Override
@@ -5854,11 +5839,14 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(pipelineName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, pipelineName_);
       }
+      if (pipelineVersion_ != 0L) {
+        output.writeInt64(2, pipelineVersion_);
+      }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, topicName_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topicName_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, tensor_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, tensor_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -5872,11 +5860,15 @@ public final class ChainerOuterClass {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(pipelineName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, pipelineName_);
       }
+      if (pipelineVersion_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, pipelineVersion_);
+      }
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topicName_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, topicName_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topicName_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, tensor_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, tensor_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -5895,6 +5887,8 @@ public final class ChainerOuterClass {
 
       if (!getPipelineName()
           .equals(other.getPipelineName())) return false;
+      if (getPipelineVersion()
+          != other.getPipelineVersion()) return false;
       if (!getTopicName()
           .equals(other.getTopicName())) return false;
       if (hasTensor() != other.hasTensor()) return false;
@@ -5915,6 +5909,9 @@ public final class ChainerOuterClass {
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + PIPELINENAME_FIELD_NUMBER;
       hash = (53 * hash) + getPipelineName().hashCode();
+      hash = (37 * hash) + PIPELINEVERSION_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getPipelineVersion());
       hash = (37 * hash) + TOPICNAME_FIELD_NUMBER;
       hash = (53 * hash) + getTopicName().hashCode();
       if (hasTensor()) {
@@ -6049,10 +6046,14 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         pipelineName_ = "";
+
+        pipelineVersion_ = 0L;
+
         topicName_ = "";
+
         tensor_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -6079,25 +6080,18 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        onBuilt();
-        return result;
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic result) {
         int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.pipelineName_ = pipelineName_;
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.topicName_ = topicName_;
-        }
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.tensor_ = tensor_;
+        result.pipelineName_ = pipelineName_;
+        result.pipelineVersion_ = pipelineVersion_;
+        result.topicName_ = topicName_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.bitField0_ |= to_bitField0_;
+        result.tensor_ = tensor_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
       }
 
       @java.lang.Override
@@ -6146,17 +6140,18 @@ public final class ChainerOuterClass {
         if (other == io.seldon.mlops.chainer.ChainerOuterClass.PipelineTopic.getDefaultInstance()) return this;
         if (!other.getPipelineName().isEmpty()) {
           pipelineName_ = other.pipelineName_;
-          bitField0_ |= 0x00000001;
           onChanged();
+        }
+        if (other.getPipelineVersion() != 0L) {
+          setPipelineVersion(other.getPipelineVersion());
         }
         if (!other.getTopicName().isEmpty()) {
           topicName_ = other.topicName_;
-          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (other.hasTensor()) {
+          bitField0_ |= 0x00000001;
           tensor_ = other.tensor_;
-          bitField0_ |= 0x00000004;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -6187,19 +6182,24 @@ public final class ChainerOuterClass {
                 break;
               case 10: {
                 pipelineName_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000001;
+
                 break;
               } // case 10
-              case 18: {
-                topicName_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
+              case 16: {
+                pipelineVersion_ = input.readInt64();
+
                 break;
-              } // case 18
+              } // case 16
               case 26: {
-                tensor_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000004;
+                topicName_ = input.readStringRequireUtf8();
+
                 break;
               } // case 26
+              case 34: {
+                tensor_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 34
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -6258,9 +6258,11 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineName(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         pipelineName_ = value;
-        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -6269,8 +6271,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearPipelineName() {
+        
         pipelineName_ = getDefaultInstance().getPipelineName();
-        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -6281,17 +6283,50 @@ public final class ChainerOuterClass {
        */
       public Builder setPipelineNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         pipelineName_ = value;
-        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private long pipelineVersion_ ;
+      /**
+       * <code>int64 pipelineVersion = 2;</code>
+       * @return The pipelineVersion.
+       */
+      @java.lang.Override
+      public long getPipelineVersion() {
+        return pipelineVersion_;
+      }
+      /**
+       * <code>int64 pipelineVersion = 2;</code>
+       * @param value The pipelineVersion to set.
+       * @return This builder for chaining.
+       */
+      public Builder setPipelineVersion(long value) {
+        
+        pipelineVersion_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int64 pipelineVersion = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearPipelineVersion() {
+        
+        pipelineVersion_ = 0L;
         onChanged();
         return this;
       }
 
       private java.lang.Object topicName_ = "";
       /**
-       * <code>string topicName = 2;</code>
+       * <code>string topicName = 3;</code>
        * @return The topicName.
        */
       public java.lang.String getTopicName() {
@@ -6307,7 +6342,7 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>string topicName = 2;</code>
+       * <code>string topicName = 3;</code>
        * @return The bytes for topicName.
        */
       public com.google.protobuf.ByteString
@@ -6324,53 +6359,57 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>string topicName = 2;</code>
+       * <code>string topicName = 3;</code>
        * @param value The topicName to set.
        * @return This builder for chaining.
        */
       public Builder setTopicName(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         topicName_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
       /**
-       * <code>string topicName = 2;</code>
+       * <code>string topicName = 3;</code>
        * @return This builder for chaining.
        */
       public Builder clearTopicName() {
+        
         topicName_ = getDefaultInstance().getTopicName();
-        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
       /**
-       * <code>string topicName = 2;</code>
+       * <code>string topicName = 3;</code>
        * @param value The bytes for topicName to set.
        * @return This builder for chaining.
        */
       public Builder setTopicNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         topicName_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
 
       private java.lang.Object tensor_ = "";
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @return Whether the tensor field is set.
        */
       public boolean hasTensor() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000001) != 0);
       }
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @return The tensor.
        */
       public java.lang.String getTensor() {
@@ -6386,7 +6425,7 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @return The bytes for tensor.
        */
       public com.google.protobuf.ByteString
@@ -6403,39 +6442,43 @@ public final class ChainerOuterClass {
         }
       }
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @param value The tensor to set.
        * @return This builder for chaining.
        */
       public Builder setTensor(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
         tensor_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @return This builder for chaining.
        */
       public Builder clearTensor() {
+        bitField0_ = (bitField0_ & ~0x00000001);
         tensor_ = getDefaultInstance().getTensor();
-        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
       /**
-       * <code>optional string tensor = 3;</code>
+       * <code>optional string tensor = 4;</code>
        * @param value The bytes for tensor to set.
        * @return This builder for chaining.
        */
       public Builder setTensorBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        bitField0_ |= 0x00000001;
         tensor_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -6577,7 +6620,7 @@ public final class ChainerOuterClass {
 
     private int bitField0_;
     public static final int SIZE_FIELD_NUMBER = 1;
-    private int size_ = 0;
+    private int size_;
     /**
      * <code>optional uint32 size = 1;</code>
      * @return Whether the size field is set.
@@ -6596,7 +6639,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int WINDOWMS_FIELD_NUMBER = 2;
-    private int windowMs_ = 0;
+    private int windowMs_;
     /**
      * <code>optional uint32 windowMs = 2;</code>
      * @return Whether the windowMs field is set.
@@ -6615,7 +6658,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int ROLLING_FIELD_NUMBER = 3;
-    private boolean rolling_ = false;
+    private boolean rolling_;
     /**
      * <code>bool rolling = 3;</code>
      * @return The rolling.
@@ -6846,10 +6889,12 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
         size_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
         windowMs_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
         rolling_ = false;
+
         return this;
       }
 
@@ -6876,12 +6921,6 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.Batch buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.Batch result = new io.seldon.mlops.chainer.ChainerOuterClass.Batch(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
-        onBuilt();
-        return result;
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.Batch result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -6892,10 +6931,10 @@ public final class ChainerOuterClass {
           result.windowMs_ = windowMs_;
           to_bitField0_ |= 0x00000002;
         }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.rolling_ = rolling_;
-        }
-        result.bitField0_ |= to_bitField0_;
+        result.rolling_ = rolling_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
       }
 
       @java.lang.Override
@@ -6989,7 +7028,7 @@ public final class ChainerOuterClass {
               } // case 16
               case 24: {
                 rolling_ = input.readBool();
-                bitField0_ |= 0x00000004;
+
                 break;
               } // case 24
               default: {
@@ -7032,9 +7071,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setSize(int value) {
-        
-        size_ = value;
         bitField0_ |= 0x00000001;
+        size_ = value;
         onChanged();
         return this;
       }
@@ -7072,9 +7110,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder setWindowMs(int value) {
-        
-        windowMs_ = value;
         bitField0_ |= 0x00000002;
+        windowMs_ = value;
         onChanged();
         return this;
       }
@@ -7106,7 +7143,6 @@ public final class ChainerOuterClass {
       public Builder setRolling(boolean value) {
         
         rolling_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -7115,7 +7151,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearRolling() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        
         rolling_ = false;
         onChanged();
         return this;
@@ -7309,11 +7345,11 @@ public final class ChainerOuterClass {
      */
     @java.lang.Override
     public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessageOrBuilder getUpdateOrBuilder() {
-      return update_ == null ? io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.getDefaultInstance() : update_;
+      return getUpdate();
     }
 
     public static final int SUCCESS_FIELD_NUMBER = 2;
-    private boolean success_ = false;
+    private boolean success_;
     /**
      * <code>bool success = 2;</code>
      * @return The success.
@@ -7324,8 +7360,7 @@ public final class ChainerOuterClass {
     }
 
     public static final int REASON_FIELD_NUMBER = 3;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object reason_ = "";
+    private volatile java.lang.Object reason_;
     /**
      * <code>string reason = 3;</code>
      * @return The reason.
@@ -7577,14 +7612,16 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        bitField0_ = 0;
-        update_ = null;
-        if (updateBuilder_ != null) {
-          updateBuilder_.dispose();
+        if (updateBuilder_ == null) {
+          update_ = null;
+        } else {
+          update_ = null;
           updateBuilder_ = null;
         }
         success_ = false;
+
         reason_ = "";
+
         return this;
       }
 
@@ -7611,24 +7648,15 @@ public final class ChainerOuterClass {
       @java.lang.Override
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage buildPartial() {
         io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage result = new io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (updateBuilder_ == null) {
+          result.update_ = update_;
+        } else {
+          result.update_ = updateBuilder_.build();
+        }
+        result.success_ = success_;
+        result.reason_ = reason_;
         onBuilt();
         return result;
-      }
-
-      private void buildPartial0(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage result) {
-        int from_bitField0_ = bitField0_;
-        if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.update_ = updateBuilder_ == null
-              ? update_
-              : updateBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.success_ = success_;
-        }
-        if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.reason_ = reason_;
-        }
       }
 
       @java.lang.Override
@@ -7683,7 +7711,6 @@ public final class ChainerOuterClass {
         }
         if (!other.getReason().isEmpty()) {
           reason_ = other.reason_;
-          bitField0_ |= 0x00000004;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -7716,17 +7743,17 @@ public final class ChainerOuterClass {
                 input.readMessage(
                     getUpdateFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000001;
+
                 break;
               } // case 10
               case 16: {
                 success_ = input.readBool();
-                bitField0_ |= 0x00000002;
+
                 break;
               } // case 16
               case 26: {
                 reason_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000004;
+
                 break;
               } // case 26
               default: {
@@ -7744,7 +7771,6 @@ public final class ChainerOuterClass {
         } // finally
         return this;
       }
-      private int bitField0_;
 
       private io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage update_;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -7758,7 +7784,7 @@ public final class ChainerOuterClass {
        * @return Whether the update field is set.
        */
       public boolean hasUpdate() {
-        return ((bitField0_ & 0x00000001) != 0);
+        return updateBuilder_ != null || update_ != null;
       }
       /**
        * <pre>
@@ -7788,11 +7814,11 @@ public final class ChainerOuterClass {
             throw new NullPointerException();
           }
           update_ = value;
+          onChanged();
         } else {
           updateBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -7806,11 +7832,11 @@ public final class ChainerOuterClass {
           io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.Builder builderForValue) {
         if (updateBuilder_ == null) {
           update_ = builderForValue.build();
+          onChanged();
         } else {
           updateBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -7822,18 +7848,17 @@ public final class ChainerOuterClass {
        */
       public Builder mergeUpdate(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage value) {
         if (updateBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) != 0) &&
-            update_ != null &&
-            update_ != io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.getDefaultInstance()) {
-            getUpdateBuilder().mergeFrom(value);
+          if (update_ != null) {
+            update_ =
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.newBuilder(update_).mergeFrom(value).buildPartial();
           } else {
             update_ = value;
           }
+          onChanged();
         } else {
           updateBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000001;
-        onChanged();
+
         return this;
       }
       /**
@@ -7844,13 +7869,14 @@ public final class ChainerOuterClass {
        * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
        */
       public Builder clearUpdate() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        update_ = null;
-        if (updateBuilder_ != null) {
-          updateBuilder_.dispose();
+        if (updateBuilder_ == null) {
+          update_ = null;
+          onChanged();
+        } else {
+          update_ = null;
           updateBuilder_ = null;
         }
-        onChanged();
+
         return this;
       }
       /**
@@ -7861,7 +7887,7 @@ public final class ChainerOuterClass {
        * <code>.seldon.mlops.chainer.PipelineUpdateMessage update = 1;</code>
        */
       public io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.Builder getUpdateBuilder() {
-        bitField0_ |= 0x00000001;
+        
         onChanged();
         return getUpdateFieldBuilder().getBuilder();
       }
@@ -7918,7 +7944,6 @@ public final class ChainerOuterClass {
       public Builder setSuccess(boolean value) {
         
         success_ = value;
-        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -7927,7 +7952,7 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearSuccess() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        
         success_ = false;
         onChanged();
         return this;
@@ -7974,9 +7999,11 @@ public final class ChainerOuterClass {
        */
       public Builder setReason(
           java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         reason_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -7985,8 +8012,8 @@ public final class ChainerOuterClass {
        * @return This builder for chaining.
        */
       public Builder clearReason() {
+        
         reason_ = getDefaultInstance().getReason();
-        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -7997,10 +8024,12 @@ public final class ChainerOuterClass {
        */
       public Builder setReasonBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
         reason_ = value;
-        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -8542,25 +8571,25 @@ public final class ChainerOuterClass {
       "\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020" +
       "\003B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMapp" +
       "ing\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTen" +
-      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelin" +
-      "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicNam" +
-      "e\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"" +
-      "X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030" +
-      "\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t" +
-      "_windowMs\"{\n\033PipelineUpdateStatusMessage" +
-      "\022;\n\006update\030\001 \001(\0132+.seldon.mlops.chainer." +
-      "PipelineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016" +
-      "\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRe" +
-      "sponse2\211\002\n\007Chainer\022~\n\030SubscribePipelineU" +
-      "pdates\0221.seldon.mlops.chainer.PipelineSu" +
-      "bscriptionRequest\032+.seldon.mlops.chainer" +
-      ".PipelineUpdateMessage\"\0000\001\022~\n\023PipelineUp" +
-      "dateEvent\0221.seldon.mlops.chainer.Pipelin" +
-      "eUpdateStatusMessage\0322.seldon.mlops.chai" +
-      "ner.PipelineUpdateStatusResponse\"\000BS\n\027io" +
-      ".seldon.mlops.chainerZ8github.com/seldon" +
-      "io/seldon-core/apis/go/v2/mlops/chainerb" +
-      "\006proto3"
+      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"q\n\rPipelin" +
+      "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\027\n\017pipeline" +
+      "Version\030\002 \001(\003\022\021\n\ttopicName\030\003 \001(\t\022\023\n\006tens" +
+      "or\030\004 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004siz" +
+      "e\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007r" +
+      "olling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pi" +
+      "pelineUpdateStatusMessage\022;\n\006update\030\001 \001(" +
+      "\0132+.seldon.mlops.chainer.PipelineUpdateM" +
+      "essage\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"" +
+      "\036\n\034PipelineUpdateStatusResponse2\211\002\n\007Chai" +
+      "ner\022~\n\030SubscribePipelineUpdates\0221.seldon" +
+      ".mlops.chainer.PipelineSubscriptionReque" +
+      "st\032+.seldon.mlops.chainer.PipelineUpdate" +
+      "Message\"\0000\001\022~\n\023PipelineUpdateEvent\0221.sel" +
+      "don.mlops.chainer.PipelineUpdateStatusMe" +
+      "ssage\0322.seldon.mlops.chainer.PipelineUpd" +
+      "ateStatusResponse\"\000BS\n\027io.seldon.mlops.c" +
+      "hainerZ8github.com/seldonio/seldon-core/" +
+      "apis/go/v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8595,7 +8624,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineTopic_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineTopic_descriptor,
-        new java.lang.String[] { "PipelineName", "TopicName", "Tensor", "Tensor", });
+        new java.lang.String[] { "PipelineName", "PipelineVersion", "TopicName", "Tensor", "Tensor", });
     internal_static_seldon_mlops_chainer_Batch_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_seldon_mlops_chainer_Batch_fieldAccessorTable = new
