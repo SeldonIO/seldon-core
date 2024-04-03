@@ -10,7 +10,7 @@ licenses:
 
 .PHONY: lint
 lint:
-	./gradlew ktlintCheck --no-daemon --no-build-cache
+	./gradlew ktlintCheck --no-daemon --no-build-cache --continue
 
 .PHONY: format
 format:
