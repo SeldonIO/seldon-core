@@ -14,8 +14,9 @@ object SeldonHeaders {
 
     // Remove headers we do not want transferred between topics.
     // These headers are set in MLServer Alibi-Detect and Alibi-Explain runtimes: https://github.com/SeldonIO/mlserver.
-    val alibiDiscards = arrayOf(
-        "x-seldon-alibi-type",
-        "x-seldon-alibi-method",
-    )
+    val alibiDiscards =
+        arrayOf(
+            "x-seldon-alibi-type",
+            "x-seldon-alibi-method",
+        )
 }

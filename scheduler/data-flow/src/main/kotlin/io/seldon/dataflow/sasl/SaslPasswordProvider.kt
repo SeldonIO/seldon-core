@@ -7,14 +7,12 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.dataflow.sasl
 
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.SaslConfig
 
 class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
-
     fun getPassword(config: SaslConfig.Password): String {
         logger.info("retrieving password for SASL user")
 
@@ -22,7 +20,11 @@ class SaslPasswordProvider(private val secretsProvider: SecretsProvider) {
         return extractPassword(config.secretName, secret, config.passwordField)
     }
 
-    private fun extractPassword(secretName: String, secret: Map<String, ByteArray>, fieldName: String): String {
+    private fun extractPassword(
+        secretName: String,
+        secret: Map<String, ByteArray>,
+        fieldName: String,
+    ): String {
         return when (val password = secret[fieldName]) {
             null -> {
                 logger.warn("unable to retrieve password for SASL user from secret $secretName at path $fieldName")

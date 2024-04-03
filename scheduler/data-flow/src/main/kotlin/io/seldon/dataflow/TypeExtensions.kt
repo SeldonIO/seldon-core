@@ -21,14 +21,14 @@ import kotlinx.coroutines.flow.flow
 suspend fun <T, R> Flow<T>.parallel(
     scope: CoroutineScope,
     concurrency: Int = DEFAULT_CONCURRENCY,
-    transform: suspend (T) -> R
+    transform: suspend (T) -> R,
 ): Flow<R> {
     return with(scope) {
         this@parallel
             .flatMapMerge(concurrency) { value ->
                 flow {
                     emit(
-                        async { transform(value) }
+                        async { transform(value) },
                     )
                 }
             }

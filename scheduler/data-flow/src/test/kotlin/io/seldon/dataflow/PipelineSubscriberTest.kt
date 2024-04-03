@@ -18,7 +18,6 @@ import java.time.LocalDateTime
 
 @OptIn(FlowPreview::class)
 internal class PipelineSubscriberTest {
-
     @Test
     fun `should run sequentially`() {
         suspend fun waitAndPrint(i: Int) {
@@ -45,7 +44,7 @@ internal class PipelineSubscriberTest {
                             async {
                                 kotlinx.coroutines.delay(1000)
                                 println("${LocalDateTime.now()} - $it")
-                            }
+                            },
                         )
                     }
                 }

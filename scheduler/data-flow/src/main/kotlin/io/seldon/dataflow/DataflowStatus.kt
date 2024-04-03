@@ -13,10 +13,10 @@ import kotlinx.coroutines.runBlocking
  * return values to indicate errors/status updates that require special handling in the code.
  */
 interface DataflowStatus {
-    var exception : Exception?
-    var message : String?
+    var exception: Exception?
+    var message: String?
 
-    fun getDescription() : String? {
+    fun getDescription(): String? {
         val exceptionMsg = this.exception?.message
         return if (exceptionMsg != null) {
             "${this.message} Exception: $exceptionMsg"
@@ -26,7 +26,10 @@ interface DataflowStatus {
     }
 
     // log status when logger is in a coroutine
-    fun log(logger: Klogger, levelIfNoException: Level) {
+    fun log(
+        logger: Klogger,
+        levelIfNoException: Level,
+    ) {
         val exceptionMsg = this.exception?.message
         val exceptionCause = this.exception?.cause ?: Exception("")
         val statusMsg = this.message
@@ -42,7 +45,10 @@ interface DataflowStatus {
     }
 
     // log status when logger is outside coroutines
-    fun log(logger: NoCoLogger, levelIfNoException: Level) {
+    fun log(
+        logger: NoCoLogger,
+        levelIfNoException: Level,
+    ) {
         val exceptionMsg = this.exception?.message
         val exceptionCause = this.exception?.cause ?: Exception("")
         if (exceptionMsg != null) {
@@ -53,13 +59,12 @@ interface DataflowStatus {
     }
 }
 
-fun <T: DataflowStatus> T.withException(e: Exception) : T {
+fun <T : DataflowStatus> T.withException(e: Exception): T {
     this.exception = e
     return this
 }
 
-fun <T: DataflowStatus> T.withMessage(msg: String): T {
+fun <T : DataflowStatus> T.withMessage(msg: String): T {
     this.message = msg
     return this
 }
-

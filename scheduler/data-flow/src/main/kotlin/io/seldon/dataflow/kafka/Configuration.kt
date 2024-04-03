@@ -53,7 +53,7 @@ data class TopicWaitRetryParams(
     val createTimeoutMillis: Int, // int required by the underlying kafka-streams library
     val describeTimeoutMillis: Long,
     val describeRetries: Int,
-    val describeRetryDelayMillis: Long
+    val describeRetryDelayMillis: Long,
 )
 
 val kafkaTopicConfig = { maxMessageSizeBytes: Int ->
@@ -71,11 +71,12 @@ fun getKafkaAdminProperties(params: KafkaStreamsParams): KafkaAdminProperties {
 }
 
 private fun getSecurityProperties(params: KafkaStreamsParams): Properties {
-    val authProperties = when (params.security.securityProtocol) {
-        SecurityProtocol.SSL -> getSslProperties(params)
-        SecurityProtocol.SASL_SSL -> getSaslProperties(params)
-        else -> Properties() // No authentication, so nothing to configure
-    }
+    val authProperties =
+        when (params.security.securityProtocol) {
+            SecurityProtocol.SSL -> getSslProperties(params)
+            SecurityProtocol.SASL_SSL -> getSaslProperties(params)
+            else -> Properties() // No authentication, so nothing to configure
+        }
 
     return authProperties.apply {
         this[StreamsConfig.SECURITY_PROTOCOL_CONFIG] = params.security.securityProtocol.toString()
@@ -121,34 +122,37 @@ private fun getSaslProperties(params: KafkaStreamsParams): Properties {
 
         when (params.security.saslConfig) {
             is SaslConfig.Password -> {
-                val module = when (params.security.saslConfig) {
-                    is SaslConfig.Password.Plain -> "org.apache.kafka.common.security.plain.PlainLoginModule required"
-                    is SaslConfig.Password.Scram256,
-                    is SaslConfig.Password.Scram512 -> "org.apache.kafka.common.security.scram.ScramLoginModule required"
-                }
+                val module =
+                    when (params.security.saslConfig) {
+                        is SaslConfig.Password.Plain -> "org.apache.kafka.common.security.plain.PlainLoginModule required"
+                        is SaslConfig.Password.Scram256,
+                        is SaslConfig.Password.Scram512,
+                        -> "org.apache.kafka.common.security.scram.ScramLoginModule required"
+                    }
                 val password = SaslPasswordProvider.default.getPassword(params.security.saslConfig)
 
                 this[SaslConfigs.SASL_JAAS_CONFIG] = module +
-                        """ username="${params.security.saslConfig.username}"""" +
-                        """ password="$password";"""
+                    """ username="${params.security.saslConfig.username}"""" +
+                    """ password="$password";"""
             }
             is SaslConfig.Oauth -> {
                 val oauthConfig = SaslOauthProvider.default.getOauthConfig(params.security.saslConfig)
 
-                val jaasConfig = buildString {
-                    append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
-                    append(""" clientId="${oauthConfig.clientId}"""")
-                    append(""" clientSecret="${oauthConfig.clientSecret}"""")
-                    oauthConfig.scope?.let {
-                        append(""" scope="$it"""")
-                    }
-                    oauthConfig.extensions?.let { extensions ->
-                        extensions.forEach {
-                            append(""" $it""")
+                val jaasConfig =
+                    buildString {
+                        append("org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required")
+                        append(""" clientId="${oauthConfig.clientId}"""")
+                        append(""" clientSecret="${oauthConfig.clientSecret}"""")
+                        oauthConfig.scope?.let {
+                            append(""" scope="$it"""")
                         }
+                        oauthConfig.extensions?.let { extensions ->
+                            extensions.forEach {
+                                append(""" $it""")
+                            }
+                        }
+                        append(";")
                     }
-                    append(";")
-                }
 
                 this[SaslConfigs.SASL_JAAS_CONFIG] = jaasConfig
                 this[SaslConfigs.SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL] = oauthConfig.tokenUrl
@@ -190,7 +194,11 @@ fun getKafkaProperties(params: KafkaStreamsParams): KafkaProperties {
     }
 }
 
-fun KafkaProperties.withAppId(namespace: String, consumerGroupIdPrefix: String, name: String): KafkaProperties {
+fun KafkaProperties.withAppId(
+    namespace: String,
+    consumerGroupIdPrefix: String,
+    name: String,
+): KafkaProperties {
     val properties = KafkaProperties()
     properties.putAll(this.toMap())
 
@@ -221,15 +229,17 @@ fun KafkaProperties.withStreamThreads(n: Int): KafkaProperties {
     return properties
 }
 
-fun KafkaProperties.withErrorHandlers(deserializationExceptionHdl: DeserializationExceptionHandler?,
-                                      streamExceptionHdl: StreamsUncaughtExceptionHandler?,
-                                      productionExceptionHdl: ProductionExceptionHandler?): KafkaProperties {
+fun KafkaProperties.withErrorHandlers(
+    deserializationExceptionHdl: DeserializationExceptionHandler?,
+    streamExceptionHdl: StreamsUncaughtExceptionHandler?,
+    productionExceptionHdl: ProductionExceptionHandler?,
+): KafkaProperties {
     val properties = KafkaProperties()
     properties.putAll(this.toMap())
 
-    deserializationExceptionHdl?.let  { properties[StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java }
-    streamExceptionHdl?.let           { properties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java                        }
-    productionExceptionHdl?.let       { properties[StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java      }
+    deserializationExceptionHdl?.let { properties[StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java }
+    streamExceptionHdl?.let { properties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java }
+    productionExceptionHdl?.let { properties[StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG] = it::class.java }
 
     return properties
 }

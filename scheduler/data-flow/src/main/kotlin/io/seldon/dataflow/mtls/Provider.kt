@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.charset.Charset
+import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
 import java.security.KeyFactory
 import java.security.KeyStore
@@ -21,11 +22,9 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
 import kotlin.io.path.Path
 import kotlin.io.path.setPosixFilePermissions
-import java.nio.file.Files
-import java.util.Base64
-
 
 // TODO - dynamically reload certificates.  Can KafkaStreams handle this or does it need to pause?
 object Provider {
@@ -112,10 +111,11 @@ object Provider {
     fun privateKeyFromFile(filename: FilePath): RSAPrivateKey {
         val file = File(filename)
         val key = String(Files.readAllBytes(file.toPath()), Charset.defaultCharset())
-        val privateKeyPEM = key
-            .replace("-----BEGIN PRIVATE KEY-----", "")
-            .replace(System.lineSeparator().toRegex(), "")
-            .replace("-----END PRIVATE KEY-----", "")
+        val privateKeyPEM =
+            key
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace(System.lineSeparator().toRegex(), "")
+                .replace("-----END PRIVATE KEY-----", "")
         val encoded: ByteArray = Base64.getDecoder().decode(privateKeyPEM)
         val keyFactory = KeyFactory.getInstance("RSA")
         val keySpec = PKCS8EncodedKeySpec(encoded)

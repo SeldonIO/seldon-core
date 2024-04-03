@@ -42,85 +42,93 @@ fun stepFor(
     val triggerTopicsToTensors = parseTriggers(triggerSources)
     return when (val result = parseSources(sources)) {
         is SourceProjection.Empty -> null
-        is SourceProjection.Single -> Chainer(
-            builder,
-            result.topicForPipeline,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
-            null,
-            pipelineName,
-            tensorMap,
-            batchProperties,
-            kafkaDomainParams,
-            triggerTopicsToTensors.keys,
-            triggerJoinType,
-            triggerTopicsToTensors
-        )
-        is SourceProjection.SingleSubset -> Chainer(
-            builder,
-            result.topicForPipeline,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
-            result.tensors,
-            pipelineName,
-            tensorMap,
-            batchProperties,
-            kafkaDomainParams,
-            triggerTopicsToTensors.keys,
-            triggerJoinType,
-            triggerTopicsToTensors
-        )
-        is SourceProjection.Many -> Joiner(
-            builder,
-            result.topicNames,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
-            null,
-            pipelineName,
-            tensorMap,
-            kafkaDomainParams,
-            joinType,
-            triggerTopicsToTensors.keys,
-            triggerJoinType,
-            triggerTopicsToTensors
-        )
-        is SourceProjection.ManySubsets -> Joiner(
-            builder,
-            result.tensorsByTopic.keys,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
-            result.tensorsByTopic,
-            pipelineName,
-            tensorMap,
-            kafkaDomainParams,
-            joinType,
-            triggerTopicsToTensors.keys,
-            triggerJoinType,
-            triggerTopicsToTensors
-        )
+        is SourceProjection.Single ->
+            Chainer(
+                builder,
+                result.topicForPipeline,
+                TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+                null,
+                pipelineName,
+                tensorMap,
+                batchProperties,
+                kafkaDomainParams,
+                triggerTopicsToTensors.keys,
+                triggerJoinType,
+                triggerTopicsToTensors,
+            )
+        is SourceProjection.SingleSubset ->
+            Chainer(
+                builder,
+                result.topicForPipeline,
+                TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+                result.tensors,
+                pipelineName,
+                tensorMap,
+                batchProperties,
+                kafkaDomainParams,
+                triggerTopicsToTensors.keys,
+                triggerJoinType,
+                triggerTopicsToTensors,
+            )
+        is SourceProjection.Many ->
+            Joiner(
+                builder,
+                result.topicNames,
+                TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+                null,
+                pipelineName,
+                tensorMap,
+                kafkaDomainParams,
+                joinType,
+                triggerTopicsToTensors.keys,
+                triggerJoinType,
+                triggerTopicsToTensors,
+            )
+        is SourceProjection.ManySubsets ->
+            Joiner(
+                builder,
+                result.tensorsByTopic.keys,
+                TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+                result.tensorsByTopic,
+                pipelineName,
+                tensorMap,
+                kafkaDomainParams,
+                joinType,
+                triggerTopicsToTensors.keys,
+                triggerJoinType,
+                triggerTopicsToTensors,
+            )
     }
 }
 
-
 sealed class SourceProjection {
     object Empty : SourceProjection()
+
     data class Single(val topicForPipeline: TopicForPipeline) : SourceProjection()
+
     data class SingleSubset(val topicForPipeline: TopicForPipeline, val tensors: Set<TensorName>) : SourceProjection()
+
     data class Many(val topicNames: Set<TopicForPipeline>) : SourceProjection()
+
     data class ManySubsets(val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>) : SourceProjection()
 }
 
-fun parseTriggers(sources: List<PipelineTopic>): Map<TopicForPipeline,Set<TensorName>> {
+fun parseTriggers(sources: List<PipelineTopic>): Map<TopicForPipeline, Set<TensorName>> {
     return sources
         .map { parseSource(it) }
-        .groupBy(keySelector = { it.first+":"+it.third }, valueTransform = { it.second })
+        .groupBy(keySelector = { it.first + ":" + it.third }, valueTransform = { it.second })
         .mapValues { it.value.filterNotNull().toSet() }
         .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
-        .associate {it.topicForPipeline to it.tensors }
+        .associate { it.topicForPipeline to it.tensors }
 }
 
 fun parseSources(sources: List<PipelineTopic>): SourceProjection {
-    val topicsAndTensors = sources
-        .map { parseSource(it) }
-        .groupBy(keySelector = { it.first+":"+it.third }, valueTransform = { it.second })
-        .mapValues { it.value.filterNotNull().toSet() }
-        .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
+    val topicsAndTensors =
+        sources
+            .map { parseSource(it) }
+            .groupBy(keySelector = { it.first + ":" + it.third }, valueTransform = { it.second })
+            .mapValues { it.value.filterNotNull().toSet() }
+            .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
 
     return when {
         topicsAndTensors.isEmpty() -> SourceProjection.Empty

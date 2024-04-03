@@ -7,7 +7,6 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.dataflow
 
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
@@ -21,10 +20,12 @@ import strikt.assertions.isSuccess
 import java.util.stream.Stream
 
 internal class CliTest {
-
     @ParameterizedTest(name = "{0}")
     @MethodSource("saslMechanisms")
-    fun getSaslMechanism(input: String, expectedMechanism: KafkaSaslMechanisms) {
+    fun getSaslMechanism(
+        input: String,
+        expectedMechanism: KafkaSaslMechanisms,
+    ) {
         val args = arrayOf("--kafka-sasl-mechanism", input)
         val cli = Cli.configWith(args)
 

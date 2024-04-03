@@ -20,7 +20,6 @@ import org.apache.kafka.streams.KafkaStreams.StateListener
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
-import org.apache.kafka.streams.errors.StreamsException
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
@@ -35,7 +34,6 @@ data class PipelineMetadata(
     val version: Int,
 )
 
-
 class Pipeline(
     private val metadata: PipelineMetadata,
     private val topology: Topology,
@@ -44,12 +42,13 @@ class Pipeline(
     val size: Int,
 ) : StateListener {
     private val latch = CountDownLatch(1)
+
     // Never update status properties in-place, because we need it to have atomic
     // properties. Instead, just assign new values to it.
     @Volatile
-    var status : PipelineStatus = PipelineStatus.StreamStopped(null)
+    var status: PipelineStatus = PipelineStatus.StreamStopped(null)
 
-    fun start() : PipelineStatus {
+    fun start(): PipelineStatus {
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
@@ -61,9 +60,10 @@ class Pipeline(
         } catch (e: Exception) {
             streams.close()
             streams.cleanUp()
-            status = PipelineStatus.Error(State.NOT_RUNNING)
-                .withException(e)
-                .withMessage("kafka streams: failed to start")
+            status =
+                PipelineStatus.Error(State.NOT_RUNNING)
+                    .withException(e)
+                    .withMessage("kafka streams: failed to start")
             return status
         }
         status = PipelineStatus.StreamStarting()
@@ -93,11 +93,16 @@ class Pipeline(
         latch.countDown()
     }
 
-    override fun onChange(newState: State?, oldState: State?) {
+    override fun onChange(
+        newState: State?,
+        oldState: State?,
+    ) {
         logger.info {
-            e("pipeline {pipelineName} (v{pipelineVersion}) changing to state $newState",
+            e(
+                "pipeline {pipelineName} (v{pipelineVersion}) changing to state $newState",
                 metadata.name,
-                metadata.version)
+                metadata.version,
+            )
         }
         if (newState == State.RUNNING) {
             // Only update the status if the pipeline is not already being stopped
@@ -117,8 +122,9 @@ class Pipeline(
         // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
         if (newState != State.CREATED && newState != State.REBALANCING) {
             if (status !is PipelineStatus.StreamStopping) {
-                status = PipelineStatus.Error(newState)
-                    .withMessage("pipeline data streams error: kafka streams state: $newState")
+                status =
+                    PipelineStatus.Error(newState)
+                        .withMessage("pipeline data streams error: kafka streams state: $newState")
                 latch.countDown()
             }
         }
@@ -140,19 +146,20 @@ class Pipeline(
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-            var streamsApp : KafkaStreams?
+            var streamsApp: KafkaStreams?
             var pipelineError: PipelineStatus.Error?
             try {
                 streamsApp = KafkaStreams(topology, pipelineProperties)
             } catch (e: Exception) {
-                pipelineError = PipelineStatus.Error(null)
-                    .withException(e)
-                    .withMessage("failed to initialize kafka streams for pipeline")
+                pipelineError =
+                    PipelineStatus.Error(null)
+                        .withException(e)
+                        .withMessage("failed to initialize kafka streams for pipeline")
                 return null to pipelineError
             }
 
             val uncaughtExceptionHandlerClass = pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
-            uncaughtExceptionHandlerClass?.let{
+            uncaughtExceptionHandlerClass?.let {
                 logger.debug("Setting custom Kafka streams uncaught exception handler")
                 streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
             }
@@ -161,7 +168,7 @@ class Pipeline(
                 metadata.name,
                 metadata.id,
                 metadata.version,
-                pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG]
+                pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
             )
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
@@ -172,21 +179,22 @@ class Pipeline(
             kafkaDomainParams: KafkaDomainParams,
         ): Pair<Topology, Int> {
             val builder = StreamsBuilder()
-            val topologySteps = steps
-                .mapNotNull {
-                    stepFor(
-                        builder,
-                        metadata.name,
-                        it.sourcesList,
-                        it.triggersList,
-                        it.tensorMapList,
-                        it.sink,
-                        it.inputJoinTy,
-                        it.triggersJoinTy,
-                        it.batch,
-                        kafkaDomainParams,
-                    )
-                }
+            val topologySteps =
+                steps
+                    .mapNotNull {
+                        stepFor(
+                            builder,
+                            metadata.name,
+                            it.sourcesList,
+                            it.triggersList,
+                            it.tensorMapList,
+                            it.sink,
+                            it.inputJoinTy,
+                            it.triggersJoinTy,
+                            it.batch,
+                            kafkaDomainParams,
+                        )
+                    }
             val topology = builder.build()
             return topology to topologySteps.size
         }
@@ -196,7 +204,7 @@ class Pipeline(
             metadata: PipelineMetadata,
             numSteps: Int,
             kafkaConsumerGroupIdPrefix: String,
-            namespace: String
+            namespace: String,
         ): KafkaProperties {
             return kafkaProperties
                 .withAppId(
@@ -210,7 +218,7 @@ class Pipeline(
                 .withErrorHandlers(
                     StreamErrorHandling.StreamsDeserializationErrorHandler(),
                     StreamErrorHandling.StreamsCustomUncaughtExceptionHandler(),
-                    StreamErrorHandling.StreamsRecordProducerErrorHandler()
+                    StreamErrorHandling.StreamsRecordProducerErrorHandler(),
                 )
         }
 

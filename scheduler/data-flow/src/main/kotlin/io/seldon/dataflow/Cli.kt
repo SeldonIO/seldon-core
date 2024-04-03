@@ -101,11 +101,12 @@ object Cli {
     }
 
     private fun parseArguments(rawArgs: Array<String>): Configuration {
-        val (config, unparsedArgs) = parseArgs(
-            rawArgs,
-            *this.args().map { CommandLineOption(it) }.toTypedArray(),
-            programName = "seldon-dataflow-engine",
-        )
+        val (config, unparsedArgs) =
+            parseArgs(
+                rawArgs,
+                *this.args().map { CommandLineOption(it) }.toTypedArray(),
+                programName = "seldon-dataflow-engine",
+            )
         if (unparsedArgs.isNotEmpty()) {
             logUnknownArguments(unparsedArgs)
         }

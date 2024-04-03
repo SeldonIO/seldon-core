@@ -42,21 +42,22 @@ class PipelineSubscriber(
     private val namespace: String,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
-    private val channel = ManagedChannelBuilder
-        .forAddress(upstreamHost, upstreamPort)
-        .defaultServiceConfig(grpcServiceConfig)
-        .usePlaintext() // Use TLS
-        .enableRetry()
-        .build()
+    private val channel =
+        ManagedChannelBuilder
+            .forAddress(upstreamHost, upstreamPort)
+            .defaultServiceConfig(grpcServiceConfig)
+            .usePlaintext() // Use TLS
+            .enableRetry()
+            .build()
     private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
 
     private val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
 
     suspend fun subscribe() {
         while (true) {
-            logger.info("will connect to ${upstreamHost}:${upstreamPort}")
+            logger.info("will connect to $upstreamHost:$upstreamPort")
             retry(binaryExponentialBackoff(50..5_000L)) {
-                logger.debug("retrying to connect to ${upstreamHost}:${upstreamPort}")
+                logger.debug("retrying to connect to $upstreamHost:$upstreamPort")
                 subscribePipelines(kafkaConsumerGroupIdPrefix, namespace)
             }
         }
@@ -69,18 +70,22 @@ class PipelineSubscriber(
     //  Pipeline UID should be enough to uniquely key it, even across versions?
     //  ...
     //  - Add map of model name -> (weak) referrents/reference count to avoid recreation of streams
-    private suspend fun subscribePipelines(kafkaConsumerGroupIdPrefix: String, namespace: String) {
+    private suspend fun subscribePipelines(
+        kafkaConsumerGroupIdPrefix: String,
+        namespace: String,
+    ) {
         logger.info("Subscribing to pipeline updates")
         client
             .subscribePipelineUpdates(request = makeSubscriptionRequest())
             .onEach { update ->
                 logger.info("received request for ${update.pipeline}:${update.version} Id:${update.uid}")
 
-                val metadata = PipelineMetadata(
-                    id = update.uid,
-                    name = update.pipeline,
-                    version = update.version,
-                )
+                val metadata =
+                    PipelineMetadata(
+                        id = update.uid,
+                        name = update.pipeline,
+                        version = update.version,
+                    )
 
                 when (update.op) {
                     PipelineOperation.Create -> handleCreate(metadata, update.updatesList, kafkaConsumerGroupIdPrefix, namespace)
@@ -97,12 +102,15 @@ class PipelineSubscriber(
                             // Defend against any existing pipelines that have failed but are not yet stopped, so that
                             // kafka streams may clean up resources (including temporary files). This is a catch-all
                             // and indicates we've missed calling stop in a failure case.
-                            if(it.value.status.isError) {
-                                logger.debug("(bug) pipeline in error state when subscription terminates with error. pipeline id: {pipelineId}", it.key)
+                            if (it.value.status.isError) {
+                                logger.debug(
+                                    "(bug) pipeline in error state when subscription terminates with error. pipeline id: {pipelineId}",
+                                    it.key,
+                                )
                                 it.value.stop()
                             }
                         }
-                    logger.error("pipeline subscription terminated with error ${cause}")
+                    logger.error("pipeline subscription terminated with error $cause")
                 }
             }
             .collect()
@@ -125,16 +133,17 @@ class PipelineSubscriber(
             "Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}",
             metadata.name,
             metadata.version,
-            metadata.id
+            metadata.id,
         )
-        val (pipeline, err) = Pipeline.forSteps(
-            metadata,
-            steps,
-            kafkaProperties,
-            kafkaDomainParams,
-            kafkaConsumerGroupIdPrefix,
-            namespace
-        )
+        val (pipeline, err) =
+            Pipeline.forSteps(
+                metadata,
+                steps,
+                kafkaProperties,
+                kafkaDomainParams,
+                kafkaConsumerGroupIdPrefix,
+                namespace,
+            )
         if (err != null) {
             err.log(logger, Level.ERROR)
             client.pipelineUpdateEvent(
@@ -142,13 +151,13 @@ class PipelineSubscriber(
                     metadata = metadata,
                     operation = PipelineOperation.Create,
                     success = false,
-                    reason = err.getDescription() ?: "failed to initialize dataflow engine"
-                )
+                    reason = err.getDescription() ?: "failed to initialize dataflow engine",
+                ),
             )
             return
         }
 
-        pipeline!!  //assert pipeline is not null when err is null
+        pipeline!! // assert pipeline is not null when err is null
         if (pipeline.size != steps.size) {
             pipeline.stop()
             client.pipelineUpdateEvent(
@@ -156,8 +165,8 @@ class PipelineSubscriber(
                     metadata = metadata,
                     operation = PipelineOperation.Create,
                     success = false,
-                    reason = "failed to create all pipeline steps"
-                )
+                    reason = "failed to create all pipeline steps",
+                ),
             )
 
             return
@@ -170,9 +179,10 @@ class PipelineSubscriber(
             if (err == null) {
                 pipelineStatus = pipeline.start()
             } else {
-                pipelineStatus = PipelineStatus.Error(null)
-                    .withException(err)
-                    .withMessage("kafka streams topic creation error")
+                pipelineStatus =
+                    PipelineStatus.Error(null)
+                        .withException(err)
+                        .withMessage("kafka streams topic creation error")
                 pipeline.stop()
             }
         } else {
@@ -190,7 +200,7 @@ class PipelineSubscriber(
         // pipeline has started. While states such as "StreamStarting" or "StreamStopped" are
         // not in themselves errors, if the pipeline is not running here then it can't
         // be marked as ready.
-        if(pipelineStatus !is PipelineStatus.Started) {
+        if (pipelineStatus !is PipelineStatus.Started) {
             pipelineStatus.isError = true
         }
         pipelineStatus.log(logger, Level.INFO)
@@ -199,13 +209,18 @@ class PipelineSubscriber(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
                 success = !pipelineStatus.isError,
-                reason = pipelineStatus.getDescription() ?: "pipeline created"
-            )
+                reason = pipelineStatus.getDescription() ?: "pipeline created",
+            ),
         )
     }
 
     private suspend fun handleDelete(metadata: PipelineMetadata) {
-        logger.info("Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}", metadata.name, metadata.version, metadata.id )
+        logger.info(
+            "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
         pipelines
             .remove(metadata.id)
             ?.also { pipeline ->
@@ -219,7 +234,7 @@ class PipelineSubscriber(
                 operation = PipelineOperation.Delete,
                 success = true,
                 reason = "pipeline removed",
-            )
+            ),
         )
     }
 
@@ -251,7 +266,7 @@ class PipelineSubscriber(
                     .setPipeline(metadata.name)
                     .setVersion(metadata.version)
                     .setUid(metadata.id)
-                    .build()
+                    .build(),
             )
             .build()
     }

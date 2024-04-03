@@ -21,11 +21,12 @@ class PipelineNameFilter(private val pipelineName: String) : ValueTransformer<TR
     }
 
     override fun transform(value: TRecord?): TRecord? {
-        val shouldProcess = context
-            ?.headers()
-            ?.headers(SeldonHeaders.pipelineName)
-            ?.any { it.value().decodeToString() == pipelineName }
-            ?: false
+        val shouldProcess =
+            context
+                ?.headers()
+                ?.headers(SeldonHeaders.pipelineName)
+                ?.any { it.value().decodeToString() == pipelineName }
+                ?: false
         return if (shouldProcess) value else null
     }
 
