@@ -9,7 +9,10 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import com.github.michaelbull.retry.policy.*
+import com.github.michaelbull.retry.policy.constantDelay
+import com.github.michaelbull.retry.policy.continueIf
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.stopAtAttempts
 import com.github.michaelbull.retry.retry
 import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate

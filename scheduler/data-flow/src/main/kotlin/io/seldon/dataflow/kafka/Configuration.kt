@@ -26,7 +26,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.DeserializationExceptionHandler
 import org.apache.kafka.streams.errors.ProductionExceptionHandler
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
-import java.util.*
+import java.util.Properties
 
 const val KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG = "default.processing.exception.handler"
 

@@ -9,7 +9,18 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
-import com.natpryce.konfig.*
+import com.natpryce.konfig.CommandLineOption
+import com.natpryce.konfig.Configuration
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.booleanType
+import com.natpryce.konfig.enumType
+import com.natpryce.konfig.intType
+import com.natpryce.konfig.longType
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.parseArgs
+import com.natpryce.konfig.stringType
 import io.klogging.Level
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms

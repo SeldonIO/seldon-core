@@ -13,7 +13,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.kstream.StreamJoined
-import java.util.*
+import java.util.Properties
 
 typealias KafkaProperties = Properties
 typealias KafkaAdminProperties = Properties
