@@ -101,6 +101,6 @@ downloadLicenses {
 
 ktlint {
     filter {
-        exclude { projectDir.toURI().relativize(it.file.toURI()).path.contains("/apis/mlops/") }
+        exclude { element -> element.file.path.contains("apis/mlops")}
     }
 }
