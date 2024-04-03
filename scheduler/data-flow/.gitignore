@@ -341,4 +341,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# VSCode
+.vscode/
+
 # End of https://www.gitignore.io/api/java,linux,macos,windows,android,intellij,androidstudio
