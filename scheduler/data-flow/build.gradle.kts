@@ -102,7 +102,6 @@ downloadLicenses {
 ktlint {
     verbose = true
     debug = true
-    disabledRules.set(setOf("no-wildcard-imports"))
     // Ignore generated code from proto
     filter {
         exclude { element -> element.file.path.contains("apis/mlops") }
