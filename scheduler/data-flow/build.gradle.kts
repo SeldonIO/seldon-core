@@ -6,7 +6,7 @@ plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "1.8.20" // the kotlin version
-    id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     java
     application
 }
@@ -100,6 +100,9 @@ downloadLicenses {
 }
 
 ktlint {
+    verbose = true
+    debug = true
+    disabledRules.set(setOf("no-wildcard-imports"))
     filter {
         exclude { element -> element.file.path.contains("apis/mlops")}
     }
