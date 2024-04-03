@@ -51,7 +51,7 @@ class KafkaAdmin(
         try {
             steps
                 .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
-                .map { topicName -> parseSource(topicName).first }
+                .map { topicName -> parseSource(topicName).topicName }
                 .toSet()
                 .also {
                     logger.info("Topics found are $it")

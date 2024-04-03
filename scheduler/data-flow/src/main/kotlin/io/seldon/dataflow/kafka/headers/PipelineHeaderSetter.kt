@@ -14,7 +14,7 @@ import io.seldon.dataflow.kafka.TRecord
 import org.apache.kafka.streams.kstream.ValueTransformer
 import org.apache.kafka.streams.processor.ProcessorContext
 
-class PipelineHeaderSetter(private val pipelineName: String, private val pipelineVersion: Int) : ValueTransformer<TRecord, TRecord> {
+class PipelineHeaderSetter(private val pipelineName: String, private val pipelineVersion: String) : ValueTransformer<TRecord, TRecord> {
     var context: ProcessorContext? = null
 
     override fun init(context: ProcessorContext?) {
@@ -25,7 +25,7 @@ class PipelineHeaderSetter(private val pipelineName: String, private val pipelin
         this.context?.headers()?.remove(SeldonHeaders.pipelineName)
         this.context?.headers()?.add(SeldonHeaders.pipelineName, pipelineName.toByteArray())
         this.context?.headers()?.remove(SeldonHeaders.pipelineVersion)
-        this.context?.headers()?.add(SeldonHeaders.pipelineVersion, pipelineVersion.toString().toByteArray())
+        this.context?.headers()?.add(SeldonHeaders.pipelineVersion, pipelineVersion.toByteArray())
         return value
     }
 

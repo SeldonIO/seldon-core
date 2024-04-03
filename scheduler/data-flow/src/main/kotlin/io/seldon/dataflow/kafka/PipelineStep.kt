@@ -25,12 +25,20 @@ data class TopicTensors(
 data class TopicForPipeline(
     val topicName: TopicName,
     val pipelineName: String,
+    val pipelineVersion: String,
+)
+
+data class Source(
+    val topicName: TopicName,
+    val tensor: TensorName?,
+    val pipelineName: String,
+    val pipelineVersion: String,
 )
 
 fun stepFor(
     builder: StreamsBuilder,
     pipelineName: String,
-    pipelineVersion: Int,
+    pipelineVersion: String,
     sources: List<PipelineTopic>,
     triggerSources: List<PipelineTopic>,
     tensorMap: List<PipelineTensorMapping>,
@@ -46,7 +54,7 @@ fun stepFor(
         is SourceProjection.Single -> Chainer(
             builder,
             result.topicForPipeline,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName, pipelineVersion = sink.pipelineVersion.toString()),
             null,
             pipelineName,
             pipelineVersion,
@@ -60,7 +68,7 @@ fun stepFor(
         is SourceProjection.SingleSubset -> Chainer(
             builder,
             result.topicForPipeline,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName, pipelineVersion = sink.pipelineVersion.toString()),
             result.tensors,
             pipelineName,
             pipelineVersion,
@@ -74,7 +82,7 @@ fun stepFor(
         is SourceProjection.Many -> Joiner(
             builder,
             result.topicNames,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName, pipelineVersion = sink.pipelineVersion.toString()),
             null,
             pipelineName,
             pipelineVersion,
@@ -88,7 +96,7 @@ fun stepFor(
         is SourceProjection.ManySubsets -> Joiner(
             builder,
             result.tensorsByTopic.keys,
-            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
+            TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName, pipelineVersion = sink.pipelineVersion.toString()),
             result.tensorsByTopic,
             pipelineName,
             pipelineVersion,
@@ -114,18 +122,18 @@ sealed class SourceProjection {
 fun parseTriggers(sources: List<PipelineTopic>): Map<TopicForPipeline,Set<TensorName>> {
     return sources
         .map { parseSource(it) }
-        .groupBy(keySelector = { it.first+":"+it.third }, valueTransform = { it.second })
+        .groupBy(keySelector = { it.topicName+":"+it.pipelineName+":"+it.pipelineVersion }, valueTransform = { it.tensor })
         .mapValues { it.value.filterNotNull().toSet() }
-        .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
+        .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1], pipelineVersion = it.key.split(":")[2]), it.value) }
         .associate {it.topicForPipeline to it.tensors }
 }
 
 fun parseSources(sources: List<PipelineTopic>): SourceProjection {
     val topicsAndTensors = sources
         .map { parseSource(it) }
-        .groupBy(keySelector = { it.first+":"+it.third }, valueTransform = { it.second })
+        .groupBy(keySelector = { it.topicName+":"+it.pipelineName+":"+it.pipelineVersion }, valueTransform = { it.tensor })
         .mapValues { it.value.filterNotNull().toSet() }
-        .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
+        .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1], pipelineVersion = it.key.split(":")[2]), it.value) }
 
     return when {
         topicsAndTensors.isEmpty() -> SourceProjection.Empty
@@ -145,10 +153,19 @@ fun parseSources(sources: List<PipelineTopic>): SourceProjection {
     }
 }
 
-fun parseSource(source: PipelineTopic): Triple<TopicName, TensorName?, String> {
-    return Triple(
+// fun parseSource(source: PipelineTopic): Triple<TopicName, TensorName?, String> {
+//     return Triple(
+//         source.topicName,
+//         if (source.tensor == "") null else source.tensor,
+//         source.pipelineName,
+//     )
+// }
+
+fun parseSource(source: PipelineTopic): Source {
+    return Source(
         source.topicName,
         if (source.tensor == "") null else source.tensor,
         source.pipelineName,
+        source.pipelineVersion.toString(),
     )
 }

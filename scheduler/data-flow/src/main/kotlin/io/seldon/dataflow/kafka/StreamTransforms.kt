@@ -30,7 +30,7 @@ fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {
         .transformValues(ValueTransformerSupplier { AlibiDetectRemover() })
 }
 
-fun <T> KStream<T, TRecord>.headerSetter(pipelineName: String, pipelineVersion: Int): KStream<T, TRecord> {
+fun <T> KStream<T, TRecord>.headerSetter(pipelineName: String, pipelineVersion: String): KStream<T, TRecord> {
     return this
         .transformValues(ValueTransformerSupplier { PipelineHeaderSetter(pipelineName, pipelineVersion) })
 }

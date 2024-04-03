@@ -23,7 +23,7 @@ class Chainer(
     internal val outputTopic: TopicForPipeline,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
-    internal val pipelineVersion: Int,
+    internal val pipelineVersion: String,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val batchProperties: ChainerOuterClass.Batch,
     private val kafkaDomainParams: KafkaDomainParams,

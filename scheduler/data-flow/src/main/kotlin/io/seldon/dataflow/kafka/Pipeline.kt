@@ -177,7 +177,7 @@ class Pipeline(
                     stepFor(
                         builder,
                         metadata.name,
-                        metadata.version,
+                        metadata.version.toString(),
                         it.sourcesList,
                         it.triggersList,
                         it.tensorMapList,
