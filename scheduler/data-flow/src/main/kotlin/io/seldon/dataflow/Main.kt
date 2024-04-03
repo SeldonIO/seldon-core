@@ -10,7 +10,12 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow
 
 import io.klogging.noCoLogger
-import io.seldon.dataflow.kafka.*
+import io.seldon.dataflow.kafka.KafkaDomainParams
+import io.seldon.dataflow.kafka.KafkaSecurityParams
+import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.TopicWaitRetryParams
+import io.seldon.dataflow.kafka.getKafkaAdminProperties
+import io.seldon.dataflow.kafka.getKafkaProperties
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig

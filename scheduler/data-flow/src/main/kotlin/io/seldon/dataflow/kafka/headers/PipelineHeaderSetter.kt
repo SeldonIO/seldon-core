@@ -21,8 +21,8 @@ class PipelineHeaderSetter(private val pipelineName: String) : ValueTransformer<
     }
 
     override fun transform(value: TRecord?): TRecord? {
-        this.context?.headers()?.remove(SeldonHeaders.pipelineName)
-        this.context?.headers()?.add(SeldonHeaders.pipelineName, pipelineName.toByteArray())
+        this.context?.headers()?.remove(SeldonHeaders.PIPELINENAME)
+        this.context?.headers()?.add(SeldonHeaders.PIPELINENAME, pipelineName.toByteArray())
         return value
     }
 

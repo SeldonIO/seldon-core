@@ -24,7 +24,7 @@ class PipelineNameFilter(private val pipelineName: String) : ValueTransformer<TR
         val shouldProcess =
             context
                 ?.headers()
-                ?.headers(SeldonHeaders.pipelineName)
+                ?.headers(SeldonHeaders.PIPELINENAME)
                 ?.any { it.value().decodeToString() == pipelineName }
                 ?: false
         return if (shouldProcess) value else null

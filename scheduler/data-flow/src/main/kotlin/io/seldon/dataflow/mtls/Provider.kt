@@ -28,10 +28,10 @@ import kotlin.io.path.setPosixFilePermissions
 
 // TODO - dynamically reload certificates.  Can KafkaStreams handle this or does it need to pause?
 object Provider {
-    private const val storeType = "JKS"
-    private const val certificateType = "X.509"
-    private const val keyType = "RSA"
-    private const val keyName = "dataflow-engine-key"
+    private const val STORE_TYPE = "JKS"
+    private const val CERTIFICATE_TYPE = "X.509"
+    private const val KEY_TYPE = "RSA"
+    private const val KEY_NAME = "dataflow-engine-key"
 
     fun trustStoreFromCertificates(certs: CertificateConfig): TruststoreConfig {
         val (trustStoreLocation, trustStorePassword) = trustStoreFromCACert(certs)
@@ -44,7 +44,7 @@ object Provider {
     private fun trustStoreFromCACert(certPaths: CertificateConfig): Pair<FilePath, KeystorePassword> {
         val password = generatePassword()
         val location = generateLocation()
-        val trustStore = KeyStore.getInstance(storeType)
+        val trustStore = KeyStore.getInstance(STORE_TYPE)
         trustStore.load(null, password.toCharArray())
 
         certsFromFile(certPaths.brokerCaCertPath)
@@ -69,7 +69,7 @@ object Provider {
         return FileInputStream(certFile)
             .use { certStream ->
                 CertificateFactory
-                    .getInstance(certificateType)
+                    .getInstance(CERTIFICATE_TYPE)
                     .generateCertificates(certStream)
             }
     }
@@ -85,7 +85,7 @@ object Provider {
     private fun keyStoreFromCerts(certPaths: CertificateConfig): Pair<FilePath, KeystorePassword> {
         val password = generatePassword()
         val location = generateLocation()
-        val keyStore = KeyStore.getInstance(storeType)
+        val keyStore = KeyStore.getInstance(STORE_TYPE)
         keyStore.load(null, password.toCharArray())
 
         val privateKey = privateKeyFromFile(certPaths.keyPath)
@@ -93,7 +93,7 @@ object Provider {
         val caCerts = certsFromFile(certPaths.caCertPath)
         // TODO - check if CA certs are required as part of the chain.  Docs imply this, but unclear.
         keyStore.setKeyEntry(
-            keyName,
+            KEY_NAME,
             privateKey,
             password.toCharArray(), // No password
             certs.union(caCerts).toTypedArray(),

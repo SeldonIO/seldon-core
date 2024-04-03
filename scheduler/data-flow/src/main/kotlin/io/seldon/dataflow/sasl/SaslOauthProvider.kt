@@ -30,11 +30,11 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
     }
 
     private fun Map<String, ByteArray>.toOauthConfig(): SaslOauthConfig {
-        val clientId = this.getValue(clientIdKey).toString(Charsets.UTF_8)
-        val clientSecret = this.getValue(clientSecretKey).toString(Charsets.UTF_8)
-        val tokenUrl = this.getValue(tokenUrlKey).toString(Charsets.UTF_8)
-        val scope = this.getValue(scopeKey).toString(Charsets.UTF_8)
-        val extensions = this.getValue(extensionsKey).toString(Charsets.UTF_8).toExtensions()
+        val clientId = this.getValue(CLIENT_ID_KEY).toString(Charsets.UTF_8)
+        val clientSecret = this.getValue(CLIENT_SECRET_KEY).toString(Charsets.UTF_8)
+        val tokenUrl = this.getValue(TOKEN_URL_KEY).toString(Charsets.UTF_8)
+        val scope = this.getValue(SCOPE_KEY).toString(Charsets.UTF_8)
+        val extensions = this.getValue(EXTENSIONS_KEY).toString(Charsets.UTF_8).toExtensions()
 
         return SaslOauthConfig(
             tokenUrl = tokenUrl,
@@ -77,11 +77,11 @@ class SaslOauthProvider(private val secretsProvider: SecretsProvider) {
     }
 
     companion object {
-        private const val clientIdKey = "client_id"
-        private const val clientSecretKey = "client_secret"
-        private const val tokenUrlKey = "token_endpoint_url"
-        private const val scopeKey = "scope"
-        private const val extensionsKey = "extensions"
+        private const val CLIENT_ID_KEY = "client_id"
+        private const val CLIENT_SECRET_KEY = "client_secret"
+        private const val TOKEN_URL_KEY = "token_endpoint_url"
+        private const val SCOPE_KEY = "scope"
+        private const val EXTENSIONS_KEY = "extensions"
 
         private val logger = noCoLogger(SaslOauthProvider::class)
 

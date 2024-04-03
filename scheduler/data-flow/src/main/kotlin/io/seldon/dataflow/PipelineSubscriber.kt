@@ -26,6 +26,7 @@ import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage
 import kotlinx.coroutines.FlowPreview
@@ -186,13 +187,13 @@ class PipelineSubscriber(
         val previous = pipelines.putIfAbsent(metadata.id, pipeline)
         var pipelineStatus: PipelineStatus
         if (previous == null) {
-            val err = kafkaAdmin.ensureTopicsExist(steps)
-            if (err == null) {
+            val errTopics = kafkaAdmin.ensureTopicsExist(steps)
+            if (errTopics == null) {
                 pipelineStatus = pipeline.start()
             } else {
                 pipelineStatus =
                     PipelineStatus.Error(null)
-                        .withException(err)
+                        .withException(errTopics)
                         .withMessage("kafka streams topic creation error")
                 pipeline.stop()
             }
