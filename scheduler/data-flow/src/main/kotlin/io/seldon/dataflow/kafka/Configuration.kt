@@ -50,7 +50,8 @@ data class KafkaDomainParams(
 )
 
 data class TopicWaitRetryParams(
-    val createTimeoutMillis: Int, // int required by the underlying kafka-streams library
+    // int required by the underlying kafka-streams library
+    val createTimeoutMillis: Int,
     val describeTimeoutMillis: Long,
     val describeRetries: Int,
     val describeRetryDelayMillis: Long,
@@ -75,7 +76,8 @@ private fun getSecurityProperties(params: KafkaStreamsParams): Properties {
         when (params.security.securityProtocol) {
             SecurityProtocol.SSL -> getSslProperties(params)
             SecurityProtocol.SASL_SSL -> getSaslProperties(params)
-            else -> Properties() // No authentication, so nothing to configure
+            // No authentication, so nothing to configure
+            else -> Properties()
         }
 
     return authProperties.apply {

@@ -95,7 +95,8 @@ object Provider {
         keyStore.setKeyEntry(
             KEY_NAME,
             privateKey,
-            password.toCharArray(), // No password
+            // No password for private key
+            password.toCharArray(),
             certs.union(caCerts).toTypedArray(),
         )
 
