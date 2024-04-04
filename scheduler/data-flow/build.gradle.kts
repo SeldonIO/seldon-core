@@ -1,12 +1,12 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.8.20"  // the kotlin version
-
+    kotlin("jvm") version "1.8.20" // the kotlin version
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     java
     application
 }
@@ -97,4 +97,13 @@ tasks.named<ShadowJar>("shadowJar") {
 downloadLicenses {
     includeProjectDependencies = true
     dependencyConfiguration = "compileClasspath"
+}
+
+ktlint {
+    verbose = true
+    debug = true
+    // Ignore generated code from proto
+    filter {
+        exclude { element -> element.file.path.contains("apis/mlops") }
+    }
 }

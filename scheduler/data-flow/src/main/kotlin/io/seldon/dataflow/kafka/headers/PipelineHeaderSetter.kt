@@ -7,7 +7,6 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.dataflow.kafka.headers
 
 import io.seldon.dataflow.kafka.TRecord
@@ -22,8 +21,8 @@ class PipelineHeaderSetter(private val pipelineName: String) : ValueTransformer<
     }
 
     override fun transform(value: TRecord?): TRecord? {
-        this.context?.headers()?.remove(SeldonHeaders.pipelineName)
-        this.context?.headers()?.add(SeldonHeaders.pipelineName, pipelineName.toByteArray())
+        this.context?.headers()?.remove(SeldonHeaders.PIPELINENAME)
+        this.context?.headers()?.add(SeldonHeaders.PIPELINENAME, pipelineName.toByteArray())
         return value
     }
 

@@ -7,3 +7,15 @@ licenses:
 	chmod +x ./scripts/generate_license.sh
 	./scripts/generate_license.sh licenses/dependency-license.json licenses/dependency-license.txt
 	cp ../../LICENSE licenses/license.txt
+
+.PHONY: lint
+lint:
+	./gradlew ktlintCheck --no-daemon --no-build-cache --continue
+
+.PHONY: format
+format:
+	./gradlew ktlintFormat --no-daemon --no-build-cache
+
+.PHONY: build
+build:
+	./gradlew build --no-daemon --no-build-cache

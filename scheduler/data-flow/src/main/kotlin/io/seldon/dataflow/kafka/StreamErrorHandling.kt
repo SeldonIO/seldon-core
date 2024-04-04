@@ -19,16 +19,14 @@ import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.processor.ProcessorContext
 
 class StreamErrorHandling {
-
-    class StreamsDeserializationErrorHandler: DeserializationExceptionHandler {
-
+    class StreamsDeserializationErrorHandler : DeserializationExceptionHandler {
         override fun configure(configs: MutableMap<String, *>?) {
         }
 
         override fun handle(
             context: ProcessorContext?,
             record: ConsumerRecord<ByteArray, ByteArray>?,
-            exception: Exception?
+            exception: Exception?,
         ): DeserializationExceptionHandler.DeserializationHandlerResponse {
             if (exception != null) {
                 logger.error(exception, "Kafka streams: message deserialization error on ${record?.topic()}")
@@ -37,39 +35,36 @@ class StreamErrorHandling {
         }
     }
 
-    class StreamsRecordProducerErrorHandler: ProductionExceptionHandler {
-
+    class StreamsRecordProducerErrorHandler : ProductionExceptionHandler {
         override fun configure(configs: MutableMap<String, *>?) {
         }
 
         override fun handle(
             record: ProducerRecord<ByteArray, ByteArray>?,
-            exception: Exception?
+            exception: Exception?,
         ): ProductionExceptionHandler.ProductionExceptionHandlerResponse {
             if (exception != null) {
                 logger.error(exception, "Kafka streams: error when writing to ${record?.topic()}")
             }
             return ProductionExceptionHandler.ProductionExceptionHandlerResponse.CONTINUE
         }
-
     }
 
-    class StreamsCustomUncaughtExceptionHandler: StreamsUncaughtExceptionHandler {
+    class StreamsCustomUncaughtExceptionHandler : StreamsUncaughtExceptionHandler {
         override fun handle(exception: Throwable?): StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse {
             if (exception is StreamsException) {
                 val originalException = exception.cause
                 originalException?.let {
                     logger.error(it, "Kafka streams: stream processing exception")
-                    return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_CLIENT;
+                    return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_CLIENT
                 }
             }
             // try to continue
-            return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.REPLACE_THREAD;
+            return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.REPLACE_THREAD
         }
     }
 
     companion object {
         private val logger = noCoLogger(StreamErrorHandling::class)
     }
-
 }

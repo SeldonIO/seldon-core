@@ -37,3 +37,5 @@ jobs:
           working-directory: components/tls
           skip-cache: true
           args: --timeout 3m --verbose
+      - name: lint-dataflow
+        run: make -C scheduler/data-flow lint

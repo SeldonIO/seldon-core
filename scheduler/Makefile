@@ -78,11 +78,18 @@ ${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
-.PHONY: lint
-lint: ${.GOLANGCILINT_PATH}/golangci-lint
+.PHONY: lint-go
+lint-go: ${.GOLANGCILINT_PATH}/golangci-lint
 	gofmt -w pkg
 	gofmt -w cmd
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
+
+.PHONY: lint-jvm
+lint-jvm:
+	make -C data-flow lint
+
+.PHONY: lint
+lint: lint-go lint-jvm
 
 .PHONY: test-go
 test-go:

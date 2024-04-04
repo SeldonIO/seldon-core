@@ -31,7 +31,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             this.isError = this.prevState?.isError ?: false
         }
 
-        override fun getDescription() : String? {
+        override fun getDescription(): String? {
             val exceptionMsg = this.exception?.message
             var statusMsg = this.message
             val prevStateDescription = this.prevState?.getDescription()
@@ -46,7 +46,10 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         }
 
         // log status when logger is in a coroutine
-        override fun log(logger: Klogger, levelIfNoException: Level) {
+        override fun log(
+            logger: Klogger,
+            levelIfNoException: Level,
+        ) {
             var exceptionMsg = this.exception?.message
             var exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
@@ -66,7 +69,10 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         }
 
         // log status when logger is outside coroutines
-        override fun log(logger: NoCoLogger, levelIfNoException: Level) {
+        override fun log(
+            logger: NoCoLogger,
+            levelIfNoException: Level,
+        ) {
             val exceptionMsg = this.exception?.message
             val exceptionCause = this.exception?.cause ?: Exception("")
             var statusMsg = this.message
@@ -94,9 +100,8 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
         override var message: String? = "pipeline data streams: ready"
     }
 
-    data class Error(val errorState: KafkaStreams.State?): PipelineStatus(errorState, true)
+    data class Error(val errorState: KafkaStreams.State?) : PipelineStatus(errorState, true)
 
     override var exception: Exception? = null
     override var message: String? = null
-
 }

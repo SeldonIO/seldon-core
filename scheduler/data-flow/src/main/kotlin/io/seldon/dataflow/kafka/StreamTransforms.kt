@@ -9,11 +9,11 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
 import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
-import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
+import io.seldon.dataflow.kafka.headers.PipelineNameFilter
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
+import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import org.apache.kafka.streams.kstream.KStream
@@ -55,14 +55,18 @@ fun <T> KStream<T, ModelInferResponse>.marshallInferenceV2Response(): KStream<T,
         .mapValues { request -> request.toByteArray() }
 }
 
-
 fun <T> KStream<T, ModelInferResponse>.convertToRequest(
     inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenamingList: List<PipelineTensorMapping>
+    tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferRequest> {
-    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
+    val tensorRenaming =
+        tensorRenamingList.filter {
+            it.pipelineName.equals(
+                inputPipeline,
+            )
+        }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             convertToRequest(
@@ -80,8 +84,9 @@ fun <T> KStream<T, ModelInferResponse>.convertToRequest(
 fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KStream<String, ModelInferRequest> {
     return when (batchProperties.size) {
         0 -> this
-        else -> this
-            .transform({ BatchProcessor(batchProperties.size) }, BatchProcessor.STATE_STORE_ID)
+        else ->
+            this
+                .transform({ BatchProcessor(batchProperties.size) }, BatchProcessor.STATE_STORE_ID)
     }
 }
 
@@ -103,11 +108,12 @@ private fun convertToRequest(
             response.outputsList
                 .forEachIndexed { idx, tensor ->
                     if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
-                        val newName = tensorRenaming
-                            .getOrDefault(
-                                "${inputTopic}.${tensor.name}",
-                                tensor.name,
-                            )
+                        val newName =
+                            tensorRenaming
+                                .getOrDefault(
+                                    "$inputTopic.${tensor.name}",
+                                    tensor.name,
+                                )
                         val convertedTensor =
                             convertOutputToInputTensor(newName, tensor, response.rawOutputContentsCount > 0)
 
@@ -115,7 +121,7 @@ private fun convertToRequest(
                         if (idx < response.rawOutputContentsCount) {
                             // TODO - should add in appropriate index for raw input contents!
                             addRawInputContents(
-                                response.getRawOutputContents(idx)
+                                response.getRawOutputContents(idx),
                             )
                         }
                     }
@@ -126,14 +132,15 @@ private fun convertToRequest(
 private fun convertOutputToInputTensor(
     tensorName: TensorName,
     output: ModelInferResponse.InferOutputTensor,
-    rawContents: Boolean
+    rawContents: Boolean,
 ): ModelInferRequest.InferInputTensor {
-    val req = ModelInferRequest.InferInputTensor
-        .newBuilder()
-        .setName(tensorName)
-        .setDatatype(output.datatype)
-        .addAllShape(output.shapeList)
-        .putAllParameters(output.parametersMap)
+    val req =
+        ModelInferRequest.InferInputTensor
+            .newBuilder()
+            .setName(tensorName)
+            .setDatatype(output.datatype)
+            .addAllShape(output.shapeList)
+            .putAllParameters(output.parametersMap)
     if (!rawContents) {
         req.setContents(output.contents)
     }
@@ -144,9 +151,14 @@ fun <T> KStream<T, ModelInferRequest>.filterRequests(
     inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenamingList: List<PipelineTensorMapping>
+    tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferRequest> {
-    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
+    val tensorRenaming =
+        tensorRenamingList.filter {
+            it.pipelineName.equals(
+                inputPipeline,
+            )
+        }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             filterRequest(
@@ -173,19 +185,20 @@ private fun filterRequest(
             request.inputsList
                 .forEachIndexed { idx, tensor ->
                     if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
-                        val newName = tensorRenaming
-                            .getOrDefault(
-                                "${inputTopic}.${tensor.name}",
-                                tensor.name,
-                            )
+                        val newName =
+                            tensorRenaming
+                                .getOrDefault(
+                                    "$inputTopic.${tensor.name}",
+                                    tensor.name,
+                                )
 
-                        val convertedTensor = createInputTensor(newName, tensor, request.rawInputContentsCount>0)
+                        val convertedTensor = createInputTensor(newName, tensor, request.rawInputContentsCount > 0)
 
                         addInputs(convertedTensor)
                         if (idx < request.rawInputContentsCount) {
                             // TODO - should add in appropriate index for raw input contents!
                             addRawInputContents(
-                                request.getRawInputContents(idx)
+                                request.getRawInputContents(idx),
                             )
                         }
                     }
@@ -196,28 +209,33 @@ private fun filterRequest(
 private fun createInputTensor(
     tensorName: TensorName,
     input: ModelInferRequest.InferInputTensor,
-    rawContents: Boolean
+    rawContents: Boolean,
 ): ModelInferRequest.InferInputTensor {
-    val req = ModelInferRequest.InferInputTensor
-        .newBuilder()
-        .setName(tensorName)
-        .setDatatype(input.datatype)
-        .addAllShape(input.shapeList)
-        .putAllParameters(input.parametersMap)
+    val req =
+        ModelInferRequest.InferInputTensor
+            .newBuilder()
+            .setName(tensorName)
+            .setDatatype(input.datatype)
+            .addAllShape(input.shapeList)
+            .putAllParameters(input.parametersMap)
     if (!rawContents) {
         req.setContents(input.contents)
     }
     return req.build()
 }
 
-
 fun <T> KStream<T, ModelInferResponse>.filterResponses(
     inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenamingList: List<PipelineTensorMapping>
+    tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferResponse> {
-    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
+    val tensorRenaming =
+        tensorRenamingList.filter {
+            it.pipelineName.equals(
+                inputPipeline,
+            )
+        }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             filterResponse(
@@ -244,19 +262,20 @@ private fun filterResponse(
             response.outputsList
                 .forEachIndexed { idx, tensor ->
                     if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
-                        val newName = tensorRenaming
-                            .getOrDefault(
-                                "${inputTopic}.${tensor.name}",
-                                tensor.name,
-                            )
+                        val newName =
+                            tensorRenaming
+                                .getOrDefault(
+                                    "$inputTopic.${tensor.name}",
+                                    tensor.name,
+                                )
 
-                        val convertedTensor = createOutputTensor(newName, tensor, response.rawOutputContentsCount>0)
+                        val convertedTensor = createOutputTensor(newName, tensor, response.rawOutputContentsCount > 0)
 
                         addOutputs(convertedTensor)
                         if (idx < response.rawOutputContentsCount) {
                             // TODO - should add in appropriate index for raw input contents!
                             addRawOutputContents(
-                                response.getRawOutputContents(idx)
+                                response.getRawOutputContents(idx),
                             )
                         }
                     }
@@ -267,14 +286,15 @@ private fun filterResponse(
 private fun createOutputTensor(
     tensorName: TensorName,
     input: ModelInferResponse.InferOutputTensor,
-    rawContents: Boolean
+    rawContents: Boolean,
 ): ModelInferResponse.InferOutputTensor {
-    val res = ModelInferResponse.InferOutputTensor
-        .newBuilder()
-        .setName(tensorName)
-        .setDatatype(input.datatype)
-        .addAllShape(input.shapeList)
-        .putAllParameters(input.parametersMap)
+    val res =
+        ModelInferResponse.InferOutputTensor
+            .newBuilder()
+            .setName(tensorName)
+            .setDatatype(input.datatype)
+            .addAllShape(input.shapeList)
+            .putAllParameters(input.parametersMap)
     if (!rawContents) {
         res.setContents(input.contents)
     }
@@ -285,9 +305,14 @@ fun <T> KStream<T, ModelInferRequest>.convertToResponse(
     inputPipeline: String,
     inputTopic: TopicName,
     desiredTensors: Set<TensorName>?,
-    tensorRenamingList: List<PipelineTensorMapping>
+    tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferResponse> {
-    val tensorRenaming = tensorRenamingList.filter { it.pipelineName.equals(inputPipeline) }.map { it.topicAndTensor to it.tensorName }.toMap()
+    val tensorRenaming =
+        tensorRenamingList.filter {
+            it.pipelineName.equals(
+                inputPipeline,
+            )
+        }.map { it.topicAndTensor to it.tensorName }.toMap()
     return this
         .mapValues { inferResponse ->
             convertToResponse(
@@ -317,18 +342,19 @@ private fun convertToResponse(
             request.inputsList
                 .forEachIndexed { idx, tensor ->
                     if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
-                        val newName = tensorRenaming
-                            .getOrDefault(
-                                "${inputTopic}.${tensor.name}",
-                                tensor.name,
-                            )
-                        val convertedTensor = convertInputToOutputTensor(newName, tensor, request.rawInputContentsCount>0)
+                        val newName =
+                            tensorRenaming
+                                .getOrDefault(
+                                    "$inputTopic.${tensor.name}",
+                                    tensor.name,
+                                )
+                        val convertedTensor = convertInputToOutputTensor(newName, tensor, request.rawInputContentsCount > 0)
 
                         addOutputs(convertedTensor)
                         if (idx < request.rawInputContentsCount) {
                             // TODO - should add in appropriate index for raw input contents!
                             addRawOutputContents(
-                                request.getRawInputContents(idx)
+                                request.getRawInputContents(idx),
                             )
                         }
                     }
@@ -339,14 +365,15 @@ private fun convertToResponse(
 private fun convertInputToOutputTensor(
     tensorName: TensorName,
     input: ModelInferRequest.InferInputTensor,
-    rawContents: Boolean
+    rawContents: Boolean,
 ): ModelInferResponse.InferOutputTensor {
-    val req = ModelInferResponse.InferOutputTensor
-        .newBuilder()
-        .setName(tensorName)
-        .setDatatype(input.datatype)
-        .addAllShape(input.shapeList)
-        .putAllParameters(input.parametersMap)
+    val req =
+        ModelInferResponse.InferOutputTensor
+            .newBuilder()
+            .setName(tensorName)
+            .setDatatype(input.datatype)
+            .addAllShape(input.shapeList)
+            .putAllParameters(input.parametersMap)
     if (!rawContents) {
         req.setContents(input.contents)
     }

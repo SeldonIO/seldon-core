@@ -13,18 +13,18 @@ import java.math.BigInteger
 import java.security.MessageDigest
 
 object HashUtils {
-    private const val algoMD5 = "MD5"
-    private const val maxOutputLength = 16
+    private const val ALGO_MD5 = "MD5"
+    private const val MAX_OUTPUT_LENGTH = 16
 
     fun hashIfLong(input: String): String {
-        if (input.length <= maxOutputLength) {
+        if (input.length <= MAX_OUTPUT_LENGTH) {
             return input
         }
 
-        val md = MessageDigest.getInstance(algoMD5)
+        val md = MessageDigest.getInstance(ALGO_MD5)
         val hashedBytes = md.digest(input.toByteArray())
         return BigInteger(1, hashedBytes)
             .toString(16)
-            .padStart(maxOutputLength, '0')
+            .padStart(MAX_OUTPUT_LENGTH, '0')
     }
 }

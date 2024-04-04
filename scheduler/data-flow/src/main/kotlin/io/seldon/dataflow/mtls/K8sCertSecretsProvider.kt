@@ -9,30 +9,31 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.mtls
 
-import java.io.File
 import io.kubernetes.client.openapi.ApiClient
 import io.kubernetes.client.openapi.Configuration
 import io.kubernetes.client.openapi.apis.CoreV1Api
+import io.kubernetes.client.openapi.models.V1Secret
 import io.kubernetes.client.util.ClientBuilder
 import io.kubernetes.client.util.KubeConfig
-import io.kubernetes.client.openapi.models.V1Secret
+import java.io.File
 import java.io.FileReader
 import java.nio.file.Files
 
-
-
 object K8sCertSecretsProvider {
-
     private val kubeConfigPath: String = System.getenv("HOME") + "/.kube/config"
     private val namespace = System.getenv("SELDON_POD_NAMESPACE")
 
-    private fun getApiClient(): ApiClient = try {
-        ClientBuilder.cluster().build()
-    } catch (e: IllegalStateException) {
-        ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(FileReader(kubeConfigPath))).build()
-    }
+    private fun getApiClient(): ApiClient =
+        try {
+            ClientBuilder.cluster().build()
+        } catch (e: IllegalStateException) {
+            ClientBuilder.kubeconfig(KubeConfig.loadKubeConfig(FileReader(kubeConfigPath))).build()
+        }
 
-    private fun extractCertAndStore(secret: V1Secret, path: FilePath) {
+    private fun extractCertAndStore(
+        secret: V1Secret,
+        path: FilePath,
+    ) {
         val keyFile = File(path)
         val keyData = secret.data?.get(keyFile.name)
         Files.createDirectories(keyFile.toPath().parent)

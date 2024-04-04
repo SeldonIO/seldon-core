@@ -15,21 +15,23 @@ import io.klogging.rendering.RENDER_ISO8601
 import io.klogging.sending.STDOUT
 
 object Logging {
-    private const val stdoutSink = "stdout"
+    private const val STDOUT_SINK = "stdout"
 
-    fun configure(appLevel: Level = Level.INFO, kafkaLevel: Level = Level.WARN) =
-        loggingConfiguration {
-            kloggingMinLogLevel(appLevel)
-            sink(stdoutSink, RENDER_ISO8601, STDOUT)
-            logging {
-                fromLoggerBase("io.seldon")
-                toSink(stdoutSink)
-            }
-            logging {
-                fromMinLevel(kafkaLevel) {
-                    fromLoggerBase("org.apache")
-                    toSink(stdoutSink)
-                }
+    fun configure(
+        appLevel: Level = Level.INFO,
+        kafkaLevel: Level = Level.WARN,
+    ) = loggingConfiguration {
+        kloggingMinLogLevel(appLevel)
+        sink(STDOUT_SINK, RENDER_ISO8601, STDOUT)
+        logging {
+            fromLoggerBase("io.seldon")
+            toSink(STDOUT_SINK)
+        }
+        logging {
+            fromMinLevel(kafkaLevel) {
+                fromLoggerBase("org.apache")
+                toSink(STDOUT_SINK)
             }
         }
+    }
 }

@@ -11,14 +11,17 @@ package io.seldon.dataflow
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 @OptIn(FlowPreview::class)
 internal class PipelineSubscriberTest {
-
     @Test
     fun `should run sequentially`() {
         suspend fun waitAndPrint(i: Int) {
@@ -45,7 +48,7 @@ internal class PipelineSubscriberTest {
                             async {
                                 kotlinx.coroutines.delay(1000)
                                 println("${LocalDateTime.now()} - $it")
-                            }
+                            },
                         )
                     }
                 }
