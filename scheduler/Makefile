@@ -86,7 +86,7 @@ lint-go: ${.GOLANGCILINT_PATH}/golangci-lint
 
 .PHONY: lint-jvm
 lint-jvm:
-	cd data-flow; ./gradlew ktlintCheck --no-daemon
+	make -C data-flow lint
 
 .PHONY: lint
 lint: lint-go lint-jvm
