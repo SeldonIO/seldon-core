@@ -10,7 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow.kafka.headers
 
 object SeldonHeaders {
-    const val PIPELINENAME = "pipeline"
+    const val PIPELINE_NAME = "pipeline"
+    const val PIPELINE_VERSION = "x-pipeline-version"
 
     // Remove headers we do not want transferred between topics.
     // These headers are set in MLServer Alibi-Detect and Alibi-Explain runtimes: https://github.com/SeldonIO/mlserver.

@@ -30,9 +30,12 @@ fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {
         .transformValues(ValueTransformerSupplier { AlibiDetectRemover() })
 }
 
-fun <T> KStream<T, TRecord>.headerSetter(pipelineName: String): KStream<T, TRecord> {
+fun <T> KStream<T, TRecord>.headerSetter(
+    pipelineName: String,
+    pipelineVersion: String,
+): KStream<T, TRecord> {
     return this
-        .transformValues(ValueTransformerSupplier { PipelineHeaderSetter(pipelineName) })
+        .transformValues(ValueTransformerSupplier { PipelineHeaderSetter(pipelineName, pipelineVersion) })
 }
 
 fun <T> KStream<T, ByteArray>.unmarshallInferenceV2Response(): KStream<T, ModelInferResponse> {

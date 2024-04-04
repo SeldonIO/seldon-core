@@ -23,6 +23,7 @@ class Chainer(
     internal val outputTopic: TopicForPipeline,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
+    internal val pipelineVersion: String,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val batchProperties: ChainerOuterClass.Batch,
     private val kafkaDomainParams: KafkaDomainParams,
@@ -64,7 +65,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
@@ -88,7 +89,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
@@ -112,7 +113,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
@@ -137,7 +138,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
@@ -162,7 +163,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
