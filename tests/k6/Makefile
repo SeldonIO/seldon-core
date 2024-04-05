@@ -93,7 +93,5 @@ create-secret:
 	kubectl create secret generic k6-sa-key --from-file k6-service-account.json -n {NAMESPACE}
 
 create-kubectl-secret:
-	#gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --display-name="SCV2 k6 tests"
-	#gsutil iam ch serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://${GCS_BUCKET_NAME}/
-	gcloud iam service-accounts keys create --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" k6-service-account.json
-	kubectl create secret generic k6-sa-key --from-file k6-service-account.json -n seldon-mesh
+	# TODO:  filter only current context that is relevant
+	kubectl create secret generic k6-kube-sa-key --from-file ~/.kube/config -n {NAMESPACE}
