@@ -403,6 +403,8 @@ seldon pipeline infer --show-headers --header X-foo=bar tfsimples \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
+For pipeline inference, the response also contains a `x-pipeline-version` header, indicating which version of pipeline it ran inference with.
+
 ## Request IDs
 
 For both model and pipeline requests the response will contain a `x-request-id` response header. For pipeline requests this can be used to inspect the pipeline steps via the CLI, e.g.:

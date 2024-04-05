@@ -52,7 +52,7 @@ class Pipeline(
         if (kafkaDomainParams.useCleanState) {
             streams.cleanUp()
         }
-        logger.info("starting pipeline {pipelineName}, ({pipelineId})", metadata.name, metadata.id)
+        logger.info("starting pipeline {pipelineName}, ({pipelineId}, {pipelineVersion})", metadata.name, metadata.id, metadata.version)
         logger.debug { topology.describe() }
         streams.setStateListener(this)
         try {
@@ -187,6 +187,7 @@ class Pipeline(
                         stepFor(
                             builder,
                             metadata.name,
+                            metadata.version.toString(),
                             it.sourcesList,
                             it.triggersList,
                             it.tensorMapList,
