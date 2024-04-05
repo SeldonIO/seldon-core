@@ -94,4 +94,4 @@ create-secret:
 
 create-kubectl-secret:
 	# TODO:  filter only current context that is relevant
-	kubectl create secret generic k6-kube-sa-key --from-file ~/.kube/config -n {NAMESPACE}
+	kubectl create secret generic k6-sa-key-kube --from-file ~/.kube/config -n {NAMESPACE}
