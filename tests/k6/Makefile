@@ -1,11 +1,12 @@
 CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
+NAMESPACE ?= seldon-mesh
 
 IMG ?= ${DOCKERHUB_USERNAME}/seldon-k6:${CUSTOM_IMAGE_TAG}
 GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
-CMD = kubectl describe pod ${POD} -n seldon-mesh | grep IP: -m 1 | cut -d' ' -f2- | xargs
+CMD = kubectl describe pod ${POD} -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 
 POD = seldon-scheduler
 SCHEDULER_ENDPOINT := $(shell ${CMD})
@@ -83,9 +84,15 @@ undeploy-kpipeline-test:
 	kustomize build configs/k8s/overlays/kpipeline | kubectl delete -f -
 
 undeploy-all-test:
-	kubectl get jobs -n seldon-mesh --no-headers=true | cut -d' ' -f1 | xargs kubectl delete -n seldon-mesh job
+	kubectl get jobs -n ${NAMESPACE} --no-headers=true | cut -d' ' -f1 | xargs kubectl delete -n ${NAMESPACE} job
 
 create-secret:
+	#gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --display-name="SCV2 k6 tests"
+	#gsutil iam ch serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://${GCS_BUCKET_NAME}/
+	gcloud iam service-accounts keys create --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" k6-service-account.json
+	kubectl create secret generic k6-sa-key --from-file k6-service-account.json -n {NAMESPACE}
+
+create-kubectl-secret:
 	#gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} --display-name="SCV2 k6 tests"
 	#gsutil iam ch serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://${GCS_BUCKET_NAME}/
 	gcloud iam service-accounts keys create --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" k6-service-account.json
