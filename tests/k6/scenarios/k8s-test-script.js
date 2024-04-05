@@ -2,13 +2,14 @@
 import { Kubernetes } from "k6/x/kubernetes";
 import { describe, expect } from "https://jslib.k6.io/k6chaijs/4.3.4.3/index.js";
 import { load, dump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
+import { getConfig } from '../components/settings.js';
 
 let yaml = `
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
   name: tfsimple1
-  namespace: sherif
+  namespace: ${getConfig().namespace}
 spec:
   storageUri: "gs://seldon-models/triton/simple"
   requirements:
