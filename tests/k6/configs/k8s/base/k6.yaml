@@ -12,20 +12,20 @@ spec:
         image: k6:latest
         imagePullPolicy: Always
         # infer_constant_vu
-        args: [
-          "--no-teardown",
-          "--summary-export",
-          "results/base.json",
-          "--out",
-          "csv=results/base.gz",
-          "-u",
-          "5",
-          "-i",
-          "100000",
-          "-d",
-          "120m",
-          "scenarios/infer_constant_vu.js",
-          ]
+        # args: [
+        #   "--no-teardown",
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "-u",
+        #   "5",
+        #   "-i",
+        #   "100000",
+        #   "-d",
+        #   "120m",
+        #   "scenarios/infer_constant_vu.js",
+        #   ]
         # infer_constant_vu
         # args: [
         #   "--no-teardown",
@@ -35,6 +35,14 @@ spec:
         #   "csv=results/base.gz",
         #   "scenarios/infer_constant_rate.js",
         #   ]
+        # # k8s-test-script
+        args: [
+          "--summary-export",
+          "results/base.json",
+          "--out",
+          "csv=results/base.gz",
+          "scenarios/k8s-test-script.js",
+          ]
         env:
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
@@ -63,7 +71,7 @@ spec:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
         - name: "service-account-kube"
-          mountPath: "/root/.kube/config"
+          mountPath: "/root/.kube"
         - name: podinfo
           mountPath: /info
       restartPolicy: Never
