@@ -95,3 +95,8 @@ create-secret:
 create-kubectl-secret:
 	# TODO:  filter only current context that is relevant
 	kubectl create secret generic k6-sa-key-kube --from-file ~/.kube/config -n {NAMESPACE}
+
+xk6-install:
+	# Install xk6
+	go install github.com/grafana/xk6/cmd/xk6@latest
+	xk6 build --with github.com/grafana/xk6-kubernetes
