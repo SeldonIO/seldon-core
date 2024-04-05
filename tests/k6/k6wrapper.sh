@@ -12,7 +12,8 @@ if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
     gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
 fi
 echo "start:"$(date) > $DIR/$METADATA
-k6 $@
+# use locak k6 that is built with xk6 to include kube apis
+./k6 $@
 echo "end:"$(date) >> $DIR/$METADATA
 echo "args:"$@ >> $DIR/$METADATA
 echo "envs:"$(printenv) >> $DIR/$METADATA
