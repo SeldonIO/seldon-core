@@ -6,7 +6,7 @@ require (
 	github.com/onsi/gomega v1.18.1
 	github.com/otiai10/copy v1.14.0
 	github.com/sirupsen/logrus v1.8.1
-	google.golang.org/grpc v1.62.1
+	google.golang.org/grpc v1.63.0
 	istio.io/pkg v0.0.0-20220805133948-6c7080d8dec5
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
@@ -40,7 +40,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/oauth2 v0.16.0 // indirect
+	golang.org/x/oauth2 v0.17.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
