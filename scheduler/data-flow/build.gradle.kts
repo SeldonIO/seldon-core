@@ -33,7 +33,7 @@ dependencies {
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.62.2")
+    implementation("io.grpc:grpc-stub:1.63.0")
     implementation("io.grpc:grpc-protobuf:1.62.2")
     runtimeOnly("io.grpc:grpc-netty-shaded:1.62.2")
     implementation("com.google.protobuf:protobuf-java:3.25.3")
