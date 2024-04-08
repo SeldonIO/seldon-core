@@ -1,4 +1,7 @@
-// from https://github.com/grafana/xk6-kubernetes/blob/main/examples/deployment_operations.js
+// adapted from https://github.com/grafana/xk6-kubernetes/blob/main/examples/deployment_operations.js
+// note that xk6 needs to be installed to run this script
+// also note that we need to have a secret for kubectl to work with the cluster
+// run `make create-scecret-kube` to create the secret based on the locally available kubeconfig
 import { Kubernetes } from "k6/x/kubernetes";
 import { describe, expect } from "https://jslib.k6.io/k6chaijs/4.3.4.3/index.js";
 import { load, dump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
