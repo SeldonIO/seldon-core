@@ -88,4 +88,4 @@ spec:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
-      serviceAccountName: seldon-v2-controller-manager    
+      serviceAccountName: seldon-v2-controller-manager
