@@ -119,7 +119,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	if model.Deleted {
-		// we need to LoadedModels anyway:
+		// we need to call UpdateLoadedModels anyway:
 		// - in case where we are deleting a model that doesnt have a server (FailedSchedule), server is ""
 		// - otherwise proceed a normal
 		server := ""
