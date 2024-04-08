@@ -10,7 +10,7 @@ spec:
       containers:
       - name: k6
         image: k6:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         # infer_constant_vu
         # args: [
         #   "--no-teardown",
@@ -74,8 +74,6 @@ spec:
         volumeMounts:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
-        - name: "service-account-kube"
-          mountPath: "/root/.kube"
         - name: podinfo
           mountPath: /info
       restartPolicy: Never
@@ -84,14 +82,10 @@ spec:
           secret:
             secretName: "k6-sa-key"
             optional: true
-        - name: "service-account-kube"
-          secret:
-            secretName: "k6-sa-key-kube"
-            optional: true
         - name: podinfo
           downwardAPI:
             items:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
-          
+      serviceAccountName: seldon-v2-controller-manager    

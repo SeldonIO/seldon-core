@@ -92,10 +92,6 @@ create-secret:
 	gcloud iam service-accounts keys create --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" k6-service-account.json
 	kubectl create secret generic k6-sa-key --from-file k6-service-account.json -n ${NAMESPACE}
 
-create-kubectl-secret:
-	# TODO:  filter only current context that is relevant
-	kubectl create secret generic k6-sa-key-kube --from-file ~/.kube/config -n ${NAMESPACE}
-
 xk6-install:
 	# Install xk6
 	go install github.com/grafana/xk6/cmd/xk6@latest
