@@ -101,7 +101,7 @@ function status() {
 # The following functions are the `task` options that can be called by the user.
 
 function tfsimple() {
-      echo ${1}
+      echo $i
       sed  's/name: tfsimple1/name: tfsimple'"$1"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${1}.yaml
       load model /tmp/models/tfsimple${1}.yaml
       status model tfsimple${1}
@@ -111,7 +111,7 @@ function tfsimple() {
 }
 
 function iris() {
-      echo ${1}
+      echo $i
       sed  's/name: iris/name: iris'"$1"'/g' models/iris-v1.yaml > /tmp/models/iris${1}.yaml
       load model /tmp/models/iris${1}.yaml
       status model iris${1}
@@ -121,48 +121,25 @@ function iris() {
 }
 
 function tfsimple_pipeline() {
-      echo ${1}
-      model_1=$((1 + $RANDOM % 20))
-      model_2=$((1 + $RANDOM % 20))
-      echo '''
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Pipeline
-metadata:
-  name: tfsimples'${1}'
-spec:
-  steps:
-    - name: tfsimple'${model_1}'
-    - name: tfsimple'${model_2}'
-      inputs:
-      - tfsimple'${model_1}'
-      tensorMap:
-        tfsimple'${model_1}'.outputs.OUTPUT0: INPUT0
-        tfsimple'${model_1}'.outputs.OUTPUT1: INPUT1
-  output:
-    steps:
-    - tfsimple'${model_2}'
-''' > /tmp/pipelines/tfsimples${1}.yaml
-      
-      sed  's/name: tfsimple1/name: tfsimple'"${model_1}"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${model_1}.yaml
-      load model /tmp/models/tfsimple${model_1}.yaml
-
-      sed  's/name: tfsimple1/name: tfsimple'"${model_2}"'/g' models/tfsimple1.yaml > /tmp/models/tfsimple${model_2}.yaml
-      load model /tmp/models/tfsimple${model_2}.yaml
-
-      status model tfsimple${model_1}
-      status model tfsimple${model_2}
-
+      echo $i
+      sed  's/name: tfsimples/name: tfsimples'"$1"'/g' pipelines/tfsimples.yaml > /tmp/pipelines/tfsimples${1}.yaml
+      load model ./models/tfsimple1.yaml
+      load model ./models/tfsimple2.yaml
+      status model tfsimple1
+      status model tfsimple2
       load pipeline /tmp/pipelines/tfsimples${1}.yaml
       status pipeline tfsimples${1}
       seldon pipeline infer tfsimples${1} '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
       seldon pipeline infer tfsimples${1} --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
       unload pipeline tfsimples${1} /tmp/pipelines/tfsimples${1}.yaml
-      unload model tfsimple${model_1} /tmp/models/tfsimple${model_1}.yaml
-      unload model tfsimple${model_2} /tmp/models/tfsimple${model_2}.yaml
+      # we cant unload the models here as they are used by other pipelines
+      # TODO: create sub models for each pipeline?
+      # unload model tfsimple1 ./models/tfsimple1.yaml
+      # unload model tfsimple2 ./models/tfsimple2.yaml
 }
 
 function tfsimple_join_pipeline() {
-      echo ${1}
+      echo $i
       sed  's/name: join/name: join'"$1"'/g' pipelines/tfsimples-join.yaml > /tmp/pipelines/tfsimples-join${1}.yaml
       load model ./models/tfsimple1.yaml
       load model ./models/tfsimple2.yaml
@@ -175,7 +152,7 @@ function tfsimple_join_pipeline() {
       seldon pipeline infer join${1} '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
       seldon pipeline infer join${1} --inference-mode grpc '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}'
       unload pipeline join${1} /tmp/pipelines/tfsimples-join${1}.yaml
-      # we cant unload the models here as they are used by other pipelines ?
+      # we cant unload the models here as they are used by other pipelines
       # TODO: create sub models for each pipeline?
       # unload model tfsimple1 ./models/tfsimple1.yaml
       # unload model tfsimple2 ./models/tfsimple2.yaml
