@@ -207,7 +207,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		// for example in the case that a model is just marked as loading on a particular server replica
 		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
 		// that we can unload it from the server
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsServerLoadingOrLoaded())
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
 		return errors.New(msg)
 	}
 

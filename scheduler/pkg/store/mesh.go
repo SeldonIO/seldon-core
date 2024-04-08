@@ -488,7 +488,7 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 	return false
 }
 
-func (m *ModelVersion) IsServerLoadingOrLoaded() bool {
+func (m *ModelVersion) IsLoadingOrLoadedOnServer() bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	for _, v := range m.replicas {
