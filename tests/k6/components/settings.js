@@ -196,8 +196,8 @@ function constantRateDurationSeconds() {
 }
 
 function podNamespace() {
-    if (__ENV.POD_NAMESPACE) {
-        return __ENV.POD_NAMESPACE
+    if (__ENV.NAMESPACE) {
+        return __ENV.NAMESPACE
     }
     return "seldon-mesh"
 }
