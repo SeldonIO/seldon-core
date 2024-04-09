@@ -11,22 +11,22 @@ spec:
       - name: k6
         image: k6:latest
         imagePullPolicy: IfNotPresent
-        # infer_constant_vu
-        # args: [
-        #   "--no-teardown",
-        #   "--summary-export",
-        #   "results/base.json",
-        #   "--out",
-        #   "csv=results/base.gz",
-        #   "-u",
-        #   "5",
-        #   "-i",
-        #   "100000",
-        #   "-d",
-        #   "120m",
-        #   "scenarios/infer_constant_vu.js",
-        #   ]
-        # infer_constant_vu
+        # # infer_constant_vu
+        args: [
+          "--no-teardown",
+          "--summary-export",
+          "results/base.json",
+          "--out",
+          "csv=results/base.gz",
+          "-u",
+          "5",
+          "-i",
+          "100000",
+          "-d",
+          "120m",
+          "scenarios/infer_constant_vu.js",
+          ]
+        # # infer_constant_vu
         # args: [
         #   "--no-teardown",
         #   "--summary-export",
@@ -36,13 +36,13 @@ spec:
         #   "scenarios/infer_constant_rate.js",
         #   ]
         # # k8s-test-script
-        args: [
-          "--summary-export",
-          "results/base.json",
-          "--out",
-          "csv=results/base.gz",
-          "scenarios/k8s-test-script.js",
-          ]
+        # args: [
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "scenarios/k8s-test-script.js",
+        #   ]
         env:
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
