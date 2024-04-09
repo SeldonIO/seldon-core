@@ -11,6 +11,7 @@ spec:
       - name: k6
         image: k6:latest
         imagePullPolicy: IfNotPresent
+        # # choose from the following scenarios:
         # # infer_constant_vu
         args: [
           "--no-teardown",
