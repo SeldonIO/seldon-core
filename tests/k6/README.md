@@ -7,6 +7,7 @@
  * Install k6 (load driver)
    * [link](https://k6.io/docs/getting-started/installation/)
    * Alternatively you can build a docker image that includes k6 via: `make docker-build`
+ * (Optional) Install kube api `make xk6-install`, remember to use the local folder k6 binary if kube apis are required
  * Local testing
    * Deploy the system using docker compose via: `make deploy-local`
 

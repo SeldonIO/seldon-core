@@ -10,8 +10,9 @@ spec:
       containers:
       - name: k6
         image: k6:latest
-        imagePullPolicy: Always
-        # infer_constant_vu
+        imagePullPolicy: IfNotPresent
+        # # choose from the following scenarios:
+        # # infer_constant_vu
         args: [
           "--no-teardown",
           "--summary-export",
@@ -26,7 +27,7 @@ spec:
           "120m",
           "scenarios/infer_constant_vu.js",
           ]
-        # infer_constant_vu
+        # # infer_constant_vu
         # args: [
         #   "--no-teardown",
         #   "--summary-export",
@@ -34,6 +35,14 @@ spec:
         #   "--out",
         #   "csv=results/base.gz",
         #   "scenarios/infer_constant_rate.js",
+        #   ]
+        # # k8s-test-script
+        # args: [
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "scenarios/k8s-test-script.js",
         #   ]
         env:
         - name: SCHEDULER_ENDPOINT
@@ -59,6 +68,10 @@ spec:
           value: "/var/run/secret/cloud.google.com/k6-service-account.json"
         - name: GS_BUCKET_NAME
           value: "gs://seldon-tmp/scv2-k6-results"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
@@ -76,4 +89,4 @@ spec:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
-          
+      serviceAccountName: seldon-v2-controller-manager

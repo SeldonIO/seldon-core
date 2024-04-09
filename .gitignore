@@ -150,3 +150,6 @@ event.json
 # Go workspace files
 go.work
 go.work.sum
+
+# xk6 binary
+tests/k6/k6

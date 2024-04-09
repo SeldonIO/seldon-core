@@ -195,6 +195,13 @@ function constantRateDurationSeconds() {
     return 30
 }
 
+function podNamespace() {
+    if (__ENV.NAMESPACE) {
+        return __ENV.NAMESPACE
+    }
+    return "seldon-mesh"
+}
+
 export function getConfig() {
     return {
         "schedulerEndpoint": schedulerEndpoint(),
@@ -225,5 +232,6 @@ export function getConfig() {
         "requestRate": requestRate(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
         "modelReplicas": modelReplicas(),
+        "namespace":  podNamespace(),
     }
 }
