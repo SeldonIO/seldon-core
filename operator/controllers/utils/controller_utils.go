@@ -55,9 +55,13 @@ func GetAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey stri
 func HostsFromAnnotation(mlDep *machinelearningv1.SeldonDeployment, annotationKey string, fallback string) []string {
 	annotation := GetAnnotation(mlDep, annotationKey, fallback)
 	if strings.Contains(annotation, ",") {
-		return strings.Split(annotation, ",")
+		hosts := strings.Split(annotation, ",")
+		for i, host := range hosts {
+			hosts[i] = strings.TrimSpace(host)
+		}
+		return hosts
 	} else {
-		return []string{annotation}
+		return []string{strings.TrimSpace(annotation)}
 	}
 }
 
