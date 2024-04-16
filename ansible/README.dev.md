@@ -307,10 +307,24 @@ custom_components_values:
           brokerValidationSecret:
           endpointIdentificationAlgorithm:
 
+custom_runtime_values:
+  config:
+    agentConfig:
+      rclone:
+        configSecrets:
+          - gcs-buckets
+
+custom_servers_values:
+  mlserver:
+    replicas: 1
+  triton:
+    replicas: 0
 
 custom_secrets:
   - name: "{{ custom_components_values.security.kafka.sasl.client.secret }}"
     template: "path/to/secrets/confluent.yaml.j2"
+  - name: "{{ custom_runtime_values.config.agentConfig.rclone.configSecrets[0] }}"
+    template: "path/to/secrets/gcs-bucket.yaml.j2"
 
 ```
 
@@ -472,7 +486,7 @@ for possible configuration options
 Image-related options (key/value pairs defined under the `image` key) also configured in
 `custom_image_config` above take precedence to the ones defined here.
 
-The commented example below sets a confluent cloud cluster as the kafka deployment, together
+The example below sets a confluent cloud cluster as the kafka deployment, together
 with OAUTH authentication. Typically this will also require setting a secret containing
 authentication details (see `custom_secrets` below):
 
@@ -501,6 +515,47 @@ Example:
            brokerValidationSecret:
            endpointIdentificationAlgorithm: https
 ```
+
+
+### custom_runtime_values
+
+`custom_runtime_values` provides custom config for the seldon-core-v2-runtime helm chart
+see [core_v2_src]/k8s/helm-charts/seldon-core-v2-runtime/values.yaml for possible
+configuration options
+
+The example below sets a preloaded secret to be added to the `seldon-agent` ConfigMap, so
+that all the inference servers managed by the runtime have access to a GCS bucket.
+Typically this will also require setting a secret containing service account details (see
+`custom_secrets` below; also refer to the [documentation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/kubernetes/storage-secrets/index.html#preloaded-secrets]):
+
+Example:
+```yaml
+custom_runtime_values:
+  config:
+    agentConfig:
+      rclone:
+        configSecrets:
+          - gcs-buckets
+```
+
+
+### custom_servers_values
+
+`custom_servers_values` provides custom config for the seldon-core-v2-servers helm chart
+see [core_v2_src]/k8s/helm-charts/seldon-core-v2-servers/values.yaml for possible
+configuration options
+
+The example below sets the initial number of mlserver and triton inference server replicas:
+
+Example:
+```yaml
+custom_servers_values:
+  mlserver:
+    replicas: 1
+  triton:
+    replicas: 0
+```
+
 
 ### custom_image_repository
 

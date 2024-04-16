@@ -14,6 +14,7 @@ seldon_force_install_servers: "{{ helm_force_install | default(false) }}"
 seldon_core_v2_timeout_helm: "480s"
 
 seldon_core_v2_component_values: {}
+seldon_core_v2_runtime_values: {}
 seldon_core_v2_servers_values: {}
 
 seldon_default_dev:
@@ -31,6 +32,8 @@ custom_image_config: []
 custom_image_config_u: []
 custom_image_repository_u: {}
 custom_components_values: {}
+custom_runtime_values: {}
+custom_servers_values: {}
 
 seldon_images:
   scheduler:

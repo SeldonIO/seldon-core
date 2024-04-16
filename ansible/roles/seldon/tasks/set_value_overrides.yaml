@@ -55,6 +55,14 @@
   ansible.builtin.set_fact:
     seldon_core_v2_component_values: "{{ seldon_core_v2_component_values | combine(custom_components_values, recursive=true) }}"
 
+- name: Set custom runtime values
+  ansible.builtin.set_fact:
+    seldon_core_v2_runtime_values: "{{ seldon_core_v2_runtime_values | combine(custom_runtime_values, recursive=true) }}"
+
+- name: Set custom server values
+  ansible.builtin.set_fact:
+    seldon_core_v2_servers_values: "{{ seldon_core_v2_servers_values | combine(custom_servers_values, recursive=true) }}"
+
 - name: Component values
   ansible.builtin.debug:
     var: seldon_core_v2_component_values

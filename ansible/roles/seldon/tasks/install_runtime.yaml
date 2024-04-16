@@ -6,5 +6,6 @@
     force: "{{ seldon_force_install_runtime }}"
     namespace: "{{ seldon_mesh_namespace }}"
     chart_ref: "{{ repo_root_dir }}/k8s/helm-charts/seldon-core-v2-runtime"
+    values: "{{ seldon_core_v2_runtime_values }}"
     wait: yes
     wait_timeout: "{{ seldon_core_v2_timeout_helm }}"
