@@ -19,3 +19,6 @@ configure_opentelemetry: "{{ install_opentelemetry }}"
 # Seldon Kafka Cluster Configuration
 seldon_kafka_namespace: "{{ seldon_mesh_namespace }}"
 seldon_kafka_cluster_values: {}
+
+# Helm install
+helm_force_install: false
