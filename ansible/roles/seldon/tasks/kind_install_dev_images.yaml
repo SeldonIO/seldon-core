@@ -1,0 +1,21 @@
+---
+
+- name: Copy core docker images into kind
+  ansible.builtin.command:
+    argv:
+      - kind
+      - load
+      - -v
+      - 3
+      - docker-image
+      - "{{ _docker_user }}/{{ _image_repo }}:{{ _image_tag }}"
+      - --name
+      - seldon
+    chdir: "{{ seldon_images[item.1].src }}"
+  vars:
+    _docker_user: "{{ item.0.repository_img_prefix | split('/') | first }}"
+    _image_tag: "{{ item.0.image.tag | default('latest') }}"
+    _image_repo: "{{ custom_image_repository_u[item.1] }}"
+  loop: "{{ custom_image_config_u | selectattr('dev_img_set', 'equalto', true) | subelements('components') }}"
+  loop_control:
+    label: "{{ item.1 }}"

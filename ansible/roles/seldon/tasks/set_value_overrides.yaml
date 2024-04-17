@@ -125,7 +125,3 @@
            {'imagePullSecrets': [{ 'name': custom_image_pull_secrets.name }]},
            recursive=true, list_merge="append")}}
   when: custom_image_pull_secrets is defined
-
-# - name: Debug
-#   ansible.builtin.debug:
-#     var: seldon_core_v2_component_values
