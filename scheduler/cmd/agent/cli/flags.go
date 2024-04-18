@@ -49,6 +49,7 @@ func makeArgs() {
 	flag.IntVar(&EnvoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
 	flag.IntVar(&DrainerServicePort, flagDrainerServicePort, defaultDrainerServicePort, "Drainer port")
 	flag.IntVar(&ModelInferenceLagThreshold, flagModelInferenceLagThreshold, lagThresholdDefault, "Model inference lag threshold")
+	flag.IntVar(&ModelInferenceDelayMSThreshold, flagModelInferenceDelayMSThreshold, delayMSThresholdDefault, "Model inference delay milliseconds threshold")
 	flag.IntVar(&ModelInactiveSecondsThreshold, flagModelInactiveSecondsThreshold, lastUsedThresholdSecondsDefault, "Model inactive seconds threshold")
 	flag.IntVar(&ScalingStatsPeriodSeconds, flagScalingStatsPeriodSeconds, statsPeriodSecondsDefault, "Scaling stats period seconds")
 }

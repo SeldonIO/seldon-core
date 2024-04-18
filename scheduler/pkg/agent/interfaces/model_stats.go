@@ -24,16 +24,18 @@ type ModelStatsKV struct {
 	ModelName string
 }
 
-type ModelScalingStats interface {
-	Inc(string, uint32) error
-	IncDefault(string) error
-	Dec(string, uint32) error
-	DecDefault(string) error
-	Reset(string) error
-	Set(string, uint32) error
-	Get(string) (uint32, error)
-	GetAll(uint32, LogicOperation, bool) ([]*ModelStatsKV, error)
-	Info() string
-	Delete(string) error
-	Add(string) error
+type ModelStatsKeeper interface {
+	ModelInferEnter(modelName, requestId string) error
+	ModelInferExit(modelName, requestId string) error
+	Add(modelName string) error
+	Delete(modelName string) error
+	Get(modelName string) (statValue uint32, err error)
+	GetAll(threshold uint32, op LogicOperation, reset bool) ([]*ModelStatsKV, error)
+}
+
+type ModelStats interface {
+	Enter(requestId string) error
+	Exit(requestId string) error
+	Get() uint32
+	Reset() error
 }

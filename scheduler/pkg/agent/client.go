@@ -784,10 +784,11 @@ func (c *Client) modelScalingEventsConsumer() {
 		}
 
 		c.logger.Debugf(
-			"Trigger model scaling event %d for model %s:%d with value %d",
+			"Trigger model scaling event %d for model %s:%d with %s %d",
 			e.EventType,
 			modelName,
 			modelVersion,
+			e.StatsData.Key,
 			e.StatsData.Value,
 		)
 

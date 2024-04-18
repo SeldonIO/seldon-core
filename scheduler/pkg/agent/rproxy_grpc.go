@@ -216,17 +216,23 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+	// to sync between ModelInferEnter and ModelInferExit calls running in go routines
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	// Create an outgoing context for the proxy call to service from incoming context
+	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
+
 	go func() {
-		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+		if err := rp.modelScalingStatsCollector.ModelInferEnter(internalModelName, requestId); err != nil {
 			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 		}
+		wg.Done()
 	}()
 	defer func() {
 		go func() {
-			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+			wg.Wait()
+			if err := rp.modelScalingStatsCollector.ModelInferExit(internalModelName, requestId); err != nil {
 				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()
@@ -239,9 +245,6 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
 	}
-
-	// Create an outgoing context for the proxy call to service from incoming context
-	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
 
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))

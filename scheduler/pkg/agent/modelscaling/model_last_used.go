@@ -21,31 +21,27 @@ const (
 	ModelLastUsedKey = "last_used"
 )
 
-type ModelReplicaLastUsedKeeper struct {
+type modelReplicaLastUsedKeeper struct {
 	// note that this a min-priority queue impl (i.e pop will return lowest value / highest priority)
 	// we use negative unix timestamp to pop least recently used item first
 	pq *cache.LRUCacheManager
 }
 
-func NewModelReplicaLastUsedKeeper() *ModelReplicaLastUsedKeeper {
-	return &ModelReplicaLastUsedKeeper{
+func NewModelReplicaLastUsedKeeper() *modelReplicaLastUsedKeeper {
+	return &modelReplicaLastUsedKeeper{
 		pq: cache.MakeLRU(map[string]int64{}),
 	}
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) IncDefault(modelName string) error {
-	return luKeeper.Inc(modelName, 0) // 0 not used
+func (luKeeper *modelReplicaLastUsedKeeper) ModelInferEnter(modelName, requestId string) error {
+	return luKeeper.Add(modelName)
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) Set(modelName string, ts uint32) error {
-	if err := luKeeper.pq.Update(modelName, -int64(ts)); err != nil {
-		return luKeeper.pq.Add(modelName, -int64(ts))
-	} else {
-		return err
-	}
+func (luKeeper *modelReplicaLastUsedKeeper) ModelInferExit(modelName, requestId string) error {
+	return nil
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) Inc(modelName string, _ uint32) error {
+func (luKeeper *modelReplicaLastUsedKeeper) Add(modelName string) error {
 	ts := -time.Now().Unix() // this is in seconds resolution
 
 	// if we fail update, we assume the model does not exist and we add it.
@@ -58,19 +54,11 @@ func (luKeeper *ModelReplicaLastUsedKeeper) Inc(modelName string, _ uint32) erro
 	}
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) Info() string {
-	return "Model last used"
-}
-
-func (luKeeper *ModelReplicaLastUsedKeeper) Delete(modelName string) error {
+func (luKeeper *modelReplicaLastUsedKeeper) Delete(modelName string) error {
 	return luKeeper.pq.Delete(modelName)
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) Add(modelName string) error {
-	return luKeeper.IncDefault(modelName)
-}
-
-func (luKeeper *ModelReplicaLastUsedKeeper) Get(modelName string) (uint32, error) {
+func (luKeeper *modelReplicaLastUsedKeeper) Get(modelName string) (uint32, error) {
 	if ts, err := luKeeper.pq.Get(modelName); err != nil {
 		return 0, err
 	} else {
@@ -78,15 +66,15 @@ func (luKeeper *ModelReplicaLastUsedKeeper) Get(modelName string) (uint32, error
 	}
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) GetAll(threshold uint32, op interfaces.LogicOperation, reset bool) ([]*interfaces.ModelStatsKV, error) {
+func (luKeeper *modelReplicaLastUsedKeeper) GetAll(threshold uint32, op interfaces.LogicOperation, reset bool) ([]*interfaces.ModelStatsKV, error) {
 	if op == interfaces.Gte {
 		return luKeeper.getAllGte(threshold, reset)
 	} else {
-		return nil, fmt.Errorf("Operation not supported %d", op)
+		return nil, fmt.Errorf("operation not supported %d", op)
 	}
 }
 
-func (luKeeper *ModelReplicaLastUsedKeeper) getAllGte(threshold uint32, reset bool) ([]*interfaces.ModelStatsKV, error) {
+func (luKeeper *modelReplicaLastUsedKeeper) getAllGte(threshold uint32, reset bool) ([]*interfaces.ModelStatsKV, error) {
 	type kv struct {
 		k string
 		v int64
@@ -128,16 +116,4 @@ func (luKeeper *ModelReplicaLastUsedKeeper) getAllGte(threshold uint32, reset bo
 	}
 
 	return rets, nil
-}
-
-func (luKeeper *ModelReplicaLastUsedKeeper) DecDefault(modelName string) error {
-	return fmt.Errorf("Not implemented")
-}
-
-func (luKeeper *ModelReplicaLastUsedKeeper) Reset(modelName string) error {
-	return fmt.Errorf("Not implemented")
-}
-
-func (luKeeper *ModelReplicaLastUsedKeeper) Dec(modelName string, _ uint32) error {
-	return fmt.Errorf("Not implemented")
 }
