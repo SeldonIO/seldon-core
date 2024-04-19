@@ -78,8 +78,11 @@ function unloadExperiment() {
 function maxNumModels() {
     if (__ENV.MAX_NUM_MODELS) {
         return __ENV.MAX_NUM_MODELS.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
-    return [10]
+    return [1]
 }
 
 function isSchedulerProxy() {
@@ -99,13 +102,19 @@ function isEnvoy() {
 function modelMemoryBytes() {
     if (__ENV.MODEL_MEMORY_BYTES) {
         return __ENV.MODEL_MEMORY_BYTES.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(0)
     }
-    return [null]
+    return [0]
 }
 
 function inferBatchSize() {
     if (__ENV.INFER_BATCH_SIZE) {
         return __ENV.INFER_BATCH_SIZE.split(",").map( s => parseInt(s))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
     return [1]
 }
@@ -113,6 +122,9 @@ function inferBatchSize() {
 function modelReplicas() {
     if (__ENV.MODEL_NUM_REPLICAS) {
         return __ENV.MODEL_NUM_REPLICAS.split(",").map( s => parseInt(s))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
     return [1]
 }
@@ -148,6 +160,8 @@ function dataflowTag() {
 function modelNamePrefix() {
     if (__ENV.MODELNAME_PREFIX) {
         return __ENV.MODELNAME_PREFIX.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        return  __ENV.MODEL_TYPE.split(",")
     }
     return ["model"]
 }
