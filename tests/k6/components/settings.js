@@ -102,8 +102,11 @@ function isEnvoy() {
 function modelMemoryBytes() {
     if (__ENV.MODEL_MEMORY_BYTES) {
         return __ENV.MODEL_MEMORY_BYTES.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(0)
     }
-    return [null]
+    return [0]
 }
 
 function inferBatchSize() {
