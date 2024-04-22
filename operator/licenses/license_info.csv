@@ -89,6 +89,7 @@ go-kit/kit,https://github.com/go-kit/kit/blob/master/LICENSE,MIT License,https:/
 go-kit/log,https://github.com/go-kit/log/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/go-kit/log/main/LICENSE
 go-logfmt/logfmt,https://github.com/go-logfmt/logfmt/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/go-logfmt/logfmt/main/LICENSE
 go-logr/logr,https://github.com/go-logr/logr/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-logr/logr/master/LICENSE
+go-logr/stdr,https://github.com/go-logr/stdr/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-logr/stdr/master/LICENSE
 go-logr/zapr,https://github.com/go-logr/zapr/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-logr/zapr/master/LICENSE
 go-openapi/jsonpointer,https://github.com/go-openapi/jsonpointer/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-openapi/jsonpointer/master/LICENSE
 go-openapi/jsonreference,https://github.com/go-openapi/jsonreference/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/go-openapi/jsonreference/master/LICENSE
