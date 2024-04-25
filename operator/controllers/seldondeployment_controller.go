@@ -262,7 +262,7 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 			Namespace: namespace,
 		},
 		Spec: istio_networking.VirtualService{
-			Hosts:    []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*")},
+			Hosts:    utils2.HostsFromAnnotation(mlDep, ANNOTATION_ISTIO_HOST, "*"),
 			Gateways: []string{utils2.GetAnnotation(mlDep, ANNOTATION_ISTIO_GATEWAY, istio_gateway)},
 			Http: []*istio_networking.HTTPRoute{
 				{
