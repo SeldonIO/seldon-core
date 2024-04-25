@@ -141,12 +141,57 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        logger.info(
-            "Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}",
-            metadata.name,
-            metadata.version,
-            metadata.id,
-        )
+        // If a pipeline with the same id exists, we assume it has the same name & version
+        // If it's in an error state, try re-creating.
+        //
+        // WARNING: at the moment handleCreate is called sequentially on each update in
+        // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
+        // related to race conditions on `pipelines.containsKey(...)` below. If we ever move to
+        // concurrent creation of pipelines, this needs to be revisited.
+        if (pipelines.containsKey(metadata.id)) {
+            val previous = pipelines[metadata.id]!!
+            if (!previous.status.isError) {
+                client.pipelineUpdateEvent(
+                    makePipelineUpdateEvent(
+                        metadata = metadata,
+                        operation = PipelineOperation.Create,
+                        success = true,
+                        reason = previous.status.getDescription() ?: "pipeline created",
+                    ),
+                )
+                logger.debug(
+                    "response to scheduler: pipeline {pipelineName} continues to run normally; " +
+                        "pipeline version: {pipelineVersion}, id: {pipelineId}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                )
+                return
+            } else { // pipeline exists but in failed state; cleanup state and re-create
+                logger.info(
+                    "Recreating failed pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                )
+                logger.debug(
+                    "Previous state for failed pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                    previous.status.getDescription(),
+                )
+                previous.stop()
+            }
+        } else { // pipeline doesn't exist
+            logger.info(
+                "Creating pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+                metadata.name,
+                metadata.version,
+                metadata.id,
+            )
+        }
+
         val (pipeline, err) =
             Pipeline.forSteps(
                 metadata,
@@ -184,28 +229,19 @@ class PipelineSubscriber(
             return
         }
 
-        val previous = pipelines.putIfAbsent(metadata.id, pipeline)
-        var pipelineStatus: PipelineStatus
-        if (previous == null) {
-            val errTopics = kafkaAdmin.ensureTopicsExist(steps)
-            if (errTopics == null) {
-                pipelineStatus = pipeline.start()
-            } else {
-                pipelineStatus =
-                    PipelineStatus.Error(null)
-                        .withException(errTopics)
-                        .withMessage("kafka streams topic creation error")
-                pipeline.stop()
-            }
+        // This overwrites any previous pipelines with the same id. We can only get here if those previous pipelines
+        // are in a failed state and they are being re-created by the scheduler.
+        pipelines[metadata.id] = pipeline
+        val pipelineStatus: PipelineStatus
+        val errTopics = kafkaAdmin.ensureTopicsExist(steps)
+        if (errTopics == null) {
+            pipelineStatus = pipeline.start()
         } else {
-            pipelineStatus = previous.status
-            logger.warn("pipeline {pipelineName} with id {pipelineId} already exists", metadata.name, metadata.id)
-            if (pipelineStatus.isError) {
-                // do not try to resuscitate an existing pipeline if in a failed state
-                // it's up to the scheduler to delete it & reinitialize it, as it might require
-                // coordination with {model, pipeline}gateway
-                previous.stop()
-            }
+            pipelineStatus =
+                PipelineStatus.Error(null)
+                    .withException(errTopics)
+                    .withMessage("kafka streams topic creation error")
+            pipeline.stop()
         }
 
         // We don't want to mark the PipelineOperation.Create as successful unless the
@@ -215,7 +251,7 @@ class PipelineSubscriber(
         if (pipelineStatus !is PipelineStatus.Started) {
             pipelineStatus.isError = true
         }
-        pipelineStatus.log(logger, Level.INFO)
+        pipelineStatus.log(logger, Level.DEBUG)
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
