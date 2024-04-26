@@ -114,7 +114,7 @@ class PipelineSubscriber(
                             // Defend against any existing pipelines that have failed but are not yet stopped, so that
                             // kafka streams may clean up resources (including temporary files). This is a catch-all
                             // and indicates we've missed calling stop in a failure case.
-                            if (it.value.status.isError) {
+                            if (it.value.status.isError()) {
                                 logger.debug(
                                     "(bug) pipeline in error state when subscription terminates with error. pipeline id: {pipelineId}",
                                     it.key,
@@ -141,6 +141,7 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
+        val defaultReason = "pipeline created"
         // If a pipeline with the same id exists, we assume it has the same name & version
         // If it's in an error state, try re-creating.
         //
@@ -150,13 +151,13 @@ class PipelineSubscriber(
         // concurrent creation of pipelines, this needs to be revisited.
         if (pipelines.containsKey(metadata.id)) {
             val previous = pipelines[metadata.id]!!
-            if (!previous.status.isError) {
+            if (previous.status.isActive()) {
                 client.pipelineUpdateEvent(
                     makePipelineUpdateEvent(
                         metadata = metadata,
                         operation = PipelineOperation.Create,
                         success = true,
-                        reason = previous.status.getDescription() ?: "pipeline created",
+                        reason = previous.status.getDescription() ?: defaultReason,
                     ),
                 )
                 logger.debug(
@@ -167,15 +168,15 @@ class PipelineSubscriber(
                     metadata.id,
                 )
                 return
-            } else { // pipeline exists but in failed state; cleanup state and re-create
+            } else { // pipeline exists but in failed/stopped state; cleanup state and re-create
                 logger.info(
-                    "Recreating failed pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
+                    "Recreating non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
                     metadata.name,
                     metadata.version,
                     metadata.id,
                 )
                 logger.debug(
-                    "Previous state for failed pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
+                    "Previous state for non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
                     metadata.name,
                     metadata.version,
                     metadata.id,
@@ -246,18 +247,18 @@ class PipelineSubscriber(
 
         // We don't want to mark the PipelineOperation.Create as successful unless the
         // pipeline has started. While states such as "StreamStarting" or "StreamStopped" are
-        // not in themselves errors, if the pipeline is not running here then it can't
-        // be marked as ready.
+        // not in themselves errors, they are not expected at this stage. If the pipeline
+        // is not running here then it can't be marked as ready.
         if (pipelineStatus !is PipelineStatus.Started) {
-            pipelineStatus.isError = true
+            pipelineStatus.hasError = true
         }
         pipelineStatus.log(logger, Level.DEBUG)
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
-                success = !pipelineStatus.isError,
-                reason = pipelineStatus.getDescription() ?: "pipeline created",
+                success = !pipelineStatus.isError(),
+                reason = pipelineStatus.getDescription() ?: defaultReason,
             ),
         )
     }
