@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Seldon Core v2'
-copyright = '2021-2022 Seldon Technologies Ltd.'
+copyright = '2024 Seldon Technologies Ltd.'
 author = "Seldon Technologies Ltd"
 
 # -- General configuration ---------------------------------------------------
@@ -137,12 +137,12 @@ html_theme_options = {
         {
             "href": "https://deploy.seldon.io",
             "internal": False,
-            "title": "Seldon Deploy (Enterprise)",
+            "title": "Seldon Enterprise Platform",
         },
         {
             "href": "https://github.com/SeldonIO/seldon-deploy-sdk#seldon-deploy-sdk",
             "internal": False,
-            "title": "Seldon Deploy SDK (Enterprise)",
+            "title": "Seldon Enterprise Platform SDK",
         },
     ],
 
