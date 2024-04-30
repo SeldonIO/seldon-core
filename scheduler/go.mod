@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/scheduler/v2
 
-go 1.20
+go 1.21
 
 require (
 	github.com/OneOfOne/xxhash v1.2.8

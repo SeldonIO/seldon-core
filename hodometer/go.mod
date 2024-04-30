@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/hodometer/v2
 
-go 1.20
+go 1.21
 
 require (
 	github.com/dukex/mixpanel v1.0.1

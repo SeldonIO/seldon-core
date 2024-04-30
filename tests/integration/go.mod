@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/tests/integration/v2
 
-go 1.20
+go 1.21
 
 require (
 	github.com/docker/docker v24.0.7+incompatible
