@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/docker/docker v24.0.7+incompatible
-	github.com/onsi/gomega v1.32.0
+	github.com/onsi/gomega v1.33.1
 	github.com/seldonio/seldon-core/operator/v2 v2.0.0-00010101000000-000000000000
 	k8s.io/api v0.24.4
 	k8s.io/apimachinery v0.24.4
@@ -49,14 +49,15 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/term v0.18.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
-	golang.org/x/tools v0.16.1 // indirect
+	golang.org/x/tools v0.20.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240311173647-c811ad7063a7 // indirect
