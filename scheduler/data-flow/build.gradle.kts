@@ -69,6 +69,9 @@ sourceSets {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("PASSED", "SKIPPED", "FAILED")
+    }
 }
 
 java {

@@ -15,6 +15,7 @@ import io.klogging.NoCoLogger
 import io.seldon.dataflow.DataflowStatus
 import kotlinx.coroutines.runBlocking
 import org.apache.kafka.streams.KafkaStreams
+import java.util.Objects
 
 open class PipelineStatus(val state: KafkaStreams.State?, var hasError: Boolean) : DataflowStatus {
     // Keep the previous state in case we're stopping the stream so that we can determine
@@ -86,6 +87,18 @@ open class PipelineStatus(val state: KafkaStreams.State?, var hasError: Boolean)
                 logger.log(levelIfNoException, "$statusMsg")
             }
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is StreamStopped) return false
+
+            return this.prevState == other.prevState &&
+                super.equals(other)
+        }
+
+        override fun hashCode(): Int {
+            return Objects.hash(state, hasError, exception, message, prevState)
+        }
     }
 
     class StreamStopping() : PipelineStatus(null, false) {
@@ -130,5 +143,19 @@ open class PipelineStatus(val state: KafkaStreams.State?, var hasError: Boolean)
             -> true
             else -> this.hasError
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PipelineStatus) return false
+
+        return this.state == other.state &&
+            this.hasError == other.hasError &&
+            this.exception == other.exception &&
+            this.message == other.message
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(state, hasError, exception, message)
     }
 }

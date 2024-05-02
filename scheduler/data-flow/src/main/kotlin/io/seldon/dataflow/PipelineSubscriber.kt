@@ -182,6 +182,10 @@ class PipelineSubscriber(
                     metadata.id,
                     previous.status.getDescription(),
                 )
+                // Calling stop() here may be superfluous (depending on the state in which the pipeline is in),
+                // but we want to ensure that we clean up the KafkaStreams state of the pipeline because
+                // otherwise we have issues in re-starting it.
+                // Calling stop() on an already stopped pipeline is safe.
                 previous.stop()
             }
         } else { // pipeline doesn't exist

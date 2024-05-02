@@ -11,16 +11,18 @@ package io.seldon.dataflow.kafka
 
 import org.apache.kafka.streams.KafkaStreams
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import strikt.api.expect
+import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.util.stream.Stream
 
-internal class PipelineStatusTest {
-    @DisplayName("Test PipelineStatus States")
+internal class PipelineStatusIsActiveIsErrorTest {
+    @DisplayName("check PipelineStatus properties")
     @ParameterizedTest(name = "{0} expected isActive:{1} | isError:{2}")
     @MethodSource()
     fun checkState(
@@ -66,12 +68,6 @@ internal class PipelineStatusTest {
                             PipelineStatus.Started(),
                         ),
                     ),
-                ),
-                arguments(
-                    "StreamStopping",
-                    !IS_ACTIVE,
-                    !IS_ERROR,
-                    PipelineStatus.StreamStopping(),
                 ),
                 arguments(
                     "StreamStopping",
@@ -168,5 +164,33 @@ internal class PipelineStatusTest {
                     PipelineStatus.Started(),
                 ),
             )
+    }
+}
+
+internal class PipelineStatusTest {
+    @Test
+    fun `check StreamStopped(prevState) state nesting is bounded to 1 level`() {
+        // In the following nested initialisation of StreamStopped(prevState) objects,
+        // each StreamStopped should unwrap the existing StreamStopped prevState and
+        // only store the original prevState inside it (Error in this case).
+        // We test that this works correctly.
+        val nest =
+            PipelineStatus.StreamStopped(
+                PipelineStatus.StreamStopped(
+                    PipelineStatus.StreamStopped(
+                        PipelineStatus.StreamStopped(
+                            PipelineStatus.StreamStopped(
+                                PipelineStatus.Error(null),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+
+        expectThat(nest).isEqualTo(
+            PipelineStatus.StreamStopped(
+                PipelineStatus.Error(null),
+            ),
+        )
     }
 }
