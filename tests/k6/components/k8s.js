@@ -14,7 +14,7 @@ export function connectScheduler(schedulerCl) {
   schedulerClient = schedulerCl
 }
 
-export function disconnectScheduler(schedulerCl) {
+export function disconnectScheduler() {
   schedulerClient = null
 }
 
