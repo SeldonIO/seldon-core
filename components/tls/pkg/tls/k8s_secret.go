@@ -208,11 +208,14 @@ func (s *TlsSecretHandler) GetCertificateAndWatch() error {
 		return err
 	}
 	coreInformers := informers.NewSharedInformerFactoryWithOptions(s.clientset, 0, informers.WithNamespace(s.namespace))
-	coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err = coreInformers.Core().V1().Secrets().Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    s.onAdd,
 		UpdateFunc: s.onUpdate,
 		DeleteFunc: s.onDelete,
 	})
+	if err != nil {
+		return err
+	}
 	coreInformers.WaitForCacheSync(s.stopper)
 	coreInformers.Start(s.stopper)
 	return nil
