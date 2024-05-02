@@ -1,3 +1,7 @@
+// import { dump as yamlDump } from "../import/js-yaml.mjs"
+import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
+import { getConfig } from '../components/settings.js'
+
 const tfsimple_string = "tfsimple_string"
 const tfsimple = "tfsimple"
 const iris = "iris"  // mlserver
@@ -97,32 +101,32 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         const shape = [inferBatchSize, 16]
         var httpBytes = []
         var grpcBytes = []
-        
+
         for (var i = 0; i < 16 * inferBatchSize; i++) {
             grpcBytes.push("MQ=="); // base64 of 1
             httpBytes.push("97")
         }
         const payload = {
-            "http": {"inputs":[{"name":"INPUT0","data":httpBytes,"datatype":"BYTES","shape":shape},{"name":"INPUT1","data":httpBytes,"datatype":"BYTES","shape":shape}]},
-            "grpc": {"inputs":[{"name":"INPUT0","contents":{"bytes_contents":grpcBytes},"datatype":"BYTES","shape":shape},{"name":"INPUT1","contents":{"bytes_contents":grpcBytes},"datatype":"BYTES","shape":shape}]}
+            "http": { "inputs": [{ "name": "INPUT0", "data": httpBytes, "datatype": "BYTES", "shape": shape }, { "name": "INPUT1", "data": httpBytes, "datatype": "BYTES", "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "INPUT0", "contents": { "bytes_contents": grpcBytes }, "datatype": "BYTES", "shape": shape }, { "name": "INPUT1", "contents": { "bytes_contents": grpcBytes }, "datatype": "BYTES", "shape": shape }] }
         }
         return payload
-    } else if  (modelName == tfsimple) {
-        const shape = [inferBatchSize ,16]
+    } else if (modelName == tfsimple) {
+        const shape = [inferBatchSize, 16]
         var data = []
         for (var i = 0; i < 16 * inferBatchSize; i++) {
             data.push(i)
         }
         return {
-            "http": {"inputs":[{"name":"INPUT0","data": data,"datatype":"INT32","shape":shape},{"name":"INPUT1","data":data,"datatype":"INT32","shape":shape}]},
-            "grpc": {"inputs":[{"name":"INPUT0","contents":{"int_contents":data},"datatype":"INT32","shape":shape},{"name":"INPUT1","contents":{"int_contents":data},"datatype":"INT32","shape":shape}]}
+            "http": { "inputs": [{ "name": "INPUT0", "data": data, "datatype": "INT32", "shape": shape }, { "name": "INPUT1", "data": data, "datatype": "INT32", "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "INPUT0", "contents": { "int_contents": data }, "datatype": "INT32", "shape": shape }, { "name": "INPUT1", "contents": { "int_contents": data }, "datatype": "INT32", "shape": shape }] }
         }
-    } else if  (modelName == add10) {
+    } else if (modelName == add10) {
         const shape = [4]
         var data = new Array(4).fill(0.1)
         return {
-            "http": {"inputs":[{"name":"INPUT","data": data,"datatype":"FP32","shape":shape}]},
-            "grpc": {"inputs":[{"name":"INPUT","contents":{"int_contents":data},"datatype":"FP32","shape":shape}]}
+            "http": { "inputs": [{ "name": "INPUT", "data": data, "datatype": "FP32", "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "INPUT", "contents": { "int_contents": data }, "datatype": "FP32", "shape": shape }] }
         }
     } else if (modelName == iris) {
         const shape = [inferBatchSize, 4]
@@ -131,8 +135,8 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
             data.push(i)
         }
         return {
-            "http": {"inputs": [{"name": "predict", "shape": shape, "datatype": "FP32", "data": [data]}]},
-            "grpc": {"inputs":[{"name":"input","contents":{"fp32_contents":data},"datatype":"FP32","shape":shape}]}
+            "http": { "inputs": [{ "name": "predict", "shape": shape, "datatype": "FP32", "data": [data] }] },
+            "grpc": { "inputs": [{ "name": "input", "contents": { "fp32_contents": data }, "datatype": "FP32", "shape": shape }] }
         }
     } else if (modelName == sentiment) {
         const shape = [inferBatchSize]
@@ -145,40 +149,40 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
             grpcBytes.push(base64)
         }
         return {
-            "http": {"inputs": [{"name": "args", "shape": shape, "datatype": "BYTES", "data": httpBytes}]},
-            "grpc": {"inputs":[{"name":"args","contents":{"bytes_contents":grpcBytes},"datatype":"BYTES","shape":shape}]}
+            "http": { "inputs": [{ "name": "args", "shape": shape, "datatype": "BYTES", "data": httpBytes }] },
+            "grpc": { "inputs": [{ "name": "args", "contents": { "bytes_contents": grpcBytes }, "datatype": "BYTES", "shape": shape }] }
         }
     } else if (modelName == pytorch_cifar10) {
         const shape = [inferBatchSize, 3, 32, 32]
-        const data = new Array(3*32*32*inferBatchSize).fill(0.1)
+        const data = new Array(3 * 32 * 32 * inferBatchSize).fill(0.1)
         const datatype = "FP32"
         return {
-            "http": {"inputs":[{"name":"input__0","data": data,"datatype":datatype,"shape":shape}]},
-            "grpc": {"inputs":[{"name":"input__0","contents":{"fp32_contents":data},"datatype":datatype,"shape":shape}]}
+            "http": { "inputs": [{ "name": "input__0", "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "input__0", "contents": { "fp32_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     } else if (modelName == tfmnist) {
         const shape = [inferBatchSize, 28, 28, 1]
-        const data = new Array(28*28*inferBatchSize).fill(0.1)
+        const data = new Array(28 * 28 * inferBatchSize).fill(0.1)
         const datatype = "FP32"
         return {
-            "http": {"inputs":[{"name":"conv2d_input","data": data,"datatype":datatype,"shape":shape}]},
-            "grpc": {"inputs":[{"name":"conv2d_input","contents":{"fp32_contents":data},"datatype":datatype,"shape":shape}]}
+            "http": { "inputs": [{ "name": "conv2d_input", "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "conv2d_input", "contents": { "fp32_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     } else if (modelName == tfresnet152) {
         const shape = [inferBatchSize, 224, 224, 3]
-        const data = new Array(3*224*224*inferBatchSize).fill(0.1)
+        const data = new Array(3 * 224 * 224 * inferBatchSize).fill(0.1)
         const datatype = "FP32"
         return {
-            "http": {"inputs":[{"name":"input_1","data": data,"datatype":datatype,"shape":shape}]},
-            "grpc": {"inputs":[{"name":"input_1","contents":{"fp32_contents":data},"datatype":datatype,"shape":shape}]}
+            "http": { "inputs": [{ "name": "input_1", "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "input_1", "contents": { "fp32_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     } else if (modelName == onnx_gpt2) {
         const shape = [inferBatchSize, 10]
-        const data = new Array(10*inferBatchSize).fill(1)
+        const data = new Array(10 * inferBatchSize).fill(1)
         const datatype = "INT32"
         return {
-            "http": {"inputs":[{"name":"input_ids","data": data,"datatype":datatype,"shape":shape}, {"name":"attention_mask","data": data,"datatype":datatype,"shape":shape}]},
-            "grpc": {"inputs":[{"name":"input_ids","contents":{"int_contents":data},"datatype":datatype,"shape":shape}, {"name":"attention_mask","contents":{"int_contents":data},"datatype":datatype,"shape":shape}]}
+            "http": { "inputs": [{ "name": "input_ids", "data": data, "datatype": datatype, "shape": shape }, { "name": "attention_mask", "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "input_ids", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }, { "name": "attention_mask", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     } else if (modelName == mlflow_wine) {
         const fields = ["fixed acidity", "volatile acidity", "citric acidity", "residual sugar", "chlorides", "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"]
@@ -186,7 +190,7 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         const data = new Array(1).fill(1)
         const data_all = new Array(fields.length).fill(1)
         const datatype = "FP32"
-         var v2Fields = [];
+        var v2Fields = [];
         var v2FieldsGrpc = [];
         for (var i = 0; i < fields.length; i++) {
             v2Fields.push({
@@ -197,14 +201,14 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
             })
             v2FieldsGrpc.push({
                 "name": fields[i],
-                "contents": {"fp32_contents": data},
+                "contents": { "fp32_contents": data },
                 "datatype": datatype,
                 "shape": shape,
             })
         }
         return {
-            "http": {"inputs": v2Fields, "parameters": {"content_type": "pd"}},
-            "grpc": {"inputs": v2FieldsGrpc, "parameters": {"content_type": {"string_param": "pd"}}}
+            "http": { "inputs": v2Fields, "parameters": { "content_type": "pd" } },
+            "grpc": { "inputs": v2FieldsGrpc, "parameters": { "content_type": { "string_param": "pd" } } }
         }
     }
 }
@@ -217,14 +221,15 @@ export function generateExperiment(experimentName, modelType, modelName1, modelN
         uri = uri + (uriOffset % modelTemplate.maxUriSuffix).toString()
     }
 
-    const model1 = {"model": {
-            "meta":{
+    const model1 = {
+        "model": {
+            "meta": {
                 "name": modelName1
             },
-            "modelSpec":{
+            "modelSpec": {
                 "uri": uri,
                 "requirements": modelTemplate.requirements,
-                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
+                "memoryBytes": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes
             },
             "deploymentSpec": {
                 "replicas": replicas
@@ -232,14 +237,33 @@ export function generateExperiment(experimentName, modelType, modelName1, modelN
         }
     }
 
-    const model2 = {"model": {
-            "meta":{
+    const model1CR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Model",
+        "metadata": {
+            "name": modelName1,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "storageUri": uri,
+            "requirements": modelTemplate.requirements,
+            "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+            "minReplicas": 1,
+            "replicas": replicas
+        }
+    }
+
+    const model1CRYaml = yamlDump(model1CR)
+
+    const model2 = {
+        "model": {
+            "meta": {
                 "name": modelName2
             },
-            "modelSpec":{
+            "modelSpec": {
                 "uri": uri,
                 "requirements": modelTemplate.requirements,
-                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
+                "memoryBytes": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes
             },
             "deploymentSpec": {
                 "replicas": replicas
@@ -247,21 +271,58 @@ export function generateExperiment(experimentName, modelType, modelName1, modelN
         }
     }
 
-    const experiment = {"experiment":{
-            "name":experimentName,
+    const model2CR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Model",
+        "metadata": {
+            "name": modelName2,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "storageUri": uri,
+            "requirements": modelTemplate.requirements,
+            "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+            "minReplicas": 1,
+            "replicas": replicas
+        }
+    }
+
+    const model2CRYaml = yamlDump(model2CR)
+
+    const experiment = {
+        "experiment": {
+            "name": experimentName,
             "defaultModel": modelName1,
-            "candidates":[
-                {"modelName": modelName1,"weight":50},
-                {"modelName": modelName2,"weight":50}
+            "candidates": [
+                { "modelName": modelName1, "weight": 50 },
+                { "modelName": modelName2, "weight": 50 }
             ]
         }
     }
 
+    const experimentCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Experiment",
+        "metadata": {
+            "name": experimentName,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "default": modelName1,
+            "candidates": experiment.experiment.candidates
+        }
+    }
+
+    const experimentCRYaml = yamlDump(experimentCR)
+
     const inference = getModelInferencePayload(modelType, inferBatchSize)
     return {
-        "model1Defn": isProxy ? {"request": model1} : model1,
-        "model2Defn": isProxy ? {"request": model2} : model2,
+        "model1Defn": isProxy ? { "request": model1 } : model1,
+        "model1CRYaml": model1CRYaml,
+        "model2Defn": isProxy ? { "request": model2 } : model2,
+        "model2CRYaml": model2CRYaml,
         "experimentDefn": experiment,
+        "experimentCRYaml": experimentCRYaml,
         "inference": JSON.parse(JSON.stringify(inference))
     }
 }
@@ -274,14 +335,15 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
         uri = uri + (uriOffset % modelTemplate.maxUriSuffix).toString()
     }
 
-    const model = {"model": {
-            "meta":{
+    const model = {
+        "model": {
+            "meta": {
                 "name": modelName
             },
-            "modelSpec":{
+            "modelSpec": {
                 "uri": uri,
                 "requirements": modelTemplate.requirements,
-                "memoryBytes": (memoryBytes == null)?modelTemplate.memoryBytes:memoryBytes
+                "memoryBytes": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes
             },
             "deploymentSpec": {
                 "replicas": replicas
@@ -289,21 +351,58 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
         }
     }
 
-    // simple one node pipeline
-    const pipeline = {"pipeline": {
-        "name": generatePipelineName(modelName),
-        "steps": [
-            {"name": modelName}
-        ],
-        "output":{
-            "steps": [modelName] }
+    const modelCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Model",
+        "metadata": {
+            "name": modelName,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "storageUri": uri,
+            "requirements": modelTemplate.requirements,
+            "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+            "minReplicas": 1,
+            "replicas": replicas
         }
     }
 
+    const modelCRYaml = yamlDump(modelCR)
+
+    // simple one node pipeline
+    const pipeline = {
+        "pipeline": {
+            "name": generatePipelineName(modelName),
+            "steps": [
+                { "name": modelName }
+            ],
+            "output": {
+                "steps": [modelName]
+            }
+        }
+    }
+
+    const pipelineCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Pipeline",
+        "metadata": {
+            "name": generatePipelineName(modelName),
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "steps": pipeline.pipeline.steps,
+            "output": pipeline.pipeline.output
+        }
+    }
+
+    const pipelineCRYaml = yamlDump(pipelineCR)
+
     const inference = getModelInferencePayload(modelType, inferBatchSize)
     return {
-        "modelDefn": isProxy ? {"request": model} : model,
+        "modelDefn": isProxy ? { "request": model } : model,
+        "modelCRYaml": modelCRYaml,
         "pipelineDefn": pipeline, // note that we can only deploy a pipeline with a real scheduler
+        "pipelineCRYaml": pipelineCRYaml,
         "inference": JSON.parse(JSON.stringify(inference))
     }
 }

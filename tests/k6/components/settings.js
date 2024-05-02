@@ -1,3 +1,10 @@
+function useKubeControlPlane() {
+    if (__ENV.USE_KUBE_CONTROL_PLANE) {
+        return (__ENV.USE_KUBE_CONTROL_PLANE === "true")
+    }
+    return false
+}
+
 function schedulerEndpoint() {
     if (__ENV.SCHEDULER_ENDPOINT) {
         return __ENV.SCHEDULER_ENDPOINT
@@ -218,6 +225,7 @@ function podNamespace() {
 
 export function getConfig() {
     return {
+        "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
         "inferHttpEndpoint": inferHttpEndpoint(),
         "inferGrpcEndpoint": inferGrpcEndpoint(),

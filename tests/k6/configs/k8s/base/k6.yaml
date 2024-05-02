@@ -45,6 +45,8 @@ spec:
         #   "scenarios/k8s-test-script.js",
         #   ]
         env:
+        - name: USE_KUBE_CONTROL_PLANE
+          value: "true"
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
