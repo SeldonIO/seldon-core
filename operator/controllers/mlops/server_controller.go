@@ -28,7 +28,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -184,7 +183,7 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 }
 
 // Find Servers that need reconcilliation from a change to a given ServerConfig
-func (r *ServerReconciler) mapServerFromServerConfig(obj client.Object) []reconcile.Request {
+func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj client.Object) []reconcile.Request {
 	logger := log.FromContext(context.Background()).WithName("mapServerFromServerConfig")
 	var servers mlopsv1alpha1.ServerList
 	if err := r.Client.List(context.Background(), &servers); err != nil {
@@ -214,7 +213,7 @@ func (r *ServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&v1.Service{}).
 		Watches(
-			&source.Kind{Type: &mlopsv1alpha1.ServerConfig{}},
+			&mlopsv1alpha1.ServerConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapServerFromServerConfig),
 		).
 		Complete(r)

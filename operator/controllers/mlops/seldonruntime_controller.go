@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
@@ -118,7 +117,7 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 // the user.
 //
 // For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.4/pkg/reconcile
 func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
 
@@ -213,7 +212,7 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 }
 
 // Find SeldonRuntimes that reference the changes SeldonConfig
-func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(obj client.Object) []reconcile.Request {
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Context, obj client.Object) []reconcile.Request {
 	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
 	if err := r.Client.List(context.Background(), &seldonRuntimes); err != nil {
@@ -250,7 +249,7 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&v1.ServiceAccount{}).
 		Owns(&v1.ConfigMap{}).
 		Watches(
-			&source.Kind{Type: &mlopsv1alpha1.SeldonConfig{}},
+			&mlopsv1alpha1.SeldonConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),
 		).
 		Complete(r)
