@@ -114,7 +114,7 @@ class PipelineSubscriber(
                             // Defend against any existing pipelines that have failed but are not yet stopped, so that
                             // kafka streams may clean up resources (including temporary files). This is a catch-all
                             // and indicates we've missed calling stop in a failure case.
-                            if (it.value.status.isError) {
+                            if (it.value.status.isError()) {
                                 logger.debug(
                                     "(bug) pipeline in error state when subscription terminates with error. pipeline id: {pipelineId}",
                                     it.key,
@@ -141,12 +141,62 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        logger.info(
-            "Create pipeline {pipelineName}  version: {pipelineVersion} id: {pipelineId}",
-            metadata.name,
-            metadata.version,
-            metadata.id,
-        )
+        val defaultReason = "pipeline created"
+        // If a pipeline with the same id exists, we assume it has the same name & version
+        // If it's in an error state, try re-creating.
+        //
+        // WARNING: at the moment handleCreate is called sequentially on each update in
+        // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
+        // related to race conditions on `pipelines.containsKey(...)` below. If we ever move to
+        // concurrent creation of pipelines, this needs to be revisited.
+        if (pipelines.containsKey(metadata.id)) {
+            val previous = pipelines[metadata.id]!!
+            if (previous.status.isActive()) {
+                client.pipelineUpdateEvent(
+                    makePipelineUpdateEvent(
+                        metadata = metadata,
+                        operation = PipelineOperation.Create,
+                        success = true,
+                        reason = previous.status.getDescription() ?: defaultReason,
+                    ),
+                )
+                logger.debug(
+                    "response to scheduler: pipeline {pipelineName} continues to run normally; " +
+                        "pipeline version: {pipelineVersion}, id: {pipelineId}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                )
+                return
+            } else { // pipeline exists but in failed/stopped state; cleanup state and re-create
+                logger.info(
+                    "Recreating non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                )
+                logger.debug(
+                    "Previous state for non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
+                    metadata.name,
+                    metadata.version,
+                    metadata.id,
+                    previous.status.getDescription(),
+                )
+                // Calling stop() here may be superfluous (depending on the state in which the pipeline is in),
+                // but we want to ensure that we clean up the KafkaStreams state of the pipeline because
+                // otherwise we have issues in re-starting it.
+                // Calling stop() on an already stopped pipeline is safe.
+                previous.stop()
+            }
+        } else { // pipeline doesn't exist
+            logger.info(
+                "Creating pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+                metadata.name,
+                metadata.version,
+                metadata.id,
+            )
+        }
+
         val (pipeline, err) =
             Pipeline.forSteps(
                 metadata,
@@ -184,44 +234,35 @@ class PipelineSubscriber(
             return
         }
 
-        val previous = pipelines.putIfAbsent(metadata.id, pipeline)
-        var pipelineStatus: PipelineStatus
-        if (previous == null) {
-            val errTopics = kafkaAdmin.ensureTopicsExist(steps)
-            if (errTopics == null) {
-                pipelineStatus = pipeline.start()
-            } else {
-                pipelineStatus =
-                    PipelineStatus.Error(null)
-                        .withException(errTopics)
-                        .withMessage("kafka streams topic creation error")
-                pipeline.stop()
-            }
+        // This overwrites any previous pipelines with the same id. We can only get here if those previous pipelines
+        // are in a failed state and they are being re-created by the scheduler.
+        pipelines[metadata.id] = pipeline
+        val pipelineStatus: PipelineStatus
+        val errTopics = kafkaAdmin.ensureTopicsExist(steps)
+        if (errTopics == null) {
+            pipelineStatus = pipeline.start()
         } else {
-            pipelineStatus = previous.status
-            logger.warn("pipeline {pipelineName} with id {pipelineId} already exists", metadata.name, metadata.id)
-            if (pipelineStatus.isError) {
-                // do not try to resuscitate an existing pipeline if in a failed state
-                // it's up to the scheduler to delete it & reinitialize it, as it might require
-                // coordination with {model, pipeline}gateway
-                previous.stop()
-            }
+            pipelineStatus =
+                PipelineStatus.Error(null)
+                    .withException(errTopics)
+                    .withMessage("kafka streams topic creation error")
+            pipeline.stop()
         }
 
         // We don't want to mark the PipelineOperation.Create as successful unless the
         // pipeline has started. While states such as "StreamStarting" or "StreamStopped" are
-        // not in themselves errors, if the pipeline is not running here then it can't
-        // be marked as ready.
+        // not in themselves errors, they are not expected at this stage. If the pipeline
+        // is not running here then it can't be marked as ready.
         if (pipelineStatus !is PipelineStatus.Started) {
-            pipelineStatus.isError = true
+            pipelineStatus.hasError = true
         }
-        pipelineStatus.log(logger, Level.INFO)
+        pipelineStatus.log(logger, Level.DEBUG)
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Create,
-                success = !pipelineStatus.isError,
-                reason = pipelineStatus.getDescription() ?: "pipeline created",
+                success = !pipelineStatus.isError(),
+                reason = pipelineStatus.getDescription() ?: defaultReason,
             ),
         )
     }

@@ -15,8 +15,9 @@ import io.klogging.NoCoLogger
 import io.seldon.dataflow.DataflowStatus
 import kotlinx.coroutines.runBlocking
 import org.apache.kafka.streams.KafkaStreams
+import java.util.Objects
 
-open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) : DataflowStatus {
+open class PipelineStatus(val state: KafkaStreams.State?, var hasError: Boolean) : DataflowStatus {
     // Keep the previous state in case we're stopping the stream so that we can determine
     // _why_ the stream was stopped.
     class StreamStopped(var prevState: PipelineStatus?) : PipelineStatus(null, false) {
@@ -28,7 +29,7 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
             if (prev is StreamStopped) {
                 this.prevState = prev.prevState
             }
-            this.isError = this.prevState?.isError ?: false
+            this.hasError = this.prevState?.hasError ?: false
         }
 
         override fun getDescription(): String? {
@@ -86,6 +87,18 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
                 logger.log(levelIfNoException, "$statusMsg")
             }
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is StreamStopped) return false
+
+            return this.prevState == other.prevState &&
+                super.equals(other)
+        }
+
+        override fun hashCode(): Int {
+            return Objects.hash(state, hasError, exception, message, prevState)
+        }
     }
 
     class StreamStopping() : PipelineStatus(null, false) {
@@ -104,4 +117,45 @@ open class PipelineStatus(val state: KafkaStreams.State?, var isError: Boolean) 
 
     override var exception: Exception? = null
     override var message: String? = null
+
+    fun isActive(): Boolean {
+        return when {
+            this is StreamStarting || this is Started -> true
+            this.state in
+                setOf(
+                    KafkaStreams.State.CREATED,
+                    KafkaStreams.State.REBALANCING,
+                    KafkaStreams.State.RUNNING,
+                )
+            -> true
+            else -> false
+        }
+    }
+
+    fun isError(): Boolean {
+        return when {
+            this is Error -> true
+            this.state in
+                setOf(
+                    KafkaStreams.State.PENDING_ERROR,
+                    KafkaStreams.State.ERROR,
+                )
+            -> true
+            else -> this.hasError
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PipelineStatus) return false
+
+        return this.state == other.state &&
+            this.hasError == other.hasError &&
+            this.exception == other.exception &&
+            this.message == other.message
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(state, hasError, exception, message)
+    }
 }

@@ -16,6 +16,10 @@ lint:
 format:
 	./gradlew ktlintFormat --no-daemon --no-build-cache
 
+.PHONY: test
+test:
+	./gradlew cleanTest test
+
 .PHONY: build
 build:
 	./gradlew build --no-daemon --no-build-cache
