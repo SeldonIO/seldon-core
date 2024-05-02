@@ -54,7 +54,7 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa"
+          value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
         - name: MODEL_TYPE
           value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
         - name: MODEL_MEMORY_BYTES

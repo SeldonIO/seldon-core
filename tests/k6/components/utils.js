@@ -6,9 +6,9 @@ import { connectScheduler,
   unloadModel,
   loadPipeline,
   unloadPipeline,
-  awaitPipelineStatus
+  awaitPipelineStatus,
   loadExperiment,
-  unloadExperiment,
+  unloadExperiment
 } from '../components/scheduler.js';
 import {
     connectScheduler as connectSchedulerProxy,
@@ -17,8 +17,8 @@ import {
     unloadModel as unloadModelProxy
 } from '../components/scheduler_proxy.js';
 import { inferGrpcLoop, inferHttpLoop, modelStatusHttp } from '../components/v2.js';
+import * as k8s from '../components/k8s.js';
 
-var k8s = null;
 const SeldonObjectType = {
   MODEL: Symbol("model"),
   EXPERIMENT: Symbol("experiment")
@@ -100,18 +100,18 @@ export function teardownBase(config ) {
     }
 }
 
-function lazyLoadK8s(config) {
-  if (k8s == null && config.useKubeControlPlane) {
-    k8s = require('../components/k8s.js');
-  }
-}
+// function lazyLoadK8s(config) {
+//   if (config.useKubeControlPlane) {
+//     const k8s = require('../components/k8s.js');
+//   }
+// }
 
 function warnFn(fnName, cause, name, data, awaitReady=true) {
   console.log("WARN: "+ fnName + " function not implemented." + cause)
 }
 
 export function connectControlPlaneOps(config) {
-  lazyLoadK8s(config)
+  // lazyLoadK8s(config)
   var ctl = {}
 
   ctl.connectSchedulerFn = connectScheduler
@@ -140,13 +140,13 @@ export function connectControlPlaneOps(config) {
         ctl.loadModelFn = loadModelProxy
         ctl.unloadModelFn = unloadModelProxy
         ctl.loadPipelineFn = warnFn.bind(this, "loadPipeline", warnCause)
-        ctl.unloadPipelineFn = warnFN.bind(this, "unloadPipeline", warnCause)
+        ctl.unloadPipelineFn = warnFn.bind(this, "unloadPipeline", warnCause)
         ctl.loadExperimentFn = warnFn.bind(this, "loadExperiment", warnCause)
         ctl.unloadExperimentFn = warnFn.bind(this, "unloadExperiment", warnCause)
     }
   }
 
-  schedClient = ctl.connectSchedulerFn(config.schedulerEndpoint)
+  const schedClient = ctl.connectSchedulerFn(config.schedulerEndpoint)
   // pass scheduler client to k8s for Model/Pipeline status queries
   if (config.useKubeControlPlane && !config.isSchedulerProxy) {
     k8s.connectScheduler(schedClient)
@@ -199,6 +199,7 @@ export function getSeldonObjDef(config, object, type) {
         objDef.experiment.experimentDefn = object.experimentDefn
         break;
     }
+  }
 
   return objDef
 }
