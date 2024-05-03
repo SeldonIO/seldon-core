@@ -212,6 +212,7 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 }
 
 // Find SeldonRuntimes that reference the changes SeldonConfig
+// TODO: pass an actual context from the caller to be used here
 func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Context, obj client.Object) []reconcile.Request {
 	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
