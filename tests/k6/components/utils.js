@@ -16,13 +16,9 @@ import {
     loadModel as loadModelProxy,
     unloadModel as unloadModelProxy
 } from '../components/scheduler_proxy.js';
+import { seldonObjectType } from '../components/seldon.js'
 import { inferGrpcLoop, inferHttpLoop, modelStatusHttp } from '../components/v2.js';
 import * as k8s from '../components/k8s.js';
-
-const SeldonObjectType = {
-  MODEL: Symbol("model"),
-  EXPERIMENT: Symbol("experiment")
-};
 
 export function setupBase(config) {
     if (config.loadModel) {
@@ -33,7 +29,7 @@ export function setupBase(config) {
                 const modelName = config.modelNamePrefix[j] + i.toString()
                 const model = generateModel(config.modelType[j], modelName, 1, config.modelReplicas[j], config.isSchedulerProxy, config.modelMemoryBytes[j], config.inferBatchSize[j])
 
-                var defs = getSeldonObjDef(config, model, SeldonObjectType.MODEL)
+                var defs = getSeldonObjDef(config, model, seldonObjectType.MODEL)
 
                 ctl.loadModelFn(modelName, defs.model.modelDefn, false)
                 if (config.isLoadPipeline) {
@@ -100,18 +96,11 @@ export function teardownBase(config ) {
     }
 }
 
-// function lazyLoadK8s(config) {
-//   if (config.useKubeControlPlane) {
-//     const k8s = require('../components/k8s.js');
-//   }
-// }
-
 function warnFn(fnName, cause, name, data, awaitReady=true) {
   console.log("WARN: "+ fnName + " function not implemented." + cause)
 }
 
 export function connectControlPlaneOps(config) {
-  // lazyLoadK8s(config)
   var ctl = {}
 
   ctl.connectSchedulerFn = connectScheduler
@@ -177,11 +166,11 @@ export function getSeldonObjDef(config, object, type) {
 
   if (config.useKubeControlPlane) {
     switch (type) {
-      case SeldonObjectType.MODEL:
+      case seldonObjectType.MODEL:
         objDef.model.modelDefn = object.modelCRYaml
         objDef.model.pipelineDefn = object.pipelineCRYaml
         break;
-      case SeldonObjectType.EXPERIMENT:
+      case seldonObjectType.EXPERIMENT:
         objDef.experiment.model1Defn = object.model1CRYaml
         objDef.experiment.model2Defn = object.model2CRYaml
         objDef.experiment.experimentDefn = object.experimentCRYaml
@@ -189,11 +178,11 @@ export function getSeldonObjDef(config, object, type) {
     }
   } else {
     switch (type) {
-      case SeldonObjectType.MODEL:
+      case seldonObjectType.MODEL:
         objDef.model.modelDefn = object.modelDefn
         objDef.model.pipelineDefn = object.pipelineDefn
         break;
-      case SeldonObjectType.EXPERIMENT:
+      case seldonObjectType.EXPERIMENT:
         objDef.experiment.model1Defn = object.model1Defn
         objDef.experiment.model2Defn = object.model2Defn
         objDef.experiment.experimentDefn = object.experimentDefn

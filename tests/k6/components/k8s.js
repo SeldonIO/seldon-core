@@ -6,9 +6,10 @@ import {
   awaitExperimentStart,
   awaitExperimentStop
 } from '../components/scheduler.js';
+import { seldonObjectType } from '../components/seldon.js'
 
 const kubeclient = new Kubernetes();
-const namespace = getConfig.namespace;
+const namespace = getConfig().namespace;
 var schedulerClient = null;
 
 export function connectScheduler(schedulerCl) {
@@ -19,57 +20,84 @@ export function disconnectScheduler() {
   schedulerClient = null
 }
 
+function seldonObjExists(kind, name, ns) {
+    // This is ugly, but xk6-kubernetes kubeclient.get(...) throws an exception if the
+    // underlying k8s CR doesn't exist.
+
+    // The alternative here would be to list all objects of the given kind from the namespace
+    // and see if the one with the specified name exists among them. However, that would end
+    // up being considerably slower, and we don't want to do it on every single
+    // model/pipeline/experiment load or unload.
+    try {
+        kubeclient.get(kind.description, name, ns)
+        return true
+    } catch(error) {
+        return false
+    }
+}
+
 export function loadModel(modelName, data, awaitReady=true) {
     //console.log(data)
-    kubeclient.apply(data)
-    // let created = kubeclient.get("Model.mlops.seldon.io", modelName, namespace)
-    // if ('uid' in created.metadata) {
-    if (awaitReady && schedulerClient != null) {
-        awaitStatus(modelName, "ModelAvailable")
+    if(!seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
+        kubeclient.apply(data)
+        let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, namespace)
+        if ('uid' in created.metadata) {
+            if (awaitReady && schedulerClient != null) {
+                awaitStatus(modelName, "ModelAvailable")
+            }
+        }
     }
-    // }
 }
 
 export function unloadModel(modelName, awaitReady=true) {
     // console.log("Unloading model "+modelName)
-    kubeclient.delete("Model.mlops.seldon.io", modelName, namespace)
-    if (awaitReady && schedulerClient != null) {
-        awaitStatus(modelName, "ModelTerminated")
+    if(seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
+        kubeclient.delete(seldonObjectType.MODEL.description, modelName, namespace)
+        if (awaitReady && schedulerClient != null) {
+            awaitStatus(modelName, "ModelTerminated")
+        }
     }
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
     //console.log(data)
-    kubeclient.apply(data)
-    // let created = kubeclient.get("Pipeline.mlops.seldon.io", pipelineName, namespace)
-    // if ('uid' in created.metadata) {
-    if (awaitReady && schedulerClient != null) {
-        awaitStatus(pipelineName, "PipelineReady")
+    if(!seldonObjExists(seldonObjectType.PIPELINE, pipelineName, namespace)) {
+        kubeclient.apply(data)
+        let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, namespace)
+        if ('uid' in created.metadata) {
+            if (awaitReady && schedulerClient != null) {
+                awaitStatus(pipelineName, "PipelineReady")
+            }
+        }
     }
-    // }
 }
 
 export function unloadPipeline(pipelineName, awaitReady = true) {
-    kubeclient.delete("Pipeline.mlops.seldon.io", pipelineName, namespace)
-    if (awaitReady && schedulerClient != null) {
-        awaitStatus(pipelineName, "PipelineTerminated")
+    if(seldonObjExists(seldonObjectType.PIPELINE, pipelineName, namespace)) {
+        kubeclient.delete(seldonObjectType.PIPELINE.description, pipelineName, namespace)
+        if (awaitReady && schedulerClient != null) {
+            awaitStatus(pipelineName, "PipelineTerminated")
+        }
     }
 }
 
 export function loadExperiment(experimentName, data, awaitReady=true) {
-    const ns = data.metadata.namespace
-    kubeclient.apply(data)
-    let created = kubeclient.get("Experiment.mlops.seldon.io", experimentName, namespace)
-    if ('uid' in created.metadata) {
-        if (awaitReady && schedulerClient != null) {
-            awaitExperimentStart(experimentName)
+    if(!seldonObjExists(seldonObjectType.EXPERIMENT, experimentName, namespace)) {
+        kubeclient.apply(data)
+        let created = kubeclient.get(seldonObjectType.EXPERIMENT.description, experimentName, namespace)
+        if ('uid' in created.metadata) {
+            if (awaitReady && schedulerClient != null) {
+                awaitExperimentStart(experimentName)
+            }
         }
     }
 }
 
 export function unloadExperiment(experimentName, awaitReady=true) {
-    kubeclient.delete("Experiment.mlops.seldon.io", experimentName, namespace)
-    if (awaitReady && schedulerClient != null) {
-        awaitExperimentStop(experimentName)
+    if(seldonObjExists(seldonObjectType.EXPERIMENT, experimentName, namespace)) {
+        kubeclient.delete(seldonObjExists.EXPERIMENT.description, experimentName, namespace)
+        if (awaitReady && schedulerClient != null) {
+            awaitExperimentStop(experimentName)
+        }
     }
 }
