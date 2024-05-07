@@ -37,17 +37,11 @@ function seldonObjExists(kind, name, ns) {
 }
 
 export function loadModel(modelName, data, awaitReady=true) {
-    // TODO: Update existing model with new CR definition.
-    // At the moment, if an object with the same name exists, it will not be
-    // re-loaded with different settings. This is because we get a k8s apply
-    // conflict caused by a FieldManager being set on `.spec.memory`
-    if(!seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
-        kubeclient.apply(data)
-        let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, namespace)
-        if ('uid' in created.metadata) {
-            if (awaitReady && schedulerClient != null) {
-                awaitStatus(modelName, "ModelAvailable")
-            }
+    kubeclient.apply(data)
+    let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, namespace)
+    if ('uid' in created.metadata) {
+        if (awaitReady && schedulerClient != null) {
+            awaitStatus(modelName, "ModelAvailable")
         }
     }
 }
@@ -62,13 +56,11 @@ export function unloadModel(modelName, awaitReady=true) {
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
-    if(!seldonObjExists(seldonObjectType.PIPELINE, pipelineName, namespace)) {
-        kubeclient.apply(data)
-        let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, namespace)
-        if ('uid' in created.metadata) {
-            if (awaitReady && schedulerClient != null) {
-                awaitStatus(pipelineName, "PipelineReady")
-            }
+    kubeclient.apply(data)
+    let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, namespace)
+    if ('uid' in created.metadata) {
+        if (awaitReady && schedulerClient != null) {
+            awaitStatus(pipelineName, "PipelineReady")
         }
     }
 }
@@ -83,13 +75,11 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
 }
 
 export function loadExperiment(experimentName, data, awaitReady=true) {
-    if(!seldonObjExists(seldonObjectType.EXPERIMENT, experimentName, namespace)) {
-        kubeclient.apply(data)
-        let created = kubeclient.get(seldonObjectType.EXPERIMENT.description, experimentName, namespace)
-        if ('uid' in created.metadata) {
-            if (awaitReady && schedulerClient != null) {
-                awaitExperimentStart(experimentName)
-            }
+    kubeclient.apply(data)
+    let created = kubeclient.get(seldonObjectType.EXPERIMENT.description, experimentName, namespace)
+    if ('uid' in created.metadata) {
+        if (awaitReady && schedulerClient != null) {
+            awaitExperimentStart(experimentName)
         }
     }
 }
