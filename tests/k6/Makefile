@@ -94,5 +94,5 @@ create-secret:
 
 xk6-install:
 	# Install xk6
-	go install github.com/grafana/xk6/cmd/xk6@latest
+	go install go.k6.io/xk6/cmd/xk6@latest
 	xk6 build --with github.com/grafana/xk6-kubernetes

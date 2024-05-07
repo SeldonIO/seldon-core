@@ -45,6 +45,8 @@ spec:
         #   "scenarios/k8s-test-script.js",
         #   ]
         env:
+        - name: USE_KUBE_CONTROL_PLANE
+          value: "true"
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
@@ -52,7 +54,7 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa"
+          value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
         - name: MODEL_TYPE
           value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
         - name: MODEL_MEMORY_BYTES
