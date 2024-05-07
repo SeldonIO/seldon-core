@@ -37,6 +37,10 @@ function seldonObjExists(kind, name, ns) {
 }
 
 export function loadModel(modelName, data, awaitReady=true) {
+    // TODO: Update existing model with new CR definition.
+    // At the moment, if an object with the same name exists, it will not be
+    // re-loaded with different settings. This is because we get a k8s apply
+    // conflict caused by a FieldManager being set on `.spec.memory`
     if(!seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, namespace)
