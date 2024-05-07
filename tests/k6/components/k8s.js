@@ -37,7 +37,6 @@ function seldonObjExists(kind, name, ns) {
 }
 
 export function loadModel(modelName, data, awaitReady=true) {
-    //console.log(data)
     if(!seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, namespace)
@@ -50,7 +49,6 @@ export function loadModel(modelName, data, awaitReady=true) {
 }
 
 export function unloadModel(modelName, awaitReady=true) {
-    // console.log("Unloading model "+modelName)
     if(seldonObjExists(seldonObjectType.MODEL, modelName, namespace)) {
         kubeclient.delete(seldonObjectType.MODEL.description, modelName, namespace)
         if (awaitReady && schedulerClient != null) {
@@ -60,7 +58,6 @@ export function unloadModel(modelName, awaitReady=true) {
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
-    //console.log(data)
     if(!seldonObjExists(seldonObjectType.PIPELINE, pipelineName, namespace)) {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, namespace)

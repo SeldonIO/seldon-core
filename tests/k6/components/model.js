@@ -1,4 +1,3 @@
-// import { dump as yamlDump } from "../import/js-yaml.mjs"
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import { getConfig } from '../components/settings.js'
 
@@ -248,7 +247,6 @@ export function generateExperiment(experimentName, modelType, modelName1, modelN
             "storageUri": uri,
             "requirements": modelTemplate.requirements,
             "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
-            "minReplicas": 1,
             "replicas": replicas
         }
     }
@@ -282,7 +280,6 @@ export function generateExperiment(experimentName, modelType, modelName1, modelN
             "storageUri": uri,
             "requirements": modelTemplate.requirements,
             "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
-            "minReplicas": 1,
             "replicas": replicas
         }
     }
@@ -362,7 +359,6 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
             "storageUri": uri,
             "requirements": modelTemplate.requirements,
             "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
-            "minReplicas": 1,
             "replicas": replicas
         }
     }
