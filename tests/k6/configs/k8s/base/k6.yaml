@@ -57,8 +57,13 @@ spec:
           value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
         - name: MODEL_TYPE
           value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
+        # Specify MODEL_MEMORY_BYTES with suffixes (b, k, m, g) rather than
+        # numbers without units of measure. If supplying "naked numbers",
+        # the seldon operator will take care of converting the number for you
+        # but also take ownership of the field (as FieldManager), so the next
+        # time you run the scenario creating/updating of the model CR will fail.
         - name: MODEL_MEMORY_BYTES
-          value: "400000,8000000,43000000,200000,3000000"
+          value: "400k,8m,43m,200k,3m"
         - name: MAX_NUM_MODELS
           value: "800,100,25,100,100"
           # value: "0,0,25,100,100"
