@@ -434,7 +434,7 @@ git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GITOPS_ORG}/${GITO
 export PR_RESULT=$(curl \
   -u ${GIT_USERNAME}:${GIT_PASSWORD} \
   -v -H "Content-Type: application/json" \
-  -X POST -d "{\"title\": \"SeldonDeployment Model Promotion Request - UUID: ${UUID}\", \"body\": \"This PR contains the deployment for the Seldon Deploy model and has been allocated for review and approval for relevant manager.\", \"head\": \"${UUID}\", \"base\": \"master\" }" \
+  -X POST -d "{\"title\": \"SeldonDeployment Model Promotion Request - UUID: ${UUID}\", \"body\": \"This PR contains the deployment for the Seldon Enterprise Platform model and has been allocated for review and approval for relevant manager.\", \"head\": \"${UUID}\", \"base\": \"master\" }" \
   https://api.github.com/repos/$GITOPS_ORG/$GITOPS_REPO/pulls)
 export ISSUE_NUMBER=$(echo \
   $PR_RESULT |

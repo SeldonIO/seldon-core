@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "seldon-core"
-copyright = "2021, Seldon Technologies Ltd"
+copyright = "2024, Seldon Technologies Ltd"
 author = "Seldon Technologies Ltd"
 
 # The short X.Y version
@@ -255,12 +255,12 @@ if html_theme == "sphinx_material":
             {
                 "href": "https://deploy.seldon.io",
                 "internal": False,
-                "title": "Seldon Deploy (Enterprise)",
+                "title": "Seldon Enterprise Platform",
             },
             {
                 "href": "https://github.com/SeldonIO/seldon-deploy-sdk#seldon-deploy-sdk",
                 "internal": False,
-                "title": "Seldon Deploy SDK (Enterprise)",
+                "title": "Seldon Enterprise Platform SDK",
             },
         ],
     }
