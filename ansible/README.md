@@ -127,6 +127,7 @@ will only install Kafka when setting up the ecosystem.
 | full_install            | bool   | yes                           | enables full ecosystem installation                      |
 | install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                          |
 | install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                             |
+| install_grafana         | bool   | `{{ full_install }}`          | installs Grafana Operator                                |
 | install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                    |
 | install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                          |
 | install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                   |
