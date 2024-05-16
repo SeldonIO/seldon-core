@@ -3,3 +3,9 @@ export const seldonObjectType = {
   PIPELINE: Symbol("Pipeline.mlops.seldon.io"),
   EXPERIMENT: Symbol("Experiment.mlops.seldon.io")
 };
+
+export const seldonOpType = {
+  CREATE: Symbol("Create"),
+  UPDATE: Symbol("Update"),
+  DELETE: Symbol("Delete"),
+}

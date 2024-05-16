@@ -27,7 +27,7 @@ spec:
           "120m",
           "scenarios/infer_constant_vu.js",
           ]
-        # # infer_constant_vu
+        # # infer_constant_rate
         # args: [
         #   "--no-teardown",
         #   "--summary-export",
@@ -44,6 +44,22 @@ spec:
         #   "csv=results/base.gz",
         #   "scenarios/k8s-test-script.js",
         #   ]
+        # # core2_qa_control_plane_ops
+        # args: [
+        #   "--no-teardown",
+        #   "--verbose",
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "-u",
+        #   "5",
+        #   "-i",
+        #   "10000",
+        #   "-d",
+        #   "9h",
+        #   "scenarios/core2_qa_control_plane_ops.js",
+        #   ]
         env:
         - name: USE_KUBE_CONTROL_PLANE
           value: "true"
@@ -57,18 +73,36 @@ spec:
           value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
         - name: MODEL_TYPE
           value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
-        # Specify MODEL_MEMORY_BYTES with suffixes (b, k, m, g) rather than
-        # numbers without units of measure. If supplying "naked numbers",
-        # the seldon operator will take care of converting the number for you
-        # but also take ownership of the field (as FieldManager), so the next
-        # time you run the scenario creating/updating of the model CR will fail.
+        # Specify MODEL_MEMORY_BYTES using unit-of measure suffixes (k, M, G, T)
+        # rather than numbers without units of measure. If supplying "naked
+        # numbers", the seldon operator will take care of converting the number
+        # for you but also take ownership of the field (as FieldManager), so the
+        # next time you run the scenario creating/updating of the model CR will
+        # fail.
         - name: MODEL_MEMORY_BYTES
-          value: "400k,8m,43m,200k,3m"
+          value: "400k,8M,43M,200k,3M"
+        - name: MAX_MEM_UPDATE_FRACTION
+          value: "0.1"
         - name: MAX_NUM_MODELS
           value: "800,100,25,100,100"
           # value: "0,0,25,100,100"
+        # MAX_NUM_MODELS_HEADROOM is a variable used by control-plane tests.
+        # It's the approximate number of models that can be created over
+        # MAX_NUM_MODELS over the experiment. In the worst case scenario
+        # (very unlikely) the HEADROOM values may temporarily exceed the ones
+        # specified here with the number of VUs, because each VU checks the
+        # headroom constraint independently before deciding on the available
+        # operations (no communication/sync between VUs)
+        # - name: MAX_NUM_MODELS_HEADROOM
+        #   value: "20,5,0,20,30"
         - name: INFER_BATCH_SIZE
           value: "1,1,1,1,1"
+        # MODEL_CREATE_UPDATE_DELETE_BIAS defines the probability ratios between
+        # the operations, for control-plane tests. For example, "1, 4, 3"
+        # makes an Update four times more likely then a Create, and a Delete 3
+        # times more likely than the Create.
+        # - name: MODEL_CREATE_UPDATE_DELETE_BIAS
+        #   value: "1,3,1"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS
