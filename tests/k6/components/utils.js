@@ -138,6 +138,7 @@ export function connectControlPlaneOps(config) {
   const schedClient = ctl.connectSchedulerFn(config.schedulerEndpoint)
   // pass scheduler client to k8s for Model/Pipeline status queries
   if (config.useKubeControlPlane && !config.isSchedulerProxy) {
+    k8s.init()
     k8s.connectScheduler(schedClient)
   }
 
