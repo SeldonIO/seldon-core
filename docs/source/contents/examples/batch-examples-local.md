@@ -1,6 +1,10 @@
 # Local Batch Inference Example
 
-This example runs you through a series of batch inference requests made to both models and pipelines running on Seldon Core locally. 
+This example runs you through a series of batch inference requests made to both models and pipelines running on Seldon Core locally.
+
+```{warning}
+Deprecated: The MLServer CLI `infer` feature is experimental and will be removed in future work.
+```
 
 ## Setup
 
@@ -47,7 +51,7 @@ seldon model load -f models/sklearn-iris-gs.yaml
 
 ### Deploy the Iris Pipeline
 
-Now that we've deployed our iris model, let's create a [pipeline](../pipelines/index) around the model. 
+Now that we've deployed our iris model, let's create a [pipeline](../pipelines/index) around the model.
 
 ```bash
 cat pipelines/iris.yaml
@@ -173,7 +177,7 @@ seldon model infer iris '{"inputs": [{"name": "predict", "shape": [1, 4], "datat
 
 ```
 
-The preidiction request body needs to be an [Open Inference Protocol](../apis/inference/v2.md) compatible payload and also match the expected inputs for the model you've deployed. In this case, the iris model expects data of shape `[1, 4]` and of type `FP32`. 
+The preidiction request body needs to be an [Open Inference Protocol](../apis/inference/v2.md) compatible payload and also match the expected inputs for the model you've deployed. In this case, the iris model expects data of shape `[1, 4]` and of type `FP32`.
 
 You'll notice that the prediction results for this request come back on `outputs[0].data`.
 
@@ -241,7 +245,7 @@ seldon model infer tfsimple1 '{"outputs":[{"name":"OUTPUT0"}], "inputs":[{"name"
 }
 ```
 
-You'll notice that the inputs for our tensorflow model look different from the ones we sent to the iris model. This time, we're sending two arrays of shape `[1,16]`. When sending an inference request, we can optionally chose which outputs we want back by including an `{"outputs":...}` object. 
+You'll notice that the inputs for our tensorflow model look different from the ones we sent to the iris model. This time, we're sending two arrays of shape `[1,16]`. When sending an inference request, we can optionally chose which outputs we want back by including an `{"outputs":...}` object.
 
 ### Tensorflow Pipeline
 
@@ -344,6 +348,7 @@ To run a batch inference job we'll use the [MLServer CLI](https://mlserver.readt
 ```bash
 pip install mlserver
 ```
+
 ### Iris Model
 
 The inference job can be executed by running the following command:
@@ -632,4 +637,3 @@ And finally let's spin down our local instance of Seldon Core:
 ```bash
 cd ../ && make undeploy-local
 ```
-
