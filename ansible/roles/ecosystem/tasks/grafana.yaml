@@ -1,0 +1,15 @@
+---
+- name: Set default user
+  ansible.builtin.set_fact:
+    sd_user: "{{ seldon_admin_user }}"
+  when: sd_user is not defined
+
+- name: Set default password
+  ansible.builtin.set_fact:
+    sd_password: "{{ seldon_random_gen_password }}"
+  when: sd_password is not defined
+
+- name: "Install Grafana instance"
+  include_role:
+    name: grafana
+  when: install_grafana | bool

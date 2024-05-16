@@ -1,0 +1,7 @@
+---
+grafana_chart_version: 7.3.9
+grafana_app_version: 10.4.2
+
+grafana_preloaded_dashboards:
+  - name: mms
+    json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/seldon.json') }}"

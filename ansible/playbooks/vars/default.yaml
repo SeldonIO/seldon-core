@@ -1,4 +1,19 @@
 ---
+# Default credentials.
+# These credentials are used as defaults for:
+#   - the grafana install, when configured
+#
+# For grafana, once the cluster is up and running, you may fetch the randomly generated password
+# by running (change `seldon-monitoring` to the value of the seldon_monitoring_namespace
+# variable):
+#
+# kubectl get secret --namespace seldon-monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+#
+
+# Overwrite by passing sd_user and/or sd_password variables when running the playbook
+seldon_admin_user: "admin"
+seldon_random_gen_password: "{{ lookup('password', '/dev/null chars=digits length=6') }}"
+
 # Seldon Configuration
 seldon_mesh_namespace: seldon-mesh
 
@@ -9,7 +24,11 @@ seldon_core_v2_type_svc_type: LoadBalancer
 seldon_core_v2_scheduler_svc_type: LoadBalancer
 
 # Prometheus Operator Configuration
+seldon_monitoring_prometheus_name_generated: seldon-monitoring-prometheus
+seldon_monitoring_prometheus_url: "http://{{ seldon_monitoring_prometheus_name_generated }}.{{ seldon_monitoring_namespace }}:9090"
 seldon_monitoring_namespace: seldon-monitoring
+# Grafana
+seldon_monitoring_grafana_web_ui_port: 3000
 
 # Strimzi Kafka Configuration
 strimzi_kafka_operator_namespace: "{{ seldon_mesh_namespace }}"
