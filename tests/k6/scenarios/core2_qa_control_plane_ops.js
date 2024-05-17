@@ -171,7 +171,7 @@ export default function (config) {
     while (config.maxNumModels[idx] === 0) {
         idx = Math.floor(Math.random() * numModelTypes)
     }
-    let modelsOfType = k8s.getModelsWithNamePrefix(config.modelNamePrefix[idx])
+    let modelsOfType = k8s.getModels(config.modelNamePrefix[idx])
 
     // Pick random operation in CREATE/UPDATE/DELETE, amongst available ones.
     // Each operation is added multiple times in the selection array as
@@ -199,7 +199,7 @@ export default function (config) {
 }
 
 export function teardown(config) {
-    let modelNames = k8s.getModelsWithNamePrefix("")
+    let modelNames = k8s.getModels()
     for (var modelName in modelNames) {
         k8s.unloadModel(modelName, false)
     }

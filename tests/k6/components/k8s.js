@@ -8,6 +8,7 @@ import { seldonObjectType } from '../components/seldon.js'
 import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
+const MAX_RETRIES = 60;
 var kubeclient = null;
 var schedulerClient = null;
 
@@ -46,14 +47,31 @@ function seldonObjExists(kind, name, ns) {
     }
 }
 
-export function getModelsWithNamePrefix(modelNamePrefix) {
+/**
+ * getModels() can be used to get the models currently loaded in the configured
+ * namespace.
+ *
+ * When passing prefix/suffix constrains, a filtered list is returned.
+ *
+ * With suitable model names (i.e consistent naming per type, distinct prefixes
+ * amongst types), passing a namePrefix is used to filter models of a given type
+ *
+ * If each VU creating models uses a consistent naming scheme, appending an ID
+ * from a range assigned to that specific VU, nameSuffix may be used to retrieve
+ * all the models created by the current VU.
+ *
+ * In combination, it is suggested that namePrefix and nameSuffix may be used
+ * together to retrieve all models of a given type that are managed by a given
+ * VU
+ */
+export function getModels(namePrefix="", nameSuffix="") {
     try {
         const modelList = kubeclient.list(seldonObjectType.MODEL.description, seldon_target_ns)
         const modelNames = modelList.map((modelCR) => modelCR.metadata.name)
-        if(modelNamePrefix === ""){
+        if(namePrefix === "" && nameSuffix === ""){
             return modelNames
         }
-        const filteredModels = modelNames.filter((s) => s.startsWith(modelNamePrefix))
+        const filteredModels = modelNames.filter((s) => s.startsWith(namePrefix) && s.endsWith(nameSuffix))
         return filteredModels
     } catch (error) {
         console.log("K8S List Models Error:" + error)
@@ -66,8 +84,8 @@ export function loadModel(modelName, data, awaitReady=true) {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
         if ('uid' in created.metadata) {
-            if (awaitReady && schedulerClient != null) {
-                awaitStatus(modelName, "ModelReady")
+            if (awaitReady) {
+                return awaitStatus(modelName, "ModelReady")
             }
         }
         return true
@@ -77,62 +95,94 @@ export function loadModel(modelName, data, awaitReady=true) {
     }
 }
 
-export function getModelStatus(modelName, targetStatus) {
+export function awaitStatus(modelName, status) {
+    let retries = 0
     try {
-        var modelObj = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
-    } catch (_) {
-        // catch the case where the model no longer exists and there is no point in waiting for it
-        return true
-    }
-    if ('status' in modelObj) {
-        let status = modelObj.status
-        if ('conditions' in status) {
-            for (let i = 0; i < status.conditions.length; i++) {
-                if(status.conditions[i].type == targetStatus) {
-                    return true
-                }
+        while (!getModelStatus(modelName, status)) {
+            sleep(1)
+            retries++
+            if(retries > MAX_RETRIES) {
+                console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES}`)
+                return false
             }
-            return false
-        } else {
-            return false
         }
-    } else {
+        return true
+    } catch (_) {
+        // in case getModelStatus throws an exception
         return false
     }
 }
 
-export function awaitStatus(modelName, status) {
-    while (!getModelStatus(modelName, status)) {
-        sleep(1)
+export function getModelStatus(modelName, targetStatus) {
+    var modelObj = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
+    if ('status' in modelObj) {
+        let status = modelObj.status
+        if ('conditions' in status) {
+            for (let i = 0; i < status.conditions.length; i++) {
+                if(status.conditions[i].type === targetStatus) {
+                    return status.conditions[i].status === "True"
+                }
+            }
+        }
     }
+
+    return false
 }
 
 export function unloadModel(modelName, awaitReady=true) {
     if(seldonObjExists(seldonObjectType.MODEL, modelName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
-            if (awaitReady && schedulerClient != null) {
+            if (awaitReady) {
+                let retries = 0
                 while (seldonObjExists(seldonObjectType.MODEL, modelName, seldon_target_ns)) {
                     sleep(1)
+                    retries++
+                    if(retries > MAX_RETRIES) {
+                        console.log(`Failed to unload model ${modelName} after ${MAX_RETRIES}, giving up`)
+                        return false
+                    }
                 }
             }
             return true
         } catch(_) {
             // catch case where model was deleted concurrently by another VU
-            return false
         }
-    } else {
+    }
+    return false
+}
+
+export function loadPipeline(pipelineName, data, awaitReady=true) {
+    try {
+        kubeclient.apply(data)
+        let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
+        if ('uid' in created.metadata) {
+            if (awaitReady) {
+                return awaitPipelineStatus(pipelineName, "PipelineReady")
+            }
+        }
+        return true
+    } catch (_) {
+        // continue on error. the apply may be concurrent with a delete and fail
         return false
     }
 }
 
-export function loadPipeline(pipelineName, data, awaitReady=true) {
-    kubeclient.apply(data)
-    let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
-    if ('uid' in created.metadata) {
-        if (awaitReady && schedulerClient != null) {
-            awaitPipelineStatus(pipelineName, "PipelineReady")
+export function awaitPipelineStatus(pipelineName, status) {
+    let retries = 0
+    try {
+        while (!getPipelineStatus(pipelineName, status)) {
+            sleep(1)
+            retries++
+            if(retries > MAX_RETRIES) {
+                console.log(`Giving up on waiting for pipeline ${pipelineName} to reach status ${status}, after ${MAX_RETRIES}`)
+                return false
+            }
         }
+        return true
+    } catch(_) {
+        // in case getPipelineStatus throws an exception
+        return false
     }
 }
 
@@ -145,33 +195,35 @@ export function getPipelineStatus(pipelineName, targetStatus) {
                 // return the most recent state (true/false) of the condition
                 // type named <targetStatus>
                 if(status.conditions[i].type == targetStatus) {
-                    return status.conditions[i].status
+                    return status.conditions[i].status === "True"
                 }
             }
-            return ""
-        } else {
-            return ""
         }
-    } else {
-        return ""
     }
-}
-
-export function awaitPipelineStatus(pipelineName, status) {
-    while (!getPipelineStatus(pipelineName, status)) {
-        sleep(1)
-    }
+    return false
 }
 
 export function unloadPipeline(pipelineName, awaitReady = true) {
     if(seldonObjExists(seldonObjectType.PIPELINE, pipelineName, seldon_target_ns)) {
-        kubeclient.delete(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
-        if (awaitReady && schedulerClient != null) {
-            while (seldonObjExists(seldonObjectType.PIPELINE, pipelineName, seldon_target_ns)) {
-                sleep(1)
+        try {
+            kubeclient.delete(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
+            if (awaitReady) {
+                let retries = 0
+                while (seldonObjExists(seldonObjectType.PIPELINE, pipelineName, seldon_target_ns)) {
+                    sleep(1)
+                    retries++
+                    if(retries > MAX_RETRIES) {
+                        console.log(`Failed to unload pipeline ${pipelineName} after ${MAX_RETRIES}, giving up`)
+                        return false
+                    }
+                }
             }
+            return true
+        } catch(_) {
+            // catch case where model was deleted concurrently by another VU
         }
     }
+    return false
 }
 
 export function loadExperiment(experimentName, data, awaitReady=true) {
