@@ -153,9 +153,9 @@ function modelReplicas() {
     return [1]
 }
 
-function modelMaxReplicas() {
-    if (__ENV.MODEL_MAX_REPLICAS) {
-        return __ENV.MODEL_MAX_REPLICAS.split(",").map( s => parseInt(s))
+function maxModelReplicas() {
+    if (__ENV.MAX_MODEL_REPLICAS) {
+        return __ENV.MAX_MODEL_REPLICAS.split(",").map( s => parseInt(s))
     } else if (__ENV.MODEL_TYPE) {
         const num =  __ENV.MODEL_TYPE.split(",").length
         return Array(num).fill(1)
@@ -302,7 +302,7 @@ export function getConfig() {
         "requestRate": requestRate(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
         "modelReplicas": modelReplicas(),
-        "modelMaxReplicas": modelMaxReplicas(),
+        "maxModelReplicas": maxModelReplicas(),
         "namespace":  podNamespace(),
         "maxNumModelsHeadroom": maxNumModelsHeadroom(),
         "createUpdateDeleteBias": createUpdateDeleteBias(),

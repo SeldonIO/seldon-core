@@ -14,7 +14,7 @@
  *      - If `Update` is picked, choose one of the existing models of that type
  *        and apply some random variation to the model’s memory requirements
  *        (+/- MAX_UPDATE_MEM ratio) and/or number of replicas
- *        (+/- up to the number of config.modelMaxReplicas)
+ *        (+/- up to the number of config.maxModelReplicas)
  * 3. Apply operation to cluster
  * 4. Wait VU_OP_DELAY_SECONDS
  * 5. Repeat from 1
@@ -101,7 +101,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                 let memVariation = Math.round(Math.random() * mem * config.maxMemUpdateFraction)
                 let newMemory = String(mem + (memVariation * plusOrMinus)) + memUnit
                 // update replicas +/- with random variation
-                let replicasToMax = config.modelMaxReplicas[modelTypeIx] - model.spec.replicas
+                let replicasToMax = config.maxModelReplicas[modelTypeIx] - model.spec.replicas
                 var deltaReplicas = plusOrMinus > 0 ? replicasToMax : model.spec.replicas
                 let replicasVariation = Math.round(Math.random() * deltaReplicas)
                 let newReplicas = model.spec.replicas + (replicasVariation * plusOrMinus)
