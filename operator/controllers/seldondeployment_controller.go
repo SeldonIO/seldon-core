@@ -303,6 +303,9 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		}
 	}
 
+	mirrors := make([]*istio_networking.HTTPMirrorPolicy, shadows)
+	mirrorsId := 0
+
 	routesHttp := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
 	routesGrpc := make([]*istio_networking.HTTPRouteDestination, len(mlDep.Spec.Predictors)-shadows)
 
@@ -344,65 +347,81 @@ func createIstioResources(mlDep *machinelearningv1.SeldonDeployment,
 		drules[i] = drule
 
 		if p.Shadow == true {
-			//if there's a shadow then add a mirror section to the VirtualService
-
-			vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
-				Host:   pSvcFqdn,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].httpPort),
-				},
-			}
-
-			vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
-				Host:   pSvcFqdn,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].grpcPort),
-				},
-			}
-
-			if p.Traffic > 0 {
-				//if shadow predictor's traffic is greater than 0, set the mirror percentage (like https://istio.io/latest/docs/tasks/traffic-management/mirroring/#mirroring-traffic-to-v2) in VirtualService
-				vsvc.Spec.Http[0].MirrorPercentage = &istio_networking.Percent{
-					Value: float64(p.Traffic),
+			if shadows == 1 {
+				//if there's a shadow then add a mirror section to the VirtualService
+				vsvc.Spec.Http[0].Mirror = &istio_networking.Destination{
+					Host:   pSvcFqdn,
+					Subset: p.Name,
+					Port: &istio_networking.PortSelector{
+						Number: uint32(ports[i].httpPort),
+					},
 				}
 
-				vsvc.Spec.Http[1].MirrorPercentage = &istio_networking.Percent{
-					Value: float64(p.Traffic),
+				vsvc.Spec.Http[1].Mirror = &istio_networking.Destination{
+					Host:   pSvcFqdn,
+					Subset: p.Name,
+					Port: &istio_networking.PortSelector{
+						Number: uint32(ports[i].grpcPort),
+					},
+				}
+
+				if p.Traffic > 0 {
+					//if shadow predictor's traffic is greater than 0, set the mirror percentage (like https://istio.io/latest/docs/tasks/traffic-management/mirroring/#mirroring-traffic-to-v2) in VirtualService
+					vsvc.Spec.Http[0].MirrorPercentage = &istio_networking.Percent{
+						Value: float64(p.Traffic),
+					}
+
+					vsvc.Spec.Http[1].MirrorPercentage = &istio_networking.Percent{
+						Value: float64(p.Traffic),
+					}
+				}
+			} else if shadows > 1 {
+				// multi shadow needs the version of istio >= 1.20
+				mirrors[mirrorsId] = &istio_networking.HTTPMirrorPolicy{
+					Destination: &istio_networking.Destination{
+						Host:   pSvcFqdn,
+						Subset: p.Name,
+						Port: &istio_networking.PortSelector{
+							Number: uint32(ports[i].httpPort),
+						},
+					},
+					Percentage: &istio_networking.Percent{
+						Value: float64(p.Traffic),
+					},
 				}
 			}
-
-			continue
-		}
-
-		//we split by adding different routes with their own Weights
-		//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
-		routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
-			Destination: &istio_networking.Destination{
-				Host:   pSvcFqdn,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].httpPort),
+		} else {
+			//we split by adding different routes with their own Weights
+			//so not by tag - different destinations (like https://istio.io/docs/tasks/traffic-management/traffic-shifting/) distinguished by host
+			routesHttp[routesIdx] = &istio_networking.HTTPRouteDestination{
+				Destination: &istio_networking.Destination{
+					Host:   pSvcFqdn,
+					Subset: p.Name,
+					Port: &istio_networking.PortSelector{
+						Number: uint32(ports[i].httpPort),
+					},
 				},
-			},
-			Weight: p.Traffic,
-		}
-		routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
-			Destination: &istio_networking.Destination{
-				Host:   pSvcFqdn,
-				Subset: p.Name,
-				Port: &istio_networking.PortSelector{
-					Number: uint32(ports[i].grpcPort),
+				Weight: p.Traffic,
+			}
+			routesGrpc[routesIdx] = &istio_networking.HTTPRouteDestination{
+				Destination: &istio_networking.Destination{
+					Host:   pSvcFqdn,
+					Subset: p.Name,
+					Port: &istio_networking.PortSelector{
+						Number: uint32(ports[i].grpcPort),
+					},
 				},
-			},
-			Weight: p.Traffic,
+				Weight: p.Traffic,
+			}
+			routesIdx += 1
 		}
-		routesIdx += 1
-
 	}
 	vsvc.Spec.Http[0].Route = routesHttp
 	vsvc.Spec.Http[1].Route = routesGrpc
+
+	if shadows > 1 {
+		vsvc.Spec.Http[0].Mirrors = mirrors
+	}
 
 	vscs := make([]*istio.VirtualService, 1)
 	vscs[0] = vsvc
