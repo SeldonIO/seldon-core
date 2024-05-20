@@ -25,7 +25,10 @@ export function setup() {
 
 export default function (config) {
     const numModelTypes = config.modelType.length
-    const idx = Math.floor(Math.random() * numModelTypes)
+    var idx = Math.floor(Math.random() * numModelTypes)
+    while (config.maxNumModels[idx] == 0) {
+        idx = Math.floor(Math.random() * numModelTypes)
+    }
     const modelId = Math.floor(Math.random() * config.maxNumModels[idx])
     const modelName = config.modelNamePrefix[idx] + modelId.toString()
 

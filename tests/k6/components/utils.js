@@ -31,7 +31,7 @@ export function setupBase(config) {
 
                 var defs = getSeldonObjDef(config, model, seldonObjectType.MODEL)
 
-                ctl.loadModelFn(modelName, defs.model.modelDefn, false)
+                ctl.loadModelFn(modelName, defs.model.modelDefn, true)
                 if (config.isLoadPipeline) {
                     ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, false)  // we use pipeline name as model name
                 }
@@ -42,17 +42,21 @@ export function setupBase(config) {
         if (!config.isLoadPipeline) {
             for (let j = 0; j < config.maxNumModels.length; j++) {
                 const n = config.maxNumModels[j] - 1
-                const modelName = config.modelNamePrefix[j] + n.toString()
-                const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
-                while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
-                    sleep(1)
+                if (n >= 0) {
+                  const modelName = config.modelNamePrefix[j] + n.toString()
+                  const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
+                  while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
+                      sleep(1)
+                  }
                 }
             }
         } else {
             for (let j = 0; j < config.maxNumModels.length; j++) {
                 const n = config.maxNumModels[j] - 1
-                const modelName = config.modelNamePrefix[j] + n.toString()
-                awaitPipelineStatus(generatePipelineName(modelName), "PipelineReady")
+                if (n >= 0) {
+                  const modelName = config.modelNamePrefix[j] + n.toString()
+                  awaitPipelineStatus(generatePipelineName(modelName), "PipelineReady")
+                }
             }
         }
 
@@ -138,6 +142,7 @@ export function connectControlPlaneOps(config) {
   const schedClient = ctl.connectSchedulerFn(config.schedulerEndpoint)
   // pass scheduler client to k8s for Model/Pipeline status queries
   if (config.useKubeControlPlane && !config.isSchedulerProxy) {
+    k8s.init()
     k8s.connectScheduler(schedClient)
   }
 
