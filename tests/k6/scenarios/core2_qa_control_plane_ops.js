@@ -27,7 +27,7 @@ import { Counter } from 'k6/metrics';
 import * as k8s from '../components/k8s.js';
 
 import { getConfig } from '../components/settings.js'
-import { seldonObjectType, seldonOpType } from '../components/seldon.js';
+import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
 import { setupBase } from '../components/utils.js'
 import { generateModel } from '../components/model.js';
 
@@ -50,8 +50,11 @@ export let options = {
 var VU_maxModelId = 0
 
 const createCounter = new Counter("ctl_op_model_create")
+const createFailCounter = new Counter("ctl_op_model_create_fail")
 const updateCounter = new Counter("ctl_op_model_update")
+const updateFailCounter = new Counter("ctl_op_model_update_fail")
 const deleteCounter = new Counter("ctl_op_model_delete")
+const deleteFailCounter = new Counter("ctl_op_model_delete_fail")
 
 var kubeclient = {}
 
@@ -77,6 +80,8 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
     switch (op) {
         case seldonOpType.CREATE:
             VU_maxModelId += 1
+            // vu.idInTest starts from 1; leave the range [0, config.maxCreateOpsPerVU - 1] to
+            // the preloaded models
             modelName += (vu.idInTest * config.maxCreateOpsPerVU) + VU_maxModelId
             const i = modelTypeIx
             let m = generateModel(config.modelType[i], modelName, 1, config.modelReplicas[i], config.isSchedulerProxy, config.modelMemoryBytes[i], config.inferBatchSize[i])
@@ -133,7 +138,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
 
 
     // execute control-plane operation
-    var opOk = false
+    var opOk = seldonOpExecStatus.FAIL
     switch(op) {
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
@@ -144,19 +149,43 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             break;
     }
 
-    // update k6 metrics
-    if (opOk === true) {
-        switch(op) {
-            case seldonOpType.CREATE:
-                createCounter.add(1)
-                break;
-            case seldonOpType.UPDATE:
-                updateCounter.add(1)
-                break;
-            case seldonOpType.DELETE:
-                deleteCounter.add(1)
-                break;
-        }
+    var targetCounter = null
+    switch(opOk) {
+        case seldonOpExecStatus.OK:
+            switch(op) {
+                case seldonOpType.CREATE:
+                    targetCounter = createCounter
+                    break;
+                case seldonOpType.UPDATE:
+                    targetCounter = updateCounter
+                    break;
+                case seldonOpType.DELETE:
+                    targetCounter = deleteCounter
+                    break;
+            }
+            break;
+        case seldonOpExecStatus.FAIL:
+            switch(op) {
+                case seldonOpType.CREATE:
+                    targetCounter = createFailCounter
+                    break;
+                case seldonOpType.UPDATE:
+                    targetCounter = updateFailCounter
+                    break;
+                case seldonOpType.DELETE:
+                    targetCounter = deleteFailCounter
+                    break;
+            }
+            break;
+
+        // ignore opOk == seldonOpExecStatus.CONCURRENT_OP_FAIL case
+        // it just means another VU did an operation invalidating the one of the
+        // current VU, concurrently; example: current VU wants to update a model,
+        // another VU already deleted it
+    }
+
+    if (targetCounter != null) {
+        targetCounter.add(1)
     }
 
     return opOk
@@ -182,19 +211,23 @@ export default function (config) {
     //
     // Because each VU picks the operation independently, it's possible to
     // temporarily get more models than MAX_NUM_MODELS for a given model type.
-    let availableOps = Array(config.createUpdateDeleteBias[1]).fill(seldonOpType.UPDATE)
+    let availableOps = []
     if (modelsOfType.length < config.maxNumModels[idx] + config.maxNumModelsHeadroom[idx]) {
         let createArray = Array(config.createUpdateDeleteBias[0]).fill(seldonOpType.CREATE)
         availableOps.push(...createArray)
     }
     if (modelsOfType.length > 0) {
+        let updateArray = Array(config.createUpdateDeleteBias[1]).fill(seldonOpType.UPDATE)
         let deleteArray = Array(config.createUpdateDeleteBias[2]).fill(seldonOpType.DELETE)
+        availableOps.push(...updateArray)
         availableOps.push(...deleteArray)
     }
     const randomOp = availableOps[Math.floor(Math.random() * availableOps.length)]
-    handleCtlOp(config, randomOp, idx, modelsOfType)
+    const opOk = handleCtlOp(config, randomOp, idx, modelsOfType)
 
-    sleep(config.k8sDelaySecPerVU + (Math.random() * 2))
+    if (opOk === seldonOpExecStatus.OK) {
+        sleep(config.k8sDelaySecPerVU + (Math.random() * 2))
+    }
 
 }
 

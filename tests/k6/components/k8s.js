@@ -4,7 +4,7 @@ import {
   awaitExperimentStart,
   awaitExperimentStop
 } from '../components/scheduler.js';
-import { seldonObjectType } from '../components/seldon.js'
+import { seldonObjectType, seldonOpExecStatus } from '../components/seldon.js'
 import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
@@ -88,10 +88,10 @@ export function loadModel(modelName, data, awaitReady=true) {
                 return awaitStatus(modelName, "ModelReady")
             }
         }
-        return true
+        return seldonOpExecStatus.OK
     } catch (_) {
         // continue on error. the apply may be concurrent with a delete and fail
-        return false
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
 }
 
@@ -103,13 +103,13 @@ export function awaitStatus(modelName, status) {
             retries++
             if(retries > MAX_RETRIES) {
                 console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES}`)
-                return false
+                return seldonOpExecStatus.FAIL
             }
         }
-        return true
+        return seldonOpExecStatus.OK
     } catch (_) {
         // in case getModelStatus throws an exception
-        return false
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
 }
 
@@ -125,7 +125,6 @@ export function getModelStatus(modelName, targetStatus) {
             }
         }
     }
-
     return false
 }
 
@@ -140,16 +139,16 @@ export function unloadModel(modelName, awaitReady=true) {
                     retries++
                     if(retries > MAX_RETRIES) {
                         console.log(`Failed to unload model ${modelName} after ${MAX_RETRIES}, giving up`)
-                        return false
+                        return seldonOpExecStatus.FAIL
                     }
                 }
             }
-            return true
+            return seldonOpExecStatus.OK
         } catch(_) {
             // catch case where model was deleted concurrently by another VU
         }
     }
-    return false
+    return seldonOpExecStatus.CONCURRENT_OP_FAIL
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
@@ -161,10 +160,10 @@ export function loadPipeline(pipelineName, data, awaitReady=true) {
                 return awaitPipelineStatus(pipelineName, "PipelineReady")
             }
         }
-        return true
+        return seldonOpExecStatus.OK
     } catch (_) {
         // continue on error. the apply may be concurrent with a delete and fail
-        return false
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
 }
 
@@ -176,13 +175,13 @@ export function awaitPipelineStatus(pipelineName, status) {
             retries++
             if(retries > MAX_RETRIES) {
                 console.log(`Giving up on waiting for pipeline ${pipelineName} to reach status ${status}, after ${MAX_RETRIES}`)
-                return false
+                return seldonOpExecStatus.FAIL
             }
         }
-        return true
+        return seldonOpExecStatus.OK
     } catch(_) {
         // in case getPipelineStatus throws an exception
-        return false
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
 }
 
@@ -214,16 +213,16 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
                     retries++
                     if(retries > MAX_RETRIES) {
                         console.log(`Failed to unload pipeline ${pipelineName} after ${MAX_RETRIES}, giving up`)
-                        return false
+                        return seldonOpExecStatus.FAIL
                     }
                 }
             }
-            return true
+            return seldonOpExecStatus.OK
         } catch(_) {
             // catch case where model was deleted concurrently by another VU
         }
     }
-    return false
+    return seldonOpExecStatus.CONCURRENT_OP_FAIL
 }
 
 export function loadExperiment(experimentName, data, awaitReady=true) {

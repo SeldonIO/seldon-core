@@ -9,3 +9,9 @@ export const seldonOpType = {
   UPDATE: Symbol("Update"),
   DELETE: Symbol("Delete"),
 }
+
+export const seldonOpExecStatus = {
+  OK: Symbol("Ok"),
+  FAIL: Symbol("Control-plane failure"),
+  CONCURRENT_OP_FAIL: Symbol("Failure because of concurrent operation in another VU")
+}
