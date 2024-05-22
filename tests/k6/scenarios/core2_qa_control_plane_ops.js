@@ -29,7 +29,7 @@ import * as k8s from '../components/k8s.js';
 import { getConfig } from '../components/settings.js'
 import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
 import { setupBase } from '../components/utils.js'
-import { generateModel } from '../components/model.js';
+import { generateModel, generatePipelineName } from '../components/model.js';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -73,6 +73,9 @@ export function setup() {
 function handleCtlOp(config, op, modelTypeIx, existingModels) {
     var modelName = config.modelNamePrefix[modelTypeIx]
     var modelCRYaml = {}
+    if (config.isLoadPipeline) {
+        var pipelineCRYaml = {}
+    }
 
     // generate model CR or select one of the existing ones as the
     // target for the control-plane operation, possibly updating its config if
@@ -86,6 +89,9 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             const i = modelTypeIx
             let m = generateModel(config.modelType[i], modelName, 1, config.modelReplicas[i], config.isSchedulerProxy, config.modelMemoryBytes[i], config.inferBatchSize[i])
             modelCRYaml = m.modelCRYaml
+            if (config.isLoadPipeline) {
+                pipelineCRYaml = m.pipelineCRYaml
+            }
             break;
         case seldonOpType.UPDATE:
         case seldonOpType.DELETE:
@@ -127,6 +133,23 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                     }
                 }
                 modelCRYaml = yamlDump(newModelCR)
+                if (config.isLoadPipeline) {
+                    let pipelineCRYaml = {
+                        "apiVersion": "mlops.seldon.io/v1alpha1",
+                        "kind": "Pipeline",
+                        "metadata": {
+                            "name": generatePipelineName(modelName),
+                            "namespace": getConfig().namespace,
+                            "labels": {
+                                "seldon.io/pipeline_id": String(Math.random() * 1000),  // random pipeline ID to force a change
+                            },
+                        },
+                        "spec": {
+                            "steps": pipeline.pipeline.steps,
+                            "output": pipeline.pipeline.output
+                        }
+                    }
+                }
             } catch (_) {
                 // just continue test, another VU might have deleted the chosen model
                 return false
@@ -143,9 +166,15 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
+            if (config.isLoadPipeline) {
+                opOk = k8s.loadPipeline(generatePipelineName(modelName), pipelineCRYaml, true) && opOk
+            }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
+            if (config.isLoadPipeline) {
+                opOk = k8s.unloadPipeline(generatePipelineName(modelName), true) && opOk
+            }
             break;
     }
 
