@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-seldonio/seldon-core  Business Source License 1.1  https://github.com/SeldonIO/seldon-core/blob/master/LICENSE
+seldonio/seldon-core  BSL 1.1  https://github.com/SeldonIO/seldon-core/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Parameters
 
@@ -11292,7 +11292,6 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 --------------------------------------------------------------------------------
 gregjones/httpcache  MIT License  https://github.com/gregjones/httpcache/blob/master/LICENSE.txt
 --------------------------------------------------------------------------------
@@ -16557,7 +16556,7 @@ License text copyright (c) 2020 MariaDB Corporation Ab, All Rights Reserved.
 Parameters
 
 Licensor:             HashiCorp, Inc.
-Licensed Work:        Vault Version 1.15.0 or later. The Licensed Work is (c) 2023
+Licensed Work:        Vault Version 1.15.0 or later. The Licensed Work is (c) 2024
                       HashiCorp, Inc.
 Additional Use Grant: You may make production use of the Licensed Work, provided
                       Your use does not include offering the Licensed Work to third
