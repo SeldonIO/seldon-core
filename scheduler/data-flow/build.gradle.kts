@@ -5,8 +5,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.8.20" // the kotlin version
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    kotlin("jvm") version "1.9.21" // the kotlin version
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     java
     application
 }
@@ -33,12 +33,12 @@ dependencies {
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.63.0")
-    implementation("io.grpc:grpc-protobuf:1.63.0")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.63.0")
+    implementation("io.grpc:grpc-stub:1.64.0")
+    implementation("io.grpc:grpc-protobuf:1.64.0")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.64.0")
     implementation("com.google.protobuf:protobuf-java:3.25.3")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
