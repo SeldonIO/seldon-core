@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-seldonio/seldon-core  BSL 1.1  https://github.com/SeldonIO/seldon-core/blob/master/LICENSE
+seldonio/seldon-core  Business Source License 1.1  https://github.com/SeldonIO/seldon-core/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Parameters
 
