@@ -134,24 +134,26 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                 }
                 modelCRYaml = yamlDump(newModelCR)
                 if (config.isLoadPipeline) {
-                    let pipelineCRYaml = {
+                    let pipeline = kubeclient.get(seldonObjectType.PIPELINE.description, generatePipelineName(modelName), config.namespace)
+                    let steps = pipeline.spec.steps
+                    steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
+                    let newPipelineCRYaml = {
                         "apiVersion": "mlops.seldon.io/v1alpha1",
                         "kind": "Pipeline",
                         "metadata": {
                             "name": generatePipelineName(modelName),
                             "namespace": getConfig().namespace,
-                            "labels": {
-                                "seldon.io/pipeline_id": String(Math.random() * 1000),  // random pipeline ID to force a change
-                            },
                         },
                         "spec": {
-                            "steps": pipeline.pipeline.steps,
-                            "output": pipeline.pipeline.output
+                            "steps": steps,
+                            "output": pipeline.spec.output
                         }
                     }
+                    pipelineCRYaml = yamlDump(newPipelineCRYaml)
                 }
-            } catch (_) {
+            } catch (err) {
                 // just continue test, another VU might have deleted the chosen model
+                console.log(`Failed to update model ${modelName}: ${err}`)
                 return false
             }
             break;
@@ -173,7 +175,10 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
             if (config.isLoadPipeline) {
-                opOk = k8s.unloadPipeline(generatePipelineName(modelName), true) && opOk
+                let unloadPipeline = Math.random() < 0.5 ? 0 : 1
+                if (unloadPipeline) {
+                    opOk = k8s.unloadPipeline(generatePipelineName(modelName), true) && opOk
+                }
             }
             break;
     }
