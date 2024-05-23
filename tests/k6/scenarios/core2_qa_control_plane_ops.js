@@ -178,19 +178,19 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
-            if (config.isLoadPipeline) {
-                opOk = k8s.loadPipeline(generatePipelineName(modelName), pipelineCRYaml, true) && opOk
+            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
+                opOk = k8s.loadPipeline(generatePipelineName(modelName), pipelineCRYaml, true)
             }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
-            if (config.isLoadPipeline) {
+            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
                 // a model can go away while a pipeline is still loaded, we then simulate this behavior
                 // by not unloading the pipeline in 50% of the cases
                 // TODO: make it an environment variable?
                 let unloadPipeline = Math.random() < 0.5 ? 0 : 1
                 if (unloadPipeline) {
-                    opOk = k8s.unloadPipeline(generatePipelineName(modelName), true) && opOk
+                    opOk = k8s.unloadPipeline(generatePipelineName(modelName), true)
                 }
             }
             break;
