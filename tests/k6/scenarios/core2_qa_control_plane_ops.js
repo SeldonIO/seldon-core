@@ -175,6 +175,9 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
             if (config.isLoadPipeline) {
+                // a model can go away while a pipeline is still loaded, we then simulate this behavior
+                // by not unloading the pipeline in 50% of the cases
+                // TODO: make it an environment variable?
                 let unloadPipeline = Math.random() < 0.5 ? 0 : 1
                 if (unloadPipeline) {
                     opOk = k8s.unloadPipeline(generatePipelineName(modelName), true) && opOk
