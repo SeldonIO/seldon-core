@@ -1,6 +1,6 @@
 # seldon-core-operator
 
-![Version: 1.18.0](https://img.shields.io/badge/Version-1.18.0-informational?style=flat-square) ![AppVersion: 1.18.0](https://img.shields.io/badge/AppVersion-1.18.0-informational?style=flat-square)
+![Version: 1.19.0-dev](https://img.shields.io/badge/Version-1.19.0--dev-informational?style=flat-square) ![AppVersion: 1.19.0-dev](https://img.shields.io/badge/AppVersion-1.19.0--dev-informational?style=flat-square)
 
 Seldon Core CRD and controller helm chart for Kubernetes.
 
@@ -31,7 +31,7 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | executor.image.pullPolicy | string | `"IfNotPresent"` |  |
 | executor.image.registry | string | `"docker.io"` |  |
 | executor.image.repository | string | `"seldonio/seldon-core-executor"` |  |
-| executor.image.tag | string | `"1.18.0"` |  |
+| executor.image.tag | string | `"1.19.0-dev"` |  |
 | executor.metricsPortName | string | `"metrics"` |  |
 | executor.port | int | `8000` |  |
 | executor.prometheus.path | string | `"/prometheus"` |  |
@@ -44,13 +44,13 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | executor.resources.memoryRequest | string | `"512Mi"` |  |
 | executor.serviceAccount.name | string | `"default"` |  |
 | executor.user | int | `8888` |  |
-| explainer.image | string | `"seldonio/alibiexplainer:1.18.0"` |  |
+| explainer.image | string | `"seldonio/alibiexplainer:1.19.0-dev"` |  |
 | explainer.image_v2 | string | `"seldonio/mlserver:1.3.5-alibi-explain"` |  |
 | hostNetwork | bool | `false` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.registry | string | `"docker.io"` |  |
 | image.repository | string | `"seldonio/seldon-core-operator"` |  |
-| image.tag | string | `"1.18.0"` |  |
+| image.tag | string | `"1.19.0-dev"` |  |
 | istio.enabled | bool | `false` |  |
 | istio.gateway | string | `"istio-system/seldon-gateway"` |  |
 | istio.tlsMode | string | `""` |  |
@@ -80,23 +80,23 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | predictiveUnit.metricsPortName | string | `"metrics"` |  |
 | predictor_servers.HUGGINGFACE_SERVER.protocols.v2.defaultImageVersion | string | `"1.3.5-huggingface"` |  |
 | predictor_servers.HUGGINGFACE_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.18.0"` |  |
+| predictor_servers.MLFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.19.0-dev"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.seldon.image | string | `"seldonio/mlflowserver"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.v2.defaultImageVersion | string | `"1.3.5-mlflow"` |  |
 | predictor_servers.MLFLOW_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.18.0"` |  |
+| predictor_servers.SKLEARN_SERVER.protocols.seldon.defaultImageVersion | string | `"1.19.0-dev"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.seldon.image | string | `"seldonio/sklearnserver"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.v2.defaultImageVersion | string | `"1.3.5-sklearn"` |  |
 | predictor_servers.SKLEARN_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.v2.defaultImageVersion | string | `"1.3.5-slim"` |  |
 | predictor_servers.TEMPO_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
-| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.18.0"` |  |
+| predictor_servers.TENSORFLOW_SERVER.protocols.seldon.defaultImageVersion | string | `"1.19.0-dev"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.seldon.image | string | `"seldonio/tfserving-proxy"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.defaultImageVersion | string | `"2.1.0"` |  |
 | predictor_servers.TENSORFLOW_SERVER.protocols.tensorflow.image | string | `"tensorflow/serving"` |  |
 | predictor_servers.TRITON_SERVER.protocols.v2.defaultImageVersion | string | `"21.08-py3"` |  |
 | predictor_servers.TRITON_SERVER.protocols.v2.image | string | `"nvcr.io/nvidia/tritonserver"` |  |
-| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.18.0"` |  |
+| predictor_servers.XGBOOST_SERVER.protocols.seldon.defaultImageVersion | string | `"1.19.0-dev"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.seldon.image | string | `"seldonio/xgboostserver"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.v2.defaultImageVersion | string | `"1.3.5-xgboost"` |  |
 | predictor_servers.XGBOOST_SERVER.protocols.v2.image | string | `"seldonio/mlserver"` |  |
@@ -107,8 +107,11 @@ Seldon Core CRD and controller helm chart for Kubernetes.
 | singleNamespace | bool | `false` |  |
 | storageInitializer.cpuLimit | string | `"1"` |  |
 | storageInitializer.cpuRequest | string | `"100m"` |  |
-| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.18.0"` |  |
+| storageInitializer.image | string | `"seldonio/rclone-storage-initializer:1.19.0-dev"` |  |
 | storageInitializer.memoryLimit | string | `"1Gi"` |  |
 | storageInitializer.memoryRequest | string | `"100Mi"` |  |
 | usageMetrics.enabled | bool | `false` |  |
 | webhook.port | int | `4443` |  |
+
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.13.1](https://github.com/norwoodj/helm-docs/releases/v1.13.1)
