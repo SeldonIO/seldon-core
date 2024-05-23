@@ -18,6 +18,16 @@
  * 3. Apply operation to cluster
  * 4. Wait VU_OP_DELAY_SECONDS
  * 5. Repeat from 1
+ * 
+ * When testing with pipelines (i.e running `make deploy-kpipeline-test`) we are also
+ * testing pipeline creation/deletion. The pipeline operation follows the same pattern 
+ * for the model operation, with the following differences:
+ * There assumptions to note with the current change:
+ * - The test that we currently have is for a single model pipelines
+ * - To update a pipeline we induce a change to the pipeline CR that has no real effect 
+ *   (by setting `batch` to a random value)
+ * - We delete pipelines 50% of the time when a delete of a model is required, 
+ *   to simulate a pipeline that is not available due to issues with models.
  */
 
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
