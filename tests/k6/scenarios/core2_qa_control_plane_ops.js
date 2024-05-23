@@ -18,6 +18,16 @@
  * 3. Apply operation to cluster
  * 4. Wait VU_OP_DELAY_SECONDS
  * 5. Repeat from 1
+ * 
+ * When testing with pipelines (i.e running `make deploy-kpipeline-test`) we are also
+ * testing pipeline creation/deletion. The pipeline operation follows the same pattern 
+ * for the model operation, with the following differences:
+ * There assumptions to note with the current change:
+ * - The test that we currently have is for a single model pipelines
+ * - To update a pipeline we induce a change to the pipeline CR that has no real effect 
+ *   (by setting `batch` to a random value)
+ * - We delete pipelines 50% of the time when a delete of a model is required, 
+ *   to simulate a pipeline that is not available due to issues with models.
  */
 
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
@@ -29,7 +39,7 @@ import * as k8s from '../components/k8s.js';
 import { getConfig } from '../components/settings.js'
 import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
 import { setupBase } from '../components/utils.js'
-import { generateModel } from '../components/model.js';
+import { generateModel, generatePipelineName } from '../components/model.js';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -73,6 +83,9 @@ export function setup() {
 function handleCtlOp(config, op, modelTypeIx, existingModels) {
     var modelName = config.modelNamePrefix[modelTypeIx]
     var modelCRYaml = {}
+    if (config.isLoadPipeline) {
+        var pipelineCRYaml = {}
+    }
 
     // generate model CR or select one of the existing ones as the
     // target for the control-plane operation, possibly updating its config if
@@ -86,6 +99,9 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             const i = modelTypeIx
             let m = generateModel(config.modelType[i], modelName, 1, config.modelReplicas[i], config.isSchedulerProxy, config.modelMemoryBytes[i], config.inferBatchSize[i])
             modelCRYaml = m.modelCRYaml
+            if (config.isLoadPipeline) {
+                pipelineCRYaml = m.pipelineCRYaml
+            }
             break;
         case seldonOpType.UPDATE:
         case seldonOpType.DELETE:
@@ -127,8 +143,27 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                     }
                 }
                 modelCRYaml = yamlDump(newModelCR)
-            } catch (_) {
+                if (config.isLoadPipeline) {
+                    let pipeline = kubeclient.get(seldonObjectType.PIPELINE.description, generatePipelineName(modelName), config.namespace)
+                    let steps = pipeline.spec.steps
+                    steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
+                    let newPipelineCRYaml = {
+                        "apiVersion": "mlops.seldon.io/v1alpha1",
+                        "kind": "Pipeline",
+                        "metadata": {
+                            "name": generatePipelineName(modelName),
+                            "namespace": getConfig().namespace,
+                        },
+                        "spec": {
+                            "steps": steps,
+                            "output": pipeline.spec.output
+                        }
+                    }
+                    pipelineCRYaml = yamlDump(newPipelineCRYaml)
+                }
+            } catch (err) {
                 // just continue test, another VU might have deleted the chosen model
+                console.log(`Failed to update model ${modelName}: ${err}`)
                 return false
             }
             break;
@@ -143,9 +178,21 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
+            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
+                opOk = k8s.loadPipeline(generatePipelineName(modelName), pipelineCRYaml, true)
+            }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
+            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
+                // a model can go away while a pipeline is still loaded, we then simulate this behavior
+                // by not unloading the pipeline in 50% of the cases
+                // TODO: make it an environment variable?
+                let unloadPipeline = Math.random() < 0.5 ? 0 : 1
+                if (unloadPipeline) {
+                    opOk = k8s.unloadPipeline(generatePipelineName(modelName), true)
+                }
+            }
             break;
     }
 

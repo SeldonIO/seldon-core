@@ -33,7 +33,7 @@ export function setupBase(config) {
 
                 ctl.loadModelFn(modelName, defs.model.modelDefn, true)
                 if (config.isLoadPipeline) {
-                    ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, false)  // we use pipeline name as model name
+                    ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, false)  // we use pipeline name as model name + "-pipeline"
                 }
             }
         }
