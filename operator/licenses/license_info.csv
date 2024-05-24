@@ -55,6 +55,7 @@ devigned/tab,https://github.com/devigned/tab/blob/master/LICENSE,MIT License,htt
 dgryski/go-gk,https://github.com/dgryski/go-gk/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/dgryski/go-gk/master/LICENSE
 dgryski/go-rendezvous,https://github.com/dgryski/go-rendezvous/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/dgryski/go-rendezvous/master/LICENSE
 dimchansky/utfbom,https://github.com/dimchansky/utfbom/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/dimchansky/utfbom/master/LICENSE
+docker/distribution,https://github.com/distribution/distribution/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/distribution/distribution/main/LICENSE
 docker/spdystream,https://github.com/moby/spdystream/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/spdystream/master/LICENSE
 docopt/docopt-go,https://github.com/docopt/docopt.go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/docopt/docopt.go/master/LICENSE
 dustin/go-humanize,https://github.com/dustin/go-humanize/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/dustin/go-humanize/master/LICENSE
