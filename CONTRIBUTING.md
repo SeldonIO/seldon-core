@@ -1,6 +1,6 @@
 # Seldon Core Licensing
 
-As of 22 January 2024, contributions to Seldon's open source and source available projects are governed by Seldon's Contributor License Agreement ("CLA").  For certain contributions previously contributed to Seldon's open source projects under the Apache 2.0 license, the individual contributions will remain open source under the Apache 2.0 license (see [here](https://github.com/SeldonIO/seldon-core/blob/v1.17.1/LICENSE)), but Seldon may include such contribution as part of a larger project that constitutes a derivative work of the project and is licensed as a whole under the Business Source License 1.1.  A list of individual contributions that are subject to the Apache 2.0 license are listed [here](oss_commits.md).
+As of 22 January 2024, contributions to Seldon's open source and source available projects are governed by Seldon's Contributor License Agreement ("CLA").  For certain contributions previously contributed to Seldon's open source projects under the Apache 2.0 license, the individual contributions will remain open source under the Apache 2.0 license (see [here](https://github.com/SeldonIO/seldon-core/blob/v1.17.1/LICENSE)), but Seldon may include such contribution as part of a larger project that constitutes a derivative work of the project and is licensed as a whole under the Business Source License 1.1.  A list of individual contributions that are subject to the Apache 2.0 license are listed [here](./oss_commits.md).
 
 # Contributing to Seldon Core
 
