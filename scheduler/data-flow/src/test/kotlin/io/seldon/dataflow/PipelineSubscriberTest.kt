@@ -9,6 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.asFlow
@@ -37,6 +38,7 @@ internal class PipelineSubscriberTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `should run ops concurrently`() {
         val xs = (1..10).asFlow()
@@ -58,7 +60,7 @@ internal class PipelineSubscriberTest {
     }
 
     @Test
-    fun `should run ops in parallel`() {
+    fun `should run ops concurrently using custom Flow type extension`() {
         suspend fun waitAndPrint(i: Int) {
             kotlinx.coroutines.delay(1000)
             println("${LocalDateTime.now()} - $i")

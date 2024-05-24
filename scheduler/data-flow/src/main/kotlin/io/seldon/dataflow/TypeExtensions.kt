@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.DEFAULT_CONCURRENCY
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 suspend fun <T, R> Flow<T>.parallel(
     scope: CoroutineScope,
     concurrency: Int = DEFAULT_CONCURRENCY,
