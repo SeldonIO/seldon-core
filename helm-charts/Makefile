@@ -13,7 +13,7 @@ docs:
 	helm-docs -o README.md -t ../README.md.tpl
 
 install:
-	go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.13.1
+	go install github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
 
 package:
 	mkdir -p build && \
