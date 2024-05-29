@@ -1,8 +1,24 @@
 # seldon-core-loadtesting
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/static/v1?label=Version&message=0.2.0&color=informational&style=flat-square)
 
 Loadtesting for Seldon Core v1
+
+## Usage
+
+To use this chart, you will first need to add the `seldonio` Helm repo:
+
+```bash
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+helm repo update
+```
+
+Once that's done, you should then be able to deploy the chart as:
+
+```bash
+kubectl create namespace seldon-system
+helm install seldon-core-loadtesting seldonio/seldon-core-loadtesting --namespace seldon-system
+```
 
 **Homepage:** <https://github.com/SeldonIO/seldon-core>
 
