@@ -19,7 +19,7 @@ tornado = "^6.1"
 protobuf = "^3.17.3"
 joblib = "1.2.0"
 
-werkzeug = "^2.1.1"
+werkzeug = "^3.0.3"
 pillow = "^9.0.1"
 
 [tool.poetry.dev-dependencies]
