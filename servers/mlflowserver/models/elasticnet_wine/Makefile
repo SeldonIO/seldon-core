@@ -17,7 +17,8 @@ collect:
 	find ./mlruns -name "MLmodel" -type f -exec cp {} ./output \;
 	find ./mlruns -name "conda.yaml" -type f -exec cp {} ./output \;
 	find ./mlruns -name "model.pkl" -type f -exec cp {} ./output \;
-	conda env create --force -p ./.inference-env -f ./output/conda.yaml
+	rm -rf ./.inference-env && mkdir -p ./.inference-env
+	conda env create -p ./.inference-env -f ./output/conda.yaml
 	./.inference-env/bin/pip install mlserver[all] mlserver-mlflow
 	./.env/bin/conda-pack -p ./.inference-env -f -o output/environment.tar.gz
 
