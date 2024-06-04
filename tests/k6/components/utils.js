@@ -507,8 +507,8 @@ export function checkModelsStateIsConsistent(k8sModels, schedModels) {
 
       // if status is "Ready" check if on the same version
       let schedVersion = schedModel.version
-      if (k8sModelStatus == "ModelReady" && Number(k8sModel.metadata.generation) !== schedVersion) {
-          statesConsistent = false
+      if (k8sModelStatus == "ModelReady" && k8sModel.metadata.generation !== schedVersion) {
+          isConsistent = false
           let inconsistency = {
           type: `ModelVersion`,
           message: `Model ${k8sModelName} has version ${k8sModel.metadata.generation} in K8S and ${schedVersion} in Scheduler`
@@ -572,8 +572,8 @@ export function checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines) {
 
       // check same version
       let schedVersion = schedPipeline.pipeline.version
-      if (k8sPipelineStatus === "PipelineReady" && Number(k8sPipeline.metadata.generation) == schedVersion) {
-          statesConsistent = false
+      if (k8sPipelineStatus === "PipelineReady" && k8sPipeline.metadata.generation == schedVersion) {
+          isConsistent = false
           let inconsistency = {
               type: `PipelineVersion`,
               message: `Pipeline ${k8sPipelineName} has version ${k8sPipeline.metadata.generation} in K8S and ${schedVersion} in Scheduler`
