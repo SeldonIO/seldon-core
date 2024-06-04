@@ -3,7 +3,11 @@
  * numerous control-plane operations, with some of those being executed in
  * parallel.
  *
- * Tests Create/Update/Delete operations; expect: consistent end-state
+ * Tests Create/Update/Delete operations; expect: consistent end-state,
+ * consistent states between operator/scheduler at each intermediary check.
+ *
+ * State consistency tests happen periodically on VU1, while other VUs wait for
+ * the checks to complete.
  *
  * Constant VU test;
  * Per VU:
@@ -18,27 +22,28 @@
  * 3. Apply operation to cluster
  * 4. Wait VU_OP_DELAY_SECONDS
  * 5. Repeat from 1
- * 
+ *
  * When testing with pipelines (i.e running `make deploy-kpipeline-test`) we are also
- * testing pipeline creation/deletion. The pipeline operation follows the same pattern 
+ * testing pipeline creation/deletion. The pipeline operation follows the same pattern
  * for the model operation, with the following differences:
  * There assumptions to note with the current change:
  * - The test that we currently have is for a single model pipelines
- * - To update a pipeline we induce a change to the pipeline CR that has no real effect 
+ * - To update a pipeline we induce a change to the pipeline CR that has no real effect
  *   (by setting `batch` to a random value)
- * - We delete pipelines 50% of the time when a delete of a model is required, 
+ * - We delete pipelines 50% of the time when a delete of a model is required,
  *   to simulate a pipeline that is not available due to issues with models.
  */
 
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
-import { sleep } from 'k6';
-import { vu } from 'k6/execution';
+import { sleep, check } from 'k6';
+import { scenario, vu, test } from 'k6/execution';
 import { Counter } from 'k6/metrics';
 import * as k8s from '../components/k8s.js';
+import * as scheduler from '../components/scheduler.js'
 
 import { getConfig } from '../components/settings.js'
 import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
-import { setupBase } from '../components/utils.js'
+import { setupBase, periodicExclusiveRun, checkModelsStateIsConsistent, checkPipelinesStateIsConsistent } from '../components/utils.js'
 import { generateModel, generatePipelineName } from '../components/model.js';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -59,6 +64,22 @@ export let options = {
 // with other VUs. The range size is controlled by MAX_CREATE_OPS_PER_VU
 var VU_maxModelId = 0
 
+// Control-plane operations timing
+const maxRandomDelay = 2
+const maxOpDuration = k8s.MAX_RETRIES + 2
+const maxIterDuration = maxOpDuration + getConfig().k8sDelaySecPerVU + maxRandomDelay
+
+// Variable only used by VU 1, to avoid running the check twice in the same
+// period; Pass object to periodicExclusiveRun(), as the status argument.
+var checkStatus = {
+    isDue: true
+}
+
+// Control-plane client handles
+var kubeClient = null
+var schedClient = null
+
+// metrics
 const createCounter = new Counter("ctl_op_model_create")
 const createFailCounter = new Counter("ctl_op_model_create_fail")
 const updateCounter = new Counter("ctl_op_model_update")
@@ -66,13 +87,15 @@ const updateFailCounter = new Counter("ctl_op_model_update_fail")
 const deleteCounter = new Counter("ctl_op_model_delete")
 const deleteFailCounter = new Counter("ctl_op_model_delete_fail")
 
-var kubeclient = {}
-
 export function setup() {
     var config = getConfig()
 
+    // Check config sanity
+    if((config.checkStateEverySec - config.maxCheckTimeSec) < (maxIterDuration + 1)) {
+        throw new Error(`Invalid config: CHECK_STATE_EVERY_SECONDS - MAX_CHECK_TIME_SECONDS must be at least ${maxIterDuration + 1} to ensure test progression`)
+    }
+
     setupBase(config)
-    console.log(config.maxNumModels)
     let numLoadedModels = config.maxNumModels.reduce((s,a) => s + Number(a), 0)
     console.log("Loaded models (end-of-setup):" + numLoadedModels)
     createCounter.add(numLoadedModels)
@@ -113,7 +136,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             }
 
             try {
-                let model = kubeclient.get(seldonObjectType.MODEL.description, modelName, config.namespace)
+                let model = kubeClient.get(seldonObjectType.MODEL.description, modelName, config.namespace)
 
                 let plusOrMinus = Math.random() < 0.5 ? -1 : 1
                 // update memory +/- with random variation
@@ -144,7 +167,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                 }
                 modelCRYaml = yamlDump(newModelCR)
                 if (config.isLoadPipeline) {
-                    let pipeline = kubeclient.get(seldonObjectType.PIPELINE.description, generatePipelineName(modelName), config.namespace)
+                    let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, generatePipelineName(modelName), config.namespace)
                     let steps = pipeline.spec.steps
                     steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
                     let newPipelineCRYaml = {
@@ -170,7 +193,6 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
     }
 
     console.log(`VU ${vu.idInTest} executes ${op.description} on ${modelName}`)
-
 
     // execute control-plane operation
     var opOk = seldonOpExecStatus.FAIL
@@ -225,10 +247,12 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             }
             break;
 
-        // ignore opOk == seldonOpExecStatus.CONCURRENT_OP_FAIL case
-        // it just means another VU did an operation invalidating the one of the
+        // Ignore opOk == seldonOpExecStatus.CONCURRENT_OP_FAIL case;
+        // It just means another VU did an operation invalidating the one of the
         // current VU, concurrently; example: current VU wants to update a model,
-        // another VU already deleted it
+        // another VU already deleted it. It is expected that such operations
+        // would fail, and they shouldn't be recorded as errors as long as the
+        // control plane remains functional
     }
 
     if (targetCounter != null) {
@@ -236,18 +260,62 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
     }
 
     return opOk
-
 }
 
 export default function (config) {
-    kubeclient = k8s.init()
+    kubeClient = k8s.init()
+    if (periodicExclusiveRun(config.checkStateEverySec,
+                             config.maxCheckTimeSec,
+                             maxIterDuration, checkStatus)) {
+        console.log(`VU ${vu.idInTest} starts a state consistency check...`)
+        // Perform state consistency checks
+        let k8sModels = k8s.getAllModels()
+
+        if (schedClient === null) {
+            schedClient = scheduler.connectScheduler(config.schedulerEndpoint)
+        }
+
+        // The folowing code all executes asynchronously; It's the only way
+        // we can currently get grpc status streaming from the scheduler.
+        //
+        // The VU will return immediately, but all the async functions below
+        // are registered to run as part of the event loop, and k6 will wait
+        // some time for them to complete before ending the current iteration
+        scheduler.getAllModels().then((schedModels) => {
+            let msc = checkModelsStateIsConsistent(k8sModels, schedModels)
+
+            if (config.isLoadPipeline) {
+                let k8sPipelines = k8s.getAllPipelines()
+                scheduler.getAllPipelines().then((schedPipelines) => {
+                    let psc = checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines)
+
+                    if (!psc && config.stopOnCheckFailure) {
+                        test.abort("Aborting test due to pipeline state inconsistencies")
+                    }
+                })
+            }
+
+            if (!msc && config.stopOnCheckFailure) {
+                test.abort("Aborting test due to model state inconsistencies")
+            }
+        })
+
+        // required for the async operations set above to run before the next
+        // iteration starts
+        return
+    }
+
     const numModelTypes = config.modelType.length
 
-    var idx = Math.floor(Math.random() * numModelTypes)
-    while (config.maxNumModels[idx] === 0) {
-        idx = Math.floor(Math.random() * numModelTypes)
+    let candidateIdxs = []
+    for (let i = 0; i < numModelTypes; i++) {
+        if (config.maxNumModels[i] !== 0)
+            candidateIdxs.push(i)
     }
-    let modelsOfType = k8s.getModels(config.modelNamePrefix[idx])
+    const numCandidates = candidateIdxs.length
+
+    var idx = candidateIdxs[Math.floor(Math.random() * numCandidates)]
+    let modelsOfType = k8s.getExistingModelNames(config.modelNamePrefix[idx])
 
     // Pick random operation in CREATE/UPDATE/DELETE, amongst available ones.
     // Each operation is added multiple times in the selection array as
@@ -259,6 +327,12 @@ export default function (config) {
     // Because each VU picks the operation independently, it's possible to
     // temporarily get more models than MAX_NUM_MODELS for a given model type.
     let availableOps = []
+    if (modelsOfType.length == 0 && config.createUpdateDeleteBias[0] == 0 ) {
+        // Force single create operation when maxNumModels for a given type
+        // is not 0, all models of that type have been deleted, but the "Create"
+        // bias is also set to 0
+        availableOps.push(seldonOpType.CREATE)
+    }
     if (modelsOfType.length < config.maxNumModels[idx] + config.maxNumModelsHeadroom[idx]) {
         let createArray = Array(config.createUpdateDeleteBias[0]).fill(seldonOpType.CREATE)
         availableOps.push(...createArray)
@@ -269,18 +343,26 @@ export default function (config) {
         availableOps.push(...updateArray)
         availableOps.push(...deleteArray)
     }
+
+    if (availableOps.length == 0) {
+        console.log(`No available operations for models of type ${config.modelNamePrefix[idx]}`)
+        return
+    }
     const randomOp = availableOps[Math.floor(Math.random() * availableOps.length)]
     const opOk = handleCtlOp(config, randomOp, idx, modelsOfType)
 
     if (opOk === seldonOpExecStatus.OK) {
         sleep(config.k8sDelaySecPerVU + (Math.random() * 2))
+    } else {
+        // prevent client-rate limiting in case of error
+        sleep(2)
     }
-
 }
 
 export function teardown(config) {
-    let modelNames = k8s.getModels()
+    let modelNames = k8s.getExistingModelNames()
     for (var modelName in modelNames) {
         k8s.unloadModel(modelName, false)
     }
+    scheduler.disconnectScheduler()
 }

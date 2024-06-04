@@ -39,6 +39,36 @@ export function getModelStatus(modelName) {
     }
 }
 
+export async function getAllObjects(grpcStatusEndpointName){
+    let objStatusResponse = new Promise((resolve, reject) => {
+        let objStatusStream = new grpc.Stream(schedulerClient, grpcStatusEndpointName, null)
+        var objs = []
+        objStatusStream.on('data', function(objStatus) {
+            objs.push(objStatus)
+        })
+        objStatusStream.on('end', function() {
+            resolve(objs)
+        })
+        objStatusStream.on('error', function(err) {
+            console.log('error: ' + err)
+            reject(err)
+        })
+
+        objStatusStream.write({ "subscriberName": "seldon-k6", "allVersions": false })
+        objStatusStream.end()
+    })
+
+    return await objStatusResponse
+}
+
+export async function getAllModels() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/ModelStatus")
+}
+
+export async function getAllPipelines() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/PipelineStatus")
+}
+
 export function awaitStatus(modelName, status) {
     while (getModelStatus(modelName) !== status) {
         sleep(1)

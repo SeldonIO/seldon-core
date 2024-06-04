@@ -271,6 +271,34 @@ function k8sDelaySecPerVU() {
     return 10
 }
 
+// How often to do state consistency checks (in seconds)
+function checkStateEverySec() {
+    if (__ENV.CHECK_STATE_EVERY_SECONDS) {
+        return Number(__ENV.CHECK_STATE_EVERY_SECONDS)
+    }
+    return 4 * 60
+}
+
+// Maximum time to wait for a state consistency check to complete (in seconds).
+// This MUST be fulfilled under all circumstances, otherwise concurrency issues
+// will appear. This is because other VUs will start control-plane operations
+// after maxCheckTimeSec in the current checkPeriod, irrespective of whether
+// the state check is done or not.
+function maxCheckTimeSec() {
+    if (__ENV.MAX_CHECK_TIME_SECONDS) {
+        return Number(__ENV.MAX_CHECK_TIME_SECONDS)
+    }
+    return 10
+}
+
+// Whether to abort the k6 test if a state consistency check fails
+function stopOnCheckFailure() {
+    if (__ENV.STOP_ON_CHECK_FAILURE) {
+        return (__ENV.STOP_ON_CHECK_FAILURE === "true")
+    }
+    return true
+}
+
 export function getConfig() {
     return {
         "useKubeControlPlane": useKubeControlPlane(),
@@ -309,5 +337,8 @@ export function getConfig() {
         "maxCreateOpsPerVU": maxCreateOpsPerVU(),
         "k8sDelaySecPerVU": k8sDelaySecPerVU(),
         "maxMemUpdateFraction": maxMemUpdateFraction(),
+        "checkStateEverySec": checkStateEverySec(),
+        "maxCheckTimeSec": maxCheckTimeSec(),
+        "stopOnCheckFailure": stopOnCheckFailure(),
     }
 }

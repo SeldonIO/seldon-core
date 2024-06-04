@@ -8,7 +8,7 @@ import { seldonObjectType, seldonOpExecStatus } from '../components/seldon.js'
 import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
-const MAX_RETRIES = 60;
+export const MAX_RETRIES = 10;
 var kubeclient = null;
 var schedulerClient = null;
 
@@ -47,9 +47,32 @@ function seldonObjExists(kind, name, ns) {
     }
 }
 
+function identity(value) {
+    return value
+}
+
+function getSeldonObjects(type, mapFn=identity, filterFn=identity) {
+    try {
+        return kubeclient.list(type.description, seldon_target_ns)
+                         .map(mapFn)
+                         .filter(filterFn)
+    } catch (error) {
+        console.log(`K8S error in listing ${type.description}: ${error}`)
+        return []
+    }
+}
+
+export function getAllModels() {
+    return getSeldonObjects(seldonObjectType.MODEL)
+}
+
+export function getAllPipelines() {
+    return getSeldonObjects(seldonObjectType.PIPELINE)
+}
+
 /**
- * getModels() can be used to get the models currently loaded in the configured
- * namespace.
+ * getExistingModelNames() can be used to get the models currently loaded in the
+ * configured namespace.
  *
  * When passing prefix/suffix constrains, a filtered list is returned.
  *
@@ -64,7 +87,7 @@ function seldonObjExists(kind, name, ns) {
  * together to retrieve all models of a given type that are managed by a given
  * VU
  */
-export function getModels(namePrefix="", nameSuffix="") {
+export function getExistingModelNames(namePrefix="", nameSuffix="") {
     try {
         const modelList = kubeclient.list(seldonObjectType.MODEL.description, seldon_target_ns)
         const modelNames = modelList.map((modelCR) => modelCR.metadata.name)
@@ -102,7 +125,7 @@ export function awaitStatus(modelName, status) {
             sleep(1)
             retries++
             if(retries > MAX_RETRIES) {
-                console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES}`)
+                console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES} retries`)
                 return seldonOpExecStatus.FAIL
             }
         }
@@ -126,6 +149,28 @@ export function getModelStatus(modelName, targetStatus) {
         }
     }
     return false
+}
+
+function getObjectCRStatus(objCR, targetStatus, field) {
+    var k8sStatus = "K8sStatusUnknown";
+    if('status' in objCR) {
+        for (let i = 0; i < objCR.status.conditions.length; i++){
+            let condition = objCR.status.conditions[i]
+            if (condition.type === targetStatus) {
+                k8sStatus = condition[field]
+                break
+            }
+        }
+    }
+    return k8sStatus
+}
+
+export function getModelCRStatus(modelCR) {
+    return getObjectCRStatus(modelCR, "ModelReady", "message")
+}
+
+export function getPipelineCRStatus(pipelineCR) {
+    return getObjectCRStatus(pipelineCR, "PipelineReady", "reason")
 }
 
 export function unloadModel(modelName, awaitReady=true) {
