@@ -264,45 +264,47 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
 
 export default function (config) {
     kubeClient = k8s.init()
-    if (periodicExclusiveRun(config.checkStateEverySec,
-                             config.maxCheckTimeSec,
-                             maxIterDuration, checkStatus)) {
-        console.log(`VU ${vu.idInTest} starts a state consistency check...`)
-        // Perform state consistency checks
-        let k8sModels = k8s.getAllModels()
+    if(config.enableStateCheck) {
+        if (periodicExclusiveRun(config.checkStateEverySec,
+                                config.maxCheckTimeSec,
+                                maxIterDuration, checkStatus)) {
+            console.log(`VU ${vu.idInTest} starts a state consistency check...`)
+            // Perform state consistency checks
+            let k8sModels = k8s.getAllModels()
 
-        if (schedClient === null) {
-            schedClient = scheduler.connectScheduler(config.schedulerEndpoint)
+            if (schedClient === null) {
+                schedClient = scheduler.connectScheduler(config.schedulerEndpoint)
+            }
+
+            // The folowing code all executes asynchronously; It's the only way
+            // we can currently get grpc status streaming from the scheduler.
+            //
+            // The VU will return immediately, but all the async functions below
+            // are registered to run as part of the event loop, and k6 will wait
+            // some time for them to complete before ending the current iteration
+            scheduler.getAllModels().then((schedModels) => {
+                let msc = checkModelsStateIsConsistent(k8sModels, schedModels)
+
+                if (config.isLoadPipeline) {
+                    let k8sPipelines = k8s.getAllPipelines()
+                    scheduler.getAllPipelines().then((schedPipelines) => {
+                        let psc = checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines)
+
+                        if (!psc && config.stopOnCheckFailure) {
+                            test.abort("Aborting test due to pipeline state inconsistencies")
+                        }
+                    })
+                }
+
+                if (!msc && config.stopOnCheckFailure) {
+                    test.abort("Aborting test due to model state inconsistencies")
+                }
+            })
+
+            // required for the async operations set above to run before the next
+            // iteration starts
+            return
         }
-
-        // The folowing code all executes asynchronously; It's the only way
-        // we can currently get grpc status streaming from the scheduler.
-        //
-        // The VU will return immediately, but all the async functions below
-        // are registered to run as part of the event loop, and k6 will wait
-        // some time for them to complete before ending the current iteration
-        scheduler.getAllModels().then((schedModels) => {
-            let msc = checkModelsStateIsConsistent(k8sModels, schedModels)
-
-            if (config.isLoadPipeline) {
-                let k8sPipelines = k8s.getAllPipelines()
-                scheduler.getAllPipelines().then((schedPipelines) => {
-                    let psc = checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines)
-
-                    if (!psc && config.stopOnCheckFailure) {
-                        test.abort("Aborting test due to pipeline state inconsistencies")
-                    }
-                })
-            }
-
-            if (!msc && config.stopOnCheckFailure) {
-                test.abort("Aborting test due to model state inconsistencies")
-            }
-        })
-
-        // required for the async operations set above to run before the next
-        // iteration starts
-        return
     }
 
     const numModelTypes = config.modelType.length

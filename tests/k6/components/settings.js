@@ -299,6 +299,13 @@ function stopOnCheckFailure() {
     return true
 }
 
+function enableStateCheck() {
+    if (__ENV.ENABLE_STATE_CHECK) {
+        return (__ENV.ENABLE_STATE_CHECK === "true")
+    }
+    return true
+}
+
 export function getConfig() {
     return {
         "useKubeControlPlane": useKubeControlPlane(),
@@ -337,6 +344,7 @@ export function getConfig() {
         "maxCreateOpsPerVU": maxCreateOpsPerVU(),
         "k8sDelaySecPerVU": k8sDelaySecPerVU(),
         "maxMemUpdateFraction": maxMemUpdateFraction(),
+        "enableStateCheck": enableStateCheck(),
         "checkStateEverySec": checkStateEverySec(),
         "maxCheckTimeSec": maxCheckTimeSec(),
         "stopOnCheckFailure": stopOnCheckFailure(),
