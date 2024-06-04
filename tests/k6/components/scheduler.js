@@ -65,10 +65,6 @@ export async function getAllModels() {
     return await getAllObjects("seldon.mlops.scheduler.Scheduler/ModelStatus")
 }
 
-export async function getAllPipelines() {
-    return await getAllObjects("seldon.mlops.scheduler.Scheduler/PipelineStatus")
-}
-
 export function awaitStatus(modelName, status) {
     while (getModelStatus(modelName) !== status) {
         sleep(1)
@@ -83,6 +79,10 @@ export function unloadModel(modelName, awaitReady = true) {
             awaitStatus(modelName, "ModelTerminated")
         }
     }
+}
+
+export async function getAllPipelines() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/PipelineStatus")
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
@@ -120,6 +120,10 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
             awaitPipelineStatus(pipelineName, "PipelineTerminated")
         }
     }
+}
+
+export async function getAllExperiments() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/ExperimentStatus")
 }
 
 export function isExperimentActive(experimentName) {

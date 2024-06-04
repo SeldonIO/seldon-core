@@ -43,7 +43,13 @@ import * as scheduler from '../components/scheduler.js'
 
 import { getConfig } from '../components/settings.js'
 import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
-import { setupBase, periodicExclusiveRun, checkModelsStateIsConsistent, checkPipelinesStateIsConsistent } from '../components/utils.js'
+import {
+    setupBase,
+    periodicExclusiveRun,
+    checkModelsStateIsConsistent,
+    checkPipelinesStateIsConsistent,
+    checkExperimentsStateIsConsistent,
+} from '../components/utils.js'
 import { generateModel, generatePipelineName } from '../components/model.js';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -103,8 +109,10 @@ export function setup() {
     return config
 }
 
-function handleCtlOp(config, op, modelTypeIx, existingModels) {
+function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines) {
     var modelName = config.modelNamePrefix[modelTypeIx]
+    var pipelineName = generatePipelineName(modelName)
+    var altPipelineName = pipelineName // used for delete only
     var modelCRYaml = {}
     if (config.isLoadPipeline) {
         var pipelineCRYaml = {}
@@ -123,6 +131,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
             let m = generateModel(config.modelType[i], modelName, 1, config.modelReplicas[i], config.isSchedulerProxy, config.modelMemoryBytes[i], config.inferBatchSize[i])
             modelCRYaml = m.modelCRYaml
             if (config.isLoadPipeline) {
+                pipelineName = m.pipelineDefn.pipeline.name
                 pipelineCRYaml = m.pipelineCRYaml
             }
             break;
@@ -130,6 +139,9 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.DELETE:
             var randomModelIx = Math.floor(Math.random() * existingModels.length)
             modelName = existingModels[randomModelIx]
+
+            var randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
+            altPipelineName = existingPipelines[randomPipelineIx]
 
             if (op === seldonOpType.DELETE) {
                 break;
@@ -167,14 +179,14 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
                 }
                 modelCRYaml = yamlDump(newModelCR)
                 if (config.isLoadPipeline) {
-                    let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, generatePipelineName(modelName), config.namespace)
+                    let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, pipelineName, config.namespace)
                     let steps = pipeline.spec.steps
                     steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
                     let newPipelineCRYaml = {
                         "apiVersion": "mlops.seldon.io/v1alpha1",
                         "kind": "Pipeline",
                         "metadata": {
-                            "name": generatePipelineName(modelName),
+                            "name": pipelineName,
                             "namespace": getConfig().namespace,
                         },
                         "spec": {
@@ -201,18 +213,29 @@ function handleCtlOp(config, op, modelTypeIx, existingModels) {
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
             if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
-                opOk = k8s.loadPipeline(generatePipelineName(modelName), pipelineCRYaml, true)
+                opOk = k8s.loadPipeline(pipelineName, pipelineCRYaml, true)
             }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
             if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
-                // a model can go away while a pipeline is still loaded, we then simulate this behavior
-                // by not unloading the pipeline in 50% of the cases
-                // TODO: make it an environment variable?
-                let unloadPipeline = Math.random() < 0.5 ? 0 : 1
-                if (unloadPipeline) {
-                    opOk = k8s.unloadPipeline(generatePipelineName(modelName), true)
+                // We don't want to always delete the pipeline corrsponding to
+                // the deleted model, because we also want to test the case
+                // where the pipeline remains without some of the component
+                // models.
+                //
+                // However, when we don't delete the pipeline associated with
+                // the model, we still want to delete a pipeline, because
+                // otherwise the number of pipelines will grow indefinitely.
+                // We have picked this altPipeline at random from the existing
+                // ones. In practice, this means that the probability to delete
+                // the pipeline associated with the model is slightly larger than
+                // 0.5
+                let unloadAltPipeline = Math.random() < 0.5 ? 0 : 1
+                if (unloadAltPipeline) {
+                    opOk = k8s.unloadPipeline(altPipelineName, true)
+                } else {
+                    opOk = k8s.unloadPipeline(pipelineName, true)
                 }
             }
             break;
@@ -296,6 +319,17 @@ export default function (config) {
                     })
                 }
 
+                if (config.loadExperiment) {
+                    let k8sExperiments = k8s.getAllExperiments()
+                    scheduler.getAllExperiments().then((schedExperiments) => {
+                        let esc = checkExperimentsStateIsConsistent(k8sExperiments, schedExperiments)
+
+                        if (!esc && config.stopOnCheckFailure) {
+                            test.abort("Aborting test due to experiment state inconsistencies")
+                        }
+                    })
+                }
+
                 if (!msc && config.stopOnCheckFailure) {
                     test.abort("Aborting test due to model state inconsistencies")
                 }
@@ -318,6 +352,7 @@ export default function (config) {
 
     var idx = candidateIdxs[Math.floor(Math.random() * numCandidates)]
     let modelsOfType = k8s.getExistingModelNames(config.modelNamePrefix[idx])
+    let pipelinesOfType = k8s.getExistingPipelineNames(config.modelNamePrefix[idx])
 
     // Pick random operation in CREATE/UPDATE/DELETE, amongst available ones.
     // Each operation is added multiple times in the selection array as
@@ -351,7 +386,7 @@ export default function (config) {
         return
     }
     const randomOp = availableOps[Math.floor(Math.random() * availableOps.length)]
-    const opOk = handleCtlOp(config, randomOp, idx, modelsOfType)
+    const opOk = handleCtlOp(config, randomOp, idx, modelsOfType, pipelinesOfType)
 
     if (opOk === seldonOpExecStatus.OK) {
         sleep(config.k8sDelaySecPerVU + (Math.random() * 2))
