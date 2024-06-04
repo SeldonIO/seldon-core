@@ -139,6 +139,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
         case seldonOpType.DELETE:
             var randomModelIx = Math.floor(Math.random() * existingModels.length)
             modelName = existingModels[randomModelIx]
+            pipelineName = generatePipelineName(modelName)
 
             var randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
             altPipelineName = existingPipelines[randomPipelineIx]

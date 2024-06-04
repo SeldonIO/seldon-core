@@ -54,7 +54,13 @@ export async function getAllObjects(grpcStatusEndpointName){
             reject(err)
         })
 
-        objStatusStream.write({ "subscriberName": "seldon-k6", "allVersions": false })
+        let req = null
+        if (grpcStatusEndpointName.endsWith("ExperimentStatus")) {
+            req = { "subscriberName": "seldon-k6" }
+        } else {
+            req = { "subscriberName": "seldon-k6", "allVersions": false }
+        }
+        objStatusStream.write(req)
         objStatusStream.end()
     })
 

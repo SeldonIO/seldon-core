@@ -572,7 +572,7 @@ export function checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines) {
 
       // check same version
       let schedVersion = schedPipeline.pipeline.version
-      if (pipelineIsReady && k8sPipeline.metadata.generation == schedVersion) {
+      if (pipelineIsReady && k8sPipeline.metadata.generation !== schedVersion) {
           isConsistent = false
           let inconsistency = {
               type: `PipelineVersion`,
