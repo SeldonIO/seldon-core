@@ -111,20 +111,19 @@ export function setup() {
 
 function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines) {
     var modelName = config.modelNamePrefix[modelTypeIx]
-    var pipelineName = generatePipelineName(modelName)
-    // altPipelineName is modified depending on the operation, and then used by
-    // the UPDATE and DELETE ops. For DELETE, altPipelineName is only used when
-    // we don't delete the pipeline associated with modelName and need another
-    // (arbitrary) pipeline.
-    var altPipelineName = pipelineName
     var modelCRYaml = {}
+
     if (config.isLoadPipeline) {
+        var pipelineName = generatePipelineName(modelName)
+        // targetPipelineName is modified to either point at pipelineName or
+        // to an alternative, random pipeline from the existing ones, depending on
+        // operation and context
+        var targetPipelineName = pipelineName
         var pipelineCRYaml = {}
     }
 
-    // generate model CR or select one of the existing ones as the
-    // target for the control-plane operation, possibly updating its config if
-    // needed
+    // Logic for generating data structures (model/pipeline CRs) and targets for
+    // the control-plane operation
     switch (op) {
         case seldonOpType.CREATE:
             VU_maxModelId += 1
@@ -136,20 +135,42 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
             modelCRYaml = m.modelCRYaml
             if (config.isLoadPipeline) {
                 pipelineName = m.pipelineDefn.pipeline.name
+                targetPipelineName = pipelineName
                 pipelineCRYaml = m.pipelineCRYaml
             }
             break;
         case seldonOpType.UPDATE:
         case seldonOpType.DELETE:
-            var randomModelIx = Math.floor(Math.random() * existingModels.length)
+            let randomModelIx = Math.floor(Math.random() * existingModels.length)
             modelName = existingModels[randomModelIx]
-            pipelineName = generatePipelineName(modelName)
+            let altPipelineName = ""
 
-            var randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
-            altPipelineName = existingPipelines[randomPipelineIx]
-            let targetPipelineName = pipelineName
+            if (config.isLoadPipeline) {
+                pipelineName = generatePipelineName(modelName)
+                targetPipelineName = pipelineName
+                let randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
+                altPipelineName = existingPipelines[randomPipelineIx]
+            }
 
             if (op === seldonOpType.DELETE) {
+                if (config.isLoadPipeline) {
+                    // We don't want to always delete the pipeline corrsponding to
+                    // the deleted model, because we also want to test the case
+                    // where the pipeline remains without some of the component
+                    // models.
+                    //
+                    // However, when we don't delete the pipeline associated with
+                    // the model, we still want to delete a pipeline, because
+                    // otherwise the number of pipelines will grow indefinitely.
+                    // We have picked this altPipeline at random from the existing
+                    // ones. In practice, this means that the probability to delete
+                    // the pipeline associated with the model is slightly larger than
+                    // 0.5
+                    let unloadAltPipeline = Math.random() < 0.5 ? 0 : 1
+                    if (unloadAltPipeline) {
+                        targetPipelineName = altPipelineName
+                    }
+                }
                 break;
             }
 
@@ -216,39 +237,27 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
             break;
     }
 
-    console.log(`VU ${vu.idInTest} executes ${op.description} on ${modelName}`)
+    let msg = `VU ${vu.idInTest} executes ${op.description} on ${modelName}`
+    if(config.isLoadPipeline) {
+        msg += ` and ${targetPipelineName}`
+    }
+    console.log(msg)
 
-    // execute control-plane operation
+    // Execution of control-plane operation. No Math.random() selection logic
+    // below
     var opOk = seldonOpExecStatus.FAIL
     switch(op) {
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
             if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
-                opOk = k8s.loadPipeline(pipelineName, pipelineCRYaml, true)
+                opOk = k8s.loadPipeline(targetPipelineName, pipelineCRYaml, true)
             }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
             if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
-                // We don't want to always delete the pipeline corrsponding to
-                // the deleted model, because we also want to test the case
-                // where the pipeline remains without some of the component
-                // models.
-                //
-                // However, when we don't delete the pipeline associated with
-                // the model, we still want to delete a pipeline, because
-                // otherwise the number of pipelines will grow indefinitely.
-                // We have picked this altPipeline at random from the existing
-                // ones. In practice, this means that the probability to delete
-                // the pipeline associated with the model is slightly larger than
-                // 0.5
-                let unloadAltPipeline = Math.random() < 0.5 ? 0 : 1
-                if (unloadAltPipeline) {
-                    opOk = k8s.unloadPipeline(altPipelineName, true)
-                } else {
-                    opOk = k8s.unloadPipeline(pipelineName, true)
-                }
+                    opOk = k8s.unloadPipeline(targetPipelineName, true)
             }
             break;
     }
