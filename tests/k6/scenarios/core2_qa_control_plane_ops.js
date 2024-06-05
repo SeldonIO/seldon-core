@@ -112,7 +112,11 @@ export function setup() {
 function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines) {
     var modelName = config.modelNamePrefix[modelTypeIx]
     var pipelineName = generatePipelineName(modelName)
-    var altPipelineName = pipelineName // used for delete only
+    // altPipelineName is modified depending on the operation, and then used by
+    // the UPDATE and DELETE ops. For DELETE, altPipelineName is only used when
+    // we don't delete the pipeline associated with modelName and need another
+    // (arbitrary) pipeline.
+    var altPipelineName = pipelineName
     var modelCRYaml = {}
     if (config.isLoadPipeline) {
         var pipelineCRYaml = {}
@@ -143,6 +147,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
 
             var randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
             altPipelineName = existingPipelines[randomPipelineIx]
+            let targetPipelineName = pipelineName
 
             if (op === seldonOpType.DELETE) {
                 break;
@@ -180,14 +185,20 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
                 }
                 modelCRYaml = yamlDump(newModelCR)
                 if (config.isLoadPipeline) {
-                    let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, pipelineName, config.namespace)
+                    // The pipeline associated with modelName might have been deleted,
+                    // having been chosen at random while deleting another model.
+                    // This is because when deleting a model, we don't always delete
+                    // its associated pipeline (to test the case when the pipeline remains
+                    // and the model disappears) but instead pick another pipeline.
+                    targetPipelineName = pipelineName in existingPipelines ? pipelineName : altPipelineName
+                    let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, targetPipelineName, config.namespace)
                     let steps = pipeline.spec.steps
                     steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
                     let newPipelineCRYaml = {
                         "apiVersion": "mlops.seldon.io/v1alpha1",
                         "kind": "Pipeline",
                         "metadata": {
-                            "name": pipelineName,
+                            "name": targetPipelineName,
                             "namespace": getConfig().namespace,
                         },
                         "spec": {
@@ -198,8 +209,8 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
                     pipelineCRYaml = yamlDump(newPipelineCRYaml)
                 }
             } catch (err) {
-                // just continue test, another VU might have deleted the chosen model
-                console.log(`Failed to update model ${modelName}: ${err}`)
+                // just continue test, another VU might have deleted the chosen model/pipeline
+                console.log(`Failed to update model ${modelName} or pipeline ${targetPipelineName}: ${err}`)
                 return false
             }
             break;
