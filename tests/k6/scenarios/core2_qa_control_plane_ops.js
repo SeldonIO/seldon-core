@@ -211,7 +211,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
                     // This is because when deleting a model, we don't always delete
                     // its associated pipeline (to test the case when the pipeline remains
                     // and the model disappears) but instead pick another pipeline.
-                    targetPipelineName = pipelineName in existingPipelines ? pipelineName : altPipelineName
+                    targetPipelineName = existingPipelines.includes(pipelineName) ? pipelineName : altPipelineName
                     let pipeline = kubeClient.get(seldonObjectType.PIPELINE.description, targetPipelineName, config.namespace)
                     let steps = pipeline.spec.steps
                     steps[0]["batch"] = {"size": Math.round(Math.random() * 100)}  // to induce a change in pipeline
