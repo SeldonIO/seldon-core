@@ -163,10 +163,11 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
                     // the model, we still want to delete a pipeline, because
                     // otherwise the number of pipelines will grow indefinitely.
                     // We have picked this altPipeline at random from the existing
-                    // ones. In practice, this means that the probability to delete
-                    // the pipeline associated with the model is slightly larger than
-                    // 0.5
-                    let unloadAltPipeline = Math.random() < 0.5 ? 0 : 1
+                    // ones (including the one associated with the model). This
+                    // means that the probability to delete the pipeline
+                    // associated with the deleted model is slightly larger than
+                    // 0.8
+                    let unloadAltPipeline = Math.random() > 0.8 ? 0 : 1
                     if (unloadAltPipeline) {
                         targetPipelineName = altPipelineName
                     }
