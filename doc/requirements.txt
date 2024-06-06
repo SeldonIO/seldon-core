@@ -254,7 +254,7 @@ tomli==2.0.1
     #   build
     #   pip-tools
     #   pyproject-hooks
-tornado==6.4
+tornado==6.4.1
     # via
     #   ipykernel
     #   jupyter-client
