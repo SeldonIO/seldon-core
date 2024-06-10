@@ -53,7 +53,7 @@ dependencies {
 
     // transitive dependencies constraints
     constraints {
-        implementation("org.apache.commons:commons-compress:1.26.1") {
+        implementation("org.apache.commons:commons-compress:1.26.2") {
             because("version 1.25.0 pulled by io.kubernetes:client-java contains high CVEs")
         }
     }
