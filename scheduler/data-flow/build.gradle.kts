@@ -29,7 +29,7 @@ dependencies {
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:7.6.1-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.1-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.1-ce")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
