@@ -273,7 +273,7 @@ traitlets==5.14.1
     #   nbsphinx
 unidecode==1.3.7
     # via python-slugify
-urllib3==2.1.0
+urllib3==2.2.2
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
