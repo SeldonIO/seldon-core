@@ -7,7 +7,7 @@ require (
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
 	github.com/confluentinc/confluent-kafka-go/v2 v2.4.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/imdario/mergo v0.3.16
 	github.com/json-iterator/go v1.1.12
