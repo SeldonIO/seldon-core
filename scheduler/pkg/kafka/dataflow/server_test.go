@@ -310,7 +310,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubServerStatusServer(1)
+			stream := newStubServerStatusServer(10)
 			if test.connection {
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
@@ -433,7 +433,7 @@ func TestPipelineEvents(t *testing.T) {
 			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
 			g.Expect(err).To(BeNil())
 
-			stream := newStubServerStatusServer(1)
+			stream := newStubServerStatusServer(10)
 			if test.connection {
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
@@ -470,6 +470,165 @@ func TestPipelineEvents(t *testing.T) {
 				// error message should be set
 				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
 			}
+
+		})
+	}
+}
+
+func TestPipelineRebalance(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name           string
+		loadReq        *scheduler.Pipeline
+		status         pipeline.PipelineStatus
+		expectedStatus pipeline.PipelineStatus
+		expectedOp     chainer.PipelineUpdateMessage_PipelineOperation
+		connection     bool
+	}
+
+	tests := []test{
+		{
+			name: "rebalance ready pipeline",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:         pipeline.PipelineReady,
+			expectedStatus: pipeline.PipelineCreating,
+			expectedOp:     chainer.PipelineUpdateMessage_Create,
+			connection:     true,
+		},
+		{
+			name: "rebalance creating pipeline",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:         pipeline.PipelineCreating,
+			expectedStatus: pipeline.PipelineCreating,
+			expectedOp:     chainer.PipelineUpdateMessage_Create,
+			connection:     true,
+		},
+		{
+			name: "rebalance terminating pipeline",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:         pipeline.PipelineTerminating,
+			expectedStatus: pipeline.PipelineTerminating,
+			expectedOp:     chainer.PipelineUpdateMessage_Delete,
+			connection:     true,
+		},
+		{
+			name: "rebalance terminating pipeline - no connection",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:         pipeline.PipelineTerminating,
+			expectedStatus: pipeline.PipelineTerminated,
+			connection:     false,
+		},
+		{
+			name: "no connection",
+			loadReq: &scheduler.Pipeline{
+
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*scheduler.PipelineStep{
+					{
+						Name: "a",
+					},
+				},
+			},
+			status:         pipeline.PipelineReady,
+			expectedStatus: pipeline.PipelineCreate,
+			connection:     false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			serverName := "dummy"
+			s, _ := createTestScheduler(t, serverName)
+			stream := newStubServerStatusServer(20)
+			if test.connection {
+				s.streams[serverName] = &ChainerSubscription{
+					name:   "dummy",
+					stream: stream,
+					fin:    make(chan bool),
+				}
+				g.Expect(s.streams[serverName]).ToNot(BeNil())
+			}
+
+			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
+			g.Expect(err).To(BeNil())
+
+			//to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			g.Expect(err).To(BeNil())
+
+			//to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			s.rebalance()
+			actualPipelineVersion, _ := s.pipelineHandler.GetPipelineVersion(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid)
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if test.connection {
+				var psr *chainer.PipelineUpdateMessage
+				select {
+				case <-stream.msgs: // skip the first message for AddPipeline
+					next := <-stream.msgs
+					psr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(psr).ToNot(BeNil())
+				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
+				g.Expect(psr.Version).To(Equal(uint32(test.loadReq.Version)))
+				g.Expect(psr.Op).To(Equal(test.expectedOp))
+			} else {
+				// error message should be set
+				g.Expect(actualPipelineVersion.State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
+			}
+			g.Expect(actualPipelineVersion.State.Status).To(Equal(test.expectedStatus))
 
 		})
 	}
