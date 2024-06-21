@@ -655,7 +655,7 @@ func (s *stubChainerServer) Send(r *chainer.PipelineUpdateMessage) error {
 // TODO: this function is defined elsewhere, refactor to avoid duplication
 func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coordinator.EventHub) {
 	logger := log.New()
-	logger.SetLevel(log.WarnLevel)
+	logger.SetLevel(log.DebugLevel)
 
 	eventHub, _ := coordinator.NewEventHub(logger)
 
