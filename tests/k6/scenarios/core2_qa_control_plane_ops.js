@@ -45,7 +45,7 @@ import { getConfig } from '../components/settings.js'
 import { seldonObjectType, seldonOpExecStatus, seldonOpType } from '../components/seldon.js';
 import {
     setupBase,
-    periodicExclusiveRun,
+    checkOrWaitForExclusiveRun,
     checkModelsStateIsConsistent,
     checkPipelinesStateIsConsistent,
     checkExperimentsStateIsConsistent,
@@ -76,7 +76,7 @@ const maxOpDuration = k8s.MAX_RETRIES + 2
 const maxIterDuration = maxOpDuration + getConfig().k8sDelaySecPerVU + maxRandomDelay
 
 // Variable only used by VU 1, to avoid running the check twice in the same
-// period; Pass object to periodicExclusiveRun(), as the status argument.
+// period; Pass object to checkOrWaitForExclusiveRun(), as the status argument.
 var checkStatus = {
     isDue: true
 }
@@ -154,7 +154,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
 
             if (op === seldonOpType.DELETE) {
                 if (config.isLoadPipeline) {
-                    // We don't want to always delete the pipeline corrsponding to
+                    // We don't want to always delete the pipeline corresponding to
                     // the deleted model, because we also want to test the case
                     // where the pipeline remains without some of the component
                     // models.
@@ -310,7 +310,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
 export default function (config) {
     kubeClient = k8s.init()
     if(config.enableStateCheck) {
-        if (periodicExclusiveRun(config.checkStateEverySec,
+        if (checkOrWaitForExclusiveRun(config.checkStateEverySec,
                                 config.maxCheckTimeSec,
                                 maxIterDuration, checkStatus)) {
             console.log(`VU ${vu.idInTest} starts a state consistency check...`)

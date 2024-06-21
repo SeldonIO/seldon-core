@@ -34,7 +34,8 @@ export function setupBase(config) {
 
                 ctl.loadModelFn(modelName, defs.model.modelDefn, true)
                 if (config.isLoadPipeline) {
-                    ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, true)  // we use pipeline name as model name + "-pipeline"
+                    let waitForReady = config.enableStateCheck
+                    ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, waitForReady)  // we use pipeline name as model name + "-pipeline"
                 }
             }
         }
@@ -224,7 +225,7 @@ export function getVersionSuffix(isSchedulerProxy) {
 }
 
 /**
- * periodicExclusiveRun(...) allows setting up k6 iteration code such that,
+ * checkOrWaitForExclusiveRun(...) allows setting up k6 iteration code such that,
  * periodically and for a fixed period, a single VU (VU 1) executes while other
  * VUs wait. This is not a great synchronization primitive because the
  * implementation relies on timestamps and sleeping. However, we choose this
@@ -250,7 +251,7 @@ export function getVersionSuffix(isSchedulerProxy) {
  * (non-exclusive) iteration might take. This is used to determine if there is
  * enough time left before the next exclusive interval for another iteration to
  * run. If any iterations run longer than this duration, we can no longer
- * guarantee that the VU1 code run when periodicExclusiveRun(...) returns true
+ * guarantee that the VU1 code run when checkOrWaitForExclusiveRun(...) returns true
  * will run exclusively.
  * @param {object} status - The status object for the exclusive run. During the
  * first call, this should be status = { isDue: true }. VU 1 needs to pass
@@ -258,18 +259,28 @@ export function getVersionSuffix(isSchedulerProxy) {
  * the periodic exclusive run is due and to avoid running it twice in the same
  * period.
  * @returns {boolean} - Returns true only for VU 1, at the point where it is in
- * the right time slot for running the exclusive check.
+ * the right time slot for running the exclusive check. Returns false for all other
+ * VUs. Before returning, the function will sleep the right amount of time to ensure
+ * that VUs != 1 are only allowed to continue executing code outside the exclusive run
+ * interval.
  *
- * Every VU should call periodicExclusiveRun(...) at the beginning of each
+ * Every VU should call checkOrWaitForExclusiveRun(...) at the beginning of each
  * iteration. The same configuration arguments need to be passed on each call
  * (there's no support to modify the exclusive run frequency or max runtime).
  *
  * - If there is sufficient time for the VU to execute another iteration,
- * periodicExclusiveRun simply returns false, and the iteration of the VU
- * calling periodicExclusiveRun should continue as normal.
+ * checkOrWaitForExclusiveRun simply returns false, and the iteration of the VU
+ * calling checkOrWaitForExclusiveRun should continue as normal.
  * - If not, VU1 waits until the time when the next exclusive run is scheduled
  * and returns true. Other VUs wait until the time of the next exclusive run +
  * the maximum time that the exclusive run might take, then return false.
+ *
+ * The behaviour described above means that for the last maxIterDuration seconds
+ * of each exclusiveEverySec period, all VUs wait. There's not enough time to
+ * start another iteration, and the exclusive run of VU is not yet due. This time
+ * is used to ensure that the state of the system under test has time to stabilize
+ * before the next exclusive run (for example, to allow state consistency checks
+ * to be executed in the exclusive run interval)
  *
  * Example usage:
  *
@@ -280,7 +291,7 @@ export function getVersionSuffix(isSchedulerProxy) {
  *   const maxIterDuration = 10
  *   ....
  *   export default function (data) { // iteration code
- *      if (periodicExclusiveRun(exclusiveEverySec, maxRuntimeSec, maxIterDuration, status)) {
+ *      if (checkOrWaitForExclusiveRun(exclusiveEverySec, maxRuntimeSec, maxIterDuration, status)) {
  *         // Code exclusively run on VU 1 every exclusiveEverySec seconds
  *         // while other VUs wait
  *
@@ -301,15 +312,16 @@ export function getVersionSuffix(isSchedulerProxy) {
  *
  * |<------------------exclusiveEverySec------------------>|<----exclusiveEverySec-----..
  * |<---maxRuntimeSec--->|           |<--maxIterDuration-->|<---maxRuntimeSec--->|     ..
- * |  VU 1 runs check    | I I I I I I                     |  VU 1 runs check    | I I ..
- * |  other VUs wait     |       ^-----timeToNextRun------>|  other VUs wait     |
+ * |  VU 1 runs check    | I I I I I I     ALL WAIT        |  VU 1 runs check    | I I ..
+ * |  other VUs wait     |       ^-----timeToNextRun------>|  other VUs wait     |     ..
+ * +---------------------+---------------------------------+---------------------+-----..
  */
-export function periodicExclusiveRun(exclusiveEverySec, maxRuntimeSec, maxIterDuration, status) {
+export function checkOrWaitForExclusiveRun(exclusiveEverySec, maxRuntimeSec, maxIterDuration, status) {
   let timeSoFar = new Date().getTime() - scenario.startTime
   const exclusiveEveryMs = exclusiveEverySec * 1000
   const timeToNextRun = (exclusiveEveryMs - (timeSoFar % exclusiveEveryMs)) / 1000.0
 
-  // The case when a VU ends up calling periodicExclusiveRun during the time
+  // The case when a VU ends up calling checkOrWaitForExclusiveRun during the time
   // reserved for the exclusive run. It will occur on test startup (first
   // exclusive run), and defend against iterations starting too soon in other
   // cases.
@@ -427,7 +439,7 @@ function checkSeldonObjectStateIsConsistent(k8sObjects, schedObjects, objType, p
           schedObjsIndex[k8sObjectName].found = true
 
           // More checks applicable for any two seldon objects with the same
-          // name can be added here
+          // type and name can be added here
 
           if (perMatchCheckFn != null) {
             statesConsistent &= perMatchCheckFn(k8sObject, schedObject, inconsistencies)
@@ -442,7 +454,7 @@ function checkSeldonObjectStateIsConsistent(k8sObjects, schedObjects, objType, p
       }
   }
 
-  // CHECK 3: The only models present as non-terminated in the scheduler are
+  // CHECK 3: The only objects present as non-terminated in the scheduler are
   // the ones we've just checked based on the K8S list
   Object.keys(schedObjsIndex).forEach((objIxName) => {
     if (!schedObjsIndex[objIxName].found) {

@@ -17,7 +17,7 @@ export function init() {
     // (rather than only doing it when kubeclient is null) because if k8s
     // operations happen within VUs, on starting a new iteration, the internal
     // kubeclient state becomes invalid (all operations will return
-    // client-side throttling errors). This does meant each VU will need to call
+    // client-side throttling errors). This does mean each VU will need to call
     // init() at the beginning of the iteration.
     kubeclient = new Kubernetes();
     return kubeclient
@@ -29,10 +29,6 @@ export function connectScheduler(schedulerCl) {
 
 export function disconnectScheduler() {
   schedulerClient = null
-}
-
-export function identity(value) {
-    return value
 }
 
 function seldonObjExists(kind, name, ns) {
@@ -51,13 +47,21 @@ function seldonObjExists(kind, name, ns) {
     }
 }
 
-function getSeldonObjectList(type, mapFn=identity, filterFn=identity) {
+function getPrefixAndSuffixFilter(prefix, suffix) {
+  let filterFn = null
+  if(prefix !== "" || suffix !== ""){
+      filterFn = (name) => name.startsWith(prefix) && name.endsWith(suffix)
+  }
+  return filterFn
+}
+
+function getSeldonObjectList(type, mapFn=null, filterFn=null) {
     try {
         let objList = kubeclient.list(type.description, seldon_target_ns)
-        if (mapFn !== identity) {
+        if (mapFn !== null) {
             objList = objList.map(mapFn)
         }
-        if (filterFn !== identity) {
+        if (filterFn !== null) {
             objList = objList.filter(filterFn)
         }
         return objList
@@ -122,10 +126,7 @@ export function getAllModels() {
  */
 export function getExistingModelNames(namePrefix="", nameSuffix="") {
     try {
-        var filterFn = identity
-        if(namePrefix !== "" || nameSuffix !== ""){
-            filterFn = (name) => name.startsWith(namePrefix) && name.endsWith(nameSuffix)
-        }
+        const filterFn = getPrefixAndSuffixFilter(namePrefix, nameSuffix)
         const modelNames = getSeldonObjectList(
             seldonObjectType.MODEL,
             (modelCR) => modelCR.metadata.name,
@@ -226,10 +227,7 @@ export function getAllPipelines() {
  */
 export function getExistingPipelineNames(namePrefix="", nameSuffix="") {
     try {
-        var filterFn = identity
-        if(namePrefix !== "" || nameSuffix !== ""){
-            filterFn = (name) => name.startsWith(namePrefix) && name.endsWith(nameSuffix)
-        }
+        const filterFn = getPrefixAndSuffixFilter(namePrefix, nameSuffix)
         const pipelineNames = getSeldonObjectList(
             seldonObjectType.PIPELINE,
             (pipelineCR) => pipelineCR.metadata.name,

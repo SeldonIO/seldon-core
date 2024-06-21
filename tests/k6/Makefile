@@ -1,6 +1,5 @@
 CUSTOM_IMAGE_TAG ?= latest
-# DOCKERHUB_USERNAME ?= seldonio
-DOCKERHUB_USERNAME ?= sakoushseldon
+DOCKERHUB_USERNAME ?= seldonio
 NAMESPACE ?= seldon-mesh
 K6_VERSION ?= 0.51.0
 
