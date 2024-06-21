@@ -1,0 +1,68 @@
+---
+apiVersion: 1
+
+adminUser: "{{ sd_user }}"
+adminPassword: "{{ sd_password }}"
+
+grafana.ini:
+  paths:
+    data: /var/lib/grafana/
+    logs: /var/log/grafana
+    plugins: /var/lib/grafana/plugins
+    provisioning: /etc/grafana/provisioning
+  analytics:
+    check_for_updates: false
+  log:
+    mode: console
+  grafana_net:
+    url: https://grafana.net
+  server:
+    protocol: http
+    http_port: "{{ seldon_monitoring_grafana_web_ui_port }}"
+    domain: "''"
+    serve_from_sub_path: false
+
+persistence:
+  type: pvc
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  finalizers:
+    - kubernetes.io/pvc-protection
+  extraPvcLabels: {}
+
+datasources:
+ datasources.yaml:
+   apiVersion: 1
+   datasources:
+   - name: Prometheus
+     type: prometheus
+     url: "{{ seldon_monitoring_prometheus_url }}"
+     access: proxy
+     isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      allowUiUpdates: true
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    {% for dashboard in grafana_preloaded_dashboards | default([]) -%}
+    {{ dashboard.name }}:
+      json: |-
+        {{ dashboard.json | to_nice_json(indent=2) | indent(8) }}
+      datasource:
+      - name: DS_PROMETHEUS
+        value: Prometheus
+    {% endfor -%}

@@ -7,7 +7,6 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.dataflow.kafka.security
 
 sealed class SaslConfig(
@@ -15,7 +14,7 @@ sealed class SaslConfig(
 ) {
     class Oauth(
         val secretName: String,
-    ): SaslConfig(KafkaSaslMechanisms.OAUTH_BEARER)
+    ) : SaslConfig(KafkaSaslMechanisms.OAUTH_BEARER)
 
     sealed class Password(
         mechanism: KafkaSaslMechanisms,
@@ -33,13 +32,13 @@ sealed class SaslConfig(
             secretName: String,
             username: String,
             passwordField: String,
-        ): Password(KafkaSaslMechanisms.SCRAM_SHA_256, secretName, username, passwordField)
+        ) : Password(KafkaSaslMechanisms.SCRAM_SHA_256, secretName, username, passwordField)
 
         class Scram512(
             secretName: String,
             username: String,
             passwordField: String,
-        ): Password(KafkaSaslMechanisms.SCRAM_SHA_512, secretName, username, passwordField)
+        ) : Password(KafkaSaslMechanisms.SCRAM_SHA_512, secretName, username, passwordField)
     }
 }
 
@@ -47,7 +46,8 @@ enum class KafkaSaslMechanisms(private val mechanism: String) {
     PLAIN("PLAIN"),
     SCRAM_SHA_256("SCRAM-SHA-256"),
     SCRAM_SHA_512("SCRAM-SHA-512"),
-    OAUTH_BEARER("OAUTHBEARER");
+    OAUTH_BEARER("OAUTHBEARER"),
+    ;
 
     override fun toString(): String {
         return this.mechanism

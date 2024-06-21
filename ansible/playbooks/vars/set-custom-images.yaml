@@ -14,11 +14,7 @@
 # with their default setup.
 #
 # This is a list, where each items specifies:
-# - a target: whether the component is configured at the root-level in
-#             helm-charts (set target to "core") or under serverConfig
-#             (set target to "serverConfig")
 # - components: list of components with a particular image customisation
-#               possible list elements for target "core":
 #                - hodometer
 #                - modelgateway
 #                - pipelinegateway
@@ -26,16 +22,17 @@
 #                - controller
 #                - envoy
 #                - scheduler
-#               possible list elements for target "serverConfig":
 #                - mlserver
 #                - triton
 #                - rclone
 #                - agent
 # - image: the keys to overwrite the existing "image" helm-chart values for a
 #          component
+# - repository_img_prefix: [optional, default: `seldonio`]
+#                          The repository prefix that should be applied to the docker image
+#                          name. Typically the dockerhub user.
 custom_image_config:
-  - target: core
-    components:
+  - components:
       - hodometer
       - modelgateway
       - pipelinegateway
@@ -46,8 +43,7 @@ custom_image_config:
     image:
       registry: [CORE_REGISTRY_NAME]
       tag: [TAG_NAME1]
-  - target: serverConfig
-    components:
+  - components:
       - mlserver
     image:
       registry: [MLSERVER_REGISTRY_NAME]
@@ -56,7 +52,7 @@ custom_image_config:
 # For repository definitions, each component will have its own name, depending
 # on the registry configuration. Set the core component to registry name
 # mapping here; missing components remain with their default names.
-core_custom_image_repository:
+custom_image_repository:
   hodometer: seldon-hodometer
   modelgateway: seldon-modelgateway
   pipelinegateway: seldon-pipelinegateway
@@ -64,11 +60,6 @@ core_custom_image_repository:
   controller: seldonv2-controller
   envoy: seldon-envoy
   scheduler: seldon-scheduler
-
-# For repository definitions, each component will have its own name, depending
-# on the registry configuration. Set the server component to registry name
-# mapping here; missing components remain with their default names.
-server_custom_image_repository:
   mlserver: mlserver
 
 # Define the custom secret to be created or updated in k8s for access to private

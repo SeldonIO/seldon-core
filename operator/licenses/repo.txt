@@ -91,6 +91,7 @@ go-kit/kit
 go-kit/log
 go-logfmt/logfmt
 go-logr/logr
+go-logr/stdr
 go-logr/zapr
 go-openapi/jsonpointer
 go-openapi/jsonreference

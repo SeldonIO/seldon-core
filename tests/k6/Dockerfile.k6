@@ -1,4 +1,4 @@
-FROM alpine:3.6 AS builder
+FROM alpine:3.19.1 AS builder
 
 RUN apk add --update \
  python3 \
@@ -12,8 +12,7 @@ FROM grafana/k6
 
 USER root
 
-
-RUN apk add --update python3 uuidgen sed
+RUN apk add --update python3 uuidgen sed go
 
 COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
 
@@ -28,6 +27,9 @@ ADD k6.tar.gz k6/
 ADD apis /home/apis/
 
 WORKDIR k6
+
+RUN go install go.k6.io/xk6/cmd/xk6@latest
+RUN ~/go/bin/xk6 build --with github.com/grafana/xk6-kubernetes
 
 RUN mkdir results
 

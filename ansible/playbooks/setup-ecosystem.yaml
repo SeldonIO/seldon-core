@@ -7,12 +7,14 @@
     full_install: yes
 
     install_prometheus: "{{ full_install }}"
+    install_grafana: "{{ full_install }}"
     install_kafka: "{{ full_install }}"
     install_certmanager: "{{ full_install }}"
     install_jaeger: "{{ full_install }}"
     install_opentelemetry: "{{ full_install }}"
 
     configure_prometheus: "{{ install_prometheus }}"
+    configure_grafana: "{{ install_grafana }}"
     configure_kafka: "{{ install_kafka }}"
     configure_jaeger: "{{ install_jaeger }}"
     configure_opentelemetry: "{{ install_opentelemetry }}"

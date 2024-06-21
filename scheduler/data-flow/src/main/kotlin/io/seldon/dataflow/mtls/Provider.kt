@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.charset.Charset
+import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
 import java.security.KeyFactory
 import java.security.KeyStore
@@ -21,18 +22,16 @@ import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
 import kotlin.io.path.Path
 import kotlin.io.path.setPosixFilePermissions
-import java.nio.file.Files
-import java.util.Base64
-
 
 // TODO - dynamically reload certificates.  Can KafkaStreams handle this or does it need to pause?
 object Provider {
-    private const val storeType = "JKS"
-    private const val certificateType = "X.509"
-    private const val keyType = "RSA"
-    private const val keyName = "dataflow-engine-key"
+    private const val STORE_TYPE = "JKS"
+    private const val CERTIFICATE_TYPE = "X.509"
+    private const val KEY_TYPE = "RSA"
+    private const val KEY_NAME = "dataflow-engine-key"
 
     fun trustStoreFromCertificates(certs: CertificateConfig): TruststoreConfig {
         val (trustStoreLocation, trustStorePassword) = trustStoreFromCACert(certs)
@@ -45,7 +44,7 @@ object Provider {
     private fun trustStoreFromCACert(certPaths: CertificateConfig): Pair<FilePath, KeystorePassword> {
         val password = generatePassword()
         val location = generateLocation()
-        val trustStore = KeyStore.getInstance(storeType)
+        val trustStore = KeyStore.getInstance(STORE_TYPE)
         trustStore.load(null, password.toCharArray())
 
         certsFromFile(certPaths.brokerCaCertPath)
@@ -70,7 +69,7 @@ object Provider {
         return FileInputStream(certFile)
             .use { certStream ->
                 CertificateFactory
-                    .getInstance(certificateType)
+                    .getInstance(CERTIFICATE_TYPE)
                     .generateCertificates(certStream)
             }
     }
@@ -86,7 +85,7 @@ object Provider {
     private fun keyStoreFromCerts(certPaths: CertificateConfig): Pair<FilePath, KeystorePassword> {
         val password = generatePassword()
         val location = generateLocation()
-        val keyStore = KeyStore.getInstance(storeType)
+        val keyStore = KeyStore.getInstance(STORE_TYPE)
         keyStore.load(null, password.toCharArray())
 
         val privateKey = privateKeyFromFile(certPaths.keyPath)
@@ -94,9 +93,10 @@ object Provider {
         val caCerts = certsFromFile(certPaths.caCertPath)
         // TODO - check if CA certs are required as part of the chain.  Docs imply this, but unclear.
         keyStore.setKeyEntry(
-            keyName,
+            KEY_NAME,
             privateKey,
-            password.toCharArray(), // No password
+            // No password for private key
+            password.toCharArray(),
             certs.union(caCerts).toTypedArray(),
         )
 
@@ -112,10 +112,11 @@ object Provider {
     fun privateKeyFromFile(filename: FilePath): RSAPrivateKey {
         val file = File(filename)
         val key = String(Files.readAllBytes(file.toPath()), Charset.defaultCharset())
-        val privateKeyPEM = key
-            .replace("-----BEGIN PRIVATE KEY-----", "")
-            .replace(System.lineSeparator().toRegex(), "")
-            .replace("-----END PRIVATE KEY-----", "")
+        val privateKeyPEM =
+            key
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace(System.lineSeparator().toRegex(), "")
+                .replace("-----END PRIVATE KEY-----", "")
         val encoded: ByteArray = Base64.getDecoder().decode(privateKeyPEM)
         val keyFactory = KeyFactory.getInstance("RSA")
         val keySpec = PKCS8EncodedKeySpec(encoded)

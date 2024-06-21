@@ -25,7 +25,6 @@ import org.apache.kafka.streams.state.Stores
 typealias TBatchRequest = KeyValue<String, ModelInferRequest>?
 typealias TBatchStore = KeyValueStore<String, ByteArray>
 
-
 class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInferRequest, TBatchRequest> {
     private var ctx: ProcessorContext? = null
     private val aggregateStore: TBatchStore by lazy {
@@ -39,7 +38,10 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
         this.ctx = context
     }
 
-    override fun transform(key: String, value: ModelInferRequest): TBatchRequest {
+    override fun transform(
+        key: String,
+        value: ModelInferRequest,
+    ): TBatchRequest {
         val stateStoreKey = "random-batch-id"
         var batchedRequest = value
         val reqBytes = aggregateStore.putIfAbsent(stateStoreKey, value.toByteArray())
@@ -48,13 +50,14 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
             aggregateStore.put(stateStoreKey, batchedRequest.toByteArray())
         }
         val batchSize = batchedRequest.getInputs(0).getShape(0)
-        val returnValue = when {
-            batchSize >= threshold -> {
-                aggregateStore.delete(stateStoreKey)
-                KeyValue.pair(key, batchedRequest)
+        val returnValue =
+            when {
+                batchSize >= threshold -> {
+                    aggregateStore.delete(stateStoreKey)
+                    KeyValue.pair(key, batchedRequest)
+                }
+                else -> null
             }
-            else -> null
-        }
         return returnValue
     }
 
@@ -65,12 +68,13 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
     // For this reason, batches should be ordered chronologically, with the most recent item last.
     internal fun merge(requests: List<ModelInferRequest>): ModelInferRequest {
         val batchReferenceRequest = requests.last()
-        val combinedRequest = ModelInferRequest
-            .newBuilder()
-            .setId(batchReferenceRequest.id)
-            .setModelName(batchReferenceRequest.modelName)
-            .setModelVersion(batchReferenceRequest.modelVersion)
-            .putAllParameters(batchReferenceRequest.parametersMap)
+        val combinedRequest =
+            ModelInferRequest
+                .newBuilder()
+                .setId(batchReferenceRequest.id)
+                .setModelName(batchReferenceRequest.modelName)
+                .setModelVersion(batchReferenceRequest.modelVersion)
+                .putAllParameters(batchReferenceRequest.parametersMap)
 
         when {
             requests.any { it.rawInputContentsCount > 0 } -> {
@@ -96,48 +100,61 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
                 val elementShape = tensors.first().shapeList.toList().drop(1)
                 val newShape = listOf(batchSize) + elementShape
 
-                val parameters = tensors
-                    .flatMap { it.parametersMap.entries }
-                    .associate { it.toPair() }
+                val parameters =
+                    tensors
+                        .flatMap { it.parametersMap.entries }
+                        .associate { it.toPair() }
 
                 val datatype = tensors.first().datatype
 
-                val contents = InferTensorContents
-                    .newBuilder()
-                    .apply {
-                        when (DataType.valueOf(datatype)) {
-                            DataType.UINT8,
-                            DataType.UINT16,
-                            DataType.UINT32 -> this.addAllUintContents(
-                                tensors.flatMap { it.contents.uintContentsList }
-                            )
-                            DataType.UINT64 -> this.addAllUint64Contents(
-                                tensors.flatMap { it.contents.uint64ContentsList }
-                            )
-                            DataType.INT8,
-                            DataType.INT16,
-                            DataType.INT32 -> this.addAllIntContents(
-                                tensors.flatMap { it.contents.intContentsList }
-                            )
-                            DataType.INT64 -> this.addAllInt64Contents(
-                                tensors.flatMap { it.contents.int64ContentsList }
-                            )
-                            DataType.FP16, // may need to handle this separately in future
-                            DataType.FP32 -> this.addAllFp32Contents(
-                                tensors.flatMap { it.contents.fp32ContentsList }
-                            )
-                            DataType.FP64 -> this.addAllFp64Contents(
-                                tensors.flatMap { it.contents.fp64ContentsList }
-                            )
-                            DataType.BOOL -> this.addAllBoolContents(
-                                tensors.flatMap { it.contents.boolContentsList }
-                            )
-                            DataType.BYTES -> this.addAllBytesContents(
-                                tensors.flatMap { it.contents.bytesContentsList }
-                            )
+                val contents =
+                    InferTensorContents
+                        .newBuilder()
+                        .apply {
+                            when (DataType.valueOf(datatype)) {
+                                DataType.UINT8,
+                                DataType.UINT16,
+                                DataType.UINT32,
+                                ->
+                                    this.addAllUintContents(
+                                        tensors.flatMap { it.contents.uintContentsList },
+                                    )
+                                DataType.UINT64 ->
+                                    this.addAllUint64Contents(
+                                        tensors.flatMap { it.contents.uint64ContentsList },
+                                    )
+                                DataType.INT8,
+                                DataType.INT16,
+                                DataType.INT32,
+                                ->
+                                    this.addAllIntContents(
+                                        tensors.flatMap { it.contents.intContentsList },
+                                    )
+                                DataType.INT64 ->
+                                    this.addAllInt64Contents(
+                                        tensors.flatMap { it.contents.int64ContentsList },
+                                    )
+                                DataType.FP16, // may need to handle this separately in future
+                                DataType.FP32,
+                                ->
+                                    this.addAllFp32Contents(
+                                        tensors.flatMap { it.contents.fp32ContentsList },
+                                    )
+                                DataType.FP64 ->
+                                    this.addAllFp64Contents(
+                                        tensors.flatMap { it.contents.fp64ContentsList },
+                                    )
+                                DataType.BOOL ->
+                                    this.addAllBoolContents(
+                                        tensors.flatMap { it.contents.boolContentsList },
+                                    )
+                                DataType.BYTES ->
+                                    this.addAllBytesContents(
+                                        tensors.flatMap { it.contents.bytesContentsList },
+                                    )
+                            }
                         }
-                    }
-                    .build()
+                        .build()
 
                 InferInputTensor
                     .newBuilder()
@@ -168,13 +185,14 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
 
                 val combinedRawContents = ByteString.copyFrom(rawContents)
 
-                val tensor = InferInputTensor
-                    .newBuilder()
-                    .setName(name)
-                    .setDatatype(datatype)
-                    .addAllShape(shape)
-                    .putAllParameters(parameters)
-                    .build()
+                val tensor =
+                    InferInputTensor
+                        .newBuilder()
+                        .setName(name)
+                        .setDatatype(datatype)
+                        .addAllShape(shape)
+                        .putAllParameters(parameters)
+                        .build()
 
                 tensor to combinedRawContents
             }
@@ -187,13 +205,14 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
     companion object {
         private val logger = noCoLogger(BatchProcessor::class)
         const val STATE_STORE_ID = "batch-store"
-        val stateStoreBuilder: StoreBuilder<KeyValueStore<String, ByteArray>> = Stores
-            .keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore(STATE_STORE_ID),
-                Serdes.String(),
-                Serdes.ByteArray(),
-            )
-            .withLoggingDisabled()
-            .withCachingDisabled()
+        val stateStoreBuilder: StoreBuilder<KeyValueStore<String, ByteArray>> =
+            Stores
+                .keyValueStoreBuilder(
+                    Stores.inMemoryKeyValueStore(STATE_STORE_ID),
+                    Serdes.String(),
+                    Serdes.ByteArray(),
+                )
+                .withLoggingDisabled()
+                .withCachingDisabled()
     }
 }

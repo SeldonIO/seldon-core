@@ -71,18 +71,25 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.51.2
+.GOLANGCILINT_VERSION := v1.57.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint: 
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
-.PHONY: lint
-lint: ${.GOLANGCILINT_PATH}/golangci-lint
+.PHONY: lint-go
+lint-go: ${.GOLANGCILINT_PATH}/golangci-lint
 	gofmt -w pkg
 	gofmt -w cmd
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
+
+.PHONY: lint-jvm
+lint-jvm:
+	make -C data-flow lint
+
+.PHONY: lint
+lint: lint-go lint-jvm
 
 .PHONY: test-go
 test-go:

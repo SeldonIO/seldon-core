@@ -9,21 +9,18 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import com.github.michaelbull.retry.ContinueRetrying
-import com.github.michaelbull.retry.policy.RetryPolicy
 import com.github.michaelbull.retry.policy.constantDelay
-import com.github.michaelbull.retry.policy.limitAttempts
+import com.github.michaelbull.retry.policy.continueIf
 import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.stopAtAttempts
 import com.github.michaelbull.retry.retry
+import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.admin.CreateTopicsOptions
 import org.apache.kafka.clients.admin.NewTopic
-import org.apache.kafka.common.KafkaFuture
 import org.apache.kafka.common.errors.TimeoutException
-import org.apache.kafka.common.errors.TopicExistsException
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import io.klogging.logger as coLogger
 
@@ -34,19 +31,22 @@ class KafkaAdmin(
 ) {
     private val adminClient = Admin.create(adminConfig)
 
-    suspend fun ensureTopicsExist(
-        steps: List<PipelineStepUpdate>,
-    ) : Exception? {
-        val missingTopicRetryPolicy: RetryPolicy<Throwable> = {
-            when (reason.cause) {
-                is TimeoutException,
-                is UnknownTopicOrPartitionException -> ContinueRetrying
-                else -> {
-                    logger.warn("ignoring exception while waiting for topic creation: ${reason.message}")
-                    ContinueRetrying
+    suspend fun ensureTopicsExist(steps: List<PipelineStepUpdate>): Exception? {
+        val missingTopicRetryPolicy =
+            continueIf<Throwable> { (failure) ->
+                when (failure) {
+                    is TimeoutException,
+                    is UnknownTopicOrPartitionException,
+                    -> true
+                    else -> {
+                        // We log here for dev purposes, to gather other kinds of exceptions that occur. In time, we should
+                        // collate those and decide which are permanent errors. For permanent errors, it would be worth
+                        // stopping the retries and returning false.
+                        noCoLogger.warn("ignoring exception while waiting for topic creation: ${failure.message}")
+                        true
+                    }
                 }
             }
-        }
 
         try {
             steps
@@ -70,7 +70,7 @@ class KafkaAdmin(
                 .run {
                     adminClient.createTopics(
                         this,
-                        CreateTopicsOptions().timeoutMs(topicWaitRetryParams.createTimeoutMillis)
+                        CreateTopicsOptions().timeoutMs(topicWaitRetryParams.createTimeoutMillis),
                     )
                 }
                 .values()
@@ -80,9 +80,10 @@ class KafkaAdmin(
                     // one broker. This is because the call to createTopics above returns before topics can actually
                     // be subscribed to.
                     retry(
-                        missingTopicRetryPolicy + limitAttempts(topicWaitRetryParams.describeRetries) + constantDelay(
-                            topicWaitRetryParams.describeRetryDelayMillis
-                        )
+                        missingTopicRetryPolicy + stopAtAttempts(topicWaitRetryParams.describeRetries) +
+                            constantDelay(
+                                topicWaitRetryParams.describeRetryDelayMillis,
+                            ),
                     ) {
                         logger.debug("Still waiting for all topics to be created...")
                         // the KafkaFuture retrieved via .allTopicNames() only succeeds if all the topic
@@ -105,5 +106,6 @@ class KafkaAdmin(
 
     companion object {
         private val logger = coLogger(KafkaAdmin::class)
+        private val noCoLogger = noCoLogger(KafkaAdmin::class)
     }
 }

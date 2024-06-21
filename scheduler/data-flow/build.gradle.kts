@@ -1,12 +1,12 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.8.20"
-
+    kotlin("jvm") version "1.9.21" // the kotlin version
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     java
     application
 }
@@ -28,18 +28,18 @@ dependencies {
     implementation("io.klogging:slf4j-klogging:0.5.11")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:7.6.0-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.0-ccs")
+    implementation("org.apache.kafka:kafka-streams:7.6.1-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.1-ccs")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.62.2")
-    implementation("io.grpc:grpc-protobuf:1.62.2")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.62.2")
+    implementation("io.grpc:grpc-stub:1.64.0")
+    implementation("io.grpc:grpc-protobuf:1.64.0")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.64.0")
     implementation("com.google.protobuf:protobuf-java:3.25.3")
     implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
     implementation("io.kubernetes:client-java:20.0.1") {
@@ -69,6 +69,9 @@ sourceSets {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("PASSED", "SKIPPED", "FAILED")
+    }
 }
 
 java {
@@ -97,4 +100,13 @@ tasks.named<ShadowJar>("shadowJar") {
 downloadLicenses {
     includeProjectDependencies = true
     dependencyConfiguration = "compileClasspath"
+}
+
+ktlint {
+    verbose = true
+    debug = true
+    // Ignore generated code from proto
+    filter {
+        exclude { element -> element.file.path.contains("apis/mlops") }
+    }
 }

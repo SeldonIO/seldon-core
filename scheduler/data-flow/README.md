@@ -54,6 +54,14 @@ $ ./gradlew build
 BUILD SUCCESSFUL in 536ms
 6 actionable tasks: 6 up-to-date
 ```
+You can also run lint check and formatting using `ktlint`, which are also available as make targets i.e. `make lint` and `make format`.
+
+```bash
+$ ./gradlew ktlintCheck 
+$ ./gradlew ktlintFormat
+```
+
+After a successful run, they generate reports in `build/reports/ktlint`.
 
 <details>
 <summary>Unsupported class file major version</summary>

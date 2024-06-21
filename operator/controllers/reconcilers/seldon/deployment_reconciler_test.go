@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -163,7 +163,7 @@ func TestDeploymentOverride(t *testing.T) {
 			deploymentName: mlopsv1alpha1.SchedulerName,
 			podSpec:        &v1.PodSpec{},
 			override: &mlopsv1alpha1.OverrideSpec{
-				Replicas: pointer.Int32Ptr(3),
+				Replicas: ptr.To(int32(3)),
 			},
 			expectedReplicas: 3,
 		},

@@ -22,7 +22,10 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import strikt.api.expectThat
-import strikt.assertions.*
+import strikt.assertions.isEmpty
+import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThan
+import strikt.assertions.isNull
 import java.util.stream.Stream
 
 internal class BatchProcessorTest {
@@ -31,11 +34,12 @@ internal class BatchProcessorTest {
         val mockContext = MockProcessorContext()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", listOf(12.34F, 12.34F, 12.34F))
-        val requests = listOf(
-            makeRequest("1", listOf(12.34F)),
-            makeRequest("2", listOf(12.34F)),
-            makeRequest("3", listOf(12.34F)),
-        )
+        val requests =
+            listOf(
+                makeRequest("1", listOf(12.34F)),
+                makeRequest("2", listOf(12.34F)),
+                makeRequest("3", listOf(12.34F)),
+            )
 
         batcher.init(mockContext)
         val merged = batcher.merge(requests)
@@ -48,11 +52,12 @@ internal class BatchProcessorTest {
         val mockContext = MockProcessorContext()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", emptyList())
-        val requests = listOf(
-            makeRequest("1", emptyList()),
-            makeRequest("2", emptyList()),
-            makeRequest("3", emptyList()),
-        )
+        val requests =
+            listOf(
+                makeRequest("1", emptyList()),
+                makeRequest("2", emptyList()),
+                makeRequest("3", emptyList()),
+            )
 
         batcher.init(mockContext)
         val merged = batcher.merge(requests)
@@ -65,11 +70,12 @@ internal class BatchProcessorTest {
         val mockContext = MockProcessorContext()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", listOf(12.34F, 12.34F, 12.34F)).withBinaryContents()
-        val requests = listOf(
-            makeRequest("1", listOf(12.34F)).withBinaryContents(),
-            makeRequest("2", listOf(12.34F)).withBinaryContents(),
-            makeRequest("3", listOf(12.34F)).withBinaryContents(),
-        )
+        val requests =
+            listOf(
+                makeRequest("1", listOf(12.34F)).withBinaryContents(),
+                makeRequest("2", listOf(12.34F)).withBinaryContents(),
+                makeRequest("3", listOf(12.34F)).withBinaryContents(),
+            )
 
         batcher.init(mockContext)
         val merged = batcher.merge(requests)
@@ -80,15 +86,16 @@ internal class BatchProcessorTest {
     @Test
     fun `should only forward when batch size met`() {
         val mockContext = MockProcessorContext()
-        val store = Stores
-            .keyValueStoreBuilder(
-                Stores.inMemoryKeyValueStore(BatchProcessor.STATE_STORE_ID),
-                Serdes.String(),
-                Serdes.ByteArray(),
-            )
-            .withCachingDisabled()
-            .withLoggingDisabled()
-            .build()
+        val store =
+            Stores
+                .keyValueStoreBuilder(
+                    Stores.inMemoryKeyValueStore(BatchProcessor.STATE_STORE_ID),
+                    Serdes.String(),
+                    Serdes.ByteArray(),
+                )
+                .withCachingDisabled()
+                .withLoggingDisabled()
+                .build()
         val batchSize = 10
         val batcher = BatchProcessor(batchSize)
         val streamKey = "789"
@@ -109,13 +116,14 @@ internal class BatchProcessorTest {
 
         val batchRequest = makeRequest(batchSize.toString(), listOf(batchSize.toFloat()))
         val batched = batcher.transform(streamKey, batchRequest)
-        val expected = KeyValue(
-            streamKey,
-            makeRequest(
-                batchRequest.id,
-                (1..batchSize).map { it.toFloat() },
+        val expected =
+            KeyValue(
+                streamKey,
+                makeRequest(
+                    batchRequest.id,
+                    (1..batchSize).map { it.toFloat() },
+                ),
             )
-        )
         expectThat(batched).isEqualTo(expected)
         expectThat(mockContext.forwarded()).isEmpty()
         expectThat(store.approximateNumEntries()).isEqualTo(0)
@@ -187,7 +195,10 @@ internal class BatchProcessorTest {
             )
         }
 
-        private fun makeRequest(id: String, values: List<Float>): ModelInferRequest {
+        private fun makeRequest(
+            id: String,
+            values: List<Float>,
+        ): ModelInferRequest {
             return ModelInferRequest
                 .newBuilder()
                 .setId(id)
@@ -197,14 +208,14 @@ internal class BatchProcessorTest {
                         .setName("preprocessed_image")
                         .setDatatype("FP32")
                         .addAllShape(
-                            listOf(values.size.toLong(), 1, 1, 1)
+                            listOf(values.size.toLong(), 1, 1, 1),
                         )
                         .setContents(
                             InferTensorContents
                                 .newBuilder()
                                 .addAllFp32Contents(values)
-                                .build()
-                        )
+                                .build(),
+                        ),
                 )
                 .build()
         }

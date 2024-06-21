@@ -488,6 +488,17 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 	return false
 }
 
+func (m *ModelVersion) IsLoadingOrLoadedOnServer() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, v := range m.replicas {
+		if v.State.AlreadyLoadingOrLoaded() {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *ModelVersion) HasLiveReplicas() bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

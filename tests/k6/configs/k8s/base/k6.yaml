@@ -10,8 +10,9 @@ spec:
       containers:
       - name: k6
         image: k6:latest
-        imagePullPolicy: Always
-        # infer_constant_vu
+        imagePullPolicy: IfNotPresent
+        # # choose from the following scenarios:
+        # # infer_constant_vu
         args: [
           "--no-teardown",
           "--summary-export",
@@ -26,7 +27,7 @@ spec:
           "120m",
           "scenarios/infer_constant_vu.js",
           ]
-        # infer_constant_vu
+        # # infer_constant_rate
         # args: [
         #   "--no-teardown",
         #   "--summary-export",
@@ -35,7 +36,33 @@ spec:
         #   "csv=results/base.gz",
         #   "scenarios/infer_constant_rate.js",
         #   ]
+        # # k8s-test-script
+        # args: [
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "scenarios/k8s-test-script.js",
+        #   ]
+        # # core2_qa_control_plane_ops
+        # args: [
+        #   "--no-teardown",
+        #   "--verbose",
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "-u",
+        #   "5",
+        #   "-i",
+        #   "10000",
+        #   "-d",
+        #   "9h",
+        #   "scenarios/core2_qa_control_plane_ops.js",
+        #   ]
         env:
+        - name: USE_KUBE_CONTROL_PLANE
+          value: "true"
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
@@ -43,22 +70,57 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea,pytorch_cifar10a,tfmnista,mlflow_winea,irisa"
+          value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
         - name: MODEL_TYPE
           value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
+        # Specify MODEL_MEMORY_BYTES using unit-of measure suffixes (k, M, G, T)
+        # rather than numbers without units of measure. If supplying "naked
+        # numbers", the seldon operator will take care of converting the number
+        # for you but also take ownership of the field (as FieldManager), so the
+        # next time you run the scenario creating/updating of the model CR will
+        # fail.
         - name: MODEL_MEMORY_BYTES
-          value: "400000,8000000,43000000,200000,3000000"
+          value: "400k,8M,43M,200k,3M"
+        - name: MAX_MEM_UPDATE_FRACTION
+          value: "0.1"
         - name: MAX_NUM_MODELS
           value: "800,100,25,100,100"
           # value: "0,0,25,100,100"
+        #
+        # MAX_NUM_MODELS_HEADROOM is a variable used by control-plane tests.
+        # It's the approximate number of models that can be created over
+        # MAX_NUM_MODELS over the experiment. In the worst case scenario
+        # (very unlikely) the HEADROOM values may temporarily exceed the ones
+        # specified here with the number of VUs, because each VU checks the
+        # headroom constraint independently before deciding on the available
+        # operations (no communication/sync between VUs)
+        # - name: MAX_NUM_MODELS_HEADROOM
+        #   value: "20,5,0,20,30"
+        #
+        # MAX_MODEL_REPLICAS is used by control-plane tests. It controls the
+        # maximum number of replicas that may be requested when
+        # creating/updating models of a given type.
+        # - name: MAX_MODEL_REPLICAS
+        #   value: "2,2,0,2,2"
+        #
         - name: INFER_BATCH_SIZE
           value: "1,1,1,1,1"
+        # MODEL_CREATE_UPDATE_DELETE_BIAS defines the probability ratios between
+        # the operations, for control-plane tests. For example, "1, 4, 3"
+        # makes an Update four times more likely then a Create, and a Delete 3
+        # times more likely than the Create.
+        # - name: MODEL_CREATE_UPDATE_DELETE_BIAS
+        #   value: "1,3,1"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/run/secret/cloud.google.com/k6-service-account.json"
         - name: GS_BUCKET_NAME
           value: "gs://seldon-tmp/scv2-k6-results"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
@@ -76,4 +138,4 @@ spec:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
-          
+      serviceAccountName: seldon-v2-controller-manager
