@@ -39,6 +39,38 @@ export function getModelStatus(modelName) {
     }
 }
 
+export async function getAllObjects(grpcStatusEndpointName){
+    let objStatusResponse = new Promise((resolve, reject) => {
+        let objStatusStream = new grpc.Stream(schedulerClient, grpcStatusEndpointName, null)
+        var objs = []
+        objStatusStream.on('data', function(objStatus) {
+            objs.push(objStatus)
+        })
+        objStatusStream.on('end', function() {
+            resolve(objs)
+        })
+        objStatusStream.on('error', function(err) {
+            console.log('error: ' + err)
+            reject(err)
+        })
+
+        let req = null
+        if (grpcStatusEndpointName.endsWith("ExperimentStatus")) {
+            req = { "subscriberName": "seldon-k6" }
+        } else {
+            req = { "subscriberName": "seldon-k6", "allVersions": false }
+        }
+        objStatusStream.write(req)
+        objStatusStream.end()
+    })
+
+    return await objStatusResponse
+}
+
+export async function getAllModels() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/ModelStatus")
+}
+
 export function awaitStatus(modelName, status) {
     while (getModelStatus(modelName) !== status) {
         sleep(1)
@@ -53,6 +85,10 @@ export function unloadModel(modelName, awaitReady = true) {
             awaitStatus(modelName, "ModelTerminated")
         }
     }
+}
+
+export async function getAllPipelines() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/PipelineStatus")
 }
 
 export function loadPipeline(pipelineName, data, awaitReady=true) {
@@ -90,6 +126,10 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
             awaitPipelineStatus(pipelineName, "PipelineTerminated")
         }
     }
+}
+
+export async function getAllExperiments() {
+    return await getAllObjects("seldon.mlops.scheduler.Scheduler/ExperimentStatus")
 }
 
 export function isExperimentActive(experimentName) {

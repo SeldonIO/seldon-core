@@ -15,3 +15,11 @@ export const seldonOpExecStatus = {
   FAIL: Symbol("Control-plane failure"),
   CONCURRENT_OP_FAIL: Symbol("Failure because of concurrent operation in another VU")
 }
+
+export function getSeldonObjectCommonName(objType) {
+  let objName = objType.description.split(".")[0]
+  return {
+    one: objName,
+    many: objName + "s"
+  }
+}

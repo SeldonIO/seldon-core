@@ -1,6 +1,7 @@
 CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 NAMESPACE ?= seldon-mesh
+K6_VERSION ?= 0.51.0
 
 IMG ?= ${DOCKERHUB_USERNAME}/seldon-k6:${CUSTOM_IMAGE_TAG}
 GIT_COMMIT := $(shell git rev-parse HEAD)
@@ -27,12 +28,17 @@ SERVICE_ACCOUNT_NAME ?= scv2-k6-tests
 GCS_BUCKET_NAME ?= seldon-tmp
 PROJECT_ID ?= seldon-pub
 
-docker-push: 
+docker-push:
 	docker push ${IMG}
 
 docker-build:
 	tar -czvf ../../k6.tar.gz .
-	cd ../../ && docker build --build-arg GIT_COMMIT=${GIT_COMMIT} --build-arg GIT_BRANCH=${GIT_BRANCH}  -t ${IMG} -f tests/k6/Dockerfile.k6 .
+	cd ../../ && docker build \
+		--build-arg GIT_COMMIT=${GIT_COMMIT} \
+		--build-arg GIT_BRANCH=${GIT_BRANCH} \
+		--build-arg K6_VERSION=${K6_VERSION} \
+		-t ${IMG} \
+		-f tests/k6/Dockerfile.k6 .
 	rm ../../k6.tar.gz
 
 docker-run:
@@ -58,25 +64,25 @@ deploy-rproxy-mlserver-test:
 undeploy-rproxy-test:
 	kustomize build configs/k8s/overlays/rproxy | kubectl delete -f -
 
-deploy-server-test: 
+deploy-server-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
 	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_TRITON_ENDPOINT}" envsubst | kubectl apply -f -
 
-deploy-server-mlserver-test: 
+deploy-server-mlserver-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
 	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_MLSERVER_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-server-test:
 	kustomize build configs/k8s/overlays/server | kubectl delete -f -
 
-deploy-kmodel-test: 
+deploy-kmodel-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
 	kustomize build configs/k8s/overlays/kmodel | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" PIPELINE_ENDPOINT="${PIPELINE_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-kmodel-test:
 	kustomize build configs/k8s/overlays/kmodel | kubectl delete -f -
 
-deploy-kpipeline-test: 
+deploy-kpipeline-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
 	kustomize build configs/k8s/overlays/kpipeline | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" PIPELINE_ENDPOINT="${PIPELINE_ENDPOINT}" envsubst | kubectl apply -f -
 
@@ -95,4 +101,4 @@ create-secret:
 xk6-install:
 	# Install xk6
 	go install go.k6.io/xk6/cmd/xk6@latest
-	xk6 build --with github.com/grafana/xk6-kubernetes
+	xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
