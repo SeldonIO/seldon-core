@@ -202,14 +202,14 @@ spec:
       status model iris2
       load experiment /tmp/experiments/experiment-sample${1}.yaml
       status experiment experiment-sample${1}
-      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment -i 50 \
+      seldon model infer experiment-sample${1}.experiment --header seldon-model=experiment-sample${1}.experiment -i 50 \
       '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment --show-headers \
+      seldon model infer experiment-sample${1}.experiment --header seldon-model=experiment-sample${1}.experiment --show-headers \
       '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment -s -i 50 \
+      seldon model infer experiment-sample${1}.experiment --header seldon-model=experiment-sample${1}.experiment -s -i 50 \
       '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
-      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment --inference-mode grpc -s -i 50\
-      '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+      seldon model infer experiment-sample${1}.experiment --inference-mode grpc -s -i 50\
+      '{"model_name":"experiment-sample'${1}'.experiment","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
       # we cant unload the models here as they are used by other experiments
       # unload experiment experiment-sample${1} /tmp/experiments/experiment-sample${1}.yaml
       # unload model iris ./models/sklearn1.yaml
