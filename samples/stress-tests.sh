@@ -201,7 +201,7 @@ spec:
       status model iris
       status model iris2
       load experiment /tmp/experiments/experiment-sample${1}.yaml
-      status experiment experiment-sample
+      status experiment experiment-sample${1}
       seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment -i 50 \
       '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
       seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment --show-headers \
