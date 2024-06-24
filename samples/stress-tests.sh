@@ -212,7 +212,7 @@ spec:
       seldon model infer experiment-sample${1}.experiment --inference-mode grpc -s -i 50\
       '{"model_name":"experiment-sample'${1}'.experiment","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
       # we cant unload the models here as they are used by other experiments
-      # unload experiment experiment-sample${1} /tmp/experiments/experiment-sample${1}.yaml
+      unload experiment experiment-sample${1} /tmp/experiments/experiment-sample${1}.yaml
       # unload model iris ./models/sklearn1.yaml
       # unload model iris2 ./models/sklearn2.yaml
 }
