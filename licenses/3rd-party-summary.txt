@@ -1,12 +1,12 @@
       1 Apache 2
       6 Apache 2.0
-      7 Apache-2.0
     297 Apache License 2.0
       9 Apache License, Version 2.0
-      3 Bouncy Castle Licence
+      7 Apache-2.0
      33 BSD 2-Clause Simplified License
-      2 BSD-3-Clause
     144 BSD 3-Clause New or Revised License
+      2 BSD-3-Clause
+      3 Bouncy Castle Licence
       4 Business Source License 1.1
       1 CDDL + GPLv2 with classpath exception
       2 Creative Commons Zero v1.0 Universal
