@@ -10388,6 +10388,7 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 gofrs/flock  BSD 3-Clause "New" or "Revised" License  https://github.com/gofrs/flock/blob/master/LICENSE
 --------------------------------------------------------------------------------
+Copyright (c) 2018-2024, The Gofrs
 Copyright (c) 2015-2020, Tim Heckman
 All rights reserved.
 
