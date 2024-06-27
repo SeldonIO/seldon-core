@@ -413,6 +413,12 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
 			}
 		}
+		if es.db != nil {
+			err := es.db.save(experiment)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+		}
 		return es.createExperimentEventMsg(experiment, true), modelEvt, pipelineEvt, nil
 	} else {
 		return nil, nil, nil, &ExperimentNotFound{
