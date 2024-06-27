@@ -77,7 +77,8 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 				experiment := CreateExperimentFromRequest(&snapshot)
 				err = startExperimentCb(experiment)
 				if err != nil {
-					// skip restoring the experiment if the callback returns an error
+					// If the callback fails, do not bubble the error up but simply log it as a warning. 
+					// The experiment restore is skipped instead of returning an error which would cause the scheduler to fail.
 					edb.logger.WithError(err).Warnf("failed to restore experiment %s", experiment.Name)
 				}
 				return nil
