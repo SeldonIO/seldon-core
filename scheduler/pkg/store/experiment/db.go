@@ -19,6 +19,7 @@ import (
 
 type ExperimentDBManager struct {
 	db *badger.DB
+	logger logrus.FieldLogger
 }
 
 func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
@@ -30,6 +31,7 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger) (*Experiment
 	}
 	return &ExperimentDBManager{
 		db: db,
+		logger: logger,
 	}, nil
 }
 
@@ -75,7 +77,8 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 				experiment := CreateExperimentFromRequest(&snapshot)
 				err = startExperimentCb(experiment)
 				if err != nil {
-					return err
+					// skip restoring the experiment if the callback returns an error
+					edb.logger.WithError(err).Warnf("failed to restore experiment %s", experiment.Name)
 				}
 				return nil
 			})
