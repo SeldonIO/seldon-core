@@ -106,7 +106,7 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	}
 	es.db = db
 	// If database already existed we can restore else this is a noop
-	err = es.db.restore(es.StartExperiment)
+	err = es.db.restore(es.StartExperiment, es.experiments)
 	if err != nil {
 		return err
 	}
