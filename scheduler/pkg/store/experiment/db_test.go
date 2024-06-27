@@ -60,6 +60,60 @@ func TestSaveAndRestore(t *testing.T) {
 			errors: []bool{false},
 		},
 		{
+			name: "basic 2 model experiment",
+			experiments: []*Experiment{
+				{
+					Name: "test1",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name: "test2",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			errors: []bool{false, false},
+		},
+		{
 			name: "basic pipeline experiment",
 			experiments: []*Experiment{
 				{
