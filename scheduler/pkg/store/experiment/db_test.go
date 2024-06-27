@@ -23,7 +23,10 @@ func TestSaveAndRestore(t *testing.T) {
 	type test struct {
 		name        string
 		experiments []*Experiment
+		errors      []bool
 	}
+
+	getStrPtr := func(val string) *string { return &val }
 
 	tests := []test{
 		{
@@ -54,6 +57,7 @@ func TestSaveAndRestore(t *testing.T) {
 					},
 				},
 			},
+			errors: []bool{false},
 		},
 		{
 			name: "basic pipeline experiment",
@@ -84,6 +88,51 @@ func TestSaveAndRestore(t *testing.T) {
 					},
 				},
 			},
+			errors: []bool{false},
+		},
+		{
+			name: "faulty experiment",
+			experiments: []*Experiment{
+				{
+					Name:         "test1",
+					ResourceType: ModelResourceType,
+					Default:      getStrPtr("model1"),
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{ // duplicate default
+					Name:         "test2",
+					ResourceType: ModelResourceType,
+					Default:      getStrPtr("model1"),
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model3",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			errors: []bool{false, true},
 		},
 	}
 
@@ -103,8 +152,10 @@ func TestSaveAndRestore(t *testing.T) {
 			es := NewExperimentServer(log.New(), nil, nil, nil)
 			err = es.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
-			for _, p := range test.experiments {
-				g.Expect(cmp.Equal(p, es.experiments[p.Name])).To(BeTrue())
+			for idx, p := range test.experiments {
+				if !test.errors[idx] {
+					g.Expect(cmp.Equal(p, es.experiments[p.Name])).To(BeTrue())
+				}
 			}
 		})
 	}
