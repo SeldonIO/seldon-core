@@ -18,7 +18,7 @@ import (
 )
 
 type ExperimentDBManager struct {
-	db *badger.DB
+	db     *badger.DB
 	logger logrus.FieldLogger
 }
 
@@ -30,7 +30,7 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger) (*Experiment
 		return nil, err
 	}
 	return &ExperimentDBManager{
-		db: db,
+		db:     db,
 		logger: logger,
 	}, nil
 }
