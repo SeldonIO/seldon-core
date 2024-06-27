@@ -61,7 +61,8 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 // 	})
 // }
 
-func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) error) error {
+func (edb *ExperimentDBManager) restore(
+	startExperimentCb func(*Experiment) error, experiments map[string]*Experiment) error {
 	return edb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -75,9 +76,17 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 					return err
 				}
 				experiment := CreateExperimentFromRequest(&snapshot)
-				err = startExperimentCb(experiment)
+				if experiment.Deleted {
+					// we just add a reference to the experiment in the memory store
+					// so that we can keep track of it in case we need to replay the event (to the controller)
+					// we do not trigger an event though as envoy has a clean state when the scheduler restarts
+					experiments[experiment.Name] = experiment
+				} else {
+					// otherwise attempt to start the experiment
+					err = startExperimentCb(experiment)
+				}
 				if err != nil {
-					// If the callback fails, do not bubble the error up but simply log it as a warning. 
+					// If the callback fails, do not bubble the error up but simply log it as a warning.
 					// The experiment restore is skipped instead of returning an error which would cause the scheduler to fail.
 					edb.logger.WithError(err).Warnf("failed to restore experiment %s", experiment.Name)
 				}
