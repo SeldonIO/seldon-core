@@ -73,9 +73,6 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 					return err
 				}
 				experiment := CreateExperimentFromRequest(&snapshot)
-				if err != nil {
-					return err
-				}
 				err = startExperimentCb(experiment)
 				if err != nil {
 					return err
