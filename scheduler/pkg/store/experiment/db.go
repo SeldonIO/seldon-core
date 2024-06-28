@@ -96,3 +96,33 @@ func (edb *ExperimentDBManager) restore(
 		return nil
 	})
 }
+
+// get experiment by name from db
+func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
+	var foundExperiment *Experiment
+	err := edb.db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				snapshot := scheduler.Experiment{}
+				err := proto.Unmarshal(v, &snapshot)
+				if err != nil {
+					return err
+				}
+				experiment := CreateExperimentFromRequest(&snapshot)
+				if experiment.Name == name {
+					foundExperiment = experiment
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return foundExperiment, err
+}
