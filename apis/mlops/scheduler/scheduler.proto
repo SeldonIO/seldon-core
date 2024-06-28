@@ -218,6 +218,7 @@ message Experiment {
   optional ExperimentConfig config = 5;
   optional KubernetesMeta kubernetesMeta = 6;
   ResourceType resourceType = 7;
+  bool active = 8;
 }
 
 message ExperimentConfig {
