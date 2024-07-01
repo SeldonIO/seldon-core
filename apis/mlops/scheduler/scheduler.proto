@@ -221,8 +221,7 @@ message Experiment {
   // to mark the experiment as deleted, this is currently required as we persist all
   // experiments in the local scheduler state (badgerdb) so that events can be replayed
   // on restart, which would guard against lost events in communication.
-  // added as optional as not to break the existing communications that dont require it.
-  optional bool deleted = 8;
+  bool deleted = 8;
 }
 
 message ExperimentConfig {
