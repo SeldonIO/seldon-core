@@ -232,6 +232,10 @@ func TestAddPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger := logrus.New()
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			test.store.db = db
 			err := test.store.AddPipeline(test.proto)
 			if test.err == nil {
 				p := test.store.pipelines[test.proto.Name]
@@ -243,6 +247,13 @@ func TestAddPipeline(t *testing.T) {
 				g.Expect(pv.UID).ToNot(Equal(""))
 				g.Expect(pv.Name).To(Equal(test.proto.Name))
 				g.Expect(pv.State.Status).To(Equal(PipelineCreate))
+
+				// check db
+				pipelineFromDB, _ := test.store.db.get(test.proto.Name)
+				g.Expect(pipelineFromDB.Deleted).To(Equal(p.Deleted))
+				g.Expect(pipelineFromDB.LastVersion).To(Equal(p.LastVersion))
+				g.Expect(len(pipelineFromDB.Versions)).To(Equal(len(p.Versions)))
+				g.Expect(len(pipelineFromDB.Versions)).To(Equal(len(p.Versions)))
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}
