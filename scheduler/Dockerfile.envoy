@@ -1,4 +1,4 @@
-FROM envoyproxy/envoy:v1.30.2 as envoy
+FROM envoyproxy/envoy:v1.30.4 as envoy
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-9
 
