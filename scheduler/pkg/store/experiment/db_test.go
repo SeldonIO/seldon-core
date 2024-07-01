@@ -336,7 +336,7 @@ func TestGetExperimentFromDB(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			actualExperiment, err  := db.get(test.experimentName)
+			actualExperiment, err := db.get(test.experimentName)
 			if test.isErr {
 				g.Expect(err).To(BeNil())
 				g.Expect(actualExperiment).To(BeNil())
