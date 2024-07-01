@@ -52,7 +52,8 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 		Name:           request.Name,
 		Default:        request.Default,
 		ResourceType:   resourceType,
-		Active:         false,
+		Active:         false, // this is always false when creating from a request
+		Deleted:        request.Deleted,
 		Candidates:     candidates,
 		Mirror:         mirror,
 		Config:         config,
@@ -103,5 +104,6 @@ func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
 		Mirror:         mirror,
 		Config:         config,
 		KubernetesMeta: k8sMeta,
+		Deleted:        experiment.Deleted,
 	}
 }

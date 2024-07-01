@@ -98,9 +98,12 @@ func getExperimentDbFolder(basePath string) string {
 func (es *ExperimentStore) AddExperimentInMap(experiment *Experiment) error {
 	es.mu.Lock()
 	defer es.mu.Unlock()
-	// is there a risk of overwriting an existing experiment?
-	es.experiments[experiment.Name] = experiment
-	return nil
+	if _, ok := es.experiments[experiment.Name]; !ok {
+		es.experiments[experiment.Name] = experiment
+		return nil
+	} else {
+		return fmt.Errorf("Experiment %s already exists", experiment.Name)
+	}
 }
 
 func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
