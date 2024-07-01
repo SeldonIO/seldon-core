@@ -256,6 +256,8 @@ func TestAddPipeline(t *testing.T) {
 				g.Expect(len(pipelineFromDB.Versions)).To(Equal(len(p.Versions)))
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
+				pipelineFromDB, _ := test.store.db.get(test.proto.Name)
+				g.Expect(pipelineFromDB).To(BeNil())
 			}
 		})
 	}
