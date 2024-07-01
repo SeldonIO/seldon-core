@@ -79,6 +79,7 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 					Namespace:  "default",
 					Generation: 1,
 				},
+				Deleted: false,
 			},
 		},
 		{
