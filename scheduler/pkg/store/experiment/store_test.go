@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
@@ -429,6 +430,7 @@ func TestRestoreExperiments(t *testing.T) {
 				expectedExperiment, ok := test.experiments[p.Name]
 				g.Expect(ok).To(BeTrue())
 				g.Expect(expectedExperiment.Deleted).To(Equal(p.Deleted))
+				g.Expect(cmp.Equal(p, expectedExperiment)).To(BeTrue())
 			}
 
 			g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
