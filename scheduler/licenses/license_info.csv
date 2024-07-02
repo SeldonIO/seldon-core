@@ -267,6 +267,7 @@ pascaldekloe/goe,https://github.com/pascaldekloe/goe/blob/master/LICENSE,Creativ
 pelletier/go-toml,https://github.com/pelletier/go-toml/blob/v2/LICENSE,The MIT License (MIT),https://raw.githubusercontent.com/pelletier/go-toml/v2/LICENSE
 peterbourgon/diskv,https://github.com/peterbourgon/diskv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/peterbourgon/diskv/master/LICENSE
 pierrec/lz4,https://github.com/pierrec/lz4/blob/v4/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pierrec/lz4/v4/LICENSE
+pkg/errors,https://github.com/pkg/errors/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/errors/master/LICENSE
 pkg/profile,https://github.com/pkg/profile/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/profile/master/LICENSE
 pmezard/go-difflib,https://github.com/pmezard/go-difflib/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pmezard/go-difflib/master/LICENSE
 posener/complete,https://github.com/posener/complete/blob/v1/LICENSE.txt,MIT License,https://raw.githubusercontent.com/posener/complete/v1/LICENSE.txt
