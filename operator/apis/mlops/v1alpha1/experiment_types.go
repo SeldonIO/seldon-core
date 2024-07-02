@@ -113,7 +113,6 @@ func (e *Experiment) AsSchedulerExperimentRequest() *scheduler.Experiment {
 			Generation: e.Generation,
 		},
 		ResourceType: resourceType,
-		Deleted:      false,
 	}
 }
 
