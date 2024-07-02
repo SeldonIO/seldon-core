@@ -13,10 +13,60 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 )
+
+// this is legacy for migration testing
+func createExperimentProto(experiment *Experiment) *scheduler.Experiment {
+	var candidates []*scheduler.ExperimentCandidate
+	for _, candidate := range experiment.Candidates {
+		candidates = append(candidates, &scheduler.ExperimentCandidate{
+			Name:   candidate.Name,
+			Weight: candidate.Weight,
+		})
+	}
+	var mirror *scheduler.ExperimentMirror
+	if experiment.Mirror != nil {
+		mirror = &scheduler.ExperimentMirror{
+			Name:    experiment.Mirror.Name,
+			Percent: experiment.Mirror.Percent,
+		}
+	}
+	var config *scheduler.ExperimentConfig
+	if experiment.Config != nil {
+		config = &scheduler.ExperimentConfig{
+			StickySessions: experiment.Config.StickySessions,
+		}
+	}
+	var k8sMeta *scheduler.KubernetesMeta
+	if experiment.KubernetesMeta != nil {
+		k8sMeta = &scheduler.KubernetesMeta{
+			Namespace:  experiment.KubernetesMeta.Namespace,
+			Generation: experiment.KubernetesMeta.Generation,
+		}
+	}
+	var resourceType scheduler.ResourceType
+	switch experiment.ResourceType {
+	case PipelineResourceType:
+		resourceType = scheduler.ResourceType_PIPELINE
+	case ModelResourceType:
+		resourceType = scheduler.ResourceType_MODEL
+	}
+	return &scheduler.Experiment{
+		Name:           experiment.Name,
+		Default:        experiment.Default,
+		ResourceType:   resourceType,
+		Candidates:     candidates,
+		Mirror:         mirror,
+		Config:         config,
+		KubernetesMeta: k8sMeta,
+	}
+}
 
 func TestSaveAndRestore(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -351,6 +401,164 @@ func TestGetExperimentFromDB(t *testing.T) {
 					}
 				}
 				g.Expect(expFound).To(BeTrue())
+			}
+			err = db.Stop()
+			g.Expect(err).To(BeNil())
+		})
+	}
+}
+
+func TestMigrateToExperimentSnapshot(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name        string
+		experiments []*Experiment
+	}
+
+	tests := []test{
+		{
+			name: "basic model experiment",
+			experiments: []*Experiment{
+				{
+					Name: "test1",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
+		{
+			name: "basic 2 model experiment",
+			experiments: []*Experiment{
+				{
+					Name: "test1",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name: "test2",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
+		{
+			name: "basic pipeline experiment",
+			experiments: []*Experiment{
+				{
+					Name:         "test1",
+					ResourceType: PipelineResourceType,
+					Candidates: []*Candidate{
+						{
+							Name:   "pipeline1",
+							Weight: 50,
+						},
+						{
+							Name:   "pipeline2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "pipeline3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
+	}
+
+	saveLegacyFn := func(experiment *Experiment, db *badger.DB) error {
+		experimentProto := createExperimentProto(experiment)
+		experimentBytes, err := proto.Marshal(experimentProto)
+		if err != nil {
+			return err
+		}
+		return db.Update(func(txn *badger.Txn) error {
+			err = txn.Set([]byte(experiment.Name), experimentBytes)
+			return err
+		})
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			logger := log.New()
+			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.experiments {
+				err := saveLegacyFn(p, db.db)
+				g.Expect(err).To(BeNil())
+			}
+
+			err = db.migrateToExperimentSnapshot()
+			g.Expect(err).To(BeNil())
+			for _, p := range test.experiments {
+				snapshot, err := db.get(p.Name)
+				g.Expect(err).To(BeNil())
+				g.Expect(cmp.Equal(p, snapshot)).To(BeTrue())
 			}
 			err = db.Stop()
 			g.Expect(err).To(BeNil())
