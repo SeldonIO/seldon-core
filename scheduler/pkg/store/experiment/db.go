@@ -18,7 +18,8 @@ import (
 )
 
 type ExperimentDBManager struct {
-	db *badger.DB
+	db     *badger.DB
+	logger logrus.FieldLogger
 }
 
 func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
@@ -29,7 +30,8 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger) (*Experiment
 		return nil, err
 	}
 	return &ExperimentDBManager{
-		db: db,
+		db:     db,
+		logger: logger,
 	}, nil
 }
 
@@ -38,7 +40,7 @@ func (edb *ExperimentDBManager) Stop() error {
 }
 
 func (edb *ExperimentDBManager) save(experiment *Experiment) error {
-	experimentProto := CreateExperimentProto(experiment)
+	experimentProto := CreateExperimentSnapshotProto(experiment)
 	experimentBytes, err := proto.Marshal(experimentProto)
 	if err != nil {
 		return err
@@ -59,7 +61,8 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 // 	})
 // }
 
-func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) error) error {
+func (edb *ExperimentDBManager) restore(
+	startExperimentCb func(*Experiment) error, stopExperimentCb func(*Experiment) error) error {
 	return edb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -67,18 +70,22 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.Experiment{}
+				snapshot := scheduler.ExperimentSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
 				if err != nil {
 					return err
 				}
-				experiment := CreateExperimentFromRequest(&snapshot)
-				if err != nil {
-					return err
+				experiment := CreateExperimentFromSnapshot(&snapshot)
+				if experiment.Deleted {
+					err = stopExperimentCb(experiment)
+				} else {
+					// otherwise attempt to start the experiment
+					err = startExperimentCb(experiment)
 				}
-				err = startExperimentCb(experiment)
 				if err != nil {
-					return err
+					// If the callback fails, do not bubble the error up but simply log it as a warning.
+					// The experiment restore is skipped instead of returning an error which would cause the scheduler to fail.
+					edb.logger.WithError(err).Warnf("failed to restore experiment %s", experiment.Name)
 				}
 				return nil
 			})
@@ -88,4 +95,34 @@ func (edb *ExperimentDBManager) restore(startExperimentCb func(*Experiment) erro
 		}
 		return nil
 	})
+}
+
+// get experiment by name from db
+func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
+	var foundExperiment *Experiment
+	err := edb.db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			err := item.Value(func(v []byte) error {
+				snapshot := scheduler.ExperimentSnapshot{}
+				err := proto.Unmarshal(v, &snapshot)
+				if err != nil {
+					return err
+				}
+				experiment := CreateExperimentFromSnapshot(&snapshot)
+				if experiment.Name == name {
+					foundExperiment = experiment
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return foundExperiment, err
 }

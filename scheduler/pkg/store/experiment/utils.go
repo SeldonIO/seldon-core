@@ -52,7 +52,8 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 		Name:           request.Name,
 		Default:        request.Default,
 		ResourceType:   resourceType,
-		Active:         false,
+		Active:         false, // this is always false when creating from a request
+		Deleted:        false,
 		Candidates:     candidates,
 		Mirror:         mirror,
 		Config:         config,
@@ -60,7 +61,13 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 	}
 }
 
-func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
+func CreateExperimentFromSnapshot(request *scheduler.ExperimentSnapshot) *Experiment {
+	experiment := CreateExperimentFromRequest(request.Experiment)
+	experiment.Deleted = request.Deleted
+	return experiment
+}
+
+func CreateExperimentSnapshotProto(experiment *Experiment) *scheduler.ExperimentSnapshot {
 	var candidates []*scheduler.ExperimentCandidate
 	for _, candidate := range experiment.Candidates {
 		candidates = append(candidates, &scheduler.ExperimentCandidate{
@@ -95,13 +102,16 @@ func CreateExperimentProto(experiment *Experiment) *scheduler.Experiment {
 	case ModelResourceType:
 		resourceType = scheduler.ResourceType_MODEL
 	}
-	return &scheduler.Experiment{
-		Name:           experiment.Name,
-		Default:        experiment.Default,
-		ResourceType:   resourceType,
-		Candidates:     candidates,
-		Mirror:         mirror,
-		Config:         config,
-		KubernetesMeta: k8sMeta,
+	return &scheduler.ExperimentSnapshot{
+		Experiment: &scheduler.Experiment{
+			Name:           experiment.Name,
+			Default:        experiment.Default,
+			ResourceType:   resourceType,
+			Candidates:     candidates,
+			Mirror:         mirror,
+			Config:         config,
+			KubernetesMeta: k8sMeta,
+		},
+		Deleted: experiment.Deleted,
 	}
 }

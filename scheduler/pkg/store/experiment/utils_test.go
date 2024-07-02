@@ -17,7 +17,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
-func TestLoadModel(t *testing.T) {
+func TestCreateExperiment(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name       string
@@ -197,6 +197,145 @@ func TestLoadModel(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			experiment := CreateExperimentFromRequest(test.proto)
 			g.Expect(experiment).To(Equal(test.experiment))
+		})
+	}
+
+}
+
+func TestCreateExperimentFromSnapshot(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name     string
+		proto    *scheduler.ExperimentSnapshot
+		expected *Experiment
+	}
+
+	getStrPtr := func(val string) *string { return &val }
+	tests := []test{
+		{
+			name: "experiment",
+			proto: &scheduler.ExperimentSnapshot{
+				Experiment: &scheduler.Experiment{
+					Name:    "foo",
+					Default: getStrPtr("model1"),
+					Candidates: []*scheduler.ExperimentCandidate{
+						{
+							Name:   "model1",
+							Weight: 20,
+						},
+						{
+							Name:   "model3",
+							Weight: 20,
+						},
+					},
+					Mirror: &scheduler.ExperimentMirror{
+						Name:    "model4",
+						Percent: 80,
+					},
+					Config: &scheduler.ExperimentConfig{
+						StickySessions: true,
+					},
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				Deleted: false,
+			},
+			expected: &Experiment{
+				Name:         "foo",
+				Active:       false,
+				Deleted:      false,
+				Default:      getStrPtr("model1"),
+				ResourceType: ModelResourceType,
+				Candidates: []*Candidate{
+					{
+						Name:   "model1",
+						Weight: 20,
+					},
+					{
+						Name:   "model3",
+						Weight: 20,
+					},
+				},
+				Mirror: &Mirror{
+					Name:    "model4",
+					Percent: 80,
+				},
+				Config: &Config{
+					StickySessions: true,
+				},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "deleted experiment",
+			proto: &scheduler.ExperimentSnapshot{
+				Experiment: &scheduler.Experiment{
+					Name:    "foo",
+					Default: getStrPtr("model1"),
+					Candidates: []*scheduler.ExperimentCandidate{
+						{
+							Name:   "model1",
+							Weight: 20,
+						},
+						{
+							Name:   "model3",
+							Weight: 20,
+						},
+					},
+					Mirror: &scheduler.ExperimentMirror{
+						Name:    "model4",
+						Percent: 80,
+					},
+					Config: &scheduler.ExperimentConfig{
+						StickySessions: true,
+					},
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				Deleted: true,
+			},
+			expected: &Experiment{
+				Name:         "foo",
+				Active:       false,
+				Deleted:      true,
+				Default:      getStrPtr("model1"),
+				ResourceType: ModelResourceType,
+				Candidates: []*Candidate{
+					{
+						Name:   "model1",
+						Weight: 20,
+					},
+					{
+						Name:   "model3",
+						Weight: 20,
+					},
+				},
+				Mirror: &Mirror{
+					Name:    "model4",
+					Percent: 80,
+				},
+				Config: &Config{
+					StickySessions: true,
+				},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace:  "default",
+					Generation: 1,
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			experiment := CreateExperimentFromSnapshot(test.proto)
+			g.Expect(experiment).To(Equal(test.expected))
 		})
 	}
 

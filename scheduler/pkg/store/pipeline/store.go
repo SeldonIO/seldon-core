@@ -100,6 +100,7 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	return nil
 }
 
+// note: we do not validate the pipeline when we restore it from the db as we assume it was validated when it was added
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
