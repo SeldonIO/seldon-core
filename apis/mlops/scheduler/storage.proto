@@ -12,3 +12,11 @@ message PipelineSnapshot {
   repeated PipelineWithState versions = 3;
   bool deleted = 4;
 }
+
+message ExperimentSnapshot {
+  Experiment experiment = 1;
+  // to mark the experiment as deleted, this is currently required as we persist all
+  // experiments in the local scheduler state (badgerdb) so that events can be replayed
+  // on restart, which would guard against lost events in communication.
+  bool deleted = 2;
+}
