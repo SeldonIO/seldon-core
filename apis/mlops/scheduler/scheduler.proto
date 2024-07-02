@@ -218,10 +218,6 @@ message Experiment {
   optional ExperimentConfig config = 5;
   optional KubernetesMeta kubernetesMeta = 6;
   ResourceType resourceType = 7;
-  // to mark the experiment as deleted, this is currently required as we persist all
-  // experiments in the local scheduler state (badgerdb) so that events can be replayed
-  // on restart, which would guard against lost events in communication.
-  bool deleted = 8;
 }
 
 message ExperimentConfig {
