@@ -17,7 +17,29 @@ spec:
     singular: experiment
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Experiment ready status
+      jsonPath: .status.conditions[?(@.type=='ExperimentReady')].status
+      name: Experiment ready
+      type: string
+    - description: Candidates ready status
+      jsonPath: .status.conditions[?(@.type=='CandidatesReady')].status
+      name: Candidates ready
+      priority: 1
+      type: string
+    - description: Mirror ready status
+      jsonPath: .status.conditions[?(@.type=='MirrorReady')].status
+      name: Mirror ready
+      priority: 1
+      type: string
+    - description: Status message
+      jsonPath: .status.conditions[?(@.type=='Ready')].message
+      name: Message
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Experiment is the Schema for the experiments API

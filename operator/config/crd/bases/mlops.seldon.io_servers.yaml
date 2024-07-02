@@ -17,7 +17,23 @@ spec:
     singular: server
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Server ready status
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - description: Number of replicas
+      jsonPath: .status.replicas
+      name: Replicas
+      type: integer
+    - description: Number of loaded models
+      jsonPath: .status.loadedModels
+      name: Loaded Models
+      type: integer
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Server is the Schema for the servers API

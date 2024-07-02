@@ -17,7 +17,29 @@ spec:
     singular: pipeline
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Pipeline ready status
+      jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: Pipeline ready
+      type: string
+    - description: Models ready status
+      jsonPath: .status.conditions[?(@.type=='ModelsReady')].status
+      name: Models ready
+      priority: 1
+      type: string
+    - description: Dataflow ready status
+      jsonPath: .status.conditions[?(@.type=='PipelineReady')].status
+      name: Dataflow ready
+      priority: 1
+      type: string
+    - description: Status message
+      jsonPath: .status.conditions[?(@.type=='Ready')].message
+      name: Message
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Pipeline is the Schema for the pipelines API

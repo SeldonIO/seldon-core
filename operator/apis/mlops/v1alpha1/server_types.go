@@ -73,6 +73,10 @@ type ServerStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 //+kubebuilder:resource:shortName=mls
+//+kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`,description="Server ready status"
+//+kubebuilder:printcolumn:name="Replicas",type=integer,JSONPath=`.status.replicas`,description="Number of replicas"
+//+kubebuilder:printcolumn:name="Loaded Models",type=integer,JSONPath=`.status.loadedModels`,description="Number of loaded models"
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Server is the Schema for the servers API
 type Server struct {
