@@ -40,7 +40,7 @@ func (edb *ExperimentDBManager) Stop() error {
 }
 
 func (edb *ExperimentDBManager) save(experiment *Experiment) error {
-	experimentProto := CreateExperimentProto(experiment)
+	experimentProto := CreateExperimentSnapshotProto(experiment)
 	experimentBytes, err := proto.Marshal(experimentProto)
 	if err != nil {
 		return err
@@ -70,12 +70,12 @@ func (edb *ExperimentDBManager) restore(
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.Experiment{}
+				snapshot := scheduler.ExperimentSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
 				if err != nil {
 					return err
 				}
-				experiment := CreateExperimentFromRequest(&snapshot)
+				experiment := CreateExperimentFromSnapshot(&snapshot)
 				if experiment.Deleted {
 					err = stopExperimentCb(experiment)
 				} else {
@@ -107,12 +107,12 @@ func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.Experiment{}
+				snapshot := scheduler.ExperimentSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
 				if err != nil {
 					return err
 				}
-				experiment := CreateExperimentFromRequest(&snapshot)
+				experiment := CreateExperimentFromSnapshot(&snapshot)
 				if experiment.Name == name {
 					foundExperiment = experiment
 				}
