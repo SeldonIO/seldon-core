@@ -54,6 +54,11 @@ type ExperimentStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlx
+//+kubebuilder:printcolumn:name="Experiment ready",type=string,JSONPath=`.status.conditions[?(@.type=='ExperimentReady')].status`,description="Experiment ready status"
+//+kubebuilder:printcolumn:name="Candidates ready",type=string,JSONPath=`.status.conditions[?(@.type=='CandidatesReady')].status`,description="Candidates ready status",priority=1
+//+kubebuilder:printcolumn:name="Mirror ready",type=string,JSONPath=`.status.conditions[?(@.type=='MirrorReady')].status`,description="Mirror ready status",priority=1
+//+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Experiment is the Schema for the experiments API
 type Experiment struct {
