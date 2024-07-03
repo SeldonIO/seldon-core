@@ -151,43 +151,14 @@ func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
 	return experiment, err
 }
 
-// migrateToExperimentSnapshot migrates the data from the old experiment format
-// to the new experiment snapshot format.
-func (edb *ExperimentDBManager) migrateToExperimentSnapshot() error {
-	var experiments map[string]*Experiment = make(map[string]*Experiment)
-	loadCb := func(experiment *Experiment) {
-		experiments[experiment.Name] = experiment
-	}
-	err := edb.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			item := it.Item()
-			err := item.Value(func(v []byte) error {
-				oldSnapshot := scheduler.Experiment{}
-				err := proto.Unmarshal(v, &oldSnapshot)
-				if err != nil {
-					return err
-				}
-				experiment := CreateExperimentFromRequest(&oldSnapshot)
-				loadCb(experiment)
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+// migrateToDBV2 deletes all experiments from the db
+// the reason why we went ahead with this approach is that the experiment that we store in the old
+// format doesnt have a delete field, so we cannot distinguish between deleted and active experiments
+// we then will rely on the operator to re-create the experiments from the etcd snapshot
+func (edb *ExperimentDBManager) migrateToDBV2() error {
+	err := edb.db.DropAll()
 	if err != nil {
 		return err
 	}
-	for _, experiment := range experiments {
-		err := edb.save(experiment)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return edb.saveVersion()
 }

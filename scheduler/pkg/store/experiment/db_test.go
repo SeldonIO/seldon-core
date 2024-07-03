@@ -684,13 +684,17 @@ func TestMigrateToExperimentSnapshot(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			err = db.migrateToExperimentSnapshot()
+			version, err := db.getVersion()
+			g.Expect(err).ToNot(BeNil())
+			g.Expect(version).To(Equal(defaultExperimentSnapshotVersion))
+
+			// migrate
+			err = db.migrateToDBV2()
+
 			g.Expect(err).To(BeNil())
-			for _, p := range test.experiments {
-				snapshot, err := db.get(p.Name)
-				g.Expect(err).To(BeNil())
-				g.Expect(cmp.Equal(p, snapshot)).To(BeTrue())
-			}
+			version, err = db.getVersion()
+			g.Expect(err).To(BeNil())
+			g.Expect(version).To(Equal(currentExperimentSnapshotVersion))
 			err = db.Stop()
 			g.Expect(err).To(BeNil())
 		})
