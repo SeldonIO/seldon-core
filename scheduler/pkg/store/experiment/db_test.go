@@ -409,6 +409,136 @@ func TestGetExperimentFromDB(t *testing.T) {
 	}
 }
 
+func TestDeleteExperimentFromDB(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name           string
+		experiments    []*Experiment
+		experimentName string
+	}
+
+	tests := []test{
+		{
+			name: "basic 2 model experiment",
+			experiments: []*Experiment{
+				{
+					Name: "test1",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name: "test2",
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					Mirror: &Mirror{
+						Name:    "model3",
+						Percent: 90,
+					},
+					Config: &Config{
+						StickySessions: true,
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			experimentName: "test2",
+		},
+		{
+			name: "Experiment not found",
+			experiments: []*Experiment{
+				{
+					Name:         "test1",
+					ResourceType: ModelResourceType,
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name:         "test2",
+					ResourceType: ModelResourceType,
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model3",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			experimentName: "test3",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			logger := log.New()
+			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.experiments {
+				err := db.save(p)
+				g.Expect(err).To(BeNil())
+			}
+
+			err = db.delete(test.experimentName)
+			g.Expect(err).To(BeNil())
+
+			_, err = db.get(test.experimentName)
+			g.Expect(err).ToNot(BeNil()) // key not found
+
+			err = db.Stop()
+			g.Expect(err).To(BeNil())
+		})
+	}
+}
+
 func TestMigrateToExperimentSnapshot(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {

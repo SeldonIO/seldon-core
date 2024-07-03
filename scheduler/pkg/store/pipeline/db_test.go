@@ -215,3 +215,68 @@ func TestGetPipelineFromDB(t *testing.T) {
 		})
 	}
 }
+
+func TestDeletePipelineFromDB(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name         string
+		pipelines    []*Pipeline
+		pipelineName string
+	}
+
+	tests := []test{
+		{
+			name: "test single pipeline",
+			pipelines: []*Pipeline{
+				{
+					Name:        "test",
+					LastVersion: 0,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "p1",
+							Version: 0,
+							UID:     "x",
+							Steps: map[string]*PipelineStep{
+								"a": {Name: "a"},
+							},
+							State: &PipelineState{
+								Status:    PipelineReady,
+								Reason:    "deployed",
+								Timestamp: time.Now(),
+							},
+							Output: &PipelineOutput{},
+							KubernetesMeta: &KubernetesMeta{
+								Namespace: "default",
+							},
+						},
+					},
+					Deleted: false,
+				},
+			},
+			pipelineName: "test",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			logger := log.New()
+			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.pipelines {
+				err := db.save(p)
+				g.Expect(err).To(BeNil())
+			}
+			g.Expect(err).To(BeNil())
+
+			err = db.delete(test.pipelineName)
+			g.Expect(err).To(BeNil())
+
+			_, err = db.get(test.pipelineName)
+			g.Expect(err).ToNot(BeNil()) // expect error as pipeline should be deleted
+
+			err = db.Stop()
+			g.Expect(err).To(BeNil())
+		})
+	}
+}

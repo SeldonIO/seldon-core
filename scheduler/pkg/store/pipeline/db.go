@@ -50,9 +50,9 @@ func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
 }
 
 // TODO: delete unused pipelines from the store as for now it increases indefinitely
-func (pdb *PipelineDBManager) delete(pipeline *Pipeline) error {
+func (pdb *PipelineDBManager) delete(name string) error {
 	return pdb.db.Update(func(txn *badger.Txn) error {
-		err := txn.Delete([]byte(pipeline.Name))
+		err := txn.Delete([]byte(name))
 		return err
 	})
 }
