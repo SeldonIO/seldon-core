@@ -99,32 +99,24 @@ func (edb *ExperimentDBManager) restore(
 
 // get experiment by name from db
 func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
-	var foundExperiment *Experiment
+	var experiment *Experiment
 	err := edb.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			item := it.Item()
-			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.ExperimentSnapshot{}
-				err := proto.Unmarshal(v, &snapshot)
-				if err != nil {
-					return err
-				}
-				experiment := CreateExperimentFromSnapshot(&snapshot)
-				if experiment.Name == name {
-					foundExperiment = experiment
-				}
-				return nil
-			})
+		item, err := txn.Get(([]byte(name)))
+		if err != nil {
+			return err
+		}
+		return item.Value(func(v []byte) error {
+
+			snapshot := scheduler.ExperimentSnapshot{}
+			err = proto.Unmarshal(v, &snapshot)
 			if err != nil {
 				return err
 			}
-		}
-		return nil
+			experiment = CreateExperimentFromSnapshot(&snapshot)
+			return err
+		})
 	})
-	return foundExperiment, err
+	return experiment, err
 }
 
 // migrateToExperimentSnapshot migrates the data from the old experiment format

@@ -16,9 +16,10 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 // this is legacy for migration testing
@@ -388,7 +389,7 @@ func TestGetExperimentFromDB(t *testing.T) {
 
 			actualExperiment, err := db.get(test.experimentName)
 			if test.isErr {
-				g.Expect(err).To(BeNil())
+				g.Expect(err).ToNot(BeNil())
 				g.Expect(actualExperiment).To(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())

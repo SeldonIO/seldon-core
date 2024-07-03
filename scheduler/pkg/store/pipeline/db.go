@@ -86,34 +86,26 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 }
 
 // get experiment by name from db
-func (pdb *PipelineDBManager) get(name string) (*Pipeline, error) {
-	var foundPipeline *Pipeline
-	err := pdb.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
-		defer it.Close()
-		for it.Rewind(); it.Valid(); it.Next() {
-			item := it.Item()
-			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.PipelineSnapshot{}
-				err := proto.Unmarshal(v, &snapshot)
-				if err != nil {
-					return err
-				}
-				pipeline, err := CreatePipelineFromSnapshot(&snapshot)
-				if err != nil {
-					return err
-				}
-				if pipeline.Name == name {
-					foundPipeline = pipeline
-				}
-				return nil
-			})
+func (edb *PipelineDBManager) get(name string) (*Pipeline, error) {
+	var pipeline *Pipeline
+	err := edb.db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get(([]byte(name)))
+		if err != nil {
+			return err
+		}
+		return item.Value(func(v []byte) error {
+
+			snapshot := scheduler.PipelineSnapshot{}
+			err = proto.Unmarshal(v, &snapshot)
 			if err != nil {
 				return err
 			}
-		}
-		return nil
+			pipeline, err = CreatePipelineFromSnapshot(&snapshot)
+			if err != nil {
+				return err
+			}
+			return err
+		})
 	})
-	return foundPipeline, err
+	return pipeline, err
 }
