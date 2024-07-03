@@ -17,6 +17,12 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
+const (
+	defaultExperimentSnapshotVersion = "v1"
+	currentExperimentSnapshotVersion = "v2"
+	versionKey                       = "__version_key__"
+)
+
 type ExperimentDBManager struct {
 	db     *badger.DB
 	logger logrus.FieldLogger
@@ -51,6 +57,27 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 	})
 }
 
+func (edb *ExperimentDBManager) saveVersion() error {
+	return edb.db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(versionKey), []byte(currentExperimentSnapshotVersion))
+	})
+}
+
+func (edb *ExperimentDBManager) getVersion() (string, error) {
+	version := defaultExperimentSnapshotVersion // defaullt version
+	err := edb.db.View(func(txn *badger.Txn) error {
+		item, err := txn.Get(([]byte(versionKey)))
+		if err != nil {
+			return err
+		}
+		return item.Value(func(v []byte) error {
+			version = string(v)
+			return nil
+		})
+	})
+	return version, err
+}
+
 // TODO: as with pipeline deletion, we should also delete the experiment from the db once we guarantee that
 // the event has been consumed by all relevant subscribers (e.g. controller, etc.)
 // currently we want to replay all events on reconnection
@@ -69,6 +96,11 @@ func (edb *ExperimentDBManager) restore(
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
+			key := string(item.Key())
+			if key == versionKey {
+				// skip the version key
+				continue
+			}
 			err := item.Value(func(v []byte) error {
 				snapshot := scheduler.ExperimentSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
