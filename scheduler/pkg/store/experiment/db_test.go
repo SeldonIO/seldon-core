@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 // this is legacy for migration testing
@@ -677,7 +678,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := open(getExperimentDbFolder(path), logger)
+			db, err := utils.Open(getExperimentDbFolder(path), logger, "experimentDb")
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := saveLegacyFn(p, db)

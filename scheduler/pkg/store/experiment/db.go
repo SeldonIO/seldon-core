@@ -15,12 +15,12 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
 	defaultExperimentSnapshotVersion = "v1"
 	currentExperimentSnapshotVersion = "v2"
-	versionKey                       = "__version_key__"
 )
 
 type ExperimentDBManager struct {
@@ -28,18 +28,8 @@ type ExperimentDBManager struct {
 	logger logrus.FieldLogger
 }
 
-func open(path string, logger logrus.FieldLogger) (*badger.DB, error) {
-	options := badger.DefaultOptions(path)
-	options.Logger = logger.WithField("source", "experimentDb")
-	db, err := badger.Open(options)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
 func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
-	db, err := open(path, logger)
+	db, err := utils.Open(path, logger, "experimentDb")
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +56,7 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger) (*Experiment
 }
 
 func (edb *ExperimentDBManager) Stop() error {
-	return edb.db.Close()
+	return utils.Stop(edb.db)
 }
 
 func (edb *ExperimentDBManager) save(experiment *Experiment) error {
@@ -82,34 +72,18 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 }
 
 func (edb *ExperimentDBManager) saveVersion() error {
-	return edb.db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(versionKey), []byte(currentExperimentSnapshotVersion))
-	})
+	return utils.SaveVersion(edb.db, currentExperimentSnapshotVersion)
 }
 
 func (edb *ExperimentDBManager) getVersion() (string, error) {
-	version := defaultExperimentSnapshotVersion // defaullt version
-	err := edb.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(([]byte(versionKey)))
-		if err != nil {
-			return err
-		}
-		return item.Value(func(v []byte) error {
-			version = string(v)
-			return nil
-		})
-	})
-	return version, err
+	return utils.GetVersion(edb.db, defaultExperimentSnapshotVersion)
 }
 
 // TODO: as with pipeline deletion, we should also delete the experiment from the db once we guarantee that
 // the event has been consumed by all relevant subscribers (e.g. controller, etc.)
 // currently we want to replay all events on reconnection
 func (edb *ExperimentDBManager) delete(name string) error {
-	return edb.db.Update(func(txn *badger.Txn) error {
-		err := txn.Delete([]byte(name))
-		return err
-	})
+	return utils.Delete(edb.db, name)
 }
 
 func (edb *ExperimentDBManager) restore(
@@ -121,7 +95,7 @@ func (edb *ExperimentDBManager) restore(
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
 			key := string(item.Key())
-			if key == versionKey {
+			if key == utils.VersionKey {
 				// skip the version key
 				continue
 			}
