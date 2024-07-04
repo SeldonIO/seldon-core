@@ -15,6 +15,13 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
+)
+
+const (
+	defaultPipelineSnapshotVersion = "v1"
+	currentPipelineSnapshotVersion = "v2"
 )
 
 type PipelineDBManager struct {
@@ -22,39 +29,62 @@ type PipelineDBManager struct {
 }
 
 func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBManager, error) {
-	options := badger.DefaultOptions(path)
-	options.Logger = logger.WithField("source", "pipelineDb")
-	db, err := badger.Open(options)
+	db, err := utils.Open(path, logger, "pipelineDb")
 	if err != nil {
 		return nil, err
 	}
-	return &PipelineDBManager{
+
+	pdb := &PipelineDBManager{
 		db: db,
-	}, nil
+	}
+
+	version, err := pdb.getVersion()
+	if err != nil {
+		// assume that if the version key is not found then either:
+		// -  the db is in the old format
+		// -  the db is empty
+		// in either case we will migrate the db to the current version
+		logger.Infof("Migrating DB from version %s to %s", version, currentPipelineSnapshotVersion)
+		err := pdb.migrateToDBV2()
+		if err != nil {
+			return nil, err
+		}
+	}
+	// in the furture we can add migration logic here for > v1
+	return pdb, nil
 }
 
-func (pdb *PipelineDBManager) Stop() error {
-	return pdb.db.Close()
-}
-
-func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
+func save(pipeline *Pipeline, db *badger.DB) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
 		return err
 	}
-	return pdb.db.Update(func(txn *badger.Txn) error {
+	return db.Update(func(txn *badger.Txn) error {
 		err = txn.Set([]byte(pipeline.Name), pipelineBytes)
 		return err
 	})
 }
 
+func (pdb *PipelineDBManager) Stop() error {
+	return utils.Stop(pdb.db)
+}
+
+func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
+	return save(pipeline, pdb.db)
+}
+
 // TODO: delete unused pipelines from the store as for now it increases indefinitely
 func (pdb *PipelineDBManager) delete(name string) error {
-	return pdb.db.Update(func(txn *badger.Txn) error {
-		err := txn.Delete([]byte(name))
-		return err
-	})
+	return utils.Delete(pdb.db, name)
+}
+
+func (pdb *PipelineDBManager) saveVersion() error {
+	return utils.SaveVersion(pdb.db, currentPipelineSnapshotVersion)
+}
+
+func (pdb *PipelineDBManager) getVersion() (string, error) {
+	return utils.GetVersion(pdb.db, defaultPipelineSnapshotVersion)
 }
 
 func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline)) error {
@@ -64,6 +94,11 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 		defer it.Close()
 		for it.Rewind(); it.Valid(); it.Next() {
 			item := it.Item()
+			key := string(item.Key())
+			if key == utils.VersionKey {
+				// skip the version key
+				continue
+			}
 			err := item.Value(func(v []byte) error {
 				snapshot := scheduler.PipelineSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
@@ -85,10 +120,10 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 	})
 }
 
-// get experiment by name from db
-func (edb *PipelineDBManager) get(name string) (*Pipeline, error) {
+// get pipeline by name from db
+func (pdb *PipelineDBManager) get(name string) (*Pipeline, error) {
 	var pipeline *Pipeline
-	err := edb.db.View(func(txn *badger.Txn) error {
+	err := pdb.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get(([]byte(name)))
 		if err != nil {
 			return err
@@ -108,4 +143,9 @@ func (edb *PipelineDBManager) get(name string) (*Pipeline, error) {
 		})
 	})
 	return pipeline, err
+}
+
+// we only save the version key in the db for this migration
+func (pdb *PipelineDBManager) migrateToDBV2() error {
+	return pdb.saveVersion()
 }

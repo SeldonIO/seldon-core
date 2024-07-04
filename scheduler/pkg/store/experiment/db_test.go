@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
