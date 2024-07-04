@@ -13,10 +13,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
@@ -122,16 +122,16 @@ func TestAsPipelineDetails(t *testing.T) {
 * Rather than fixing the test directly, FIRST UPDATE the kubebuilder:printcolumn comments,
 * THEN update the test to also match the new values.
 *
-*/
+ */
 func TestPipelineStatusPrintColumns(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name			string
-		pipeline	*Pipeline
+		name     string
+		pipeline *Pipeline
 	}
 	fail_reason := "Pipeline.Status.Conditions[].Type string changed in CRD from \"%s\" to \"%[2]s\" without updating kubebuilder:printcolumn comment for type Model. " +
-								 "Update kubebuilder:printcolumn comment in pipeline_types.go to match \"%[2]s\"."
+		"Update kubebuilder:printcolumn comment in pipeline_types.go to match \"%[2]s\"."
 
 	// !! When the test fails, update the string values here ONLY after updating the kubebuilder:
 	// printcolumn comments in pipeline_types.go to match the new values
@@ -139,11 +139,10 @@ func TestPipelineStatusPrintColumns(t *testing.T) {
 	// The key represents the condition used by the CR, the value is the string currently used in
 	// the kubebuilder:printcolumn comments.
 	expectedPrintColumnString := map[apis.ConditionType]string{
-		ModelsReady: "ModelsReady",
-		PipelineReady: "PipelineReady",
+		ModelsReady:         "ModelsReady",
+		PipelineReady:       "PipelineReady",
 		apis.ConditionReady: "Ready",
 	}
-
 
 	tests := []test{
 		{
@@ -153,9 +152,9 @@ func TestPipelineStatusPrintColumns(t *testing.T) {
 					Status: duckv1.Status{
 						Conditions: duckv1.Conditions{
 							// pass the strings used in kubebuilder:printcolumn comments as the ConditionType
-							{ Type: apis.ConditionType(expectedPrintColumnString[ModelsReady]), Status: v1.ConditionTrue },
-							{ Type: apis.ConditionType(expectedPrintColumnString[PipelineReady]), Status: v1.ConditionTrue },
-							{ Type: apis.ConditionType(expectedPrintColumnString[apis.ConditionReady]), Status: v1.ConditionTrue },
+							{Type: apis.ConditionType(expectedPrintColumnString[ModelsReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[PipelineReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[apis.ConditionReady]), Status: v1.ConditionTrue},
 						},
 					},
 				},
@@ -165,7 +164,7 @@ func TestPipelineStatusPrintColumns(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			if test.pipeline.Status.Conditions != nil {
-				searchMap := make (map[string]v1.ConditionStatus)
+				searchMap := make(map[string]v1.ConditionStatus)
 				for _, cond := range test.pipeline.Status.Conditions {
 					searchMap[string(cond.Type)] = cond.Status
 				}

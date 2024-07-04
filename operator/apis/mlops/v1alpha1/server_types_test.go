@@ -10,11 +10,11 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 
-	"github.com/tidwall/gjson"
 	. "github.com/onsi/gomega"
+	"github.com/tidwall/gjson"
 )
 
 /* WARNING: Read this first if test below fails (either at compile-time or while running the
@@ -29,17 +29,17 @@ import (
 * Rather than fixing the test directly, FIRST UPDATE the kubebuilder:printcolumn comments,
 * THEN update the test to also match the new values.
 *
-*/
+ */
 func TestServerStatusPrintColumns(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name    string
-		server   *Server
+		name                          string
+		server                        *Server
 		expectedJsonSerializationKeys []string
 	}
 	json_fail_reason := "Json serialization of Server.Status does not contain path \"%s\", used in kubebuilder.printcolumn comments. " +
-								"Update kubebuilder:printcolumn comments to match the new serialization keys."
+		"Update kubebuilder:printcolumn comments to match the new serialization keys."
 
 	tests := []test{
 		{
