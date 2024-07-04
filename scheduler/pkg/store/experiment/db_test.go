@@ -539,7 +539,7 @@ func TestDeleteExperimentFromDB(t *testing.T) {
 	}
 }
 
-func TestMigrateToExperimentSnapshot(t *testing.T) {
+func TestMigrateFromV1ToV2(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name        string
@@ -677,26 +677,31 @@ func TestMigrateToExperimentSnapshot(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			db, err := open(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := saveLegacyFn(p, db.db)
+				err := saveLegacyFn(p, db)
 				g.Expect(err).To(BeNil())
 			}
-
-			version, err := db.getVersion()
-			g.Expect(err).ToNot(BeNil())
-			g.Expect(version).To(Equal(defaultExperimentSnapshotVersion))
+			_ = db.Close()
 
 			// migrate
-			err = db.migrateToDBV2()
+			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
 
 			g.Expect(err).To(BeNil())
-			version, err = db.getVersion()
+			version, err := edb.getVersion()
 			g.Expect(err).To(BeNil())
 			g.Expect(version).To(Equal(currentExperimentSnapshotVersion))
-			err = db.Stop()
+			err = edb.Stop()
 			g.Expect(err).To(BeNil())
+
+			// check that we have no experiments in the db format
+			es := NewExperimentServer(log.New(), nil, nil, nil)
+			err = es.InitialiseOrRestoreDB(path)
+			g.Expect(err).To(BeNil())
+			g.Expect(len(es.experiments)).To(Equal(0))
+
 		})
 	}
 }

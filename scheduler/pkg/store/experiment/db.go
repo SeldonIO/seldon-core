@@ -28,17 +28,41 @@ type ExperimentDBManager struct {
 	logger logrus.FieldLogger
 }
 
-func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
+func open(path string, logger logrus.FieldLogger) (*badger.DB, error) {
 	options := badger.DefaultOptions(path)
 	options.Logger = logger.WithField("source", "experimentDb")
 	db, err := badger.Open(options)
 	if err != nil {
 		return nil, err
 	}
-	return &ExperimentDBManager{
+	return db, nil
+}
+
+func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
+	db, err := open(path, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	edb := &ExperimentDBManager{
 		db:     db,
 		logger: logger,
-	}, nil
+	}
+
+	version, err := edb.getVersion()
+	if err != nil {
+		// assume that if the version key is not found then either:
+		// -  the db is in the old format
+		// -  the db is empty
+		// in either case we will migrate the db to the current version
+		logger.Infof("Migrating DB from version %s to %s", version, currentExperimentSnapshotVersion)
+		err := edb.migrateToDBV2()
+		if err != nil {
+			return nil, err
+		}
+	}
+	// in the furture we can add migration logic here for > v1
+	return edb, nil
 }
 
 func (edb *ExperimentDBManager) Stop() error {
