@@ -49,11 +49,14 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
-func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
+func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, conn *grpc.ClientConn) (bool, error) {
 	logger := s.logger.WithName("StopExperiment")
-	conn, err := s.getConnection(experiment.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if conn == nil {
+		conn, err = s.getConnection(experiment.Namespace)
+		if err != nil {
+			return true, err
+		}
 	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StopExperimentRequest{
@@ -66,7 +69,7 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
+	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
 // namespace is not used in this function
@@ -83,12 +86,15 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *g
 	// if there are no experiments in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that mnigrated the state
 	// to v2 (where we delete the experiments from the scheduler state)
-	numExperiments, err := getNumExperimentsFromScheduler(ctx, grcpClient)
+	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grcpClient)
 	if err != nil {
 		return err
 	}
-	if numExperiments == 0 {
+	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from experiments that are being deleted
+	if numExperimentsFromScheduler == 0 {
 		s.handleLoadedExperiments(ctx, namespace, conn)
+		s.handlePendingDeleteExperiments(ctx, namespace, conn)
 	}
 
 	for {
@@ -236,6 +242,54 @@ func (s *SchedulerClient) handleLoadedExperiments(
 			}
 		} else {
 			s.logger.V(1).Info("Experiment is being deleted, not starting", "experiment", experiment.Name)
+		}
+	}
+}
+
+func (s *SchedulerClient) handlePendingDeleteExperiments(
+	ctx context.Context, namespace string, conn *grpc.ClientConn) {
+	experimentList := &v1alpha1.ExperimentList{}
+	// Get all models in the namespace
+	err := s.List(
+		ctx,
+		experimentList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	// Check if any experiments are being deleted
+	for _, experiment := range experimentList.Items {
+		if !experiment.ObjectMeta.DeletionTimestamp.IsZero() {
+			s.logger.V(1).Info("Calling Stop experiment (on reconnect)", "experiment", experiment.Name)
+			if retryUnload, err := s.StopExperiment(ctx, &experiment, conn); err != nil {
+				if retryUnload {
+					// caller will retry as this method is called on connection reconnect
+					s.logger.Error(err, "Failed to call stop experiment", "experiment", experiment.Name)
+					continue
+				} else {
+					// this is essentially a failed pre-condition (experiment does not exist in scheduler)
+					// we can remove
+					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+						experiment.ObjectMeta.Finalizers = utils.RemoveStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
+						if errUpdate := s.Update(ctx, &experiment); errUpdate != nil {
+							s.logger.Error(err, "Failed to remove finalizer", "experiment", experiment.Name)
+							return errUpdate
+						}
+						s.logger.Info("Removed finalizer", "experiment", experiment.Name)
+						return nil
+					})
+					if retryErr != nil {
+						s.logger.Error(err, "Failed to remove finalizer after retries", "experiment", experiment.Name)
+					}
+				}
+			} else {
+				// if the experiment exists in the scheduler so we wait until we get the event from the subscription stream
+				s.logger.Info("Stop experiment called successfully, not removing finalizer", "experiment", experiment.Name)
+			}
+		} else {
+			s.logger.V(1).Info("Experiment is not being deleted, not unloading", "experiment", experiment.Name)
 		}
 	}
 }

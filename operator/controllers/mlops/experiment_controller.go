@@ -51,7 +51,7 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.
 	} else { // experiment is being deleted
 		if utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
 			// Handle unload in scheduler
-			if err, retry := r.Scheduler.StopExperiment(ctx, experiment); err != nil {
+			if retry, err := r.Scheduler.StopExperiment(ctx, experiment, nil); err != nil {
 				if retry {
 					return true, err
 				} else {
