@@ -80,7 +80,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *g
 	// if there are no experiments in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that mnigrated the state
 	// to v2 (where we delete the experiments from the scheduler state)
-	numExperiments, err := getNumExperimentsFromScheduler(ctx, grcpClient)
+	_, err = getNumExperimentsFromScheduler(ctx, grcpClient)
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func getNumExperimentsFromScheduler(ctx context.Context, grcpClient scheduler.Sc
 		return 0, err
 	}
 	for {
-		_, err := streamForExperimentStatuses.Recv()
+		data, err := streamForExperimentStatuses.Recv()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -190,7 +190,7 @@ func getNumExperimentsFromScheduler(ctx context.Context, grcpClient scheduler.Sc
 				return 0, err
 			}
 		}
-
+		print(data)
 		numExperimentsFromScheduler++
 	}
 	return numExperimentsFromScheduler, nil
