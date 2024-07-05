@@ -115,7 +115,7 @@ go-openapi/swag,https://github.com/go-openapi/swag/blob/master/LICENSE,Apache Li
 go-stack/stack,https://github.com/go-stack/stack/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/go-stack/stack/master/LICENSE.md
 go-task/slim-sprig,https://github.com/go-task/slim-sprig/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/go-task/slim-sprig/master/LICENSE.txt
 gobuffalo/flect,https://github.com/gobuffalo/flect/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/gobuffalo/flect/main/LICENSE
-gofrs/flock,https://github.com/gofrs/flock/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gofrs/flock/master/LICENSE
+gofrs/flock,https://github.com/gofrs/flock/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gofrs/flock/main/LICENSE
 gogo/googleapis,https://github.com/gogo/googleapis/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gogo/googleapis/master/LICENSE
 gogo/protobuf,https://github.com/gogo/protobuf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gogo/protobuf/master/LICENSE
 golang-jwt/jwt,https://github.com/golang-jwt/jwt/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/golang-jwt/jwt/main/LICENSE
@@ -297,6 +297,9 @@ stretchr/testify,https://github.com/stretchr/testify/blob/master/LICENSE,MIT Lic
 subosito/gotenv,https://github.com/subosito/gotenv/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/subosito/gotenv/master/LICENSE
 testcontainers/testcontainers-go,https://github.com/testcontainers/testcontainers-go/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/testcontainers/testcontainers-go/main/LICENSE
 theupdateframework/notary,https://github.com/notaryproject/notary/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/notaryproject/notary/master/LICENSE
+tidwall/gjson,https://github.com/tidwall/gjson/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tidwall/gjson/master/LICENSE
+tidwall/match,https://github.com/tidwall/match/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tidwall/match/master/LICENSE
+tidwall/pretty,https://github.com/tidwall/pretty/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tidwall/pretty/master/LICENSE
 tilt-dev/fsnotify,https://github.com/tilt-dev/fsnotify/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/tilt-dev/fsnotify/main/LICENSE
 tklauser/go-sysconf,https://github.com/tklauser/go-sysconf/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/tklauser/go-sysconf/main/LICENSE
 tklauser/numcpus,https://github.com/tklauser/numcpus/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/tklauser/numcpus/main/LICENSE

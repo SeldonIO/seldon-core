@@ -123,7 +123,7 @@ go-playground/validator,https://github.com/go-playground/validator/blob/master/L
 go-stack/stack,https://github.com/go-stack/stack/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/go-stack/stack/master/LICENSE.md
 go-task/slim-sprig,https://github.com/go-task/slim-sprig/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/go-task/slim-sprig/master/LICENSE.txt
 gobuffalo/flect,https://github.com/gobuffalo/flect/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/gobuffalo/flect/main/LICENSE
-gofrs/flock,https://github.com/gofrs/flock/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gofrs/flock/master/LICENSE
+gofrs/flock,https://github.com/gofrs/flock/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gofrs/flock/main/LICENSE
 gogo/googleapis,https://github.com/gogo/googleapis/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gogo/googleapis/master/LICENSE
 gogo/protobuf,https://github.com/gogo/protobuf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gogo/protobuf/master/LICENSE
 golang-jwt/jwt,https://github.com/golang-jwt/jwt/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/golang-jwt/jwt/main/LICENSE
