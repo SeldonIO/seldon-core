@@ -26,11 +26,14 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
+func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, conn *grpc.ClientConn) (bool, error) {
 	logger := s.logger.WithName("StartExperiment")
-	conn, err := s.getConnection(experiment.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if conn == nil {
+		conn, err = s.getConnection(experiment.Namespace)
+		if err != nil {
+			return true, err
+		}
 	}
 	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StartExperimentRequest{
@@ -43,7 +46,7 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
+	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
 func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
@@ -80,9 +83,12 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *g
 	// if there are no experiments in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that mnigrated the state
 	// to v2 (where we delete the experiments from the scheduler state)
-	_, err = getNumExperimentsFromScheduler(ctx, grcpClient)
+	numExperiments, err := getNumExperimentsFromScheduler(ctx, grcpClient)
 	if err != nil {
 		return err
+	}
+	if numExperiments == 0 {
+		s.handleLoadedExperiments(ctx, namespace, conn)
 	}
 
 	for {
@@ -203,4 +209,33 @@ func (s *SchedulerClient) updateExperimentStatus(experiment *v1alpha1.Experiment
 		return err
 	}
 	return nil
+}
+
+func (s *SchedulerClient) handleLoadedExperiments(
+	ctx context.Context, namespace string, conn *grpc.ClientConn) {
+	experimentList := &v1alpha1.ExperimentList{}
+	// Get all experiments in the namespace
+	err := s.List(
+		ctx,
+		experimentList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	for _, experiment := range experimentList.Items {
+		// experiments that are not in the process of being deleted has DeletionTimestamp as zero
+		if experiment.ObjectMeta.DeletionTimestamp.IsZero() {
+			s.logger.V(1).Info("Calling start experiment (on reconnect)", "experiment", experiment.Name)
+			if _, err := s.StartExperiment(ctx, &experiment, conn); err != nil {
+				// if this is a retryable error, we will retry on the next connection reconnect
+				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
+			} else {
+				s.logger.V(1).Info("Start experiment called successfully", "experiment", experiment.Name)
+			}
+		} else {
+			s.logger.V(1).Info("Experiment is being deleted, not starting", "experiment", experiment.Name)
+		}
+	}
 }

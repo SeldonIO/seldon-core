@@ -102,7 +102,7 @@ func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, err
 	}
 
-	err, retry := r.Scheduler.StartExperiment(ctx, experiment)
+	retry, err := r.Scheduler.StartExperiment(ctx, experiment, nil)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, experiment, err)
 		if retry {
