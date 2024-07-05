@@ -94,7 +94,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *g
 	// also remove finalizers from experiments that are being deleted
 	if numExperimentsFromScheduler == 0 {
 		s.handleLoadedExperiments(ctx, namespace, conn)
-		s.handlePendingDeleteExperiments(ctx, namespace, conn)
+		s.handlePendingDeleteExperiments(ctx, namespace)
 	}
 
 	for {
@@ -240,14 +240,12 @@ func (s *SchedulerClient) handleLoadedExperiments(
 			} else {
 				s.logger.V(1).Info("Start experiment called successfully", "experiment", experiment.Name)
 			}
-		} else {
-			s.logger.V(1).Info("Experiment is being deleted, not starting", "experiment", experiment.Name)
 		}
 	}
 }
 
 func (s *SchedulerClient) handlePendingDeleteExperiments(
-	ctx context.Context, namespace string, conn *grpc.ClientConn) {
+	ctx context.Context, namespace string) {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -262,34 +260,19 @@ func (s *SchedulerClient) handlePendingDeleteExperiments(
 	// Check if any experiments are being deleted
 	for _, experiment := range experimentList.Items {
 		if !experiment.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Calling Stop experiment (on reconnect)", "experiment", experiment.Name)
-			if retryUnload, err := s.StopExperiment(ctx, &experiment, conn); err != nil {
-				if retryUnload {
-					// caller will retry as this method is called on connection reconnect
-					s.logger.Error(err, "Failed to call stop experiment", "experiment", experiment.Name)
-					continue
-				} else {
-					// this is essentially a failed pre-condition (experiment does not exist in scheduler)
-					// we can remove
-					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-						experiment.ObjectMeta.Finalizers = utils.RemoveStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
-						if errUpdate := s.Update(ctx, &experiment); errUpdate != nil {
-							s.logger.Error(err, "Failed to remove finalizer", "experiment", experiment.Name)
-							return errUpdate
-						}
-						s.logger.Info("Removed finalizer", "experiment", experiment.Name)
-						return nil
-					})
-					if retryErr != nil {
-						s.logger.Error(err, "Failed to remove finalizer after retries", "experiment", experiment.Name)
-					}
+			s.logger.V(1).Info("Removing finalizer (on reconnect)", "experiment", experiment.Name)
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				experiment.ObjectMeta.Finalizers = utils.RemoveStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
+				if errUpdate := s.Update(ctx, &experiment); errUpdate != nil {
+					s.logger.Error(err, "Failed to remove finalizer", "experiment", experiment.Name)
+					return errUpdate
 				}
-			} else {
-				// if the experiment exists in the scheduler so we wait until we get the event from the subscription stream
-				s.logger.Info("Stop experiment called successfully, not removing finalizer", "experiment", experiment.Name)
+				s.logger.Info("Removed finalizer", "experiment", experiment.Name)
+				return nil
+			})
+			if retryErr != nil {
+				s.logger.Error(err, "Failed to remove finalizer after retries", "experiment", experiment.Name)
 			}
-		} else {
-			s.logger.V(1).Info("Experiment is not being deleted, not unloading", "experiment", experiment.Name)
 		}
 	}
 }
