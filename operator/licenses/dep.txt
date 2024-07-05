@@ -357,6 +357,9 @@ github.com/subosito/gotenv
 github.com/testcontainers/testcontainers-go
 github.com/testcontainers/testcontainers-go/modules/compose
 github.com/theupdateframework/notary
+github.com/tidwall/gjson
+github.com/tidwall/match
+github.com/tidwall/pretty
 github.com/tilt-dev/fsnotify
 github.com/tklauser/go-sysconf
 github.com/tklauser/numcpus

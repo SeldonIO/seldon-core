@@ -308,6 +308,9 @@ stretchr/testify
 subosito/gotenv
 testcontainers/testcontainers-go
 theupdateframework/notary
+tidwall/gjson
+tidwall/match
+tidwall/pretty
 tilt-dev/fsnotify
 tklauser/go-sysconf
 tklauser/numcpus
