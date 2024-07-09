@@ -114,7 +114,7 @@ func NewSeldonCoreCollector(
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", schedulerHost, port)
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		fmt.Sprintf("%s:%d", schedulerHost, port),
 		connectOptions...,
 	)

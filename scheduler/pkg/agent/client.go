@@ -407,7 +407,7 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}

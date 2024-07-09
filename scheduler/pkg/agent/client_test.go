@@ -211,8 +211,7 @@ func TestClientCreate(t *testing.T) {
 				test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
-			conn, err := grpc.DialContext(
-				context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
+			conn, err := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn
@@ -371,7 +370,7 @@ func TestLoadModel(t *testing.T) {
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 
 			client.conn = conn
@@ -528,7 +527,7 @@ parameters:
 				client.secretsHandler = s
 			}
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
 			go func() {
@@ -661,7 +660,7 @@ func TestUnloadModel(t *testing.T) {
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
-			conn, cerr := grpc.DialContext(context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			conn, cerr := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
 			go func() {
@@ -720,8 +719,7 @@ func TestClientClose(t *testing.T) {
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 	mockAgentV2Server := &mockAgentV2Server{}
-	conn, err := grpc.DialContext(
-		context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
+	conn, err := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 	g.Expect(err).To(BeNil())
 	client.conn = conn
@@ -820,8 +818,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{}
-			conn, err := grpc.DialContext(
-				context.Background(), "", grpc.WithTransportCredentials(insecure.NewCredentials()),
+			conn, err := grpc.NewClient("", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
 			client.conn = conn

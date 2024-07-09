@@ -197,10 +197,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
-	// Not using DialContext with context timeout and withBlocking as this seems to ignore errors such as TLS certificate
-	// issues and not return any error resulting in uninformative context timeouts only.
-	// See https://github.com/grpc/grpc-go/issues/622
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		s.logger.Error(err, "Failed to connect to scheduler")
 		return nil, err

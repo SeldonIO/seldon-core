@@ -57,7 +57,7 @@ func CreateV2GrpcConnection(v2Config V2Config) (*grpc.ClientConn, error) {
 		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", v2Config.Host, v2Config.GRPCPort), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", v2Config.Host, v2Config.GRPCPort), opts...)
 	if err != nil {
 		return nil, err
 	}
