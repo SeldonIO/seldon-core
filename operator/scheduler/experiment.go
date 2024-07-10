@@ -26,21 +26,22 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, conn *grpc.ClientConn) (bool, error) {
+func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StartExperiment")
 	var err error
-	if conn == nil {
-		conn, err = s.getConnection(experiment.Namespace)
+	if grpcClient == nil {
+		conn, err := s.getConnection(experiment.Namespace)
 		if err != nil {
 			return true, err
 		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
+
 	req := &scheduler.StartExperimentRequest{
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err = grcpClient.StartExperiment(
+	_, err = grpcClient.StartExperiment(
 		ctx,
 		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -93,8 +94,8 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *g
 	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
 	// also remove finalizers from experiments that are being deleted
 	if numExperimentsFromScheduler == 0 {
-		s.handleLoadedExperiments(ctx, namespace, conn)
-		s.handlePendingDeleteExperiments(ctx, namespace)
+		handleLoadedExperiments(ctx, namespace, s, grcpClient)
+		handlePendingDeleteExperiments(ctx, namespace, s)
 	}
 
 	for {
@@ -217,62 +218,3 @@ func (s *SchedulerClient) updateExperimentStatus(experiment *v1alpha1.Experiment
 	return nil
 }
 
-func (s *SchedulerClient) handleLoadedExperiments(
-	ctx context.Context, namespace string, conn *grpc.ClientConn) {
-	experimentList := &v1alpha1.ExperimentList{}
-	// Get all experiments in the namespace
-	err := s.List(
-		ctx,
-		experimentList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	for _, experiment := range experimentList.Items {
-		// experiments that are not in the process of being deleted has DeletionTimestamp as zero
-		if experiment.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Calling start experiment (on reconnect)", "experiment", experiment.Name)
-			if _, err := s.StartExperiment(ctx, &experiment, conn); err != nil {
-				// if this is a retryable error, we will retry on the next connection reconnect
-				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
-			} else {
-				s.logger.V(1).Info("Start experiment called successfully", "experiment", experiment.Name)
-			}
-		}
-	}
-}
-
-func (s *SchedulerClient) handlePendingDeleteExperiments(
-	ctx context.Context, namespace string) {
-	experimentList := &v1alpha1.ExperimentList{}
-	// Get all models in the namespace
-	err := s.List(
-		ctx,
-		experimentList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	// Check if any experiments are being deleted
-	for _, experiment := range experimentList.Items {
-		if !experiment.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Removing finalizer (on reconnect)", "experiment", experiment.Name)
-			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				experiment.ObjectMeta.Finalizers = utils.RemoveStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
-				if errUpdate := s.Update(ctx, &experiment); errUpdate != nil {
-					s.logger.Error(err, "Failed to remove finalizer", "experiment", experiment.Name)
-					return errUpdate
-				}
-				s.logger.Info("Removed finalizer", "experiment", experiment.Name)
-				return nil
-			})
-			if retryErr != nil {
-				s.logger.Error(err, "Failed to remove finalizer after retries", "experiment", experiment.Name)
-			}
-		}
-	}
-}
