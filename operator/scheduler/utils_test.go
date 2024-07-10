@@ -7,6 +7,8 @@ import (
 
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -45,6 +47,8 @@ func (s *mockSchedulerExperimentClient) Recv() (*scheduler.ExperimentStatusRespo
 type mockSchedulerClient struct {
 	responses_experiments []*scheduler.ExperimentStatusResponse
 	requests_experiments  []*scheduler.StartExperimentRequest
+	requests_models       []*scheduler.LoadModelRequest
+	errors                map[string]error
 }
 
 var _ scheduler.SchedulerClient = (*mockSchedulerClient)(nil)
@@ -59,10 +63,16 @@ func (s *mockSchedulerClient) ServerNotify(ctx context.Context, in *scheduler.Se
 }
 
 func (s *mockSchedulerClient) LoadModel(ctx context.Context, in *scheduler.LoadModelRequest, opts ...grpc.CallOption) (*scheduler.LoadModelResponse, error) {
+	s.requests_models = append(s.requests_models, in)
 	return nil, nil
 }
 func (s *mockSchedulerClient) UnloadModel(ctx context.Context, in *scheduler.UnloadModelRequest, opts ...grpc.CallOption) (*scheduler.UnloadModelResponse, error) {
-	return nil, nil
+	err, ok := s.errors["UnloadModel"]
+	if ok {
+		return nil, err
+	} else {
+		return nil, nil
+	}
 }
 func (s *mockSchedulerClient) LoadPipeline(ctx context.Context, in *scheduler.LoadPipelineRequest, opts ...grpc.CallOption) (*scheduler.LoadPipelineResponse, error) {
 	return nil, nil
@@ -137,19 +147,7 @@ func TestHandleLoadedExperiments(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 			},
 		},
@@ -163,17 +161,8 @@ func TestHandleLoadedExperiments(t *testing.T) {
 						Generation: 1,
 					},
 					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
+						Default:    getStrPtr("model1"),
+						Candidates: []mlopsv1alpha1.ExperimentCandidate{},
 					},
 				},
 				&mlopsv1alpha1.Experiment{
@@ -185,17 +174,8 @@ func TestHandleLoadedExperiments(t *testing.T) {
 						Finalizers:        []string{constants.ExperimentFinalizerName},
 					},
 					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
+						Default:    getStrPtr("model1"),
+						Candidates: []mlopsv1alpha1.ExperimentCandidate{},
 					},
 				},
 			},
@@ -224,6 +204,76 @@ func TestHandleLoadedExperiments(t *testing.T) {
 	}
 }
 
+func TestHandleLoadedModels(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+	}
+	now := metav1.Now()
+
+	tests := []test{
+		{
+			name: "with models",
+			resources: []client.Object{
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+			},
+		},
+		{
+			name: "with deleted models",
+			resources: []client.Object{
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.ExperimentFinalizerName},
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+			},
+		},
+		{
+			name:      "no models",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			grpcClient := mockSchedulerClient{}
+			client := newMockSchedulerClient(test.resources...)
+			handleLoadedModels(context.Background(), "", client, &grpcClient)
+			activeResources := 0
+			// TODO check the entire object
+			for idx, req := range test.resources {
+				if req.GetDeletionTimestamp().IsZero() {
+					g.Expect(req.GetName()).To(Equal(grpcClient.requests_models[idx].Model.Meta.GetName()))
+					activeResources++
+				}
+			}
+			g.Expect(len(grpcClient.requests_models)).To(Equal(activeResources))
+		})
+	}
+}
+
 func TestHandleDeletedExperiments(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -231,7 +281,6 @@ func TestHandleDeletedExperiments(t *testing.T) {
 		name      string
 		resources []client.Object
 	}
-	getStrPtr := func(val string) *string { return &val }
 	now := metav1.Now()
 
 	tests := []test{
@@ -244,19 +293,7 @@ func TestHandleDeletedExperiments(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 			},
 		},
@@ -269,19 +306,7 @@ func TestHandleDeletedExperiments(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 				&mlopsv1alpha1.Experiment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -291,19 +316,7 @@ func TestHandleDeletedExperiments(t *testing.T) {
 						DeletionTimestamp: &now,
 						Finalizers:        []string{constants.ExperimentFinalizerName},
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default: getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{
-							{
-								Name:   "model1",
-								Weight: 20,
-							},
-							{
-								Name:   "model2",
-								Weight: 30,
-							},
-						},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 			},
 		},
@@ -320,6 +333,89 @@ func TestHandleDeletedExperiments(t *testing.T) {
 
 			actualResourcesList := &mlopsv1alpha1.ExperimentList{}
 			// Get all experiments in the namespace
+			err := s.List(
+				context.Background(),
+				actualResourcesList,
+				client.InNamespace(""),
+			)
+			g.Expect(err).To(BeNil())
+
+			activeResources := 0
+			for idx, req := range test.resources {
+				if req.GetDeletionTimestamp().IsZero() {
+					g.Expect(req.GetName()).To(Equal(actualResourcesList.Items[idx].GetName()))
+					activeResources++
+				}
+			}
+			g.Expect(len(actualResourcesList.Items)).To(Equal(activeResources))
+		})
+	}
+}
+
+func TestHandleDeletedModels(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+	}
+	now := metav1.Now()
+
+	tests := []test{
+		{
+			name: "with models",
+			resources: []client.Object{
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+			},
+		},
+		{
+			name: "with deleted models",
+			resources: []client.Object{
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.ModelFinalizerName},
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
+			},
+		},
+		{
+			name:      "no models",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			grpcClient := mockSchedulerClient{
+				errors: map[string]error{
+					"UnloadModel": status.Error(codes.FailedPrecondition, "no models"),
+				},
+			}
+			s := newMockSchedulerClient(test.resources...)
+			handlePendingDeleteModels(context.Background(), "", s, &grpcClient)
+
+			actualResourcesList := &mlopsv1alpha1.ModelList{}
+			// Get all models in the namespace
 			err := s.List(
 				context.Background(),
 				actualResourcesList,

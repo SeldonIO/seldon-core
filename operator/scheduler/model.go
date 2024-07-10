@@ -35,20 +35,20 @@ import (
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
-func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (bool, error) {
+func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("LoadModel")
 	retryableError := false
 
 	// If the connection is not provided, get a new one
 	var err error
-	if conn == nil {
-		conn, err = s.getConnection(model.Namespace)
+	if grpcClient == nil {
+		conn, err := s.getConnection(model.Namespace)
 		if err != nil {
 			retryableError = true
 			return retryableError, err
 		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	logger.Info("Load", "model name", model.Name)
 	md, err := model.AsSchedulerModel()
 	if err != nil {
@@ -58,7 +58,7 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 		Model: md,
 	}
 
-	_, err = grcpClient.LoadModel(
+	_, err = grpcClient.LoadModel(
 		ctx,
 		&loadModelRequest,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -75,18 +75,19 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
-func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, conn *grpc.ClientConn) (bool, error) {
+func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("UnloadModel")
 	retryableError := false
 
 	// If the connection is not provided, get a new one
 	var err error
-	if conn == nil {
-		conn, err = s.getConnection(model.Namespace)
+	if grpcClient == nil {
+		conn, err := s.getConnection(model.Namespace)
 		if err != nil {
 			retryableError = true
 			return retryableError, err
 		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
 	logger.Info("Unload", "model name", model.Name)
 	modelRef := &scheduler.UnloadModelRequest{
@@ -99,8 +100,7 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		},
 	}
 
-	grcpClient := scheduler.NewSchedulerClient(conn)
-	_, err = grcpClient.UnloadModel(
+	_, err = grpcClient.UnloadModel(
 		ctx,
 		modelRef,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -127,9 +127,9 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 	}
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	go s.handlePendingDeleteModels(ctx, namespace, conn)
+	go handlePendingDeleteModels(ctx, namespace, s, grcpClient)
 	// on new reconnects we reload the models that are marked as loaded in k8s as the scheduler might have lost the state
-	go s.handleLoadedModels(ctx, namespace, conn)
+	go handleLoadedModels(ctx, namespace, s, grcpClient)
 
 	for {
 		event, err := stream.Recv()
@@ -269,87 +269,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.C
 
 	}
 	return nil
-}
-
-func (s *SchedulerClient) handlePendingDeleteModels(
-	ctx context.Context, namespace string, conn *grpc.ClientConn) {
-	modelList := &v1alpha1.ModelList{}
-	// Get all models in the namespace
-	err := s.List(
-		ctx,
-		modelList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	// Check if any models are being deleted
-	for _, model := range modelList.Items {
-		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Calling Unload model (on reconnect)", "model", model.Name)
-			if retryUnload, err := s.UnloadModel(ctx, &model, conn); err != nil {
-				if retryUnload {
-					// caller will retry as this method is called on connection reconnect
-					s.logger.Error(err, "Failed to call unload model", "model", model.Name)
-					continue
-				} else {
-					// this is essentially a failed pre-condition (model does not exist in scheduler)
-					// we can remove
-					// note that there is still the chance the model is not updated from the different model servers
-					// upon reconnection of the scheduler
-					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-						model.ObjectMeta.Finalizers = utils.RemoveStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-						if errUpdate := s.Update(ctx, &model); errUpdate != nil {
-							s.logger.Error(err, "Failed to remove finalizer", "model", model.Name)
-							return errUpdate
-						}
-						s.logger.Info("Removed finalizer", "model", model.Name)
-						return nil
-					})
-					if retryErr != nil {
-						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
-					}
-				}
-			} else {
-				// if the model exists in the scheduler so we wait until we get the event from the subscription stream
-				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
-			}
-		} else {
-			s.logger.V(1).Info("Model is not being deleted, not unloading", "model", model.Name)
-		}
-	}
-}
-
-// when need to reload the models that are marked in k8s as loaded, this is because there could be a
-// case where the scheduler has load the models state (if the scheduler and the model server restart at the same time)
-func (s *SchedulerClient) handleLoadedModels(
-	ctx context.Context, namespace string, conn *grpc.ClientConn) {
-	modelList := &v1alpha1.ModelList{}
-	// Get all models in the namespace
-	err := s.List(
-		ctx,
-		modelList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	for _, model := range modelList.Items {
-		// models that are not in the process of being deleted has DeletionTimestamp as zero
-		if model.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Calling Load model (on reconnect)", "model", model.Name)
-			if _, err := s.LoadModel(ctx, &model, conn); err != nil {
-				// if this is a retryable error, we will retry on the next connection reconnect
-				s.logger.Error(err, "Failed to call load model", "model", model.Name)
-			} else {
-				s.logger.V(1).Info("Load model called successfully", "model", model.Name)
-			}
-		} else {
-			s.logger.V(1).Info("Model is being deleted, not loading", "model", model.Name)
-		}
-	}
 }
 
 func canRemoveFinalizer(state scheduler.ModelStatus_ModelState) bool {
