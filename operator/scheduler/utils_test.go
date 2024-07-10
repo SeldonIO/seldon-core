@@ -21,22 +21,45 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type mockSchedulerExperimentClient struct {
+type mockSchedulerExperimentGrpcClient struct {
 	counter int
 	results []*scheduler.ExperimentStatusResponse
 	grpc.ClientStream
 }
 
-var _ scheduler.Scheduler_ExperimentStatusClient = (*mockSchedulerExperimentClient)(nil)
+var _ scheduler.Scheduler_ExperimentStatusClient = (*mockSchedulerExperimentGrpcClient)(nil)
 
-func newMockSchedulerExperimentClient(results []*scheduler.ExperimentStatusResponse) *mockSchedulerExperimentClient {
-	return &mockSchedulerExperimentClient{
+func newMockSchedulerExperimentGrpcClient(results []*scheduler.ExperimentStatusResponse) *mockSchedulerExperimentGrpcClient {
+	return &mockSchedulerExperimentGrpcClient{
 		results: results,
 		counter: 0,
 	}
 }
 
-func (s *mockSchedulerExperimentClient) Recv() (*scheduler.ExperimentStatusResponse, error) {
+func (s *mockSchedulerExperimentGrpcClient) Recv() (*scheduler.ExperimentStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
+type mockSchedulerPipelineGrpcClient struct {
+	counter int
+	results []*scheduler.PipelineStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_PipelineStatusClient = (*mockSchedulerPipelineGrpcClient)(nil)
+
+func newMockSchedulerPipelineGrpcClient(results []*scheduler.PipelineStatusResponse) *mockSchedulerPipelineGrpcClient {
+	return &mockSchedulerPipelineGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerPipelineGrpcClient) Recv() (*scheduler.PipelineStatusResponse, error) {
 	if s.counter < len(s.results) {
 		s.counter++
 		return s.results[s.counter-1], nil
@@ -46,6 +69,7 @@ func (s *mockSchedulerExperimentClient) Recv() (*scheduler.ExperimentStatusRespo
 
 type mockSchedulerClient struct {
 	responses_experiments []*scheduler.ExperimentStatusResponse
+	responses_pipelines   []*scheduler.PipelineStatusResponse
 	requests_experiments  []*scheduler.StartExperimentRequest
 	requests_pipelines    []*scheduler.LoadPipelineRequest
 	requests_models       []*scheduler.LoadModelRequest
@@ -55,10 +79,9 @@ type mockSchedulerClient struct {
 var _ scheduler.SchedulerClient = (*mockSchedulerClient)(nil)
 
 func (s *mockSchedulerClient) ExperimentStatus(ctx context.Context, in *scheduler.ExperimentStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_ExperimentStatusClient, error) {
-	return newMockSchedulerExperimentClient(s.responses_experiments), nil
+	return newMockSchedulerExperimentGrpcClient(s.responses_experiments), nil
 }
 
-// the below functions are not implemented
 func (s *mockSchedulerClient) ServerNotify(ctx context.Context, in *scheduler.ServerNotifyRequest, opts ...grpc.CallOption) (*scheduler.ServerNotifyResponse, error) {
 	return nil, nil
 }
@@ -97,7 +120,7 @@ func (s *mockSchedulerClient) ModelStatus(ctx context.Context, in *scheduler.Mod
 	return nil, nil
 }
 func (s *mockSchedulerClient) PipelineStatus(ctx context.Context, in *scheduler.PipelineStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_PipelineStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerPipelineGrpcClient(s.responses_pipelines), nil
 }
 func (s *mockSchedulerClient) SchedulerStatus(ctx context.Context, in *scheduler.SchedulerStatusRequest, opts ...grpc.CallOption) (*scheduler.SchedulerStatusResponse, error) {
 	return nil, nil
@@ -574,6 +597,80 @@ func TestHandleDeletedModels(t *testing.T) {
 				}
 			}
 			g.Expect(len(actualResourcesList.Items)).To(Equal(activeResources))
+		})
+	}
+}
+
+func TestGetNumExperiments(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		results []*scheduler.ExperimentStatusResponse
+	}
+
+	tests := []test{
+		{
+			name: "experiment ok",
+			results: []*scheduler.ExperimentStatusResponse{
+				{
+					ExperimentName: "foo",
+				},
+				{
+					ExperimentName: "bar",
+				},
+			},
+		},
+		{
+			name:    "experiment ok",
+			results: []*scheduler.ExperimentStatusResponse{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := mockSchedulerClient{responses_experiments: test.results}
+			num, err := getNumExperimentsFromScheduler(context.Background(), &client)
+
+			g.Expect(err).To(BeNil())
+			g.Expect(num).To(Equal(len(test.results)))
+		})
+	}
+}
+
+func TestGetNumPipelines(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		results []*scheduler.PipelineStatusResponse
+	}
+
+	tests := []test{
+		{
+			name: "pipeline ok",
+			results: []*scheduler.PipelineStatusResponse{
+				{
+					PipelineName: "foo",
+				},
+				{
+					PipelineName: "bar",
+				},
+			},
+		},
+		{
+			name:    "experiment ok",
+			results: []*scheduler.PipelineStatusResponse{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := mockSchedulerClient{responses_pipelines: test.results}
+			num, err := getNumPipelinesFromScheduler(context.Background(), &client)
+
+			g.Expect(err).To(BeNil())
+			g.Expect(num).To(Equal(len(test.results)))
 		})
 	}
 }

@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"io"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -212,4 +213,52 @@ func handlePendingDeletePipelines(
 			}
 		}
 	}
+}
+
+func getNumExperimentsFromScheduler(ctx context.Context, grcpClient scheduler.SchedulerClient) (int, error) {
+	req := &scheduler.ExperimentStatusRequest{
+		SubscriberName: "seldon manager",
+	}
+	streamForExperimentStatuses, err := grcpClient.ExperimentStatus(ctx, req)
+	numExperimentsFromScheduler := 0
+	if err != nil {
+		return 0, err
+	}
+	for {
+		data, err := streamForExperimentStatuses.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return 0, err
+			}
+		}
+		print(data)
+		numExperimentsFromScheduler++
+	}
+	return numExperimentsFromScheduler, nil
+}
+
+func getNumPipelinesFromScheduler(ctx context.Context, grcpClient scheduler.SchedulerClient) (int, error) {
+	req := &scheduler.PipelineStatusRequest{
+		SubscriberName: "seldon manager",
+	}
+	streamForPipelineStatuses, err := grcpClient.PipelineStatus(ctx, req)
+	numPipelinesFromScheduler := 0
+	if err != nil {
+		return 0, err
+	}
+	for {
+		data, err := streamForPipelineStatuses.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return 0, err
+			}
+		}
+		print(data)
+		numPipelinesFromScheduler++
+	}
+	return numPipelinesFromScheduler, nil
 }

@@ -94,6 +94,20 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grp
 		return err
 	}
 
+	// get pipelines from the scheduler
+	// if there are no pipelines in the scheduler state then we need to create them
+	// this is likely because of the scheduler state got deleted
+	numPipelinesFromScheduler, err := getNumExperimentsFromScheduler(ctx, grcpClient)
+	if err != nil {
+		return err
+	}
+	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from experiments that are being deleted
+	if numPipelinesFromScheduler == 0 {
+		handleLoadedExperiments(ctx, namespace, s, grcpClient)
+		handlePendingDeleteExperiments(ctx, namespace, s)
+	}
+
 	for {
 		event, err := stream.Recv()
 		if err != nil {
