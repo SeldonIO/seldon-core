@@ -26,24 +26,27 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
+func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("LoadPipeline")
-	conn, err := s.getConnection(pipeline.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if grpcClient == nil {
+		conn, err := s.getConnection(pipeline.Namespace)
+		if err != nil {
+			return true, err
+		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.LoadPipelineRequest{
 		Pipeline: pipeline.AsSchedulerPipeline(),
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
-	_, err = grcpClient.LoadPipeline(
+	_, err = grpcClient.LoadPipeline(
 		ctx,
 		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
+	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
 
 func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {

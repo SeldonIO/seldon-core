@@ -153,3 +153,63 @@ func handlePendingDeleteModels(
 		}
 	}
 }
+
+func handleLoadedPipelines(
+	ctx context.Context, namespace string, s *SchedulerClient, grcpClient scheduler.SchedulerClient) {
+	pipelineList := &v1alpha1.PipelineList{}
+	// Get all pipelines in the namespace
+	err := s.List(
+		ctx,
+		pipelineList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	for _, pipeline := range pipelineList.Items {
+		// pipelines that are not in the process of being deleted has DeletionTimestamp as zero
+		if pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
+			s.logger.V(1).Info("Calling load pipeline (on reconnect)", "pipeline", pipeline.Name)
+			if _, err := s.LoadPipeline(ctx, &pipeline, grcpClient); err != nil {
+				// if this is a retryable error, we will retry on the next connection reconnect
+				s.logger.Error(err, "Failed to call load pipeline", "pipeline", pipeline.Name)
+			} else {
+				s.logger.V(1).Info("Load pipeline called successfully", "pipeline", pipeline.Name)
+			}
+		}
+	}
+}
+
+func handlePendingDeletePipelines(
+	ctx context.Context, namespace string, s *SchedulerClient) {
+	pipelineList := &v1alpha1.PipelineList{}
+	// Get all models in the namespace
+	err := s.List(
+		ctx,
+		pipelineList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	// Check if any pipelines are being deleted
+	for _, pipeline := range pipelineList.Items {
+		if !pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
+			s.logger.V(1).Info("Removing finalizer (on reconnect)", "pipeline", pipeline.Name)
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				pipeline.ObjectMeta.Finalizers = utils.RemoveStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
+				if errUpdate := s.Update(ctx, &pipeline); errUpdate != nil {
+					s.logger.Error(err, "Failed to remove finalizer", "pipeline", pipeline.Name)
+					return errUpdate
+				}
+				s.logger.Info("Removed finalizer", "pipeline", pipeline.Name)
+				return nil
+			})
+			if retryErr != nil {
+				s.logger.Error(err, "Failed to remove finalizer after retries", "pipeline", pipeline.Name)
+			}
+		}
+	}
+}

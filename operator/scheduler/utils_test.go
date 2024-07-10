@@ -47,6 +47,7 @@ func (s *mockSchedulerExperimentClient) Recv() (*scheduler.ExperimentStatusRespo
 type mockSchedulerClient struct {
 	responses_experiments []*scheduler.ExperimentStatusResponse
 	requests_experiments  []*scheduler.StartExperimentRequest
+	requests_pipelines    []*scheduler.LoadPipelineRequest
 	requests_models       []*scheduler.LoadModelRequest
 	errors                map[string]error
 }
@@ -75,6 +76,7 @@ func (s *mockSchedulerClient) UnloadModel(ctx context.Context, in *scheduler.Unl
 	}
 }
 func (s *mockSchedulerClient) LoadPipeline(ctx context.Context, in *scheduler.LoadPipelineRequest, opts ...grpc.CallOption) (*scheduler.LoadPipelineResponse, error) {
+	s.requests_pipelines = append(s.requests_pipelines, in)
 	return nil, nil
 }
 func (s *mockSchedulerClient) UnloadPipeline(ctx context.Context, in *scheduler.UnloadPipelineRequest, opts ...grpc.CallOption) (*scheduler.UnloadPipelineResponse, error) {
@@ -134,7 +136,6 @@ func TestHandleLoadedExperiments(t *testing.T) {
 		name      string
 		resources []client.Object
 	}
-	getStrPtr := func(val string) *string { return &val }
 	now := metav1.Now()
 
 	tests := []test{
@@ -160,10 +161,7 @@ func TestHandleLoadedExperiments(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default:    getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 				&mlopsv1alpha1.Experiment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -173,10 +171,7 @@ func TestHandleLoadedExperiments(t *testing.T) {
 						DeletionTimestamp: &now,
 						Finalizers:        []string{constants.ExperimentFinalizerName},
 					},
-					Spec: mlopsv1alpha1.ExperimentSpec{
-						Default:    getStrPtr("model1"),
-						Candidates: []mlopsv1alpha1.ExperimentCandidate{},
-					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
 			},
 		},
@@ -274,6 +269,76 @@ func TestHandleLoadedModels(t *testing.T) {
 	}
 }
 
+func TestHandleLoadedPipelines(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+	}
+	now := metav1.Now()
+
+	tests := []test{
+		{
+			name: "with pipelines",
+			resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+		},
+		{
+			name: "with deleted pipelines",
+			resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.PipelineFinalizerName},
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+		},
+		{
+			name:      "no pipelines",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			grpcClient := mockSchedulerClient{}
+			client := newMockSchedulerClient(test.resources...)
+			handleLoadedPipelines(context.Background(), "", client, &grpcClient)
+			activeResources := 0
+			// TODO check the entire object
+			for idx, req := range test.resources {
+				if req.GetDeletionTimestamp().IsZero() {
+					g.Expect(req.GetName()).To(Equal(grpcClient.requests_pipelines[idx].Pipeline.GetName()))
+					activeResources++
+				}
+			}
+			g.Expect(len(grpcClient.requests_pipelines)).To(Equal(activeResources))
+		})
+	}
+}
+
 func TestHandleDeletedExperiments(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -333,6 +398,84 @@ func TestHandleDeletedExperiments(t *testing.T) {
 
 			actualResourcesList := &mlopsv1alpha1.ExperimentList{}
 			// Get all experiments in the namespace
+			err := s.List(
+				context.Background(),
+				actualResourcesList,
+				client.InNamespace(""),
+			)
+			g.Expect(err).To(BeNil())
+
+			activeResources := 0
+			for idx, req := range test.resources {
+				if req.GetDeletionTimestamp().IsZero() {
+					g.Expect(req.GetName()).To(Equal(actualResourcesList.Items[idx].GetName()))
+					activeResources++
+				}
+			}
+			g.Expect(len(actualResourcesList.Items)).To(Equal(activeResources))
+		})
+	}
+}
+
+func TestHandleDeletedPipelines(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+	}
+	now := metav1.Now()
+
+	tests := []test{
+		{
+			name: "with pipelines",
+			resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+		},
+		{
+			name: "with deleted pipelines",
+			resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.PipelineFinalizerName},
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+		},
+		{
+			name:      "no experiments",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s := newMockSchedulerClient(test.resources...)
+			handlePendingDeletePipelines(context.Background(), "", s)
+
+			actualResourcesList := &mlopsv1alpha1.PipelineList{}
+			// Get all pipelines in the namespace
 			err := s.List(
 				context.Background(),
 				actualResourcesList,
