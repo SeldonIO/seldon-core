@@ -367,7 +367,8 @@ func TestSubscribePipelineEvents(t *testing.T) {
 				}
 			}
 			controller := newMockControllerClient(test.existing_resources...)
-			controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
+			err := controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 
 			isBeingDeleted := map[string]bool{}
 			for _, req := range test.existing_resources {
