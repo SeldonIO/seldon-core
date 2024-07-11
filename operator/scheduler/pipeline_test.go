@@ -17,17 +17,17 @@ func TestSubscribePipelineEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name             string
-		resources        []client.Object
-		results          []*scheduler.PipelineStatusResponse
-		noSchedulerState bool
+		name               string
+		existing_resources []client.Object
+		results            []*scheduler.PipelineStatusResponse
+		noSchedulerState   bool
 	}
 	now := metav1.Now()
 
 	tests := []test{
 		{
-			name: "model and pipeline ready",
-			resources: []client.Object{
+			name: "model and pipeline ready - no scheduler state",
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -61,7 +61,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 		},
 		{
 			name: "model and pipeline ready - with scheduler state",
-			resources: []client.Object{
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -95,12 +95,12 @@ func TestSubscribePipelineEvents(t *testing.T) {
 		},
 		{
 			name: "pipeline terminated - with scheduler state",
-			resources: []client.Object{
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:       "foo",
-						Namespace:  "default",
-						Generation: 1,
+						Name:              "foo",
+						Namespace:         "default",
+						Generation:        1,
 						DeletionTimestamp: &now,
 						Finalizers:        []string{constants.PipelineFinalizerName},
 					},
@@ -131,7 +131,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 		},
 		{
 			name: "model not ready and pipeline ready",
-			resources: []client.Object{
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -161,11 +161,11 @@ func TestSubscribePipelineEvents(t *testing.T) {
 					},
 				},
 			},
-			noSchedulerState: true,
+			noSchedulerState: false,
 		},
 		{
 			name: "model and pipeline not ready",
-			resources: []client.Object{
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -195,11 +195,11 @@ func TestSubscribePipelineEvents(t *testing.T) {
 					},
 				},
 			},
-			noSchedulerState: true,
+			noSchedulerState: false,
 		},
 		{
-			name: "with deleted pipelines",
-			resources: []client.Object{
+			name: "with deleted pipelines - no scheduler state",
+			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -222,9 +222,53 @@ func TestSubscribePipelineEvents(t *testing.T) {
 			noSchedulerState: true,
 		},
 		{
-			name:             "no pipelines",
-			resources:        []client.Object{},
-			noSchedulerState: true,
+			name: "with deleted pipelines - no remove",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.PipelineFinalizerName},
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+			results: []*scheduler.PipelineStatusResponse{
+				{
+					PipelineName: "foo",
+					Versions: []*scheduler.PipelineWithState{
+						{
+							Pipeline: &scheduler.Pipeline{
+								Name: "foo",
+								KubernetesMeta: &scheduler.KubernetesMeta{
+									Namespace:  "default",
+									Generation: 1,
+								},
+							},
+							State: &scheduler.PipelineVersionState{
+								Status:      scheduler.PipelineVersionState_PipelineReady,
+								ModelsReady: true,
+							},
+						},
+					},
+				},
+			},
+			noSchedulerState: false,
+		},
+		{
+			name:               "no pipelines",
+			existing_resources: []client.Object{},
+			noSchedulerState:   false,
 		},
 	}
 
@@ -242,13 +286,13 @@ func TestSubscribePipelineEvents(t *testing.T) {
 					responses_subscribe_pipelines: test.results,
 				}
 			}
-			controller := newMockControllerClient(test.resources...)
+			controller := newMockControllerClient(test.existing_resources...)
 			controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
 
 			// check that we have reloaded the correct resources if the stata of the scheduler is not correct
 			if test.noSchedulerState {
 				activeResources := 0
-				for idx, req := range test.resources {
+				for idx, req := range test.existing_resources {
 					if req.GetDeletionTimestamp().IsZero() {
 						g.Expect(req.GetName()).To(Equal(grpcClient.requests_pipelines[idx].Pipeline.GetName()))
 						activeResources++
