@@ -253,7 +253,7 @@ func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName stri
 }
 
 func retryFn(
-	fn func(context context.Context, conn *grpc.ClientConn, namespace string) error,
+	fn func(context context.Context,  grcpClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
 	logger.Info("RetryFn", "namespace", namespace)
@@ -262,7 +262,8 @@ func retryFn(
 	}
 	backOffExp := backoff.NewExponentialBackOff()
 	fnWithArgs := func() error {
-		return fn(context.Background(), conn, namespace)
+		grcpClient := scheduler.NewSchedulerClient(conn)
+		return fn(context.Background(), grcpClient, namespace)
 	}
 	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 	if err != nil {
