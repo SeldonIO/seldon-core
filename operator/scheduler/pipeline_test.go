@@ -321,6 +321,11 @@ func TestSubscribePipelineEvents(t *testing.T) {
 					} else {
 						g.Expect(pipeline.Status.IsReady()).To(BeFalse())
 					}
+					if r.Versions[0].State.Status == scheduler.PipelineVersionState_PipelineReady {
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeTrue())
+					} else {
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeFalse())
+					}
 					if r.Versions[0].State.ModelsReady {
 						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.ModelsReady)).To(BeTrue())
 					} else {
