@@ -270,6 +270,31 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 			existing_resources: []client.Object{},
 			noSchedulerState:   false,
 		},
+		{
+			name: "experiment does not exist in k8s",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Experiment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
+				},
+			},
+			results: []*scheduler.ExperimentStatusResponse{
+				{
+					ExperimentName:  "foo2",
+					Active:          false,
+					CandidatesReady: false,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+			noSchedulerState: false,
+		},
 	}
 
 	for _, test := range tests {
@@ -323,7 +348,14 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 						},
 						experiment,
 					)
-					g.Expect(err).To(BeNil())
+
+					// we check if the experiement is not in k8s (existing_resources) then we should not act on it
+					if _, ok := isBeingDeleted[r.ExperimentName]; !ok {
+						g.Expect(err).ToNot(BeNil())
+					} else {
+						g.Expect(err).To(BeNil())
+					}
+
 					if r.CandidatesReady && r.Active && r.MirrorReady {
 						g.Expect(experiment.Status.IsReady()).To(BeTrue())
 					} else {

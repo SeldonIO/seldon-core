@@ -315,6 +315,40 @@ func TestSubscribePipelineEvents(t *testing.T) {
 			existing_resources: []client.Object{},
 			noSchedulerState:   false,
 		},
+		{
+			name: "pipeline does not exist in k8s",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+			results: []*scheduler.PipelineStatusResponse{
+				{
+					PipelineName: "foo2",
+					Versions: []*scheduler.PipelineWithState{
+						{
+							Pipeline: &scheduler.Pipeline{
+								Name: "foo2",
+								KubernetesMeta: &scheduler.KubernetesMeta{
+									Namespace:  "default",
+									Generation: 1,
+								},
+							},
+							State: &scheduler.PipelineVersionState{
+								Status:      scheduler.PipelineVersionState_PipelineFailed,
+								ModelsReady: false,
+							},
+						},
+					},
+				},
+			},
+			noSchedulerState: false,
+		},
 	}
 
 	for _, test := range tests {
@@ -333,6 +367,15 @@ func TestSubscribePipelineEvents(t *testing.T) {
 			}
 			controller := newMockControllerClient(test.existing_resources...)
 			controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
+
+			isBeingDeleted := map[string]bool{}
+			for _, req := range test.existing_resources {
+				if !req.GetDeletionTimestamp().IsZero() {
+					isBeingDeleted[req.GetName()] = true
+				} else {
+					isBeingDeleted[req.GetName()] = false
+				}
+			}
 
 			// check that we have reloaded the correct resources if the stata of the scheduler is not correct
 			if test.noSchedulerState {
@@ -360,7 +403,12 @@ func TestSubscribePipelineEvents(t *testing.T) {
 						},
 						pipeline,
 					)
-					g.Expect(err).To(BeNil())
+					// we check if the pipeline is not in k8s (existing_resources) then we should not act on it
+					if _, ok := isBeingDeleted[r.GetPipelineName()]; !ok {
+						g.Expect(err).ToNot(BeNil())
+					} else {
+						g.Expect(err).To(BeNil())
+					}
 					if r.Versions[0].State.Status == scheduler.PipelineVersionState_PipelineReady && r.Versions[0].State.ModelsReady {
 						g.Expect(pipeline.Status.IsReady()).To(BeTrue())
 					} else {
