@@ -9,16 +9,17 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type mockSchedulerExperimentGrpcClient struct {

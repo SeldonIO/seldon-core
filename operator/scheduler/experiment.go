@@ -192,4 +192,3 @@ func (s *SchedulerClient) updateExperimentStatus(experiment *v1alpha1.Experiment
 	}
 	return nil
 }
-

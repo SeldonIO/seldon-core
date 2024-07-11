@@ -253,7 +253,7 @@ func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName stri
 }
 
 func retryFn(
-	fn func(context context.Context,  grcpClient scheduler.SchedulerClient, namespace string) error,
+	fn func(context context.Context, grcpClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
 	logger.Info("RetryFn", "namespace", namespace)

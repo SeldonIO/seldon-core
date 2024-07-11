@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func TestSubscribePipelineEvents(t *testing.T) {
