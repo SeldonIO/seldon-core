@@ -90,6 +90,29 @@ func (s *mockSchedulerPipelineGrpcClient) Recv() (*scheduler.PipelineStatusRespo
 	return nil, io.EOF
 }
 
+type mockSchedulerExperimentSubscribeGrpcClient struct {
+	counter int
+	results []*scheduler.ExperimentStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeExperimentStatusClient = (*mockSchedulerExperimentSubscribeGrpcClient)(nil)
+
+func newMockSchedulerExperimentSubscribeGrpcClient(results []*scheduler.ExperimentStatusResponse) *mockSchedulerExperimentSubscribeGrpcClient {
+	return &mockSchedulerExperimentSubscribeGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerExperimentSubscribeGrpcClient) Recv() (*scheduler.ExperimentStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
 type mockSchedulerGrpcClient struct {
 	responses_experiments           []*scheduler.ExperimentStatusResponse
 	responses_subscribe_experiments []*scheduler.ExperimentStatusResponse
@@ -157,7 +180,7 @@ func (s *mockSchedulerGrpcClient) SubscribeModelStatus(ctx context.Context, in *
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeExperimentStatus(ctx context.Context, in *scheduler.ExperimentSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeExperimentStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerExperimentSubscribeGrpcClient(s.responses_subscribe_experiments), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribePipelineStatus(ctx context.Context, in *scheduler.PipelineSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribePipelineStatusClient, error) {
 	return newMockSchedulerPipelineSubscribeGrpcClient(s.responses_subscribe_pipelines), nil
