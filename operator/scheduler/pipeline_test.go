@@ -266,6 +266,50 @@ func TestSubscribePipelineEvents(t *testing.T) {
 			noSchedulerState: false,
 		},
 		{
+			name: "with deleted pipelines - remove",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.PipelineFinalizerName},
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+			},
+			results: []*scheduler.PipelineStatusResponse{
+				{
+					PipelineName: "bar",
+					Versions: []*scheduler.PipelineWithState{
+						{
+							Pipeline: &scheduler.Pipeline{
+								Name: "bar",
+								KubernetesMeta: &scheduler.KubernetesMeta{
+									Namespace:  "default",
+									Generation: 1,
+								},
+							},
+							State: &scheduler.PipelineVersionState{
+								Status:      scheduler.PipelineVersionState_PipelineTerminated,
+								ModelsReady: false,
+							},
+						},
+					},
+				},
+			},
+			noSchedulerState: false,
+		},
+		{
 			name:               "no pipelines",
 			existing_resources: []client.Object{},
 			noSchedulerState:   false,
