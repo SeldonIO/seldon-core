@@ -15,7 +15,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -112,9 +111,8 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return retryableError, nil
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeModelStatus(
 		ctx,

@@ -14,7 +14,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -64,9 +63,8 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 }
 
 // note: namespace is not used in this function
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeServerStatus(
 		ctx,

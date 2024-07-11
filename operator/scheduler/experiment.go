@@ -74,9 +74,8 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {

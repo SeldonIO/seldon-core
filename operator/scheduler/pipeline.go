@@ -14,7 +14,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -80,9 +79,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grcpClient.SubscribePipelineStatus(
 		ctx,
@@ -97,15 +95,15 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grp
 	// get pipelines from the scheduler
 	// if there are no pipelines in the scheduler state then we need to create them
 	// this is likely because of the scheduler state got deleted
-	numPipelinesFromScheduler, err := getNumExperimentsFromScheduler(ctx, grcpClient)
+	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grcpClient)
 	if err != nil {
 		return err
 	}
-	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
-	// also remove finalizers from experiments that are being deleted
+	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from pipelines that are being deleted
 	if numPipelinesFromScheduler == 0 {
-		handleLoadedExperiments(ctx, namespace, s, grcpClient)
-		handlePendingDeleteExperiments(ctx, namespace, s)
+		handleLoadedPipelines(ctx, namespace, s, grcpClient)
+		handlePendingDeletePipelines(ctx, namespace, s)
 	}
 
 	for {
