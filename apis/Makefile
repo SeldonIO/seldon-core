@@ -47,18 +47,18 @@ PROTOC_GEN_KOTLIN_GRPC_JDK ?= jdk7
 
 ################################################################################
 
-MAKEFILE := $(lastword $(MAKEFILE_LIST))
-BASE_DIR := $(realpath $(dir $(MAKEFILE)))
-TOOLS_DIR := $(BASE_DIR)/tools
+MAKEFILE   := $(lastword $(MAKEFILE_LIST))
+BASE_DIR   := $(realpath $(dir $(MAKEFILE)))
+TOOLS_DIR  := $(BASE_DIR)/.tools
 
-CMD_WGET   	?= wget
-CMD_UNZIP 	?= unzip
-CMD_GO			?= go
-CMD_PYTHON	?= python3
+CMD_WGET   ?= wget
+CMD_UNZIP  ?= unzip
+CMD_GO     ?= go
+CMD_PYTHON ?= python3
 
-PROTOC_IMPORT_PATH := -I.
-PROTOBUF_RELEASE_URL ?= https://github.com/protocolbuffers/protobuf/releases
-ARCH ?= $(shell uname -m)
+PROTOC_IMPORT_PATH    := -I.
+PROTOBUF_RELEASE_URL  ?= https://github.com/protocolbuffers/protobuf/releases
+ARCH                  ?= $(shell uname -m)
 
 # Check existence of required cmdline tools
 $(TOOLS_DIR)/.check_%: \
@@ -87,7 +87,7 @@ $(TOOLS_DIR)/%/:
 
 ### START PROTOC ###
 
-CMD_PROTOC 	?= $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION)
+CMD_PROTOC          ?= $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION)
 PROTOC_DOWNLOAD_URL ?= $(PROTOBUF_RELEASE_URL)/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-$(ARCH).zip
 
 # Download protoc
@@ -105,22 +105,22 @@ $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION): \
 
 ### START GO ###
 
-CMD_PROTOC_GEN_GO ?= $(TOOLS_DIR)/bin/protoc-gen-go-${PROTOC_GEN_GO_VERSION}
+CMD_PROTOC_GEN_GO      ?= $(TOOLS_DIR)/bin/protoc-gen-go-${PROTOC_GEN_GO_VERSION}
 CMD_PROTOC_GEN_GO_GRPC ?= $(TOOLS_DIR)/bin/protoc-gen-go-grpc-${PROTOC_GEN_GO_GRPC_VERSION}
 
-PROTOC_GEN_GO_NAME ?= google.golang.org/protobuf/cmd/protoc-gen-go
+PROTOC_GEN_GO_NAME      ?= google.golang.org/protobuf/cmd/protoc-gen-go
 PROTOC_GEN_GO_GRPC_NAME ?= google.golang.org/grpc/cmd/protoc-gen-go-grpc
 PROTOC_GO_PACKAGE_STYLE := import
 PROTOC_GO_MODULE_PREFIX := github.com/seldonio/seldon-core/apis/go/v2
 PROTOC_GO_OUTPUT_PREFIX := ./go
 
-PROTOC_GO_PATH := --go_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
-PROTOC_GO_MODULE := --go_opt=module=$(PROTOC_GO_MODULE_PREFIX)
-PROTOC_GO_OUT := --go_out=$(PROTOC_GO_OUTPUT_PREFIX)
-PROTOC_GO_GRPC_PATH := --go-grpc_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
-PROTOC_GO_GRPC_MODULE := --go-grpc_opt=module=$(PROTOC_GO_MODULE_PREFIX)
-PROTOC_GO_GRPC_OUT := --go-grpc_out=$(PROTOC_GO_OUTPUT_PREFIX)
-PROTOC_GEN_GO_PLUGIN := --plugin=protoc-gen-go=$(TOOLS_DIR)/bin/protoc-gen-go-$(PROTOC_GEN_GO_VERSION)
+PROTOC_GO_PATH            := --go_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
+PROTOC_GO_MODULE          := --go_opt=module=$(PROTOC_GO_MODULE_PREFIX)
+PROTOC_GO_OUT             := --go_out=$(PROTOC_GO_OUTPUT_PREFIX)
+PROTOC_GO_GRPC_PATH       := --go-grpc_opt=paths=$(PROTOC_GO_PACKAGE_STYLE)
+PROTOC_GO_GRPC_MODULE     := --go-grpc_opt=module=$(PROTOC_GO_MODULE_PREFIX)
+PROTOC_GO_GRPC_OUT        := --go-grpc_out=$(PROTOC_GO_OUTPUT_PREFIX)
+PROTOC_GEN_GO_PLUGIN      := --plugin=protoc-gen-go=$(TOOLS_DIR)/bin/protoc-gen-go-$(PROTOC_GEN_GO_VERSION)
 PROTOC_GEN_GO_GRPC_PLUGIN := --plugin=protoc-gen-go-grpc=$(TOOLS_DIR)/bin/protoc-gen-go-grpc-$(PROTOC_GEN_GO_GRPC_VERSION)
 PROTOC_GO_OPTIONS = $(PROTOC_GO_PATH) \
 										$(PROTOC_GO_MODULE) \
@@ -174,8 +174,8 @@ clean-go:
 
 ### START PYTHON ###
 
-PROTOC_PYTHON_OUT := --python_out=./python --grpc_python_out=./python
-PROTOC_PYTHON_OPTIONS = $(PROTOC_PYTHON_OUT)
+PROTOC_PYTHON_OUT      := --python_out=./python --grpc_python_out=./python
+PROTOC_PYTHON_OPTIONS  = $(PROTOC_PYTHON_OUT)
 PROTOC_PYTHON_VENV_DIR = $(TOOLS_DIR)/python/.venv.grpcio-tools-$(PROTOC_GEN_PYTHON_GRPCIO_TOOLS_VERSION)
 
 # Create python virtual environment and install grpcio-tools
@@ -207,11 +207,11 @@ build-v2-python: \
 PROTOC_JAVA_GRPC_BIN ?= protoc-gen-grpc-java-$(PROTOC_GEN_JAVA_GRPC_VERSION)-linux-$(ARCH).exe
 PROTOC_JAVA_GRPC_URL ?= https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/$(PROTOC_GEN_JAVA_GRPC_VERSION)/$(PROTOC_JAVA_GRPC_BIN)
 
-PROTOC_KOTLIN_GRPC_JAR ?= protoc-gen-grpc-kotlin-$(PROTOC_GEN_KOTLIN_GRPC_VERSION)-$(PROTOC_GEN_KOTLIN_GRPC_JDK).jar
-PROTOC_KOTLIN_GRPC_URL ?= https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-kotlin/$(PROTOC_GEN_KOTLIN_GRPC_VERSION)/$(PROTOC_KOTLIN_GRPC_JAR)
+PROTOC_KOTLIN_GRPC_JAR         ?= protoc-gen-grpc-kotlin-$(PROTOC_GEN_KOTLIN_GRPC_VERSION)-$(PROTOC_GEN_KOTLIN_GRPC_JDK).jar
+PROTOC_KOTLIN_GRPC_URL         ?= https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-kotlin/$(PROTOC_GEN_KOTLIN_GRPC_VERSION)/$(PROTOC_KOTLIN_GRPC_JAR)
 PROTOC_KOTLIN_GRPC_BIN_WRAPPER := protoc-gen-grpc-kotlin-$(PROTOC_GEN_KOTLIN_GRPC_VERSION).sh
 
-CMD_PROTOC_GEN_JAVA_GRPC ?= $(TOOLS_DIR)/jvm/$(PROTOC_JAVA_GRPC_BIN)
+CMD_PROTOC_GEN_JAVA_GRPC   ?= $(TOOLS_DIR)/jvm/$(PROTOC_JAVA_GRPC_BIN)
 CMD_PROTOC_GEN_KOTLIN_GRPC ?= $(TOOLS_DIR)/jvm/$(PROTOC_KOTLIN_GRPC_BIN_WRAPPER)
 
 # Download protoc-gen-grpc-java
