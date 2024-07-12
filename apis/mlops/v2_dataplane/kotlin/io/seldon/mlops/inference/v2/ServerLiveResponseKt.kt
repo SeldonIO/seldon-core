@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializeserverLiveResponse")
 public inline fun serverLiveResponse(block: io.seldon.mlops.inference.v2.ServerLiveResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse =
   io.seldon.mlops.inference.v2.ServerLiveResponseKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse.newBuilder()).apply { block() }._build()
 public object ServerLiveResponseKt {
@@ -60,3 +60,4 @@ public object ServerLiveResponseKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse.copy(block: io.seldon.mlops.inference.v2.ServerLiveResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse =
   io.seldon.mlops.inference.v2.ServerLiveResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializemodelInferResponse")
 public inline fun modelInferResponse(block: io.seldon.mlops.inference.v2.ModelInferResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse =
   io.seldon.mlops.inference.v2.ModelInferResponseKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.newBuilder()).apply { block() }._build()
 public object ModelInferResponseKt {
@@ -186,7 +186,7 @@ public object ModelInferResponseKt {
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("clearParameters")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
       .clear() {
          _builder.clearParameters()
        }
@@ -221,7 +221,8 @@ public object ModelInferResponseKt {
     @kotlin.jvm.JvmName("addOutputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.add(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor) {
       _builder.addOutputs(value)
-    }/**
+    }
+    /**
      * <pre>
      * The output tensors holding inference results.
      * </pre>
@@ -234,7 +235,8 @@ public object ModelInferResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.plusAssign(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor) {
       add(value)
-    }/**
+    }
+    /**
      * <pre>
      * The output tensors holding inference results.
      * </pre>
@@ -246,7 +248,8 @@ public object ModelInferResponseKt {
     @kotlin.jvm.JvmName("addAllOutputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.addAll(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor>) {
       _builder.addAllOutputs(values)
-    }/**
+    }
+    /**
      * <pre>
      * The output tensors holding inference results.
      * </pre>
@@ -259,7 +262,8 @@ public object ModelInferResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.plusAssign(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor>) {
       addAll(values)
-    }/**
+    }
+    /**
      * <pre>
      * The output tensors holding inference results.
      * </pre>
@@ -272,7 +276,8 @@ public object ModelInferResponseKt {
     @kotlin.jvm.JvmName("setOutputs")
     public operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.set(index: kotlin.Int, value: io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor) {
       _builder.setOutputs(index, value)
-    }/**
+    }
+    /**
      * <pre>
      * The output tensors holding inference results.
      * </pre>
@@ -284,6 +289,8 @@ public object ModelInferResponseKt {
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, OutputsProxy>.clear() {
       _builder.clearOutputs()
     }
+
+
     /**
      * An uninstantiable, behaviorless type to represent the field in
      * generics.
@@ -461,7 +468,7 @@ public object ModelInferResponseKt {
     public fun com.google.protobuf.kotlin.DslList<com.google.protobuf.ByteString, RawOutputContentsProxy>.clear() {
       _builder.clearRawOutputContents()
     }}
-  @kotlin.jvm.JvmSynthetic
+  @kotlin.jvm.JvmName("-initializeinferOutputTensor")
   public inline fun inferOutputTensor(block: io.seldon.mlops.inference.v2.ModelInferResponseKt.InferOutputTensorKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor =
     io.seldon.mlops.inference.v2.ModelInferResponseKt.InferOutputTensorKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.newBuilder()).apply { block() }._build()
   public object InferOutputTensorKt {
@@ -703,7 +710,7 @@ public object ModelInferResponseKt {
        */
       @kotlin.jvm.JvmSynthetic
       @JvmName("clearParameters")
-      public fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
+      fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
         .clear() {
            _builder.clearParameters()
          }
@@ -755,6 +762,11 @@ public object ModelInferResponseKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.copy(block: io.seldon.mlops.inference.v2.ModelInferResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse =
   io.seldon.mlops.inference.v2.ModelInferResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.copy(block: io.seldon.mlops.inference.v2.ModelInferResponseKt.InferOutputTensorKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor =
   io.seldon.mlops.inference.v2.ModelInferResponseKt.InferOutputTensorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+public val io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensorOrBuilder.contentsOrNull: io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents?
+  get() = if (hasContents()) getContents() else null
+

@@ -244,7 +244,7 @@ build-kotlin: \
 		$(TOOLS_DIR)/.check_$(CMD_PROTOC_GEN_KOTLIN_GRPC)
 #
 	@echo "[INFO] Generating Java/Kotlin code from protobuf files..."
-	@cd ./mlops/chainer && $(CMD_PROTOC) \
+	@cd $(BASE_DIR)/mlops/chainer && $(CMD_PROTOC) \
 		--proto_path=. \
 		--plugin=protoc-gen-grpc-java=$(CMD_PROTOC_GEN_JAVA_GRPC) \
 		--java_out=./kotlin \
@@ -253,6 +253,15 @@ build-kotlin: \
 		--kotlin_out=./kotlin \
 		--grpckt_out=./kotlin \
 		chainer.proto
+	@cd $(BASE_DIR)/mlops/v2_dataplane && $(CMD_PROTOC) \
+		--proto_path=. \
+		--plugin=protoc-gen-grpc-java=$(CMD_PROTOC_GEN_JAVA_GRPC) \
+		--java_out=./kotlin \
+		--grpc-java_out=./kotlin \
+		--plugin=protoc-gen-grpckt=$(CMD_PROTOC_GEN_KOTLIN_GRPC) \
+		--kotlin_out=./kotlin \
+		--grpckt_out=./kotlin \
+		v2_dataplane.proto
 
 ################################################################################
 

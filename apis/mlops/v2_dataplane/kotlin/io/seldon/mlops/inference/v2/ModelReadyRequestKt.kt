@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializemodelReadyRequest")
 public inline fun modelReadyRequest(block: io.seldon.mlops.inference.v2.ModelReadyRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest =
   io.seldon.mlops.inference.v2.ModelReadyRequestKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest.newBuilder()).apply { block() }._build()
 public object ModelReadyRequestKt {
@@ -87,3 +87,4 @@ public object ModelReadyRequestKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest.copy(block: io.seldon.mlops.inference.v2.ModelReadyRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest =
   io.seldon.mlops.inference.v2.ModelReadyRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
