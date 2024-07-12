@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializemodelMetadataResponse")
 public inline fun modelMetadataResponse(block: io.seldon.mlops.inference.v2.ModelMetadataResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse =
   io.seldon.mlops.inference.v2.ModelMetadataResponseKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.newBuilder()).apply { block() }._build()
 public object ModelMetadataResponseKt {
@@ -209,7 +209,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("addInputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.add(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       _builder.addInputs(value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's inputs.
      * </pre>
@@ -222,7 +223,8 @@ public object ModelMetadataResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.plusAssign(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       add(value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's inputs.
      * </pre>
@@ -234,7 +236,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("addAllInputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.addAll(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>) {
       _builder.addAllInputs(values)
-    }/**
+    }
+    /**
      * <pre>
      * The model's inputs.
      * </pre>
@@ -247,7 +250,8 @@ public object ModelMetadataResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.plusAssign(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>) {
       addAll(values)
-    }/**
+    }
+    /**
      * <pre>
      * The model's inputs.
      * </pre>
@@ -260,7 +264,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("setInputs")
     public operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.set(index: kotlin.Int, value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       _builder.setInputs(index, value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's inputs.
      * </pre>
@@ -272,6 +277,8 @@ public object ModelMetadataResponseKt {
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, InputsProxy>.clear() {
       _builder.clearInputs()
     }
+
+
     /**
      * An uninstantiable, behaviorless type to represent the field in
      * generics.
@@ -302,7 +309,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("addOutputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.add(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       _builder.addOutputs(value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's outputs.
      * </pre>
@@ -315,7 +323,8 @@ public object ModelMetadataResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.plusAssign(value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       add(value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's outputs.
      * </pre>
@@ -327,7 +336,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("addAllOutputs")
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.addAll(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>) {
       _builder.addAllOutputs(values)
-    }/**
+    }
+    /**
      * <pre>
      * The model's outputs.
      * </pre>
@@ -340,7 +350,8 @@ public object ModelMetadataResponseKt {
     @Suppress("NOTHING_TO_INLINE")
     public inline operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.plusAssign(values: kotlin.collections.Iterable<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>) {
       addAll(values)
-    }/**
+    }
+    /**
      * <pre>
      * The model's outputs.
      * </pre>
@@ -353,7 +364,8 @@ public object ModelMetadataResponseKt {
     @kotlin.jvm.JvmName("setOutputs")
     public operator fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.set(index: kotlin.Int, value: io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) {
       _builder.setOutputs(index, value)
-    }/**
+    }
+    /**
      * <pre>
      * The model's outputs.
      * </pre>
@@ -365,6 +377,8 @@ public object ModelMetadataResponseKt {
     public fun com.google.protobuf.kotlin.DslList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, OutputsProxy>.clear() {
       _builder.clearOutputs()
     }
+
+
     /**
      * An uninstantiable, behaviorless type to represent the field in
      * generics.
@@ -451,12 +465,12 @@ public object ModelMetadataResponseKt {
      */
     @kotlin.jvm.JvmSynthetic
     @JvmName("clearParameters")
-    public fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
+    fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
       .clear() {
          _builder.clearParameters()
        }
   }
-  @kotlin.jvm.JvmSynthetic
+  @kotlin.jvm.JvmName("-initializetensorMetadata")
   public inline fun tensorMetadata(block: io.seldon.mlops.inference.v2.ModelMetadataResponseKt.TensorMetadataKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata =
     io.seldon.mlops.inference.v2.ModelMetadataResponseKt.TensorMetadataKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.newBuilder()).apply { block() }._build()
   public object TensorMetadataKt {
@@ -711,7 +725,7 @@ public object ModelMetadataResponseKt {
        */
       @kotlin.jvm.JvmSynthetic
       @JvmName("clearParameters")
-      public fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
+      fun com.google.protobuf.kotlin.DslMap<kotlin.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter, ParametersProxy>
         .clear() {
            _builder.clearParameters()
          }
@@ -721,6 +735,8 @@ public object ModelMetadataResponseKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.copy(block: io.seldon.mlops.inference.v2.ModelMetadataResponseKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse =
   io.seldon.mlops.inference.v2.ModelMetadataResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.copy(block: io.seldon.mlops.inference.v2.ModelMetadataResponseKt.TensorMetadataKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata =
   io.seldon.mlops.inference.v2.ModelMetadataResponseKt.TensorMetadataKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

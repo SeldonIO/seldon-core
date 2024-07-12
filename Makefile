@@ -98,7 +98,7 @@ prep-artifacts:
 #
 
 update-copyright:
-	./hack/boilerplate.sh
+	@./hack/boilerplate.sh
 
 
 install-go-license-tools:

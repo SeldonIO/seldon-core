@@ -45,43 +45,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerLiveRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerLiveRequest_descriptor;
@@ -109,7 +72,7 @@ public final class V2Dataplane {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -118,7 +81,7 @@ public final class V2Dataplane {
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -133,7 +96,7 @@ public final class V2Dataplane {
       }
       io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -144,7 +107,7 @@ public final class V2Dataplane {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -261,18 +224,13 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -351,7 +309,7 @@ public final class V2Dataplane {
 
       public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest other) {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -366,17 +324,30 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       @java.lang.Override
@@ -412,7 +383,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerLiveRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -473,48 +455,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerLiveResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-
-              live_ = input.readBool();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerLiveResponse_descriptor;
@@ -529,7 +469,7 @@ public final class V2Dataplane {
     }
 
     public static final int LIVE_FIELD_NUMBER = 1;
-    private boolean live_;
+    private boolean live_ = false;
     /**
      * <pre>
      * True if the inference server is live, false if not live.
@@ -560,7 +500,7 @@ public final class V2Dataplane {
       if (live_ != false) {
         output.writeBool(1, live_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -573,7 +513,7 @@ public final class V2Dataplane {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, live_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -590,7 +530,7 @@ public final class V2Dataplane {
 
       if (getLive()
           != other.getLive()) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -604,7 +544,7 @@ public final class V2Dataplane {
       hash = (37 * hash) + LIVE_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getLive());
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -721,24 +661,19 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         live_ = false;
-
         return this;
       }
 
@@ -765,9 +700,16 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse(this);
-        result.live_ = live_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.live_ = live_;
+        }
       }
 
       @java.lang.Override
@@ -817,7 +759,7 @@ public final class V2Dataplane {
         if (other.getLive() != false) {
           setLive(other.getLive());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -832,19 +774,38 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                live_ = input.readBool();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+      private int bitField0_;
 
       private boolean live_ ;
       /**
@@ -871,6 +832,7 @@ public final class V2Dataplane {
       public Builder setLive(boolean value) {
         
         live_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -883,7 +845,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearLive() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         live_ = false;
         onChanged();
         return this;
@@ -921,7 +883,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerLiveResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -972,43 +945,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerReadyRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerReadyRequest_descriptor;
@@ -1036,7 +972,7 @@ public final class V2Dataplane {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -1045,7 +981,7 @@ public final class V2Dataplane {
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1060,7 +996,7 @@ public final class V2Dataplane {
       }
       io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -1071,7 +1007,7 @@ public final class V2Dataplane {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1188,18 +1124,13 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -1278,7 +1209,7 @@ public final class V2Dataplane {
 
       public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest other) {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1293,17 +1224,30 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       @java.lang.Override
@@ -1339,7 +1283,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerReadyRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -1400,48 +1355,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerReadyResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-
-              ready_ = input.readBool();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerReadyResponse_descriptor;
@@ -1456,7 +1369,7 @@ public final class V2Dataplane {
     }
 
     public static final int READY_FIELD_NUMBER = 1;
-    private boolean ready_;
+    private boolean ready_ = false;
     /**
      * <pre>
      * True if the inference server is ready, false if not ready.
@@ -1487,7 +1400,7 @@ public final class V2Dataplane {
       if (ready_ != false) {
         output.writeBool(1, ready_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -1500,7 +1413,7 @@ public final class V2Dataplane {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, ready_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -1517,7 +1430,7 @@ public final class V2Dataplane {
 
       if (getReady()
           != other.getReady()) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -1531,7 +1444,7 @@ public final class V2Dataplane {
       hash = (37 * hash) + READY_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getReady());
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1648,24 +1561,19 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         ready_ = false;
-
         return this;
       }
 
@@ -1692,9 +1600,16 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse(this);
-        result.ready_ = ready_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.ready_ = ready_;
+        }
       }
 
       @java.lang.Override
@@ -1744,7 +1659,7 @@ public final class V2Dataplane {
         if (other.getReady() != false) {
           setReady(other.getReady());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1759,19 +1674,38 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                ready_ = input.readBool();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+      private int bitField0_;
 
       private boolean ready_ ;
       /**
@@ -1798,6 +1732,7 @@ public final class V2Dataplane {
       public Builder setReady(boolean value) {
         
         ready_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1810,7 +1745,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearReady() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         ready_ = false;
         onChanged();
         return this;
@@ -1848,7 +1783,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerReadyResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -1943,55 +1889,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ModelReadyRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              version_ = s;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelReadyRequest_descriptor;
@@ -2006,7 +1903,8 @@ public final class V2Dataplane {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      * <pre>
      * The name of the model to check for readiness.
@@ -2052,7 +1950,8 @@ public final class V2Dataplane {
     }
 
     public static final int VERSION_FIELD_NUMBER = 2;
-    private volatile java.lang.Object version_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object version_ = "";
     /**
      * <pre>
      * The version of the model to check for readiness. If not given the
@@ -2119,7 +2018,7 @@ public final class V2Dataplane {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2134,7 +2033,7 @@ public final class V2Dataplane {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2153,7 +2052,7 @@ public final class V2Dataplane {
           .equals(other.getName())) return false;
       if (!getVersion()
           .equals(other.getVersion())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -2168,7 +2067,7 @@ public final class V2Dataplane {
       hash = (53 * hash) + getName().hashCode();
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getVersion().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2285,26 +2184,20 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
         version_ = "";
-
         return this;
       }
 
@@ -2331,10 +2224,19 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest(this);
-        result.name_ = name_;
-        result.version_ = version_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.version_ = version_;
+        }
       }
 
       @java.lang.Override
@@ -2383,13 +2285,15 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getVersion().isEmpty()) {
           version_ = other.version_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -2404,19 +2308,43 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                version_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+      private int bitField0_;
 
       private java.lang.Object name_ = "";
       /**
@@ -2471,11 +2399,9 @@ public final class V2Dataplane {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2488,8 +2414,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -2504,12 +2430,10 @@ public final class V2Dataplane {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2570,11 +2494,9 @@ public final class V2Dataplane {
        */
       public Builder setVersion(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -2588,8 +2510,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        
         version_ = getDefaultInstance().getVersion();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -2605,12 +2527,10 @@ public final class V2Dataplane {
        */
       public Builder setVersionBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -2647,7 +2567,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelReadyRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -2708,48 +2639,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ModelReadyResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-
-              ready_ = input.readBool();
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelReadyResponse_descriptor;
@@ -2764,7 +2653,7 @@ public final class V2Dataplane {
     }
 
     public static final int READY_FIELD_NUMBER = 1;
-    private boolean ready_;
+    private boolean ready_ = false;
     /**
      * <pre>
      * True if the model is ready, false if not ready.
@@ -2795,7 +2684,7 @@ public final class V2Dataplane {
       if (ready_ != false) {
         output.writeBool(1, ready_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2808,7 +2697,7 @@ public final class V2Dataplane {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, ready_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2825,7 +2714,7 @@ public final class V2Dataplane {
 
       if (getReady()
           != other.getReady()) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -2839,7 +2728,7 @@ public final class V2Dataplane {
       hash = (37 * hash) + READY_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getReady());
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2956,24 +2845,19 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         ready_ = false;
-
         return this;
       }
 
@@ -3000,9 +2884,16 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse(this);
-        result.ready_ = ready_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.ready_ = ready_;
+        }
       }
 
       @java.lang.Override
@@ -3052,7 +2943,7 @@ public final class V2Dataplane {
         if (other.getReady() != false) {
           setReady(other.getReady());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -3067,19 +2958,38 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                ready_ = input.readBool();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+      private int bitField0_;
 
       private boolean ready_ ;
       /**
@@ -3106,6 +3016,7 @@ public final class V2Dataplane {
       public Builder setReady(boolean value) {
         
         ready_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -3118,7 +3029,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearReady() {
-        
+        bitField0_ = (bitField0_ & ~0x00000001);
         ready_ = false;
         onChanged();
         return this;
@@ -3156,7 +3067,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelReadyResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -3207,43 +3129,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerMetadataRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerMetadataRequest_descriptor;
@@ -3271,7 +3156,7 @@ public final class V2Dataplane {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -3280,7 +3165,7 @@ public final class V2Dataplane {
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -3295,7 +3180,7 @@ public final class V2Dataplane {
       }
       io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -3306,7 +3191,7 @@ public final class V2Dataplane {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -3423,18 +3308,13 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -3513,7 +3393,7 @@ public final class V2Dataplane {
 
       public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest other) {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -3528,17 +3408,30 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       @java.lang.Override
@@ -3574,7 +3467,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerMetadataRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -3709,68 +3613,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ServerMetadataResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              version_ = s;
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                extensions_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              extensions_.add(s);
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          extensions_ = extensions_.getUnmodifiableView();
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ServerMetadataResponse_descriptor;
@@ -3785,7 +3627,8 @@ public final class V2Dataplane {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      * <pre>
      * The server name.
@@ -3831,7 +3674,8 @@ public final class V2Dataplane {
     }
 
     public static final int VERSION_FIELD_NUMBER = 2;
-    private volatile java.lang.Object version_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object version_ = "";
     /**
      * <pre>
      * The server version.
@@ -3877,6 +3721,7 @@ public final class V2Dataplane {
     }
 
     public static final int EXTENSIONS_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringList extensions_;
     /**
      * <pre>
@@ -3950,7 +3795,7 @@ public final class V2Dataplane {
       for (int i = 0; i < extensions_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, extensions_.getRaw(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -3973,7 +3818,7 @@ public final class V2Dataplane {
         size += dataSize;
         size += 1 * getExtensionsList().size();
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -3994,7 +3839,7 @@ public final class V2Dataplane {
           .equals(other.getVersion())) return false;
       if (!getExtensionsList()
           .equals(other.getExtensionsList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -4013,7 +3858,7 @@ public final class V2Dataplane {
         hash = (37 * hash) + EXTENSIONS_FIELD_NUMBER;
         hash = (53 * hash) + getExtensionsList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -4130,28 +3975,22 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
         version_ = "";
-
         extensions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -4178,16 +4017,28 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse(this);
-        int from_bitField0_ = bitField0_;
-        result.name_ = name_;
-        result.version_ = version_;
-        if (((bitField0_ & 0x00000001) != 0)) {
-          extensions_ = extensions_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000001);
-        }
-        result.extensions_ = extensions_;
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse result) {
+        if (((bitField0_ & 0x00000004) != 0)) {
+          extensions_ = extensions_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.extensions_ = extensions_;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.version_ = version_;
+        }
       }
 
       @java.lang.Override
@@ -4236,23 +4087,25 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getVersion().isEmpty()) {
           version_ = other.version_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (!other.extensions_.isEmpty()) {
           if (extensions_.isEmpty()) {
             extensions_ = other.extensions_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureExtensionsIsMutable();
             extensions_.addAll(other.extensions_);
           }
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -4267,17 +4120,46 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                version_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 26: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureExtensionsIsMutable();
+                extensions_.add(s);
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -4335,11 +4217,9 @@ public final class V2Dataplane {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -4352,8 +4232,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -4368,12 +4248,10 @@ public final class V2Dataplane {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -4431,11 +4309,9 @@ public final class V2Dataplane {
        */
       public Builder setVersion(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -4448,8 +4324,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        
         version_ = getDefaultInstance().getVersion();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -4464,21 +4340,19 @@ public final class V2Dataplane {
        */
       public Builder setVersionBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
 
       private com.google.protobuf.LazyStringList extensions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureExtensionsIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           extensions_ = new com.google.protobuf.LazyStringArrayList(extensions_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000004;
          }
       }
       /**
@@ -4541,10 +4415,8 @@ public final class V2Dataplane {
        */
       public Builder setExtensions(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureExtensionsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureExtensionsIsMutable();
         extensions_.set(index, value);
         onChanged();
         return this;
@@ -4560,10 +4432,8 @@ public final class V2Dataplane {
        */
       public Builder addExtensions(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureExtensionsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureExtensionsIsMutable();
         extensions_.add(value);
         onChanged();
         return this;
@@ -4595,7 +4465,7 @@ public final class V2Dataplane {
        */
       public Builder clearExtensions() {
         extensions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -4610,10 +4480,8 @@ public final class V2Dataplane {
        */
       public Builder addExtensionsBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         ensureExtensionsIsMutable();
         extensions_.add(value);
         onChanged();
@@ -4652,7 +4520,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerMetadataResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -4747,55 +4626,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ModelMetadataRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              version_ = s;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelMetadataRequest_descriptor;
@@ -4810,7 +4640,8 @@ public final class V2Dataplane {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      * <pre>
      * The name of the model.
@@ -4856,7 +4687,8 @@ public final class V2Dataplane {
     }
 
     public static final int VERSION_FIELD_NUMBER = 2;
-    private volatile java.lang.Object version_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object version_ = "";
     /**
      * <pre>
      * The version of the model to check for readiness. If not given the
@@ -4923,7 +4755,7 @@ public final class V2Dataplane {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -4938,7 +4770,7 @@ public final class V2Dataplane {
       if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -4957,7 +4789,7 @@ public final class V2Dataplane {
           .equals(other.getName())) return false;
       if (!getVersion()
           .equals(other.getVersion())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -4972,7 +4804,7 @@ public final class V2Dataplane {
       hash = (53 * hash) + getName().hashCode();
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getVersion().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -5089,26 +4921,20 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
         version_ = "";
-
         return this;
       }
 
@@ -5135,10 +4961,19 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest(this);
-        result.name_ = name_;
-        result.version_ = version_;
+        if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.version_ = version_;
+        }
       }
 
       @java.lang.Override
@@ -5187,13 +5022,15 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getVersion().isEmpty()) {
           version_ = other.version_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -5208,19 +5045,43 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                version_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+      private int bitField0_;
 
       private java.lang.Object name_ = "";
       /**
@@ -5275,11 +5136,9 @@ public final class V2Dataplane {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -5292,8 +5151,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -5308,12 +5167,10 @@ public final class V2Dataplane {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -5374,11 +5231,9 @@ public final class V2Dataplane {
        */
       public Builder setVersion(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -5392,8 +5247,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearVersion() {
-        
         version_ = getDefaultInstance().getVersion();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -5409,12 +5264,10 @@ public final class V2Dataplane {
        */
       public Builder setVersionBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         version_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -5451,7 +5304,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelMetadataRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -5687,10 +5551,11 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
-
-    io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
     /**
      * <pre>
      * Optional default parameters for the request / response.
@@ -5699,7 +5564,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
-
     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key);
   }
@@ -5734,105 +5598,6 @@ public final class V2Dataplane {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private ModelMetadataResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                versions_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              versions_.add(s);
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              platform_ = s;
-              break;
-            }
-            case 34: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                inputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              inputs_.add(
-                  input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.parser(), extensionRegistry));
-              break;
-            }
-            case 42: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              outputs_.add(
-                  input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.parser(), extensionRegistry));
-              break;
-            }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-                parameters_ = com.google.protobuf.MapField.newMapField(
-                    ParametersDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000008;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-              parameters__ = input.readMessage(
-                  ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              parameters_.getMutableMap().put(
-                  parameters__.getKey(), parameters__.getValue());
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          versions_ = versions_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          inputs_ = java.util.Collections.unmodifiableList(inputs_);
-        }
-        if (((mutable_bitField0_ & 0x00000004) != 0)) {
-          outputs_ = java.util.Collections.unmodifiableList(outputs_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -5978,10 +5743,11 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
-      io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
       /**
        * <pre>
        * Optional default parameters for input.
@@ -5990,7 +5756,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key);
     }
@@ -6028,93 +5793,6 @@ public final class V2Dataplane {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private TensorMetadata(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                datatype_ = s;
-                break;
-              }
-              case 24: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                shape_.addLong(input.readInt64());
-                break;
-              }
-              case 26: {
-                int length = input.readRawVarint32();
-                int limit = input.pushLimit(length);
-                if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                while (input.getBytesUntilLimit() > 0) {
-                  shape_.addLong(input.readInt64());
-                }
-                input.popLimit(limit);
-                break;
-              }
-              case 34: {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  parameters_ = com.google.protobuf.MapField.newMapField(
-                      ParametersDefaultEntryHolder.defaultEntry);
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-                parameters__ = input.readMessage(
-                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                parameters_.getMutableMap().put(
-                    parameters__.getKey(), parameters__.getValue());
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable(); // C
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelMetadataResponse_TensorMetadata_descriptor;
@@ -6141,7 +5819,8 @@ public final class V2Dataplane {
       }
 
       public static final int NAME_FIELD_NUMBER = 1;
-      private volatile java.lang.Object name_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object name_ = "";
       /**
        * <pre>
        * The tensor name.
@@ -6187,7 +5866,8 @@ public final class V2Dataplane {
       }
 
       public static final int DATATYPE_FIELD_NUMBER = 2;
-      private volatile java.lang.Object datatype_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object datatype_ = "";
       /**
        * <pre>
        * The tensor data type.
@@ -6233,6 +5913,7 @@ public final class V2Dataplane {
       }
 
       public static final int SHAPE_FIELD_NUMBER = 3;
+      @SuppressWarnings("serial")
       private com.google.protobuf.Internal.LongList shape_;
       /**
        * <pre>
@@ -6287,6 +5968,7 @@ public final class V2Dataplane {
                     com.google.protobuf.WireFormat.FieldType.MESSAGE,
                     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
       }
+      @SuppressWarnings("serial")
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -6297,7 +5979,6 @@ public final class V2Dataplane {
         }
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -6309,7 +5990,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -6333,7 +6013,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -6346,10 +6025,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -6364,7 +6044,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -6410,7 +6089,7 @@ public final class V2Dataplane {
             internalGetParameters(),
             ParametersDefaultEntryHolder.defaultEntry,
             4);
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -6449,7 +6128,7 @@ public final class V2Dataplane {
           size += com.google.protobuf.CodedOutputStream
               .computeMessageSize(4, parameters__);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -6472,7 +6151,7 @@ public final class V2Dataplane {
             .equals(other.getShapeList())) return false;
         if (!internalGetParameters().equals(
             other.internalGetParameters())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -6495,7 +6174,7 @@ public final class V2Dataplane {
           hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
           hash = (53 * hash) + internalGetParameters().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -6638,28 +6317,21 @@ public final class V2Dataplane {
 
         // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
+          bitField0_ = 0;
           name_ = "";
-
           datatype_ = "";
-
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
           internalGetMutableParameters().clear();
           return this;
         }
@@ -6687,18 +6359,32 @@ public final class V2Dataplane {
         @java.lang.Override
         public io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata buildPartial() {
           io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata(this);
-          int from_bitField0_ = bitField0_;
-          result.name_ = name_;
-          result.datatype_ = datatype_;
-          if (((bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable();
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.shape_ = shape_;
-          result.parameters_ = internalGetParameters();
-          result.parameters_.makeImmutable();
+          buildPartialRepeatedFields(result);
+          if (bitField0_ != 0) { buildPartial0(result); }
           onBuilt();
           return result;
+        }
+
+        private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata result) {
+          if (((bitField0_ & 0x00000004) != 0)) {
+            shape_.makeImmutable();
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.shape_ = shape_;
+        }
+
+        private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.name_ = name_;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.datatype_ = datatype_;
+          }
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.parameters_ = internalGetParameters();
+            result.parameters_.makeImmutable();
+          }
         }
 
         @java.lang.Override
@@ -6747,16 +6433,18 @@ public final class V2Dataplane {
           if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.getDefaultInstance()) return this;
           if (!other.getName().isEmpty()) {
             name_ = other.name_;
+            bitField0_ |= 0x00000001;
             onChanged();
           }
           if (!other.getDatatype().isEmpty()) {
             datatype_ = other.datatype_;
+            bitField0_ |= 0x00000002;
             onChanged();
           }
           if (!other.shape_.isEmpty()) {
             if (shape_.isEmpty()) {
               shape_ = other.shape_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureShapeIsMutable();
               shape_.addAll(other.shape_);
@@ -6765,7 +6453,8 @@ public final class V2Dataplane {
           }
           internalGetMutableParameters().mergeFrom(
               other.internalGetParameters());
-          this.mergeUnknownFields(other.unknownFields);
+          bitField0_ |= 0x00000008;
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -6780,17 +6469,65 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+                case 18: {
+                  datatype_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+                case 24: {
+                  long v = input.readInt64();
+                  ensureShapeIsMutable();
+                  shape_.addLong(v);
+                  break;
+                } // case 24
+                case 26: {
+                  int length = input.readRawVarint32();
+                  int limit = input.pushLimit(length);
+                  ensureShapeIsMutable();
+                  while (input.getBytesUntilLimit() > 0) {
+                    shape_.addLong(input.readInt64());
+                  }
+                  input.popLimit(limit);
+                  break;
+                } // case 26
+                case 34: {
+                  com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                  parameters__ = input.readMessage(
+                      ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                  internalGetMutableParameters().getMutableMap().put(
+                      parameters__.getKey(), parameters__.getValue());
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 34
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -6848,11 +6585,9 @@ public final class V2Dataplane {
          */
         public Builder setName(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -6865,8 +6600,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearName() {
-          
           name_ = getDefaultInstance().getName();
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
           return this;
         }
@@ -6881,12 +6616,10 @@ public final class V2Dataplane {
          */
         public Builder setNameBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -6944,11 +6677,9 @@ public final class V2Dataplane {
          */
         public Builder setDatatype(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
@@ -6961,8 +6692,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearDatatype() {
-          
           datatype_ = getDefaultInstance().getDatatype();
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
           return this;
         }
@@ -6977,22 +6708,20 @@ public final class V2Dataplane {
          */
         public Builder setDatatypeBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
 
         private com.google.protobuf.Internal.LongList shape_ = emptyLongList();
         private void ensureShapeIsMutable() {
-          if (!((bitField0_ & 0x00000001) != 0)) {
+          if (!((bitField0_ & 0x00000004) != 0)) {
             shape_ = mutableCopy(shape_);
-            bitField0_ |= 0x00000001;
-           }
+            bitField0_ |= 0x00000004;
+          }
         }
         /**
          * <pre>
@@ -7005,7 +6734,7 @@ public final class V2Dataplane {
          */
         public java.util.List<java.lang.Long>
             getShapeList() {
-          return ((bitField0_ & 0x00000001) != 0) ?
+          return ((bitField0_ & 0x00000004) != 0) ?
                    java.util.Collections.unmodifiableList(shape_) : shape_;
         }
         /**
@@ -7046,6 +6775,7 @@ public final class V2Dataplane {
          */
         public Builder setShape(
             int index, long value) {
+          
           ensureShapeIsMutable();
           shape_.setLong(index, value);
           onChanged();
@@ -7062,6 +6792,7 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder addShape(long value) {
+          
           ensureShapeIsMutable();
           shape_.addLong(value);
           onChanged();
@@ -7096,7 +6827,7 @@ public final class V2Dataplane {
          */
         public Builder clearShape() {
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
           return this;
         }
@@ -7104,7 +6835,7 @@ public final class V2Dataplane {
         private com.google.protobuf.MapField<
             java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetParameters() {
+            internalGetParameters() {
           if (parameters_ == null) {
             return com.google.protobuf.MapField.emptyMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -7112,8 +6843,7 @@ public final class V2Dataplane {
           return parameters_;
         }
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetMutableParameters() {
-          onChanged();;
+            internalGetMutableParameters() {
           if (parameters_ == null) {
             parameters_ = com.google.protobuf.MapField.newMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -7121,9 +6851,10 @@ public final class V2Dataplane {
           if (!parameters_.isMutable()) {
             parameters_ = parameters_.copy();
           }
+          bitField0_ |= 0x00000008;
+          onChanged();
           return parameters_;
         }
-
         public int getParametersCount() {
           return internalGetParameters().getMap().size();
         }
@@ -7135,7 +6866,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         @java.lang.Override
         public boolean containsParameters(
             java.lang.String key) {
@@ -7159,7 +6889,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
           return internalGetParameters().getMap();
         }
@@ -7172,10 +6901,11 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
-        public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+        public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
             java.lang.String key,
-            io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+            /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
           if (key == null) { throw new NullPointerException("map key"); }
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
               internalGetParameters().getMap();
@@ -7190,7 +6920,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -7201,8 +6930,8 @@ public final class V2Dataplane {
           }
           return map.get(key);
         }
-
         public Builder clearParameters() {
+          bitField0_ = (bitField0_ & ~0x00000008);
           internalGetMutableParameters().getMutableMap()
               .clear();
           return this;
@@ -7215,7 +6944,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder removeParameters(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -7228,7 +6956,8 @@ public final class V2Dataplane {
          */
         @java.lang.Deprecated
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        getMutableParameters() {
+            getMutableParameters() {
+          bitField0_ |= 0x00000008;
           return internalGetMutableParameters().getMutableMap();
         }
         /**
@@ -7243,12 +6972,10 @@ public final class V2Dataplane {
             java.lang.String key,
             io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
           if (key == null) { throw new NullPointerException("map key"); }
-          if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+          if (value == null) { throw new NullPointerException("map value"); }
           internalGetMutableParameters().getMutableMap()
               .put(key, value);
+          bitField0_ |= 0x00000008;
           return this;
         }
         /**
@@ -7259,11 +6986,11 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder putAllParameters(
             java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
           internalGetMutableParameters().getMutableMap()
               .putAll(values);
+          bitField0_ |= 0x00000008;
           return this;
         }
         @java.lang.Override
@@ -7299,7 +7026,18 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TensorMetadata(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -7320,7 +7058,8 @@ public final class V2Dataplane {
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object name_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object name_ = "";
     /**
      * <pre>
      * The model name.
@@ -7366,6 +7105,7 @@ public final class V2Dataplane {
     }
 
     public static final int VERSIONS_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
     private com.google.protobuf.LazyStringList versions_;
     /**
      * <pre>
@@ -7417,7 +7157,8 @@ public final class V2Dataplane {
     }
 
     public static final int PLATFORM_FIELD_NUMBER = 3;
-    private volatile java.lang.Object platform_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object platform_ = "";
     /**
      * <pre>
      * The model's platform. See Platforms.
@@ -7463,6 +7204,7 @@ public final class V2Dataplane {
     }
 
     public static final int INPUTS_FIELD_NUMBER = 4;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata> inputs_;
     /**
      * <pre>
@@ -7523,6 +7265,7 @@ public final class V2Dataplane {
     }
 
     public static final int OUTPUTS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata> outputs_;
     /**
      * <pre>
@@ -7594,6 +7337,7 @@ public final class V2Dataplane {
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
                   io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
     }
+    @SuppressWarnings("serial")
     private com.google.protobuf.MapField<
         java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
     private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -7604,7 +7348,6 @@ public final class V2Dataplane {
       }
       return parameters_;
     }
-
     public int getParametersCount() {
       return internalGetParameters().getMap().size();
     }
@@ -7616,7 +7359,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
-
     @java.lang.Override
     public boolean containsParameters(
         java.lang.String key) {
@@ -7640,7 +7382,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
     @java.lang.Override
-
     public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
       return internalGetParameters().getMap();
     }
@@ -7653,10 +7394,11 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
     @java.lang.Override
-
-    public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
       if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
           internalGetParameters().getMap();
@@ -7671,7 +7413,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
      */
     @java.lang.Override
-
     public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key) {
       if (key == null) { throw new NullPointerException("map key"); }
@@ -7718,7 +7459,7 @@ public final class V2Dataplane {
           internalGetParameters(),
           ParametersDefaultEntryHolder.defaultEntry,
           6);
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -7759,7 +7500,7 @@ public final class V2Dataplane {
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(6, parameters__);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -7786,7 +7527,7 @@ public final class V2Dataplane {
           .equals(other.getOutputsList())) return false;
       if (!internalGetParameters().equals(
           other.internalGetParameters())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -7817,7 +7558,7 @@ public final class V2Dataplane {
         hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
         hash = (53 * hash) + internalGetParameters().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -7956,42 +7697,36 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-          getInputsFieldBuilder();
-          getOutputsFieldBuilder();
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         name_ = "";
-
         versions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         platform_ = "";
-
         if (inputsBuilder_ == null) {
           inputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          inputs_ = null;
           inputsBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000008);
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
         } else {
+          outputs_ = null;
           outputsBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000010);
         internalGetMutableParameters().clear();
         return this;
       }
@@ -8019,36 +7754,50 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse(this);
-        int from_bitField0_ = bitField0_;
-        result.name_ = name_;
-        if (((bitField0_ & 0x00000001) != 0)) {
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse result) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           versions_ = versions_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.versions_ = versions_;
-        result.platform_ = platform_;
         if (inputsBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0)) {
+          if (((bitField0_ & 0x00000008) != 0)) {
             inputs_ = java.util.Collections.unmodifiableList(inputs_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.inputs_ = inputs_;
         } else {
           result.inputs_ = inputsBuilder_.build();
         }
         if (outputsBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0)) {
+          if (((bitField0_ & 0x00000010) != 0)) {
             outputs_ = java.util.Collections.unmodifiableList(outputs_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.outputs_ = outputs_;
         } else {
           result.outputs_ = outputsBuilder_.build();
         }
-        result.parameters_ = internalGetParameters();
-        result.parameters_.makeImmutable();
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.name_ = name_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.platform_ = platform_;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.parameters_ = internalGetParameters();
+          result.parameters_.makeImmutable();
+        }
       }
 
       @java.lang.Override
@@ -8097,12 +7846,13 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.versions_.isEmpty()) {
           if (versions_.isEmpty()) {
             versions_ = other.versions_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureVersionsIsMutable();
             versions_.addAll(other.versions_);
@@ -8111,13 +7861,14 @@ public final class V2Dataplane {
         }
         if (!other.getPlatform().isEmpty()) {
           platform_ = other.platform_;
+          bitField0_ |= 0x00000004;
           onChanged();
         }
         if (inputsBuilder_ == null) {
           if (!other.inputs_.isEmpty()) {
             if (inputs_.isEmpty()) {
               inputs_ = other.inputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureInputsIsMutable();
               inputs_.addAll(other.inputs_);
@@ -8130,7 +7881,7 @@ public final class V2Dataplane {
               inputsBuilder_.dispose();
               inputsBuilder_ = null;
               inputs_ = other.inputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000008);
               inputsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getInputsFieldBuilder() : null;
@@ -8143,7 +7894,7 @@ public final class V2Dataplane {
           if (!other.outputs_.isEmpty()) {
             if (outputs_.isEmpty()) {
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000010);
             } else {
               ensureOutputsIsMutable();
               outputs_.addAll(other.outputs_);
@@ -8156,7 +7907,7 @@ public final class V2Dataplane {
               outputsBuilder_.dispose();
               outputsBuilder_ = null;
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000010);
               outputsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getOutputsFieldBuilder() : null;
@@ -8167,7 +7918,8 @@ public final class V2Dataplane {
         }
         internalGetMutableParameters().mergeFrom(
             other.internalGetParameters());
-        this.mergeUnknownFields(other.unknownFields);
+        bitField0_ |= 0x00000020;
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -8182,17 +7934,81 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureVersionsIsMutable();
+                versions_.add(s);
+                break;
+              } // case 18
+              case 26: {
+                platform_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              case 34: {
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.parser(),
+                        extensionRegistry);
+                if (inputsBuilder_ == null) {
+                  ensureInputsIsMutable();
+                  inputs_.add(m);
+                } else {
+                  inputsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 34
+              case 42: {
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.parser(),
+                        extensionRegistry);
+                if (outputsBuilder_ == null) {
+                  ensureOutputsIsMutable();
+                  outputs_.add(m);
+                } else {
+                  outputsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
+              case 50: {
+                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                parameters__ = input.readMessage(
+                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableParameters().getMutableMap().put(
+                    parameters__.getKey(), parameters__.getValue());
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -8250,11 +8066,9 @@ public final class V2Dataplane {
        */
       public Builder setName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -8267,8 +8081,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearName() {
-        
         name_ = getDefaultInstance().getName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -8283,21 +8097,19 @@ public final class V2Dataplane {
        */
       public Builder setNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         name_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
 
       private com.google.protobuf.LazyStringList versions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureVersionsIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
+        if (!((bitField0_ & 0x00000002) != 0)) {
           versions_ = new com.google.protobuf.LazyStringArrayList(versions_);
-          bitField0_ |= 0x00000001;
+          bitField0_ |= 0x00000002;
          }
       }
       /**
@@ -8360,10 +8172,8 @@ public final class V2Dataplane {
        */
       public Builder setVersions(
           int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureVersionsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureVersionsIsMutable();
         versions_.set(index, value);
         onChanged();
         return this;
@@ -8379,10 +8189,8 @@ public final class V2Dataplane {
        */
       public Builder addVersions(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureVersionsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureVersionsIsMutable();
         versions_.add(value);
         onChanged();
         return this;
@@ -8414,7 +8222,7 @@ public final class V2Dataplane {
        */
       public Builder clearVersions() {
         versions_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -8429,10 +8237,8 @@ public final class V2Dataplane {
        */
       public Builder addVersionsBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         ensureVersionsIsMutable();
         versions_.add(value);
         onChanged();
@@ -8492,11 +8298,9 @@ public final class V2Dataplane {
        */
       public Builder setPlatform(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         platform_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -8509,8 +8313,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearPlatform() {
-        
         platform_ = getDefaultInstance().getPlatform();
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -8525,12 +8329,10 @@ public final class V2Dataplane {
        */
       public Builder setPlatformBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         platform_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -8538,9 +8340,9 @@ public final class V2Dataplane {
       private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata> inputs_ =
         java.util.Collections.emptyList();
       private void ensureInputsIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
+        if (!((bitField0_ & 0x00000008) != 0)) {
           inputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>(inputs_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -8734,7 +8536,7 @@ public final class V2Dataplane {
       public Builder clearInputs() {
         if (inputsBuilder_ == null) {
           inputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           inputsBuilder_.clear();
@@ -8839,7 +8641,7 @@ public final class V2Dataplane {
           inputsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.Builder, io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadataOrBuilder>(
                   inputs_,
-                  ((bitField0_ & 0x00000002) != 0),
+                  ((bitField0_ & 0x00000008) != 0),
                   getParentForChildren(),
                   isClean());
           inputs_ = null;
@@ -8850,9 +8652,9 @@ public final class V2Dataplane {
       private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata> outputs_ =
         java.util.Collections.emptyList();
       private void ensureOutputsIsMutable() {
-        if (!((bitField0_ & 0x00000004) != 0)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata>(outputs_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000010;
          }
       }
 
@@ -9046,7 +8848,7 @@ public final class V2Dataplane {
       public Builder clearOutputs() {
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
           outputsBuilder_.clear();
@@ -9151,7 +8953,7 @@ public final class V2Dataplane {
           outputsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata, io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadata.Builder, io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse.TensorMetadataOrBuilder>(
                   outputs_,
-                  ((bitField0_ & 0x00000004) != 0),
+                  ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
           outputs_ = null;
@@ -9162,7 +8964,7 @@ public final class V2Dataplane {
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetParameters() {
+          internalGetParameters() {
         if (parameters_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -9170,8 +8972,7 @@ public final class V2Dataplane {
         return parameters_;
       }
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetMutableParameters() {
-        onChanged();;
+          internalGetMutableParameters() {
         if (parameters_ == null) {
           parameters_ = com.google.protobuf.MapField.newMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -9179,9 +8980,10 @@ public final class V2Dataplane {
         if (!parameters_.isMutable()) {
           parameters_ = parameters_.copy();
         }
+        bitField0_ |= 0x00000020;
+        onChanged();
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -9193,7 +8995,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -9217,7 +9018,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -9230,10 +9030,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -9248,7 +9049,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -9259,8 +9059,8 @@ public final class V2Dataplane {
         }
         return map.get(key);
       }
-
       public Builder clearParameters() {
+        bitField0_ = (bitField0_ & ~0x00000020);
         internalGetMutableParameters().getMutableMap()
             .clear();
         return this;
@@ -9273,7 +9073,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
-
       public Builder removeParameters(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -9286,7 +9085,8 @@ public final class V2Dataplane {
        */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      getMutableParameters() {
+          getMutableParameters() {
+        bitField0_ |= 0x00000020;
         return internalGetMutableParameters().getMutableMap();
       }
       /**
@@ -9301,12 +9101,10 @@ public final class V2Dataplane {
           java.lang.String key,
           io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
         if (key == null) { throw new NullPointerException("map key"); }
-        if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+        if (value == null) { throw new NullPointerException("map value"); }
         internalGetMutableParameters().getMutableMap()
             .put(key, value);
+        bitField0_ |= 0x00000020;
         return this;
       }
       /**
@@ -9317,11 +9115,11 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 6;</code>
        */
-
       public Builder putAllParameters(
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
         internalGetMutableParameters().getMutableMap()
             .putAll(values);
+        bitField0_ |= 0x00000020;
         return this;
       }
       @java.lang.Override
@@ -9357,7 +9155,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelMetadataResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -9484,10 +9293,11 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
-    io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
     /**
      * <pre>
      * Optional inference parameters.
@@ -9495,7 +9305,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key);
 
@@ -9690,110 +9499,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ModelInferRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              modelName_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              modelVersion_ = s;
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              id_ = s;
-              break;
-            }
-            case 34: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                parameters_ = com.google.protobuf.MapField.newMapField(
-                    ParametersDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-              parameters__ = input.readMessage(
-                  ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              parameters_.getMutableMap().put(
-                  parameters__.getKey(), parameters__.getValue());
-              break;
-            }
-            case 42: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                inputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              inputs_.add(
-                  input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor.parser(), extensionRegistry));
-              break;
-            }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor>();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              outputs_.add(
-                  input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor.parser(), extensionRegistry));
-              break;
-            }
-            case 58: {
-              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-                rawInputContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
-                mutable_bitField0_ |= 0x00000008;
-              }
-              rawInputContents_.add(input.readBytes());
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          inputs_ = java.util.Collections.unmodifiableList(inputs_);
-        }
-        if (((mutable_bitField0_ & 0x00000004) != 0)) {
-          outputs_ = java.util.Collections.unmodifiableList(outputs_);
-        }
-        if (((mutable_bitField0_ & 0x00000008) != 0)) {
-          rawInputContents_ = java.util.Collections.unmodifiableList(rawInputContents_); // C
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelInferRequest_descriptor;
@@ -9931,10 +9636,11 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
-      io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
       /**
        * <pre>
        * Optional inference input tensor parameters.
@@ -9942,7 +9648,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key);
 
@@ -10013,106 +9718,6 @@ public final class V2Dataplane {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private InferInputTensor(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                datatype_ = s;
-                break;
-              }
-              case 24: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                shape_.addLong(input.readInt64());
-                break;
-              }
-              case 26: {
-                int length = input.readRawVarint32();
-                int limit = input.pushLimit(length);
-                if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                while (input.getBytesUntilLimit() > 0) {
-                  shape_.addLong(input.readInt64());
-                }
-                input.popLimit(limit);
-                break;
-              }
-              case 34: {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  parameters_ = com.google.protobuf.MapField.newMapField(
-                      ParametersDefaultEntryHolder.defaultEntry);
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-                parameters__ = input.readMessage(
-                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                parameters_.getMutableMap().put(
-                    parameters__.getKey(), parameters__.getValue());
-                break;
-              }
-              case 42: {
-                io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder subBuilder = null;
-                if (contents_ != null) {
-                  subBuilder = contents_.toBuilder();
-                }
-                contents_ = input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(contents_);
-                  contents_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable(); // C
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelInferRequest_InferInputTensor_descriptor;
@@ -10139,7 +9744,8 @@ public final class V2Dataplane {
       }
 
       public static final int NAME_FIELD_NUMBER = 1;
-      private volatile java.lang.Object name_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object name_ = "";
       /**
        * <pre>
        * The tensor name.
@@ -10185,7 +9791,8 @@ public final class V2Dataplane {
       }
 
       public static final int DATATYPE_FIELD_NUMBER = 2;
-      private volatile java.lang.Object datatype_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object datatype_ = "";
       /**
        * <pre>
        * The tensor data type.
@@ -10231,6 +9838,7 @@ public final class V2Dataplane {
       }
 
       public static final int SHAPE_FIELD_NUMBER = 3;
+      @SuppressWarnings("serial")
       private com.google.protobuf.Internal.LongList shape_;
       /**
        * <pre>
@@ -10282,6 +9890,7 @@ public final class V2Dataplane {
                     com.google.protobuf.WireFormat.FieldType.MESSAGE,
                     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
       }
+      @SuppressWarnings("serial")
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -10292,7 +9901,6 @@ public final class V2Dataplane {
         }
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -10303,7 +9911,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -10326,7 +9933,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -10338,10 +9944,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -10355,7 +9962,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -10408,7 +10014,7 @@ public final class V2Dataplane {
        */
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContentsOrBuilder getContentsOrBuilder() {
-        return getContents();
+        return contents_ == null ? io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.getDefaultInstance() : contents_;
       }
 
       private byte memoizedIsInitialized = -1;
@@ -10448,7 +10054,7 @@ public final class V2Dataplane {
         if (contents_ != null) {
           output.writeMessage(5, getContents());
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -10491,7 +10097,7 @@ public final class V2Dataplane {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(5, getContents());
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -10519,7 +10125,7 @@ public final class V2Dataplane {
           if (!getContents()
               .equals(other.getContents())) return false;
         }
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -10546,7 +10152,7 @@ public final class V2Dataplane {
           hash = (37 * hash) + CONTENTS_FIELD_NUMBER;
           hash = (53 * hash) + getContents().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -10689,33 +10295,25 @@ public final class V2Dataplane {
 
         // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
+          bitField0_ = 0;
           name_ = "";
-
           datatype_ = "";
-
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
           internalGetMutableParameters().clear();
-          if (contentsBuilder_ == null) {
-            contents_ = null;
-          } else {
-            contents_ = null;
+          contents_ = null;
+          if (contentsBuilder_ != null) {
+            contentsBuilder_.dispose();
             contentsBuilder_ = null;
           }
           return this;
@@ -10744,23 +10342,37 @@ public final class V2Dataplane {
         @java.lang.Override
         public io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor buildPartial() {
           io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor(this);
-          int from_bitField0_ = bitField0_;
-          result.name_ = name_;
-          result.datatype_ = datatype_;
-          if (((bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable();
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.shape_ = shape_;
-          result.parameters_ = internalGetParameters();
-          result.parameters_.makeImmutable();
-          if (contentsBuilder_ == null) {
-            result.contents_ = contents_;
-          } else {
-            result.contents_ = contentsBuilder_.build();
-          }
+          buildPartialRepeatedFields(result);
+          if (bitField0_ != 0) { buildPartial0(result); }
           onBuilt();
           return result;
+        }
+
+        private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor result) {
+          if (((bitField0_ & 0x00000004) != 0)) {
+            shape_.makeImmutable();
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.shape_ = shape_;
+        }
+
+        private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.name_ = name_;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.datatype_ = datatype_;
+          }
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.parameters_ = internalGetParameters();
+            result.parameters_.makeImmutable();
+          }
+          if (((from_bitField0_ & 0x00000010) != 0)) {
+            result.contents_ = contentsBuilder_ == null
+                ? contents_
+                : contentsBuilder_.build();
+          }
         }
 
         @java.lang.Override
@@ -10809,16 +10421,18 @@ public final class V2Dataplane {
           if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor.getDefaultInstance()) return this;
           if (!other.getName().isEmpty()) {
             name_ = other.name_;
+            bitField0_ |= 0x00000001;
             onChanged();
           }
           if (!other.getDatatype().isEmpty()) {
             datatype_ = other.datatype_;
+            bitField0_ |= 0x00000002;
             onChanged();
           }
           if (!other.shape_.isEmpty()) {
             if (shape_.isEmpty()) {
               shape_ = other.shape_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureShapeIsMutable();
               shape_.addAll(other.shape_);
@@ -10827,10 +10441,11 @@ public final class V2Dataplane {
           }
           internalGetMutableParameters().mergeFrom(
               other.internalGetParameters());
+          bitField0_ |= 0x00000008;
           if (other.hasContents()) {
             mergeContents(other.getContents());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -10845,17 +10460,72 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+                case 18: {
+                  datatype_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+                case 24: {
+                  long v = input.readInt64();
+                  ensureShapeIsMutable();
+                  shape_.addLong(v);
+                  break;
+                } // case 24
+                case 26: {
+                  int length = input.readRawVarint32();
+                  int limit = input.pushLimit(length);
+                  ensureShapeIsMutable();
+                  while (input.getBytesUntilLimit() > 0) {
+                    shape_.addLong(input.readInt64());
+                  }
+                  input.popLimit(limit);
+                  break;
+                } // case 26
+                case 34: {
+                  com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                  parameters__ = input.readMessage(
+                      ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                  internalGetMutableParameters().getMutableMap().put(
+                      parameters__.getKey(), parameters__.getValue());
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 34
+                case 42: {
+                  input.readMessage(
+                      getContentsFieldBuilder().getBuilder(),
+                      extensionRegistry);
+                  bitField0_ |= 0x00000010;
+                  break;
+                } // case 42
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -10913,11 +10583,9 @@ public final class V2Dataplane {
          */
         public Builder setName(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -10930,8 +10598,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearName() {
-          
           name_ = getDefaultInstance().getName();
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
           return this;
         }
@@ -10946,12 +10614,10 @@ public final class V2Dataplane {
          */
         public Builder setNameBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -11009,11 +10675,9 @@ public final class V2Dataplane {
          */
         public Builder setDatatype(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
@@ -11026,8 +10690,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearDatatype() {
-          
           datatype_ = getDefaultInstance().getDatatype();
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
           return this;
         }
@@ -11042,22 +10706,20 @@ public final class V2Dataplane {
          */
         public Builder setDatatypeBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
 
         private com.google.protobuf.Internal.LongList shape_ = emptyLongList();
         private void ensureShapeIsMutable() {
-          if (!((bitField0_ & 0x00000001) != 0)) {
+          if (!((bitField0_ & 0x00000004) != 0)) {
             shape_ = mutableCopy(shape_);
-            bitField0_ |= 0x00000001;
-           }
+            bitField0_ |= 0x00000004;
+          }
         }
         /**
          * <pre>
@@ -11069,7 +10731,7 @@ public final class V2Dataplane {
          */
         public java.util.List<java.lang.Long>
             getShapeList() {
-          return ((bitField0_ & 0x00000001) != 0) ?
+          return ((bitField0_ & 0x00000004) != 0) ?
                    java.util.Collections.unmodifiableList(shape_) : shape_;
         }
         /**
@@ -11107,6 +10769,7 @@ public final class V2Dataplane {
          */
         public Builder setShape(
             int index, long value) {
+          
           ensureShapeIsMutable();
           shape_.setLong(index, value);
           onChanged();
@@ -11122,6 +10785,7 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder addShape(long value) {
+          
           ensureShapeIsMutable();
           shape_.addLong(value);
           onChanged();
@@ -11154,7 +10818,7 @@ public final class V2Dataplane {
          */
         public Builder clearShape() {
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
           return this;
         }
@@ -11162,7 +10826,7 @@ public final class V2Dataplane {
         private com.google.protobuf.MapField<
             java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetParameters() {
+            internalGetParameters() {
           if (parameters_ == null) {
             return com.google.protobuf.MapField.emptyMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -11170,8 +10834,7 @@ public final class V2Dataplane {
           return parameters_;
         }
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetMutableParameters() {
-          onChanged();;
+            internalGetMutableParameters() {
           if (parameters_ == null) {
             parameters_ = com.google.protobuf.MapField.newMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -11179,9 +10842,10 @@ public final class V2Dataplane {
           if (!parameters_.isMutable()) {
             parameters_ = parameters_.copy();
           }
+          bitField0_ |= 0x00000008;
+          onChanged();
           return parameters_;
         }
-
         public int getParametersCount() {
           return internalGetParameters().getMap().size();
         }
@@ -11192,7 +10856,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         @java.lang.Override
         public boolean containsParameters(
             java.lang.String key) {
@@ -11215,7 +10878,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
           return internalGetParameters().getMap();
         }
@@ -11227,10 +10889,11 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
-        public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+        public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
             java.lang.String key,
-            io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+            /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
           if (key == null) { throw new NullPointerException("map key"); }
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
               internalGetParameters().getMap();
@@ -11244,7 +10907,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -11255,8 +10917,8 @@ public final class V2Dataplane {
           }
           return map.get(key);
         }
-
         public Builder clearParameters() {
+          bitField0_ = (bitField0_ & ~0x00000008);
           internalGetMutableParameters().getMutableMap()
               .clear();
           return this;
@@ -11268,7 +10930,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder removeParameters(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -11281,7 +10942,8 @@ public final class V2Dataplane {
          */
         @java.lang.Deprecated
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        getMutableParameters() {
+            getMutableParameters() {
+          bitField0_ |= 0x00000008;
           return internalGetMutableParameters().getMutableMap();
         }
         /**
@@ -11295,12 +10957,10 @@ public final class V2Dataplane {
             java.lang.String key,
             io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
           if (key == null) { throw new NullPointerException("map key"); }
-          if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+          if (value == null) { throw new NullPointerException("map value"); }
           internalGetMutableParameters().getMutableMap()
               .put(key, value);
+          bitField0_ |= 0x00000008;
           return this;
         }
         /**
@@ -11310,11 +10970,11 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder putAllParameters(
             java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
           internalGetMutableParameters().getMutableMap()
               .putAll(values);
+          bitField0_ |= 0x00000008;
           return this;
         }
 
@@ -11332,7 +10992,7 @@ public final class V2Dataplane {
          * @return Whether the contents field is set.
          */
         public boolean hasContents() {
-          return contentsBuilder_ != null || contents_ != null;
+          return ((bitField0_ & 0x00000010) != 0);
         }
         /**
          * <pre>
@@ -11366,11 +11026,11 @@ public final class V2Dataplane {
               throw new NullPointerException();
             }
             contents_ = value;
-            onChanged();
           } else {
             contentsBuilder_.setMessage(value);
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -11386,11 +11046,11 @@ public final class V2Dataplane {
             io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder builderForValue) {
           if (contentsBuilder_ == null) {
             contents_ = builderForValue.build();
-            onChanged();
           } else {
             contentsBuilder_.setMessage(builderForValue.build());
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -11404,17 +11064,18 @@ public final class V2Dataplane {
          */
         public Builder mergeContents(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents value) {
           if (contentsBuilder_ == null) {
-            if (contents_ != null) {
-              contents_ =
-                io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.newBuilder(contents_).mergeFrom(value).buildPartial();
+            if (((bitField0_ & 0x00000010) != 0) &&
+              contents_ != null &&
+              contents_ != io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.getDefaultInstance()) {
+              getContentsBuilder().mergeFrom(value);
             } else {
               contents_ = value;
             }
-            onChanged();
           } else {
             contentsBuilder_.mergeFrom(value);
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -11427,14 +11088,13 @@ public final class V2Dataplane {
          * <code>.inference.InferTensorContents contents = 5;</code>
          */
         public Builder clearContents() {
-          if (contentsBuilder_ == null) {
-            contents_ = null;
-            onChanged();
-          } else {
-            contents_ = null;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          contents_ = null;
+          if (contentsBuilder_ != null) {
+            contentsBuilder_.dispose();
             contentsBuilder_ = null;
           }
-
+          onChanged();
           return this;
         }
         /**
@@ -11447,7 +11107,7 @@ public final class V2Dataplane {
          * <code>.inference.InferTensorContents contents = 5;</code>
          */
         public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder getContentsBuilder() {
-          
+          bitField0_ |= 0x00000010;
           onChanged();
           return getContentsFieldBuilder().getBuilder();
         }
@@ -11523,7 +11183,18 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new InferInputTensor(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -11606,10 +11277,11 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
-
-      io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
       /**
        * <pre>
        * Optional requested output tensor parameters.
@@ -11617,7 +11289,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
-
       io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key);
     }
@@ -11653,63 +11324,6 @@ public final class V2Dataplane {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private InferRequestedOutputTensor(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  parameters_ = com.google.protobuf.MapField.newMapField(
-                      ParametersDefaultEntryHolder.defaultEntry);
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-                parameters__ = input.readMessage(
-                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                parameters_.getMutableMap().put(
-                    parameters__.getKey(), parameters__.getValue());
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelInferRequest_InferRequestedOutputTensor_descriptor;
@@ -11736,7 +11350,8 @@ public final class V2Dataplane {
       }
 
       public static final int NAME_FIELD_NUMBER = 1;
-      private volatile java.lang.Object name_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object name_ = "";
       /**
        * <pre>
        * The tensor name.
@@ -11793,6 +11408,7 @@ public final class V2Dataplane {
                     com.google.protobuf.WireFormat.FieldType.MESSAGE,
                     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
       }
+      @SuppressWarnings("serial")
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -11803,7 +11419,6 @@ public final class V2Dataplane {
         }
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -11814,7 +11429,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -11837,7 +11451,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -11849,10 +11462,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -11866,7 +11480,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -11901,7 +11514,7 @@ public final class V2Dataplane {
             internalGetParameters(),
             ParametersDefaultEntryHolder.defaultEntry,
             2);
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -11923,7 +11536,7 @@ public final class V2Dataplane {
           size += com.google.protobuf.CodedOutputStream
               .computeMessageSize(2, parameters__);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -11942,7 +11555,7 @@ public final class V2Dataplane {
             .equals(other.getName())) return false;
         if (!internalGetParameters().equals(
             other.internalGetParameters())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -11959,7 +11572,7 @@ public final class V2Dataplane {
           hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
           hash = (53 * hash) + internalGetParameters().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -12102,24 +11715,19 @@ public final class V2Dataplane {
 
         // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
+          bitField0_ = 0;
           name_ = "";
-
           internalGetMutableParameters().clear();
           return this;
         }
@@ -12147,12 +11755,20 @@ public final class V2Dataplane {
         @java.lang.Override
         public io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor buildPartial() {
           io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor(this);
-          int from_bitField0_ = bitField0_;
-          result.name_ = name_;
-          result.parameters_ = internalGetParameters();
-          result.parameters_.makeImmutable();
+          if (bitField0_ != 0) { buildPartial0(result); }
           onBuilt();
           return result;
+        }
+
+        private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.name_ = name_;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.parameters_ = internalGetParameters();
+            result.parameters_.makeImmutable();
+          }
         }
 
         @java.lang.Override
@@ -12201,11 +11817,13 @@ public final class V2Dataplane {
           if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor.getDefaultInstance()) return this;
           if (!other.getName().isEmpty()) {
             name_ = other.name_;
+            bitField0_ |= 0x00000001;
             onChanged();
           }
           internalGetMutableParameters().mergeFrom(
               other.internalGetParameters());
-          this.mergeUnknownFields(other.unknownFields);
+          bitField0_ |= 0x00000002;
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -12220,17 +11838,44 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+                case 18: {
+                  com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                  parameters__ = input.readMessage(
+                      ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                  internalGetMutableParameters().getMutableMap().put(
+                      parameters__.getKey(), parameters__.getValue());
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -12288,11 +11933,9 @@ public final class V2Dataplane {
          */
         public Builder setName(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -12305,8 +11948,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearName() {
-          
           name_ = getDefaultInstance().getName();
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
           return this;
         }
@@ -12321,12 +11964,10 @@ public final class V2Dataplane {
          */
         public Builder setNameBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -12334,7 +11975,7 @@ public final class V2Dataplane {
         private com.google.protobuf.MapField<
             java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetParameters() {
+            internalGetParameters() {
           if (parameters_ == null) {
             return com.google.protobuf.MapField.emptyMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -12342,8 +11983,7 @@ public final class V2Dataplane {
           return parameters_;
         }
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetMutableParameters() {
-          onChanged();;
+            internalGetMutableParameters() {
           if (parameters_ == null) {
             parameters_ = com.google.protobuf.MapField.newMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -12351,9 +11991,10 @@ public final class V2Dataplane {
           if (!parameters_.isMutable()) {
             parameters_ = parameters_.copy();
           }
+          bitField0_ |= 0x00000002;
+          onChanged();
           return parameters_;
         }
-
         public int getParametersCount() {
           return internalGetParameters().getMap().size();
         }
@@ -12364,7 +12005,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
-
         @java.lang.Override
         public boolean containsParameters(
             java.lang.String key) {
@@ -12387,7 +12027,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
         @java.lang.Override
-
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
           return internalGetParameters().getMap();
         }
@@ -12399,10 +12038,11 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
         @java.lang.Override
-
-        public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+        public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
             java.lang.String key,
-            io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+            /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
           if (key == null) { throw new NullPointerException("map key"); }
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
               internalGetParameters().getMap();
@@ -12416,7 +12056,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
         @java.lang.Override
-
         public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -12427,8 +12066,8 @@ public final class V2Dataplane {
           }
           return map.get(key);
         }
-
         public Builder clearParameters() {
+          bitField0_ = (bitField0_ & ~0x00000002);
           internalGetMutableParameters().getMutableMap()
               .clear();
           return this;
@@ -12440,7 +12079,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
-
         public Builder removeParameters(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -12453,7 +12091,8 @@ public final class V2Dataplane {
          */
         @java.lang.Deprecated
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        getMutableParameters() {
+            getMutableParameters() {
+          bitField0_ |= 0x00000002;
           return internalGetMutableParameters().getMutableMap();
         }
         /**
@@ -12467,12 +12106,10 @@ public final class V2Dataplane {
             java.lang.String key,
             io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
           if (key == null) { throw new NullPointerException("map key"); }
-          if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+          if (value == null) { throw new NullPointerException("map value"); }
           internalGetMutableParameters().getMutableMap()
               .put(key, value);
+          bitField0_ |= 0x00000002;
           return this;
         }
         /**
@@ -12482,11 +12119,11 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 2;</code>
          */
-
         public Builder putAllParameters(
             java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
           internalGetMutableParameters().getMutableMap()
               .putAll(values);
+          bitField0_ |= 0x00000002;
           return this;
         }
         @java.lang.Override
@@ -12522,7 +12159,18 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new InferRequestedOutputTensor(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -12543,7 +12191,8 @@ public final class V2Dataplane {
     }
 
     public static final int MODEL_NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object modelName_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelName_ = "";
     /**
      * <pre>
      * The name of the model to use for inferencing.
@@ -12589,7 +12238,8 @@ public final class V2Dataplane {
     }
 
     public static final int MODEL_VERSION_FIELD_NUMBER = 2;
-    private volatile java.lang.Object modelVersion_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelVersion_ = "";
     /**
      * <pre>
      * The version of the model to use for inference. If not given the
@@ -12637,7 +12287,8 @@ public final class V2Dataplane {
     }
 
     public static final int ID_FIELD_NUMBER = 3;
-    private volatile java.lang.Object id_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object id_ = "";
     /**
      * <pre>
      * Optional identifier for the request. If specified will be
@@ -12696,6 +12347,7 @@ public final class V2Dataplane {
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
                   io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
     }
+    @SuppressWarnings("serial")
     private com.google.protobuf.MapField<
         java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
     private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -12706,7 +12358,6 @@ public final class V2Dataplane {
       }
       return parameters_;
     }
-
     public int getParametersCount() {
       return internalGetParameters().getMap().size();
     }
@@ -12717,7 +12368,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
     @java.lang.Override
     public boolean containsParameters(
         java.lang.String key) {
@@ -12740,7 +12390,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
     public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
       return internalGetParameters().getMap();
     }
@@ -12752,10 +12401,11 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
-    public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
       if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
           internalGetParameters().getMap();
@@ -12769,7 +12419,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
     public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key) {
       if (key == null) { throw new NullPointerException("map key"); }
@@ -12782,6 +12431,7 @@ public final class V2Dataplane {
     }
 
     public static final int INPUTS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor> inputs_;
     /**
      * <pre>
@@ -12842,6 +12492,7 @@ public final class V2Dataplane {
     }
 
     public static final int OUTPUTS_FIELD_NUMBER = 6;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor> outputs_;
     /**
      * <pre>
@@ -12907,6 +12558,7 @@ public final class V2Dataplane {
     }
 
     public static final int RAW_INPUT_CONTENTS_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ByteString> rawInputContents_;
     /**
      * <pre>
@@ -13019,7 +12671,7 @@ public final class V2Dataplane {
       for (int i = 0; i < rawInputContents_.size(); i++) {
         output.writeBytes(7, rawInputContents_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -13064,7 +12716,7 @@ public final class V2Dataplane {
         size += dataSize;
         size += 1 * getRawInputContentsList().size();
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -13093,7 +12745,7 @@ public final class V2Dataplane {
           .equals(other.getOutputsList())) return false;
       if (!getRawInputContentsList()
           .equals(other.getRawInputContentsList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -13126,7 +12778,7 @@ public final class V2Dataplane {
         hash = (37 * hash) + RAW_INPUT_CONTENTS_FIELD_NUMBER;
         hash = (53 * hash) + getRawInputContentsList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -13265,45 +12917,37 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-          getInputsFieldBuilder();
-          getOutputsFieldBuilder();
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         modelName_ = "";
-
         modelVersion_ = "";
-
         id_ = "";
-
         internalGetMutableParameters().clear();
         if (inputsBuilder_ == null) {
           inputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          inputs_ = null;
           inputsBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000010);
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
         } else {
+          outputs_ = null;
           outputsBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000020);
         rawInputContents_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -13330,37 +12974,53 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest(this);
-        int from_bitField0_ = bitField0_;
-        result.modelName_ = modelName_;
-        result.modelVersion_ = modelVersion_;
-        result.id_ = id_;
-        result.parameters_ = internalGetParameters();
-        result.parameters_.makeImmutable();
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest result) {
         if (inputsBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0)) {
+          if (((bitField0_ & 0x00000010) != 0)) {
             inputs_ = java.util.Collections.unmodifiableList(inputs_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.inputs_ = inputs_;
         } else {
           result.inputs_ = inputsBuilder_.build();
         }
         if (outputsBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) != 0)) {
+          if (((bitField0_ & 0x00000020) != 0)) {
             outputs_ = java.util.Collections.unmodifiableList(outputs_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000020);
           }
           result.outputs_ = outputs_;
         } else {
           result.outputs_ = outputsBuilder_.build();
         }
-        if (((bitField0_ & 0x00000008) != 0)) {
+        if (((bitField0_ & 0x00000040) != 0)) {
           rawInputContents_ = java.util.Collections.unmodifiableList(rawInputContents_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000040);
         }
         result.rawInputContents_ = rawInputContents_;
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.modelName_ = modelName_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.modelVersion_ = modelVersion_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.id_ = id_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.parameters_ = internalGetParameters();
+          result.parameters_.makeImmutable();
+        }
       }
 
       @java.lang.Override
@@ -13409,23 +13069,27 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.getDefaultInstance()) return this;
         if (!other.getModelName().isEmpty()) {
           modelName_ = other.modelName_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getModelVersion().isEmpty()) {
           modelVersion_ = other.modelVersion_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (!other.getId().isEmpty()) {
           id_ = other.id_;
+          bitField0_ |= 0x00000004;
           onChanged();
         }
         internalGetMutableParameters().mergeFrom(
             other.internalGetParameters());
+        bitField0_ |= 0x00000008;
         if (inputsBuilder_ == null) {
           if (!other.inputs_.isEmpty()) {
             if (inputs_.isEmpty()) {
               inputs_ = other.inputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000010);
             } else {
               ensureInputsIsMutable();
               inputs_.addAll(other.inputs_);
@@ -13438,7 +13102,7 @@ public final class V2Dataplane {
               inputsBuilder_.dispose();
               inputsBuilder_ = null;
               inputs_ = other.inputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000010);
               inputsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getInputsFieldBuilder() : null;
@@ -13451,7 +13115,7 @@ public final class V2Dataplane {
           if (!other.outputs_.isEmpty()) {
             if (outputs_.isEmpty()) {
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000020);
             } else {
               ensureOutputsIsMutable();
               outputs_.addAll(other.outputs_);
@@ -13464,7 +13128,7 @@ public final class V2Dataplane {
               outputsBuilder_.dispose();
               outputsBuilder_ = null;
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000020);
               outputsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getOutputsFieldBuilder() : null;
@@ -13476,14 +13140,14 @@ public final class V2Dataplane {
         if (!other.rawInputContents_.isEmpty()) {
           if (rawInputContents_.isEmpty()) {
             rawInputContents_ = other.rawInputContents_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000040);
           } else {
             ensureRawInputContentsIsMutable();
             rawInputContents_.addAll(other.rawInputContents_);
           }
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -13498,17 +13162,86 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                modelName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                modelVersion_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 26: {
+                id_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              case 34: {
+                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                parameters__ = input.readMessage(
+                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableParameters().getMutableMap().put(
+                    parameters__.getKey(), parameters__.getValue());
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              case 42: {
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor.parser(),
+                        extensionRegistry);
+                if (inputsBuilder_ == null) {
+                  ensureInputsIsMutable();
+                  inputs_.add(m);
+                } else {
+                  inputsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
+              case 50: {
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor.parser(),
+                        extensionRegistry);
+                if (outputsBuilder_ == null) {
+                  ensureOutputsIsMutable();
+                  outputs_.add(m);
+                } else {
+                  outputsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 50
+              case 58: {
+                com.google.protobuf.ByteString v = input.readBytes();
+                ensureRawInputContentsIsMutable();
+                rawInputContents_.add(v);
+                break;
+              } // case 58
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -13566,11 +13299,9 @@ public final class V2Dataplane {
        */
       public Builder setModelName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         modelName_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -13583,8 +13314,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearModelName() {
-        
         modelName_ = getDefaultInstance().getModelName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -13599,12 +13330,10 @@ public final class V2Dataplane {
        */
       public Builder setModelNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         modelName_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -13665,11 +13394,9 @@ public final class V2Dataplane {
        */
       public Builder setModelVersion(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         modelVersion_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -13683,8 +13410,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearModelVersion() {
-        
         modelVersion_ = getDefaultInstance().getModelVersion();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -13700,12 +13427,10 @@ public final class V2Dataplane {
        */
       public Builder setModelVersionBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         modelVersion_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -13766,11 +13491,9 @@ public final class V2Dataplane {
        */
       public Builder setId(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         id_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -13784,8 +13507,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearId() {
-        
         id_ = getDefaultInstance().getId();
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -13801,12 +13524,10 @@ public final class V2Dataplane {
        */
       public Builder setIdBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         id_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -13814,7 +13535,7 @@ public final class V2Dataplane {
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetParameters() {
+          internalGetParameters() {
         if (parameters_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -13822,8 +13543,7 @@ public final class V2Dataplane {
         return parameters_;
       }
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetMutableParameters() {
-        onChanged();;
+          internalGetMutableParameters() {
         if (parameters_ == null) {
           parameters_ = com.google.protobuf.MapField.newMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -13831,9 +13551,10 @@ public final class V2Dataplane {
         if (!parameters_.isMutable()) {
           parameters_ = parameters_.copy();
         }
+        bitField0_ |= 0x00000008;
+        onChanged();
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -13844,7 +13565,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -13867,7 +13587,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -13879,10 +13598,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -13896,7 +13616,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -13907,8 +13626,8 @@ public final class V2Dataplane {
         }
         return map.get(key);
       }
-
       public Builder clearParameters() {
+        bitField0_ = (bitField0_ & ~0x00000008);
         internalGetMutableParameters().getMutableMap()
             .clear();
         return this;
@@ -13920,7 +13639,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       public Builder removeParameters(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -13933,7 +13651,8 @@ public final class V2Dataplane {
        */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      getMutableParameters() {
+          getMutableParameters() {
+        bitField0_ |= 0x00000008;
         return internalGetMutableParameters().getMutableMap();
       }
       /**
@@ -13947,12 +13666,10 @@ public final class V2Dataplane {
           java.lang.String key,
           io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
         if (key == null) { throw new NullPointerException("map key"); }
-        if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+        if (value == null) { throw new NullPointerException("map value"); }
         internalGetMutableParameters().getMutableMap()
             .put(key, value);
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
@@ -13962,20 +13679,20 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       public Builder putAllParameters(
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
         internalGetMutableParameters().getMutableMap()
             .putAll(values);
+        bitField0_ |= 0x00000008;
         return this;
       }
 
       private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor> inputs_ =
         java.util.Collections.emptyList();
       private void ensureInputsIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           inputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor>(inputs_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000010;
          }
       }
 
@@ -14169,7 +13886,7 @@ public final class V2Dataplane {
       public Builder clearInputs() {
         if (inputsBuilder_ == null) {
           inputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
           inputsBuilder_.clear();
@@ -14274,7 +13991,7 @@ public final class V2Dataplane {
           inputsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor.Builder, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensorOrBuilder>(
                   inputs_,
-                  ((bitField0_ & 0x00000002) != 0),
+                  ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
           inputs_ = null;
@@ -14285,9 +14002,9 @@ public final class V2Dataplane {
       private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor> outputs_ =
         java.util.Collections.emptyList();
       private void ensureOutputsIsMutable() {
-        if (!((bitField0_ & 0x00000004) != 0)) {
+        if (!((bitField0_ & 0x00000020) != 0)) {
           outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor>(outputs_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000020;
          }
       }
 
@@ -14492,7 +14209,7 @@ public final class V2Dataplane {
       public Builder clearOutputs() {
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000020);
           onChanged();
         } else {
           outputsBuilder_.clear();
@@ -14604,7 +14321,7 @@ public final class V2Dataplane {
           outputsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensor.Builder, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferRequestedOutputTensorOrBuilder>(
                   outputs_,
-                  ((bitField0_ & 0x00000004) != 0),
+                  ((bitField0_ & 0x00000020) != 0),
                   getParentForChildren(),
                   isClean());
           outputs_ = null;
@@ -14614,10 +14331,10 @@ public final class V2Dataplane {
 
       private java.util.List<com.google.protobuf.ByteString> rawInputContents_ = java.util.Collections.emptyList();
       private void ensureRawInputContentsIsMutable() {
-        if (!((bitField0_ & 0x00000008) != 0)) {
+        if (!((bitField0_ & 0x00000040) != 0)) {
           rawInputContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>(rawInputContents_);
-          bitField0_ |= 0x00000008;
-         }
+          bitField0_ |= 0x00000040;
+        }
       }
       /**
        * <pre>
@@ -14641,7 +14358,7 @@ public final class V2Dataplane {
        */
       public java.util.List<com.google.protobuf.ByteString>
           getRawInputContentsList() {
-        return ((bitField0_ & 0x00000008) != 0) ?
+        return ((bitField0_ & 0x00000040) != 0) ?
                  java.util.Collections.unmodifiableList(rawInputContents_) : rawInputContents_;
       }
       /**
@@ -14715,10 +14432,8 @@ public final class V2Dataplane {
        */
       public Builder setRawInputContents(
           int index, com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureRawInputContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureRawInputContentsIsMutable();
         rawInputContents_.set(index, value);
         onChanged();
         return this;
@@ -14745,10 +14460,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addRawInputContents(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureRawInputContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureRawInputContentsIsMutable();
         rawInputContents_.add(value);
         onChanged();
         return this;
@@ -14804,7 +14517,7 @@ public final class V2Dataplane {
        */
       public Builder clearRawInputContents() {
         rawInputContents_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000040);
         onChanged();
         return this;
       }
@@ -14841,7 +14554,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelInferRequest(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -14964,10 +14688,11 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
-    io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
     /**
      * <pre>
      * Optional inference response parameters.
@@ -14975,7 +14700,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key);
 
@@ -15120,98 +14844,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private ModelInferResponse(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              modelName_ = s;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              modelVersion_ = s;
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              id_ = s;
-              break;
-            }
-            case 34: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                parameters_ = com.google.protobuf.MapField.newMapField(
-                    ParametersDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-              parameters__ = input.readMessage(
-                  ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              parameters_.getMutableMap().put(
-                  parameters__.getKey(), parameters__.getValue());
-              break;
-            }
-            case 42: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              outputs_.add(
-                  input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.parser(), extensionRegistry));
-              break;
-            }
-            case 50: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                rawOutputContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              rawOutputContents_.add(input.readBytes());
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          outputs_ = java.util.Collections.unmodifiableList(outputs_);
-        }
-        if (((mutable_bitField0_ & 0x00000004) != 0)) {
-          rawOutputContents_ = java.util.Collections.unmodifiableList(rawOutputContents_); // C
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelInferResponse_descriptor;
@@ -15349,10 +14981,11 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
-      io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue);
       /**
        * <pre>
        * Optional output tensor parameters.
@@ -15360,7 +14993,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key);
 
@@ -15431,106 +15063,6 @@ public final class V2Dataplane {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private InferOutputTensor(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                datatype_ = s;
-                break;
-              }
-              case 24: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                shape_.addLong(input.readInt64());
-                break;
-              }
-              case 26: {
-                int length = input.readRawVarint32();
-                int limit = input.pushLimit(length);
-                if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                  shape_ = newLongList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                while (input.getBytesUntilLimit() > 0) {
-                  shape_.addLong(input.readInt64());
-                }
-                input.popLimit(limit);
-                break;
-              }
-              case 34: {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  parameters_ = com.google.protobuf.MapField.newMapField(
-                      ParametersDefaultEntryHolder.defaultEntry);
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-                parameters__ = input.readMessage(
-                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                parameters_.getMutableMap().put(
-                    parameters__.getKey(), parameters__.getValue());
-                break;
-              }
-              case 42: {
-                io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder subBuilder = null;
-                if (contents_ != null) {
-                  subBuilder = contents_.toBuilder();
-                }
-                contents_ = input.readMessage(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(contents_);
-                  contents_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable(); // C
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelInferResponse_InferOutputTensor_descriptor;
@@ -15557,7 +15089,8 @@ public final class V2Dataplane {
       }
 
       public static final int NAME_FIELD_NUMBER = 1;
-      private volatile java.lang.Object name_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object name_ = "";
       /**
        * <pre>
        * The tensor name.
@@ -15603,7 +15136,8 @@ public final class V2Dataplane {
       }
 
       public static final int DATATYPE_FIELD_NUMBER = 2;
-      private volatile java.lang.Object datatype_;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object datatype_ = "";
       /**
        * <pre>
        * The tensor data type.
@@ -15649,6 +15183,7 @@ public final class V2Dataplane {
       }
 
       public static final int SHAPE_FIELD_NUMBER = 3;
+      @SuppressWarnings("serial")
       private com.google.protobuf.Internal.LongList shape_;
       /**
        * <pre>
@@ -15700,6 +15235,7 @@ public final class V2Dataplane {
                     com.google.protobuf.WireFormat.FieldType.MESSAGE,
                     io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
       }
+      @SuppressWarnings("serial")
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -15710,7 +15246,6 @@ public final class V2Dataplane {
         }
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -15721,7 +15256,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -15744,7 +15278,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -15756,10 +15289,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -15773,7 +15307,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -15826,7 +15359,7 @@ public final class V2Dataplane {
        */
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContentsOrBuilder getContentsOrBuilder() {
-        return getContents();
+        return contents_ == null ? io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.getDefaultInstance() : contents_;
       }
 
       private byte memoizedIsInitialized = -1;
@@ -15866,7 +15399,7 @@ public final class V2Dataplane {
         if (contents_ != null) {
           output.writeMessage(5, getContents());
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -15909,7 +15442,7 @@ public final class V2Dataplane {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(5, getContents());
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -15937,7 +15470,7 @@ public final class V2Dataplane {
           if (!getContents()
               .equals(other.getContents())) return false;
         }
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -15964,7 +15497,7 @@ public final class V2Dataplane {
           hash = (37 * hash) + CONTENTS_FIELD_NUMBER;
           hash = (53 * hash) + getContents().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -16107,33 +15640,25 @@ public final class V2Dataplane {
 
         // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
+          bitField0_ = 0;
           name_ = "";
-
           datatype_ = "";
-
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
           internalGetMutableParameters().clear();
-          if (contentsBuilder_ == null) {
-            contents_ = null;
-          } else {
-            contents_ = null;
+          contents_ = null;
+          if (contentsBuilder_ != null) {
+            contentsBuilder_.dispose();
             contentsBuilder_ = null;
           }
           return this;
@@ -16162,23 +15687,37 @@ public final class V2Dataplane {
         @java.lang.Override
         public io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor buildPartial() {
           io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor(this);
-          int from_bitField0_ = bitField0_;
-          result.name_ = name_;
-          result.datatype_ = datatype_;
-          if (((bitField0_ & 0x00000001) != 0)) {
-            shape_.makeImmutable();
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.shape_ = shape_;
-          result.parameters_ = internalGetParameters();
-          result.parameters_.makeImmutable();
-          if (contentsBuilder_ == null) {
-            result.contents_ = contents_;
-          } else {
-            result.contents_ = contentsBuilder_.build();
-          }
+          buildPartialRepeatedFields(result);
+          if (bitField0_ != 0) { buildPartial0(result); }
           onBuilt();
           return result;
+        }
+
+        private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor result) {
+          if (((bitField0_ & 0x00000004) != 0)) {
+            shape_.makeImmutable();
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.shape_ = shape_;
+        }
+
+        private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.name_ = name_;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.datatype_ = datatype_;
+          }
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.parameters_ = internalGetParameters();
+            result.parameters_.makeImmutable();
+          }
+          if (((from_bitField0_ & 0x00000010) != 0)) {
+            result.contents_ = contentsBuilder_ == null
+                ? contents_
+                : contentsBuilder_.build();
+          }
         }
 
         @java.lang.Override
@@ -16227,16 +15766,18 @@ public final class V2Dataplane {
           if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.getDefaultInstance()) return this;
           if (!other.getName().isEmpty()) {
             name_ = other.name_;
+            bitField0_ |= 0x00000001;
             onChanged();
           }
           if (!other.getDatatype().isEmpty()) {
             datatype_ = other.datatype_;
+            bitField0_ |= 0x00000002;
             onChanged();
           }
           if (!other.shape_.isEmpty()) {
             if (shape_.isEmpty()) {
               shape_ = other.shape_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureShapeIsMutable();
               shape_.addAll(other.shape_);
@@ -16245,10 +15786,11 @@ public final class V2Dataplane {
           }
           internalGetMutableParameters().mergeFrom(
               other.internalGetParameters());
+          bitField0_ |= 0x00000008;
           if (other.hasContents()) {
             mergeContents(other.getContents());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -16263,17 +15805,72 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+                case 18: {
+                  datatype_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+                case 24: {
+                  long v = input.readInt64();
+                  ensureShapeIsMutable();
+                  shape_.addLong(v);
+                  break;
+                } // case 24
+                case 26: {
+                  int length = input.readRawVarint32();
+                  int limit = input.pushLimit(length);
+                  ensureShapeIsMutable();
+                  while (input.getBytesUntilLimit() > 0) {
+                    shape_.addLong(input.readInt64());
+                  }
+                  input.popLimit(limit);
+                  break;
+                } // case 26
+                case 34: {
+                  com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                  parameters__ = input.readMessage(
+                      ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                  internalGetMutableParameters().getMutableMap().put(
+                      parameters__.getKey(), parameters__.getValue());
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 34
+                case 42: {
+                  input.readMessage(
+                      getContentsFieldBuilder().getBuilder(),
+                      extensionRegistry);
+                  bitField0_ |= 0x00000010;
+                  break;
+                } // case 42
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -16331,11 +15928,9 @@ public final class V2Dataplane {
          */
         public Builder setName(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -16348,8 +15943,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearName() {
-          
           name_ = getDefaultInstance().getName();
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
           return this;
         }
@@ -16364,12 +15959,10 @@ public final class V2Dataplane {
          */
         public Builder setNameBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           name_ = value;
+          bitField0_ |= 0x00000001;
           onChanged();
           return this;
         }
@@ -16427,11 +16020,9 @@ public final class V2Dataplane {
          */
         public Builder setDatatype(
             java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
+          if (value == null) { throw new NullPointerException(); }
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
@@ -16444,8 +16035,8 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder clearDatatype() {
-          
           datatype_ = getDefaultInstance().getDatatype();
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
           return this;
         }
@@ -16460,22 +16051,20 @@ public final class V2Dataplane {
          */
         public Builder setDatatypeBytes(
             com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
           datatype_ = value;
+          bitField0_ |= 0x00000002;
           onChanged();
           return this;
         }
 
         private com.google.protobuf.Internal.LongList shape_ = emptyLongList();
         private void ensureShapeIsMutable() {
-          if (!((bitField0_ & 0x00000001) != 0)) {
+          if (!((bitField0_ & 0x00000004) != 0)) {
             shape_ = mutableCopy(shape_);
-            bitField0_ |= 0x00000001;
-           }
+            bitField0_ |= 0x00000004;
+          }
         }
         /**
          * <pre>
@@ -16487,7 +16076,7 @@ public final class V2Dataplane {
          */
         public java.util.List<java.lang.Long>
             getShapeList() {
-          return ((bitField0_ & 0x00000001) != 0) ?
+          return ((bitField0_ & 0x00000004) != 0) ?
                    java.util.Collections.unmodifiableList(shape_) : shape_;
         }
         /**
@@ -16525,6 +16114,7 @@ public final class V2Dataplane {
          */
         public Builder setShape(
             int index, long value) {
+          
           ensureShapeIsMutable();
           shape_.setLong(index, value);
           onChanged();
@@ -16540,6 +16130,7 @@ public final class V2Dataplane {
          * @return This builder for chaining.
          */
         public Builder addShape(long value) {
+          
           ensureShapeIsMutable();
           shape_.addLong(value);
           onChanged();
@@ -16572,7 +16163,7 @@ public final class V2Dataplane {
          */
         public Builder clearShape() {
           shape_ = emptyLongList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
           return this;
         }
@@ -16580,7 +16171,7 @@ public final class V2Dataplane {
         private com.google.protobuf.MapField<
             java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetParameters() {
+            internalGetParameters() {
           if (parameters_ == null) {
             return com.google.protobuf.MapField.emptyMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -16588,8 +16179,7 @@ public final class V2Dataplane {
           return parameters_;
         }
         private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        internalGetMutableParameters() {
-          onChanged();;
+            internalGetMutableParameters() {
           if (parameters_ == null) {
             parameters_ = com.google.protobuf.MapField.newMapField(
                 ParametersDefaultEntryHolder.defaultEntry);
@@ -16597,9 +16187,10 @@ public final class V2Dataplane {
           if (!parameters_.isMutable()) {
             parameters_ = parameters_.copy();
           }
+          bitField0_ |= 0x00000008;
+          onChanged();
           return parameters_;
         }
-
         public int getParametersCount() {
           return internalGetParameters().getMap().size();
         }
@@ -16610,7 +16201,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         @java.lang.Override
         public boolean containsParameters(
             java.lang.String key) {
@@ -16633,7 +16223,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
           return internalGetParameters().getMap();
         }
@@ -16645,10 +16234,11 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
-        public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+        public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
             java.lang.String key,
-            io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+            /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
           if (key == null) { throw new NullPointerException("map key"); }
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
               internalGetParameters().getMap();
@@ -16662,7 +16252,6 @@ public final class V2Dataplane {
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
         @java.lang.Override
-
         public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -16673,8 +16262,8 @@ public final class V2Dataplane {
           }
           return map.get(key);
         }
-
         public Builder clearParameters() {
+          bitField0_ = (bitField0_ & ~0x00000008);
           internalGetMutableParameters().getMutableMap()
               .clear();
           return this;
@@ -16686,7 +16275,6 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder removeParameters(
             java.lang.String key) {
           if (key == null) { throw new NullPointerException("map key"); }
@@ -16699,7 +16287,8 @@ public final class V2Dataplane {
          */
         @java.lang.Deprecated
         public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-        getMutableParameters() {
+            getMutableParameters() {
+          bitField0_ |= 0x00000008;
           return internalGetMutableParameters().getMutableMap();
         }
         /**
@@ -16713,12 +16302,10 @@ public final class V2Dataplane {
             java.lang.String key,
             io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
           if (key == null) { throw new NullPointerException("map key"); }
-          if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+          if (value == null) { throw new NullPointerException("map value"); }
           internalGetMutableParameters().getMutableMap()
               .put(key, value);
+          bitField0_ |= 0x00000008;
           return this;
         }
         /**
@@ -16728,11 +16315,11 @@ public final class V2Dataplane {
          *
          * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
          */
-
         public Builder putAllParameters(
             java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
           internalGetMutableParameters().getMutableMap()
               .putAll(values);
+          bitField0_ |= 0x00000008;
           return this;
         }
 
@@ -16750,7 +16337,7 @@ public final class V2Dataplane {
          * @return Whether the contents field is set.
          */
         public boolean hasContents() {
-          return contentsBuilder_ != null || contents_ != null;
+          return ((bitField0_ & 0x00000010) != 0);
         }
         /**
          * <pre>
@@ -16784,11 +16371,11 @@ public final class V2Dataplane {
               throw new NullPointerException();
             }
             contents_ = value;
-            onChanged();
           } else {
             contentsBuilder_.setMessage(value);
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -16804,11 +16391,11 @@ public final class V2Dataplane {
             io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder builderForValue) {
           if (contentsBuilder_ == null) {
             contents_ = builderForValue.build();
-            onChanged();
           } else {
             contentsBuilder_.setMessage(builderForValue.build());
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -16822,17 +16409,18 @@ public final class V2Dataplane {
          */
         public Builder mergeContents(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents value) {
           if (contentsBuilder_ == null) {
-            if (contents_ != null) {
-              contents_ =
-                io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.newBuilder(contents_).mergeFrom(value).buildPartial();
+            if (((bitField0_ & 0x00000010) != 0) &&
+              contents_ != null &&
+              contents_ != io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.getDefaultInstance()) {
+              getContentsBuilder().mergeFrom(value);
             } else {
               contents_ = value;
             }
-            onChanged();
           } else {
             contentsBuilder_.mergeFrom(value);
           }
-
+          bitField0_ |= 0x00000010;
+          onChanged();
           return this;
         }
         /**
@@ -16845,14 +16433,13 @@ public final class V2Dataplane {
          * <code>.inference.InferTensorContents contents = 5;</code>
          */
         public Builder clearContents() {
-          if (contentsBuilder_ == null) {
-            contents_ = null;
-            onChanged();
-          } else {
-            contents_ = null;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          contents_ = null;
+          if (contentsBuilder_ != null) {
+            contentsBuilder_.dispose();
             contentsBuilder_ = null;
           }
-
+          onChanged();
           return this;
         }
         /**
@@ -16865,7 +16452,7 @@ public final class V2Dataplane {
          * <code>.inference.InferTensorContents contents = 5;</code>
          */
         public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.Builder getContentsBuilder() {
-          
+          bitField0_ |= 0x00000010;
           onChanged();
           return getContentsFieldBuilder().getBuilder();
         }
@@ -16941,7 +16528,18 @@ public final class V2Dataplane {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new InferOutputTensor(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -16962,7 +16560,8 @@ public final class V2Dataplane {
     }
 
     public static final int MODEL_NAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object modelName_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelName_ = "";
     /**
      * <pre>
      * The name of the model used for inference.
@@ -17008,7 +16607,8 @@ public final class V2Dataplane {
     }
 
     public static final int MODEL_VERSION_FIELD_NUMBER = 2;
-    private volatile java.lang.Object modelVersion_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelVersion_ = "";
     /**
      * <pre>
      * The version of the model used for inference.
@@ -17054,7 +16654,8 @@ public final class V2Dataplane {
     }
 
     public static final int ID_FIELD_NUMBER = 3;
-    private volatile java.lang.Object id_;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object id_ = "";
     /**
      * <pre>
      * The id of the inference request if one was specified.
@@ -17111,6 +16712,7 @@ public final class V2Dataplane {
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
                   io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.getDefaultInstance());
     }
+    @SuppressWarnings("serial")
     private com.google.protobuf.MapField<
         java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
     private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
@@ -17121,7 +16723,6 @@ public final class V2Dataplane {
       }
       return parameters_;
     }
-
     public int getParametersCount() {
       return internalGetParameters().getMap().size();
     }
@@ -17132,7 +16733,6 @@ public final class V2Dataplane {
      *
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
-
     @java.lang.Override
     public boolean containsParameters(
         java.lang.String key) {
@@ -17155,7 +16755,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
     public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
       return internalGetParameters().getMap();
     }
@@ -17167,10 +16766,11 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
-    public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+    public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
         java.lang.String key,
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
       if (key == null) { throw new NullPointerException("map key"); }
       java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
           internalGetParameters().getMap();
@@ -17184,7 +16784,6 @@ public final class V2Dataplane {
      * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
      */
     @java.lang.Override
-
     public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
         java.lang.String key) {
       if (key == null) { throw new NullPointerException("map key"); }
@@ -17197,6 +16796,7 @@ public final class V2Dataplane {
     }
 
     public static final int OUTPUTS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
     private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor> outputs_;
     /**
      * <pre>
@@ -17257,6 +16857,7 @@ public final class V2Dataplane {
     }
 
     public static final int RAW_OUTPUT_CONTENTS_FIELD_NUMBER = 6;
+    @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ByteString> rawOutputContents_;
     /**
      * <pre>
@@ -17366,7 +16967,7 @@ public final class V2Dataplane {
       for (int i = 0; i < rawOutputContents_.size(); i++) {
         output.writeBytes(6, rawOutputContents_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -17407,7 +17008,7 @@ public final class V2Dataplane {
         size += dataSize;
         size += 1 * getRawOutputContentsList().size();
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -17434,7 +17035,7 @@ public final class V2Dataplane {
           .equals(other.getOutputsList())) return false;
       if (!getRawOutputContentsList()
           .equals(other.getRawOutputContentsList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -17463,7 +17064,7 @@ public final class V2Dataplane {
         hash = (37 * hash) + RAW_OUTPUT_CONTENTS_FIELD_NUMBER;
         hash = (53 * hash) + getRawOutputContentsList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -17602,38 +17203,30 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-          getOutputsFieldBuilder();
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         modelName_ = "";
-
         modelVersion_ = "";
-
         id_ = "";
-
         internalGetMutableParameters().clear();
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          outputs_ = null;
           outputsBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000010);
         rawOutputContents_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -17660,28 +17253,44 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse(this);
-        int from_bitField0_ = bitField0_;
-        result.modelName_ = modelName_;
-        result.modelVersion_ = modelVersion_;
-        result.id_ = id_;
-        result.parameters_ = internalGetParameters();
-        result.parameters_.makeImmutable();
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse result) {
         if (outputsBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0)) {
+          if (((bitField0_ & 0x00000010) != 0)) {
             outputs_ = java.util.Collections.unmodifiableList(outputs_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000010);
           }
           result.outputs_ = outputs_;
         } else {
           result.outputs_ = outputsBuilder_.build();
         }
-        if (((bitField0_ & 0x00000004) != 0)) {
+        if (((bitField0_ & 0x00000020) != 0)) {
           rawOutputContents_ = java.util.Collections.unmodifiableList(rawOutputContents_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000020);
         }
         result.rawOutputContents_ = rawOutputContents_;
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.modelName_ = modelName_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.modelVersion_ = modelVersion_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.id_ = id_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.parameters_ = internalGetParameters();
+          result.parameters_.makeImmutable();
+        }
       }
 
       @java.lang.Override
@@ -17730,23 +17339,27 @@ public final class V2Dataplane {
         if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.getDefaultInstance()) return this;
         if (!other.getModelName().isEmpty()) {
           modelName_ = other.modelName_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.getModelVersion().isEmpty()) {
           modelVersion_ = other.modelVersion_;
+          bitField0_ |= 0x00000002;
           onChanged();
         }
         if (!other.getId().isEmpty()) {
           id_ = other.id_;
+          bitField0_ |= 0x00000004;
           onChanged();
         }
         internalGetMutableParameters().mergeFrom(
             other.internalGetParameters());
+        bitField0_ |= 0x00000008;
         if (outputsBuilder_ == null) {
           if (!other.outputs_.isEmpty()) {
             if (outputs_.isEmpty()) {
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000010);
             } else {
               ensureOutputsIsMutable();
               outputs_.addAll(other.outputs_);
@@ -17759,7 +17372,7 @@ public final class V2Dataplane {
               outputsBuilder_.dispose();
               outputsBuilder_ = null;
               outputs_ = other.outputs_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000010);
               outputsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getOutputsFieldBuilder() : null;
@@ -17771,14 +17384,14 @@ public final class V2Dataplane {
         if (!other.rawOutputContents_.isEmpty()) {
           if (rawOutputContents_.isEmpty()) {
             rawOutputContents_ = other.rawOutputContents_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000020);
           } else {
             ensureRawOutputContentsIsMutable();
             rawOutputContents_.addAll(other.rawOutputContents_);
           }
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -17793,17 +17406,73 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                modelName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                modelVersion_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 26: {
+                id_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              case 34: {
+                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
+                parameters__ = input.readMessage(
+                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableParameters().getMutableMap().put(
+                    parameters__.getKey(), parameters__.getValue());
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+              case 42: {
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.parser(),
+                        extensionRegistry);
+                if (outputsBuilder_ == null) {
+                  ensureOutputsIsMutable();
+                  outputs_.add(m);
+                } else {
+                  outputsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
+              case 50: {
+                com.google.protobuf.ByteString v = input.readBytes();
+                ensureRawOutputContentsIsMutable();
+                rawOutputContents_.add(v);
+                break;
+              } // case 50
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -17861,11 +17530,9 @@ public final class V2Dataplane {
        */
       public Builder setModelName(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         modelName_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -17878,8 +17545,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearModelName() {
-        
         modelName_ = getDefaultInstance().getModelName();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -17894,12 +17561,10 @@ public final class V2Dataplane {
        */
       public Builder setModelNameBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         modelName_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -17957,11 +17622,9 @@ public final class V2Dataplane {
        */
       public Builder setModelVersion(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         modelVersion_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -17974,8 +17637,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearModelVersion() {
-        
         modelVersion_ = getDefaultInstance().getModelVersion();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -17990,12 +17653,10 @@ public final class V2Dataplane {
        */
       public Builder setModelVersionBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         modelVersion_ = value;
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -18053,11 +17714,9 @@ public final class V2Dataplane {
        */
       public Builder setId(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
+        if (value == null) { throw new NullPointerException(); }
         id_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -18070,8 +17729,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder clearId() {
-        
         id_ = getDefaultInstance().getId();
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -18086,12 +17745,10 @@ public final class V2Dataplane {
        */
       public Builder setIdBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         id_ = value;
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -18099,7 +17756,7 @@ public final class V2Dataplane {
       private com.google.protobuf.MapField<
           java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> parameters_;
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetParameters() {
+          internalGetParameters() {
         if (parameters_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -18107,8 +17764,7 @@ public final class V2Dataplane {
         return parameters_;
       }
       private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      internalGetMutableParameters() {
-        onChanged();;
+          internalGetMutableParameters() {
         if (parameters_ == null) {
           parameters_ = com.google.protobuf.MapField.newMapField(
               ParametersDefaultEntryHolder.defaultEntry);
@@ -18116,9 +17772,10 @@ public final class V2Dataplane {
         if (!parameters_.isMutable()) {
           parameters_ = parameters_.copy();
         }
+        bitField0_ |= 0x00000008;
+        onChanged();
         return parameters_;
       }
-
       public int getParametersCount() {
         return internalGetParameters().getMap().size();
       }
@@ -18129,7 +17786,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       @java.lang.Override
       public boolean containsParameters(
           java.lang.String key) {
@@ -18152,7 +17808,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> getParametersMap() {
         return internalGetParameters().getMap();
       }
@@ -18164,10 +17819,11 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
-      public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrDefault(
           java.lang.String key,
-          io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.InferParameter defaultValue) {
         if (key == null) { throw new NullPointerException("map key"); }
         java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> map =
             internalGetParameters().getMap();
@@ -18181,7 +17837,6 @@ public final class V2Dataplane {
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
       @java.lang.Override
-
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter getParametersOrThrow(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -18192,8 +17847,8 @@ public final class V2Dataplane {
         }
         return map.get(key);
       }
-
       public Builder clearParameters() {
+        bitField0_ = (bitField0_ & ~0x00000008);
         internalGetMutableParameters().getMutableMap()
             .clear();
         return this;
@@ -18205,7 +17860,6 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       public Builder removeParameters(
           java.lang.String key) {
         if (key == null) { throw new NullPointerException("map key"); }
@@ -18218,7 +17872,8 @@ public final class V2Dataplane {
        */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter>
-      getMutableParameters() {
+          getMutableParameters() {
+        bitField0_ |= 0x00000008;
         return internalGetMutableParameters().getMutableMap();
       }
       /**
@@ -18232,12 +17887,10 @@ public final class V2Dataplane {
           java.lang.String key,
           io.seldon.mlops.inference.v2.V2Dataplane.InferParameter value) {
         if (key == null) { throw new NullPointerException("map key"); }
-        if (value == null) {
-  throw new NullPointerException("map value");
-}
-
+        if (value == null) { throw new NullPointerException("map value"); }
         internalGetMutableParameters().getMutableMap()
             .put(key, value);
+        bitField0_ |= 0x00000008;
         return this;
       }
       /**
@@ -18247,20 +17900,20 @@ public final class V2Dataplane {
        *
        * <code>map&lt;string, .inference.InferParameter&gt; parameters = 4;</code>
        */
-
       public Builder putAllParameters(
           java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.InferParameter> values) {
         internalGetMutableParameters().getMutableMap()
             .putAll(values);
+        bitField0_ |= 0x00000008;
         return this;
       }
 
       private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor> outputs_ =
         java.util.Collections.emptyList();
       private void ensureOutputsIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
+        if (!((bitField0_ & 0x00000010) != 0)) {
           outputs_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor>(outputs_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000010;
          }
       }
 
@@ -18454,7 +18107,7 @@ public final class V2Dataplane {
       public Builder clearOutputs() {
         if (outputsBuilder_ == null) {
           outputs_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000010);
           onChanged();
         } else {
           outputsBuilder_.clear();
@@ -18559,7 +18212,7 @@ public final class V2Dataplane {
           outputsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensor.Builder, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.InferOutputTensorOrBuilder>(
                   outputs_,
-                  ((bitField0_ & 0x00000002) != 0),
+                  ((bitField0_ & 0x00000010) != 0),
                   getParentForChildren(),
                   isClean());
           outputs_ = null;
@@ -18569,10 +18222,10 @@ public final class V2Dataplane {
 
       private java.util.List<com.google.protobuf.ByteString> rawOutputContents_ = java.util.Collections.emptyList();
       private void ensureRawOutputContentsIsMutable() {
-        if (!((bitField0_ & 0x00000004) != 0)) {
+        if (!((bitField0_ & 0x00000020) != 0)) {
           rawOutputContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>(rawOutputContents_);
-          bitField0_ |= 0x00000004;
-         }
+          bitField0_ |= 0x00000020;
+        }
       }
       /**
        * <pre>
@@ -18596,7 +18249,7 @@ public final class V2Dataplane {
        */
       public java.util.List<com.google.protobuf.ByteString>
           getRawOutputContentsList() {
-        return ((bitField0_ & 0x00000004) != 0) ?
+        return ((bitField0_ & 0x00000020) != 0) ?
                  java.util.Collections.unmodifiableList(rawOutputContents_) : rawOutputContents_;
       }
       /**
@@ -18670,10 +18323,8 @@ public final class V2Dataplane {
        */
       public Builder setRawOutputContents(
           int index, com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureRawOutputContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureRawOutputContentsIsMutable();
         rawOutputContents_.set(index, value);
         onChanged();
         return this;
@@ -18700,10 +18351,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addRawOutputContents(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureRawOutputContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureRawOutputContentsIsMutable();
         rawOutputContents_.add(value);
         onChanged();
         return this;
@@ -18759,7 +18408,7 @@ public final class V2Dataplane {
        */
       public Builder clearRawOutputContents() {
         rawOutputContents_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
         return this;
       }
@@ -18796,7 +18445,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ModelInferResponse(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -18922,59 +18582,6 @@ public final class V2Dataplane {
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
-    }
-    private InferParameter(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-              parameterChoice_ = input.readBool();
-              parameterChoiceCase_ = 1;
-              break;
-            }
-            case 16: {
-              parameterChoice_ = input.readInt64();
-              parameterChoiceCase_ = 2;
-              break;
-            }
-            case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
-              parameterChoiceCase_ = 3;
-              parameterChoice_ = s;
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
@@ -19179,7 +18786,7 @@ public final class V2Dataplane {
       if (parameterChoiceCase_ == 3) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, parameterChoice_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -19201,7 +18808,7 @@ public final class V2Dataplane {
       if (parameterChoiceCase_ == 3) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, parameterChoice_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -19233,7 +18840,7 @@ public final class V2Dataplane {
         case 0:
         default:
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -19262,7 +18869,7 @@ public final class V2Dataplane {
         case 0:
         default:
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -19386,22 +18993,18 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         parameterChoiceCase_ = 0;
         parameterChoice_ = null;
         return this;
@@ -19430,18 +19033,19 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.InferParameter buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.InferParameter result = new io.seldon.mlops.inference.v2.V2Dataplane.InferParameter(this);
-        if (parameterChoiceCase_ == 1) {
-          result.parameterChoice_ = parameterChoice_;
-        }
-        if (parameterChoiceCase_ == 2) {
-          result.parameterChoice_ = parameterChoice_;
-        }
-        if (parameterChoiceCase_ == 3) {
-          result.parameterChoice_ = parameterChoice_;
-        }
-        result.parameterChoiceCase_ = parameterChoiceCase_;
+        if (bitField0_ != 0) { buildPartial0(result); }
+        buildPartialOneofs(result);
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.InferParameter result) {
+        int from_bitField0_ = bitField0_;
+      }
+
+      private void buildPartialOneofs(io.seldon.mlops.inference.v2.V2Dataplane.InferParameter result) {
+        result.parameterChoiceCase_ = parameterChoiceCase_;
+        result.parameterChoice_ = this.parameterChoice_;
       }
 
       @java.lang.Override
@@ -19507,7 +19111,7 @@ public final class V2Dataplane {
             break;
           }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -19522,17 +19126,46 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.InferParameter parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                parameterChoice_ = input.readBool();
+                parameterChoiceCase_ = 1;
+                break;
+              } // case 8
+              case 16: {
+                parameterChoice_ = input.readInt64();
+                parameterChoiceCase_ = 2;
+                break;
+              } // case 16
+              case 26: {
+                java.lang.String s = input.readStringRequireUtf8();
+                parameterChoiceCase_ = 3;
+                parameterChoice_ = s;
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.InferParameter) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int parameterChoiceCase_ = 0;
@@ -19550,6 +19183,7 @@ public final class V2Dataplane {
         return this;
       }
 
+      private int bitField0_;
 
       /**
        * <pre>
@@ -19586,6 +19220,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder setBoolParam(boolean value) {
+        
         parameterChoiceCase_ = 1;
         parameterChoice_ = value;
         onChanged();
@@ -19643,6 +19278,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder setInt64Param(long value) {
+        
         parameterChoiceCase_ = 2;
         parameterChoice_ = value;
         onChanged();
@@ -19741,10 +19377,8 @@ public final class V2Dataplane {
        */
       public Builder setStringParam(
           java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  parameterChoiceCase_ = 3;
+        if (value == null) { throw new NullPointerException(); }
+        parameterChoiceCase_ = 3;
         parameterChoice_ = value;
         onChanged();
         return this;
@@ -19776,10 +19410,8 @@ public final class V2Dataplane {
        */
       public Builder setStringParamBytes(
           com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
         parameterChoiceCase_ = 3;
         parameterChoice_ = value;
         onChanged();
@@ -19818,7 +19450,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new InferParameter(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -20169,223 +19812,6 @@ public final class V2Dataplane {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private InferTensorContents(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                boolContents_ = newBooleanList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              boolContents_.addBoolean(input.readBool());
-              break;
-            }
-            case 10: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                boolContents_ = newBooleanList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                boolContents_.addBoolean(input.readBool());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                intContents_ = newIntList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              intContents_.addInt(input.readInt32());
-              break;
-            }
-            case 18: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
-                intContents_ = newIntList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                intContents_.addInt(input.readInt32());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-                int64Contents_ = newLongList();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              int64Contents_.addLong(input.readInt64());
-              break;
-            }
-            case 26: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) != 0) && input.getBytesUntilLimit() > 0) {
-                int64Contents_ = newLongList();
-                mutable_bitField0_ |= 0x00000004;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                int64Contents_.addLong(input.readInt64());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 32: {
-              if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-                uintContents_ = newIntList();
-                mutable_bitField0_ |= 0x00000008;
-              }
-              uintContents_.addInt(input.readUInt32());
-              break;
-            }
-            case 34: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000008) != 0) && input.getBytesUntilLimit() > 0) {
-                uintContents_ = newIntList();
-                mutable_bitField0_ |= 0x00000008;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                uintContents_.addInt(input.readUInt32());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 40: {
-              if (!((mutable_bitField0_ & 0x00000010) != 0)) {
-                uint64Contents_ = newLongList();
-                mutable_bitField0_ |= 0x00000010;
-              }
-              uint64Contents_.addLong(input.readUInt64());
-              break;
-            }
-            case 42: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000010) != 0) && input.getBytesUntilLimit() > 0) {
-                uint64Contents_ = newLongList();
-                mutable_bitField0_ |= 0x00000010;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                uint64Contents_.addLong(input.readUInt64());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 53: {
-              if (!((mutable_bitField0_ & 0x00000020) != 0)) {
-                fp32Contents_ = newFloatList();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              fp32Contents_.addFloat(input.readFloat());
-              break;
-            }
-            case 50: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000020) != 0) && input.getBytesUntilLimit() > 0) {
-                fp32Contents_ = newFloatList();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                fp32Contents_.addFloat(input.readFloat());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 57: {
-              if (!((mutable_bitField0_ & 0x00000040) != 0)) {
-                fp64Contents_ = newDoubleList();
-                mutable_bitField0_ |= 0x00000040;
-              }
-              fp64Contents_.addDouble(input.readDouble());
-              break;
-            }
-            case 58: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000040) != 0) && input.getBytesUntilLimit() > 0) {
-                fp64Contents_ = newDoubleList();
-                mutable_bitField0_ |= 0x00000040;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                fp64Contents_.addDouble(input.readDouble());
-              }
-              input.popLimit(limit);
-              break;
-            }
-            case 66: {
-              if (!((mutable_bitField0_ & 0x00000080) != 0)) {
-                bytesContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
-                mutable_bitField0_ |= 0x00000080;
-              }
-              bytesContents_.add(input.readBytes());
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          boolContents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          intContents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000004) != 0)) {
-          int64Contents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000008) != 0)) {
-          uintContents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000010) != 0)) {
-          uint64Contents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000020) != 0)) {
-          fp32Contents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000040) != 0)) {
-          fp64Contents_.makeImmutable(); // C
-        }
-        if (((mutable_bitField0_ & 0x00000080) != 0)) {
-          bytesContents_ = java.util.Collections.unmodifiableList(bytesContents_); // C
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_InferTensorContents_descriptor;
@@ -20400,6 +19826,7 @@ public final class V2Dataplane {
     }
 
     public static final int BOOL_CONTENTS_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.BooleanList boolContents_;
     /**
      * <pre>
@@ -20446,6 +19873,7 @@ public final class V2Dataplane {
     private int boolContentsMemoizedSerializedSize = -1;
 
     public static final int INT_CONTENTS_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.IntList intContents_;
     /**
      * <pre>
@@ -20495,6 +19923,7 @@ public final class V2Dataplane {
     private int intContentsMemoizedSerializedSize = -1;
 
     public static final int INT64_CONTENTS_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.LongList int64Contents_;
     /**
      * <pre>
@@ -20541,6 +19970,7 @@ public final class V2Dataplane {
     private int int64ContentsMemoizedSerializedSize = -1;
 
     public static final int UINT_CONTENTS_FIELD_NUMBER = 4;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.IntList uintContents_;
     /**
      * <pre>
@@ -20590,6 +20020,7 @@ public final class V2Dataplane {
     private int uintContentsMemoizedSerializedSize = -1;
 
     public static final int UINT64_CONTENTS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.LongList uint64Contents_;
     /**
      * <pre>
@@ -20636,6 +20067,7 @@ public final class V2Dataplane {
     private int uint64ContentsMemoizedSerializedSize = -1;
 
     public static final int FP32_CONTENTS_FIELD_NUMBER = 6;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.FloatList fp32Contents_;
     /**
      * <pre>
@@ -20682,6 +20114,7 @@ public final class V2Dataplane {
     private int fp32ContentsMemoizedSerializedSize = -1;
 
     public static final int FP64_CONTENTS_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
     private com.google.protobuf.Internal.DoubleList fp64Contents_;
     /**
      * <pre>
@@ -20728,6 +20161,7 @@ public final class V2Dataplane {
     private int fp64ContentsMemoizedSerializedSize = -1;
 
     public static final int BYTES_CONTENTS_FIELD_NUMBER = 8;
+    @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ByteString> bytesContents_;
     /**
      * <pre>
@@ -20839,7 +20273,7 @@ public final class V2Dataplane {
       for (int i = 0; i < bytesContents_.size(); i++) {
         output.writeBytes(8, bytesContents_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -20946,7 +20380,7 @@ public final class V2Dataplane {
         size += dataSize;
         size += 1 * getBytesContentsList().size();
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -20977,7 +20411,7 @@ public final class V2Dataplane {
           .equals(other.getFp64ContentsList())) return false;
       if (!getBytesContentsList()
           .equals(other.getBytesContentsList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -21020,7 +20454,7 @@ public final class V2Dataplane {
         hash = (37 * hash) + BYTES_CONTENTS_FIELD_NUMBER;
         hash = (53 * hash) + getBytesContentsList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -21143,38 +20577,26 @@ public final class V2Dataplane {
 
       // Construct using io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         boolContents_ = emptyBooleanList();
-        bitField0_ = (bitField0_ & ~0x00000001);
         intContents_ = emptyIntList();
-        bitField0_ = (bitField0_ & ~0x00000002);
         int64Contents_ = emptyLongList();
-        bitField0_ = (bitField0_ & ~0x00000004);
         uintContents_ = emptyIntList();
-        bitField0_ = (bitField0_ & ~0x00000008);
         uint64Contents_ = emptyLongList();
-        bitField0_ = (bitField0_ & ~0x00000010);
         fp32Contents_ = emptyFloatList();
-        bitField0_ = (bitField0_ & ~0x00000020);
         fp64Contents_ = emptyDoubleList();
-        bitField0_ = (bitField0_ & ~0x00000040);
         bytesContents_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -21201,7 +20623,13 @@ public final class V2Dataplane {
       @java.lang.Override
       public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents buildPartial() {
         io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents result = new io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents(this);
-        int from_bitField0_ = bitField0_;
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents result) {
         if (((bitField0_ & 0x00000001) != 0)) {
           boolContents_.makeImmutable();
           bitField0_ = (bitField0_ & ~0x00000001);
@@ -21242,8 +20670,10 @@ public final class V2Dataplane {
           bitField0_ = (bitField0_ & ~0x00000080);
         }
         result.bytesContents_ = bytesContents_;
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents result) {
+        int from_bitField0_ = bitField0_;
       }
 
       @java.lang.Override
@@ -21370,7 +20800,7 @@ public final class V2Dataplane {
           }
           onChanged();
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -21385,17 +20815,148 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                boolean v = input.readBool();
+                ensureBoolContentsIsMutable();
+                boolContents_.addBoolean(v);
+                break;
+              } // case 8
+              case 10: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureBoolContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  boolContents_.addBoolean(input.readBool());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 10
+              case 16: {
+                int v = input.readInt32();
+                ensureIntContentsIsMutable();
+                intContents_.addInt(v);
+                break;
+              } // case 16
+              case 18: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureIntContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  intContents_.addInt(input.readInt32());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 18
+              case 24: {
+                long v = input.readInt64();
+                ensureInt64ContentsIsMutable();
+                int64Contents_.addLong(v);
+                break;
+              } // case 24
+              case 26: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureInt64ContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  int64Contents_.addLong(input.readInt64());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 26
+              case 32: {
+                int v = input.readUInt32();
+                ensureUintContentsIsMutable();
+                uintContents_.addInt(v);
+                break;
+              } // case 32
+              case 34: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureUintContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  uintContents_.addInt(input.readUInt32());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 34
+              case 40: {
+                long v = input.readUInt64();
+                ensureUint64ContentsIsMutable();
+                uint64Contents_.addLong(v);
+                break;
+              } // case 40
+              case 42: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureUint64ContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  uint64Contents_.addLong(input.readUInt64());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 42
+              case 53: {
+                float v = input.readFloat();
+                ensureFp32ContentsIsMutable();
+                fp32Contents_.addFloat(v);
+                break;
+              } // case 53
+              case 50: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureFp32ContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  fp32Contents_.addFloat(input.readFloat());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 50
+              case 57: {
+                double v = input.readDouble();
+                ensureFp64ContentsIsMutable();
+                fp64Contents_.addDouble(v);
+                break;
+              } // case 57
+              case 58: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                ensureFp64ContentsIsMutable();
+                while (input.getBytesUntilLimit() > 0) {
+                  fp64Contents_.addDouble(input.readDouble());
+                }
+                input.popLimit(limit);
+                break;
+              } // case 58
+              case 66: {
+                com.google.protobuf.ByteString v = input.readBytes();
+                ensureBytesContentsIsMutable();
+                bytesContents_.add(v);
+                break;
+              } // case 66
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -21405,7 +20966,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000001) != 0)) {
           boolContents_ = mutableCopy(boolContents_);
           bitField0_ |= 0x00000001;
-         }
+        }
       }
       /**
        * <pre>
@@ -21463,6 +21024,7 @@ public final class V2Dataplane {
        */
       public Builder setBoolContents(
           int index, boolean value) {
+        
         ensureBoolContentsIsMutable();
         boolContents_.setBoolean(index, value);
         onChanged();
@@ -21480,6 +21042,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addBoolContents(boolean value) {
+        
         ensureBoolContentsIsMutable();
         boolContents_.addBoolean(value);
         onChanged();
@@ -21526,7 +21089,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000002) != 0)) {
           intContents_ = mutableCopy(intContents_);
           bitField0_ |= 0x00000002;
-         }
+        }
       }
       /**
        * <pre>
@@ -21588,6 +21151,7 @@ public final class V2Dataplane {
        */
       public Builder setIntContents(
           int index, int value) {
+        
         ensureIntContentsIsMutable();
         intContents_.setInt(index, value);
         onChanged();
@@ -21606,6 +21170,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addIntContents(int value) {
+        
         ensureIntContentsIsMutable();
         intContents_.addInt(value);
         onChanged();
@@ -21654,7 +21219,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000004) != 0)) {
           int64Contents_ = mutableCopy(int64Contents_);
           bitField0_ |= 0x00000004;
-         }
+        }
       }
       /**
        * <pre>
@@ -21712,6 +21277,7 @@ public final class V2Dataplane {
        */
       public Builder setInt64Contents(
           int index, long value) {
+        
         ensureInt64ContentsIsMutable();
         int64Contents_.setLong(index, value);
         onChanged();
@@ -21729,6 +21295,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addInt64Contents(long value) {
+        
         ensureInt64ContentsIsMutable();
         int64Contents_.addLong(value);
         onChanged();
@@ -21775,7 +21342,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000008) != 0)) {
           uintContents_ = mutableCopy(uintContents_);
           bitField0_ |= 0x00000008;
-         }
+        }
       }
       /**
        * <pre>
@@ -21837,6 +21404,7 @@ public final class V2Dataplane {
        */
       public Builder setUintContents(
           int index, int value) {
+        
         ensureUintContentsIsMutable();
         uintContents_.setInt(index, value);
         onChanged();
@@ -21855,6 +21423,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addUintContents(int value) {
+        
         ensureUintContentsIsMutable();
         uintContents_.addInt(value);
         onChanged();
@@ -21903,7 +21472,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000010) != 0)) {
           uint64Contents_ = mutableCopy(uint64Contents_);
           bitField0_ |= 0x00000010;
-         }
+        }
       }
       /**
        * <pre>
@@ -21961,6 +21530,7 @@ public final class V2Dataplane {
        */
       public Builder setUint64Contents(
           int index, long value) {
+        
         ensureUint64ContentsIsMutable();
         uint64Contents_.setLong(index, value);
         onChanged();
@@ -21978,6 +21548,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addUint64Contents(long value) {
+        
         ensureUint64ContentsIsMutable();
         uint64Contents_.addLong(value);
         onChanged();
@@ -22024,7 +21595,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000020) != 0)) {
           fp32Contents_ = mutableCopy(fp32Contents_);
           bitField0_ |= 0x00000020;
-         }
+        }
       }
       /**
        * <pre>
@@ -22082,6 +21653,7 @@ public final class V2Dataplane {
        */
       public Builder setFp32Contents(
           int index, float value) {
+        
         ensureFp32ContentsIsMutable();
         fp32Contents_.setFloat(index, value);
         onChanged();
@@ -22099,6 +21671,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addFp32Contents(float value) {
+        
         ensureFp32ContentsIsMutable();
         fp32Contents_.addFloat(value);
         onChanged();
@@ -22145,7 +21718,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000040) != 0)) {
           fp64Contents_ = mutableCopy(fp64Contents_);
           bitField0_ |= 0x00000040;
-         }
+        }
       }
       /**
        * <pre>
@@ -22203,6 +21776,7 @@ public final class V2Dataplane {
        */
       public Builder setFp64Contents(
           int index, double value) {
+        
         ensureFp64ContentsIsMutable();
         fp64Contents_.setDouble(index, value);
         onChanged();
@@ -22220,6 +21794,7 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addFp64Contents(double value) {
+        
         ensureFp64ContentsIsMutable();
         fp64Contents_.addDouble(value);
         onChanged();
@@ -22266,7 +21841,7 @@ public final class V2Dataplane {
         if (!((bitField0_ & 0x00000080) != 0)) {
           bytesContents_ = new java.util.ArrayList<com.google.protobuf.ByteString>(bytesContents_);
           bitField0_ |= 0x00000080;
-         }
+        }
       }
       /**
        * <pre>
@@ -22324,10 +21899,8 @@ public final class V2Dataplane {
        */
       public Builder setBytesContents(
           int index, com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureBytesContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureBytesContentsIsMutable();
         bytesContents_.set(index, value);
         onChanged();
         return this;
@@ -22344,10 +21917,8 @@ public final class V2Dataplane {
        * @return This builder for chaining.
        */
       public Builder addBytesContents(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureBytesContentsIsMutable();
+        if (value == null) { throw new NullPointerException(); }
+        ensureBytesContentsIsMutable();
         bytesContents_.add(value);
         onChanged();
         return this;
@@ -22420,7 +21991,18 @@ public final class V2Dataplane {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new InferTensorContents(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -22435,6 +22017,7715 @@ public final class V2Dataplane {
 
     @java.lang.Override
     public io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ModelRepositoryParameterOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.ModelRepositoryParameter)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bool bool_param
+     *&#64;&#64;
+     *&#64;&#64;       A boolean parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool bool_param = 1;</code>
+     * @return Whether the boolParam field is set.
+     */
+    boolean hasBoolParam();
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bool bool_param
+     *&#64;&#64;
+     *&#64;&#64;       A boolean parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool bool_param = 1;</code>
+     * @return The boolParam.
+     */
+    boolean getBoolParam();
+
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: int64 int64_param
+     *&#64;&#64;
+     *&#64;&#64;       An int64 parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>int64 int64_param = 2;</code>
+     * @return Whether the int64Param field is set.
+     */
+    boolean hasInt64Param();
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: int64 int64_param
+     *&#64;&#64;
+     *&#64;&#64;       An int64 parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>int64 int64_param = 2;</code>
+     * @return The int64Param.
+     */
+    long getInt64Param();
+
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return Whether the stringParam field is set.
+     */
+    boolean hasStringParam();
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return The stringParam.
+     */
+    java.lang.String getStringParam();
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return The bytes for stringParam.
+     */
+    com.google.protobuf.ByteString
+        getStringParamBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bytes bytes_param
+     *&#64;&#64;
+     *&#64;&#64;       A bytes parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bytes bytes_param = 4;</code>
+     * @return Whether the bytesParam field is set.
+     */
+    boolean hasBytesParam();
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bytes bytes_param
+     *&#64;&#64;
+     *&#64;&#64;       A bytes parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bytes bytes_param = 4;</code>
+     * @return The bytesParam.
+     */
+    com.google.protobuf.ByteString getBytesParam();
+
+    public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.ParameterChoiceCase getParameterChoiceCase();
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message ModelRepositoryParameter
+   *&#64;&#64;
+   *&#64;&#64;   An model repository parameter value.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.ModelRepositoryParameter}
+   */
+  public static final class ModelRepositoryParameter extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.ModelRepositoryParameter)
+      ModelRepositoryParameterOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ModelRepositoryParameter.newBuilder() to construct.
+    private ModelRepositoryParameter(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ModelRepositoryParameter() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new ModelRepositoryParameter();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelRepositoryParameter_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelRepositoryParameter_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.class, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.Builder.class);
+    }
+
+    private int parameterChoiceCase_ = 0;
+    private java.lang.Object parameterChoice_;
+    public enum ParameterChoiceCase
+        implements com.google.protobuf.Internal.EnumLite,
+            com.google.protobuf.AbstractMessage.InternalOneOfEnum {
+      BOOL_PARAM(1),
+      INT64_PARAM(2),
+      STRING_PARAM(3),
+      BYTES_PARAM(4),
+      PARAMETERCHOICE_NOT_SET(0);
+      private final int value;
+      private ParameterChoiceCase(int value) {
+        this.value = value;
+      }
+      /**
+       * @param value The number of the enum to look for.
+       * @return The enum associated with the given number.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ParameterChoiceCase valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ParameterChoiceCase forNumber(int value) {
+        switch (value) {
+          case 1: return BOOL_PARAM;
+          case 2: return INT64_PARAM;
+          case 3: return STRING_PARAM;
+          case 4: return BYTES_PARAM;
+          case 0: return PARAMETERCHOICE_NOT_SET;
+          default: return null;
+        }
+      }
+      public int getNumber() {
+        return this.value;
+      }
+    };
+
+    public ParameterChoiceCase
+    getParameterChoiceCase() {
+      return ParameterChoiceCase.forNumber(
+          parameterChoiceCase_);
+    }
+
+    public static final int BOOL_PARAM_FIELD_NUMBER = 1;
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bool bool_param
+     *&#64;&#64;
+     *&#64;&#64;       A boolean parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool bool_param = 1;</code>
+     * @return Whether the boolParam field is set.
+     */
+    @java.lang.Override
+    public boolean hasBoolParam() {
+      return parameterChoiceCase_ == 1;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bool bool_param
+     *&#64;&#64;
+     *&#64;&#64;       A boolean parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool bool_param = 1;</code>
+     * @return The boolParam.
+     */
+    @java.lang.Override
+    public boolean getBoolParam() {
+      if (parameterChoiceCase_ == 1) {
+        return (java.lang.Boolean) parameterChoice_;
+      }
+      return false;
+    }
+
+    public static final int INT64_PARAM_FIELD_NUMBER = 2;
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: int64 int64_param
+     *&#64;&#64;
+     *&#64;&#64;       An int64 parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>int64 int64_param = 2;</code>
+     * @return Whether the int64Param field is set.
+     */
+    @java.lang.Override
+    public boolean hasInt64Param() {
+      return parameterChoiceCase_ == 2;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: int64 int64_param
+     *&#64;&#64;
+     *&#64;&#64;       An int64 parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>int64 int64_param = 2;</code>
+     * @return The int64Param.
+     */
+    @java.lang.Override
+    public long getInt64Param() {
+      if (parameterChoiceCase_ == 2) {
+        return (java.lang.Long) parameterChoice_;
+      }
+      return 0L;
+    }
+
+    public static final int STRING_PARAM_FIELD_NUMBER = 3;
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return Whether the stringParam field is set.
+     */
+    public boolean hasStringParam() {
+      return parameterChoiceCase_ == 3;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return The stringParam.
+     */
+    public java.lang.String getStringParam() {
+      java.lang.Object ref = "";
+      if (parameterChoiceCase_ == 3) {
+        ref = parameterChoice_;
+      }
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (parameterChoiceCase_ == 3) {
+          parameterChoice_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: string string_param
+     *&#64;&#64;
+     *&#64;&#64;       A string parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string string_param = 3;</code>
+     * @return The bytes for stringParam.
+     */
+    public com.google.protobuf.ByteString
+        getStringParamBytes() {
+      java.lang.Object ref = "";
+      if (parameterChoiceCase_ == 3) {
+        ref = parameterChoice_;
+      }
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        if (parameterChoiceCase_ == 3) {
+          parameterChoice_ = b;
+        }
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BYTES_PARAM_FIELD_NUMBER = 4;
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bytes bytes_param
+     *&#64;&#64;
+     *&#64;&#64;       A bytes parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bytes bytes_param = 4;</code>
+     * @return Whether the bytesParam field is set.
+     */
+    @java.lang.Override
+    public boolean hasBytesParam() {
+      return parameterChoiceCase_ == 4;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;    .. cpp:var:: bytes bytes_param
+     *&#64;&#64;
+     *&#64;&#64;       A bytes parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bytes bytes_param = 4;</code>
+     * @return The bytesParam.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getBytesParam() {
+      if (parameterChoiceCase_ == 4) {
+        return (com.google.protobuf.ByteString) parameterChoice_;
+      }
+      return com.google.protobuf.ByteString.EMPTY;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (parameterChoiceCase_ == 1) {
+        output.writeBool(
+            1, (boolean)((java.lang.Boolean) parameterChoice_));
+      }
+      if (parameterChoiceCase_ == 2) {
+        output.writeInt64(
+            2, (long)((java.lang.Long) parameterChoice_));
+      }
+      if (parameterChoiceCase_ == 3) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, parameterChoice_);
+      }
+      if (parameterChoiceCase_ == 4) {
+        output.writeBytes(
+            4, (com.google.protobuf.ByteString) parameterChoice_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (parameterChoiceCase_ == 1) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(
+              1, (boolean)((java.lang.Boolean) parameterChoice_));
+      }
+      if (parameterChoiceCase_ == 2) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(
+              2, (long)((java.lang.Long) parameterChoice_));
+      }
+      if (parameterChoiceCase_ == 3) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, parameterChoice_);
+      }
+      if (parameterChoiceCase_ == 4) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(
+              4, (com.google.protobuf.ByteString) parameterChoice_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter other = (io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter) obj;
+
+      if (!getParameterChoiceCase().equals(other.getParameterChoiceCase())) return false;
+      switch (parameterChoiceCase_) {
+        case 1:
+          if (getBoolParam()
+              != other.getBoolParam()) return false;
+          break;
+        case 2:
+          if (getInt64Param()
+              != other.getInt64Param()) return false;
+          break;
+        case 3:
+          if (!getStringParam()
+              .equals(other.getStringParam())) return false;
+          break;
+        case 4:
+          if (!getBytesParam()
+              .equals(other.getBytesParam())) return false;
+          break;
+        case 0:
+        default:
+      }
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      switch (parameterChoiceCase_) {
+        case 1:
+          hash = (37 * hash) + BOOL_PARAM_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+              getBoolParam());
+          break;
+        case 2:
+          hash = (37 * hash) + INT64_PARAM_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getInt64Param());
+          break;
+        case 3:
+          hash = (37 * hash) + STRING_PARAM_FIELD_NUMBER;
+          hash = (53 * hash) + getStringParam().hashCode();
+          break;
+        case 4:
+          hash = (37 * hash) + BYTES_PARAM_FIELD_NUMBER;
+          hash = (53 * hash) + getBytesParam().hashCode();
+          break;
+        case 0:
+        default:
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message ModelRepositoryParameter
+     *&#64;&#64;
+     *&#64;&#64;   An model repository parameter value.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.ModelRepositoryParameter}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.ModelRepositoryParameter)
+        io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameterOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelRepositoryParameter_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelRepositoryParameter_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.class, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        parameterChoiceCase_ = 0;
+        parameterChoice_ = null;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_ModelRepositoryParameter_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter result = new io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        buildPartialOneofs(result);
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter result) {
+        int from_bitField0_ = bitField0_;
+      }
+
+      private void buildPartialOneofs(io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter result) {
+        result.parameterChoiceCase_ = parameterChoiceCase_;
+        result.parameterChoice_ = this.parameterChoice_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.getDefaultInstance()) return this;
+        switch (other.getParameterChoiceCase()) {
+          case BOOL_PARAM: {
+            setBoolParam(other.getBoolParam());
+            break;
+          }
+          case INT64_PARAM: {
+            setInt64Param(other.getInt64Param());
+            break;
+          }
+          case STRING_PARAM: {
+            parameterChoiceCase_ = 3;
+            parameterChoice_ = other.parameterChoice_;
+            onChanged();
+            break;
+          }
+          case BYTES_PARAM: {
+            setBytesParam(other.getBytesParam());
+            break;
+          }
+          case PARAMETERCHOICE_NOT_SET: {
+            break;
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                parameterChoice_ = input.readBool();
+                parameterChoiceCase_ = 1;
+                break;
+              } // case 8
+              case 16: {
+                parameterChoice_ = input.readInt64();
+                parameterChoiceCase_ = 2;
+                break;
+              } // case 16
+              case 26: {
+                java.lang.String s = input.readStringRequireUtf8();
+                parameterChoiceCase_ = 3;
+                parameterChoice_ = s;
+                break;
+              } // case 26
+              case 34: {
+                parameterChoice_ = input.readBytes();
+                parameterChoiceCase_ = 4;
+                break;
+              } // case 34
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int parameterChoiceCase_ = 0;
+      private java.lang.Object parameterChoice_;
+      public ParameterChoiceCase
+          getParameterChoiceCase() {
+        return ParameterChoiceCase.forNumber(
+            parameterChoiceCase_);
+      }
+
+      public Builder clearParameterChoice() {
+        parameterChoiceCase_ = 0;
+        parameterChoice_ = null;
+        onChanged();
+        return this;
+      }
+
+      private int bitField0_;
+
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bool bool_param
+       *&#64;&#64;
+       *&#64;&#64;       A boolean parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool bool_param = 1;</code>
+       * @return Whether the boolParam field is set.
+       */
+      public boolean hasBoolParam() {
+        return parameterChoiceCase_ == 1;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bool bool_param
+       *&#64;&#64;
+       *&#64;&#64;       A boolean parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool bool_param = 1;</code>
+       * @return The boolParam.
+       */
+      public boolean getBoolParam() {
+        if (parameterChoiceCase_ == 1) {
+          return (java.lang.Boolean) parameterChoice_;
+        }
+        return false;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bool bool_param
+       *&#64;&#64;
+       *&#64;&#64;       A boolean parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool bool_param = 1;</code>
+       * @param value The boolParam to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBoolParam(boolean value) {
+        
+        parameterChoiceCase_ = 1;
+        parameterChoice_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bool bool_param
+       *&#64;&#64;
+       *&#64;&#64;       A boolean parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool bool_param = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBoolParam() {
+        if (parameterChoiceCase_ == 1) {
+          parameterChoiceCase_ = 0;
+          parameterChoice_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: int64 int64_param
+       *&#64;&#64;
+       *&#64;&#64;       An int64 parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>int64 int64_param = 2;</code>
+       * @return Whether the int64Param field is set.
+       */
+      public boolean hasInt64Param() {
+        return parameterChoiceCase_ == 2;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: int64 int64_param
+       *&#64;&#64;
+       *&#64;&#64;       An int64 parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>int64 int64_param = 2;</code>
+       * @return The int64Param.
+       */
+      public long getInt64Param() {
+        if (parameterChoiceCase_ == 2) {
+          return (java.lang.Long) parameterChoice_;
+        }
+        return 0L;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: int64 int64_param
+       *&#64;&#64;
+       *&#64;&#64;       An int64 parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>int64 int64_param = 2;</code>
+       * @param value The int64Param to set.
+       * @return This builder for chaining.
+       */
+      public Builder setInt64Param(long value) {
+        
+        parameterChoiceCase_ = 2;
+        parameterChoice_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: int64 int64_param
+       *&#64;&#64;
+       *&#64;&#64;       An int64 parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>int64 int64_param = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearInt64Param() {
+        if (parameterChoiceCase_ == 2) {
+          parameterChoiceCase_ = 0;
+          parameterChoice_ = null;
+          onChanged();
+        }
+        return this;
+      }
+
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @return Whether the stringParam field is set.
+       */
+      @java.lang.Override
+      public boolean hasStringParam() {
+        return parameterChoiceCase_ == 3;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @return The stringParam.
+       */
+      @java.lang.Override
+      public java.lang.String getStringParam() {
+        java.lang.Object ref = "";
+        if (parameterChoiceCase_ == 3) {
+          ref = parameterChoice_;
+        }
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (parameterChoiceCase_ == 3) {
+            parameterChoice_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @return The bytes for stringParam.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getStringParamBytes() {
+        java.lang.Object ref = "";
+        if (parameterChoiceCase_ == 3) {
+          ref = parameterChoice_;
+        }
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          if (parameterChoiceCase_ == 3) {
+            parameterChoice_ = b;
+          }
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @param value The stringParam to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStringParam(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        parameterChoiceCase_ = 3;
+        parameterChoice_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearStringParam() {
+        if (parameterChoiceCase_ == 3) {
+          parameterChoiceCase_ = 0;
+          parameterChoice_ = null;
+          onChanged();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string string_param
+       *&#64;&#64;
+       *&#64;&#64;       A string parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string string_param = 3;</code>
+       * @param value The bytes for stringParam to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStringParamBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        parameterChoiceCase_ = 3;
+        parameterChoice_ = value;
+        onChanged();
+        return this;
+      }
+
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bytes bytes_param
+       *&#64;&#64;
+       *&#64;&#64;       A bytes parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bytes bytes_param = 4;</code>
+       * @return Whether the bytesParam field is set.
+       */
+      public boolean hasBytesParam() {
+        return parameterChoiceCase_ == 4;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bytes bytes_param
+       *&#64;&#64;
+       *&#64;&#64;       A bytes parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bytes bytes_param = 4;</code>
+       * @return The bytesParam.
+       */
+      public com.google.protobuf.ByteString getBytesParam() {
+        if (parameterChoiceCase_ == 4) {
+          return (com.google.protobuf.ByteString) parameterChoice_;
+        }
+        return com.google.protobuf.ByteString.EMPTY;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bytes bytes_param
+       *&#64;&#64;
+       *&#64;&#64;       A bytes parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bytes bytes_param = 4;</code>
+       * @param value The bytesParam to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBytesParam(com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        parameterChoiceCase_ = 4;
+        parameterChoice_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: bytes bytes_param
+       *&#64;&#64;
+       *&#64;&#64;       A bytes parameter value.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bytes bytes_param = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBytesParam() {
+        if (parameterChoiceCase_ == 4) {
+          parameterChoiceCase_ = 0;
+          parameterChoice_ = null;
+          onChanged();
+        }
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.ModelRepositoryParameter)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.ModelRepositoryParameter)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ModelRepositoryParameter>
+        PARSER = new com.google.protobuf.AbstractParser<ModelRepositoryParameter>() {
+      @java.lang.Override
+      public ModelRepositoryParameter parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<ModelRepositoryParameter> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ModelRepositoryParameter> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryIndexRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryIndexRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository. If empty the index is returned
+     *&#64;&#64;     for all repositories.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    java.lang.String getRepositoryName();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository. If empty the index is returned
+     *&#64;&#64;     for all repositories.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    com.google.protobuf.ByteString
+        getRepositoryNameBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: bool ready
+     *&#64;&#64;
+     *&#64;&#64;     If true returned only models currently ready for inferencing.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool ready = 2;</code>
+     * @return The ready.
+     */
+    boolean getReady();
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryIndexRequest
+   *&#64;&#64;
+   *&#64;&#64;   Request message for RepositoryIndex.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryIndexRequest}
+   */
+  public static final class RepositoryIndexRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryIndexRequest)
+      RepositoryIndexRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryIndexRequest.newBuilder() to construct.
+    private RepositoryIndexRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryIndexRequest() {
+      repositoryName_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryIndexRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexRequest_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.Builder.class);
+    }
+
+    public static final int REPOSITORY_NAME_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object repositoryName_ = "";
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository. If empty the index is returned
+     *&#64;&#64;     for all repositories.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    @java.lang.Override
+    public java.lang.String getRepositoryName() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        repositoryName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository. If empty the index is returned
+     *&#64;&#64;     for all repositories.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getRepositoryNameBytes() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        repositoryName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int READY_FIELD_NUMBER = 2;
+    private boolean ready_ = false;
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: bool ready
+     *&#64;&#64;
+     *&#64;&#64;     If true returned only models currently ready for inferencing.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>bool ready = 2;</code>
+     * @return The ready.
+     */
+    @java.lang.Override
+    public boolean getReady() {
+      return ready_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, repositoryName_);
+      }
+      if (ready_ != false) {
+        output.writeBool(2, ready_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, repositoryName_);
+      }
+      if (ready_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, ready_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest) obj;
+
+      if (!getRepositoryName()
+          .equals(other.getRepositoryName())) return false;
+      if (getReady()
+          != other.getReady()) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + REPOSITORY_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getRepositoryName().hashCode();
+      hash = (37 * hash) + READY_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getReady());
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryIndexRequest
+     *&#64;&#64;
+     *&#64;&#64;   Request message for RepositoryIndex.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryIndexRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryIndexRequest)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexRequest_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        repositoryName_ = "";
+        ready_ = false;
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.repositoryName_ = repositoryName_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.ready_ = ready_;
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest.getDefaultInstance()) return this;
+        if (!other.getRepositoryName().isEmpty()) {
+          repositoryName_ = other.repositoryName_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (other.getReady() != false) {
+          setReady(other.getReady());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                repositoryName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 16: {
+                ready_ = input.readBool();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object repositoryName_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository. If empty the index is returned
+       *&#64;&#64;     for all repositories.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The repositoryName.
+       */
+      public java.lang.String getRepositoryName() {
+        java.lang.Object ref = repositoryName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          repositoryName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository. If empty the index is returned
+       *&#64;&#64;     for all repositories.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The bytes for repositoryName.
+       */
+      public com.google.protobuf.ByteString
+          getRepositoryNameBytes() {
+        java.lang.Object ref = repositoryName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          repositoryName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository. If empty the index is returned
+       *&#64;&#64;     for all repositories.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository. If empty the index is returned
+       *&#64;&#64;     for all repositories.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRepositoryName() {
+        repositoryName_ = getDefaultInstance().getRepositoryName();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository. If empty the index is returned
+       *&#64;&#64;     for all repositories.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The bytes for repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private boolean ready_ ;
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: bool ready
+       *&#64;&#64;
+       *&#64;&#64;     If true returned only models currently ready for inferencing.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool ready = 2;</code>
+       * @return The ready.
+       */
+      @java.lang.Override
+      public boolean getReady() {
+        return ready_;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: bool ready
+       *&#64;&#64;
+       *&#64;&#64;     If true returned only models currently ready for inferencing.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool ready = 2;</code>
+       * @param value The ready to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReady(boolean value) {
+        
+        ready_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: bool ready
+       *&#64;&#64;
+       *&#64;&#64;     If true returned only models currently ready for inferencing.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>bool ready = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearReady() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        ready_ = false;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryIndexRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryIndexRequest)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryIndexRequest>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryIndexRequest>() {
+      @java.lang.Override
+      public RepositoryIndexRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryIndexRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryIndexRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryIndexResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryIndexResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> 
+        getModelsList();
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getModels(int index);
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    int getModelsCount();
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    java.util.List<? extends io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder> 
+        getModelsOrBuilderList();
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder getModelsOrBuilder(
+        int index);
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryIndexResponse
+   *&#64;&#64;
+   *&#64;&#64;   Response message for RepositoryIndex.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryIndexResponse}
+   */
+  public static final class RepositoryIndexResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryIndexResponse)
+      RepositoryIndexResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryIndexResponse.newBuilder() to construct.
+    private RepositoryIndexResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryIndexResponse() {
+      models_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryIndexResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.Builder.class);
+    }
+
+    public interface ModelIndexOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:inference.RepositoryIndexResponse.ModelIndex)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string name
+       *&#64;&#64;
+       *&#64;&#64;       The name of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string name = 1;</code>
+       * @return The name.
+       */
+      java.lang.String getName();
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string name
+       *&#64;&#64;
+       *&#64;&#64;       The name of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string name = 1;</code>
+       * @return The bytes for name.
+       */
+      com.google.protobuf.ByteString
+          getNameBytes();
+
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string version
+       *&#64;&#64;
+       *&#64;&#64;       The version of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string version = 2;</code>
+       * @return The version.
+       */
+      java.lang.String getVersion();
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string version
+       *&#64;&#64;
+       *&#64;&#64;       The version of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string version = 2;</code>
+       * @return The bytes for version.
+       */
+      com.google.protobuf.ByteString
+          getVersionBytes();
+
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string state
+       *&#64;&#64;
+       *&#64;&#64;       The state of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string state = 3;</code>
+       * @return The state.
+       */
+      java.lang.String getState();
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string state
+       *&#64;&#64;
+       *&#64;&#64;       The state of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string state = 3;</code>
+       * @return The bytes for state.
+       */
+      com.google.protobuf.ByteString
+          getStateBytes();
+
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string reason
+       *&#64;&#64;
+       *&#64;&#64;       The reason, if any, that the model is in the given state.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string reason = 4;</code>
+       * @return The reason.
+       */
+      java.lang.String getReason();
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string reason
+       *&#64;&#64;
+       *&#64;&#64;       The reason, if any, that the model is in the given state.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string reason = 4;</code>
+       * @return The bytes for reason.
+       */
+      com.google.protobuf.ByteString
+          getReasonBytes();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: message ModelIndex
+     *&#64;&#64;
+     *&#64;&#64;     Index entry for a model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryIndexResponse.ModelIndex}
+     */
+    public static final class ModelIndex extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:inference.RepositoryIndexResponse.ModelIndex)
+        ModelIndexOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use ModelIndex.newBuilder() to construct.
+      private ModelIndex(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private ModelIndex() {
+        name_ = "";
+        version_ = "";
+        state_ = "";
+        reason_ = "";
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new ModelIndex();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_ModelIndex_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder.class);
+      }
+
+      public static final int NAME_FIELD_NUMBER = 1;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object name_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string name
+       *&#64;&#64;
+       *&#64;&#64;       The name of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string name = 1;</code>
+       * @return The name.
+       */
+      @java.lang.Override
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          name_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string name
+       *&#64;&#64;
+       *&#64;&#64;       The name of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string name = 1;</code>
+       * @return The bytes for name.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int VERSION_FIELD_NUMBER = 2;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object version_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string version
+       *&#64;&#64;
+       *&#64;&#64;       The version of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string version = 2;</code>
+       * @return The version.
+       */
+      @java.lang.Override
+      public java.lang.String getVersion() {
+        java.lang.Object ref = version_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          version_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;    .. cpp:var:: string version
+       *&#64;&#64;
+       *&#64;&#64;       The version of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string version = 2;</code>
+       * @return The bytes for version.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getVersionBytes() {
+        java.lang.Object ref = version_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          version_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int STATE_FIELD_NUMBER = 3;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object state_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string state
+       *&#64;&#64;
+       *&#64;&#64;       The state of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string state = 3;</code>
+       * @return The state.
+       */
+      @java.lang.Override
+      public java.lang.String getState() {
+        java.lang.Object ref = state_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          state_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string state
+       *&#64;&#64;
+       *&#64;&#64;       The state of the model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string state = 3;</code>
+       * @return The bytes for state.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getStateBytes() {
+        java.lang.Object ref = state_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          state_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int REASON_FIELD_NUMBER = 4;
+      @SuppressWarnings("serial")
+      private volatile java.lang.Object reason_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string reason
+       *&#64;&#64;
+       *&#64;&#64;       The reason, if any, that the model is in the given state.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string reason = 4;</code>
+       * @return The reason.
+       */
+      @java.lang.Override
+      public java.lang.String getReason() {
+        java.lang.Object ref = reason_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          reason_ = s;
+          return s;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;    .. cpp:var:: string reason
+       *&#64;&#64;
+       *&#64;&#64;       The reason, if any, that the model is in the given state.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string reason = 4;</code>
+       * @return The bytes for reason.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getReasonBytes() {
+        java.lang.Object ref = reason_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          reason_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 2, version_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(state_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 3, state_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(reason_)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 4, reason_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(version_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, version_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(state_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, state_);
+        }
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(reason_)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, reason_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex)) {
+          return super.equals(obj);
+        }
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex) obj;
+
+        if (!getName()
+            .equals(other.getName())) return false;
+        if (!getVersion()
+            .equals(other.getVersion())) return false;
+        if (!getState()
+            .equals(other.getState())) return false;
+        if (!getReason()
+            .equals(other.getReason())) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getName().hashCode();
+        hash = (37 * hash) + VERSION_FIELD_NUMBER;
+        hash = (53 * hash) + getVersion().hashCode();
+        hash = (37 * hash) + STATE_FIELD_NUMBER;
+        hash = (53 * hash) + getState().hashCode();
+        hash = (37 * hash) + REASON_FIELD_NUMBER;
+        hash = (53 * hash) + getReason().hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: message ModelIndex
+       *&#64;&#64;
+       *&#64;&#64;     Index entry for a model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * Protobuf type {@code inference.RepositoryIndexResponse.ModelIndex}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:inference.RepositoryIndexResponse.ModelIndex)
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_ModelIndex_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder.class);
+        }
+
+        // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.newBuilder()
+        private Builder() {
+
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          bitField0_ = 0;
+          name_ = "";
+          version_ = "";
+          state_ = "";
+          reason_ = "";
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor;
+        }
+
+        @java.lang.Override
+        public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getDefaultInstanceForType() {
+          return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex build() {
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex buildPartial() {
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex(this);
+          if (bitField0_ != 0) { buildPartial0(result); }
+          onBuilt();
+          return result;
+        }
+
+        private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex result) {
+          int from_bitField0_ = bitField0_;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.name_ = name_;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.version_ = version_;
+          }
+          if (((from_bitField0_ & 0x00000004) != 0)) {
+            result.state_ = state_;
+          }
+          if (((from_bitField0_ & 0x00000008) != 0)) {
+            result.reason_ = reason_;
+          }
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex) {
+            return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex other) {
+          if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.getDefaultInstance()) return this;
+          if (!other.getName().isEmpty()) {
+            name_ = other.name_;
+            bitField0_ |= 0x00000001;
+            onChanged();
+          }
+          if (!other.getVersion().isEmpty()) {
+            version_ = other.version_;
+            bitField0_ |= 0x00000002;
+            onChanged();
+          }
+          if (!other.getState().isEmpty()) {
+            state_ = other.state_;
+            bitField0_ |= 0x00000004;
+            onChanged();
+          }
+          if (!other.getReason().isEmpty()) {
+            reason_ = other.reason_;
+            bitField0_ |= 0x00000008;
+            onChanged();
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+                case 18: {
+                  version_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+                case 26: {
+                  state_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 26
+                case 34: {
+                  reason_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 34
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.unwrapIOException();
+          } finally {
+            onChanged();
+          } // finally
+          return this;
+        }
+        private int bitField0_;
+
+        private java.lang.Object name_ = "";
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string name
+         *&#64;&#64;
+         *&#64;&#64;       The name of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string name = 1;</code>
+         * @return The name.
+         */
+        public java.lang.String getName() {
+          java.lang.Object ref = name_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            name_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string name
+         *&#64;&#64;
+         *&#64;&#64;       The name of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string name = 1;</code>
+         * @return The bytes for name.
+         */
+        public com.google.protobuf.ByteString
+            getNameBytes() {
+          java.lang.Object ref = name_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            name_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string name
+         *&#64;&#64;
+         *&#64;&#64;       The name of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string name = 1;</code>
+         * @param value The name to set.
+         * @return This builder for chaining.
+         */
+        public Builder setName(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          name_ = value;
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string name
+         *&#64;&#64;
+         *&#64;&#64;       The name of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string name = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearName() {
+          name_ = getDefaultInstance().getName();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string name
+         *&#64;&#64;
+         *&#64;&#64;       The name of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string name = 1;</code>
+         * @param value The bytes for name to set.
+         * @return This builder for chaining.
+         */
+        public Builder setNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          name_ = value;
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object version_ = "";
+        /**
+         * <pre>
+         *&#64;&#64;    .. cpp:var:: string version
+         *&#64;&#64;
+         *&#64;&#64;       The version of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string version = 2;</code>
+         * @return The version.
+         */
+        public java.lang.String getVersion() {
+          java.lang.Object ref = version_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            version_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;    .. cpp:var:: string version
+         *&#64;&#64;
+         *&#64;&#64;       The version of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string version = 2;</code>
+         * @return The bytes for version.
+         */
+        public com.google.protobuf.ByteString
+            getVersionBytes() {
+          java.lang.Object ref = version_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            version_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;    .. cpp:var:: string version
+         *&#64;&#64;
+         *&#64;&#64;       The version of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string version = 2;</code>
+         * @param value The version to set.
+         * @return This builder for chaining.
+         */
+        public Builder setVersion(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          version_ = value;
+          bitField0_ |= 0x00000002;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;    .. cpp:var:: string version
+         *&#64;&#64;
+         *&#64;&#64;       The version of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string version = 2;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearVersion() {
+          version_ = getDefaultInstance().getVersion();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;    .. cpp:var:: string version
+         *&#64;&#64;
+         *&#64;&#64;       The version of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string version = 2;</code>
+         * @param value The bytes for version to set.
+         * @return This builder for chaining.
+         */
+        public Builder setVersionBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          version_ = value;
+          bitField0_ |= 0x00000002;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object state_ = "";
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string state
+         *&#64;&#64;
+         *&#64;&#64;       The state of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string state = 3;</code>
+         * @return The state.
+         */
+        public java.lang.String getState() {
+          java.lang.Object ref = state_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            state_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string state
+         *&#64;&#64;
+         *&#64;&#64;       The state of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string state = 3;</code>
+         * @return The bytes for state.
+         */
+        public com.google.protobuf.ByteString
+            getStateBytes() {
+          java.lang.Object ref = state_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            state_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string state
+         *&#64;&#64;
+         *&#64;&#64;       The state of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string state = 3;</code>
+         * @param value The state to set.
+         * @return This builder for chaining.
+         */
+        public Builder setState(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          state_ = value;
+          bitField0_ |= 0x00000004;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string state
+         *&#64;&#64;
+         *&#64;&#64;       The state of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string state = 3;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearState() {
+          state_ = getDefaultInstance().getState();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string state
+         *&#64;&#64;
+         *&#64;&#64;       The state of the model.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string state = 3;</code>
+         * @param value The bytes for state to set.
+         * @return This builder for chaining.
+         */
+        public Builder setStateBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          state_ = value;
+          bitField0_ |= 0x00000004;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object reason_ = "";
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string reason
+         *&#64;&#64;
+         *&#64;&#64;       The reason, if any, that the model is in the given state.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string reason = 4;</code>
+         * @return The reason.
+         */
+        public java.lang.String getReason() {
+          java.lang.Object ref = reason_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            reason_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string reason
+         *&#64;&#64;
+         *&#64;&#64;       The reason, if any, that the model is in the given state.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string reason = 4;</code>
+         * @return The bytes for reason.
+         */
+        public com.google.protobuf.ByteString
+            getReasonBytes() {
+          java.lang.Object ref = reason_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            reason_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string reason
+         *&#64;&#64;
+         *&#64;&#64;       The reason, if any, that the model is in the given state.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string reason = 4;</code>
+         * @param value The reason to set.
+         * @return This builder for chaining.
+         */
+        public Builder setReason(
+            java.lang.String value) {
+          if (value == null) { throw new NullPointerException(); }
+          reason_ = value;
+          bitField0_ |= 0x00000008;
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string reason
+         *&#64;&#64;
+         *&#64;&#64;       The reason, if any, that the model is in the given state.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string reason = 4;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearReason() {
+          reason_ = getDefaultInstance().getReason();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+          return this;
+        }
+        /**
+         * <pre>
+         *&#64;&#64;
+         *&#64;&#64;    .. cpp:var:: string reason
+         *&#64;&#64;
+         *&#64;&#64;       The reason, if any, that the model is in the given state.
+         *&#64;&#64;
+         * </pre>
+         *
+         * <code>string reason = 4;</code>
+         * @param value The bytes for reason to set.
+         * @return This builder for chaining.
+         */
+        public Builder setReasonBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) { throw new NullPointerException(); }
+          checkByteStringIsUtf8(value);
+          reason_ = value;
+          bitField0_ |= 0x00000008;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:inference.RepositoryIndexResponse.ModelIndex)
+      }
+
+      // @@protoc_insertion_point(class_scope:inference.RepositoryIndexResponse.ModelIndex)
+      private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex();
+      }
+
+      public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      private static final com.google.protobuf.Parser<ModelIndex>
+          PARSER = new com.google.protobuf.AbstractParser<ModelIndex>() {
+        @java.lang.Override
+        public ModelIndex parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
+        }
+      };
+
+      public static com.google.protobuf.Parser<ModelIndex> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<ModelIndex> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public static final int MODELS_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> models_;
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> getModelsList() {
+      return models_;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder> 
+        getModelsOrBuilderList() {
+      return models_;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    @java.lang.Override
+    public int getModelsCount() {
+      return models_.size();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getModels(int index) {
+      return models_.get(index);
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+     *&#64;&#64;
+     *&#64;&#64;     An index entry for each model.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+     */
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder getModelsOrBuilder(
+        int index) {
+      return models_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < models_.size(); i++) {
+        output.writeMessage(1, models_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < models_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, models_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse) obj;
+
+      if (!getModelsList()
+          .equals(other.getModelsList())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (getModelsCount() > 0) {
+        hash = (37 * hash) + MODELS_FIELD_NUMBER;
+        hash = (53 * hash) + getModelsList().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryIndexResponse
+     *&#64;&#64;
+     *&#64;&#64;   Response message for RepositoryIndex.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryIndexResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryIndexResponse)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        if (modelsBuilder_ == null) {
+          models_ = java.util.Collections.emptyList();
+        } else {
+          models_ = null;
+          modelsBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryIndexResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse(this);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse result) {
+        if (modelsBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) != 0)) {
+            models_ = java.util.Collections.unmodifiableList(models_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.models_ = models_;
+        } else {
+          result.models_ = modelsBuilder_.build();
+        }
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse result) {
+        int from_bitField0_ = bitField0_;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.getDefaultInstance()) return this;
+        if (modelsBuilder_ == null) {
+          if (!other.models_.isEmpty()) {
+            if (models_.isEmpty()) {
+              models_ = other.models_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureModelsIsMutable();
+              models_.addAll(other.models_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.models_.isEmpty()) {
+            if (modelsBuilder_.isEmpty()) {
+              modelsBuilder_.dispose();
+              modelsBuilder_ = null;
+              models_ = other.models_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              modelsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getModelsFieldBuilder() : null;
+            } else {
+              modelsBuilder_.addAllMessages(other.models_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex m =
+                    input.readMessage(
+                        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.parser(),
+                        extensionRegistry);
+                if (modelsBuilder_ == null) {
+                  ensureModelsIsMutable();
+                  models_.add(m);
+                } else {
+                  modelsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> models_ =
+        java.util.Collections.emptyList();
+      private void ensureModelsIsMutable() {
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          models_ = new java.util.ArrayList<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex>(models_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder> modelsBuilder_;
+
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> getModelsList() {
+        if (modelsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(models_);
+        } else {
+          return modelsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public int getModelsCount() {
+        if (modelsBuilder_ == null) {
+          return models_.size();
+        } else {
+          return modelsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex getModels(int index) {
+        if (modelsBuilder_ == null) {
+          return models_.get(index);
+        } else {
+          return modelsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder setModels(
+          int index, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex value) {
+        if (modelsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureModelsIsMutable();
+          models_.set(index, value);
+          onChanged();
+        } else {
+          modelsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder setModels(
+          int index, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder builderForValue) {
+        if (modelsBuilder_ == null) {
+          ensureModelsIsMutable();
+          models_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          modelsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder addModels(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex value) {
+        if (modelsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureModelsIsMutable();
+          models_.add(value);
+          onChanged();
+        } else {
+          modelsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder addModels(
+          int index, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex value) {
+        if (modelsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureModelsIsMutable();
+          models_.add(index, value);
+          onChanged();
+        } else {
+          modelsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder addModels(
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder builderForValue) {
+        if (modelsBuilder_ == null) {
+          ensureModelsIsMutable();
+          models_.add(builderForValue.build());
+          onChanged();
+        } else {
+          modelsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder addModels(
+          int index, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder builderForValue) {
+        if (modelsBuilder_ == null) {
+          ensureModelsIsMutable();
+          models_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          modelsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder addAllModels(
+          java.lang.Iterable<? extends io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex> values) {
+        if (modelsBuilder_ == null) {
+          ensureModelsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, models_);
+          onChanged();
+        } else {
+          modelsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder clearModels() {
+        if (modelsBuilder_ == null) {
+          models_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          modelsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public Builder removeModels(int index) {
+        if (modelsBuilder_ == null) {
+          ensureModelsIsMutable();
+          models_.remove(index);
+          onChanged();
+        } else {
+          modelsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder getModelsBuilder(
+          int index) {
+        return getModelsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder getModelsOrBuilder(
+          int index) {
+        if (modelsBuilder_ == null) {
+          return models_.get(index);  } else {
+          return modelsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public java.util.List<? extends io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder> 
+           getModelsOrBuilderList() {
+        if (modelsBuilder_ != null) {
+          return modelsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(models_);
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder addModelsBuilder() {
+        return getModelsFieldBuilder().addBuilder(
+            io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder addModelsBuilder(
+          int index) {
+        return getModelsFieldBuilder().addBuilder(
+            index, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *&#64;&#64;
+       *&#64;&#64;  .. cpp:var:: ModelIndex models (repeated)
+       *&#64;&#64;
+       *&#64;&#64;     An index entry for each model.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>repeated .inference.RepositoryIndexResponse.ModelIndex models = 1;</code>
+       */
+      public java.util.List<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder> 
+           getModelsBuilderList() {
+        return getModelsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder> 
+          getModelsFieldBuilder() {
+        if (modelsBuilder_ == null) {
+          modelsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndex.Builder, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse.ModelIndexOrBuilder>(
+                  models_,
+                  ((bitField0_ & 0x00000001) != 0),
+                  getParentForChildren(),
+                  isClean());
+          models_ = null;
+        }
+        return modelsBuilder_;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryIndexResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryIndexResponse)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryIndexResponse>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryIndexResponse>() {
+      @java.lang.Override
+      public RepositoryIndexResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryIndexResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryIndexResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryModelLoadRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryModelLoadRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository to load from. If empty the model
+     *&#64;&#64;     is loaded from any repository.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    java.lang.String getRepositoryName();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository to load from. If empty the model
+     *&#64;&#64;     is loaded from any repository.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    com.google.protobuf.ByteString
+        getRepositoryNameBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to load, or reload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The modelName.
+     */
+    java.lang.String getModelName();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to load, or reload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The bytes for modelName.
+     */
+    com.google.protobuf.ByteString
+        getModelNameBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    int getParametersCount();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    boolean containsParameters(
+        java.lang.String key);
+    /**
+     * Use {@link #getParametersMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    getParameters();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    getParametersMap();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+        java.lang.String key,
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue);
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+        java.lang.String key);
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryModelLoadRequest
+   *&#64;&#64;
+   *&#64;&#64;   Request message for RepositoryModelLoad.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryModelLoadRequest}
+   */
+  public static final class RepositoryModelLoadRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryModelLoadRequest)
+      RepositoryModelLoadRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryModelLoadRequest.newBuilder() to construct.
+    private RepositoryModelLoadRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryModelLoadRequest() {
+      repositoryName_ = "";
+      modelName_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryModelLoadRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_descriptor;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    @java.lang.Override
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 3:
+          return internalGetParameters();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.Builder.class);
+    }
+
+    public static final int REPOSITORY_NAME_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object repositoryName_ = "";
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository to load from. If empty the model
+     *&#64;&#64;     is loaded from any repository.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    @java.lang.Override
+    public java.lang.String getRepositoryName() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        repositoryName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository to load from. If empty the model
+     *&#64;&#64;     is loaded from any repository.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getRepositoryNameBytes() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        repositoryName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MODEL_NAME_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelName_ = "";
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to load, or reload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The modelName.
+     */
+    @java.lang.Override
+    public java.lang.String getModelName() {
+      java.lang.Object ref = modelName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        modelName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to load, or reload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The bytes for modelName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModelNameBytes() {
+      java.lang.Object ref = modelName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        modelName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARAMETERS_FIELD_NUMBER = 3;
+    private static final class ParametersDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>newDefaultInstance(
+                  io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                  io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.getDefaultInstance());
+    }
+    @SuppressWarnings("serial")
+    private com.google.protobuf.MapField<
+        java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> parameters_;
+    private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    internalGetParameters() {
+      if (parameters_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            ParametersDefaultEntryHolder.defaultEntry);
+      }
+      return parameters_;
+    }
+    public int getParametersCount() {
+      return internalGetParameters().getMap().size();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public boolean containsParameters(
+        java.lang.String key) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      return internalGetParameters().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getParametersMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParameters() {
+      return getParametersMap();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParametersMap() {
+      return internalGetParameters().getMap();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+        java.lang.String key,
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+          internalGetParameters().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+          internalGetParameters().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, repositoryName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modelName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, modelName_);
+      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetParameters(),
+          ParametersDefaultEntryHolder.defaultEntry,
+          3);
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, repositoryName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modelName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, modelName_);
+      }
+      for (java.util.Map.Entry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> entry
+           : internalGetParameters().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+        parameters__ = ParametersDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(3, parameters__);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest) obj;
+
+      if (!getRepositoryName()
+          .equals(other.getRepositoryName())) return false;
+      if (!getModelName()
+          .equals(other.getModelName())) return false;
+      if (!internalGetParameters().equals(
+          other.internalGetParameters())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + REPOSITORY_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getRepositoryName().hashCode();
+      hash = (37 * hash) + MODEL_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getModelName().hashCode();
+      if (!internalGetParameters().getMap().isEmpty()) {
+        hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetParameters().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryModelLoadRequest
+     *&#64;&#64;
+     *&#64;&#64;   Request message for RepositoryModelLoad.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryModelLoadRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryModelLoadRequest)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_descriptor;
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetParameters();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetMutableParameters();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        repositoryName_ = "";
+        modelName_ = "";
+        internalGetMutableParameters().clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.repositoryName_ = repositoryName_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.modelName_ = modelName_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.parameters_ = internalGetParameters();
+          result.parameters_.makeImmutable();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest.getDefaultInstance()) return this;
+        if (!other.getRepositoryName().isEmpty()) {
+          repositoryName_ = other.repositoryName_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.getModelName().isEmpty()) {
+          modelName_ = other.modelName_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        internalGetMutableParameters().mergeFrom(
+            other.internalGetParameters());
+        bitField0_ |= 0x00000004;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                repositoryName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                modelName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 26: {
+                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+                parameters__ = input.readMessage(
+                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableParameters().getMutableMap().put(
+                    parameters__.getKey(), parameters__.getValue());
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object repositoryName_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository to load from. If empty the model
+       *&#64;&#64;     is loaded from any repository.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The repositoryName.
+       */
+      public java.lang.String getRepositoryName() {
+        java.lang.Object ref = repositoryName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          repositoryName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository to load from. If empty the model
+       *&#64;&#64;     is loaded from any repository.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The bytes for repositoryName.
+       */
+      public com.google.protobuf.ByteString
+          getRepositoryNameBytes() {
+        java.lang.Object ref = repositoryName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          repositoryName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository to load from. If empty the model
+       *&#64;&#64;     is loaded from any repository.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository to load from. If empty the model
+       *&#64;&#64;     is loaded from any repository.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRepositoryName() {
+        repositoryName_ = getDefaultInstance().getRepositoryName();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository to load from. If empty the model
+       *&#64;&#64;     is loaded from any repository.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The bytes for repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object modelName_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to load, or reload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return The modelName.
+       */
+      public java.lang.String getModelName() {
+        java.lang.Object ref = modelName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          modelName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to load, or reload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return The bytes for modelName.
+       */
+      public com.google.protobuf.ByteString
+          getModelNameBytes() {
+        java.lang.Object ref = modelName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          modelName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to load, or reload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @param value The modelName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        modelName_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to load, or reload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModelName() {
+        modelName_ = getDefaultInstance().getModelName();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to load, or reload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @param value The bytes for modelName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        modelName_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> parameters_;
+      private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          internalGetParameters() {
+        if (parameters_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              ParametersDefaultEntryHolder.defaultEntry);
+        }
+        return parameters_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          internalGetMutableParameters() {
+        if (parameters_ == null) {
+          parameters_ = com.google.protobuf.MapField.newMapField(
+              ParametersDefaultEntryHolder.defaultEntry);
+        }
+        if (!parameters_.isMutable()) {
+          parameters_ = parameters_.copy();
+        }
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return parameters_;
+      }
+      public int getParametersCount() {
+        return internalGetParameters().getMap().size();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public boolean containsParameters(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        return internalGetParameters().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getParametersMap()} instead.
+       */
+      @java.lang.Override
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParameters() {
+        return getParametersMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParametersMap() {
+        return internalGetParameters().getMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+          java.lang.String key,
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+            internalGetParameters().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+            internalGetParameters().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+      public Builder clearParameters() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        internalGetMutableParameters().getMutableMap()
+            .clear();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder removeParameters(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        internalGetMutableParameters().getMutableMap()
+            .remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          getMutableParameters() {
+        bitField0_ |= 0x00000004;
+        return internalGetMutableParameters().getMutableMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder putParameters(
+          java.lang.String key,
+          io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter value) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        if (value == null) { throw new NullPointerException("map value"); }
+        internalGetMutableParameters().getMutableMap()
+            .put(key, value);
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder putAllParameters(
+          java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> values) {
+        internalGetMutableParameters().getMutableMap()
+            .putAll(values);
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryModelLoadRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryModelLoadRequest)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryModelLoadRequest>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryModelLoadRequest>() {
+      @java.lang.Override
+      public RepositoryModelLoadRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryModelLoadRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryModelLoadRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryModelLoadResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryModelLoadResponse)
+      com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryModelLoadResponse
+   *&#64;&#64;
+   *&#64;&#64;   Response message for RepositoryModelLoad.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryModelLoadResponse}
+   */
+  public static final class RepositoryModelLoadResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryModelLoadResponse)
+      RepositoryModelLoadResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryModelLoadResponse.newBuilder() to construct.
+    private RepositoryModelLoadResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryModelLoadResponse() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryModelLoadResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.Builder.class);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse) obj;
+
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryModelLoadResponse
+     *&#64;&#64;
+     *&#64;&#64;   Response message for RepositoryModelLoad.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryModelLoadResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryModelLoadResponse)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelLoadResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse(this);
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryModelLoadResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryModelLoadResponse)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryModelLoadResponse>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryModelLoadResponse>() {
+      @java.lang.Override
+      public RepositoryModelLoadResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryModelLoadResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryModelLoadResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryModelUnloadRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryModelUnloadRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository from which the model was originally
+     *&#64;&#64;     loaded. If empty the repository is not considered.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    java.lang.String getRepositoryName();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository from which the model was originally
+     *&#64;&#64;     loaded. If empty the repository is not considered.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    com.google.protobuf.ByteString
+        getRepositoryNameBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to unload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The modelName.
+     */
+    java.lang.String getModelName();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to unload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The bytes for modelName.
+     */
+    com.google.protobuf.ByteString
+        getModelNameBytes();
+
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    int getParametersCount();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    boolean containsParameters(
+        java.lang.String key);
+    /**
+     * Use {@link #getParametersMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    getParameters();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    getParametersMap();
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+        java.lang.String key,
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue);
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+        java.lang.String key);
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryModelUnloadRequest
+   *&#64;&#64;
+   *&#64;&#64;   Request message for RepositoryModelUnload.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryModelUnloadRequest}
+   */
+  public static final class RepositoryModelUnloadRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryModelUnloadRequest)
+      RepositoryModelUnloadRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryModelUnloadRequest.newBuilder() to construct.
+    private RepositoryModelUnloadRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryModelUnloadRequest() {
+      repositoryName_ = "";
+      modelName_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryModelUnloadRequest();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_descriptor;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    @java.lang.Override
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 3:
+          return internalGetParameters();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.Builder.class);
+    }
+
+    public static final int REPOSITORY_NAME_FIELD_NUMBER = 1;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object repositoryName_ = "";
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository from which the model was originally
+     *&#64;&#64;     loaded. If empty the repository is not considered.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The repositoryName.
+     */
+    @java.lang.Override
+    public java.lang.String getRepositoryName() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        repositoryName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the repository from which the model was originally
+     *&#64;&#64;     loaded. If empty the repository is not considered.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string repository_name = 1;</code>
+     * @return The bytes for repositoryName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getRepositoryNameBytes() {
+      java.lang.Object ref = repositoryName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        repositoryName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MODEL_NAME_FIELD_NUMBER = 2;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object modelName_ = "";
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to unload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The modelName.
+     */
+    @java.lang.Override
+    public java.lang.String getModelName() {
+      java.lang.Object ref = modelName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        modelName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: string repository_name
+     *&#64;&#64;
+     *&#64;&#64;     The name of the model to unload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>string model_name = 2;</code>
+     * @return The bytes for modelName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getModelNameBytes() {
+      java.lang.Object ref = modelName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        modelName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PARAMETERS_FIELD_NUMBER = 3;
+    private static final class ParametersDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>newDefaultInstance(
+                  io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                  io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter.getDefaultInstance());
+    }
+    @SuppressWarnings("serial")
+    private com.google.protobuf.MapField<
+        java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> parameters_;
+    private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+    internalGetParameters() {
+      if (parameters_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            ParametersDefaultEntryHolder.defaultEntry);
+      }
+      return parameters_;
+    }
+    public int getParametersCount() {
+      return internalGetParameters().getMap().size();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public boolean containsParameters(
+        java.lang.String key) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      return internalGetParameters().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getParametersMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParameters() {
+      return getParametersMap();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParametersMap() {
+      return internalGetParameters().getMap();
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+        java.lang.String key,
+        /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+          internalGetParameters().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+     *&#64;&#64;
+     *&#64;&#64;     Optional model repository request parameters.
+     *&#64;&#64;
+     * </pre>
+     *
+     * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+     */
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new NullPointerException("map key"); }
+      java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+          internalGetParameters().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, repositoryName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modelName_)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, modelName_);
+      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetParameters(),
+          ParametersDefaultEntryHolder.defaultEntry,
+          3);
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(repositoryName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, repositoryName_);
+      }
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modelName_)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, modelName_);
+      }
+      for (java.util.Map.Entry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> entry
+           : internalGetParameters().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+        parameters__ = ParametersDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(3, parameters__);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest) obj;
+
+      if (!getRepositoryName()
+          .equals(other.getRepositoryName())) return false;
+      if (!getModelName()
+          .equals(other.getModelName())) return false;
+      if (!internalGetParameters().equals(
+          other.internalGetParameters())) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + REPOSITORY_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getRepositoryName().hashCode();
+      hash = (37 * hash) + MODEL_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getModelName().hashCode();
+      if (!internalGetParameters().getMap().isEmpty()) {
+        hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetParameters().hashCode();
+      }
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryModelUnloadRequest
+     *&#64;&#64;
+     *&#64;&#64;   Request message for RepositoryModelUnload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryModelUnloadRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryModelUnloadRequest)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_descriptor;
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetParameters();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetMutableParameters();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        bitField0_ = 0;
+        repositoryName_ = "";
+        modelName_ = "";
+        internalGetMutableParameters().clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadRequest_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest(this);
+        if (bitField0_ != 0) { buildPartial0(result); }
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartial0(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.repositoryName_ = repositoryName_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.modelName_ = modelName_;
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.parameters_ = internalGetParameters();
+          result.parameters_.makeImmutable();
+        }
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest.getDefaultInstance()) return this;
+        if (!other.getRepositoryName().isEmpty()) {
+          repositoryName_ = other.repositoryName_;
+          bitField0_ |= 0x00000001;
+          onChanged();
+        }
+        if (!other.getModelName().isEmpty()) {
+          modelName_ = other.modelName_;
+          bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        internalGetMutableParameters().mergeFrom(
+            other.internalGetParameters());
+        bitField0_ |= 0x00000004;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                repositoryName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+              case 18: {
+                modelName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+              case 26: {
+                com.google.protobuf.MapEntry<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+                parameters__ = input.readMessage(
+                    ParametersDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                internalGetMutableParameters().getMutableMap().put(
+                    parameters__.getKey(), parameters__.getValue());
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object repositoryName_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository from which the model was originally
+       *&#64;&#64;     loaded. If empty the repository is not considered.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The repositoryName.
+       */
+      public java.lang.String getRepositoryName() {
+        java.lang.Object ref = repositoryName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          repositoryName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository from which the model was originally
+       *&#64;&#64;     loaded. If empty the repository is not considered.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return The bytes for repositoryName.
+       */
+      public com.google.protobuf.ByteString
+          getRepositoryNameBytes() {
+        java.lang.Object ref = repositoryName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          repositoryName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository from which the model was originally
+       *&#64;&#64;     loaded. If empty the repository is not considered.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository from which the model was originally
+       *&#64;&#64;     loaded. If empty the repository is not considered.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRepositoryName() {
+        repositoryName_ = getDefaultInstance().getRepositoryName();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the repository from which the model was originally
+       *&#64;&#64;     loaded. If empty the repository is not considered.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string repository_name = 1;</code>
+       * @param value The bytes for repositoryName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRepositoryNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        repositoryName_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object modelName_ = "";
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to unload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return The modelName.
+       */
+      public java.lang.String getModelName() {
+        java.lang.Object ref = modelName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          modelName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to unload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return The bytes for modelName.
+       */
+      public com.google.protobuf.ByteString
+          getModelNameBytes() {
+        java.lang.Object ref = modelName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          modelName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to unload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @param value The modelName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        modelName_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to unload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearModelName() {
+        modelName_ = getDefaultInstance().getModelName();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: string repository_name
+       *&#64;&#64;
+       *&#64;&#64;     The name of the model to unload.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>string model_name = 2;</code>
+       * @param value The bytes for modelName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setModelNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        modelName_ = value;
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> parameters_;
+      private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          internalGetParameters() {
+        if (parameters_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              ParametersDefaultEntryHolder.defaultEntry);
+        }
+        return parameters_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          internalGetMutableParameters() {
+        if (parameters_ == null) {
+          parameters_ = com.google.protobuf.MapField.newMapField(
+              ParametersDefaultEntryHolder.defaultEntry);
+        }
+        if (!parameters_.isMutable()) {
+          parameters_ = parameters_.copy();
+        }
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return parameters_;
+      }
+      public int getParametersCount() {
+        return internalGetParameters().getMap().size();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public boolean containsParameters(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        return internalGetParameters().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getParametersMap()} instead.
+       */
+      @java.lang.Override
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParameters() {
+        return getParametersMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> getParametersMap() {
+        return internalGetParameters().getMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrDefault(
+          java.lang.String key,
+          /* nullable */
+io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+            internalGetParameters().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter getParametersOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> map =
+            internalGetParameters().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+      public Builder clearParameters() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        internalGetMutableParameters().getMutableMap()
+            .clear();
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder removeParameters(
+          java.lang.String key) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        internalGetMutableParameters().getMutableMap()
+            .remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter>
+          getMutableParameters() {
+        bitField0_ |= 0x00000004;
+        return internalGetMutableParameters().getMutableMap();
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder putParameters(
+          java.lang.String key,
+          io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter value) {
+        if (key == null) { throw new NullPointerException("map key"); }
+        if (value == null) { throw new NullPointerException("map value"); }
+        internalGetMutableParameters().getMutableMap()
+            .put(key, value);
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <pre>
+       *&#64;&#64;  .. cpp:var:: map&lt;string,ModelRepositoryParameter&gt; parameters
+       *&#64;&#64;
+       *&#64;&#64;     Optional model repository request parameters.
+       *&#64;&#64;
+       * </pre>
+       *
+       * <code>map&lt;string, .inference.ModelRepositoryParameter&gt; parameters = 3;</code>
+       */
+      public Builder putAllParameters(
+          java.util.Map<java.lang.String, io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter> values) {
+        internalGetMutableParameters().getMutableMap()
+            .putAll(values);
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryModelUnloadRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryModelUnloadRequest)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryModelUnloadRequest>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryModelUnloadRequest>() {
+      @java.lang.Override
+      public RepositoryModelUnloadRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryModelUnloadRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryModelUnloadRequest> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RepositoryModelUnloadResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:inference.RepositoryModelUnloadResponse)
+      com.google.protobuf.MessageOrBuilder {
+  }
+  /**
+   * <pre>
+   *&#64;&#64;
+   *&#64;&#64;.. cpp:var:: message RepositoryModelUnloadResponse
+   *&#64;&#64;
+   *&#64;&#64;   Response message for RepositoryModelUnload.
+   *&#64;&#64;
+   * </pre>
+   *
+   * Protobuf type {@code inference.RepositoryModelUnloadResponse}
+   */
+  public static final class RepositoryModelUnloadResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:inference.RepositoryModelUnloadResponse)
+      RepositoryModelUnloadResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use RepositoryModelUnloadResponse.newBuilder() to construct.
+    private RepositoryModelUnloadResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RepositoryModelUnloadResponse() {
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RepositoryModelUnloadResponse();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadResponse_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.Builder.class);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getUnknownFields().writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse)) {
+        return super.equals(obj);
+      }
+      io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse other = (io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse) obj;
+
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *&#64;&#64;
+     *&#64;&#64;.. cpp:var:: message RepositoryModelUnloadResponse
+     *&#64;&#64;
+     *&#64;&#64;   Response message for RepositoryModelUnload.
+     *&#64;&#64;
+     * </pre>
+     *
+     * Protobuf type {@code inference.RepositoryModelUnloadResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:inference.RepositoryModelUnloadResponse)
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadResponse_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.class, io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.Builder.class);
+      }
+
+      // Construct using io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.newBuilder()
+      private Builder() {
+
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.internal_static_inference_RepositoryModelUnloadResponse_descriptor;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse getDefaultInstanceForType() {
+        return io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse build() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse buildPartial() {
+        io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse result = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse(this);
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse) {
+          return mergeFrom((io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse other) {
+        if (other == io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.unwrapIOException();
+        } finally {
+          onChanged();
+        } // finally
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:inference.RepositoryModelUnloadResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:inference.RepositoryModelUnloadResponse)
+    private static final io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse();
+    }
+
+    public static io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RepositoryModelUnloadResponse>
+        PARSER = new com.google.protobuf.AbstractParser<RepositoryModelUnloadResponse>() {
+      @java.lang.Override
+      public RepositoryModelUnloadResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
+      }
+    };
+
+    public static com.google.protobuf.Parser<RepositoryModelUnloadResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RepositoryModelUnloadResponse> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -22565,6 +29856,56 @@ public final class V2Dataplane {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_inference_InferTensorContents_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_ModelRepositoryParameter_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_ModelRepositoryParameter_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryIndexRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryIndexRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryIndexResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryIndexResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryIndexResponse_ModelIndex_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelLoadRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelLoadRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelLoadResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelLoadResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelUnloadRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelUnloadRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inference_RepositoryModelUnloadResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inference_RepositoryModelUnloadResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -22643,7 +29984,30 @@ public final class V2Dataplane {
       "nt64_contents\030\003 \003(\003\022\025\n\ruint_contents\030\004 \003" +
       "(\r\022\027\n\017uint64_contents\030\005 \003(\004\022\025\n\rfp32_cont" +
       "ents\030\006 \003(\002\022\025\n\rfp64_contents\030\007 \003(\001\022\026\n\016byt" +
-      "es_contents\030\010 \003(\0142\374\003\n\024GRPCInferenceServi" +
+      "es_contents\030\010 \003(\014\"\212\001\n\030ModelRepositoryPar" +
+      "ameter\022\024\n\nbool_param\030\001 \001(\010H\000\022\025\n\013int64_pa" +
+      "ram\030\002 \001(\003H\000\022\026\n\014string_param\030\003 \001(\tH\000\022\025\n\013b" +
+      "ytes_param\030\004 \001(\014H\000B\022\n\020parameter_choice\"@" +
+      "\n\026RepositoryIndexRequest\022\027\n\017repository_n" +
+      "ame\030\001 \001(\t\022\r\n\005ready\030\002 \001(\010\"\244\001\n\027RepositoryI" +
+      "ndexResponse\022=\n\006models\030\001 \003(\0132-.inference" +
+      ".RepositoryIndexResponse.ModelIndex\032J\n\nM" +
+      "odelIndex\022\014\n\004name\030\001 \001(\t\022\017\n\007version\030\002 \001(\t" +
+      "\022\r\n\005state\030\003 \001(\t\022\016\n\006reason\030\004 \001(\t\"\354\001\n\032Repo" +
+      "sitoryModelLoadRequest\022\027\n\017repository_nam" +
+      "e\030\001 \001(\t\022\022\n\nmodel_name\030\002 \001(\t\022I\n\nparameter" +
+      "s\030\003 \003(\01325.inference.RepositoryModelLoadR" +
+      "equest.ParametersEntry\032V\n\017ParametersEntr" +
+      "y\022\013\n\003key\030\001 \001(\t\0222\n\005value\030\002 \001(\0132#.inferenc" +
+      "e.ModelRepositoryParameter:\0028\001\"\035\n\033Reposi" +
+      "toryModelLoadResponse\"\360\001\n\034RepositoryMode" +
+      "lUnloadRequest\022\027\n\017repository_name\030\001 \001(\t\022" +
+      "\022\n\nmodel_name\030\002 \001(\t\022K\n\nparameters\030\003 \003(\0132" +
+      "7.inference.RepositoryModelUnloadRequest" +
+      ".ParametersEntry\032V\n\017ParametersEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\0222\n\005value\030\002 \001(\0132#.inference.Mode" +
+      "lRepositoryParameter:\0028\001\"\037\n\035RepositoryMo" +
+      "delUnloadResponse2\256\006\n\024GRPCInferenceServi" +
       "ce\022K\n\nServerLive\022\034.inference.ServerLiveR" +
       "equest\032\035.inference.ServerLiveResponse\"\000\022" +
       "N\n\013ServerReady\022\035.inference.ServerReadyRe" +
@@ -22656,9 +30020,17 @@ public final class V2Dataplane {
       "MetadataRequest\032 .inference.ModelMetadat" +
       "aResponse\"\000\022K\n\nModelInfer\022\034.inference.Mo" +
       "delInferRequest\032\035.inference.ModelInferRe" +
-      "sponse\"\000Ba\n\034io.seldon.mlops.inference.v2" +
-      "ZAgithub.com/seldonio/seldon-core/schedu" +
-      "ler/apis/mlops/v2_dataplaneb\006proto3"
+      "sponse\"\000\022Z\n\017RepositoryIndex\022!.inference." +
+      "RepositoryIndexRequest\032\".inference.Repos" +
+      "itoryIndexResponse\"\000\022f\n\023RepositoryModelL" +
+      "oad\022%.inference.RepositoryModelLoadReque" +
+      "st\032&.inference.RepositoryModelLoadRespon" +
+      "se\"\000\022l\n\025RepositoryModelUnload\022\'.inferenc" +
+      "e.RepositoryModelUnloadRequest\032(.inferen" +
+      "ce.RepositoryModelUnloadResponse\"\000B]\n\034io" +
+      ".seldon.mlops.inference.v2Z=github.com/s" +
+      "eldonio/seldon-core/apis/go/v2/mlops/v2_" +
+      "dataplaneb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -22814,6 +30186,66 @@ public final class V2Dataplane {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_inference_InferTensorContents_descriptor,
         new java.lang.String[] { "BoolContents", "IntContents", "Int64Contents", "UintContents", "Uint64Contents", "Fp32Contents", "Fp64Contents", "BytesContents", });
+    internal_static_inference_ModelRepositoryParameter_descriptor =
+      getDescriptor().getMessageTypes().get(14);
+    internal_static_inference_ModelRepositoryParameter_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_ModelRepositoryParameter_descriptor,
+        new java.lang.String[] { "BoolParam", "Int64Param", "StringParam", "BytesParam", "ParameterChoice", });
+    internal_static_inference_RepositoryIndexRequest_descriptor =
+      getDescriptor().getMessageTypes().get(15);
+    internal_static_inference_RepositoryIndexRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryIndexRequest_descriptor,
+        new java.lang.String[] { "RepositoryName", "Ready", });
+    internal_static_inference_RepositoryIndexResponse_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_inference_RepositoryIndexResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryIndexResponse_descriptor,
+        new java.lang.String[] { "Models", });
+    internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor =
+      internal_static_inference_RepositoryIndexResponse_descriptor.getNestedTypes().get(0);
+    internal_static_inference_RepositoryIndexResponse_ModelIndex_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryIndexResponse_ModelIndex_descriptor,
+        new java.lang.String[] { "Name", "Version", "State", "Reason", });
+    internal_static_inference_RepositoryModelLoadRequest_descriptor =
+      getDescriptor().getMessageTypes().get(17);
+    internal_static_inference_RepositoryModelLoadRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelLoadRequest_descriptor,
+        new java.lang.String[] { "RepositoryName", "ModelName", "Parameters", });
+    internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_descriptor =
+      internal_static_inference_RepositoryModelLoadRequest_descriptor.getNestedTypes().get(0);
+    internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelLoadRequest_ParametersEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_inference_RepositoryModelLoadResponse_descriptor =
+      getDescriptor().getMessageTypes().get(18);
+    internal_static_inference_RepositoryModelLoadResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelLoadResponse_descriptor,
+        new java.lang.String[] { });
+    internal_static_inference_RepositoryModelUnloadRequest_descriptor =
+      getDescriptor().getMessageTypes().get(19);
+    internal_static_inference_RepositoryModelUnloadRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelUnloadRequest_descriptor,
+        new java.lang.String[] { "RepositoryName", "ModelName", "Parameters", });
+    internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_descriptor =
+      internal_static_inference_RepositoryModelUnloadRequest_descriptor.getNestedTypes().get(0);
+    internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelUnloadRequest_ParametersEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_inference_RepositoryModelUnloadResponse_descriptor =
+      getDescriptor().getMessageTypes().get(20);
+    internal_static_inference_RepositoryModelUnloadResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inference_RepositoryModelUnloadResponse_descriptor,
+        new java.lang.String[] { });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
