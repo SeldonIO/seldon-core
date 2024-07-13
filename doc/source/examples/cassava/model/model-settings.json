@@ -1,0 +1,4 @@
+{
+    "name": "cassava",
+    "implementation": "serve-model.CassavaModel"
+}
