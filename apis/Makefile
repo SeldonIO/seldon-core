@@ -24,25 +24,25 @@ build: build-go build-kotlin build-v2-python update-copyright
 # the latest version of protoc + language-specific plugins.
 
 # https://github.com/protocolbuffers/protobuf/releases
-PROTOC_VERSION ?= 21.10
+PROTOC_VERSION ?= 27.2
 
 # https://pkg.go.dev/google.golang.org/protobuf/cmd/protoc-gen-go
-PROTOC_GEN_GO_VERSION ?= 1.28.1
+PROTOC_GEN_GO_VERSION ?= 1.34.2
 
 # https://pkg.go.dev/google.golang.org/grpc/cmd/protoc-gen-go-grpc
-PROTOC_GEN_GO_GRPC_VERSION ?= 1.2.0
+PROTOC_GEN_GO_GRPC_VERSION ?= 1.4.0
 
 # https://pypi.org/project/grpcio-tools/
-PROTOC_GEN_PYTHON_GRPCIO_TOOLS_VERSION ?= 1.51.3
+PROTOC_GEN_PYTHON_GRPCIO_TOOLS_VERSION ?= 1.64.1
 
 # https://github.com/grpc/grpc-java
 # https://mvnrepository.com/artifact/io.grpc/protoc-gen-grpc-java
-PROTOC_GEN_JAVA_GRPC_VERSION ?= 1.45.1
+PROTOC_GEN_JAVA_GRPC_VERSION ?= 1.65.1
 
 # https://github.com/grpc/grpc-kotlin
 # https://mvnrepository.com/artifact/io.grpc/protoc-gen-grpc-kotlin
-PROTOC_GEN_KOTLIN_GRPC_VERSION ?= 1.2.1
-PROTOC_GEN_KOTLIN_GRPC_JDK ?= jdk7
+PROTOC_GEN_KOTLIN_GRPC_VERSION ?= 1.4.1
+PROTOC_GEN_KOTLIN_GRPC_JDK ?= jdk8
 
 
 ################################################################################
