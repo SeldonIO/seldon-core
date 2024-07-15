@@ -45,7 +45,7 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 		// -  the db is empty
 		// in either case we will migrate the db to the current version
 		logger.Infof("Migrating DB from version %s to %s", version, currentPipelineSnapshotVersion)
-		err := pdb.migrateToDBV2()
+		err := pdb.migrateToDBCurrentVersion()
 		if err != nil {
 			return nil, err
 		}
@@ -146,6 +146,6 @@ func (pdb *PipelineDBManager) get(name string) (*Pipeline, error) {
 }
 
 // we only save the version key in the db for this migration
-func (pdb *PipelineDBManager) migrateToDBV2() error {
+func (pdb *PipelineDBManager) migrateToDBCurrentVersion() error {
 	return pdb.saveVersion()
 }

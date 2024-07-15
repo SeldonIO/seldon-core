@@ -47,7 +47,7 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger) (*Experiment
 		// -  the db is empty
 		// in either case we will migrate the db to the current version
 		logger.Infof("Migrating DB from version %s to %s", version, currentExperimentSnapshotVersion)
-		err := edb.migrateToDBV2()
+		err := edb.migrateToDBCurrentVersion()
 		if err != nil {
 			return nil, err
 		}
@@ -150,11 +150,11 @@ func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
 	return experiment, err
 }
 
-// migrateToDBV2 deletes all experiments from the db
+// migrateToDBCurrentVersion deletes all experiments from the db
 // the reason why we went ahead with this approach is that the experiment that we store in the old
 // format doesnt have a delete field, so we cannot distinguish between deleted and active experiments
 // we then will rely on the operator to re-create the experiments from the etcd snapshot
-func (edb *ExperimentDBManager) migrateToDBV2() error {
+func (edb *ExperimentDBManager) migrateToDBCurrentVersion() error {
 	err := edb.db.DropAll()
 	if err != nil {
 		return err
