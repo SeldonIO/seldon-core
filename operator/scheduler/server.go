@@ -29,7 +29,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 	if err != nil {
 		return err
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
+	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	var replicas int32
 	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -49,7 +49,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
-	_, err = grcpClient.ServerNotify(
+	_, err = grpcClient.ServerNotify(
 		ctx,
 		request,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -63,10 +63,10 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 }
 
 // note: namespace is not used in this function
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 
-	stream, err := grcpClient.SubscribeServerStatus(
+	stream, err := grpcClient.SubscribeServerStatus(
 		ctx,
 		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),

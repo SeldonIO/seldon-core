@@ -54,12 +54,12 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	if err != nil {
 		return err, true
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
+	grpcClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.UnloadPipelineRequest{
 		Name: pipeline.Name,
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
-	_, err = grcpClient.UnloadPipeline(
+	_, err = grpcClient.UnloadPipeline(
 		ctx,
 		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -79,10 +79,10 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 
-	stream, err := grcpClient.SubscribePipelineStatus(
+	stream, err := grpcClient.SubscribePipelineStatus(
 		ctx,
 		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -95,14 +95,14 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grcpClien
 	// get pipelines from the scheduler
 	// if there are no pipelines in the scheduler state then we need to create them
 	// this is likely because of the scheduler state got deleted
-	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grcpClient)
+	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grpcClient)
 	if err != nil {
 		return err
 	}
 	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
 	// also remove finalizers from pipelines that are being deleted
 	if numPipelinesFromScheduler == 0 {
-		handleLoadedPipelines(ctx, namespace, s, grcpClient)
+		handleLoadedPipelines(ctx, namespace, s, grpcClient)
 		handlePendingDeletePipelines(ctx, namespace, s)
 	}
 

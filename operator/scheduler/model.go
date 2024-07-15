@@ -111,10 +111,10 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return retryableError, nil
 }
 
-func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 
-	stream, err := grcpClient.SubscribeModelStatus(
+	stream, err := grpcClient.SubscribeModelStatus(
 		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -125,9 +125,9 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grcpClient s
 	}
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	go handlePendingDeleteModels(ctx, namespace, s, grcpClient)
+	go handlePendingDeleteModels(ctx, namespace, s, grpcClient)
 	// on new reconnects we reload the models that are marked as loaded in k8s as the scheduler might have lost the state
-	go handleLoadedModels(ctx, namespace, s, grcpClient)
+	go handleLoadedModels(ctx, namespace, s, grpcClient)
 
 	for {
 		event, err := stream.Recv()

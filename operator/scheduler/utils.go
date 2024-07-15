@@ -26,7 +26,7 @@ import (
 // TODO: unify these helper functions as they do more or less the same thing
 
 func handleLoadedExperiments(
-	ctx context.Context, namespace string, s *SchedulerClient, grcpClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all experiments in the namespace
 	err := s.List(
@@ -42,7 +42,7 @@ func handleLoadedExperiments(
 		// experiments that are not in the process of being deleted has DeletionTimestamp as zero
 		if experiment.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling start experiment (on reconnect)", "experiment", experiment.Name)
-			if _, err := s.StartExperiment(ctx, &experiment, grcpClient); err != nil {
+			if _, err := s.StartExperiment(ctx, &experiment, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
 			} else {
@@ -88,7 +88,7 @@ func handlePendingDeleteExperiments(
 // when need to reload the models that are marked in k8s as loaded, this is because there could be a
 // case where the scheduler has load the models state (if the scheduler and the model server restart at the same time)
 func handleLoadedModels(
-	ctx context.Context, namespace string, s *SchedulerClient, grcpClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -104,7 +104,7 @@ func handleLoadedModels(
 		// models that are not in the process of being deleted has DeletionTimestamp as zero
 		if model.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling Load model (on reconnect)", "model", model.Name)
-			if _, err := s.LoadModel(ctx, &model, grcpClient); err != nil {
+			if _, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
 			} else {
@@ -117,7 +117,7 @@ func handleLoadedModels(
 }
 
 func handlePendingDeleteModels(
-	ctx context.Context, namespace string, s *SchedulerClient, grcpClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -133,7 +133,7 @@ func handlePendingDeleteModels(
 	for _, model := range modelList.Items {
 		if !model.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling Unload model (on reconnect)", "model", model.Name)
-			if retryUnload, err := s.UnloadModel(ctx, &model, grcpClient); err != nil {
+			if retryUnload, err := s.UnloadModel(ctx, &model, grpcClient); err != nil {
 				if retryUnload {
 					// caller will retry as this method is called on connection reconnect
 					s.logger.Error(err, "Failed to call unload model", "model", model.Name)
@@ -167,7 +167,7 @@ func handlePendingDeleteModels(
 }
 
 func handleLoadedPipelines(
-	ctx context.Context, namespace string, s *SchedulerClient, grcpClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
 	pipelineList := &v1alpha1.PipelineList{}
 	// Get all pipelines in the namespace
 	err := s.List(
@@ -183,7 +183,7 @@ func handleLoadedPipelines(
 		// pipelines that are not in the process of being deleted has DeletionTimestamp as zero
 		if pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling load pipeline (on reconnect)", "pipeline", pipeline.Name)
-			if _, err := s.LoadPipeline(ctx, &pipeline, grcpClient); err != nil {
+			if _, err := s.LoadPipeline(ctx, &pipeline, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load pipeline", "pipeline", pipeline.Name)
 			} else {
@@ -226,11 +226,11 @@ func handlePendingDeletePipelines(
 	}
 }
 
-func getNumExperimentsFromScheduler(ctx context.Context, grcpClient scheduler.SchedulerClient) (int, error) {
+func getNumExperimentsFromScheduler(ctx context.Context, grpcClient scheduler.SchedulerClient) (int, error) {
 	req := &scheduler.ExperimentStatusRequest{
 		SubscriberName: "seldon manager",
 	}
-	streamForExperimentStatuses, err := grcpClient.ExperimentStatus(ctx, req)
+	streamForExperimentStatuses, err := grpcClient.ExperimentStatus(ctx, req)
 	numExperimentsFromScheduler := 0
 	if err != nil {
 		return 0, err
@@ -250,11 +250,11 @@ func getNumExperimentsFromScheduler(ctx context.Context, grcpClient scheduler.Sc
 	return numExperimentsFromScheduler, nil
 }
 
-func getNumPipelinesFromScheduler(ctx context.Context, grcpClient scheduler.SchedulerClient) (int, error) {
+func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.SchedulerClient) (int, error) {
 	req := &scheduler.PipelineStatusRequest{
 		SubscriberName: "seldon manager",
 	}
-	streamForPipelineStatuses, err := grcpClient.PipelineStatus(ctx, req)
+	streamForPipelineStatuses, err := grpcClient.PipelineStatus(ctx, req)
 	numPipelinesFromScheduler := 0
 	if err != nil {
 		return 0, err

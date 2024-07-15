@@ -73,10 +73,10 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grcpClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
 
-	stream, err := grcpClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grpcClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
@@ -85,14 +85,14 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grcpCli
 	// if there are no experiments in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that migrated the state
 	// to v2 (where we delete the experiments from the scheduler state)
-	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grcpClient)
+	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grpcClient)
 	if err != nil {
 		return err
 	}
 	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
 	// also remove finalizers from experiments that are being deleted
 	if numExperimentsFromScheduler == 0 {
-		handleLoadedExperiments(ctx, namespace, s, grcpClient)
+		handleLoadedExperiments(ctx, namespace, s, grpcClient)
 		handlePendingDeleteExperiments(ctx, namespace, s)
 	}
 
