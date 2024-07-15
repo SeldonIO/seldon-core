@@ -129,7 +129,6 @@ func (pdb *PipelineDBManager) get(name string) (*Pipeline, error) {
 			return err
 		}
 		return item.Value(func(v []byte) error {
-
 			snapshot := scheduler.PipelineSnapshot{}
 			err = proto.Unmarshal(v, &snapshot)
 			if err != nil {

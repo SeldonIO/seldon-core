@@ -137,7 +137,6 @@ func (edb *ExperimentDBManager) get(name string) (*Experiment, error) {
 			return err
 		}
 		return item.Value(func(v []byte) error {
-
 			snapshot := scheduler.ExperimentSnapshot{}
 			err = proto.Unmarshal(v, &snapshot)
 			if err != nil {
