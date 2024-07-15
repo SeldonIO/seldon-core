@@ -717,7 +717,7 @@ func TestGetNumPipelines(t *testing.T) {
 			},
 		},
 		{
-			name:    "experiment ok",
+			name:    "no pipelines",
 			results: []*scheduler.PipelineStatusResponse{},
 		},
 	}
