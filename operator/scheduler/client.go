@@ -132,9 +132,9 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 
 // A smoke test allows us to quickly check if we actually have a functional grpc connection to the scheduler
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
-	grcpClient := scheduler.NewSchedulerClient(conn)
+	grpcClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grpcClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName stri
 }
 
 func retryFn(
-	fn func(context context.Context, conn *grpc.ClientConn, namespace string) error,
+	fn func(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
 	logger.Info("RetryFn", "namespace", namespace)
@@ -262,7 +262,8 @@ func retryFn(
 	}
 	backOffExp := backoff.NewExponentialBackOff()
 	fnWithArgs := func() error {
-		return fn(context.Background(), conn, namespace)
+		grpcClient := scheduler.NewSchedulerClient(conn)
+		return fn(context.Background(), grpcClient, namespace)
 	}
 	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 	if err != nil {
