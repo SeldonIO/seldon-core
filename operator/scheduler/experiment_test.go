@@ -347,7 +347,7 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 				g.Expect(len(grpcClient.requests_experiments)).To(Equal(0))
 			}
 
-			// check state is correct for each pipeline
+			// check state is correct for each experiment
 			for _, r := range test.results {
 				if !isBeingDeleted[r.ExperimentName] {
 					experiment := &mlopsv1alpha1.Experiment{}
