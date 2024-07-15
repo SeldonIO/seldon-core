@@ -421,19 +421,19 @@ func TestSubscribePipelineEvents(t *testing.T) {
 						g.Expect(err).To(BeNil())
 					}
 					if r.Versions[0].State.Status == scheduler.PipelineVersionState_PipelineReady && r.Versions[0].State.ModelsReady {
-						g.Expect(pipeline.Status.IsReady()).To(BeTrue())
+						g.Expect(pipeline.Status.IsReady()).To(BeTrueBecause("Pipeline and Models are ready"))
 					} else {
-						g.Expect(pipeline.Status.IsReady()).To(BeFalse())
+						g.Expect(pipeline.Status.IsReady()).To(BeFalseBecause("Either Pipline or Models are not ready"))
 					}
 					if r.Versions[0].State.Status == scheduler.PipelineVersionState_PipelineReady {
-						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeTrue())
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeTrueBecause("Pipeline is ready"))
 					} else {
-						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeFalse())
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.PipelineReady)).To(BeFalseBecause("Pipeline is not ready"))
 					}
 					if r.Versions[0].State.ModelsReady {
-						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.ModelsReady)).To(BeTrue())
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.ModelsReady)).To(BeTrueBecause("Models are ready"))
 					} else {
-						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.ModelsReady)).To(BeFalse())
+						g.Expect(pipeline.Status.IsConditionReady(mlopsv1alpha1.ModelsReady)).To(BeFalseBecause("Models are not ready"))
 					}
 
 				} else {

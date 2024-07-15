@@ -368,27 +368,27 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 					}
 
 					if r.CandidatesReady && r.Active && r.MirrorReady {
-						g.Expect(experiment.Status.IsReady()).To(BeTrue())
+						g.Expect(experiment.Status.IsReady()).To(BeTrueBecause("All CandidatesReady, Active and MirrorReady are true"))
 					} else {
-						g.Expect(experiment.Status.IsReady()).To(BeFalse())
+						g.Expect(experiment.Status.IsReady()).To(BeFalseBecause("Either CandidatesReady, Active and MirrorReady are false"))
 					}
 
 					if r.Active {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.ExperimentReady)).To(BeTrue())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.ExperimentReady)).To(BeTrueBecause("Active is true"))
 					} else {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.ExperimentReady)).To(BeFalse())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.ExperimentReady)).To(BeFalseBecause("Active is false"))
 					}
 
 					if r.MirrorReady {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.MirrorReady)).To(BeTrue())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.MirrorReady)).To(BeTrueBecause("MirrorReady is true"))
 					} else {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.MirrorReady)).To(BeFalse())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.MirrorReady)).To(BeFalseBecause("MirrorReady is false"))
 					}
 
 					if r.CandidatesReady {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.CandidatesReady)).To(BeTrue())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.CandidatesReady)).To(BeTrueBecause("CandidatesReady is true"))
 					} else {
-						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.CandidatesReady)).To(BeFalse())
+						g.Expect(experiment.Status.IsConditionReady(mlopsv1alpha1.CandidatesReady)).To(BeFalseBecause("CandidatesReady is false"))
 					}
 
 				} else {
@@ -402,9 +402,9 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 						experiment,
 					)
 					if err != nil { // in case the experiment is remove from k8s we should get an error and active is false
-						g.Expect(r.Active).To(BeFalse())
+						g.Expect(r.Active).To(BeFalseBecause("Experiment is not in k8s"))
 					} else {
-						g.Expect(r.Active).To(BeTrue())
+						g.Expect(r.Active).To(BeTrueBecause("Experiment is in k8s"))
 					}
 				}
 			}
