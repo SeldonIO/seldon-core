@@ -10,11 +10,16 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	"encoding/json"
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/tidwall/gjson"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
@@ -320,6 +325,89 @@ func TestAsModelDetails(t *testing.T) {
 				g.Expect(md).To(Equal(test.modelpb))
 			} else {
 				g.Expect(err).ToNot(BeNil())
+			}
+		})
+	}
+}
+
+/* WARNING: Read this first if test below fails (either at compile-time or while running the
+* test):
+*
+* The test below aims to ensure that the fields used in kubebuilder:printcolumn comments in
+* model_types.go match the structure and condition types in the Model CRD.
+*
+* If the test fails, it means that the CRD was updated without updating the kubebuilder:
+* printcolumn comments.
+*
+* Rather than fixing the test directly, FIRST UPDATE the kubebuilder:printcolumn comments,
+* THEN update the test to also match the new values.
+*
+ */
+func TestModelStatusPrintColumns(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                          string
+		model                         *Model
+		expectedJsonSerializationKeys []string
+	}
+	condition_fail_reason := "Model.Status.Conditions[].Type string changed in CRD from \"%s\" to \"%[2]s\" without updating kubebuilder:printcolumn comment for type Model. " +
+		"Update kubebuilder:printcolumn comment in model_types.go to match \"%[2]s\"."
+	json_fail_reason := "Json serialization of Model.Status does not contain path \"%s\", used in kubebuilder.printcolum comments. " +
+		"Update kubebuilder:printcolumn comments to match the new serialization keys."
+
+	// !! When the test fails, update the string values here ONLY after updating the kubebuilder:
+	// printcolumn comments in model_types.go to match the new values
+	//
+	// The key represents the condition used by the CR, the value is the string currently used in
+	// the kubebuilder:printcolumn comments.
+	expectedPrintColumnString := map[apis.ConditionType]string{
+		ModelReady:          "ModelReady",
+		apis.ConditionReady: "Ready",
+	}
+
+	tests := []test{
+		{
+			name: "model ready conditions",
+			model: &Model{
+				Status: ModelStatus{
+					Status: duckv1.Status{
+						Conditions: duckv1.Conditions{
+							// pass the strings used in kubebuilder:printcolumn comments as the ConditionType
+							{Type: apis.ConditionType(expectedPrintColumnString[ModelReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[apis.ConditionReady]), Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "model replicas",
+			model: &Model{
+				Status: ModelStatus{
+					Replicas: 1,
+				},
+			},
+			expectedJsonSerializationKeys: []string{"status.replicas"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.model.Status.Conditions != nil {
+				searchMap := make(map[string]v1.ConditionStatus)
+				for _, cond := range test.model.Status.Conditions {
+					searchMap[string(cond.Type)] = cond.Status
+				}
+				for conditionKey, printColumnString := range expectedPrintColumnString {
+					_, found := searchMap[string(conditionKey)]
+					g.Expect(found).To(BeTrueBecause(condition_fail_reason, printColumnString, string(conditionKey)))
+				}
+			} else {
+				jsonBytes, err := json.Marshal(test.model)
+				g.Expect(err).To(BeNil())
+				for _, key := range test.expectedJsonSerializationKeys {
+					g.Expect(gjson.GetBytes(jsonBytes, key).Exists()).To(BeTrueBecause(json_fail_reason, key))
+				}
 			}
 		})
 	}

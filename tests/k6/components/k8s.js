@@ -8,7 +8,7 @@ import { seldonObjectType, seldonOpExecStatus } from '../components/seldon.js'
 import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
-const MAX_RETRIES = 60;
+export const MAX_RETRIES = 10;
 var kubeclient = null;
 var schedulerClient = null;
 
@@ -17,7 +17,7 @@ export function init() {
     // (rather than only doing it when kubeclient is null) because if k8s
     // operations happen within VUs, on starting a new iteration, the internal
     // kubeclient state becomes invalid (all operations will return
-    // client-side throttling errors). This does meant each VU will need to call
+    // client-side throttling errors). This does mean each VU will need to call
     // init() at the beginning of the iteration.
     kubeclient = new Kubernetes();
     return kubeclient
@@ -47,9 +47,69 @@ function seldonObjExists(kind, name, ns) {
     }
 }
 
+function getPrefixAndSuffixFilter(prefix, suffix) {
+  let filterFn = null
+  if(prefix !== "" || suffix !== ""){
+      filterFn = (name) => name.startsWith(prefix) && name.endsWith(suffix)
+  }
+  return filterFn
+}
+
+function getSeldonObjectList(type, mapFn=null, filterFn=null) {
+    try {
+        let objList = kubeclient.list(type.description, seldon_target_ns)
+        if (mapFn !== null) {
+            objList = objList.map(mapFn)
+        }
+        if (filterFn !== null) {
+            objList = objList.filter(filterFn)
+        }
+        return objList
+    } catch (error) {
+        console.log(`K8S error in listing ${type.description}: ${error}`)
+        return []
+    }
+}
+
+function getObjectCondition(objCR, targetConditionType, field = null) {
+    var k8sCondition = {
+        "value": "K8sStatusUnknown",
+        "met": false
+    };
+    if('status' in objCR) {
+        let status = objCR.status
+        if ('conditions' in status) {
+            for (let i = 0; i < status.conditions.length; i++){
+                let condition = objCR.status.conditions[i]
+                if (condition.type === targetConditionType) {
+                    if (field === null) {
+                        k8sCondition.value = condition
+                    } else {
+                        k8sCondition.value = condition[field]
+                    }
+                    k8sCondition.met = (condition.status === "True")
+                    break
+                }
+            }
+        }
+    }
+    return k8sCondition
+}
+
+
+/************
+ *
+ * Models
+ *
+ *****/
+
+export function getAllModels() {
+    return getSeldonObjectList(seldonObjectType.MODEL)
+}
+
 /**
- * getModels() can be used to get the models currently loaded in the configured
- * namespace.
+ * getExistingModelNames() can be used to get the models currently loaded in the
+ * configured namespace.
  *
  * When passing prefix/suffix constrains, a filtered list is returned.
  *
@@ -64,19 +124,28 @@ function seldonObjExists(kind, name, ns) {
  * together to retrieve all models of a given type that are managed by a given
  * VU
  */
-export function getModels(namePrefix="", nameSuffix="") {
+export function getExistingModelNames(namePrefix="", nameSuffix="") {
     try {
-        const modelList = kubeclient.list(seldonObjectType.MODEL.description, seldon_target_ns)
-        const modelNames = modelList.map((modelCR) => modelCR.metadata.name)
-        if(namePrefix === "" && nameSuffix === ""){
-            return modelNames
-        }
-        const filteredModels = modelNames.filter((s) => s.startsWith(namePrefix) && s.endsWith(nameSuffix))
-        return filteredModels
+        const filterFn = getPrefixAndSuffixFilter(namePrefix, nameSuffix)
+        const modelNames = getSeldonObjectList(
+            seldonObjectType.MODEL,
+            (modelCR) => modelCR.metadata.name,
+            filterFn
+        )
+        return modelNames
     } catch (error) {
         console.log("K8S List Models Error:" + error)
         return []
     }
+}
+
+export function modelConditionMet(modelName, targetCondition) {
+    var modelObj = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
+    return getObjectCondition(modelObj, targetCondition, "status").met
+}
+
+export function getModelReadyCondition(modelCR) {
+    return getObjectCondition(modelCR, "ModelReady", "message")
 }
 
 export function loadModel(modelName, data, awaitReady=true) {
@@ -98,11 +167,11 @@ export function loadModel(modelName, data, awaitReady=true) {
 export function awaitStatus(modelName, status) {
     let retries = 0
     try {
-        while (!getModelStatus(modelName, status)) {
+        while (!modelConditionMet(modelName, status)) {
             sleep(1)
             retries++
             if(retries > MAX_RETRIES) {
-                console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES}`)
+                console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES} retries`)
                 return seldonOpExecStatus.FAIL
             }
         }
@@ -111,21 +180,6 @@ export function awaitStatus(modelName, status) {
         // in case getModelStatus throws an exception
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
-}
-
-export function getModelStatus(modelName, targetStatus) {
-    var modelObj = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
-    if ('status' in modelObj) {
-        let status = modelObj.status
-        if ('conditions' in status) {
-            for (let i = 0; i < status.conditions.length; i++) {
-                if(status.conditions[i].type === targetStatus) {
-                    return status.conditions[i].status === "True"
-                }
-            }
-        }
-    }
-    return false
 }
 
 export function unloadModel(modelName, awaitReady=true) {
@@ -151,6 +205,50 @@ export function unloadModel(modelName, awaitReady=true) {
     return seldonOpExecStatus.CONCURRENT_OP_FAIL
 }
 
+
+/************
+ *
+ * Pipelines
+ *
+ *****/
+
+export function getAllPipelines() {
+    return getSeldonObjectList(seldonObjectType.PIPELINE)
+}
+
+/**
+ * getExistingPipelineNames() can be used to get the pipelines currently loaded in the
+ * configured namespace.
+ *
+ * When passing prefix/suffix constrains, a filtered list is returned.
+ *
+ * With suitable pipeline names (i.e consistent naming per type, distinct prefixes
+ * amongst types), passing a namePrefix is used to filter pipelines of a given type
+ */
+export function getExistingPipelineNames(namePrefix="", nameSuffix="") {
+    try {
+        const filterFn = getPrefixAndSuffixFilter(namePrefix, nameSuffix)
+        const pipelineNames = getSeldonObjectList(
+            seldonObjectType.PIPELINE,
+            (pipelineCR) => pipelineCR.metadata.name,
+            filterFn
+        )
+        return pipelineNames
+    } catch (error) {
+        console.log("K8S List Pipelines Error:" + error)
+        return []
+    }
+}
+
+export function pipelineConditionMet(pipelineName, targetCondition) {
+    let pipelineObj = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
+    return getObjectCondition(pipelineObj, targetCondition, "status").met
+}
+
+export function getPipelineReadyCondition(pipelineCR) {
+    return getObjectCondition(pipelineCR, "PipelineReady", "reason")
+}
+
 export function loadPipeline(pipelineName, data, awaitReady=true) {
     try {
         kubeclient.apply(data)
@@ -170,7 +268,7 @@ export function loadPipeline(pipelineName, data, awaitReady=true) {
 export function awaitPipelineStatus(pipelineName, status) {
     let retries = 0
     try {
-        while (!getPipelineStatus(pipelineName, status)) {
+        while (!pipelineConditionMet(pipelineName, status)) {
             sleep(1)
             retries++
             if(retries > MAX_RETRIES) {
@@ -183,23 +281,6 @@ export function awaitPipelineStatus(pipelineName, status) {
         // in case getPipelineStatus throws an exception
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
-}
-
-export function getPipelineStatus(pipelineName, targetStatus) {
-    let pipelineObj = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
-    if ('status' in pipelineObj) {
-        let status = pipelineObj.status
-        if ('conditions' in status) {
-            for (let i = 0; i < status.conditions.length; i++) {
-                // return the most recent state (true/false) of the condition
-                // type named <targetStatus>
-                if(status.conditions[i].type == targetStatus) {
-                    return status.conditions[i].status === "True"
-                }
-            }
-        }
-    }
-    return false
 }
 
 export function unloadPipeline(pipelineName, awaitReady = true) {
@@ -223,6 +304,17 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
         }
     }
     return seldonOpExecStatus.CONCURRENT_OP_FAIL
+}
+
+
+/************
+ *
+ * Experiments
+ *
+ *****/
+
+export function getAllExperiments() {
+    return getSeldonObjectList(seldonObjectType.EXPERIMENT)
 }
 
 export function loadExperiment(experimentName, data, awaitReady=true) {

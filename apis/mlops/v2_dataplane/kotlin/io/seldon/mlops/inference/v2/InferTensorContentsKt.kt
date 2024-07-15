@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializeinferTensorContents")
 public inline fun inferTensorContents(block: io.seldon.mlops.inference.v2.InferTensorContentsKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents =
   io.seldon.mlops.inference.v2.InferTensorContentsKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.newBuilder()).apply { block() }._build()
 public object InferTensorContentsKt {
@@ -905,3 +905,4 @@ public object InferTensorContentsKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents.copy(block: io.seldon.mlops.inference.v2.InferTensorContentsKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents =
   io.seldon.mlops.inference.v2.InferTensorContentsKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

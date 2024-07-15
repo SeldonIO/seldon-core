@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializeinferParameter")
 public inline fun inferParameter(block: io.seldon.mlops.inference.v2.InferParameterKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.InferParameter =
   io.seldon.mlops.inference.v2.InferParameterKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.newBuilder()).apply { block() }._build()
 public object InferParameterKt {
@@ -150,3 +150,4 @@ public object InferParameterKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.InferParameter.copy(block: io.seldon.mlops.inference.v2.InferParameterKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.InferParameter =
   io.seldon.mlops.inference.v2.InferParameterKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

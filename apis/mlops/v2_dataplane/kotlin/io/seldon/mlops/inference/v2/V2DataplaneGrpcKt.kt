@@ -74,6 +74,21 @@ object GRPCInferenceServiceGrpcKt {
     @JvmStatic
     get() = GRPCInferenceServiceGrpc.getModelInferMethod()
 
+  val repositoryIndexMethod: MethodDescriptor<V2Dataplane.RepositoryIndexRequest,
+      V2Dataplane.RepositoryIndexResponse>
+    @JvmStatic
+    get() = GRPCInferenceServiceGrpc.getRepositoryIndexMethod()
+
+  val repositoryModelLoadMethod: MethodDescriptor<V2Dataplane.RepositoryModelLoadRequest,
+      V2Dataplane.RepositoryModelLoadResponse>
+    @JvmStatic
+    get() = GRPCInferenceServiceGrpc.getRepositoryModelLoadMethod()
+
+  val repositoryModelUnloadMethod: MethodDescriptor<V2Dataplane.RepositoryModelUnloadRequest,
+      V2Dataplane.RepositoryModelUnloadResponse>
+    @JvmStatic
+    get() = GRPCInferenceServiceGrpc.getRepositoryModelUnloadMethod()
+
   /**
    * A stub for issuing RPCs to a(n) inference.GRPCInferenceService service as suspending
    * coroutines.
@@ -205,6 +220,66 @@ object GRPCInferenceServiceGrpcKt {
       request,
       callOptions,
       headers
+    )
+    /**
+     * Executes this RPC and returns the response message, suspending until the RPC completes
+     * with [`Status.OK`][Status].  If the RPC completes with another status, a corresponding
+     * [StatusException] is thrown.  If this coroutine is cancelled, the RPC is also cancelled
+     * with the corresponding exception as a cause.
+     *
+     * @param request The request message to send to the server.
+     *
+     * @param headers Metadata to attach to the request.  Most users will not need this.
+     *
+     * @return The single response from the server.
+     */
+    suspend fun repositoryIndex(request: V2Dataplane.RepositoryIndexRequest, headers: Metadata =
+        Metadata()): V2Dataplane.RepositoryIndexResponse = unaryRpc(
+      channel,
+      GRPCInferenceServiceGrpc.getRepositoryIndexMethod(),
+      request,
+      callOptions,
+      headers
+    )
+    /**
+     * Executes this RPC and returns the response message, suspending until the RPC completes
+     * with [`Status.OK`][Status].  If the RPC completes with another status, a corresponding
+     * [StatusException] is thrown.  If this coroutine is cancelled, the RPC is also cancelled
+     * with the corresponding exception as a cause.
+     *
+     * @param request The request message to send to the server.
+     *
+     * @param headers Metadata to attach to the request.  Most users will not need this.
+     *
+     * @return The single response from the server.
+     */
+    suspend fun repositoryModelLoad(request: V2Dataplane.RepositoryModelLoadRequest,
+        headers: Metadata = Metadata()): V2Dataplane.RepositoryModelLoadResponse = unaryRpc(
+      channel,
+      GRPCInferenceServiceGrpc.getRepositoryModelLoadMethod(),
+      request,
+      callOptions,
+      headers
+    )
+    /**
+     * Executes this RPC and returns the response message, suspending until the RPC completes
+     * with [`Status.OK`][Status].  If the RPC completes with another status, a corresponding
+     * [StatusException] is thrown.  If this coroutine is cancelled, the RPC is also cancelled
+     * with the corresponding exception as a cause.
+     *
+     * @param request The request message to send to the server.
+     *
+     * @param headers Metadata to attach to the request.  Most users will not need this.
+     *
+     * @return The single response from the server.
+     */
+    suspend fun repositoryModelUnload(request: V2Dataplane.RepositoryModelUnloadRequest,
+        headers: Metadata = Metadata()): V2Dataplane.RepositoryModelUnloadResponse = unaryRpc(
+      channel,
+      GRPCInferenceServiceGrpc.getRepositoryModelUnloadMethod(),
+      request,
+      callOptions,
+      headers
     )}
 
   /**
@@ -304,6 +379,51 @@ object GRPCInferenceServiceGrpcKt {
         V2Dataplane.ModelInferResponse = throw
         StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.ModelInfer is unimplemented"))
 
+    /**
+     * Returns the response to an RPC for inference.GRPCInferenceService.RepositoryIndex.
+     *
+     * If this method fails with a [StatusException], the RPC will fail with the corresponding
+     * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
+     * will fail
+     * with status `Status.CANCELLED`.  If this method fails for any other reason, the RPC will
+     * fail with `Status.UNKNOWN` with the exception as a cause.
+     *
+     * @param request The request from the client.
+     */
+    open suspend fun repositoryIndex(request: V2Dataplane.RepositoryIndexRequest):
+        V2Dataplane.RepositoryIndexResponse = throw
+        StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.RepositoryIndex is unimplemented"))
+
+    /**
+     * Returns the response to an RPC for inference.GRPCInferenceService.RepositoryModelLoad.
+     *
+     * If this method fails with a [StatusException], the RPC will fail with the corresponding
+     * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
+     * will fail
+     * with status `Status.CANCELLED`.  If this method fails for any other reason, the RPC will
+     * fail with `Status.UNKNOWN` with the exception as a cause.
+     *
+     * @param request The request from the client.
+     */
+    open suspend fun repositoryModelLoad(request: V2Dataplane.RepositoryModelLoadRequest):
+        V2Dataplane.RepositoryModelLoadResponse = throw
+        StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.RepositoryModelLoad is unimplemented"))
+
+    /**
+     * Returns the response to an RPC for inference.GRPCInferenceService.RepositoryModelUnload.
+     *
+     * If this method fails with a [StatusException], the RPC will fail with the corresponding
+     * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
+     * will fail
+     * with status `Status.CANCELLED`.  If this method fails for any other reason, the RPC will
+     * fail with `Status.UNKNOWN` with the exception as a cause.
+     *
+     * @param request The request from the client.
+     */
+    open suspend fun repositoryModelUnload(request: V2Dataplane.RepositoryModelUnloadRequest):
+        V2Dataplane.RepositoryModelUnloadResponse = throw
+        StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.RepositoryModelUnload is unimplemented"))
+
     final override fun bindService(): ServerServiceDefinition = builder(getServiceDescriptor())
       .addMethod(unaryServerMethodDefinition(
       context = this.context,
@@ -334,6 +454,21 @@ object GRPCInferenceServiceGrpcKt {
       context = this.context,
       descriptor = GRPCInferenceServiceGrpc.getModelInferMethod(),
       implementation = ::modelInfer
+    ))
+      .addMethod(unaryServerMethodDefinition(
+      context = this.context,
+      descriptor = GRPCInferenceServiceGrpc.getRepositoryIndexMethod(),
+      implementation = ::repositoryIndex
+    ))
+      .addMethod(unaryServerMethodDefinition(
+      context = this.context,
+      descriptor = GRPCInferenceServiceGrpc.getRepositoryModelLoadMethod(),
+      implementation = ::repositoryModelLoad
+    ))
+      .addMethod(unaryServerMethodDefinition(
+      context = this.context,
+      descriptor = GRPCInferenceServiceGrpc.getRepositoryModelUnloadMethod(),
+      implementation = ::repositoryModelUnload
     )).build()
   }
 }

@@ -14,7 +14,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,24 +25,27 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
+func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("LoadPipeline")
-	conn, err := s.getConnection(pipeline.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if grpcClient == nil {
+		conn, err := s.getConnection(pipeline.Namespace)
+		if err != nil {
+			return true, err
+		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.LoadPipelineRequest{
 		Pipeline: pipeline.AsSchedulerPipeline(),
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
-	_, err = grcpClient.LoadPipeline(
+	_, err = grpcClient.LoadPipeline(
 		ctx,
 		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
+	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
 
 func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
@@ -52,12 +54,12 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	if err != nil {
 		return err, true
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
+	grpcClient := scheduler.NewSchedulerClient(conn)
 	req := scheduler.UnloadPipelineRequest{
 		Name: pipeline.Name,
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
-	_, err = grcpClient.UnloadPipeline(
+	_, err = grpcClient.UnloadPipeline(
 		ctx,
 		&req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -77,11 +79,10 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribePipelineStatus(
+	stream, err := grpcClient.SubscribePipelineStatus(
 		ctx,
 		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
@@ -89,6 +90,20 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, conn *grp
 	)
 	if err != nil {
 		return err
+	}
+
+	// get pipelines from the scheduler
+	// if there are no pipelines in the scheduler state then we need to create them
+	// this is likely because of the scheduler state got deleted
+	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grpcClient)
+	if err != nil {
+		return err
+	}
+	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from pipelines that are being deleted
+	if numPipelinesFromScheduler == 0 {
+		handleLoadedPipelines(ctx, namespace, s, grpcClient)
+		handlePendingDeletePipelines(ctx, namespace, s)
 	}
 
 	for {

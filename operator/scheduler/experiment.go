@@ -14,7 +14,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,55 +25,77 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
+func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StartExperiment")
-	conn, err := s.getConnection(experiment.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if grpcClient == nil {
+		conn, err := s.getConnection(experiment.Namespace)
+		if err != nil {
+			return true, err
+		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
+
 	req := &scheduler.StartExperimentRequest{
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err = grcpClient.StartExperiment(
+	_, err = grpcClient.StartExperiment(
 		ctx,
 		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
+	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
-func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment) (error, bool) {
+func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StopExperiment")
-	conn, err := s.getConnection(experiment.Namespace)
-	if err != nil {
-		return err, true
+	var err error
+	if grpcClient == nil {
+		conn, err := s.getConnection(experiment.Namespace)
+		if err != nil {
+			return true, err
+		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StopExperimentRequest{
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err = grcpClient.StopExperiment(
+	_, err = grpcClient.StopExperiment(
 		ctx,
 		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
-	return err, s.checkErrorRetryable(experiment.Kind, experiment.Name, err)
+	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
 // namespace is not used in this function
-func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, conn *grpc.ClientConn, namespace string) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
-	grcpClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grcpClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grpcClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
+
+	// get experiments from the scheduler
+	// if there are no experiments in the scheduler state then we need to create them
+	// this is likely because of a restart of the scheduler that migrated the state
+	// to v2 (where we delete the experiments from the scheduler state)
+	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grpcClient)
+	if err != nil {
+		return err
+	}
+	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from experiments that are being deleted
+	if numExperimentsFromScheduler == 0 {
+		handleLoadedExperiments(ctx, namespace, s, grpcClient)
+		handlePendingDeleteExperiments(ctx, namespace, s)
+	}
+
 	for {
 		event, err := stream.Recv()
 		if err != nil {

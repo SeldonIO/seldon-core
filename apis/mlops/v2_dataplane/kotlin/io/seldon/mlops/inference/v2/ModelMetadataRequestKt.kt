@@ -12,7 +12,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.mlops.inference.v2;
 
-@kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("-initializemodelMetadataRequest")
 public inline fun modelMetadataRequest(block: io.seldon.mlops.inference.v2.ModelMetadataRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest =
   io.seldon.mlops.inference.v2.ModelMetadataRequestKt.Dsl._create(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest.newBuilder()).apply { block() }._build()
 public object ModelMetadataRequestKt {
@@ -87,3 +87,4 @@ public object ModelMetadataRequestKt {
 @kotlin.jvm.JvmSynthetic
 public inline fun io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest.copy(block: io.seldon.mlops.inference.v2.ModelMetadataRequestKt.Dsl.() -> kotlin.Unit): io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest =
   io.seldon.mlops.inference.v2.ModelMetadataRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+

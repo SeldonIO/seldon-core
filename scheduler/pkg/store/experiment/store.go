@@ -92,6 +92,20 @@ func getExperimentDbFolder(basePath string) string {
 	return filepath.Join(basePath, experimentDbFolder)
 }
 
+// we just add a reference to the experiment in the memory store
+// so that we can keep track of it in case we need to replay the event (to the controller)
+// we do not trigger an event though as envoy has a clean state when the scheduler restarts
+func (es *ExperimentStore) AddExperimentInMap(experiment *Experiment) error {
+	es.mu.Lock()
+	defer es.mu.Unlock()
+	if _, ok := es.experiments[experiment.Name]; !ok {
+		es.experiments[experiment.Name] = experiment
+		return nil
+	} else {
+		return fmt.Errorf("Experiment %s already exists", experiment.Name)
+	}
+}
+
 func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	logger := es.logger.WithField("func", "initialiseDB")
 	experimentDbPath := getExperimentDbFolder(path)
@@ -106,7 +120,7 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	}
 	es.db = db
 	// If database already existed we can restore else this is a noop
-	err = es.db.restore(es.StartExperiment)
+	err = es.db.restore(es.StartExperiment, es.AddExperimentInMap)
 	if err != nil {
 		return err
 	}
@@ -400,6 +414,12 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 				}
 			default:
 				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+			}
+		}
+		if es.db != nil {
+			err := es.db.save(experiment)
+			if err != nil {
+				return nil, nil, nil, err
 			}
 		}
 		return es.createExperimentEventMsg(experiment, true), modelEvt, pipelineEvt, nil
