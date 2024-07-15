@@ -14,7 +14,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"google.golang.org/grpc"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,21 +49,21 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
-func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, conn *grpc.ClientConn) (bool, error) {
+func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StopExperiment")
 	var err error
-	if conn == nil {
-		conn, err = s.getConnection(experiment.Namespace)
+	if grpcClient == nil {
+		conn, err := s.getConnection(experiment.Namespace)
 		if err != nil {
 			return true, err
 		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grcpClient := scheduler.NewSchedulerClient(conn)
 	req := &scheduler.StopExperimentRequest{
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err = grcpClient.StopExperiment(
+	_, err = grpcClient.StopExperiment(
 		ctx,
 		req,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
