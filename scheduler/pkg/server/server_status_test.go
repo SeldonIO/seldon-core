@@ -172,15 +172,15 @@ func TestModelsStatusEvents(t *testing.T) {
 }
 
 func TestServersStatusStream(t *testing.T) {
-	type req struct {
-		r        *pba.AgentSubscribeRequest
+	type serverReplicaRequest struct {
+		request        *pba.AgentSubscribeRequest
 		draining bool
 	}
 
 	g := NewGomegaWithT(t)
 	type test struct {
 		name    string
-		loadReq []req
+		loadReq []serverReplicaRequest
 		server  *SchedulerServer
 		err     bool
 	}
@@ -188,9 +188,9 @@ func TestServersStatusStream(t *testing.T) {
 	tests := []test{
 		{
 			name: "server ok - 1 empty replica",
-			loadReq: []req{
+			loadReq: []serverReplicaRequest{
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 					},
 				},
@@ -203,9 +203,9 @@ func TestServersStatusStream(t *testing.T) {
 		},
 		{
 			name: "server ok - multiple replicas",
-			loadReq: []req{
+			loadReq: []serverReplicaRequest{
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 						ReplicaIdx: 0,
 						LoadedModels: []*pba.ModelVersion{
@@ -218,7 +218,7 @@ func TestServersStatusStream(t *testing.T) {
 					},
 				},
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 						ReplicaIdx: 1,
 						LoadedModels: []*pba.ModelVersion{
@@ -239,9 +239,9 @@ func TestServersStatusStream(t *testing.T) {
 		},
 		{
 			name: "server ok - multiple replicas with draining",
-			loadReq: []req{
+			loadReq: []serverReplicaRequest{
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 						ReplicaIdx: 0,
 						LoadedModels: []*pba.ModelVersion{
@@ -254,7 +254,7 @@ func TestServersStatusStream(t *testing.T) {
 					},
 				},
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 						ReplicaIdx: 1,
 						LoadedModels: []*pba.ModelVersion{
@@ -276,9 +276,9 @@ func TestServersStatusStream(t *testing.T) {
 		},
 		{
 			name: "timeout",
-			loadReq: []req{
+			loadReq: []serverReplicaRequest{
 				{
-					r: &pba.AgentSubscribeRequest{
+					request: &pba.AgentSubscribeRequest{
 						ServerName: "foo",
 					},
 				},
@@ -298,14 +298,14 @@ func TestServersStatusStream(t *testing.T) {
 			expectedNumLoadedModelReplicas := int32(0)
 			if test.loadReq != nil {
 				for _, r := range test.loadReq {
-					err := test.server.modelStore.AddServerReplica(r.r)
+					err := test.server.modelStore.AddServerReplica(r.request)
 					g.Expect(err).To(BeNil())
 					if !r.draining {
 						expectedReplicas++
-						expectedNumLoadedModelReplicas += int32(len(r.r.LoadedModels))
+						expectedNumLoadedModelReplicas += int32(len(r.request.LoadedModels))
 					} else {
 						server, _ := test.server.modelStore.GetServer("foo", true, false)
-						server.Replicas[int(r.r.ReplicaIdx)].SetIsDraining()
+						server.Replicas[int(r.request.ReplicaIdx)].SetIsDraining()
 					}
 				}
 			}
