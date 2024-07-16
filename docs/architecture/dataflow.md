@@ -6,11 +6,11 @@ Seldon Core v2 is designed around data flow paradigm. Here we will explain what 
 
 Initial release of Seldon Core introduced a concept of an _inference graph_, which can be thought of as a sequence of operations that happen to the inference request. Here is how it may look like:
 
-![inference_graph](inference_graph.png)
+![inference_graph](../images/inference_graph.png)
 
 In reality though this was not how Seldon Core v1 is implemented. Instead, Seldon deployment consists of a range of independent services that host models, transformations, detectors and explainers, and a central orchestrator that knows the inference graph topology and makes service calls in the correct order, passing data between requests and responses as necessary. Here is how the picture looks under the hood:
 
-![orchestrator](orchestrator-inference-graph.png)
+![orchestrator](../images/orchestrator-inference-graph.png)
 
 While this is a convenient way of implementing evaluation graph with microservices, it has a few problems. Orchestrator becomes a bottleneck and a single point of failure. It also hides all the data transformations that need to happen to translate one service's response to another service's request. Data tracing and lineage becomes difficult. All in all, while Seldon platform is all about processing data, under-the-hood implementation was still focused on order of operations and not on data itself.
 
@@ -24,7 +24,7 @@ Data flow design makes data in software the top priority. That is one of the key
 
 In the context of Seldon Core application of FBP design approach means that the evaluation implementation is done the same way inferece graph. So instead of routing everything through a centralized orchestrator the evaluation happens in the same graph-like manner:
 
-![dataflow](dataflow-inference-graph.png)
+![dataflow](../images/dataflow-inference-graph.png)
 
 As far as implementation goes, Seldon Core v2 runs on Kafka. Inference request is put onto a pipeline input topic, which triggers an evaluation. Each part of the inference graph is a service running in its own container fronted by a model gateway. Model gateway listens to a corresponding input Kafka topic, reads data from it, calls the service and puts the received response to an output Kafka topic. There is also a pipeline gateway that allows to interact with Seldon Core in synchronous manner.
 
