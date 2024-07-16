@@ -173,7 +173,7 @@ func TestModelsStatusEvents(t *testing.T) {
 
 func TestServersStatusStream(t *testing.T) {
 	type serverReplicaRequest struct {
-		request        *pba.AgentSubscribeRequest
+		request  *pba.AgentSubscribeRequest
 		draining bool
 	}
 
