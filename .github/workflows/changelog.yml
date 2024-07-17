@@ -3,40 +3,37 @@ name: Publish changelog to master on new release
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 env:
   GITHUB_USER: seldondev
 
 jobs:
-  update-release:
+  update-v2-changelog:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
-      - name: Checkout Git Commit
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "${GITHUB_USER}"
-          git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
-
-
-      - name: Configure node
-        uses: actions/setup-node@v4
+          ref: v2
+      - uses: rhysd/changelog-from-release/action@v3
         with:
-          node-version: 14
-
-      - name: Install auto-changelog tool
-        run: |
-          npm install -g auto-changelog
-
-      # - name: Generate and commit changelog
-      #   run: |
-      #     git checkout master
-      #     auto-changelog -l 5
-      #     git add CHANGELOG.md && git commit -m "Updating CHANGELOG.md on master"
-      #     git push
+          file: CHANGELOG.md
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit: false
+          args: -d=false -l=2
+          header: "# Changelog\n\n"
+      - name: Open PR with Changelog changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: ./CHANGELOG.md
+          commit-message: Update Changelog
+          branch: update-changelog
+          branch-suffix: timestamp
+          delete-branch: true
+          title: "ci: Update CHANGELOG"
+          labels: v2
+          body: "
+            # Updated CHANGELOG\n
+            This automated PR re-generates the changelog to keep it up to
+            date."
+          reviewers: sakoush, lc525
