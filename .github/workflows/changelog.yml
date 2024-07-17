@@ -1,4 +1,4 @@
-name: Publish changelog to master on new release
+name: Publish changelog to v2 on new release
 
 on:
   release:
