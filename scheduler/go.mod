@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/OneOfOne/xxhash v1.2.8
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/confluentinc/confluent-kafka-go/v2 v2.4.0
+	github.com/confluentinc/confluent-kafka-go/v2 v2.5.0
 	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/envoyproxy/go-control-plane v0.12.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -80,7 +80,7 @@ require (
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.4 // indirect
+	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -94,18 +94,18 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/signalfx/splunk-otel-go/instrumentation/internal v1.16.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	go.opencensus.io v0.23.0 // indirect
+	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.28.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.2.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
+	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237 // indirect
