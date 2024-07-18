@@ -3,8 +3,10 @@ None
 https://gotools.org/dmitri.shuralyov.com/gpu/mtl
 AdaLogics/go-fuzz-headers
 AlecAivazis/survey
+Azure/azure-sdk-for-go
 Azure/go-ansiterm
 Azure/go-autorest
+AzureAD/microsoft-authentication-library-for-go
 BurntSushi/toml
 BurntSushi/xgb
 Masterminds/semver
@@ -16,6 +18,7 @@ PuerkitoBio/purell
 PuerkitoBio/urlesc
 Shopify/sarama
 Shopify/toxiproxy
+acarl005/stripansi
 actgardner/gogen-avro
 alecthomas/jsonschema
 alecthomas/kingpin
@@ -23,6 +26,7 @@ alecthomas/template
 alecthomas/units
 antihax/optional
 antlr/antlr4
+antlr4-go/antlr
 armon/circbuf
 armon/consul-api
 armon/go-metrics
@@ -31,6 +35,7 @@ armon/go-socks5
 asaskevich/govalidator
 aws/aws-sdk-go-v2
 aws/smithy-go
+bahlo/generic-list-go
 benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy
@@ -38,7 +43,9 @@ bketelsen/crypt
 blang/semver
 blendle/zapdriver
 bmizerany/perks
+bufbuild/protocompile
 buger/goterm
+buger/jsonparser
 c2h5oh/datasize
 cenkalti/backoff
 census-instrumentation/opencensus-proto
@@ -56,6 +63,7 @@ containerd/console
 containerd/containerd
 containerd/continuity
 containerd/log
+containerd/ttrpc
 containerd/typeurl
 coreos/bbolt
 coreos/etcd
@@ -91,6 +99,7 @@ dustin/go-humanize
 eapache/go-resiliency
 eapache/go-xerial-snappy
 eapache/queue
+eiannone/keyboard
 elazarl/goproxy
 emicklei/go-restful
 envoyproxy/go-control-plane
@@ -107,6 +116,7 @@ fvbommel/sortorder
 gabriel-vasile/mimetype
 ghodss/yaml
 go-gl/glfw
+go-jose/go-jose
 go-kit/kit
 go-kit/log
 go-logfmt/logfmt
@@ -125,6 +135,7 @@ go-playground/validator
 go-stack/stack
 go-task/slim-sprig
 gobuffalo/flect
+goccy/go-json
 gofrs/flock
 gogo/googleapis
 gogo/protobuf
@@ -146,7 +157,6 @@ gonum/stat
 google/btree
 google/cel-go
 google/flatbuffers
-google/gnostic
 google/gnostic-models
 google/go-cmp
 google/go-github
@@ -156,8 +166,10 @@ google/mako
 google/martian
 google/pprof
 google/renameio
+google/s2a-go
 google/shlex
 google/uuid
+googleapis/enterprise-certificate-proxy
 googleapis/gax-go
 googleapis/gnostic
 gopherjs/gopherjs
@@ -170,13 +182,16 @@ gregjones/httpcache
 grpc-ecosystem/go-grpc-middleware
 grpc-ecosystem/go-grpc-prometheus
 grpc-ecosystem/grpc-gateway
+hamba/avro
 hashicorp/consul
 hashicorp/errwrap
 hashicorp/go-cleanhttp
 hashicorp/go-immutable-radix
 hashicorp/go-msgpack
 hashicorp/go-multierror
+hashicorp/go-retryablehttp
 hashicorp/go-rootcerts
+hashicorp/go-secure-stdlib
 hashicorp/go-sockaddr
 hashicorp/go-syslog
 hashicorp/go-uuid
@@ -188,9 +203,9 @@ hashicorp/logutils
 hashicorp/mdns
 hashicorp/memberlist
 hashicorp/serf
+hashicorp/vault
 heetch/avro
 hpcloud/tail
-iancoleman/orderedmap
 iancoleman/strcase
 ianlancetaylor/demangle
 imdario/mergo
@@ -224,6 +239,7 @@ kr/logfmt
 kr/pretty
 kr/pty
 kr/text
+kylelemons/godebug
 leodido/go-urn
 lufia/plan9stats
 lyft/protoc-gen-star
@@ -248,6 +264,7 @@ mitchellh/iochan
 mitchellh/mapstructure
 mitchellh/reflectwalk
 moby/buildkit
+moby/docker-image-spec
 moby/locker
 moby/patternmatcher
 moby/spdystream
@@ -278,6 +295,7 @@ pascaldekloe/goe
 pelletier/go-toml
 peterbourgon/diskv
 pierrec/lz4
+pkg/browser
 pkg/errors
 pkg/profile
 pmezard/go-difflib
@@ -291,6 +309,7 @@ prometheus/procfs
 prometheus/prom2json
 prometheus/statsd_exporter
 prometheus/tsdb
+r3labs/sse
 rabbitmq/amqp091-go
 rcrowley/go-metrics
 rivo/uniseg
@@ -299,6 +318,7 @@ rogpeppe/go-internal
 rs/xid
 russross/blackfriday
 ryanuber/columnize
+ryanuber/go-glob
 santhosh-tekuri/jsonschema
 sean-/seed
 secure-systems-lab/go-securesystemslib
@@ -306,9 +326,11 @@ serialx/hashring
 shibumi/go-pathspec
 shirou/gopsutil
 shoenig/go-m1cpu
+shopspring/decimal
 shurcooL/sanitized_anchor_name
 signalfx/splunk-otel-go
 sirupsen/logrus
+skratchdot/open-golang
 smartystreets/assertions
 smartystreets/goconvey
 soheilhy/cmux
@@ -328,6 +350,9 @@ subosito/gotenv
 testcontainers/testcontainers-go
 theupdateframework/notary
 tilt-dev/fsnotify
+tink-crypto/tink-go-gcpkms
+tink-crypto/tink-go-hcvault
+tink-crypto/tink-go
 tklauser/go-sysconf
 tklauser/numcpus
 tmc/grpc-websocket-proxy
@@ -338,6 +363,7 @@ tsenart/go-tsz
 tsenart/vegeta
 ugorji/go
 urfave/cli
+wk8/go-ordered-map
 xdg-go/pbkdf2
 xdg-go/scram
 xdg-go/stringprep
@@ -346,6 +372,7 @@ xeipuuv/gojsonreference
 xeipuuv/gojsonschema
 xhit/go-str2duration
 xiang90/probing
+xiatechs/jsonata-go
 xordataexchange/crypt
 yuin/goldmark
 yusufpapurcu/wmi
