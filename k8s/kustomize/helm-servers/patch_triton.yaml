@@ -4,3 +4,4 @@ metadata:
   name: triton
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.triton.replicas }}
+  podSpec: HACK_REMOVE_ME{{ toJson .Values.triton.podSpec }}
