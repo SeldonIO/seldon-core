@@ -8,14 +8,14 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.45.1)",
+    value = "by gRPC proto compiler (version 1.65.1)",
     comments = "Source: v2_dataplane.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class GRPCInferenceServiceGrpc {
 
   private GRPCInferenceServiceGrpc() {}
 
-  public static final String SERVICE_NAME = "inference.GRPCInferenceService";
+  public static final java.lang.String SERVICE_NAME = "inference.GRPCInferenceService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest,
@@ -346,7 +346,7 @@ public final class GRPCInferenceServiceGrpc {
    * Inference Server GRPC endpoints.
    * </pre>
    */
-  public static abstract class GRPCInferenceServiceImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      * <pre>
@@ -354,7 +354,7 @@ public final class GRPCInferenceServiceGrpc {
      * and respond to metadata and inference requests.
      * </pre>
      */
-    public void serverLive(io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest request,
+    default void serverLive(io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getServerLiveMethod(), responseObserver);
     }
@@ -364,7 +364,7 @@ public final class GRPCInferenceServiceGrpc {
      * The ServerReady API indicates if the server is ready for inferencing.
      * </pre>
      */
-    public void serverReady(io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest request,
+    default void serverReady(io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getServerReadyMethod(), responseObserver);
     }
@@ -374,7 +374,7 @@ public final class GRPCInferenceServiceGrpc {
      * The ModelReady API indicates if a specific model is ready for inferencing.
      * </pre>
      */
-    public void modelReady(io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest request,
+    default void modelReady(io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getModelReadyMethod(), responseObserver);
     }
@@ -386,7 +386,7 @@ public final class GRPCInferenceServiceGrpc {
      * indicates success and other codes indicate failure.
      * </pre>
      */
-    public void serverMetadata(io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest request,
+    default void serverMetadata(io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getServerMetadataMethod(), responseObserver);
     }
@@ -398,7 +398,7 @@ public final class GRPCInferenceServiceGrpc {
      * indicates success and other codes indicate failure.
      * </pre>
      */
-    public void modelMetadata(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest request,
+    default void modelMetadata(io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getModelMetadataMethod(), responseObserver);
     }
@@ -410,7 +410,7 @@ public final class GRPCInferenceServiceGrpc {
      * indicates success and other codes indicate failure.
      * </pre>
      */
-    public void modelInfer(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest request,
+    default void modelInfer(io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getModelInferMethod(), responseObserver);
     }
@@ -420,100 +420,48 @@ public final class GRPCInferenceServiceGrpc {
      * control plance
      * </pre>
      */
-    public void repositoryIndex(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest request,
+    default void repositoryIndex(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRepositoryIndexMethod(), responseObserver);
     }
 
     /**
      */
-    public void repositoryModelLoad(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest request,
+    default void repositoryModelLoad(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRepositoryModelLoadMethod(), responseObserver);
     }
 
     /**
      */
-    public void repositoryModelUnload(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest request,
+    default void repositoryModelUnload(io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRepositoryModelUnloadMethod(), responseObserver);
-    }
-
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-            getServerLiveMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse>(
-                  this, METHODID_SERVER_LIVE)))
-          .addMethod(
-            getServerReadyMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse>(
-                  this, METHODID_SERVER_READY)))
-          .addMethod(
-            getModelReadyMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse>(
-                  this, METHODID_MODEL_READY)))
-          .addMethod(
-            getServerMetadataMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse>(
-                  this, METHODID_SERVER_METADATA)))
-          .addMethod(
-            getModelMetadataMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse>(
-                  this, METHODID_MODEL_METADATA)))
-          .addMethod(
-            getModelInferMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>(
-                  this, METHODID_MODEL_INFER)))
-          .addMethod(
-            getRepositoryIndexMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse>(
-                  this, METHODID_REPOSITORY_INDEX)))
-          .addMethod(
-            getRepositoryModelLoadMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse>(
-                  this, METHODID_REPOSITORY_MODEL_LOAD)))
-          .addMethod(
-            getRepositoryModelUnloadMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest,
-                io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse>(
-                  this, METHODID_REPOSITORY_MODEL_UNLOAD)))
-          .build();
     }
   }
 
   /**
+   * Base class for the server implementation of the service GRPCInferenceService.
    * <pre>
    * Inference Server GRPC endpoints.
    * </pre>
    */
-  public static final class GRPCInferenceServiceStub extends io.grpc.stub.AbstractAsyncStub<GRPCInferenceServiceStub> {
+  public static abstract class GRPCInferenceServiceImplBase
+      implements io.grpc.BindableService, AsyncService {
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+      return GRPCInferenceServiceGrpc.bindService(this);
+    }
+  }
+
+  /**
+   * A stub to allow clients to do asynchronous rpc calls to service GRPCInferenceService.
+   * <pre>
+   * Inference Server GRPC endpoints.
+   * </pre>
+   */
+  public static final class GRPCInferenceServiceStub
+      extends io.grpc.stub.AbstractAsyncStub<GRPCInferenceServiceStub> {
     private GRPCInferenceServiceStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -627,11 +575,13 @@ public final class GRPCInferenceServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do synchronous rpc calls to service GRPCInferenceService.
    * <pre>
    * Inference Server GRPC endpoints.
    * </pre>
    */
-  public static final class GRPCInferenceServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<GRPCInferenceServiceBlockingStub> {
+  public static final class GRPCInferenceServiceBlockingStub
+      extends io.grpc.stub.AbstractBlockingStub<GRPCInferenceServiceBlockingStub> {
     private GRPCInferenceServiceBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -736,11 +686,13 @@ public final class GRPCInferenceServiceGrpc {
   }
 
   /**
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service GRPCInferenceService.
    * <pre>
    * Inference Server GRPC endpoints.
    * </pre>
    */
-  public static final class GRPCInferenceServiceFutureStub extends io.grpc.stub.AbstractFutureStub<GRPCInferenceServiceFutureStub> {
+  public static final class GRPCInferenceServiceFutureStub
+      extends io.grpc.stub.AbstractFutureStub<GRPCInferenceServiceFutureStub> {
     private GRPCInferenceServiceFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -868,10 +820,10 @@ public final class GRPCInferenceServiceGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final GRPCInferenceServiceImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(GRPCInferenceServiceImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -932,6 +884,74 @@ public final class GRPCInferenceServiceGrpc {
     }
   }
 
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+          getServerLiveMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerLiveResponse>(
+                service, METHODID_SERVER_LIVE)))
+        .addMethod(
+          getServerReadyMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerReadyResponse>(
+                service, METHODID_SERVER_READY)))
+        .addMethod(
+          getModelReadyMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelReadyResponse>(
+                service, METHODID_MODEL_READY)))
+        .addMethod(
+          getServerMetadataMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ServerMetadataResponse>(
+                service, METHODID_SERVER_METADATA)))
+        .addMethod(
+          getModelMetadataMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelMetadataResponse>(
+                service, METHODID_MODEL_METADATA)))
+        .addMethod(
+          getModelInferMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>(
+                service, METHODID_MODEL_INFER)))
+        .addMethod(
+          getRepositoryIndexMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse>(
+                service, METHODID_REPOSITORY_INDEX)))
+        .addMethod(
+          getRepositoryModelLoadMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelLoadResponse>(
+                service, METHODID_REPOSITORY_MODEL_LOAD)))
+        .addMethod(
+          getRepositoryModelUnloadMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.RepositoryModelUnloadResponse>(
+                service, METHODID_REPOSITORY_MODEL_UNLOAD)))
+        .build();
+  }
+
   private static abstract class GRPCInferenceServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     GRPCInferenceServiceBaseDescriptorSupplier() {}
@@ -955,9 +975,9 @@ public final class GRPCInferenceServiceGrpc {
   private static final class GRPCInferenceServiceMethodDescriptorSupplier
       extends GRPCInferenceServiceBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    GRPCInferenceServiceMethodDescriptorSupplier(String methodName) {
+    GRPCInferenceServiceMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 
