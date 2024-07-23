@@ -1,4 +1,5 @@
 github.com/seldonio/seldon-core/scheduler/v2
+cel.dev/expr
 cloud.google.com/go
 cloud.google.com/go/bigquery
 cloud.google.com/go/compute
