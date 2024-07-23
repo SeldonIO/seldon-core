@@ -82,7 +82,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		grpc.WithTransportCredentials(transCreds),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", host, port)
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return err
 	}

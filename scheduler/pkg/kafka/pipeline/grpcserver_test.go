@@ -129,7 +129,7 @@ func TestGrpcServer(t *testing.T) {
 			opts := []grpc.DialOption{
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			}
-			conn, err := grpc.Dial(fmt.Sprintf("0.0.0.0:%d", port), opts...)
+			conn, err := grpc.NewClient(fmt.Sprintf("0.0.0.0:%d", port), opts...)
 			g.Expect(err).To(BeNil())
 			client := v2.NewGRPCInferenceServiceClient(conn)
 			ctx := context.TODO()
