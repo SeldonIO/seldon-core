@@ -12,7 +12,6 @@ blang/semver
 cenkalti/backoff
 census-instrumentation/opencensus-proto
 cespare/xxhash
-cncf/udpa
 cncf/xds
 coreos/go-semver
 coreos/go-systemd
