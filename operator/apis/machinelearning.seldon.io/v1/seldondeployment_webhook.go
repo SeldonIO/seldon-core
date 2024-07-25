@@ -19,6 +19,7 @@ package v1
 import (
 	"fmt"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	"github.com/seldonio/seldon-core/operator/constants"
 	corev1 "k8s.io/api/core/v1"
@@ -330,21 +331,21 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 var _ webhook.Validator = &SeldonDeployment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateCreate() error {
+func (r *SeldonDeployment) ValidateCreate() (admission.Warnings, error) {
 	seldondeploymentLog.Info("Validating v1 Webhook called for CREATE", "name", r.Name)
-	return r.Spec.ValidateSeldonDeployment()
+	return nil, r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) error {
+func (r *SeldonDeployment) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	seldondeploymentLog.Info("Validating v1 webhook called for UPDATE", "name", r.Name)
-	return r.Spec.ValidateSeldonDeployment()
+	return nil, r.Spec.ValidateSeldonDeployment()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateDelete() error {
+func (r *SeldonDeployment) ValidateDelete() (admission.Warnings, error) {
 	seldondeploymentLog.Info("Validating v1 webhook called for DELETE", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
-	return nil
+	return nil, nil
 }

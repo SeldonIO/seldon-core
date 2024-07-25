@@ -116,7 +116,7 @@ func SetEnvVar(envVars []v1.EnvVar, newVar v1.EnvVar, override bool) (newEnvVars
 	}
 
 	if found && override {
-		newEnvVars = append(envVars[:index])
+		newEnvVars = envVars[:index]
 		newEnvVars = append(newEnvVars, newVar)
 		newEnvVars = append(newEnvVars, envVars[index+1:]...)
 	}

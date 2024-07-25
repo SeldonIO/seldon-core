@@ -16,7 +16,7 @@ jobs:
     resource_class: medium
     steps:
       - go/install:
-          version: "1.20"
+          version: "1.22"
       - run:
           name: "Install kustomize"
           command: |
