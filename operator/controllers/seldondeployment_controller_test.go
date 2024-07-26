@@ -669,6 +669,7 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 											Resource: &autoscaling.ResourceMetricSource{
 												Name: v1.ResourceCPU,
 												Target: autoscaling.MetricTarget{
+													Type:               autoscaling.UtilizationMetricType,
 													AverageUtilization: &utilization,
 												},
 											},

@@ -23,7 +23,6 @@ package v1
 import (
 	"github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	"k8s.io/api/autoscaling/v2"
-	"k8s.io/api/autoscaling/v2beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -533,13 +532,6 @@ func (in *SeldonHpaSpec) DeepCopyInto(out *SeldonHpaSpec) {
 		in, out := &in.MinReplicas, &out.MinReplicas
 		*out = new(int32)
 		**out = **in
-	}
-	if in.Metrics != nil {
-		in, out := &in.Metrics, &out.Metrics
-		*out = make([]v2beta1.MetricSpec, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
 	}
 	if in.Metricsv2 != nil {
 		in, out := &in.Metricsv2, &out.Metricsv2
