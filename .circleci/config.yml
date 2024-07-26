@@ -42,10 +42,10 @@ jobs:
 
   test:
     machine:
-      image: ubuntu-2004:current
+      image: ubuntu-2404:current
     environment:
       KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-      KUSTOMIZE_VERSION: "v4.3.0"
+      KUSTOMIZE_VERSION: "v4.5.7"
       K3S_KUBECONFIG_MODE: "644"
     resource_class: large
     steps:
@@ -53,11 +53,11 @@ jobs:
           at: ~/
       - checkout
       - helm/install-helm-client:
-          version: v3.13.1
+          version: v3.15.3
       - run:
           name: Install and Launch Kubernetes
           command: |
-            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.28.3+k3s1 sh -x -
+            curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.28.12+k3s1 sh -x -
             sleep 10
             kubectl wait --for=condition=Available --timeout=60s deployments --all -n kube-system
       - run:

@@ -29,7 +29,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/constants"
 	testutils "github.com/seldonio/seldon-core/operator/controllers/testing"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscaling "k8s.io/api/autoscaling/v2beta1"
+	autoscaling "k8s.io/api/autoscaling/v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -663,12 +663,14 @@ var _ = Describe("Create a Seldon Deployment with hpa", func() {
 								HpaSpec: &machinelearningv1.SeldonHpaSpec{
 									MinReplicas: nil,
 									MaxReplicas: 10,
-									Metrics: []autoscaling.MetricSpec{
+									Metricsv2: []autoscaling.MetricSpec{
 										{
 											Type: autoscaling.ResourceMetricSourceType,
 											Resource: &autoscaling.ResourceMetricSource{
-												Name:                     v1.ResourceCPU,
-												TargetAverageUtilization: &utilization,
+												Name: v1.ResourceCPU,
+												Target: autoscaling.MetricTarget{
+													AverageUtilization: &utilization,
+												},
 											},
 										},
 									},

@@ -191,9 +191,6 @@ func createHpa(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 			Metrics:     podSpec.HpaSpec.Metricsv2,
 		},
 	}
-	if podSpec.HpaSpec.Metrics != nil {
-		hpa.Spec.Metrics = machinelearningv1.ConvertMetricSpecSlice(podSpec.HpaSpec.Metrics)
-	}
 	if podSpec.HpaSpec.MinReplicas != nil {
 		hpa.Spec.MinReplicas = podSpec.HpaSpec.MinReplicas
 	}
