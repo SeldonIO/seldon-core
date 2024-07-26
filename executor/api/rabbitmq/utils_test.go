@@ -58,7 +58,6 @@ func TestDeliveryToPayload(t *testing.T) {
 			StrData: `"hello"`,
 		},
 	}
-	protoMessage.XXX_sizecache = 0 // to make test cases match
 	protoMessageEnc, _ := proto2.Marshal(protoMessage)
 	testDeliveryProto := amqp.Delivery{
 		Body:            protoMessageEnc,
@@ -70,7 +69,7 @@ func TestDeliveryToPayload(t *testing.T) {
 		pl, err := DeliveryToPayload(testDeliveryProto)
 
 		assert.NoError(t, err)
-		assert.Equal(t, protoMessage, pl.GetPayload())
+		assertSeldonMessageEqual(t, *protoMessage, pl.GetPayload())
 	})
 
 	t.Run("rest payload", func(t *testing.T) {
@@ -83,7 +82,7 @@ func TestDeliveryToPayload(t *testing.T) {
 		err = jsonpb.UnmarshalString(string(pl.GetPayload().([]byte)), body)
 
 		assert.NoError(t, err)
-		assert.Equal(t, protoMessage, body)
+		assertSeldonMessageEqual(t, *protoMessage, body)
 	})
 }
 
@@ -311,4 +310,15 @@ func TestUpdatePayloadWithPuid(t *testing.T) {
 
 		assert.Equal(t, oldPayload, updatedPayload)
 	})
+}
+
+func assertSeldonMessageEqual(t *testing.T, expected proto.SeldonMessage, actual interface{}) {
+	assert.IsType(t, &proto.SeldonMessage{}, actual)
+	actualMessage := actual.(*proto.SeldonMessage)
+	assert.Equal(t, expected.Meta, actualMessage.Meta)
+	assert.Equal(t, expected.DataOneof, actualMessage.DataOneof)
+	assert.Equal(t, expected.Status.Status, actualMessage.Status.Status)
+	assert.Equal(t, expected.Status.Info, actualMessage.Status.Info)
+	assert.Equal(t, expected.Status.Code, actualMessage.Status.Code)
+	assert.Equal(t, expected.Status.Reason, actualMessage.Status.Reason)
 }

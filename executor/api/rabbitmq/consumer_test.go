@@ -28,7 +28,6 @@ func TestConsume(t *testing.T) {
 			StrData: testMessageStr,
 		},
 	}
-	seldonMessage.XXX_sizecache = 0 // to make test cases match
 	seldonMessageEnc, _ := proto2.Marshal(&seldonMessage)
 
 	t.Run("success", func(t *testing.T) {
@@ -53,9 +52,10 @@ func TestConsume(t *testing.T) {
 		}
 
 		payloadHandler := func(pl *SeldonPayloadWithHeaders) error {
-			assert.Equal(
+			assert.NotNil(t, pl)
+			assertSeldonPayloadWithHeadersEqual(
 				t,
-				&SeldonPayloadWithHeaders{
+				SeldonPayloadWithHeaders{
 					&payload.BytesPayload{
 						Msg:             []byte(`"hello"`),
 						ContentType:     rest.ContentTypeJSON,
@@ -63,8 +63,7 @@ func TestConsume(t *testing.T) {
 					},
 					make(map[string][]string),
 				},
-				pl,
-				"payloads not equal",
+				*pl,
 			)
 			return nil
 		}
@@ -137,16 +136,16 @@ func TestConsume(t *testing.T) {
 		}
 
 		payloadHandler := func(pl *SeldonPayloadWithHeaders) error {
-			assert.Equal(
+			assert.NotNil(t, pl)
+			assertSeldonPayloadWithHeadersEqual(
 				t,
-				&SeldonPayloadWithHeaders{
+				SeldonPayloadWithHeaders{
 					&payload.ProtoPayload{
 						Msg: &seldonMessage,
 					},
 					make(map[string][]string),
 				},
-				pl,
-				"payloads not equal",
+				*pl,
 			)
 			return nil
 		}
@@ -170,4 +169,14 @@ func createTestDelivery(ack amqp.Acknowledger, body []byte, contentType string) 
 		ContentType:     contentType,
 		ContentEncoding: "",
 	}
+}
+
+func assertSeldonPayloadWithHeadersEqual(t *testing.T, expected SeldonPayloadWithHeaders, actual SeldonPayloadWithHeaders) {
+	expectedBytes, expectedErr := expected.GetBytes()
+	actualBytes, actualErr := actual.GetBytes()
+	assert.Equal(t, expectedErr, actualErr)
+	assert.Equal(t, expectedBytes, actualBytes)
+	assert.Equal(t, expected.GetContentType(), actual.GetContentType())
+	assert.Equal(t, expected.GetContentEncoding(), actual.GetContentEncoding())
+	assert.Equal(t, expected.Headers, actual.Headers)
 }
