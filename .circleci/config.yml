@@ -27,7 +27,7 @@ jobs:
             $SUDO chmod +x ./kustomize
             $SUDO mv ./kustomize /usr/local/bin
       - setup_remote_docker:
-          version: 20.10.14
+          version: docker24
       - checkout
       - run:
           name: "Docker login"
