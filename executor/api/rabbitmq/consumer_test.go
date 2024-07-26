@@ -28,8 +28,8 @@ func TestConsume(t *testing.T) {
 			StrData: testMessageStr,
 		},
 	}
-	seldonMessageEnc, _ := proto2.Marshal(&seldonMessage)
 	seldonMessage.XXX_sizecache = 0 // to make test cases match
+	seldonMessageEnc, _ := proto2.Marshal(&seldonMessage)
 
 	t.Run("success", func(t *testing.T) {
 		mockChan := &mockChannel{}

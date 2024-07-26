@@ -58,8 +58,8 @@ func TestDeliveryToPayload(t *testing.T) {
 			StrData: `"hello"`,
 		},
 	}
-	protoMessageEnc, _ := proto2.Marshal(protoMessage)
 	protoMessage.XXX_sizecache = 0 // to make test cases match
+	protoMessageEnc, _ := proto2.Marshal(protoMessage)
 	testDeliveryProto := amqp.Delivery{
 		Body:            protoMessageEnc,
 		ContentType:     payload.APPLICATION_TYPE_PROTOBUF,
