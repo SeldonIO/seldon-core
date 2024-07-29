@@ -3,7 +3,7 @@ module github.com/seldonio/seldon-core/components/tls/v2
 go 1.21
 
 require (
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/gomega v1.34.0
 	github.com/otiai10/copy v1.14.0
 	github.com/sirupsen/logrus v1.9.0
 	google.golang.org/grpc v1.65.0
