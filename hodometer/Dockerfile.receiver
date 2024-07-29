@@ -18,7 +18,7 @@ RUN make build-receiver
 
 ################################################################################
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-9
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-13
 COPY --from=builder /build/bin/receiver /bin/receiver
 
 # Copy licenses
