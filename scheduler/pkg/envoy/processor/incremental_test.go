@@ -419,12 +419,15 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 				Name: modelName,
 			})
 		}
-		pipeline := &scheduler.Pipeline{
+		pipe := &scheduler.Pipeline{
 			Name:    pipelineName,
 			Version: version,
 			Steps:   steps,
+			Uid:     "uid",
 		}
-		err := inc.pipelineHandler.AddPipeline(pipeline)
+		err := inc.pipelineHandler.AddPipeline(pipe)
+		g.Expect(err).To(BeNil())
+		err = inc.pipelineHandler.SetPipelineState(pipelineName, version, "uid", pipeline.PipelineReady, "", "")
 		g.Expect(err).To(BeNil())
 	}
 	return f
@@ -433,13 +436,14 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name                string
-		ops                 []func(proc *IncrementalProcessor, g *WithT)
-		numExpectedClusters int
-		numExpectedRoutes   int
-		experimentActive    bool
-		experimentExists    bool
-		experimentDeleted   bool
+		name                 string
+		ops                  []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters  int
+		numExpectedRoutes    int
+		numExpectedPipelines int
+		experimentActive     bool
+		experimentExists     bool
+		experimentDeleted    bool
 	}
 
 	getStrPtr := func(t string) *string { return &t }
@@ -565,8 +569,23 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
 			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
+			numExpectedClusters:  4,
+			numExpectedRoutes:    3,
+			numExpectedPipelines: 1,
+		},
+		{
+			name: "pipeline wih removed model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
+				remoteTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters:  4,
+			numExpectedRoutes:    2, // model2 should be removed from the routes
+			numExpectedPipelines: 1, // route to pipeline is till there
 		},
 	}
 	for _, test := range tests {
@@ -594,13 +613,21 @@ func TestEnvoySettings(t *testing.T) {
 				inc.logger,
 				inc.handleExperimentEvents,
 			)
+			eventHub.RegisterPipelineEventHandler(
+				pipelineEventHandlerName,
+				pendingSyncsQueueSize,
+				inc.logger,
+				inc.handlePipelinesEvents,
+			)
+
 			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
-				time.Sleep(100 * time.Millisecond) // to allow event handlers to process
+				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
 			}
 			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
 
 			exp, err := inc.experimentServer.GetExperiment("exp")
 			if test.experimentExists {
