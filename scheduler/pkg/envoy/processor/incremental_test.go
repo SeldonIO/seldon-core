@@ -365,8 +365,9 @@ func remoteTestModel(
 	serverIdx int,
 ) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
-		inc.modelStore.RemoveModel(&scheduler.UnloadModelRequest{Model: &scheduler.ModelReference{Name: "model1", Version: &version}})
-		err := inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "")
+		err := inc.modelStore.RemoveModel(&scheduler.UnloadModelRequest{Model: &scheduler.ModelReference{Name: "model1", Version: &version}})
+		g.Expect(err).To(BeNil())
+		err = inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "")
 		g.Expect(err).To(BeNil())
 	}
 	return f
@@ -574,7 +575,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedPipelines: 1,
 		},
 		{
-			name: "pipeline wih removed model",
+			name: "pipeline with removed model",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 2),
 				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
