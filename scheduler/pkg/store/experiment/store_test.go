@@ -204,7 +204,7 @@ func TestStartExperiment(t *testing.T) {
 					// check db
 					experimentFromDB, _ := server.db.get(ea.experiment.Name)
 					g.Expect(experimentFromDB.Deleted).To(BeFalse())
-					g.Expect(experimentFromDB.Active).To(BeFalse())  // by default experiments are not active
+					g.Expect(experimentFromDB.Active).To(BeFalse()) // by default experiments are not active
 				}
 			}
 			g.Expect(len(server.experiments)).To(Equal(test.expectedNumExp))
