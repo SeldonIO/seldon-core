@@ -411,6 +411,25 @@ func deleteTestExperiment(experimentName string) func(inc *IncrementalProcessor,
 	return f
 }
 
+func createTestPipeline(pipelineName string, modelNames []string, version uint32) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		steps := []*scheduler.PipelineStep{}
+		for _, modelName := range modelNames {
+			steps = append(steps, &scheduler.PipelineStep{
+				Name: modelName,
+			})
+		}
+		pipeline := &scheduler.Pipeline{
+			Name:    pipelineName,
+			Version: version,
+			Steps:   steps,
+		}
+		err := inc.pipelineHandler.AddPipeline(pipeline)
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -536,6 +555,18 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   4,
 			experimentActive:    true,
 			experimentExists:    true,
+		},
+		{
+			name: "pipeline",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
 		},
 	}
 	for _, test := range tests {
