@@ -7,7 +7,7 @@ license = "Business Source License 1.1"
 
 [tool.poetry.dependencies]
 python = "~3.8"
-tensorflow = "2.6.2"
+tensorflow = "2.12.1"
 
 [tool.poetry.dev-dependencies]
 
