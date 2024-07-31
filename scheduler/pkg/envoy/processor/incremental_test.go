@@ -358,7 +358,7 @@ func createTestModel(modelName string,
 	return f
 }
 
-func remoteTestModel(
+func removeTestModel(
 	modelName string,
 	version uint32,
 	serverName string,
@@ -512,7 +512,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-				remoteTestModel("model2", 1, "server", 1),
+				removeTestModel("model2", 1, "server", 1),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2, // model2 should be removed from the routes
@@ -553,7 +553,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
-				remoteTestModel("model2", 1, "server", 1),
+				removeTestModel("model2", 1, "server", 1),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2, // model2 should be removed from the routes
@@ -595,7 +595,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
-				remoteTestModel("model2", 1, "server", 1),
+				removeTestModel("model2", 1, "server", 1),
 			},
 			numExpectedClusters:  4,
 			numExpectedRoutes:    2, // model2 should be removed from the routes
