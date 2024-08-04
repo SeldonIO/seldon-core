@@ -49,6 +49,8 @@ const (
 	periodReadySubService = 60 * time.Second
 	// max time to wait for a model server to load a model, including retrues
 	maxLoadElapsedTime = 120 * time.Minute
+	// max time to wait for a model server to unload a model, including retrues
+	maxUnloadElapsedTime = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// number of retries for loading a model onto a server
 	maxLoadRetryCount = 10
 	// number of retries for unloading a model onto a server
@@ -278,6 +280,7 @@ func main() {
 			maxElapsedTimeReadySubServiceBeforeStart,
 			maxElapsedTimeReadySubServiceAfterStart,
 			maxLoadElapsedTime,
+			maxUnloadElapsedTime,
 			maxLoadRetryCount,
 			maxUnloadRetryCount,
 		),

@@ -89,6 +89,7 @@ type ClientSettings struct {
 	maxElapsedTimeReadySubServiceBeforeStart time.Duration
 	maxElapsedTimeReadySubServiceAfterStart  time.Duration
 	maxLoadElapsedTime                       time.Duration
+	maxUnloadElapsedTime                     time.Duration
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
 }
@@ -102,7 +103,8 @@ func NewClientSettings(
 	periodReadySubService,
 	maxElapsedTimeReadySubServiceBeforeStart,
 	maxElapsedTimeReadySubServiceAfterStart,
-	maxLoadElapsedTime time.Duration,
+	maxLoadElapsedTime,
+	maxUnloadElapsedTime time.Duration,
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
 ) *ClientSettings {
@@ -116,6 +118,7 @@ func NewClientSettings(
 		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
 		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
 		maxLoadElapsedTime:                       maxLoadElapsedTime,
+		maxUnloadElapsedTime:                     maxUnloadElapsedTime,
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
 	}
@@ -601,7 +604,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, logger); err != nil {
+	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
@@ -643,7 +646,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, logger); err != nil {
+	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, c.settings.maxUnloadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
