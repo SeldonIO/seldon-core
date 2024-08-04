@@ -111,7 +111,7 @@ func (b *backOffWithMaxCount) Reset() {
 }
 
 func (b *backOffWithMaxCount) NextBackOff() time.Duration {
-	if b.currentCount >= b.maxCount {
+	if b.currentCount >= b.maxCount - 1 {
 		return backoff.Stop
 	} else {
 		b.currentCount++

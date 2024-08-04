@@ -54,7 +54,7 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 			fn := func() error {
 				return test.err
 			}
-			count := uint8(0)
+			count := uint8(1) // first call is not a retry
 			policyWithMax := newBackOffWithMaxCount(test.count, &policy)
 			logFailure := func(err error, delay time.Duration) {
 				logger.WithError(err).Errorf("retry")
@@ -66,7 +66,7 @@ func TestBackOffPolicyWithMax(t *testing.T) {
 			if test.err != nil {
 				g.Expect(count).To(Equal(test.count))
 			} else {
-				g.Expect(count).To(Equal(uint8(0)))
+				g.Expect(count).To(Equal(uint8(1)))
 			}
 		})
 	}
@@ -76,26 +76,41 @@ func TestFnWrapperWithMax(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
 
 	type test struct {
-		name  string
-		count uint8
+		name           string
+		count          uint8
+		maxElapsedTime time.Duration
+		expectedCount  uint8
 	}
 	tests := []test{
 		{
-			name:  "simple",
-			count: 3,
+			name:           "count > maxElapsedTime",
+			count:          4,
+			expectedCount:  4,
+			maxElapsedTime: 30 * time.Second,
+		},
+		{
+			name:           "count < maxElapsedTime",
+			count:          4,
+			expectedCount:  1,
+			maxElapsedTime: 1 * time.Millisecond,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
+			retries := uint8(0)
 			fn := func() error {
+				time.Sleep(1 * time.Millisecond)
+				retries++
 				return fmt.Errorf("error")
 			}
-			_ = backoffWithMaxNumRetry(fn, test.count, logger)
+			_ = backoffWithMaxNumRetry(fn, test.count, test.maxElapsedTime, logger)
 			// if we are here we are done
+			g.Expect(retries).To(Equal(test.expectedCount))
 		})
 	}
 }
