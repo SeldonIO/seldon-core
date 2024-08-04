@@ -88,6 +88,7 @@ type ClientSettings struct {
 	periodReadySubService                    time.Duration
 	maxElapsedTimeReadySubServiceBeforeStart time.Duration
 	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+	maxLoadElapsedTime                       time.Duration
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
 }
@@ -100,7 +101,8 @@ func NewClientSettings(
 	schedulerTlsPort int,
 	periodReadySubService,
 	maxElapsedTimeReadySubServiceBeforeStart,
-	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+	maxElapsedTimeReadySubServiceAfterStart,
+	maxLoadElapsedTime time.Duration,
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
 ) *ClientSettings {
@@ -113,6 +115,7 @@ func NewClientSettings(
 		periodReadySubService:                    periodReadySubService,
 		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
 		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+		maxLoadElapsedTime:                       maxLoadElapsedTime,
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
 	}
