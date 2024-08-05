@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestBackOffPolicyWithMax(t *testing.T) {
+func TestBackOffPolicyWithMaxCount(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
