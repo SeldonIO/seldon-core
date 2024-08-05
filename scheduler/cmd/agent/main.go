@@ -52,7 +52,7 @@ const (
 	// max time to wait for a model server to unload a model, including retries
 	maxUnloadElapsedTime = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// number of retries for loading a model onto a server
-	maxLoadRetryCount = 10
+	maxLoadRetryCount = 5
 	// number of retries for unloading a model onto a server
 	maxUnloadRetryCount = 1
 )
