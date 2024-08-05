@@ -7,10 +7,87 @@ seldon_install_components: true
 seldon_install_runtime: true
 seldon_install_servers: true
 
-seldon_force_install_crds: false
+seldon_force_install_crds: "{{ helm_force_install | default(false) }}"
+seldon_force_install_components: "{{ helm_force_install | default(false) }}"
+seldon_force_install_runtime: "{{ helm_force_install | default(false) }}"
+seldon_force_install_servers: "{{ helm_force_install | default(false) }}"
 seldon_core_v2_timeout_helm: "480s"
-save_helm_components_overrides: false
-save_helm_components_overrides_file: "{{ ansible_env.HOME }}/seldon_helm_comp_values.yaml"
 
 seldon_core_v2_component_values: {}
+seldon_core_v2_runtime_values: {}
 seldon_core_v2_servers_values: {}
+
+seldon_default_dev:
+  dockerhub_user: "seldonio"
+  install_kind_images: true
+  build_skip_existing_images: false
+  save_helm_components_overrides: false
+  save_helm_components_overrides_file: "{{ ansible_env.HOME }}/seldon_helm_comp_values.yaml"
+
+seldon_default_image_config:
+  registry: "{{ omit }}"
+  pullPolicy: "{{ omit }}"
+
+custom_image_config: []
+custom_image_config_u: []
+custom_image_repository_u: {}
+custom_components_values: {}
+custom_runtime_values: {}
+custom_servers_values: {}
+
+seldon_images:
+  scheduler:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-scheduler"
+    image_repository: "seldon-scheduler"
+  modelgateway:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-modelgateway"
+    image_repository: "seldon-modelgateway"
+  pipelinegateway:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-pipelinegateway"
+    image_repository: "seldon-pipelinegateway"
+  dataflow:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-dataflow"
+    image_repository: "seldon-dataflow-engine"
+  controller:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/operator"
+    build_target: "docker-build"
+    image_repository: "seldonv2-controller"
+  hodometer:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/hodometer"
+    build_target: "build-hodometer-docker"
+    image_repository: "seldon-hodometer"
+  envoy:
+    helm_config_type: core
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-envoy"
+    image_repository: "seldon-envoy"
+  agent:
+    helm_config_type: serverConfig
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-agent"
+    image_repository: "seldon-agent"
+  rclone:
+    helm_config_type: serverConfig
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-rclone"
+    image_repository: "seldon-rclone"
+  grafana:
+    helm_config_type: standalone
+    src: "{{ repo_root_dir }}/scheduler"
+    build_target: "docker-build-grafana"
+    image_repository: "grafana"
+  mlserver:
+    helm_config_type: serverConfig
+    src: "{{ seldon_mlserver_src | default('') }}"
+    build_target: "build"
+    image_repository: "mlserver"

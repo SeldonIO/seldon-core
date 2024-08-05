@@ -20,8 +20,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
@@ -63,16 +66,16 @@ func main() {
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
 
-	watchNamespace := namespace
+	watchNamespaceConfig := map[string]cache.Config{namespace: {}}
 	if clusterwide {
-		watchNamespace = "" // unset namespace so manager watches all namespaces
+		watchNamespaceConfig = map[string]cache.Config{} // unset namespace so manager watches all namespaces
 	}
 	setupLog.Info("Starting manager", "clusterwide", clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Namespace:              watchNamespace,
-		Port:                   9443,
+		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
+		Cache:                  cache.Options{DefaultNamespaces: watchNamespaceConfig},
+		WebhookServer:          webhook.NewServer(webhook.Options{Port: 9443}),
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "e98130ae.seldon.io",

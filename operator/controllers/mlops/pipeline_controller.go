@@ -112,7 +112,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return reconcile.Result{}, err
 	}
 
-	err, retry := r.Scheduler.LoadPipeline(ctx, pipeline)
+	retry, err := r.Scheduler.LoadPipeline(ctx, pipeline, nil)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, pipeline, retry, err)
 		if retry {

@@ -1,3 +1,10 @@
+function useKubeControlPlane() {
+    if (__ENV.USE_KUBE_CONTROL_PLANE) {
+        return (__ENV.USE_KUBE_CONTROL_PLANE === "true")
+    }
+    return false
+}
+
 function schedulerEndpoint() {
     if (__ENV.SCHEDULER_ENDPOINT) {
         return __ENV.SCHEDULER_ENDPOINT
@@ -77,9 +84,22 @@ function unloadExperiment() {
 
 function maxNumModels() {
     if (__ENV.MAX_NUM_MODELS) {
-        return __ENV.MAX_NUM_MODELS.split(",")
+        return __ENV.MAX_NUM_MODELS.split(",").map(n => Number(n))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
-    return [10]
+    return [1]
+}
+
+function maxNumModelsHeadroom() {
+    if (__ENV.MAX_NUM_MODELS_HEADROOM) {
+        return __ENV.MAX_NUM_MODELS_HEADROOM.split(",").map(n => Number(n))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(0)
+    }
+    return [0]
 }
 
 function isSchedulerProxy() {
@@ -99,13 +119,26 @@ function isEnvoy() {
 function modelMemoryBytes() {
     if (__ENV.MODEL_MEMORY_BYTES) {
         return __ENV.MODEL_MEMORY_BYTES.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(0)
     }
-    return [null]
+    return [0]
+}
+
+function maxMemUpdateFraction() {
+    if (__ENV.MAX_MEM_UPDATE_FRACTION) {
+        return Number(__ENV.MAX_MEM_UPDATE_FRACTION)
+    }
+    return 0
 }
 
 function inferBatchSize() {
     if (__ENV.INFER_BATCH_SIZE) {
         return __ENV.INFER_BATCH_SIZE.split(",").map( s => parseInt(s))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
     return [1]
 }
@@ -113,8 +146,28 @@ function inferBatchSize() {
 function modelReplicas() {
     if (__ENV.MODEL_NUM_REPLICAS) {
         return __ENV.MODEL_NUM_REPLICAS.split(",").map( s => parseInt(s))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
     }
     return [1]
+}
+
+function maxModelReplicas() {
+    if (__ENV.MAX_MODEL_REPLICAS) {
+        return __ENV.MAX_MODEL_REPLICAS.split(",").map( s => parseInt(s))
+    } else if (__ENV.MODEL_TYPE) {
+        const num =  __ENV.MODEL_TYPE.split(",").length
+        return Array(num).fill(1)
+    }
+    return [1]
+}
+
+function createUpdateDeleteBias() {
+    if (__ENV.MODEL_CREATE_UPDATE_DELETE_BIAS) {
+        return __ENV.MODEL_CREATE_UPDATE_DELETE_BIAS.split(",").map( s => parseInt(s)).slice(0,3)
+    }
+    return [1, 1, 1]
 }
 
 function modelStartIdx() {
@@ -148,6 +201,8 @@ function dataflowTag() {
 function modelNamePrefix() {
     if (__ENV.MODELNAME_PREFIX) {
         return __ENV.MODELNAME_PREFIX.split(",")
+    } else if (__ENV.MODEL_TYPE) {
+        return  __ENV.MODEL_TYPE.split(",")
     }
     return ["model"]
 }
@@ -195,8 +250,65 @@ function constantRateDurationSeconds() {
     return 30
 }
 
+function podNamespace() {
+    if (__ENV.NAMESPACE) {
+        return __ENV.NAMESPACE
+    }
+    return "seldon-mesh"
+}
+
+function maxCreateOpsPerVU() {
+    if (__ENV.MAX_CREATE_OPS_PER_VU) {
+        return Number(__ENV.MAX_CREATE_OPS_PER_VU)
+    }
+    return 10000
+}
+
+function k8sDelaySecPerVU() {
+    if (__ENV.K8S_DELAY_SECONDS_PER_VU) {
+        return Number(__ENV.K8S_DELAY_SECONDS_PER_VU)
+    }
+    return 10
+}
+
+// How often to do state consistency checks (in seconds)
+function checkStateEverySec() {
+    if (__ENV.CHECK_STATE_EVERY_SECONDS) {
+        return Number(__ENV.CHECK_STATE_EVERY_SECONDS)
+    }
+    return 4 * 60
+}
+
+// Maximum time to wait for a state consistency check to complete (in seconds).
+// This MUST be fulfilled under all circumstances, otherwise concurrency issues
+// will appear. This is because other VUs will start control-plane operations
+// after maxCheckTimeSec in the current checkPeriod, irrespective of whether
+// the state check is done or not.
+function maxCheckTimeSec() {
+    if (__ENV.MAX_CHECK_TIME_SECONDS) {
+        return Number(__ENV.MAX_CHECK_TIME_SECONDS)
+    }
+    return 10
+}
+
+// Whether to abort the k6 test if a state consistency check fails
+function stopOnCheckFailure() {
+    if (__ENV.STOP_ON_CHECK_FAILURE) {
+        return (__ENV.STOP_ON_CHECK_FAILURE === "true")
+    }
+    return true
+}
+
+function enableStateCheck() {
+    if (__ENV.ENABLE_STATE_CHECK) {
+        return (__ENV.ENABLE_STATE_CHECK === "true")
+    }
+    return true
+}
+
 export function getConfig() {
     return {
+        "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
         "inferHttpEndpoint": inferHttpEndpoint(),
         "inferGrpcEndpoint": inferGrpcEndpoint(),
@@ -225,5 +337,16 @@ export function getConfig() {
         "requestRate": requestRate(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
         "modelReplicas": modelReplicas(),
+        "maxModelReplicas": maxModelReplicas(),
+        "namespace":  podNamespace(),
+        "maxNumModelsHeadroom": maxNumModelsHeadroom(),
+        "createUpdateDeleteBias": createUpdateDeleteBias(),
+        "maxCreateOpsPerVU": maxCreateOpsPerVU(),
+        "k8sDelaySecPerVU": k8sDelaySecPerVU(),
+        "maxMemUpdateFraction": maxMemUpdateFraction(),
+        "enableStateCheck": enableStateCheck(),
+        "checkStateEverySec": checkStateEverySec(),
+        "maxCheckTimeSec": maxCheckTimeSec(),
+        "stopOnCheckFailure": stopOnCheckFailure(),
     }
 }

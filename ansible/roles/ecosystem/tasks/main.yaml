@@ -4,6 +4,9 @@
 - name: Install and configure Prometheus Operator
   import_tasks: prometheus.yaml
 
+- name: Install and configure Grafana
+  import_tasks: grafana.yaml
+
 - name: Install and configure Strimzi Kafka
   import_tasks: kafka.yaml
 

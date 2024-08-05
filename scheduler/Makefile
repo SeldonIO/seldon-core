@@ -10,7 +10,7 @@ PROMETHEUS_IMG ?= prom/prometheus:latest
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
 KAFKA_IMG ?= docker.io/bitnami/kafka:3.3.1
 ZOOKEEPER_IMG ?= docker.io/bitnami/zookeeper:3.8
-MLSERVER_IMG ?= seldonio/mlserver:1.3.5
+MLSERVER_IMG ?= seldonio/mlserver:1.6.0
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
 JAEGER_IMG ?= jaegertracing/all-in-one:latest
@@ -71,18 +71,25 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.51.2
+.GOLANGCILINT_VERSION := v1.57.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
-${.GOLANGCILINT_PATH}/golangci-lint: 
+${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
-.PHONY: lint
-lint: ${.GOLANGCILINT_PATH}/golangci-lint
+.PHONY: lint-go
+lint-go: ${.GOLANGCILINT_PATH}/golangci-lint
 	gofmt -w pkg
 	gofmt -w cmd
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
+
+.PHONY: lint-jvm
+lint-jvm:
+	make -C data-flow lint
+
+.PHONY: lint
+lint: lint-go lint-jvm
 
 .PHONY: test-go
 test-go:
@@ -590,8 +597,8 @@ start-scheduler-local-mtls: export AGENT_SECURITY_PROTOCOL=SSL
 start-scheduler-local-mtls: export AGENT_TLS_CRT_LOCATION=${PWD}/testing/certs/server/tls.crt
 start-scheduler-local-mtls: export AGENT_TLS_KEY_LOCATION=${PWD}/testing/certs/server/tls.key
 start-scheduler-local-mtls: export AGENT_TLS_CA_LOCATION=${PWD}/testing/certs/server/ca.crt
-start-scheduler-local-mtls: 
-	./bin/scheduler --log-level debug --db-path "${DB_PATH_LOCAL}" 
+start-scheduler-local-mtls:
+	./bin/scheduler --log-level debug --db-path "${DB_PATH_LOCAL}"
 
 .PHONY: clear-scheduler-state
 clear-scheduler-state:
@@ -611,7 +618,7 @@ start-agent-local-mlserver-mtls: export AGENT_SECURITY_PROTOCOL=SSL
 start-agent-local-mlserver-mtls: export AGENT_TLS_CRT_LOCATION=${PWD}/testing/certs/client/tls.crt
 start-agent-local-mlserver-mtls: export AGENT_TLS_KEY_LOCATION=${PWD}/testing/certs/client/tls.key
 start-agent-local-mlserver-mtls: export AGENT_TLS_CA_LOCATION=${PWD}/testing/certs/client/ca.crt
-start-agent-local-mlserver-mtls: 
+start-agent-local-mlserver-mtls:
 	./bin/agent --agent-folder ${PWD}/mnt/mlserver --inference-http-port 8080 --inference-grpc-port 8081 --scheduler-host "0.0.0.0" --scheduler-port 9005 --reverse-proxy-http-port 9999 --reverse-proxy-grpc-port 9998 --debug-grpc-port 7777 --metrics-port 9006 \
 		--server-type mlserver \
 		--log-level debug \

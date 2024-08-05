@@ -7,10 +7,10 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.dataflow
 
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
@@ -21,10 +21,13 @@ import strikt.assertions.isSuccess
 import java.util.stream.Stream
 
 internal class CliTest {
-
+    @DisplayName("Passing auth mechanism via cli argument")
     @ParameterizedTest(name = "{0}")
     @MethodSource("saslMechanisms")
-    fun getSaslMechanism(input: String, expectedMechanism: KafkaSaslMechanisms) {
+    fun getSaslMechanism(
+        input: String,
+        expectedMechanism: KafkaSaslMechanisms,
+    ) {
         val args = arrayOf("--kafka-sasl-mechanism", input)
         val cli = Cli.configWith(args)
 

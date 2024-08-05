@@ -13,7 +13,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
@@ -135,6 +138,75 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			proto := test.experiment.AsSchedulerExperimentRequest()
 			g.Expect(proto).To(Equal(test.proto))
+		})
+	}
+}
+
+/* WARNING: Read this first if test below fails (either at compile-time or while running the
+* test):
+*
+* The test below aims to ensure that the fields used in kubebuilder:printcolumn comments in
+* experiment_types.go match the structure and condition types in the Experiment CRD.
+*
+* If the test fails, it means that the CRD was updated without updating the kubebuilder:
+* printcolumn comments.
+*
+* Rather than fixing the test directly, FIRST UPDATE the kubebuilder:printcolumn comments,
+* THEN update the test to also match the new values.
+*
+ */
+func TestExperimentStatusPrintColumns(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		experiment *Experiment
+	}
+	fail_reason := "Experiment.Status.Conditions[].Type string changed in CRD from \"%s\" to \"%[2]s\" without updating kubebuilder:printcolumn comment for type Experiment. " +
+		"Update kubebuilder:printcolumn comment in experiment_types.go to match \"%[2]s\"."
+
+	// !! When the test fails, update the string values here ONLY after updating the kubebuilder:
+	// printcolumn comments in experiment_types.go to match the new values
+	//
+	// The key represents the condition used by the CR, the value is the string currently used in
+	// the kubebuilder:printcolumn comments.
+	expectedPrintColumnString := map[apis.ConditionType]string{
+		ExperimentReady:     "ExperimentReady",
+		CandidatesReady:     "CandidatesReady",
+		MirrorReady:         "MirrorReady",
+		apis.ConditionReady: "Ready",
+	}
+
+	tests := []test{
+		{
+			name: "experiment ready conditions",
+			experiment: &Experiment{
+				Status: ExperimentStatus{
+					Status: duckv1.Status{
+						Conditions: duckv1.Conditions{
+							// pass the strings used in kubebuilder:printcolumn comments as the ConditionType
+							{Type: apis.ConditionType(expectedPrintColumnString[ExperimentReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[CandidatesReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[MirrorReady]), Status: v1.ConditionTrue},
+							{Type: apis.ConditionType(expectedPrintColumnString[apis.ConditionReady]), Status: v1.ConditionTrue},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.experiment.Status.Conditions != nil {
+				searchMap := make(map[string]v1.ConditionStatus)
+				for _, cond := range test.experiment.Status.Conditions {
+					searchMap[string(cond.Type)] = cond.Status
+				}
+				for conditionKey, printColumnString := range expectedPrintColumnString {
+					_, found := searchMap[string(conditionKey)]
+					g.Expect(found).To(BeTrueBecause(fail_reason, printColumnString, string(conditionKey)))
+				}
+			}
 		})
 	}
 }

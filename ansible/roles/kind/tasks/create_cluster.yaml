@@ -4,7 +4,7 @@
     name: "{{ kind_cluster_name + '-control-plane' }}"
   register: cluster_check_result
 
-- name: "Start KinD Cluster: '{{ kind_cluster_name }}'"
+- name: "Start KinD Cluster with custom config: '{{ kind_cluster_name }}'"
   command:
     argv:
       - "{{ seldon_cache_directory }}/kind-{{ kind_version }}"
@@ -14,7 +14,19 @@
       - --image={{ kind_image_version }}
       - --config={{ kind_config_file }}
   register: kind_cluster_command
-  when: not cluster_check_result.exists
+  when: not cluster_check_result.exists and kind_config_file != None
+
+- name: "Start KinD Cluster: '{{ kind_cluster_name }}'"
+  shell: |
+    {{ seldon_cache_directory }}/kind-{{ kind_version }} \
+    create cluster \
+    --name={{ kind_cluster_name }} \
+    --image={{ kind_image_version }} \
+    --config - <<EOF
+    {{ kind_config_template | to_nice_yaml }}
+    EOF
+  register: kind_cluster_command
+  when: not cluster_check_result.exists and kind_config_file == None
 
 - name: Echo output of "kind create cluster ..." command
   ansible.builtin.debug:

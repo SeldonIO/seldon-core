@@ -9,16 +9,20 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 @OptIn(FlowPreview::class)
 internal class PipelineSubscriberTest {
-
     @Test
     fun `should run sequentially`() {
         suspend fun waitAndPrint(i: Int) {
@@ -34,6 +38,7 @@ internal class PipelineSubscriberTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `should run ops concurrently`() {
         val xs = (1..10).asFlow()
@@ -45,7 +50,7 @@ internal class PipelineSubscriberTest {
                             async {
                                 kotlinx.coroutines.delay(1000)
                                 println("${LocalDateTime.now()} - $it")
-                            }
+                            },
                         )
                     }
                 }
@@ -55,7 +60,7 @@ internal class PipelineSubscriberTest {
     }
 
     @Test
-    fun `should run ops in parallel`() {
+    fun `should run ops concurrently using custom Flow type extension`() {
         suspend fun waitAndPrint(i: Int) {
             kotlinx.coroutines.delay(1000)
             println("${LocalDateTime.now()} - $i")

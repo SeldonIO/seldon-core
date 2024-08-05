@@ -136,7 +136,8 @@ func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
-	_, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager smoke test"}, grpc_retry.WithMax(1))
+	_, err := grcpClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+
 	if err != nil {
 		return err
 	}
@@ -196,10 +197,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
-	// Not using DialContext with context timeout and withBlocking as this seems to ignore errors such as TLS certificate
-	// issues and not return any error resulting in uninformative context timeouts only.
-	// See https://github.com/grpc/grpc-go/issues/622
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		s.logger.Error(err, "Failed to connect to scheduler")
 		return nil, err
@@ -252,7 +250,7 @@ func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName stri
 }
 
 func retryFn(
-	fn func(context context.Context, conn *grpc.ClientConn, namespace string) error,
+	fn func(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
 	logger.Info("RetryFn", "namespace", namespace)
@@ -261,7 +259,8 @@ func retryFn(
 	}
 	backOffExp := backoff.NewExponentialBackOff()
 	fnWithArgs := func() error {
-		return fn(context.Background(), conn, namespace)
+		grpcClient := scheduler.NewSchedulerClient(conn)
+		return fn(context.Background(), grpcClient, namespace)
 	}
 	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 	if err != nil {

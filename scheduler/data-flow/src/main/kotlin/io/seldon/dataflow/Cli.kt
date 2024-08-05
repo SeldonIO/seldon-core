@@ -9,14 +9,25 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
-import com.natpryce.konfig.*
+import com.natpryce.konfig.CommandLineOption
+import com.natpryce.konfig.Configuration
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.booleanType
+import com.natpryce.konfig.enumType
+import com.natpryce.konfig.intType
+import com.natpryce.konfig.longType
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.parseArgs
+import com.natpryce.konfig.stringType
 import io.klogging.Level
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
 
 object Cli {
-    private const val envVarPrefix = "SELDON_"
+    private const val ENV_VAR_PREFIX = "SELDON_"
     private val logger = noCoLogger(Cli::class)
 
     // General setup
@@ -94,18 +105,19 @@ object Cli {
 
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
-        val fromEnv = EnvironmentVariables(prefix = envVarPrefix)
+        val fromEnv = EnvironmentVariables(prefix = ENV_VAR_PREFIX)
         val fromArgs = parseArguments(rawArgs)
 
         return fromArgs overriding fromEnv overriding fromProperties
     }
 
     private fun parseArguments(rawArgs: Array<String>): Configuration {
-        val (config, unparsedArgs) = parseArgs(
-            rawArgs,
-            *this.args().map { CommandLineOption(it) }.toTypedArray(),
-            programName = "seldon-dataflow-engine",
-        )
+        val (config, unparsedArgs) =
+            parseArgs(
+                rawArgs,
+                *this.args().map { CommandLineOption(it) }.toTypedArray(),
+                programName = "seldon-dataflow-engine",
+            )
         if (unparsedArgs.isNotEmpty()) {
             logUnknownArguments(unparsedArgs)
         }

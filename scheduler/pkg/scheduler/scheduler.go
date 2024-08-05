@@ -119,7 +119,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	if model.Deleted {
-		// we need to LoadedModels anyway:
+		// we need to call UpdateLoadedModels anyway:
 		// - in case where we are deleting a model that doesnt have a server (FailedSchedule), server is ""
 		// - otherwise proceed a normal
 		server := ""
@@ -202,8 +202,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	if !ok {
 		msg := "Failed to schedule model as no matching server had enough suitable replicas"
 		logger.Debug(msg)
-		// we do not want to reset the server if it has live replicas
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		// we do not want to reset the server if it has live replicas or loading replicas
+		// in the case of loading replicas, we need to make sure that we can unload them later.
+		// for example in the case that a model is just marked as loading on a particular server replica
+		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
+		// that we can unload it from the server
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
 		return errors.New(msg)
 	}
 

@@ -6,17 +6,12 @@ run:
   # exit code when at least one issue was found, default is 1
   issues-exit-code: 1
 
-  # which dirs to skip: they won't be analyzed;
-  # can use regexp here: generated.*, regexp is applied on full path;
-  # default value is empty list, but next dirs are always skipped independently
-  # from this option's value:
-  #     vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
-  skip-dirs: vendor
-
 # output configuration options
 output:
   # colored-line-number|line-number|json|tab|checkstyle, default is "colored-line-number"
-  format: colored-line-number
+  formats:
+    - format: colored-line-number
+      path: stdout
 
   # print lines of code with issue, default is true
   print-issued-lines: true
@@ -36,13 +31,14 @@ linters:
     - govet
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
-    - varcheck
+    - unused
 
 linters-settings:
   errcheck:
-    exclude: ./.errcheck_excludes.txt
+    exclude-functions:
+      - fmt.Fprintln
+      - fmt.Fprint
   gci:
     sections:
       - standard
@@ -51,3 +47,12 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/scheduler)
   goconst:
     min-occurrences: 5
+
+issues:
+  # which dirs to skip: they won't be analyzed;
+  # can use regexp here: generated.*, regexp is applied on full path;
+  # default value is empty list, but next dirs are always skipped independently
+  # from this option's value:
+  #     vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  exclude-dirs:
+    - vendor

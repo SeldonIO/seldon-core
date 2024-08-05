@@ -21,6 +21,11 @@ import (
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlp
+//+kubebuilder:printcolumn:name="Pipeline ready",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].status`,description="Pipeline ready status"
+//+kubebuilder:printcolumn:name="Models ready",type=string,JSONPath=`.status.conditions[?(@.type=='ModelsReady')].status`,description="Models ready status",priority=1
+//+kubebuilder:printcolumn:name="Dataflow ready",type=string,JSONPath=`.status.conditions[?(@.type=='PipelineReady')].status`,description="Dataflow ready status",priority=1
+//+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Pipeline is the Schema for the pipelines API
 type Pipeline struct {

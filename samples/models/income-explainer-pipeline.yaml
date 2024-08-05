@@ -3,7 +3,7 @@ kind: Model
 metadata:
   name: income-explainer
 spec:
-  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.5.0/income-sklearn/anchor-explainer"
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.6.0/income-sklearn/anchor-explainer"
   explainer:
     type: anchor_tabular
     pipelineRef: income-prod

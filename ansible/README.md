@@ -10,11 +10,11 @@ For production use cases follow [Helm installation](https://docs.seldon.io/proje
 Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
 Check Ansible [documentation] for further information.
 
+We provide a make target to install Ansible together with dependencies and any required collections.
+Run the following from the `ansible` directory:
 
-To install Ansible and required collections
 ```bash
-pip install ansible openshift kubernetes docker
-ansible-galaxy collection install kubernetes.core
+make install_deps_stable
 ```
 
 We have tested provided instructions on Python 3.8 - 3.11 with following version of Python libraries
@@ -127,6 +127,7 @@ will only install Kafka when setting up the ecosystem.
 | full_install            | bool   | yes                           | enables full ecosystem installation                      |
 | install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                          |
 | install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                             |
+| install_grafana         | bool   | `{{ full_install }}`          | installs Grafana Operator                                |
 | install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                    |
 | install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                          |
 | install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                   |
@@ -162,6 +163,9 @@ tag), create a custom images config file following the example in
 ```bash
 ansible-playbook playbooks/setup-seldon.yaml -e @<path-to-custom-images-config.yaml>
 ```
+
+If, instead of pulling images from an external repository you want to build certain components
+locally, please read README.dev.md
 
 ##### Private registries
 

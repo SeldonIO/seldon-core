@@ -1,4 +1,6 @@
-FROM alpine:3.6 AS builder
+ARG K6_VERSION=0.51.0
+
+FROM alpine:3.19.1 AS builder
 
 RUN apk add --update \
  python3 \
@@ -8,12 +10,12 @@ RUN apk add --update \
 
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
-FROM grafana/k6
 
+FROM grafana/k6:${K6_VERSION}
+ARG K6_VERSION
 USER root
 
-
-RUN apk add --update python3 uuidgen sed
+RUN apk add --update python3 uuidgen sed go
 
 COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
 
@@ -29,15 +31,18 @@ ADD apis /home/apis/
 
 WORKDIR k6
 
+RUN go install go.k6.io/xk6/cmd/xk6@latest
+RUN ~/go/bin/xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
+
 RUN mkdir results
 
 RUN chmod +x k6wrapper.sh
 ENTRYPOINT ["./k6wrapper.sh", "run"]
 
-ARG GIT_COMMIT $GIT_COMMIT}
-ARG GIT_BRANCH ${GIT_COMMIT}
-ENV GIT_COMMIT ${GIT_COMMIT}
-ENV GIT_BRANCH ${GIT_BRANCH}
+ARG GIT_COMMIT=${GIT_COMMIT}
+ARG GIT_BRANCH=${GIT_COMMIT}
+ENV GIT_COMMIT=${GIT_COMMIT}
+ENV GIT_BRANCH=${GIT_BRANCH}
 
-# should be overriden in practice 
+# should be overriden in practice
 CMD ["-u", "5", "scenarios/infer_constant_vu.js"]

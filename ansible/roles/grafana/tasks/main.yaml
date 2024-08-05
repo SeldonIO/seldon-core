@@ -1,0 +1,26 @@
+---
+- name: Create a k8s namespace
+  kubernetes.core.k8s:
+    name: "{{ seldon_monitoring_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Install Grafana
+  kubernetes.core.helm:
+    name: grafana
+    namespace: "{{ seldon_monitoring_namespace }}"
+    chart_ref: "grafana"
+    chart_version: "{{ grafana_chart_version }}"
+    chart_repo_url: "https://grafana.github.io/helm-charts"
+    wait: true
+    values: "{{ lookup('ansible.builtin.template', '../templates/values.yaml.j2') | from_yaml }}"
+
+- name: Grafana config and login details
+  ansible.builtin.debug:
+    msg:
+      - Grafana installed in the cluster.
+      - To view the webapp, access it via the generated ingress URL, or run
+      - "kubectl port-forward -n {{ seldon_monitoring_namespace }} svc/grafana {{ seldon_monitoring_grafana_web_ui_port }}:80"
+      - in a terminal, and visit http://localhost:{{ seldon_monitoring_grafana_web_ui_port }} in your browser.
+      - Login with {{ sd_user }}/{{ sd_password }}.

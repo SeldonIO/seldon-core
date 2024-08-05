@@ -100,6 +100,7 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	return nil
 }
 
+// note: we do not validate the pipeline when we restore it from the db as we assume it was validated when it was added
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
@@ -342,20 +343,19 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string, source string) error {
 	logger := ps.logger.WithField("func", "SetPipelineState")
 	logger.Debugf("Attempt to set state on pipeline %s:%d status:%s", name, versionNumber, status.String())
-	evts, err := ps.setPipelineStateImpl(name, versionNumber, uid, status, reason)
+	evts, err := ps.setPipelineStateImpl(name, versionNumber, uid, status, reason, source)
 	if err != nil {
 		return err
 	}
 	if ps.eventHub != nil {
 		for _, evt := range evts {
-			evt.Source = source
 			ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, *evt)
 		}
 	}
 	return nil
 }
 
-func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32, uid string, status PipelineStatus, reason string) ([]*coordinator.PipelineEventMsg, error) {
+func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32, uid string, status PipelineStatus, reason, source string) ([]*coordinator.PipelineEventMsg, error) {
 	var evts []*coordinator.PipelineEventMsg
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
@@ -367,8 +367,12 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 					PipelineName:    pipelineVersion.Name,
 					PipelineVersion: pipelineVersion.Version,
 					UID:             pipelineVersion.UID,
+					Source:          source,
 				})
 				if status == PipelineReady {
+					// note that we are not setting the source for these events as we do not want to discard them in the chainer service
+					// i.e in handlePipelineEvent we want to process the termination events even though they are triggered by the chainer
+					// to set the status of the new version of the pipeline to ready
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
 				if !pipeline.Deleted && ps.db != nil {

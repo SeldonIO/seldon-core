@@ -13,7 +13,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.kstream.StreamJoined
-import java.util.*
+import java.util.Properties
 
 typealias KafkaProperties = Properties
 typealias KafkaAdminProperties = Properties
@@ -33,10 +33,14 @@ enum class ChainType {
     INPUT_INPUT,
     INPUT_OUTPUT,
     OUTPUT_INPUT,
-    PASSTHROUGH;
+    PASSTHROUGH,
+    ;
 
     companion object {
-        fun create(input: String, output: String): ChainType {
+        fun create(
+            input: String,
+            output: String,
+        ): ChainType {
             return when (input.substringAfterLast(".") to output.substringAfterLast(".")) {
                 "inputs" to "inputs" -> INPUT_INPUT
                 "inputs" to "outputs" -> INPUT_OUTPUT
@@ -47,4 +51,3 @@ enum class ChainType {
         }
     }
 }
-

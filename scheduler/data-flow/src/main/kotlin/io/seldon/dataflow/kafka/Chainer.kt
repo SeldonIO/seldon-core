@@ -23,6 +23,7 @@ class Chainer(
     internal val outputTopic: TopicForPipeline,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
+    internal val pipelineVersion: String,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val batchProperties: ChainerOuterClass.Batch,
     private val kafkaDomainParams: KafkaDomainParams,
@@ -50,9 +51,10 @@ class Chainer(
     }
 
     private fun buildPassThroughStream(builder: StreamsBuilder) {
-        val s1 = builder
-            .stream(inputTopic.topicName, consumerSerde)
-            .filterForPipeline(inputTopic.pipelineName)
+        val s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
         addTriggerTopology(
             kafkaDomainParams,
             builder,
@@ -63,19 +65,20 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildInputOutputStream(builder: StreamsBuilder) {
-        val s1 = builder
-            .stream(inputTopic.topicName, consumerSerde)
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Request()
-            .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0 }
-            .marshallInferenceV2Response()
+        val s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Request()
+                .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.outputsList.size != 0 }
+                .marshallInferenceV2Response()
         addTriggerTopology(
             kafkaDomainParams,
             builder,
@@ -86,19 +89,20 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildOutputOutputStream(builder: StreamsBuilder) {
-        val s1 = builder
-            .stream(inputTopic.topicName, consumerSerde)
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Response()
-            .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0 }
-            .marshallInferenceV2Response()
+        val s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Response()
+                .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.outputsList.size != 0 }
+                .marshallInferenceV2Response()
         addTriggerTopology(
             kafkaDomainParams,
             builder,
@@ -109,20 +113,21 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildOutputInputStream(builder: StreamsBuilder) {
-        val s1 = builder
-            .stream(inputTopic.topicName, consumerSerde)
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Response()
-            .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.inputsList.size != 0 }
-            .batchMessages(batchProperties)
-            .marshallInferenceV2Request()
+        val s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Response()
+                .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.inputsList.size != 0 }
+                .batchMessages(batchProperties)
+                .marshallInferenceV2Request()
         addTriggerTopology(
             kafkaDomainParams,
             builder,
@@ -133,20 +138,21 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildInputInputStream(builder: StreamsBuilder) {
-        val s1 = builder
-            .stream(inputTopic.topicName, consumerSerde)
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Request()
-            .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.inputsList.size != 0 }
-            .batchMessages(batchProperties)
-            .marshallInferenceV2Request()
+        val s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Request()
+                .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.inputsList.size != 0 }
+                .batchMessages(batchProperties)
+                .marshallInferenceV2Request()
         addTriggerTopology(
             kafkaDomainParams,
             builder,
@@ -157,7 +163,7 @@ class Chainer(
             null,
         )
             .headerRemover()
-            .headerSetter(pipelineName)
+            .headerSetter(pipelineName, pipelineVersion)
             .to(outputTopic.topicName, producerSerde)
     }
 

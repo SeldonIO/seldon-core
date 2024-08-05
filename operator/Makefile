@@ -4,7 +4,7 @@ DOCKERHUB_USERNAME ?= seldonio
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-MLSERVER_IMG ?= seldonio/mlserver:1.5.0
+MLSERVER_IMG ?= seldonio/mlserver:1.6.0
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
@@ -66,7 +66,7 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.GOLANGCILINT_VERSION := v1.51.2
+.GOLANGCILINT_VERSION := v1.57.2
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:

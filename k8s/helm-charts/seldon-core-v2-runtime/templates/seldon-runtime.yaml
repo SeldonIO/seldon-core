@@ -10,22 +10,28 @@ spec:
   - name: hodometer
     disable: {{ .Values.hodometer.disable }}
     replicas: {{ .Values.hodometer.replicas }}
+    podSpec: {{ toJson .Values.hodometer.podSpec }}
   - name: seldon-scheduler
     disable: {{ .Values.scheduler.disable }}
     serviceType: {{ .Values.scheduler.serviceType }}
+    podSpec: {{ toJson .Values.scheduler.podSpec }}
   - name: seldon-envoy
     disable: {{ .Values.envoy.disable }}
     replicas: {{ .Values.envoy.replicas }}
     serviceType: {{ .Values.envoy.serviceType }}
+    podSpec: {{ toJson .Values.envoy.podSpec }}
   - name: seldon-dataflow-engine
     disable: {{ .Values.dataflow.disable }}
     replicas: {{ .Values.dataflow.replicas }}
+    podSpec: {{ toJson .Values.dataflow.podSpec }}
   - name: seldon-modelgateway
     disable: {{ .Values.modelgateway.disable }}
     replicas: {{ .Values.modelgateway.replicas }}
+    podSpec: {{ toJson .Values.modelgateway.podSpec }}
   - name: seldon-pipelinegateway
     disable: {{ .Values.pipelinegateway.disable }}
     replicas: {{ .Values.pipelinegateway.replicas }}
+    podSpec: {{ toJson .Values.pipelinegateway.podSpec }}
   config:
     agentConfig:
       rclone:
