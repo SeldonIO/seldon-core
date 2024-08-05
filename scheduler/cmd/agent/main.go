@@ -47,9 +47,9 @@ const (
 	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// period for subservice ready "cron"
 	periodReadySubService = 60 * time.Second
-	// max time to wait for a model server to load a model, including retrues
+	// max time to wait for a model server to load a model, including retries
 	maxLoadElapsedTime = 120 * time.Minute
-	// max time to wait for a model server to unload a model, including retrues
+	// max time to wait for a model server to unload a model, including retries
 	maxUnloadElapsedTime = 15 * time.Minute // 15 mins is the default MaxElapsedTime
 	// number of retries for loading a model onto a server
 	maxLoadRetryCount = 10
