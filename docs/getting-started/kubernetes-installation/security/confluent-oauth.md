@@ -19,7 +19,6 @@ In your Confluent Cloud Console go to [Account & Access / Identity providers](ht
 
 See Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/access-management/authenticate/oauth/identity-pools.html) for further details.
 
-
 ## Create Kubernetes Secret
 
 Seldon Core v2 expects oauth credentials to be in form of K8s secret
@@ -50,8 +49,29 @@ Client ID, client secret and token endpoint url should come from identity provid
 
 Configure Seldon Core v2 by setting following Helm values:
 
-```{literalinclude} ../../../../../../k8s/samples/values-confluent-kafka-oauth.yaml.tmpl
-:language: yaml
+```yaml
+# k8s/samples/values-confluent-kafka-oauth.yaml.tmpl
+kafka:
+  bootstrap: < Confluent Cloud Broker Endpoints >
+  topics:
+    replicationFactor: 3
+    numPartitions: 4
+  consumer:
+    messageMaxBytes: 8388608
+  producer:
+    messageMaxBytes: 8388608
+
+security:
+  kafka:
+    protocol: SASL_SSL
+    sasl:
+      mechanism: OAUTHBEARER
+      client:
+          secret: confluent-kafka-oauth
+    ssl:
+      client:
+        secret:
+        brokerValidationSecret:
 ```
 
 Note you may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.

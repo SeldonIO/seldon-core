@@ -2,29 +2,33 @@
 
 ## Preparation
 
- 1. `git clone https://github.com/SeldonIO/seldon-core --branch=v2`
- 2. Build [Seldon CLI](../cli.md)
- 3. Install [Docker Compose](https://docs.docker.com/compose/install/) (or directly from GitHub [release](https://github.com/docker/compose#linux) if not using Docker Desktop).
- 4. Install `make`. This will depend on your version of Linux, for example on Ubuntu run `sudo apt-get install build-essential`.
+1. `git clone https://github.com/SeldonIO/seldon-core --branch=v2`
+2. Build [Seldon CLI](cli.md)
+3. Install [Docker Compose](https://docs.docker.com/compose/install/) (or directly from GitHub
+[release](https://github.com/docker/compose#linux) if not using Docker Desktop).
+4. Install `make`. This will depend on your version of Linux, for example on Ubuntu run
+`sudo apt-get install build-essential`.
 
 
 ## Deploy
 
 From the project root run:
 
-```
+```sh
 make deploy-local
 ```
 
 This will run with `latest` images for the components.
 
-Note: Triton and MLServer are large images at present (11G and 9G respectively) so will take time to download on first usage.
+Note: Triton and MLServer are large images at present (11G and 9G respectively) so will take time to
+download on first usage.
 
 ### Run a particular version
 
-To run a particular release set the environment variable `CUSTOM_IMAGE_TAG` to the desired version before running the command, e.g.:
+To run a particular release set the environment variable `CUSTOM_IMAGE_TAG` to the desired version
+before running the command, e.g.:
 
-```
+```sh
 export CUSTOM_IMAGE_TAG=0.2.0
 make deploy-local
 ```
@@ -39,17 +43,26 @@ To enable GPU on servers:
 
 ### Local Models
 
-To deploy with a local folder available for loading models set the environment variable `LOCAL_MODEL_FOLDER` to the folder, e.g.:
+To deploy with a local folder available for loading models set the environment variable `LOCAL_MODEL_FOLDER`
+to the folder, e.g.:
 
-```bash
+```sh
 export LOCAL_MODEL_FOLDER=/home/seldon/models
 make deploy-local
 ```
 
 This folder will be mounted at `/mnt/models`. You can then specify models as shown below:
 
-```{literalinclude} ../../../../../samples/models/sklearn-iris-local.yaml
-:language: yaml
+```yaml
+# samples/models/sklearn-iris-local.yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+spec:
+  storageUri: "/mnt/models/iris"
+  requirements:
+  - sklearn
 ```
 
 If you have set the local model folder as above then this would be looking at `/home/seldon/models/iris`.
@@ -66,13 +79,6 @@ The default local install will expose Grafana at `http://localhost:3000`.
 
 From the project root run:
 
-```
+```sh
 make undeploy-local
-```
-
-
-```{toctree}
-:maxdepth: 1
-:hidden:
-
 ```

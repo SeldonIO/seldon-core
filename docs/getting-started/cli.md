@@ -8,7 +8,7 @@ Download from a recent release from https://github.com/SeldonIO/seldon-core/rele
 
 It is dynamically linked and will require and *nix architecture and glibc 2.25+.
 
-```
+```sh
 mv seldon-linux-amd64 seldon
 chmod u+x seldon
 ```
@@ -38,8 +38,15 @@ cd seldon-core/operator
 make build-seldon-arm
 ```
 
-Add `<project-root>/operator/bin` to your PATH.
+Add `<project-root>/operator/bin` to your PATH. Open your terminal and open up your `.bashrc` or
+`.zshrc` file and add the following line:
 
+```sh
+export PATH=$PATH:<project-root>/operator/bin
+```
 
+## Usage
 
-
+```sh
+seldon --help
+```
