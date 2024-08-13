@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -66,7 +67,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	version uint32,
 	modelSpec *scheduler.ModelSpec,
 	config []byte,
-) (*string, error) {
+) (modelVersionFolderPtr *string, err error) {
 	logger := r.logger.WithField("func", "DownloadModelVersion")
 
 	// Setup key vars
@@ -82,6 +83,15 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		// Once the model artifact has been downloaded via rclone, ensure that we clean it up,
+		// even in the presence of errors (e.g. if the PVC doesn't have enough space to copy the
+	  // artifact into the inference server's model repository path).
+		err_purge := r.rcloneClient.PurgeLocal(rclonePath)
+		if err_purge != nil {
+			err = errors.Join(err, err_purge)
+		}
+	}()
 
 	// Find the version folder we want
 	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(
@@ -160,12 +170,6 @@ func (r *V2ModelRepository) DownloadModelVersion(
 		foundVersionFolder,
 		modelPathInRepo,
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	// Purge rclone path now we have loaded successfully
-	err = r.rcloneClient.PurgeLocal(rclonePath)
 	if err != nil {
 		return nil, err
 	}
