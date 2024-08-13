@@ -4,7 +4,18 @@ This model allows a [Pandas](https://pandas.pydata.org/)  query to be run in the
 
 ```yaml
 # samples/models/choice1.yaml
-
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: choice-is-one
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/pandasquery"
+  requirements:
+  - mlserver
+  - python
+  parameters:
+  - name: query
+    value: "choice == 1"
 ```
 
 This invocation check filters for tensor A having value 1.
