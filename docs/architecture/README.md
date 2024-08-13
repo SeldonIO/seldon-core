@@ -6,12 +6,12 @@ The current set of components used in Seldon Core V2 is shown below:
 
 The core components are:
 
- * Scheduler : manages the load and unload of models, pipelines, explainers and experiments.
- * Pipeline gateway : handles REST/gRPC calls to pipelines.
- * Dataflow engine : handles the flow of data between components in a pipeline.
- * Model gateway : handles the flow of data from models to inference requests on servers and passes on the responses.
- * Agent : manages the loading and unloading of models on a server and access to the server over REST/gRPC.
- * Envoy : manages the proxying of requests to the correct servers including load balancing.
+* Scheduler : manages the load and unload of models, pipelines, explainers and experiments.
+* Pipeline gateway : handles REST/gRPC calls to pipelines.
+* Dataflow engine : handles the flow of data between components in a pipeline.
+* Model gateway : handles the flow of data from models to inference requests on servers and passes on the responses.
+* Agent : manages the loading and unloading of models on a server and access to the server over REST/gRPC.
+* Envoy : manages the proxying of requests to the correct servers including load balancing.
 
 All the above are Kubernetes agnostic and can run locally, e.g. on Docker Compose.
 
@@ -36,17 +36,10 @@ By focusing on the data we allow users to join various flows together using stre
 ![joins](../images/joins.png)
 
 We support several types of joins:
- * _inner joins_, where all inputs need to be present for a transaction to join the tensors passed through the Pipeline;
- * _outer joins_, where only a subset needs to be available during the join window
- * _triggers_, in which data flows need to wait until records on one or more trigger data flows appear. The data in these triggers is not passed onwards from the join.
+* _inner joins_, where all inputs need to be present for a transaction to join the tensors passed through the Pipeline;
+* _outer joins_, where only a subset needs to be available during the join window
+* _triggers_, in which data flows need to wait until records on one or more trigger data flows appear. The data in these triggers is not passed onwards from the join.
 
 These techniques allow users to create complex pipeline flows of data between machine learning components.
 
 More discussion on the data flow view of machine learning and its effect on v2 design can be found [here](dataflow.md).
-
-```{toctree}
-:maxdepth: 1
-:hidden:
-
-dataflow.md
-```
