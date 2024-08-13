@@ -86,7 +86,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	defer func() {
 		// Once the model artifact has been downloaded via rclone, ensure that we clean it up,
 		// even in the presence of errors (e.g. if the PVC doesn't have enough space to copy the
-	  // artifact into the inference server's model repository path).
+		// artifact into the inference server's model repository path).
 		err_purge := r.rcloneClient.PurgeLocal(rclonePath)
 		if err_purge != nil {
 			err = errors.Join(err, err_purge)
