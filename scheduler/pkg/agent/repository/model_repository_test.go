@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,22 +25,26 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 )
 
-func createTestRCloneMockResponders(host string, port int, status int, body string) {
-	httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d/", host, port),
-		httpmock.NewStringResponder(status, body))
+const (
+	RcloneHost = "rclone-server"
+	RclonePort = 5572
+)
+
+func createTestRCloneMockResponders(host string, port int, responder httpmock.Responder) {
+	httpmock.RegisterResponder("POST", fmt.Sprintf("=~http://%s:%d/", host, port), responder)
 }
 
-func createFakeRcloneClient(status int, path string) *rclone.RCloneClient {
+func createFakeRcloneClient(path string, responder httpmock.Responder) *rclone.RCloneClient {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	host := "rclone-server"
-	port := 5572
-	r := rclone.NewRCloneClient(host, port, path, logger, "default", nil)
-	createTestRCloneMockResponders(host, port, status, "")
+	config, _ := config.NewAgentConfigHandler("", "", logger, nil)
+	r := rclone.NewRCloneClient(RcloneHost, RclonePort, path, logger, "default", config)
+	createTestRCloneMockResponders(RcloneHost, RclonePort, responder)
 	return r
 }
 
@@ -54,6 +59,7 @@ func TestDownloadModelVersion(t *testing.T) {
 		modelName    string
 		modelVersion uint32
 		chosenFolder string
+		downloadFail bool
 		error        bool
 	}
 
@@ -80,6 +86,27 @@ func TestDownloadModelVersion(t *testing.T) {
 			modelName:    "foo",
 			modelVersion: 1,
 			chosenFolder: "1",
+		},
+		{
+			name: "DownloadFail",
+			folders: map[string]*mlserver.ModelSettings{
+				"1": {
+					Name:           "iris",
+					Implementation: "mlserver_sklearn.SKLearnModel",
+					Parameters: &mlserver.ModelParameters{
+						Version: "1",
+					},
+				},
+			},
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 1,
+			downloadFail: true,
+			chosenFolder: "1",
+			error:        true,
 		},
 		{
 			name: "ArtifactVersionMissing",
@@ -196,6 +223,25 @@ func TestDownloadModelVersion(t *testing.T) {
 			modelName:    "foo",
 			modelVersion: 1,
 		},
+		{
+			name: "ArtifactVersionMismatch",
+			folders: map[string]*mlserver.ModelSettings{
+				"2": {
+					Name:           "iris",
+					Implementation: "mlserver_sklearn.SKLearnModel",
+					Parameters: &mlserver.ModelParameters{
+						Version: "2",
+					},
+				},
+			},
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "gs://model",
+				ArtifactVersion: getArtifactVersion(1),
+			},
+			modelName:    "foo",
+			modelVersion: 2,
+			error:        true,
+		},
 	}
 
 	for _, test := range tests {
@@ -227,11 +273,20 @@ func TestDownloadModelVersion(t *testing.T) {
 				err = os.WriteFile(settingsFilePath, data, fs.ModePerm)
 				g.Expect(err).To(BeNil())
 			}
+
 			logger := log.New()
-			rcloneClient := createFakeRcloneClient(200, rclonePath)
+			responder := func(req *http.Request) (*http.Response, error) {
+				if req.URL.Path == rclone.RcloneSyncCopyPath && test.downloadFail {
+					return httpmock.NewStringResponse(404, ""), nil
+				}
+				return httpmock.NewStringResponse(200, ""), nil
+			}
+			rcloneClient := createFakeRcloneClient(rclonePath, responder)
+
 			modelRepoPath := t.TempDir()
 			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
 			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.modelSpec, nil)
+
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -240,6 +295,18 @@ func TestDownloadModelVersion(t *testing.T) {
 					g.Expect(filepath.Base(*chosenFolder)).To(Equal(test.chosenFolder))
 				}
 			}
+
+			httpInfo := httpmock.GetCallCountInfo()
+			// Check that rclonePath was cleaned-up even in the presence of errors during
+			// DownloadModelVersion, with the exception of the download itself failing
+			purgeUrl := fmt.Sprintf("POST http://%s:%d%s", RcloneHost, RclonePort, rclone.RcloneOperationsPurgePath)
+			expectedPurgeCount := 1
+			if test.downloadFail {
+				expectedPurgeCount = 0
+			}
+			g.Expect(httpInfo[purgeUrl]).To(Equal(expectedPurgeCount),
+				"Expected %d calls to %s; mock http calls map: %v",
+				expectedPurgeCount, purgeUrl, httpInfo)
 		})
 	}
 }
