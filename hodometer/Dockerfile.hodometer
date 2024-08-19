@@ -1,4 +1,4 @@
-FROM golang:1.21-bullseye as builder
+FROM golang:1.23-bullseye as builder
 
 WORKDIR /build
 # Copy the Go Modules manifests
