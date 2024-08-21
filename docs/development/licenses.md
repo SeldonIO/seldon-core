@@ -10,19 +10,19 @@ For Go modules we use a fork of Kubeflow's testing repo with some fixes.
 
 Clone and update to [this branch](https://github.com/SeldonIO/kubeflow-testing/tree/seldon-update).
 
-```
+```sh
 git clone https://github.com/SeldonIO/kubeflow-testing -b seldon-update
 ```
 
 Go to go-license-tools folder:
 
-```
+```sh
 cd kubeflow-testing/py/kubeflow/testing/go-license-tools/
 ```
 
 Install
 
-```
+```sh
 python setup.py install
 ```
 
