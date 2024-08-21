@@ -1,12 +1,14 @@
 # Huggingface speech to sentiment pipeline
 
-In this example we create a Pipeline to chain two huggingface models to allow speech to sentiment functionalityand add an explainer to understand the result.
+In this example we create a Pipeline to chain two huggingface models to allow speech to
+sentiment functionalityand add an explainer to understand the result.
 
 This example also illustrates how explainers can target pipelines to allow complex explanations flows.
 
 ![architecture](../images/speech-to-sentiment.jpg)
 
-This example requires **ffmpeg** package to be installed locally. run `make install-requirements` for the Python dependencies.
+This example requires **ffmpeg** package to be installed locally. run `make install-requirements`
+for the Python dependencies.
 
 ```python
 from ipywebrtc import AudioRecorder, CameraStream
@@ -19,7 +21,8 @@ import os
 import time
 ```
 
-Create a method to load speech from recorder; transform into mp3 and send at base64 data. On return of the result extract and show the text and sentiment.
+Create a method to load speech from recorder; transform into mp3 and send at base64 data. On
+return of the result extract and show the text and sentiment.
 
 ```python
 reqJson = json.loads('{"inputs":[{"name":"args", "parameters": {"content_type": "base64"}, "data":[],"datatype":"BYTES","shape":[1]}]}')
