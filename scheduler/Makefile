@@ -71,8 +71,8 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.57.2
-.GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
+.GOLANGCILINT_VERSION := v1.59.1
+.GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint-versions/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
