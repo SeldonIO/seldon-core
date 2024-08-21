@@ -13,28 +13,19 @@ spec:
         imagePullPolicy: IfNotPresent
         # # choose from the following scenarios:
         # # infer_constant_vu
-        args: [
-          "--no-teardown",
-          "--summary-export",
-          "results/base.json",
-          "--out",
-          "csv=results/base.gz",
-          "-u",
-          "5",
-          "-i",
-          "100000",
-          "-d",
-          "120m",
-          "scenarios/infer_constant_vu.js",
-          ]
-        # # infer_constant_rate
         # args: [
         #   "--no-teardown",
         #   "--summary-export",
         #   "results/base.json",
         #   "--out",
         #   "csv=results/base.gz",
-        #   "scenarios/infer_constant_rate.js",
+        #   "-u",
+        #   "5",
+        #   "-i",
+        #   "100000",
+        #   "-d",
+        #   "120m",
+        #   "scenarios/infer_constant_vu.js",
         #   ]
         # # infer_multiple_rates
         # args: [
@@ -45,6 +36,15 @@ spec:
         #   "csv=results/base.gz",
         #   "scenarios/infer_multiple_rates.js",
         #   ]
+        # # infer_constant_rate
+        args: [
+          # "--no-teardown",
+          "--summary-export",
+          "results/base.json",
+          "--out",
+          "csv=results/base.gz",
+          "scenarios/infer_constant_rate.js",
+          ]
         # # k8s-test-script
         # args: [
         #   "--summary-export",
@@ -71,7 +71,7 @@ spec:
         #   ]
         env:
         - name: REQUEST_RATE
-          value: "20"
+          value: "150"
         # REQUEST_RATES allows you to specify multiple target RPS values, and is
         # used in the infer_multiple_rates scenario. The duration over which
         # each rate is maintained is controlled via the value at the same index
@@ -82,7 +82,7 @@ spec:
         # - name: REQUEST_RATES
         #   value: "10,70,10,50,20"
         - name: CONSTANT_RATE_DURATION_SECONDS
-          value: "60"
+          value: "900"
         # CONSTANT_RATE_DURATIONS_SECONDS is used in the infer_multiple_rates
         # scenario. It specifies the duration in seconds for which each target
         # RPS value is maintained. If the sum of the values here is S, the total
@@ -150,8 +150,20 @@ spec:
         #   value: "true"
         # - name: SLEEP_BETWEEN_REPLICA_CHANGE
         #   value: "10"
+        # - name: DATAFLOW_TAG
+        #   value: "pipeline"
+        - name: INFER_TYPE
+          value: "REST"
         - name: WARMUP
           value: "false"
+        - name: OUTPUT_TYPE
+          value: "clickhouse"
+          # value: "gs_bucket"
+        - name: K6_CLICKHOUSE_DB
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-client-conn
+              key: dsn
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/var/run/secret/cloud.google.com/k6-service-account.json"
         - name: GS_BUCKET_NAME
@@ -165,6 +177,8 @@ spec:
           mountPath: "/var/run/secret/cloud.google.com"
         - name: podinfo
           mountPath: /info
+      imagePullSecrets:
+      - name: private-dev-seldon-registry
       restartPolicy: Never
       volumes:
         - name: "service-account"
