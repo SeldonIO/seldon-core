@@ -10,6 +10,7 @@ GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 CMD = kubectl describe pod ${POD} -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 CMD_SVC = kubectl describe svc seldon-mesh -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
+#CMD = kubectl describe svc ${POD} -n ${NAMESPACE} | grep 'LoadBalancer Ingress:' -m 1 | cut -d' ' -f3- | xargs
 
 POD = seldon-scheduler
 SCHEDULER_ENDPOINT := $(shell ${CMD})
@@ -117,4 +118,6 @@ create-secret:
 xk6-install:
 	# Install xk6
 	go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-	xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
+	xk6 build v${K6_VERSION} \
+		--with github.com/grafana/xk6-kubernetes \
+		--with github.com/Maksimall89/xk6-output-clickhouse@latest

@@ -18,7 +18,7 @@ export const options = {
             rate: getConfig().requestRate,
             timeUnit: '1s',
             duration: getConfig().constantRateDurationSeconds.toString()+'s',
-            preAllocatedVUs: 1, // how large the initial pool of VUs would be
+            preAllocatedVUs: 10, // how large the initial pool of VUs would be
             maxVUs: 1000, // if the preAllocatedVUs are not enough, we can initialize more
         },
     },
@@ -36,10 +36,15 @@ export function setup() {
 
 export default function (config) {
     const numModelTypes = config.modelType.length
-    var idx = Math.floor(Math.random() * numModelTypes)
-    while (config.maxNumModels[idx] == 0) {
-        idx = Math.floor(Math.random() * numModelTypes)
+
+    let candidateIdxs = []
+    for (let i = 0; i < numModelTypes; i++) {
+        if (config.maxNumModels[i] !== 0)
+            candidateIdxs.push(i)
     }
+    const numCandidates = candidateIdxs.length
+
+    var idx = candidateIdxs[Math.floor(Math.random() * numCandidates)]
     const modelId = Math.floor(Math.random() * config.maxNumModels[idx])
     const modelName = config.modelNamePrefix[idx] + modelId.toString()
 

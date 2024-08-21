@@ -36,7 +36,9 @@ ADD apis /home/apis/
 WORKDIR k6
 
 RUN go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN ~/go/bin/xk6 build --with github.com/grafana/xk6-kubernetes
+RUN ~/go/bin/xk6 build v${K6_VERSION} \
+    --with github.com/grafana/xk6-kubernetes \
+    --with github.com/Maksimall89/xk6-output-clickhouse@latest
 
 RUN mkdir results
 
