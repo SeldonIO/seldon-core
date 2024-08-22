@@ -9,7 +9,7 @@ LABELS=$(cat /info/labels)
 # eg: controller-uid="95a4c449-5cda-45a0-93e1-177caacc3639" job-name="k6"
 JOBID=$(echo $LABELS | sed -n 's/.*controller-uid="\([a-zA-Z0-9-]\+\)".*/\1/p')
 
-DEFAULT_OUTPUT_TYPE=csv
+DEFAULT_OUTPUT_TYPE=none
 
 if [ -z "$OUTPUT_TYPE" ]; then
     OUTPUT_TYPE=${DEFAULT_OUTPUT_TYPE}
@@ -27,11 +27,11 @@ case $OUTPUT_TYPE in
         echo "start:"$(date) > $DIR/$METADATA
         ;;
     "clickhouse")
-        if [ -z "${K6_CLICKHOUSE_DB}" ]; then
-            echo "K6_CLICKHOUSE_DB is not set"
+        if [ -z "${K6_CLICKHOUSE_DSN}" ]; then
+            echo "Dataset Name (DSN) is not set in K6_CLICKHOUSE_DSN. The format needs to be clickhouse://user:pass@host:port/[DBName]"
             exit 1
         fi
-        K6_ARGS="--out clickhouse=${K6_CLICKHOUSE_DB}"
+        K6_ARGS="--out clickhouse=${K6_CLICKHOUSE_DSN}"
         ;;
     *)
         K6_ARGS=""

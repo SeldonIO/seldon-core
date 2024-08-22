@@ -115,8 +115,9 @@ spec:
         - name: MAX_MEM_UPDATE_FRACTION
           value: "0.1"
         - name: MAX_NUM_MODELS
-          value: "800,100,25,100,100"
-          # value: "0,0,25,100,100"
+          # value: "800,100,25,100,100"
+          # value: "800,100,25,100,100"
+          value: "0,0,0,0,1"
         #
         # MAX_NUM_MODELS_HEADROOM is a variable used by control-plane tests.
         # It's the approximate number of models that can be created over
@@ -156,18 +157,43 @@ spec:
           value: "REST"
         - name: WARMUP
           value: "false"
+        # OUTPUT_TYPE controls where the raw load testing results are saved.
+        # Valid values are:
+        # - "none": k6 saves no raw output of the load test
+        # - "csv": k6 saves the raw output to a local CSV file
+        # - "clickhouse": k6 saves the raw output to a Clickhouse database
+        # - "gs_bucket": k6 saves the raw output to a Google Cloud Storage bucket
         - name: OUTPUT_TYPE
           value: "clickhouse"
           # value: "gs_bucket"
-        - name: K6_CLICKHOUSE_DB
+        # K6_CLICKHOUSE_DSN is the connection string to the Clickhouse database.
+        # It is used when OUTPUT_TYPE is set to "clickhouse".
+        # The format is "clickhouse://<username>:<password>@<host>:<port>/<database>"
+        # Because of the sensitivity of the password, it is recommended to get this string from
+        # a k8s secret
+        - name: K6_CLICKHOUSE_DSN
           valueFrom:
             secretKeyRef:
               name: clickhouse-client-conn
               key: dsn
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/var/run/secret/cloud.google.com/k6-service-account.json"
-        - name: GS_BUCKET_NAME
-          value: "gs://seldon-tmp/scv2-k6-results"
+        # K6 metrics that should not be saved to Clickhouse
+        - name: K6_CLICKHOUSE_IGNORE_METRICS
+          value: ""
+        # GOOGLE_APPLICATION_CREDENTIALS is the path to the service account key file
+        # that is used to authenticate with Google Cloud Storage.
+        # It is used when OUTPUT_TYPE is set to "gs_bucket".
+        # The path /var/run/secret/cloud.google.com is mounted from the
+        # "service-account" volume, which exposes data from the k6-gs-key secret.
+        # In the value specified below, the secret is assumed to have a key called
+        # "k6-service-account.json" with the right credentials
+        # - name: GOOGLE_APPLICATION_CREDENTIALS
+        #   value: "/var/run/secret/cloud.google.com/k6-service-account.json"
+        #
+        # GS_BUCKET_NAME is the name of the Google Cloud Storage bucket where the
+        # raw load testing results are saved.
+        # It is used when OUTPUT_TYPE is set to "gs_bucket".
+        # - name: GS_BUCKET_NAME
+        #   value: "gs://seldon-tmp/scv2-k6-results"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
@@ -183,7 +209,7 @@ spec:
       volumes:
         - name: "service-account"
           secret:
-            secretName: "k6-sa-key"
+            secretName: "k6-gs-key"
             optional: true
         - name: podinfo
           downwardAPI:
