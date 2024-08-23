@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: k6
+  labels:
+    app: k6
 spec:
   parallelism: 1
   completions: 1
@@ -39,10 +41,6 @@ spec:
         # # infer_constant_rate
         args: [
           # "--no-teardown",
-          "--summary-export",
-          "results/base.json",
-          "--out",
-          "csv=results/base.gz",
           "scenarios/infer_constant_rate.js",
           ]
         # # k8s-test-script
@@ -90,6 +88,25 @@ spec:
         # ramp-up/ramp-down stages)
         # - name: CONSTANT_RATE_DURATIONS_SECONDS
         #   value: "120,120,400,120,400"
+        - name: TEST_CONFIG_TAGS
+          # The value ends up as a single string in the raw data output
+          # to keep cardinality low, follow the format: [cluster_type],[test_regime]
+          # Typical values for cluser_type:
+          #   * kind
+          #   * gke_small
+          #   * gke_scaleup
+          # Typical values for test_regime:
+          #  * smoke
+          #  * avg_load
+          #  * stress_fixed_resources
+          #  * stress_autoscale
+          #  * chaos
+          value: "kind,smoke"
+        # - name: TEST_TARGET_TAGS
+        #   # The value ends up as a single string in the raw data output
+        #   # to keep cardinality low, follow the format:
+        #   # {"model"|"pipeline"}_{type}
+        #   value: "model_synthetic"
         - name: USE_KUBE_CONTROL_PLANE
           value: "true"
         # - name: SKIP_UNLOAD_MODEL
@@ -176,6 +193,7 @@ spec:
             secretKeyRef:
               name: clickhouse-client-conn
               key: dsn
+              optional: true
         # K6 metrics that should not be saved to Clickhouse
         - name: K6_CLICKHOUSE_IGNORE_METRICS
           value: ""
@@ -198,11 +216,17 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: TEST_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         volumeMounts:
         - name: "service-account"
           mountPath: "/var/run/secret/cloud.google.com"
         - name: podinfo
           mountPath: /info
+        - name: results
+          mountPath: /home/k6/k6/results
       imagePullSecrets:
       - name: private-dev-seldon-registry
       restartPolicy: Never
@@ -217,4 +241,7 @@ spec:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
+        - name: results
+          persistentVolumeClaim:
+            claimName: k6-results
       serviceAccountName: seldon-v2-controller-manager

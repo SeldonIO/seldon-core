@@ -362,6 +362,33 @@ function sleepBetweenModelReplicaChange() {
     return 10
 }
 
+function metaTestId() {
+    if (__ENV.TEST_ID) {
+        return (__ENV.TEST_ID)
+    }
+    return Math.random().toString(36).substring(7)
+}
+
+function metaTestConfig() {
+    if (__ENV.TEST_CONFIG_TAGS) {
+        return (__ENV.TEST_CONFIG_TAGS)
+    }
+    return "unknown"
+}
+
+function metaTestTargets() {
+    if (__ENV.TEST_TARGET_TAGS) {
+        return (__ENV.TEST_TARGET_TAGS)
+    }
+
+    let targets = "models_"
+    if (isLoadPipeline()) {
+      targets = "pipelines_"
+    }
+    targets += inferType()
+    return targets
+}
+
 export function getConfig() {
     return {
         "useKubeControlPlane": useKubeControlPlane(),
@@ -409,5 +436,8 @@ export function getConfig() {
         "stopOnCheckFailure": stopOnCheckFailure(),
         "enableModelReplicaChange": enableModeReplicaChange(),
         "sleepBetweenModelReplicaChange": sleepBetweenModelReplicaChange(),
+        "metaTestId": metaTestId(),
+        "metaTestConfig": metaTestConfig(),
+        "metaTestTargets": metaTestTargets(),
     }
 }

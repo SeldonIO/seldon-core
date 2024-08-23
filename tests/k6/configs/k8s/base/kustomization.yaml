@@ -7,8 +7,12 @@ namespace: seldon-mesh
 
 resources:
 - k6.yaml
+- pvc.yaml
 
 images:
 - name: k6
   newName: seldonio/seldon-k6
   newTag: latest
+
+configurations:
+- ./prefix-rules.yaml
