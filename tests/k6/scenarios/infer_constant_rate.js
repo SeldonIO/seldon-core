@@ -1,10 +1,13 @@
 import { getConfig } from '../components/settings.js'
 import { doInfer, setupBase, teardownBase, getVersionSuffix, applyModelReplicaChange } from '../components/utils.js'
-import { vu } from 'k6/execution';
+import { scenario, vu, test } from 'k6/execution';
 
 var kubeClient = null
 
 export const options = {
+    tags: {
+      id: getConfig().metaTestId,
+    },
     thresholds: {
         'http_req_duration{scenario:default}': [`max>=0`],
         'http_reqs{scenario:default}': [],

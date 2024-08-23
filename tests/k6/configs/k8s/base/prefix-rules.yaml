@@ -1,0 +1,7 @@
+namePrefix:
+- path: metadata/name
+  apiVersion: batch/v1
+  kind: Job
+- path: metadata/labels/app
+  apiVersion: batch/v1
+  kind: Job
