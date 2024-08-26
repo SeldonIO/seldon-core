@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.9.21" // the kotlin version
+    kotlin("jvm") version "2.0.20" // the kotlin version
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     java
     application
