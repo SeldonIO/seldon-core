@@ -6,25 +6,7 @@ Seldon can be configured via various config files.
 
 We allow configuration of the Kafka integration. In general this configuration looks like:
 
-```json
-# scheduler/config/kafka-internal.json
-{
-    "topicPrefix": "seldon",
-    "bootstrap.servers":"kafka:9093",
-    "consumer":{
-	"session.timeout.ms":6000,
-	"auto.offset.reset":"earliest",
-	"topic.metadata.propagation.max.ms": 300000,
-	"message.max.bytes":1000000000
-    },
-    "producer":{
-	"linger.ms":0,
-	"message.max.bytes":1000000000
-    },
-    "streams":{
-    }
-}
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/scheduler/config/kafka-internal.json" %}
 
 The top level keys are:
 
@@ -47,22 +29,7 @@ The `consumerGroupIdPrefix` will ensure that all consumer groups created have a 
 For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default values are
 defined in the `SeldonConfig` custom resource.
 
-```yaml
-# k8s/yaml/components.yaml
-kafkaConfig:
-  bootstrap.servers: 'seldon-kafka-bootstrap.seldon-mesh:9092'
-  consumer:
-    auto.offset.reset: 'earliest'
-    message.max.bytes: '1000000000'
-    session.timeout.ms: '6000'
-    topic.metadata.propagation.max.ms: '300000'
-  consumerGroupIdPrefix: ''
-  debug: ''
-  producer:
-    linger.ms: '0'
-    message.max.bytes: '1000000000'
-  topicPrefix: 'seldon'
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/k8s/yaml/components.yaml" %}
 
 When the `SeldonRuntime` is installed in a namespace a configMap will be created with these
 settings for Kafka configuration.
@@ -70,13 +37,8 @@ settings for Kafka configuration.
 To customize the settings you can add and modify the Kafka configuration via Helm, for example
 below is a custom Helm values file that add compression for producers:
 
-```yaml
-# k8s/samples/values-runtime-kafka-compression.yaml
-config:
-  kafkaConfig:
-    producer:
-      compression.type: gzip
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/k8s/samples/values-runtime-kafka-compression.yaml" %}
+
 To use this with the SeldonRuntime Helm chart:
 
 ```sh
@@ -110,15 +72,7 @@ You can create alternate `SeldonConfig`s with different values or override value
 
 We allow configuration of tracing. This file looks like:
 
-```json
-# scheduler/config/tracing-internal.json
-{
-  "disable": false,
-  "otelExporterEndpoint": "otel-collector:4317",
-  "otelExporterProtocol": "grpc",
-  "ratio": "1"
-}
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/scheduler/config/tracing-internal.json" %}
 
 The top level keys are:
 
@@ -136,24 +90,7 @@ The top level keys are:
 
 For Kubernetes this is controlled via a ConfigMap call `seldon-tracing` whose default value is shown below:
 
-```yaml
-# scheduler/k8s/config/tracing.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tracing
-data:
-  tracing.json: |-
-   {
-     "enable": true,
-     "otelExporterEndpoint": "seldon-collector:4317",
-     "otelExporterProtocol": "grpc",
-     "ratio": "1"
-   }
-  OTEL_JAVAAGENT_ENABLED: "true"
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://seldon-collector:4317"
-  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/scheduler/k8s/config/tracing.yaml" %}
 
 Note, this `ConfigMap` is created via our Helm charts and there is usually no need to modify it manually.
 
