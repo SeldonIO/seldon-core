@@ -147,7 +147,6 @@ func NewClient(
 	drainerService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 ) *Client {
-
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -283,7 +282,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
 
-	//TODO make retry configurable
+	// TODO make retry configurable
 	err := backoff.RetryNotify(c.ModelRepository.Ready, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for model repository to be ready")
@@ -439,7 +438,7 @@ func (c *Client) StartService() error {
 			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
 		grpc_retry.WithMax(1),
-	) //TODO make configurable
+	) // TODO make configurable
 	if err != nil {
 		return err
 	}
@@ -558,9 +557,9 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	return nil, nil
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
+func (c *Client) LoadModel(request *agent.ModelOperationMessage) (err error) {
 	if request == nil || request.ModelVersion == nil {
-		return fmt.Errorf("Empty request received for load model")
+		return fmt.Errorf("empty request received for load model")
 	}
 
 	logger := c.logger.WithField("func", "LoadModel")
@@ -591,6 +590,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
+		c.cleanup(modelWithVersion)
 		return err
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
@@ -606,6 +606,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
+		c.cleanup(modelWithVersion)
 		return err
 	}
 
@@ -670,6 +671,16 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+}
+
+func (c *Client) cleanup(modelWithVersion string) {
+	logger := c.logger.WithField("func", "cleanup")
+	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
+	if err != nil {
+		logger.Errorf("could not remove model %s - %v", modelWithVersion, err)
+		return
+	}
+	logger.Infof("removed model %s", modelWithVersion)
 }
 
 func (c *Client) sendModelEventError(
