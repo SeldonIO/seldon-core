@@ -356,13 +356,11 @@ func (kc *InferKafkaHandler) Serve() {
 					continue
 				}
 
-				kc.mu.RLock()
-				if _, ok := kc.loadedModels[modelName]; !ok {
-					kc.mu.Unlock()
+				exists := kc.Exists(modelName)
+				if !exists {
 					logger.Infof("Failed to find model %s in loaded models", modelName)
 					continue
 				}
-				kc.mu.Unlock()
 
 				// Add tracing span
 				ctx := context.Background()
