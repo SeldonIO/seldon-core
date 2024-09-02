@@ -153,14 +153,24 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 
 		logger.Infof("Received event name %s version %d state %s", event.ModelName, latestVersionStatus.Version, latestVersionStatus.State.State.String())
 
-		switch latestVersionStatus.State.State {
-		case scheduler.ModelStatus_ModelAvailable:
+		// if there are available replicas then we add the consumer for the model
+		// note that this will also get triggered if the model is already added but there is a status change (e.g. due to scale up)
+		// and in the case then it is a no-op
+		// note in the future we might want to check that available replicas > min replicas
+		if latestVersionStatus.GetState().GetAvailableReplicas() > 0 {
+			if latestVersionStatus.GetState().GetState() != scheduler.ModelStatus_ModelAvailable {
+				logger.Warnf("Model %s state is: %s", event.ModelName, latestVersionStatus.GetState().GetState().String())
+			}
+			if kc.consumerManager.Exists(event.ModelName) {
+				logger.Debugf("Model consumer %s already exists", event.ModelName)
+				continue
+			}
 			logger.Infof("Adding model %s", event.ModelName)
 			err := kc.consumerManager.AddModel(event.ModelName)
 			if err != nil {
 				kc.logger.WithError(err).Errorf("Failed to add model %s", event.ModelName)
 			}
-		default:
+		} else {
 			logger.Infof("Removing model %s", event.ModelName)
 			err := kc.consumerManager.RemoveModel(event.ModelName)
 			if err != nil {
