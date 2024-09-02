@@ -197,6 +197,18 @@ func (cm *ConsumerManager) GetNumModels() int {
 	return tot
 }
 
+func (cm *ConsumerManager) Exists(modelName string) bool {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	ic, err := cm.getInferKafkaConsumer(modelName, false)
+	if err != nil {
+		return false
+	}
+
+	return ic != nil && ic.Exists(modelName)
+}
+
 func (cm *ConsumerManager) Stop() {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
