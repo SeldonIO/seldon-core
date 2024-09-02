@@ -356,8 +356,7 @@ func (kc *InferKafkaHandler) Serve() {
 					continue
 				}
 
-				exists := kc.Exists(modelName)
-				if !exists {
+				if !kc.Exists(modelName) {
 					logger.Infof("Failed to find model %s in loaded models", modelName)
 					continue
 				}
