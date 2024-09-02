@@ -310,6 +310,13 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
 	return nil
 }
 
+func (kc *InferKafkaHandler) Exists(modelName string) bool {
+	kc.mu.RLock()
+	defer kc.mu.RUnlock()
+	_, ok := kc.loadedModels[modelName]
+	return ok
+}	
+
 func (kc *InferKafkaHandler) Serve() {
 	logger := kc.logger.WithField("func", "Serve").WithField("consumerName", kc.consumerName)
 	run := true
@@ -349,7 +356,7 @@ func (kc *InferKafkaHandler) Serve() {
 					continue
 				}
 
-				kc.mu.Lock()
+				kc.mu.RLock()
 				if _, ok := kc.loadedModels[modelName]; !ok {
 					kc.mu.Unlock()
 					logger.Infof("Failed to find model %s in loaded models", modelName)
