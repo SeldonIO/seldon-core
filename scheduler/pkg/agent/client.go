@@ -557,7 +557,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	return nil, nil
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage) (err error) {
+func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("empty request received for load model")
 	}
