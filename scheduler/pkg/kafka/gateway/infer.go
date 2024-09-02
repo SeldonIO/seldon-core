@@ -315,7 +315,7 @@ func (kc *InferKafkaHandler) Exists(modelName string) bool {
 	defer kc.mu.RUnlock()
 	_, ok := kc.loadedModels[modelName]
 	return ok
-}	
+}
 
 func (kc *InferKafkaHandler) Serve() {
 	logger := kc.logger.WithField("func", "Serve").WithField("consumerName", kc.consumerName)
