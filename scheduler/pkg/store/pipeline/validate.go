@@ -10,8 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
-	"regexp"
 	"strings"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 // Step inputs can be reference a previous step name and tensor output/input
@@ -62,8 +63,7 @@ func validate(pv *PipelineVersion) error {
 }
 
 func checkName(pv *PipelineVersion) error {
-	ok, err := regexp.Match("^[a-zA-Z0-9-_]*$", []byte(pv.Name))
-	if !ok || err != nil {
+	if ok := utils.CheckName(pv.Name); !ok {
 		return &PipelineNameValidationErr{pipeline: pv.Name}
 	}
 	return nil
