@@ -354,6 +354,7 @@ github.com/pierrec/lz4
 github.com/pkg/browser
 github.com/pkg/errors
 github.com/pkg/profile
+github.com/planetscale/vtprotobuf
 github.com/pmezard/go-difflib
 github.com/posener/complete
 github.com/power-devops/perfstat
