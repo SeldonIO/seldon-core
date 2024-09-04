@@ -298,6 +298,7 @@ pierrec/lz4
 pkg/browser
 pkg/errors
 pkg/profile
+planetscale/vtprotobuf
 pmezard/go-difflib
 posener/complete
 power-devops/perfstat
