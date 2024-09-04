@@ -126,9 +126,11 @@ type InferenceArtifactSpec struct {
 // ModelStatus defines the observed state of Model
 type ModelStatus struct {
 	// Total number of replicas targeted by this model
-	Replicas      int32  `json:"replicas,omitempty"`
-	Selector      string `json:"selector,omitempty"`
-	duckv1.Status `json:",inline"`
+	Replicas int32  `json:"replicas,omitempty"`
+	Selector string `json:"selector,omitempty"`
+	// Number of available replicas
+	AvailableReplicas int32 `json:"availableReplicas,omitempty"`
+	duckv1.Status     `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
