@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -27,6 +28,9 @@ const (
 )
 
 func validate(pv *PipelineVersion) error {
+	if err := checkName(pv); err != nil {
+		return err
+	}
 	if err := checkStepsExist(pv); err != nil {
 		return err
 	}
@@ -53,6 +57,14 @@ func validate(pv *PipelineVersion) error {
 	}
 	if err := checkPipelineInput(pv); err != nil {
 		return err
+	}
+	return nil
+}
+
+func checkName(pv *PipelineVersion) error {
+	ok, err := regexp.Match("^[a-zA-Z0-9-_]*$", []byte(pv.Name))
+	if !ok || err != nil {
+		return &PipelineNameValidationErr{pipeline: pv.Name}
 	}
 	return nil
 }

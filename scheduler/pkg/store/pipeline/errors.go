@@ -195,3 +195,11 @@ type PipelineInputErr struct {
 func (pie *PipelineInputErr) Error() string {
 	return fmt.Sprintf("pipeline %s input %s is invalid. %s", pie.pipeline, pie.input, pie.reason)
 }
+
+type PipelineNameValidationErr struct {
+	pipeline string
+}
+
+func (pnve *PipelineNameValidationErr) Error() string {
+	return fmt.Sprintf("pipeline %s does not have a valid name - it must be alphanmumeric and can contain underscores and dashes", pnve.pipeline)
+}
