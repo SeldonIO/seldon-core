@@ -24,23 +24,23 @@ func TestCheckName(t *testing.T) {
 			true,
 		},
 		{
-			"an valid dash and underscore name that begins and ends with something alphanumeric",
+			"an invalid name that begins and ends with something alphanumeric",
 			"1-----______A",
 			true,
 		},
 
 		{
-			"an invalid dash and underscore name that doesn't begin and end with something alphanumeric",
+			"an invalid name that doesn't begin and end with something alphanumeric",
 			"-----______",
 			false,
 		},
 		{
-			"an invalid dash and underscore name that doesn't end with something alphanumeric",
+			"an invalid name that doesn't end with something alphanumeric",
 			"A-----______",
 			false,
 		},
 		{
-			"an invalid dash and underscore name that doesn't begin with something alphanumeric",
+			"an invalid name that doesn't begin with something alphanumeric",
 			"-----______1",
 			false,
 		},
