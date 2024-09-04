@@ -96,6 +96,7 @@ opentracing/opentracing-go
 otiai10/copy
 peterbourgon/diskv
 pkg/errors
+planetscale/vtprotobuf
 pmezard/go-difflib
 prometheus/client_golang
 prometheus/client_model
