@@ -103,6 +103,7 @@ github.com/opentracing/opentracing-go
 github.com/otiai10/copy
 github.com/peterbourgon/diskv
 github.com/pkg/errors
+github.com/planetscale/vtprotobuf
 github.com/pmezard/go-difflib
 github.com/prometheus/client_golang
 github.com/prometheus/client_model
