@@ -435,6 +435,13 @@ func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	routeName := fmt.Sprintf("%s.experiment", exp.Name)
+
+	// first clear any existing routes
+	if err := p.removeRouteForServerInEnvoyCache(routeName); err != nil {
+		logger.WithError(err).Errorf("Failed to remove traffic for experiment %s", routeName)
+		return err
+	}
+
 	if err := p.addTrafficForExperiment(routeName, exp); err != nil {
 		logger.WithError(err).Errorf("Failed to add traffic for experiment %s", routeName)
 		return err
@@ -640,6 +647,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
 	if routes, ok := p.xdsCache.Routes[modelName]; ok {
+		logger.Debugf("routes for model %s %v", modelName, routes)
 		activeRoutes := len(routes.Clusters)
 		if activeRoutes == 1 && p.versionCleaner != nil {
 			logger.Debugf("Calling cleanup for model %s", modelName)
