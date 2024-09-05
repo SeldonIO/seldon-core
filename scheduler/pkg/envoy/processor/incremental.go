@@ -648,8 +648,7 @@ func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
 	if routes, ok := p.xdsCache.Routes[modelName]; ok {
 		logger.Debugf("routes for model %s %v", modelName, routes)
-		activeRoutes := len(routes.Clusters)
-		if activeRoutes == 1 && p.versionCleaner != nil {
+		if p.versionCleaner != nil {
 			logger.Debugf("Calling cleanup for model %s", modelName)
 			p.versionCleaner.RunCleanup(modelName)
 		}
