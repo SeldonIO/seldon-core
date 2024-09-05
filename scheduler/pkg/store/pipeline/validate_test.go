@@ -852,7 +852,7 @@ func TestCheckName(t *testing.T) {
 		{
 			name: "a valid name",
 			pipelineVersion: &PipelineVersion{
-				Name: "1-name_that-isVa1id0",
+				Name: "1-name-that-isva1id0",
 				Steps: map[string]*PipelineStep{
 					"a": {
 						Name: "a",
@@ -871,9 +871,9 @@ func TestCheckName(t *testing.T) {
 		{
 			name: "a invalid name with dots",
 			pipelineVersion: &PipelineVersion{
-				Name: "a-name_that-is-not-Valid.10.1",
+				Name: "a-name-that-is-not-valid.10.1",
 			},
-			err: &PipelineNameValidationErr{pipeline: "a-name_that-is-not-Valid.10.1"},
+			err: &PipelineNameValidationErr{pipeline: "a-name-that-is-not-valid.10.1"},
 		},
 		{
 			name: "a invalid name with a special character",

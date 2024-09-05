@@ -25,10 +25,9 @@ func TestCheckName(t *testing.T) {
 		},
 		{
 			"a valid name that begins and ends with something alphanumeric",
-			"1--a",
+			"a-a-aaa",
 			true,
 		},
-
 		{
 			"an invalid name that doesn't begin and end with something alphanumeric",
 			"--",
@@ -45,13 +44,13 @@ func TestCheckName(t *testing.T) {
 			false,
 		},
 		{
-			"an invalid name with a dot",
-			"not.valid",
+			"an invalid name with an uppercase letter",
+			"this-name-is-not-Valid1234",
 			false,
 		},
 		{
-			"an invalid name with an uppercase letter",
-			"This-name-is-not-valid1234",
+			"an invalid name with a dot",
+			"not.valid",
 			false,
 		},
 	}
