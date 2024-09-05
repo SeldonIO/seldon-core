@@ -21,9 +21,13 @@ spec:
       jsonPath: .status.conditions[?(@.type=="ModelReady")].status
       name: Ready
       type: string
-    - description: Number of replicas
-      jsonPath: .status.replicas
-      name: Replicas
+    - description: Number of desired replicas
+      jsonPath: .spec.replicas
+      name: Desired Replicas
+      type: integer
+    - description: Number of replicas available to receive inference requests
+      jsonPath: .status.availableReplicas
+      name: Available Replicas
       type: integer
     - jsonPath: .metadata.creationTimestamp
       name: Age
