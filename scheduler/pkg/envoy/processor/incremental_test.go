@@ -463,14 +463,15 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name                 string
-		ops                  []func(proc *IncrementalProcessor, g *WithT)
-		numExpectedClusters  int
-		numExpectedRoutes    int
-		numExpectedPipelines int
-		experimentActive     bool
-		experimentExists     bool
-		experimentDeleted    bool
+		name                     string
+		ops                      []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters      int
+		numExpectedRoutes        int
+		numExpectedPipelines     int
+		experimentActive         bool
+		experimentExists         bool
+		experimentDeleted        bool
+		expectedVersionsInRoutes map[string]uint32
 	}
 
 	getStrPtr := func(t string) *string { return &t }
@@ -546,6 +547,10 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 2,
+			},
 		},
 		{
 			name: "experiment with deleted model",
@@ -694,6 +699,15 @@ func TestEnvoySettings(t *testing.T) {
 			} else {
 				g.Expect(err).NotTo(BeNil())
 				g.Expect(exp).To(BeNil())
+			}
+			for modelName, version := range test.expectedVersionsInRoutes {
+				for _, route := range inc.xdsCache.Routes {
+					for _, cluster := range route.Clusters {
+						if cluster.ModelName == modelName {
+							g.Expect(cluster.ModelVersion).To(Equal(version))
+						}	
+					}
+				}
 			}
 
 		})
