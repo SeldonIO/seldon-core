@@ -705,7 +705,7 @@ func TestEnvoySettings(t *testing.T) {
 					for _, cluster := range route.Clusters {
 						if cluster.ModelName == modelName {
 							g.Expect(cluster.ModelVersion).To(Equal(version))
-						}	
+						}
 					}
 				}
 			}
