@@ -531,6 +531,10 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 1,
+			},
 		},
 		{
 			name: "experiment - new model version",
@@ -561,7 +565,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters: 4,
+			numExpectedClusters: 2,  // model2 should be removed from the clusters (server 1)
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
@@ -602,7 +606,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters: 4,
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
