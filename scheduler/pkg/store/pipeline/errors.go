@@ -201,5 +201,5 @@ type PipelineNameValidationErr struct {
 }
 
 func (pnve *PipelineNameValidationErr) Error() string {
-	return fmt.Sprintf("pipeline %s does not have a valid name - it must be alphanmumeric and can contain underscores and hyphens", pnve.pipeline)
+	return fmt.Sprintf("pipeline %s does not have a valid name - it must be alphanmumeric and cannot contain dots (.)", pnve.pipeline)
 }
