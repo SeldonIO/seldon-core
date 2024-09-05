@@ -400,6 +400,32 @@ func createTestExperiment(experimentName string, modelNames []string, defaultMod
 	return f
 }
 
+func refreshTestExperiment(experimentName string, modelNames []string, defaultModel *string, mirrorName *string) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		var candidates []*experiment.Candidate
+		var mirror *experiment.Mirror
+		for _, modelName := range modelNames {
+			candidates = append(candidates, &experiment.Candidate{Name: modelName, Weight: 1})
+		}
+		if mirrorName != nil {
+			mirror = &experiment.Mirror{
+				Name:    *mirrorName,
+				Percent: 100,
+			}
+		}
+		exp := &experiment.Experiment{
+			Name:       experimentName,
+			Default:    defaultModel,
+			Candidates: candidates,
+			Mirror:     mirror,
+		}
+
+		err := inc.experimentUpdate(exp)
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
 func deleteTestExperiment(experimentName string) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		err := inc.experimentServer.StopExperiment(experimentName)
@@ -499,6 +525,22 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+		},
+		{
+			name: "experiment - new model version",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
+				// update model2 to version 2
+				createTestModel("model2", "server", 1, []int{1}, 2, []store.ModelReplicaState{store.Available}),
+				refreshTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   3,
