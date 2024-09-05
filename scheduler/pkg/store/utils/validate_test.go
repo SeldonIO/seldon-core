@@ -25,7 +25,7 @@ func TestCheckName(t *testing.T) {
 		},
 		{
 			"a valid name that begins and ends with something alphanumeric",
-			"a-a-aaa",
+			"a-a-a",
 			true,
 		},
 		{
