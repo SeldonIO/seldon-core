@@ -565,7 +565,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters: 2,  // model2 should be removed from the clusters (server 1)
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
