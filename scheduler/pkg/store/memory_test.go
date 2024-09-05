@@ -193,7 +193,7 @@ func TestUpdateModel(t *testing.T) {
 				},
 			},
 			expectedVersion: 1,
-			err:             errors.New("Model this.Name does not have a valid name - only alphanumeric names with underscores and hyphens are valid"),
+			err:             errors.New("Model this.Name does not have a valid name - it must be alphanumeric and not contains dots (.)"),
 		},
 	}
 

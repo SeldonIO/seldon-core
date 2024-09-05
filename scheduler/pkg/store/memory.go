@@ -109,7 +109,7 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	validName := utils.CheckName(modelName)
 	if !validName {
 		return fmt.Errorf(
-			"Model %s does not have a valid name - only alphanumeric names with underscores and hyphens are valid",
+			"Model %s does not have a valid name - it must be alphanumeric and not contains dots (.)",
 			modelName,
 		)
 	}
