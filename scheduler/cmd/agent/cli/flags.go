@@ -53,11 +53,11 @@ func makeArgs() {
 	flag.IntVar(&ScalingStatsPeriodSeconds, flagScalingStatsPeriodSeconds, statsPeriodSecondsDefault, "Scaling stats period seconds")
 	flag.IntVar(&MaxElapsedTimeReadySubServiceAfterStartSeconds, flagMaxElapsedTimeReadySubServiceAfterStartSeconds, defaultMaxElapsedTimeReadySubServiceAfterStartSeconds, "Ready sub service after start seconds")
 	flag.IntVar(&MaxElapsedTimeReadySubServiceBeforeStartMinutes, flagMaxElapsedTimeReadySubServiceBeforeStartMinutes, defaultMaxElapsedTimeReadySubServiceBeforeStartMinutes, "Max elapsed time sub service before start minutes")
-	flag.IntVar(&PeriodReadySubServiceSeconds, flagPeriodReadySubServiceSeconds, defaultPeriodReadySubServiceSeconds, "period in seconds for subservice ready \"cron\"")
-	flag.IntVar(&MaxLoadElapsedTimeMinute, flagMaxLoadElapsedTimeMinutes, defaultMaxLoadElapsedTimeMinute, "max time in minutes to wait for a model server to load a model, including retries")
-	flag.IntVar(&MaxUnloadElapsedTimeMinute, flagMaxUnloadElapsedTimeMinutes, defaultMaxUnloadElapsedTimeMinute, "max time in minutes to wait for a model server to unload a model, including retries")
-	flag.IntVar(&MaxLoadRetryCount, flagMaxLoadRetryCount, defaultMaxLoadRetryCount, "number of retries for loading a model onto a server")
-	flag.IntVar(&MaxUnloadRetryCount, flagMaxUnloadRetryCount, defaultMaxUnloadRetryCount, "number of retries for unloading a model onto a server")
+	flag.IntVar(&PeriodReadySubServiceSeconds, flagPeriodReadySubServiceSeconds, defaultPeriodReadySubServiceSeconds, "Period in seconds for subservice ready \"cron\"")
+	flag.IntVar(&MaxLoadElapsedTimeMinute, flagMaxLoadElapsedTimeMinutes, defaultMaxLoadElapsedTimeMinute, "Max time in minutes to wait for a model server to load a model, including retries")
+	flag.IntVar(&MaxUnloadElapsedTimeMinute, flagMaxUnloadElapsedTimeMinutes, defaultMaxUnloadElapsedTimeMinute, "Max time in minutes to wait for a model server to unload a model, including retries")
+	flag.IntVar(&MaxLoadRetryCount, flagMaxLoadRetryCount, defaultMaxLoadRetryCount, "Number of retries for loading a model onto a server")
+	flag.IntVar(&MaxUnloadRetryCount, flagMaxUnloadRetryCount, defaultMaxUnloadRetryCount, "Number of retries for unloading a model onto a server")
 }
 
 func parseFlags() {
