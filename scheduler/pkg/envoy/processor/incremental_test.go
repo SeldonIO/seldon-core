@@ -437,14 +437,15 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name                 string
-		ops                  []func(proc *IncrementalProcessor, g *WithT)
-		numExpectedClusters  int
-		numExpectedRoutes    int
-		numExpectedPipelines int
-		experimentActive     bool
-		experimentExists     bool
-		experimentDeleted    bool
+		name                     string
+		ops                      []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters      int
+		numExpectedRoutes        int
+		numExpectedPipelines     int
+		experimentActive         bool
+		experimentExists         bool
+		experimentDeleted        bool
+		expectedVersionsInRoutes map[string]uint32
 	}
 
 	getStrPtr := func(t string) *string { return &t }
@@ -504,6 +505,29 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 1,
+			},
+		},
+		{
+			name: "experiment - new model version",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
+				// update model2 to version 2, will trigger change in routes / experiment
+				createTestModel("model2", "server", 1, []int{1}, 2, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 2,
+			},
 		},
 		{
 			name: "experiment with deleted model",
@@ -514,7 +538,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters: 4,
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
@@ -555,7 +579,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters: 4,
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
@@ -652,6 +676,15 @@ func TestEnvoySettings(t *testing.T) {
 			} else {
 				g.Expect(err).NotTo(BeNil())
 				g.Expect(exp).To(BeNil())
+			}
+			for modelName, version := range test.expectedVersionsInRoutes {
+				for _, route := range inc.xdsCache.Routes {
+					for _, cluster := range route.Clusters {
+						if cluster.ModelName == modelName {
+							g.Expect(cluster.ModelVersion).To(Equal(version))
+						}
+					}
+				}
 			}
 
 		})
