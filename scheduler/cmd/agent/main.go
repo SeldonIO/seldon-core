@@ -40,23 +40,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
-const (
-	// the max time to wait for a subservice ready after client start, i.e. during operation
-	maxElapsedTimeReadySubServiceAfterStart = 30 * time.Second
-	// the max time to wait for a subservice ready before client start, i.e. during startup
-	maxElapsedTimeReadySubServiceBeforeStart = 15 * time.Minute // 15 mins is the default MaxElapsedTime
-	// period for subservice ready "cron"
-	periodReadySubService = 60 * time.Second
-	// max time to wait for a model server to load a model, including retries
-	maxLoadElapsedTime = 120 * time.Minute
-	// max time to wait for a model server to unload a model, including retries
-	maxUnloadElapsedTime = 15 * time.Minute // 15 mins is the default MaxElapsedTime
-	// number of retries for loading a model onto a server
-	maxLoadRetryCount = 5
-	// number of retries for unloading a model onto a server
-	maxUnloadRetryCount = 1
-)
-
 func makeDirs() (string, string, error) {
 	modelRepositoryDir := filepath.Join(cli.AgentFolder, "models")
 	rcloneRepositoryDir := filepath.Join(cli.AgentFolder, "rclone")
@@ -276,13 +259,13 @@ func main() {
 			cli.SchedulerHost,
 			cli.SchedulerPort,
 			cli.SchedulerTlsPort,
-			periodReadySubService,
-			maxElapsedTimeReadySubServiceBeforeStart,
-			maxElapsedTimeReadySubServiceAfterStart,
-			maxLoadElapsedTime,
-			maxUnloadElapsedTime,
-			maxLoadRetryCount,
-			maxUnloadRetryCount,
+			time.Duration(cli.MaxElapsedTimeReadySubServiceAfterStartSeconds),
+			time.Duration(cli.MaxElapsedTimeReadySubServiceBeforeStartMinutes),
+			time.Duration(cli.MaxElapsedTimeReadySubServiceAfterStartSeconds),
+			time.Duration(cli.MaxLoadElapsedTimeMinute),
+			time.Duration(cli.MaxUnloadElapsedTimeMinute),
+			uint8(cli.MaxLoadRetryCount),
+			uint8(cli.MaxUnloadRetryCount),
 		),
 		logger,
 		modelRepository,
