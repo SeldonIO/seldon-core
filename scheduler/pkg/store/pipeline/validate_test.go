@@ -845,3 +845,58 @@ func TestCheckStepOutputs(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckName(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []validateTest{
+		{
+			name: "a valid name",
+			pipelineVersion: &PipelineVersion{
+				Name: "1-name-that-isva1id0",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs.t1", "a.inputs", "a.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"a.outputs.t1"},
+					},
+				},
+			},
+		},
+		{
+			name: "a invalid name with dots",
+			pipelineVersion: &PipelineVersion{
+				Name: "a-name-that-is-not-valid.10.1",
+			},
+			err: &PipelineNameValidationErr{pipeline: "a-name-that-is-not-valid.10.1"},
+		},
+		{
+			name: "a invalid name with a special character",
+			pipelineVersion: &PipelineVersion{
+				Name: "aNameThatIs%notValid",
+			},
+			err: &PipelineNameValidationErr{pipeline: "aNameThatIs%notValid"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkName(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+			err = validate(test.pipelineVersion)
+			if test.err == nil {
+				g.Expect(err).To(BeNil())
+			} else {
+				g.Expect(err.Error()).To(Equal(test.err.Error()))
+			}
+		})
+	}
+}

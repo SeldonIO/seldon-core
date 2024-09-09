@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -30,6 +31,7 @@ func TestUpdateModel(t *testing.T) {
 		store           *LocalSchedulerStore
 		loadModelReq    *pb.LoadModelRequest
 		expectedVersion uint32
+		err             error
 	}
 
 	tests := []test{
@@ -61,7 +63,8 @@ func TestUpdateModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			loadModelReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{
@@ -87,7 +90,8 @@ func TestUpdateModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			loadModelReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{
@@ -122,7 +126,8 @@ func TestUpdateModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			loadModelReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{
@@ -160,7 +165,8 @@ func TestUpdateModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			loadModelReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{
@@ -176,6 +182,19 @@ func TestUpdateModel(t *testing.T) {
 			},
 			expectedVersion: 2,
 		},
+		{
+			name:  "ModelNameIsNotValid",
+			store: NewLocalSchedulerStore(),
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "this.Name",
+					},
+				},
+			},
+			expectedVersion: 1,
+			err:             errors.New("Model this.Name does not have a valid name - it must be alphanumeric and not contains dots (.)"),
+		},
 	}
 
 	for _, test := range tests {
@@ -185,11 +204,15 @@ func TestUpdateModel(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
 			err = ms.UpdateModel(test.loadModelReq)
-			g.Expect(err).To(BeNil())
-			m := test.store.models[test.loadModelReq.GetModel().GetMeta().GetName()]
-			latest := m.Latest()
-			g.Expect(latest.modelDefn).To(Equal(test.loadModelReq.Model))
-			g.Expect(latest.GetVersion()).To(Equal(test.expectedVersion))
+			if test.err != nil {
+				g.Expect(err.Error()).To(BeIdenticalTo(test.err.Error()))
+			} else {
+				g.Expect(err).To(BeNil())
+				m := test.store.models[test.loadModelReq.GetModel().GetMeta().GetName()]
+				latest := m.Latest()
+				g.Expect(latest.modelDefn).To(Equal(test.loadModelReq.Model))
+				g.Expect(latest.GetVersion()).To(Equal(test.expectedVersion))
+			}
 		})
 	}
 }
@@ -228,7 +251,8 @@ func TestGetModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			key:      "model",
 			versions: 1,
 			err:      nil,
@@ -285,7 +309,8 @@ func TestRemoveModel(t *testing.T) {
 							},
 						},
 					},
-				}},
+				},
+			},
 			key: "model",
 		},
 	}
@@ -935,7 +960,7 @@ func TestUpdateModelState(t *testing.T) {
 					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels[ModelVersionID{Name: test.modelKey, Version: test.version}]).To(Equal(test.modelVersionLoaded))
 					g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetNumLoadedModels()).To(Equal(test.numModelVersionsLoaded))
 				} else {
-					//g.Expect(test.store.models[test.modelKey]).To(BeNil())
+					// g.Expect(test.store.models[test.modelKey]).To(BeNil())
 					g.Expect(test.store.models[test.modelKey].Latest().state.State).To(Equal(ModelTerminated))
 				}
 
@@ -1223,7 +1248,8 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 		{
 			name: "Add new version when none exist",
 			store: &LocalSchedulerStore{
-				models: map[string]*Model{}},
+				models: map[string]*Model{},
+			},
 			modelVersion: &agent.ModelVersion{
 				Version: 1,
 				Model: &pb.Model{
