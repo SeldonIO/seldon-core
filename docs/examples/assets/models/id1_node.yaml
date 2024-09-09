@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: id1_node
+spec:
+  storageUri: "gs://seldon-models/triton/id_node"
+  requirements:
+  - triton
+  - python
