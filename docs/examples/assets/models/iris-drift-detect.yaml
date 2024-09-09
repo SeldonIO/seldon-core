@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris-drift-detect
+spec:
+  storageUri: "gs://seldon-models/mlserver/alibi-detect/iris-tabular-drift/alibi-detector-artifacts"
+  requirements:
+    - mlserver
+    - alibi-detect
