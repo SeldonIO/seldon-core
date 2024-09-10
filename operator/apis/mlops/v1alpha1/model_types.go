@@ -190,34 +190,13 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		md.ModelSpec.Requirements = append(md.ModelSpec.Requirements, *m.Spec.ModelType)
 	}
 	// Set Replicas
-	if m.Spec.Replicas != nil {
-		md.DeploymentSpec.Replicas = uint32(*m.Spec.Replicas)
-	} else {
-		if m.Spec.MinReplicas != nil {
-			// set replicas to the min replicas if not set
-			md.DeploymentSpec.Replicas = uint32(*m.Spec.MinReplicas)
-		} else {
-			md.DeploymentSpec.Replicas = 1
-		}
+	scalingSpec, err := GetValidatedScalingSpec(m.Spec.Replicas, m.Spec.MinReplicas, m.Spec.MaxReplicas)
+	if err != nil {
+		return nil, err
 	}
-
-	if m.Spec.MinReplicas != nil {
-		md.DeploymentSpec.MinReplicas = uint32(*m.Spec.MinReplicas)
-		if md.DeploymentSpec.Replicas < md.DeploymentSpec.MinReplicas {
-			return nil, fmt.Errorf("Number of replicas %d should be >= min replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MinReplicas)
-		}
-	} else {
-		md.DeploymentSpec.MinReplicas = 0
-	}
-
-	if m.Spec.MaxReplicas != nil {
-		md.DeploymentSpec.MaxReplicas = uint32(*m.Spec.MaxReplicas)
-		if md.DeploymentSpec.Replicas > md.DeploymentSpec.MaxReplicas {
-			return nil, fmt.Errorf("Number of replicas %d should be <= max replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MaxReplicas)
-		}
-	} else {
-		md.DeploymentSpec.MaxReplicas = 0
-	}
+	md.DeploymentSpec.Replicas = scalingSpec.Replicas
+	md.DeploymentSpec.MinReplicas = scalingSpec.MinReplicas
+	md.DeploymentSpec.MaxReplicas = scalingSpec.MaxReplicas
 
 	// Set memory bytes
 	if m.Spec.Memory != nil {
