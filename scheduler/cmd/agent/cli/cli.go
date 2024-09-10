@@ -20,106 +20,134 @@ import (
 )
 
 const (
-	envServerHttpPort                = "SELDON_SERVER_HTTP_PORT"
-	envServerGrpcPort                = "SELDON_SERVER_GRPC_PORT"
-	envReverseProxyHttpPort          = "SELDON_REVERSE_PROXY_HTTP_PORT"
-	envReverseProxyGrpcPort          = "SELDON_REVERSE_PROXY_GRPC_PORT"
-	envDebugGrpcPort                 = "SELDON_DEBUG_GRPC_PORT"
-	envMetricsPort                   = "SELDON_METRICS_PORT"
-	envPodName                       = "POD_NAME"
-	envSchedulerHost                 = "SELDON_SCHEDULER_HOST"
-	envSchedulerPort                 = "SELDON_SCHEDULER_PORT"
-	envSchedulerTlsPort              = "SELDON_SCHEDULER_TLS_PORT"
-	envReplicaConfig                 = "SELDON_REPLICA_CONFIG"
-	envLogLevel                      = "SELDON_LOG_LEVEL"
-	envServerType                    = "SELDON_SERVER_TYPE"
-	envMemoryRequest                 = "MEMORY_REQUEST"
-	envCapabilities                  = "SELDON_SERVER_CAPABILITIES"
-	envOverCommitPercentage          = "SELDON_OVERCOMMIT_PERCENTAGE"
-	envEnvoyHost                     = "SELDON_ENVOY_HOST"
-	envEnvoyPort                     = "SELDON_ENVOY_PORT"
-	envDrainerServicePort            = "SELDON_DRAINER_PORT"
-	envModelInferenceLagThreshold    = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
-	envModelInactiveSecondsThreshold = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
-	envScalingStatsPeriodSeconds     = "SELDON_SCALING_STATS_PERIOD_SECONDS"
+	envServerHttpPort                                  = "SELDON_SERVER_HTTP_PORT"
+	envServerGrpcPort                                  = "SELDON_SERVER_GRPC_PORT"
+	envReverseProxyHttpPort                            = "SELDON_REVERSE_PROXY_HTTP_PORT"
+	envReverseProxyGrpcPort                            = "SELDON_REVERSE_PROXY_GRPC_PORT"
+	envDebugGrpcPort                                   = "SELDON_DEBUG_GRPC_PORT"
+	envMetricsPort                                     = "SELDON_METRICS_PORT"
+	envPodName                                         = "POD_NAME"
+	envSchedulerHost                                   = "SELDON_SCHEDULER_HOST"
+	envSchedulerPort                                   = "SELDON_SCHEDULER_PORT"
+	envSchedulerTlsPort                                = "SELDON_SCHEDULER_TLS_PORT"
+	envReplicaConfig                                   = "SELDON_REPLICA_CONFIG"
+	envLogLevel                                        = "SELDON_LOG_LEVEL"
+	envServerType                                      = "SELDON_SERVER_TYPE"
+	envMemoryRequest                                   = "MEMORY_REQUEST"
+	envCapabilities                                    = "SELDON_SERVER_CAPABILITIES"
+	envOverCommitPercentage                            = "SELDON_OVERCOMMIT_PERCENTAGE"
+	envEnvoyHost                                       = "SELDON_ENVOY_HOST"
+	envEnvoyPort                                       = "SELDON_ENVOY_PORT"
+	envDrainerServicePort                              = "SELDON_DRAINER_PORT"
+	envModelInferenceLagThreshold                      = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
+	envModelInactiveSecondsThreshold                   = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
+	envScalingStatsPeriodSeconds                       = "SELDON_SCALING_STATS_PERIOD_SECONDS"
+	envMaxElapsedTimeReadySubServiceAfterStartSeconds  = "SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS"
+	envMaxElapsedTimeReadySubServiceBeforeStartMinutes = "SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES"
+	envPeriodReadySubServiceSeconds                    = "SELDON_PERIOD_READY_SUB_SERVICE_SECONDS"
+	envMaxLoadElapsedTimeMinutes                       = "SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES"
+	envMaxUnloadElapsedTimeMinutes                     = "SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES"
+	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
+	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
 
-	flagSchedulerHost                 = "scheduler-host"
-	flagSchedulerPlaintxtPort         = "scheduler-port"
-	flagSchedulerTlsPort              = "scheduler-tls-port"
-	flagServerName                    = "server-name"
-	flagServerIdx                     = "server-idx"
-	flagInferenceHttpPort             = "inference-http-port"
-	flagInferenceGrpcPort             = "inference-grpc-port"
-	flagReverseProxyHttpPort          = "reverse-proxy-http-port"
-	flagReverseProxyGrpcPort          = "reverse-proxy-grpc-port"
-	flagDebugGrpcPort                 = "debug-grpc-port"
-	flagMetricsPort                   = "metrics-port"
-	flagReplicaConfig                 = "replica-config"
-	flagLogLevel                      = "log-level"
-	flagServerType                    = "server-type"
-	flagMemoryBytes                   = "memory-bytes"
-	flagCapabilities                  = "capabilities"
-	flagOverCommitPercentage          = "over-commit-percentage"
-	flagTracingConfigPath             = "tracing-config-path"
-	flagEnvoyHost                     = "envoy-host"
-	flagEnvoyPort                     = "envoy-port"
-	flagDrainerServicePort            = "drainer-port"
-	flagModelInferenceLagThreshold    = "model-inference-lag-threshold"
-	flagModelInactiveSecondsThreshold = "model-inactive-seconds-threshold"
-	flagScalingStatsPeriodSeconds     = "scaling-stats-period-seconds"
+	flagSchedulerHost                                   = "scheduler-host"
+	flagSchedulerPlaintxtPort                           = "scheduler-port"
+	flagSchedulerTlsPort                                = "scheduler-tls-port"
+	flagServerName                                      = "server-name"
+	flagServerIdx                                       = "server-idx"
+	flagInferenceHttpPort                               = "inference-http-port"
+	flagInferenceGrpcPort                               = "inference-grpc-port"
+	flagReverseProxyHttpPort                            = "reverse-proxy-http-port"
+	flagReverseProxyGrpcPort                            = "reverse-proxy-grpc-port"
+	flagDebugGrpcPort                                   = "debug-grpc-port"
+	flagMetricsPort                                     = "metrics-port"
+	flagReplicaConfig                                   = "replica-config"
+	flagLogLevel                                        = "log-level"
+	flagServerType                                      = "server-type"
+	flagMemoryBytes                                     = "memory-bytes"
+	flagCapabilities                                    = "capabilities"
+	flagOverCommitPercentage                            = "over-commit-percentage"
+	flagTracingConfigPath                               = "tracing-config-path"
+	flagEnvoyHost                                       = "envoy-host"
+	flagEnvoyPort                                       = "envoy-port"
+	flagDrainerServicePort                              = "drainer-port"
+	flagModelInferenceLagThreshold                      = "model-inference-lag-threshold"
+	flagModelInactiveSecondsThreshold                   = "model-inactive-seconds-threshold"
+	flagScalingStatsPeriodSeconds                       = "scaling-stats-period-seconds"
+	flagMaxElapsedTimeReadySubServiceAfterStartSeconds  = "max-elapsed-time-ready-sub-service-after-start-seconds"
+	flagMaxElapsedTimeReadySubServiceBeforeStartMinutes = "max-elapsed-time-ready-sub-service-before-start-minutes"
+	flagPeriodReadySubServiceSeconds                    = "period-ready-sub-service-seconds"
+	flagMaxLoadElapsedTimeMinutes                       = "max-load-elapsed-time-minutes"
+	flagMaxUnloadElapsedTimeMinutes                     = "max-unload-elapsed-time-minutes"
+	flagMaxLoadRetryCount                               = "max-load-retry-count"
+	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
 )
 
 const (
-	defaultInferenceHttpPort        = 8080
-	defaultInferenceGrpcPort        = 9500
-	defaultRclonePort               = 5572
-	defaultSchedulerPort            = 9005
-	defaultSchedulerTlsPort         = 9055
-	defaultMetricsPort              = 9006
-	defaultEnvoyHost                = "0.0.0.0"
-	defaultEnvoyPort                = 9000
-	defaultDrainerServicePort       = 9007
-	statsPeriodSecondsDefault       = 5
-	lagThresholdDefault             = 30
-	lastUsedThresholdSecondsDefault = 30
+	defaultInferenceHttpPort                               = 8080
+	defaultInferenceGrpcPort                               = 9500
+	defaultRclonePort                                      = 5572
+	defaultSchedulerPort                                   = 9005
+	defaultSchedulerTlsPort                                = 9055
+	defaultMetricsPort                                     = 9006
+	defaultEnvoyHost                                       = "0.0.0.0"
+	defaultEnvoyPort                                       = 9000
+	defaultDrainerServicePort                              = 9007
+	statsPeriodSecondsDefault                              = 5
+	lagThresholdDefault                                    = 30
+	lastUsedThresholdSecondsDefault                        = 30
+	defaultMaxElapsedTimeReadySubServiceAfterStartSeconds  = 30
+	defaultMaxElapsedTimeReadySubServiceBeforeStartMinutes = 15
+	defaultPeriodReadySubServiceSeconds                    = 60
+	defaultMaxLoadElapsedTimeMinute                        = 120
+	defaultMaxUnloadElapsedTimeMinute                      = 15
+	defaultMaxLoadRetryCount                               = 5
+	defaultMaxUnloadRetryCount                             = 1
 )
 
 var (
-	agentHost                     string
-	ServerName                    string
-	ReplicaIdx                    uint
-	SchedulerHost                 string
-	SchedulerPort                 int
-	SchedulerTlsPort              int
-	RcloneHost                    string
-	RclonePort                    int
-	InferenceHost                 string
-	InferenceHttpPort             int
-	InferenceGrpcPort             int
-	ReverseProxyHttpPort          int
-	ReverseProxyGrpcPort          int
-	DebugGrpcPort                 int
-	MetricsPort                   int
-	AgentFolder                   string
-	Namespace                     string
-	ReplicaConfigStr              string
-	InferenceSvcName              string
-	ConfigPath                    string
-	LogLevel                      string
-	ServerType                    string
-	memoryBytes                   int
-	MemoryBytes64                 uint64
-	capabilitiesList              string
-	Capabilities                  []string
-	OverCommitPercentage          int
-	serverTypes                   = [...]string{"mlserver", "triton"}
-	TracingConfigPath             string
-	EnvoyHost                     string
-	EnvoyPort                     int
-	DrainerServicePort            int
-	ModelInferenceLagThreshold    int
-	ModelInactiveSecondsThreshold int
-	ScalingStatsPeriodSeconds     int
+	agentHost                                       string
+	ServerName                                      string
+	ReplicaIdx                                      uint
+	SchedulerHost                                   string
+	SchedulerPort                                   int
+	SchedulerTlsPort                                int
+	RcloneHost                                      string
+	RclonePort                                      int
+	InferenceHost                                   string
+	InferenceHttpPort                               int
+	InferenceGrpcPort                               int
+	ReverseProxyHttpPort                            int
+	ReverseProxyGrpcPort                            int
+	DebugGrpcPort                                   int
+	MetricsPort                                     int
+	AgentFolder                                     string
+	Namespace                                       string
+	ReplicaConfigStr                                string
+	InferenceSvcName                                string
+	ConfigPath                                      string
+	LogLevel                                        string
+	ServerType                                      string
+	memoryBytes                                     int
+	MemoryBytes64                                   uint64
+	capabilitiesList                                string
+	Capabilities                                    []string
+	OverCommitPercentage                            int
+	serverTypes                                     = [...]string{"mlserver", "triton"}
+	TracingConfigPath                               string
+	EnvoyHost                                       string
+	EnvoyPort                                       int
+	DrainerServicePort                              int
+	ModelInferenceLagThreshold                      int
+	ModelInactiveSecondsThreshold                   int
+	ScalingStatsPeriodSeconds                       int
+	MaxElapsedTimeReadySubServiceAfterStartSeconds  int
+	MaxElapsedTimeReadySubServiceBeforeStartMinutes int
+	PeriodReadySubServiceSeconds                    int
+	MaxLoadElapsedTimeMinute                        int
+	MaxUnloadElapsedTimeMinute                      int
+	MaxLoadRetryCount                               int
+	MaxUnloadRetryCount                             int
 )
 
 func init() {
@@ -156,6 +184,13 @@ func updateFlagsFromEnv() {
 	maybeUpdateModelInferenceLagThreshold()
 	maybeUpdateModelInactiveSecondsThreshold()
 	maybeUpdateScalingStatsPeriodSeconds()
+	maybeMaxElapsedTimeReadySubServiceAfterStartSeconds()
+	maybeMaxElapsedTimeReadySubServiceBeforeStartMinutes()
+	maybePeriodReadySubServiceSeconds()
+	maybeMaxLoadElapsedTimeMinute()
+	maybeMaxUnloadElapsedTimeMinute()
+	maybeMaxLoadRetryCount()
+	maybeMaxUnloadRetryCount()
 }
 
 func maybeUpdateModelInferenceLagThreshold() {
@@ -336,6 +371,69 @@ func maybeUpdateSchedulerTlsPort() {
 
 func maybeUpdateMetricsPort() {
 	maybeUpdatePort(flagMetricsPort, envMetricsPort, &MetricsPort)
+}
+
+func maybeMaxElapsedTimeReadySubServiceAfterStartSeconds() {
+	maybeUpdateFromIntEnv(
+		flagMaxElapsedTimeReadySubServiceAfterStartSeconds,
+		envMaxElapsedTimeReadySubServiceAfterStartSeconds,
+		&MaxElapsedTimeReadySubServiceAfterStartSeconds,
+		"sub service after start seconds",
+	)
+}
+
+func maybeMaxElapsedTimeReadySubServiceBeforeStartMinutes() {
+	maybeUpdateFromIntEnv(
+		flagMaxElapsedTimeReadySubServiceBeforeStartMinutes,
+		envMaxElapsedTimeReadySubServiceBeforeStartMinutes,
+		&MaxElapsedTimeReadySubServiceBeforeStartMinutes,
+		"sub service before start minutes",
+	)
+}
+
+func maybePeriodReadySubServiceSeconds() {
+	maybeUpdateFromIntEnv(
+		flagPeriodReadySubServiceSeconds,
+		envPeriodReadySubServiceSeconds,
+		&PeriodReadySubServiceSeconds,
+		"period ready sub service seconds",
+	)
+}
+
+func maybeMaxLoadElapsedTimeMinute() {
+	maybeUpdateFromIntEnv(
+		flagMaxLoadElapsedTimeMinutes,
+		envMaxLoadElapsedTimeMinutes,
+		&MaxLoadElapsedTimeMinute,
+		"max load elapsed time minutes",
+	)
+}
+
+func maybeMaxUnloadElapsedTimeMinute() {
+	maybeUpdateFromIntEnv(
+		flagMaxUnloadElapsedTimeMinutes,
+		envMaxUnloadElapsedTimeMinutes,
+		&MaxUnloadElapsedTimeMinute,
+		"max unload elapsed time minutes",
+	)
+}
+
+func maybeMaxLoadRetryCount() {
+	maybeUpdateFromIntEnv(
+		flagMaxLoadRetryCount,
+		envMaxLoadRetryCount,
+		&MaxLoadRetryCount,
+		"max load retry count",
+	)
+}
+
+func maybeMaxUnloadRetryCount() {
+	maybeUpdateFromIntEnv(
+		flagMaxUnloadRetryCount,
+		envMaxUnloadRetryCount,
+		&MaxUnloadRetryCount,
+		"max unload retry count",
+	)
 }
 
 func maybeUpdateSchedulerHost() {
