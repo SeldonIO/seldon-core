@@ -243,6 +243,13 @@ serverConfig:
     scalingStatsPeriodSeconds: "20"
     modelInferenceLagThreshold: "30"
     modelInactiveSecondsThreshold: "600"
+    maxElapsedTimeReadySubServiceAfterStartSeconds: "30"
+    maxElapsedTimeReadySubServiceBeforeStartMinutes: "15"
+    periodReadySubServiceSeconds: "60"
+    maxLoadElapsedTimeMinutes: "120"
+    maxUnloadElapsedTimeMinutes: "15"
+    maxLoadRetryCount: "5"
+    maxUnloadRetryCount: "1"
     resources:
       cpu: 200m
       memory: 1Gi

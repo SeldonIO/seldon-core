@@ -1539,6 +1539,22 @@ spec:
         value: '{{ .Values.serverConfig.agent.modelInactiveSecondsThreshold }}'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '{{ .Values.serverConfig.agent.scalingStatsPeriodSeconds }}'
+      - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
+        value: '{{ .Values.serverConfig.agent.maxElapsedTimeReadySubServiceAfterStartSeconds
+          }}'
+      - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxElapsedTimeReadySubServiceBeforeStartMinutes
+          }}'
+      - name: SELDON_PERIOD_READY_SUB_SERVICE_SECONDS
+        value: '{{ .Values.serverConfig.agent.periodReadySubServiceSeconds }}'
+      - name: SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxLoadElapsedTimeMinutes }}'
+      - name: SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxUnloadElapsedTimeMinutes }}'
+      - name: SELDON_MAX_LOAD_RETRY_COUNT
+        value: '{{ .Values.serverConfig.agent.maxLoadRetryCount }}'
+      - name: SELDON_MAX_UNLOAD_RETRY_COUNT
+        value: '{{ .Values.serverConfig.agent.maxUnloadRetryCount }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
@@ -1787,6 +1803,22 @@ spec:
         value: '{{ .Values.serverConfig.agent.modelInactiveSecondsThreshold }}'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '{{ .Values.serverConfig.agent.scalingStatsPeriodSeconds }}'
+      - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
+        value: '{{ .Values.serverConfig.agent.maxElapsedTimeReadySubServiceAfterStartSeconds
+          }}'
+      - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxElapsedTimeReadySubServiceBeforeStartMinutes
+          }}'
+      - name: SELDON_PERIOD_READY_SUB_SERVICE_SECONDS
+        value: '{{ .Values.serverConfig.agent.periodReadySubServiceSeconds }}'
+      - name: SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxLoadElapsedTimeMinutes }}'
+      - name: SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES
+        value: '{{ .Values.serverConfig.agent.maxUnloadElapsedTimeMinutes }}'
+      - name: SELDON_MAX_LOAD_RETRY_COUNT
+        value: '{{ .Values.serverConfig.agent.maxLoadRetryCount }}'
+      - name: SELDON_MAX_UNLOAD_RETRY_COUNT
+        value: '{{ .Values.serverConfig.agent.maxUnloadRetryCount }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
