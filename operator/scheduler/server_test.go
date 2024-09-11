@@ -26,7 +26,7 @@ func TestServerNotify(t *testing.T) {
 
 	type test struct {
 		name           string
-		servers        []*v1alpha1.Server
+		servers        []v1alpha1.Server
 		expectedProtos []*scheduler.ServerNotify
 	}
 	getIntPtr := func(val int32) *int32 { return &val }
@@ -34,7 +34,7 @@ func TestServerNotify(t *testing.T) {
 	tests := []test{
 		{
 			name: "good server - replicas set",
-			servers: []*v1alpha1.Server{
+			servers: []v1alpha1.Server{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -61,7 +61,7 @@ func TestServerNotify(t *testing.T) {
 		},
 		{
 			name: "good server - replicas not set",
-			servers: []*v1alpha1.Server{
+			servers: []v1alpha1.Server{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -83,7 +83,7 @@ func TestServerNotify(t *testing.T) {
 		},
 		{
 			name: "deleted server",
-			servers: []*v1alpha1.Server{
+			servers: []v1alpha1.Server{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "foo",
@@ -115,7 +115,7 @@ func TestServerNotify(t *testing.T) {
 		},
 		{
 			name: "list of servers",
-			servers: []*v1alpha1.Server{
+			servers: []v1alpha1.Server{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
@@ -156,7 +156,7 @@ func TestServerNotify(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			// note that responses_experiments is nill -> scheduler state is not existing
 			grpcClient := mockSchedulerGrpcClient{
-				requests_servers: []*scheduler.ServerNotifyRequest{},
+				requests_servers: []*scheduler.ServerNotify{},
 			}
 			controller := newMockControllerClient()
 			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers)
@@ -164,8 +164,8 @@ func TestServerNotify(t *testing.T) {
 
 			
 			if len(test.servers) != 0 {
-				g.Expect(len(grpcClient.requests_servers)).To(Equal(1))
-				g.Expect(grpcClient.requests_servers[0].Servers).To(Equal(test.expectedProtos))
+				g.Expect(len(grpcClient.requests_servers)).To(Equal(len(test.expectedProtos)))
+				g.Expect(grpcClient.requests_servers).To(Equal(test.expectedProtos))
 			} else {
 				g.Expect(len(grpcClient.requests_servers)).To(Equal(0))
 			}

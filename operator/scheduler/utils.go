@@ -129,12 +129,8 @@ func handleRegisteredServers(
 		return
 	}
 
-	servers := []*v1alpha1.Server{}
-	for _, server := range serverList.Items {
-		servers = append(servers, &server)
-	}
-	if err := s.ServerNotify(ctx, grpcClient, servers); err != nil {
-		s.logger.Error(err, "Failed to notify servers", "servers", servers)
+	if err := s.ServerNotify(ctx, grpcClient, serverList.Items); err != nil {
+		s.logger.Error(err, "Failed to notify servers", "servers", serverList.Items)
 	}
 }
 

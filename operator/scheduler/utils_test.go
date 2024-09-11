@@ -131,7 +131,7 @@ type mockSchedulerGrpcClient struct {
 	requests_experiments            []*scheduler.StartExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
-	requests_servers                []*scheduler.ServerNotifyRequest
+	requests_servers                []*scheduler.ServerNotify
 	errors                          map[string]error
 }
 
@@ -142,7 +142,7 @@ func (s *mockSchedulerGrpcClient) ExperimentStatus(ctx context.Context, in *sche
 }
 
 func (s *mockSchedulerGrpcClient) ServerNotify(ctx context.Context, in *scheduler.ServerNotifyRequest, opts ...grpc.CallOption) (*scheduler.ServerNotifyResponse, error) {
-	s.requests_servers = append(s.requests_servers, in)
+	s.requests_servers = append(s.requests_servers, in.Servers...)
 	return nil, nil
 }
 
@@ -657,6 +657,91 @@ func TestHandleDeletedModels(t *testing.T) {
 				}
 			}
 			g.Expect(len(actualResourcesList.Items)).To(Equal(activeResources))
+		})
+	}
+}
+
+func TestHandleRegisteredServers(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+		expected  []*scheduler.ServerNotify
+	}
+
+	tests := []test{
+		{
+			name: "with 1 server",
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name: "with multiple servers",
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "bar",
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "bar",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name:      "no servers",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			grpcClient := mockSchedulerGrpcClient{}
+			client := newMockControllerClient(test.resources...)
+			handleRegisteredServers(context.Background(), "", client, &grpcClient)
+			g.Expect(grpcClient.requests_servers).To(Equal(test.expected))
 		})
 	}
 }

@@ -23,7 +23,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
-func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []*v1alpha1.Server) error {
+func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server) error {
 	logger := s.logger.WithName("NotifyServer")
 	if len(servers) == 0 {
 		return nil
