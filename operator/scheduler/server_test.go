@@ -162,7 +162,6 @@ func TestServerNotify(t *testing.T) {
 			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers)
 			g.Expect(err).To(BeNil())
 
-			
 			if len(test.servers) != 0 {
 				g.Expect(len(grpcClient.requests_servers)).To(Equal(len(test.expectedProtos)))
 				g.Expect(grpcClient.requests_servers).To(Equal(test.expectedProtos))
