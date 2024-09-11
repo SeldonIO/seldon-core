@@ -23,38 +23,46 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
-func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, server *v1alpha1.Server) error {
+func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []*v1alpha1.Server) error {
 	logger := s.logger.WithName("NotifyServer")
+	if servers == nil || len(servers) == 0 {
+		return nil
+	}
+
 	if grpcClient == nil {
-		conn, err := s.getConnection(server.Namespace)
+		// we assume that all servers are in the same namespace
+		namespace := servers[0].Namespace
+		conn, err := s.getConnection(namespace)
 		if err != nil {
 			return err
 		}
 		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
 
-	var replicas int32
-	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-		replicas = 0
-	} else if server.Spec.Replicas != nil {
-		replicas = *server.Spec.Replicas
-	} else {
-		replicas = 1
-	}
+	var requests []*scheduler.ServerNotify
+	for _, server := range servers {
+		var replicas int32
+		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
+			replicas = 0
+		} else if server.Spec.Replicas != nil {
+			replicas = *server.Spec.Replicas
+		} else {
+			replicas = 1
+		}
 
-	request := &scheduler.ServerNotifyRequest{
-		Servers: []*scheduler.ServerNotify{
-			{
-				Name:             server.GetName(),
-				ExpectedReplicas: replicas,
-				KubernetesMeta: &scheduler.KubernetesMeta{
-					Namespace:  server.GetNamespace(),
-					Generation: server.GetGeneration(),
-				},
+		logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
+		requests = append(requests, &scheduler.ServerNotify{
+			Name:             server.GetName(),
+			ExpectedReplicas: replicas,
+			KubernetesMeta: &scheduler.KubernetesMeta{
+				Namespace:  server.GetNamespace(),
+				Generation: server.GetGeneration(),
 			},
-		},
+		})
 	}
-	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
+	request := &scheduler.ServerNotifyRequest{
+		Servers: requests,
+	}
 	_, err := grpcClient.ServerNotify(
 		ctx,
 		request,
@@ -62,7 +70,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
-		logger.Error(err, "Failed to send notify server to scheduler", "name", server.GetName(), "namespace", server.GetNamespace())
+		logger.Error(err, "Failed to send notify server to scheduler")
 		return err
 	}
 	return nil

@@ -26,7 +26,7 @@ func TestServerNotify(t *testing.T) {
 
 	type test struct {
 		name           string
-		server         *v1alpha1.Server
+		servers        []*v1alpha1.Server
 		expectedProtos []*scheduler.ServerNotify
 	}
 	getIntPtr := func(val int32) *int32 { return &val }
@@ -34,15 +34,17 @@ func TestServerNotify(t *testing.T) {
 	tests := []test{
 		{
 			name: "good server - replicas set",
-			server: &v1alpha1.Server{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:       "foo",
-					Namespace:  "default",
-					Generation: 1,
-				},
-				Spec: v1alpha1.ServerSpec{
-					ScalingSpec: v1alpha1.ScalingSpec{
-						Replicas: getIntPtr(2),
+			servers: []*v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas: getIntPtr(2),
+						},
 					},
 				},
 			},
@@ -59,11 +61,13 @@ func TestServerNotify(t *testing.T) {
 		},
 		{
 			name: "good server - replicas not set",
-			server: &v1alpha1.Server{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:       "foo",
-					Namespace:  "default",
-					Generation: 1,
+			servers: []*v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
 				},
 			},
 			expectedProtos: []*scheduler.ServerNotify{
@@ -79,16 +83,18 @@ func TestServerNotify(t *testing.T) {
 		},
 		{
 			name: "deleted server",
-			server: &v1alpha1.Server{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:       "foo",
-					Namespace:  "default",
-					Generation: 1,
-					DeletionTimestamp: &now,
-				},
-				Spec: v1alpha1.ServerSpec{
-					ScalingSpec: v1alpha1.ScalingSpec{
-						Replicas: getIntPtr(2),
+			servers: []*v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "foo",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas: getIntPtr(2),
+						},
 					},
 				},
 			},
@@ -103,6 +109,47 @@ func TestServerNotify(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:           "nil servers",
+			expectedProtos: []*scheduler.ServerNotify{},
+		},
+		{
+			name: "list of servers",
+			servers: []*v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "bar",
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			expectedProtos: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				{
+					Name:             "bar",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -112,11 +159,16 @@ func TestServerNotify(t *testing.T) {
 				requests_servers: []*scheduler.ServerNotifyRequest{},
 			}
 			controller := newMockControllerClient()
-			err := controller.ServerNotify(context.Background(), &grpcClient, test.server)
+			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers)
 			g.Expect(err).To(BeNil())
 
-			g.Expect(len(grpcClient.requests_servers)).To(Equal(1))
-			g.Expect(grpcClient.requests_servers[0].Servers).To(Equal(test.expectedProtos))
+			
+			if len(test.servers) != 0 {
+				g.Expect(len(grpcClient.requests_servers)).To(Equal(1))
+				g.Expect(grpcClient.requests_servers[0].Servers).To(Equal(test.expectedProtos))
+			} else {
+				g.Expect(len(grpcClient.requests_servers)).To(Equal(0))
+			}
 
 		})
 	}
