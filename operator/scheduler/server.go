@@ -41,11 +41,15 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 	}
 
 	request := &scheduler.ServerNotifyRequest{
-		Name:             server.GetName(),
-		ExpectedReplicas: replicas,
-		KubernetesMeta: &scheduler.KubernetesMeta{
-			Namespace:  server.GetNamespace(),
-			Generation: server.GetGeneration(),
+		Servers: []*scheduler.ServerNotify{
+			{
+				Name:             server.GetName(),
+				ExpectedReplicas: replicas,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  server.GetNamespace(),
+					Generation: server.GetGeneration(),
+				},
+			},
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
