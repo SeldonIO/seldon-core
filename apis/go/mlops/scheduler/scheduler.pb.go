@@ -265,7 +265,7 @@ func (x PipelineStep_JoinOp) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PipelineStep_JoinOp.Descriptor instead.
 func (PipelineStep_JoinOp) EnumDescriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{39, 0}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{40, 0}
 }
 
 type PipelineInput_JoinOp int32
@@ -314,7 +314,7 @@ func (x PipelineInput_JoinOp) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PipelineInput_JoinOp.Descriptor instead.
 func (PipelineInput_JoinOp) EnumDescriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{41, 0}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{42, 0}
 }
 
 type PipelineOutput_JoinOp int32
@@ -363,7 +363,7 @@ func (x PipelineOutput_JoinOp) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PipelineOutput_JoinOp.Descriptor instead.
 func (PipelineOutput_JoinOp) EnumDescriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{42, 0}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{43, 0}
 }
 
 type PipelineVersionState_PipelineStatus int32
@@ -427,7 +427,7 @@ func (x PipelineVersionState_PipelineStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PipelineVersionState_PipelineStatus.Descriptor instead.
 func (PipelineVersionState_PipelineStatus) EnumDescriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{50, 0}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{51, 0}
 }
 
 type LoadModelRequest struct {
@@ -1921,10 +1921,7 @@ type ServerNotifyRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name             string          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	ExpectedReplicas int32           `protobuf:"varint,2,opt,name=expectedReplicas,proto3" json:"expectedReplicas,omitempty"`
-	Shared           bool            `protobuf:"varint,3,opt,name=shared,proto3" json:"shared,omitempty"`
-	KubernetesMeta   *KubernetesMeta `protobuf:"bytes,4,opt,name=kubernetesMeta,proto3,oneof" json:"kubernetesMeta,omitempty"`
+	Servers []*ServerNotify `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
 }
 
 func (x *ServerNotifyRequest) Reset() {
@@ -1959,28 +1956,78 @@ func (*ServerNotifyRequest) Descriptor() ([]byte, []int) {
 	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{23}
 }
 
-func (x *ServerNotifyRequest) GetName() string {
+func (x *ServerNotifyRequest) GetServers() []*ServerNotify {
+	if x != nil {
+		return x.Servers
+	}
+	return nil
+}
+
+type ServerNotify struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name             string          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ExpectedReplicas int32           `protobuf:"varint,2,opt,name=expectedReplicas,proto3" json:"expectedReplicas,omitempty"`
+	Shared           bool            `protobuf:"varint,3,opt,name=shared,proto3" json:"shared,omitempty"`
+	KubernetesMeta   *KubernetesMeta `protobuf:"bytes,4,opt,name=kubernetesMeta,proto3,oneof" json:"kubernetesMeta,omitempty"`
+}
+
+func (x *ServerNotify) Reset() {
+	*x = ServerNotify{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerNotify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerNotify) ProtoMessage() {}
+
+func (x *ServerNotify) ProtoReflect() protoreflect.Message {
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerNotify.ProtoReflect.Descriptor instead.
+func (*ServerNotify) Descriptor() ([]byte, []int) {
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ServerNotify) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *ServerNotifyRequest) GetExpectedReplicas() int32 {
+func (x *ServerNotify) GetExpectedReplicas() int32 {
 	if x != nil {
 		return x.ExpectedReplicas
 	}
 	return 0
 }
 
-func (x *ServerNotifyRequest) GetShared() bool {
+func (x *ServerNotify) GetShared() bool {
 	if x != nil {
 		return x.Shared
 	}
 	return false
 }
 
-func (x *ServerNotifyRequest) GetKubernetesMeta() *KubernetesMeta {
+func (x *ServerNotify) GetKubernetesMeta() *KubernetesMeta {
 	if x != nil {
 		return x.KubernetesMeta
 	}
@@ -1996,7 +2043,7 @@ type ServerNotifyResponse struct {
 func (x *ServerNotifyResponse) Reset() {
 	*x = ServerNotifyResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[24]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2009,7 +2056,7 @@ func (x *ServerNotifyResponse) String() string {
 func (*ServerNotifyResponse) ProtoMessage() {}
 
 func (x *ServerNotifyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[24]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2022,7 +2069,7 @@ func (x *ServerNotifyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerNotifyResponse.ProtoReflect.Descriptor instead.
 func (*ServerNotifyResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{24}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{25}
 }
 
 type ServerSubscriptionRequest struct {
@@ -2036,7 +2083,7 @@ type ServerSubscriptionRequest struct {
 func (x *ServerSubscriptionRequest) Reset() {
 	*x = ServerSubscriptionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[25]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2049,7 +2096,7 @@ func (x *ServerSubscriptionRequest) String() string {
 func (*ServerSubscriptionRequest) ProtoMessage() {}
 
 func (x *ServerSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[25]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2062,7 +2109,7 @@ func (x *ServerSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*ServerSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{25}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ServerSubscriptionRequest) GetSubscriberName() string {
@@ -2083,7 +2130,7 @@ type StartExperimentRequest struct {
 func (x *StartExperimentRequest) Reset() {
 	*x = StartExperimentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[26]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2096,7 +2143,7 @@ func (x *StartExperimentRequest) String() string {
 func (*StartExperimentRequest) ProtoMessage() {}
 
 func (x *StartExperimentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[26]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2109,7 +2156,7 @@ func (x *StartExperimentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartExperimentRequest.ProtoReflect.Descriptor instead.
 func (*StartExperimentRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{26}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *StartExperimentRequest) GetExperiment() *Experiment {
@@ -2136,7 +2183,7 @@ type Experiment struct {
 func (x *Experiment) Reset() {
 	*x = Experiment{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[27]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2149,7 +2196,7 @@ func (x *Experiment) String() string {
 func (*Experiment) ProtoMessage() {}
 
 func (x *Experiment) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[27]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2162,7 +2209,7 @@ func (x *Experiment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Experiment.ProtoReflect.Descriptor instead.
 func (*Experiment) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{27}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *Experiment) GetName() string {
@@ -2225,7 +2272,7 @@ type ExperimentConfig struct {
 func (x *ExperimentConfig) Reset() {
 	*x = ExperimentConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[28]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2238,7 +2285,7 @@ func (x *ExperimentConfig) String() string {
 func (*ExperimentConfig) ProtoMessage() {}
 
 func (x *ExperimentConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[28]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2251,7 +2298,7 @@ func (x *ExperimentConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentConfig.ProtoReflect.Descriptor instead.
 func (*ExperimentConfig) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{28}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ExperimentConfig) GetStickySessions() bool {
@@ -2273,7 +2320,7 @@ type ExperimentCandidate struct {
 func (x *ExperimentCandidate) Reset() {
 	*x = ExperimentCandidate{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[29]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2286,7 +2333,7 @@ func (x *ExperimentCandidate) String() string {
 func (*ExperimentCandidate) ProtoMessage() {}
 
 func (x *ExperimentCandidate) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[29]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2299,7 +2346,7 @@ func (x *ExperimentCandidate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentCandidate.ProtoReflect.Descriptor instead.
 func (*ExperimentCandidate) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{29}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ExperimentCandidate) GetName() string {
@@ -2328,7 +2375,7 @@ type ExperimentMirror struct {
 func (x *ExperimentMirror) Reset() {
 	*x = ExperimentMirror{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[30]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2341,7 +2388,7 @@ func (x *ExperimentMirror) String() string {
 func (*ExperimentMirror) ProtoMessage() {}
 
 func (x *ExperimentMirror) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[30]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2354,7 +2401,7 @@ func (x *ExperimentMirror) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentMirror.ProtoReflect.Descriptor instead.
 func (*ExperimentMirror) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{30}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ExperimentMirror) GetName() string {
@@ -2380,7 +2427,7 @@ type StartExperimentResponse struct {
 func (x *StartExperimentResponse) Reset() {
 	*x = StartExperimentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[31]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2393,7 +2440,7 @@ func (x *StartExperimentResponse) String() string {
 func (*StartExperimentResponse) ProtoMessage() {}
 
 func (x *StartExperimentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[31]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2406,7 +2453,7 @@ func (x *StartExperimentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartExperimentResponse.ProtoReflect.Descriptor instead.
 func (*StartExperimentResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{31}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{32}
 }
 
 type StopExperimentRequest struct {
@@ -2420,7 +2467,7 @@ type StopExperimentRequest struct {
 func (x *StopExperimentRequest) Reset() {
 	*x = StopExperimentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[32]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2433,7 +2480,7 @@ func (x *StopExperimentRequest) String() string {
 func (*StopExperimentRequest) ProtoMessage() {}
 
 func (x *StopExperimentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[32]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2446,7 +2493,7 @@ func (x *StopExperimentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopExperimentRequest.ProtoReflect.Descriptor instead.
 func (*StopExperimentRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{32}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *StopExperimentRequest) GetName() string {
@@ -2465,7 +2512,7 @@ type StopExperimentResponse struct {
 func (x *StopExperimentResponse) Reset() {
 	*x = StopExperimentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[33]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2478,7 +2525,7 @@ func (x *StopExperimentResponse) String() string {
 func (*StopExperimentResponse) ProtoMessage() {}
 
 func (x *StopExperimentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[33]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2491,7 +2538,7 @@ func (x *StopExperimentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopExperimentResponse.ProtoReflect.Descriptor instead.
 func (*StopExperimentResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{33}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{34}
 }
 
 type ExperimentSubscriptionRequest struct {
@@ -2505,7 +2552,7 @@ type ExperimentSubscriptionRequest struct {
 func (x *ExperimentSubscriptionRequest) Reset() {
 	*x = ExperimentSubscriptionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[34]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2518,7 +2565,7 @@ func (x *ExperimentSubscriptionRequest) String() string {
 func (*ExperimentSubscriptionRequest) ProtoMessage() {}
 
 func (x *ExperimentSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[34]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2531,7 +2578,7 @@ func (x *ExperimentSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*ExperimentSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{34}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *ExperimentSubscriptionRequest) GetSubscriberName() string {
@@ -2557,7 +2604,7 @@ type ExperimentStatusResponse struct {
 func (x *ExperimentStatusResponse) Reset() {
 	*x = ExperimentStatusResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[35]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2570,7 +2617,7 @@ func (x *ExperimentStatusResponse) String() string {
 func (*ExperimentStatusResponse) ProtoMessage() {}
 
 func (x *ExperimentStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[35]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2583,7 +2630,7 @@ func (x *ExperimentStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentStatusResponse.ProtoReflect.Descriptor instead.
 func (*ExperimentStatusResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{35}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ExperimentStatusResponse) GetExperimentName() string {
@@ -2639,7 +2686,7 @@ type LoadPipelineRequest struct {
 func (x *LoadPipelineRequest) Reset() {
 	*x = LoadPipelineRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[36]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2652,7 +2699,7 @@ func (x *LoadPipelineRequest) String() string {
 func (*LoadPipelineRequest) ProtoMessage() {}
 
 func (x *LoadPipelineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[36]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2665,7 +2712,7 @@ func (x *LoadPipelineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoadPipelineRequest.ProtoReflect.Descriptor instead.
 func (*LoadPipelineRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{36}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *LoadPipelineRequest) GetPipeline() *Pipeline {
@@ -2687,7 +2734,7 @@ type ExperimentStatusRequest struct {
 func (x *ExperimentStatusRequest) Reset() {
 	*x = ExperimentStatusRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[37]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2700,7 +2747,7 @@ func (x *ExperimentStatusRequest) String() string {
 func (*ExperimentStatusRequest) ProtoMessage() {}
 
 func (x *ExperimentStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[37]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2713,7 +2760,7 @@ func (x *ExperimentStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperimentStatusRequest.ProtoReflect.Descriptor instead.
 func (*ExperimentStatusRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{37}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ExperimentStatusRequest) GetSubscriberName() string {
@@ -2747,7 +2794,7 @@ type Pipeline struct {
 func (x *Pipeline) Reset() {
 	*x = Pipeline{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[38]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2760,7 +2807,7 @@ func (x *Pipeline) String() string {
 func (*Pipeline) ProtoMessage() {}
 
 func (x *Pipeline) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[38]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2773,7 +2820,7 @@ func (x *Pipeline) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pipeline.ProtoReflect.Descriptor instead.
 func (*Pipeline) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{38}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *Pipeline) GetName() string {
@@ -2843,7 +2890,7 @@ type PipelineStep struct {
 func (x *PipelineStep) Reset() {
 	*x = PipelineStep{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[39]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2856,7 +2903,7 @@ func (x *PipelineStep) String() string {
 func (*PipelineStep) ProtoMessage() {}
 
 func (x *PipelineStep) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[39]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2869,7 +2916,7 @@ func (x *PipelineStep) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineStep.ProtoReflect.Descriptor instead.
 func (*PipelineStep) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{39}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *PipelineStep) GetName() string {
@@ -2940,7 +2987,7 @@ type Batch struct {
 func (x *Batch) Reset() {
 	*x = Batch{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[40]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2953,7 +3000,7 @@ func (x *Batch) String() string {
 func (*Batch) ProtoMessage() {}
 
 func (x *Batch) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[40]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2966,7 +3013,7 @@ func (x *Batch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Batch.ProtoReflect.Descriptor instead.
 func (*Batch) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{40}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *Batch) GetSize() uint32 {
@@ -2999,7 +3046,7 @@ type PipelineInput struct {
 func (x *PipelineInput) Reset() {
 	*x = PipelineInput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[41]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3012,7 +3059,7 @@ func (x *PipelineInput) String() string {
 func (*PipelineInput) ProtoMessage() {}
 
 func (x *PipelineInput) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[41]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3025,7 +3072,7 @@ func (x *PipelineInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineInput.ProtoReflect.Descriptor instead.
 func (*PipelineInput) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{41}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *PipelineInput) GetExternalInputs() []string {
@@ -3084,7 +3131,7 @@ type PipelineOutput struct {
 func (x *PipelineOutput) Reset() {
 	*x = PipelineOutput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[42]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3097,7 +3144,7 @@ func (x *PipelineOutput) String() string {
 func (*PipelineOutput) ProtoMessage() {}
 
 func (x *PipelineOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[42]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3110,7 +3157,7 @@ func (x *PipelineOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineOutput.ProtoReflect.Descriptor instead.
 func (*PipelineOutput) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{42}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *PipelineOutput) GetSteps() []string {
@@ -3150,7 +3197,7 @@ type LoadPipelineResponse struct {
 func (x *LoadPipelineResponse) Reset() {
 	*x = LoadPipelineResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[43]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3163,7 +3210,7 @@ func (x *LoadPipelineResponse) String() string {
 func (*LoadPipelineResponse) ProtoMessage() {}
 
 func (x *LoadPipelineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[43]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3176,7 +3223,7 @@ func (x *LoadPipelineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoadPipelineResponse.ProtoReflect.Descriptor instead.
 func (*LoadPipelineResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{43}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{44}
 }
 
 type UnloadPipelineRequest struct {
@@ -3190,7 +3237,7 @@ type UnloadPipelineRequest struct {
 func (x *UnloadPipelineRequest) Reset() {
 	*x = UnloadPipelineRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[44]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3203,7 +3250,7 @@ func (x *UnloadPipelineRequest) String() string {
 func (*UnloadPipelineRequest) ProtoMessage() {}
 
 func (x *UnloadPipelineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[44]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3216,7 +3263,7 @@ func (x *UnloadPipelineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnloadPipelineRequest.ProtoReflect.Descriptor instead.
 func (*UnloadPipelineRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{44}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *UnloadPipelineRequest) GetName() string {
@@ -3235,7 +3282,7 @@ type UnloadPipelineResponse struct {
 func (x *UnloadPipelineResponse) Reset() {
 	*x = UnloadPipelineResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[45]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3248,7 +3295,7 @@ func (x *UnloadPipelineResponse) String() string {
 func (*UnloadPipelineResponse) ProtoMessage() {}
 
 func (x *UnloadPipelineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[45]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3261,7 +3308,7 @@ func (x *UnloadPipelineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnloadPipelineResponse.ProtoReflect.Descriptor instead.
 func (*UnloadPipelineResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{45}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{46}
 }
 
 type PipelineStatusRequest struct {
@@ -3277,7 +3324,7 @@ type PipelineStatusRequest struct {
 func (x *PipelineStatusRequest) Reset() {
 	*x = PipelineStatusRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[46]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3290,7 +3337,7 @@ func (x *PipelineStatusRequest) String() string {
 func (*PipelineStatusRequest) ProtoMessage() {}
 
 func (x *PipelineStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[46]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3303,7 +3350,7 @@ func (x *PipelineStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineStatusRequest.ProtoReflect.Descriptor instead.
 func (*PipelineStatusRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{46}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *PipelineStatusRequest) GetSubscriberName() string {
@@ -3338,7 +3385,7 @@ type PipelineSubscriptionRequest struct {
 func (x *PipelineSubscriptionRequest) Reset() {
 	*x = PipelineSubscriptionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[47]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3351,7 +3398,7 @@ func (x *PipelineSubscriptionRequest) String() string {
 func (*PipelineSubscriptionRequest) ProtoMessage() {}
 
 func (x *PipelineSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[47]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3364,7 +3411,7 @@ func (x *PipelineSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*PipelineSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{47}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *PipelineSubscriptionRequest) GetSubscriberName() string {
@@ -3386,7 +3433,7 @@ type PipelineStatusResponse struct {
 func (x *PipelineStatusResponse) Reset() {
 	*x = PipelineStatusResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[48]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3399,7 +3446,7 @@ func (x *PipelineStatusResponse) String() string {
 func (*PipelineStatusResponse) ProtoMessage() {}
 
 func (x *PipelineStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[48]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3412,7 +3459,7 @@ func (x *PipelineStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineStatusResponse.ProtoReflect.Descriptor instead.
 func (*PipelineStatusResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{48}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *PipelineStatusResponse) GetPipelineName() string {
@@ -3441,7 +3488,7 @@ type PipelineWithState struct {
 func (x *PipelineWithState) Reset() {
 	*x = PipelineWithState{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[49]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3454,7 +3501,7 @@ func (x *PipelineWithState) String() string {
 func (*PipelineWithState) ProtoMessage() {}
 
 func (x *PipelineWithState) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[49]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3467,7 +3514,7 @@ func (x *PipelineWithState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineWithState.ProtoReflect.Descriptor instead.
 func (*PipelineWithState) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{49}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *PipelineWithState) GetPipeline() *Pipeline {
@@ -3499,7 +3546,7 @@ type PipelineVersionState struct {
 func (x *PipelineVersionState) Reset() {
 	*x = PipelineVersionState{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[50]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3512,7 +3559,7 @@ func (x *PipelineVersionState) String() string {
 func (*PipelineVersionState) ProtoMessage() {}
 
 func (x *PipelineVersionState) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[50]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3525,7 +3572,7 @@ func (x *PipelineVersionState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineVersionState.ProtoReflect.Descriptor instead.
 func (*PipelineVersionState) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{50}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *PipelineVersionState) GetPipelineVersion() uint32 {
@@ -3574,7 +3621,7 @@ type SchedulerStatusRequest struct {
 func (x *SchedulerStatusRequest) Reset() {
 	*x = SchedulerStatusRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[51]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3587,7 +3634,7 @@ func (x *SchedulerStatusRequest) String() string {
 func (*SchedulerStatusRequest) ProtoMessage() {}
 
 func (x *SchedulerStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[51]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3600,7 +3647,7 @@ func (x *SchedulerStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SchedulerStatusRequest.ProtoReflect.Descriptor instead.
 func (*SchedulerStatusRequest) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{51}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *SchedulerStatusRequest) GetSubscriberName() string {
@@ -3621,7 +3668,7 @@ type SchedulerStatusResponse struct {
 func (x *SchedulerStatusResponse) Reset() {
 	*x = SchedulerStatusResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[52]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3634,7 +3681,7 @@ func (x *SchedulerStatusResponse) String() string {
 func (*SchedulerStatusResponse) ProtoMessage() {}
 
 func (x *SchedulerStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[52]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3647,7 +3694,7 @@ func (x *SchedulerStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SchedulerStatusResponse.ProtoReflect.Descriptor instead.
 func (*SchedulerStatusResponse) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{52}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *SchedulerStatusResponse) GetApplicationVersion() string {
@@ -3954,8 +4001,13 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x6c, 0x88, 0x01, 0x01, 0x12, 0x20, 0x0a, 0x0b, 0x61, 0x6c, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x61, 0x6c, 0x6c, 0x56, 0x65,
 	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x08, 0x0a, 0x06, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x22, 0xd5, 0x01, 0x0a, 0x13, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x69, 0x66,
-	0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x22, 0x55, 0x0a, 0x13, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x3e, 0x0a, 0x07, 0x73, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f,
+	0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65,
+	0x72, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x52, 0x07,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x73, 0x22, 0xce, 0x01, 0x0a, 0x0c, 0x53, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x2a, 0x0a, 0x10,
 	0x65, 0x78, 0x70, 0x65, 0x63, 0x74, 0x65, 0x64, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x65, 0x78, 0x70, 0x65, 0x63, 0x74, 0x65, 0x64,
@@ -4398,7 +4450,7 @@ func file_mlops_scheduler_scheduler_proto_rawDescGZIP() []byte {
 }
 
 var file_mlops_scheduler_scheduler_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_mlops_scheduler_scheduler_proto_msgTypes = make([]protoimpl.MessageInfo, 57)
+var file_mlops_scheduler_scheduler_proto_msgTypes = make([]protoimpl.MessageInfo, 58)
 var file_mlops_scheduler_scheduler_proto_goTypes = []any{
 	(ResourceType)(0),                         // 0: seldon.mlops.scheduler.ResourceType
 	(ModelStatus_ModelState)(0),               // 1: seldon.mlops.scheduler.ModelStatus.ModelState
@@ -4431,40 +4483,41 @@ var file_mlops_scheduler_scheduler_proto_goTypes = []any{
 	(*ModelSubscriptionRequest)(nil),          // 28: seldon.mlops.scheduler.ModelSubscriptionRequest
 	(*ModelStatusRequest)(nil),                // 29: seldon.mlops.scheduler.ModelStatusRequest
 	(*ServerNotifyRequest)(nil),               // 30: seldon.mlops.scheduler.ServerNotifyRequest
-	(*ServerNotifyResponse)(nil),              // 31: seldon.mlops.scheduler.ServerNotifyResponse
-	(*ServerSubscriptionRequest)(nil),         // 32: seldon.mlops.scheduler.ServerSubscriptionRequest
-	(*StartExperimentRequest)(nil),            // 33: seldon.mlops.scheduler.StartExperimentRequest
-	(*Experiment)(nil),                        // 34: seldon.mlops.scheduler.Experiment
-	(*ExperimentConfig)(nil),                  // 35: seldon.mlops.scheduler.ExperimentConfig
-	(*ExperimentCandidate)(nil),               // 36: seldon.mlops.scheduler.ExperimentCandidate
-	(*ExperimentMirror)(nil),                  // 37: seldon.mlops.scheduler.ExperimentMirror
-	(*StartExperimentResponse)(nil),           // 38: seldon.mlops.scheduler.StartExperimentResponse
-	(*StopExperimentRequest)(nil),             // 39: seldon.mlops.scheduler.StopExperimentRequest
-	(*StopExperimentResponse)(nil),            // 40: seldon.mlops.scheduler.StopExperimentResponse
-	(*ExperimentSubscriptionRequest)(nil),     // 41: seldon.mlops.scheduler.ExperimentSubscriptionRequest
-	(*ExperimentStatusResponse)(nil),          // 42: seldon.mlops.scheduler.ExperimentStatusResponse
-	(*LoadPipelineRequest)(nil),               // 43: seldon.mlops.scheduler.LoadPipelineRequest
-	(*ExperimentStatusRequest)(nil),           // 44: seldon.mlops.scheduler.ExperimentStatusRequest
-	(*Pipeline)(nil),                          // 45: seldon.mlops.scheduler.Pipeline
-	(*PipelineStep)(nil),                      // 46: seldon.mlops.scheduler.PipelineStep
-	(*Batch)(nil),                             // 47: seldon.mlops.scheduler.Batch
-	(*PipelineInput)(nil),                     // 48: seldon.mlops.scheduler.PipelineInput
-	(*PipelineOutput)(nil),                    // 49: seldon.mlops.scheduler.PipelineOutput
-	(*LoadPipelineResponse)(nil),              // 50: seldon.mlops.scheduler.LoadPipelineResponse
-	(*UnloadPipelineRequest)(nil),             // 51: seldon.mlops.scheduler.UnloadPipelineRequest
-	(*UnloadPipelineResponse)(nil),            // 52: seldon.mlops.scheduler.UnloadPipelineResponse
-	(*PipelineStatusRequest)(nil),             // 53: seldon.mlops.scheduler.PipelineStatusRequest
-	(*PipelineSubscriptionRequest)(nil),       // 54: seldon.mlops.scheduler.PipelineSubscriptionRequest
-	(*PipelineStatusResponse)(nil),            // 55: seldon.mlops.scheduler.PipelineStatusResponse
-	(*PipelineWithState)(nil),                 // 56: seldon.mlops.scheduler.PipelineWithState
-	(*PipelineVersionState)(nil),              // 57: seldon.mlops.scheduler.PipelineVersionState
-	(*SchedulerStatusRequest)(nil),            // 58: seldon.mlops.scheduler.SchedulerStatusRequest
-	(*SchedulerStatusResponse)(nil),           // 59: seldon.mlops.scheduler.SchedulerStatusResponse
-	nil,                                       // 60: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry
-	nil,                                       // 61: seldon.mlops.scheduler.PipelineStep.TensorMapEntry
-	nil,                                       // 62: seldon.mlops.scheduler.PipelineInput.TensorMapEntry
-	nil,                                       // 63: seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
-	(*timestamppb.Timestamp)(nil),             // 64: google.protobuf.Timestamp
+	(*ServerNotify)(nil),                      // 31: seldon.mlops.scheduler.ServerNotify
+	(*ServerNotifyResponse)(nil),              // 32: seldon.mlops.scheduler.ServerNotifyResponse
+	(*ServerSubscriptionRequest)(nil),         // 33: seldon.mlops.scheduler.ServerSubscriptionRequest
+	(*StartExperimentRequest)(nil),            // 34: seldon.mlops.scheduler.StartExperimentRequest
+	(*Experiment)(nil),                        // 35: seldon.mlops.scheduler.Experiment
+	(*ExperimentConfig)(nil),                  // 36: seldon.mlops.scheduler.ExperimentConfig
+	(*ExperimentCandidate)(nil),               // 37: seldon.mlops.scheduler.ExperimentCandidate
+	(*ExperimentMirror)(nil),                  // 38: seldon.mlops.scheduler.ExperimentMirror
+	(*StartExperimentResponse)(nil),           // 39: seldon.mlops.scheduler.StartExperimentResponse
+	(*StopExperimentRequest)(nil),             // 40: seldon.mlops.scheduler.StopExperimentRequest
+	(*StopExperimentResponse)(nil),            // 41: seldon.mlops.scheduler.StopExperimentResponse
+	(*ExperimentSubscriptionRequest)(nil),     // 42: seldon.mlops.scheduler.ExperimentSubscriptionRequest
+	(*ExperimentStatusResponse)(nil),          // 43: seldon.mlops.scheduler.ExperimentStatusResponse
+	(*LoadPipelineRequest)(nil),               // 44: seldon.mlops.scheduler.LoadPipelineRequest
+	(*ExperimentStatusRequest)(nil),           // 45: seldon.mlops.scheduler.ExperimentStatusRequest
+	(*Pipeline)(nil),                          // 46: seldon.mlops.scheduler.Pipeline
+	(*PipelineStep)(nil),                      // 47: seldon.mlops.scheduler.PipelineStep
+	(*Batch)(nil),                             // 48: seldon.mlops.scheduler.Batch
+	(*PipelineInput)(nil),                     // 49: seldon.mlops.scheduler.PipelineInput
+	(*PipelineOutput)(nil),                    // 50: seldon.mlops.scheduler.PipelineOutput
+	(*LoadPipelineResponse)(nil),              // 51: seldon.mlops.scheduler.LoadPipelineResponse
+	(*UnloadPipelineRequest)(nil),             // 52: seldon.mlops.scheduler.UnloadPipelineRequest
+	(*UnloadPipelineResponse)(nil),            // 53: seldon.mlops.scheduler.UnloadPipelineResponse
+	(*PipelineStatusRequest)(nil),             // 54: seldon.mlops.scheduler.PipelineStatusRequest
+	(*PipelineSubscriptionRequest)(nil),       // 55: seldon.mlops.scheduler.PipelineSubscriptionRequest
+	(*PipelineStatusResponse)(nil),            // 56: seldon.mlops.scheduler.PipelineStatusResponse
+	(*PipelineWithState)(nil),                 // 57: seldon.mlops.scheduler.PipelineWithState
+	(*PipelineVersionState)(nil),              // 58: seldon.mlops.scheduler.PipelineVersionState
+	(*SchedulerStatusRequest)(nil),            // 59: seldon.mlops.scheduler.SchedulerStatusRequest
+	(*SchedulerStatusResponse)(nil),           // 60: seldon.mlops.scheduler.SchedulerStatusResponse
+	nil,                                       // 61: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry
+	nil,                                       // 62: seldon.mlops.scheduler.PipelineStep.TensorMapEntry
+	nil,                                       // 63: seldon.mlops.scheduler.PipelineInput.TensorMapEntry
+	nil,                                       // 64: seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
+	(*timestamppb.Timestamp)(nil),             // 65: google.protobuf.Timestamp
 }
 var file_mlops_scheduler_scheduler_proto_depIdxs = []int32{
 	8,  // 0: seldon.mlops.scheduler.LoadModelRequest.model:type_name -> seldon.mlops.scheduler.Model
@@ -4480,81 +4533,82 @@ var file_mlops_scheduler_scheduler_proto_depIdxs = []int32{
 	14, // 10: seldon.mlops.scheduler.UnloadModelRequest.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
 	22, // 11: seldon.mlops.scheduler.ModelStatusResponse.versions:type_name -> seldon.mlops.scheduler.ModelVersionStatus
 	14, // 12: seldon.mlops.scheduler.ModelVersionStatus.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	60, // 13: seldon.mlops.scheduler.ModelVersionStatus.modelReplicaState:type_name -> seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry
+	61, // 13: seldon.mlops.scheduler.ModelVersionStatus.modelReplicaState:type_name -> seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry
 	23, // 14: seldon.mlops.scheduler.ModelVersionStatus.state:type_name -> seldon.mlops.scheduler.ModelStatus
 	8,  // 15: seldon.mlops.scheduler.ModelVersionStatus.modelDefn:type_name -> seldon.mlops.scheduler.Model
 	1,  // 16: seldon.mlops.scheduler.ModelStatus.state:type_name -> seldon.mlops.scheduler.ModelStatus.ModelState
-	64, // 17: seldon.mlops.scheduler.ModelStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	65, // 17: seldon.mlops.scheduler.ModelStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
 	2,  // 18: seldon.mlops.scheduler.ModelReplicaStatus.state:type_name -> seldon.mlops.scheduler.ModelReplicaStatus.ModelReplicaState
-	64, // 19: seldon.mlops.scheduler.ModelReplicaStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	65, // 19: seldon.mlops.scheduler.ModelReplicaStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
 	27, // 20: seldon.mlops.scheduler.ServerStatusResponse.resources:type_name -> seldon.mlops.scheduler.ServerReplicaResources
 	14, // 21: seldon.mlops.scheduler.ServerStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
 	18, // 22: seldon.mlops.scheduler.ModelStatusRequest.model:type_name -> seldon.mlops.scheduler.ModelReference
-	14, // 23: seldon.mlops.scheduler.ServerNotifyRequest.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	34, // 24: seldon.mlops.scheduler.StartExperimentRequest.experiment:type_name -> seldon.mlops.scheduler.Experiment
-	36, // 25: seldon.mlops.scheduler.Experiment.candidates:type_name -> seldon.mlops.scheduler.ExperimentCandidate
-	37, // 26: seldon.mlops.scheduler.Experiment.mirror:type_name -> seldon.mlops.scheduler.ExperimentMirror
-	35, // 27: seldon.mlops.scheduler.Experiment.config:type_name -> seldon.mlops.scheduler.ExperimentConfig
-	14, // 28: seldon.mlops.scheduler.Experiment.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	0,  // 29: seldon.mlops.scheduler.Experiment.resourceType:type_name -> seldon.mlops.scheduler.ResourceType
-	14, // 30: seldon.mlops.scheduler.ExperimentStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	45, // 31: seldon.mlops.scheduler.LoadPipelineRequest.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
-	46, // 32: seldon.mlops.scheduler.Pipeline.steps:type_name -> seldon.mlops.scheduler.PipelineStep
-	49, // 33: seldon.mlops.scheduler.Pipeline.output:type_name -> seldon.mlops.scheduler.PipelineOutput
-	14, // 34: seldon.mlops.scheduler.Pipeline.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	48, // 35: seldon.mlops.scheduler.Pipeline.input:type_name -> seldon.mlops.scheduler.PipelineInput
-	61, // 36: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
-	3,  // 37: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	3,  // 38: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	47, // 39: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
-	4,  // 40: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	4,  // 41: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	62, // 42: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
-	5,  // 43: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
-	63, // 44: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
-	56, // 45: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
-	45, // 46: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
-	57, // 47: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
-	6,  // 48: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
-	64, // 49: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
-	24, // 50: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
-	30, // 51: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
-	7,  // 52: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
-	19, // 53: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
-	43, // 54: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
-	51, // 55: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
-	33, // 56: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
-	39, // 57: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
-	25, // 58: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
-	29, // 59: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
-	53, // 60: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
-	44, // 61: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
-	58, // 62: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
-	32, // 63: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
-	28, // 64: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
-	41, // 65: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
-	54, // 66: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
-	31, // 67: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
-	17, // 68: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
-	20, // 69: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
-	50, // 70: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
-	52, // 71: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
-	38, // 72: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
-	40, // 73: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
-	26, // 74: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	21, // 75: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	55, // 76: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	42, // 77: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	59, // 78: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
-	26, // 79: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	21, // 80: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	42, // 81: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	55, // 82: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	67, // [67:83] is the sub-list for method output_type
-	51, // [51:67] is the sub-list for method input_type
-	51, // [51:51] is the sub-list for extension type_name
-	51, // [51:51] is the sub-list for extension extendee
-	0,  // [0:51] is the sub-list for field type_name
+	31, // 23: seldon.mlops.scheduler.ServerNotifyRequest.servers:type_name -> seldon.mlops.scheduler.ServerNotify
+	14, // 24: seldon.mlops.scheduler.ServerNotify.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	35, // 25: seldon.mlops.scheduler.StartExperimentRequest.experiment:type_name -> seldon.mlops.scheduler.Experiment
+	37, // 26: seldon.mlops.scheduler.Experiment.candidates:type_name -> seldon.mlops.scheduler.ExperimentCandidate
+	38, // 27: seldon.mlops.scheduler.Experiment.mirror:type_name -> seldon.mlops.scheduler.ExperimentMirror
+	36, // 28: seldon.mlops.scheduler.Experiment.config:type_name -> seldon.mlops.scheduler.ExperimentConfig
+	14, // 29: seldon.mlops.scheduler.Experiment.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	0,  // 30: seldon.mlops.scheduler.Experiment.resourceType:type_name -> seldon.mlops.scheduler.ResourceType
+	14, // 31: seldon.mlops.scheduler.ExperimentStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	46, // 32: seldon.mlops.scheduler.LoadPipelineRequest.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
+	47, // 33: seldon.mlops.scheduler.Pipeline.steps:type_name -> seldon.mlops.scheduler.PipelineStep
+	50, // 34: seldon.mlops.scheduler.Pipeline.output:type_name -> seldon.mlops.scheduler.PipelineOutput
+	14, // 35: seldon.mlops.scheduler.Pipeline.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	49, // 36: seldon.mlops.scheduler.Pipeline.input:type_name -> seldon.mlops.scheduler.PipelineInput
+	62, // 37: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
+	3,  // 38: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	3,  // 39: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	48, // 40: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
+	4,  // 41: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	4,  // 42: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	63, // 43: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
+	5,  // 44: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
+	64, // 45: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
+	57, // 46: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
+	46, // 47: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
+	58, // 48: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
+	6,  // 49: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
+	65, // 50: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	24, // 51: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
+	30, // 52: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
+	7,  // 53: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
+	19, // 54: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
+	44, // 55: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
+	52, // 56: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
+	34, // 57: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
+	40, // 58: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
+	25, // 59: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
+	29, // 60: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
+	54, // 61: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
+	45, // 62: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
+	59, // 63: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
+	33, // 64: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
+	28, // 65: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
+	42, // 66: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
+	55, // 67: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
+	32, // 68: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
+	17, // 69: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
+	20, // 70: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
+	51, // 71: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
+	53, // 72: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
+	39, // 73: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
+	41, // 74: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
+	26, // 75: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	21, // 76: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	56, // 77: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	43, // 78: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	60, // 79: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
+	26, // 80: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	21, // 81: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	43, // 82: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	56, // 83: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	68, // [68:84] is the sub-list for method output_type
+	52, // [52:68] is the sub-list for method input_type
+	52, // [52:52] is the sub-list for extension type_name
+	52, // [52:52] is the sub-list for extension extendee
+	0,  // [0:52] is the sub-list for field type_name
 }
 
 func init() { file_mlops_scheduler_scheduler_proto_init() }
@@ -4852,7 +4906,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[24].Exporter = func(v any, i int) any {
-			switch v := v.(*ServerNotifyResponse); i {
+			switch v := v.(*ServerNotify); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4864,7 +4918,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[25].Exporter = func(v any, i int) any {
-			switch v := v.(*ServerSubscriptionRequest); i {
+			switch v := v.(*ServerNotifyResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4876,7 +4930,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[26].Exporter = func(v any, i int) any {
-			switch v := v.(*StartExperimentRequest); i {
+			switch v := v.(*ServerSubscriptionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4888,7 +4942,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[27].Exporter = func(v any, i int) any {
-			switch v := v.(*Experiment); i {
+			switch v := v.(*StartExperimentRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4900,7 +4954,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[28].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentConfig); i {
+			switch v := v.(*Experiment); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4912,7 +4966,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[29].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentCandidate); i {
+			switch v := v.(*ExperimentConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4924,7 +4978,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[30].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentMirror); i {
+			switch v := v.(*ExperimentCandidate); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4936,7 +4990,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[31].Exporter = func(v any, i int) any {
-			switch v := v.(*StartExperimentResponse); i {
+			switch v := v.(*ExperimentMirror); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4948,7 +5002,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[32].Exporter = func(v any, i int) any {
-			switch v := v.(*StopExperimentRequest); i {
+			switch v := v.(*StartExperimentResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4960,7 +5014,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[33].Exporter = func(v any, i int) any {
-			switch v := v.(*StopExperimentResponse); i {
+			switch v := v.(*StopExperimentRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4972,7 +5026,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[34].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentSubscriptionRequest); i {
+			switch v := v.(*StopExperimentResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4984,7 +5038,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[35].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentStatusResponse); i {
+			switch v := v.(*ExperimentSubscriptionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4996,7 +5050,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[36].Exporter = func(v any, i int) any {
-			switch v := v.(*LoadPipelineRequest); i {
+			switch v := v.(*ExperimentStatusResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5008,7 +5062,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[37].Exporter = func(v any, i int) any {
-			switch v := v.(*ExperimentStatusRequest); i {
+			switch v := v.(*LoadPipelineRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5020,7 +5074,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[38].Exporter = func(v any, i int) any {
-			switch v := v.(*Pipeline); i {
+			switch v := v.(*ExperimentStatusRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5032,7 +5086,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[39].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineStep); i {
+			switch v := v.(*Pipeline); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5044,7 +5098,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[40].Exporter = func(v any, i int) any {
-			switch v := v.(*Batch); i {
+			switch v := v.(*PipelineStep); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5056,7 +5110,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[41].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineInput); i {
+			switch v := v.(*Batch); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5068,7 +5122,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[42].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineOutput); i {
+			switch v := v.(*PipelineInput); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5080,7 +5134,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[43].Exporter = func(v any, i int) any {
-			switch v := v.(*LoadPipelineResponse); i {
+			switch v := v.(*PipelineOutput); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5092,7 +5146,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[44].Exporter = func(v any, i int) any {
-			switch v := v.(*UnloadPipelineRequest); i {
+			switch v := v.(*LoadPipelineResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5104,7 +5158,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[45].Exporter = func(v any, i int) any {
-			switch v := v.(*UnloadPipelineResponse); i {
+			switch v := v.(*UnloadPipelineRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5116,7 +5170,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[46].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineStatusRequest); i {
+			switch v := v.(*UnloadPipelineResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5128,7 +5182,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[47].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineSubscriptionRequest); i {
+			switch v := v.(*PipelineStatusRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5140,7 +5194,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[48].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineStatusResponse); i {
+			switch v := v.(*PipelineSubscriptionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5152,7 +5206,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[49].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineWithState); i {
+			switch v := v.(*PipelineStatusResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5164,7 +5218,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[50].Exporter = func(v any, i int) any {
-			switch v := v.(*PipelineVersionState); i {
+			switch v := v.(*PipelineWithState); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5176,7 +5230,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[51].Exporter = func(v any, i int) any {
-			switch v := v.(*SchedulerStatusRequest); i {
+			switch v := v.(*PipelineVersionState); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5188,6 +5242,18 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[52].Exporter = func(v any, i int) any {
+			switch v := v.(*SchedulerStatusRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mlops_scheduler_scheduler_proto_msgTypes[53].Exporter = func(v any, i int) any {
 			switch v := v.(*SchedulerStatusResponse); i {
 			case 0:
 				return &v.state
@@ -5213,22 +5279,22 @@ func file_mlops_scheduler_scheduler_proto_init() {
 	file_mlops_scheduler_scheduler_proto_msgTypes[18].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[19].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[22].OneofWrappers = []any{}
-	file_mlops_scheduler_scheduler_proto_msgTypes[23].OneofWrappers = []any{}
-	file_mlops_scheduler_scheduler_proto_msgTypes[27].OneofWrappers = []any{}
-	file_mlops_scheduler_scheduler_proto_msgTypes[35].OneofWrappers = []any{}
-	file_mlops_scheduler_scheduler_proto_msgTypes[37].OneofWrappers = []any{}
+	file_mlops_scheduler_scheduler_proto_msgTypes[24].OneofWrappers = []any{}
+	file_mlops_scheduler_scheduler_proto_msgTypes[28].OneofWrappers = []any{}
+	file_mlops_scheduler_scheduler_proto_msgTypes[36].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[38].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[39].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[40].OneofWrappers = []any{}
 	file_mlops_scheduler_scheduler_proto_msgTypes[41].OneofWrappers = []any{}
-	file_mlops_scheduler_scheduler_proto_msgTypes[46].OneofWrappers = []any{}
+	file_mlops_scheduler_scheduler_proto_msgTypes[42].OneofWrappers = []any{}
+	file_mlops_scheduler_scheduler_proto_msgTypes[47].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mlops_scheduler_scheduler_proto_rawDesc,
 			NumEnums:      7,
-			NumMessages:   57,
+			NumMessages:   58,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
