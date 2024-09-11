@@ -94,7 +94,7 @@ func (m *mockStore) AddServerReplica(request *pb.AgentSubscribeRequest) error {
 	panic("implement me")
 }
 
-func (m *mockStore) ServerNotify(request *pbs.ServerNotifyRequest) error {
+func (m *mockStore) ServerNotify(request *pbs.ServerNotify) error {
 	panic("implement me")
 }
 
