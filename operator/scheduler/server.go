@@ -89,6 +89,10 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	if err != nil {
 		return err
 	}
+
+	// on new reconnects we send a list of servers to the schedule
+	go handleRegisteredServers(ctx, namespace, s, grpcClient)
+
 	for {
 		event, err := stream.Recv()
 		if err != nil {
