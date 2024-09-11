@@ -131,6 +131,7 @@ type mockSchedulerGrpcClient struct {
 	requests_experiments            []*scheduler.StartExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
+	requests_servers                []*scheduler.ServerNotifyRequest
 	errors                          map[string]error
 }
 
@@ -141,6 +142,7 @@ func (s *mockSchedulerGrpcClient) ExperimentStatus(ctx context.Context, in *sche
 }
 
 func (s *mockSchedulerGrpcClient) ServerNotify(ctx context.Context, in *scheduler.ServerNotifyRequest, opts ...grpc.CallOption) (*scheduler.ServerNotifyResponse, error) {
+	s.requests_servers = append(s.requests_servers, in)
 	return nil, nil
 }
 

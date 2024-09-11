@@ -23,13 +23,15 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
-func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Server) error {
+func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, server *v1alpha1.Server) error {
 	logger := s.logger.WithName("NotifyServer")
-	conn, err := s.getConnection(server.Namespace)
-	if err != nil {
-		return err
+	if grpcClient == nil {
+		conn, err := s.getConnection(server.Namespace)
+		if err != nil {
+			return err
+		}
+		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
-	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	var replicas int32
 	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -53,7 +55,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, server *v1alpha1.Ser
 		},
 	}
 	logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
-	_, err = grpcClient.ServerNotify(
+	_, err := grpcClient.ServerNotify(
 		ctx,
 		request,
 		grpc_retry.WithMax(SchedulerConnectMaxRetries),
