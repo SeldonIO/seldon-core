@@ -25,7 +25,7 @@ import (
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []*v1alpha1.Server) error {
 	logger := s.logger.WithName("NotifyServer")
-	if servers == nil || len(servers) == 0 {
+	if len(servers) == 0 {
 		return nil
 	}
 
