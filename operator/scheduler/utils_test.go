@@ -77,6 +77,29 @@ func (s *mockSchedulerPipelineSubscribeGrpcClient) Recv() (*scheduler.PipelineSt
 	return nil, io.EOF
 }
 
+type mockSchedulerServerSubscribeGrpcClient struct {
+	counter int
+	results []*scheduler.ServerStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeServerStatusClient = (*mockSchedulerServerSubscribeGrpcClient)(nil)
+
+func newMockSchedulerServerSubscribeGrpcClient(results []*scheduler.ServerStatusResponse) *mockSchedulerServerSubscribeGrpcClient {
+	return &mockSchedulerServerSubscribeGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
 type mockSchedulerPipelineGrpcClient struct {
 	counter int
 	results []*scheduler.PipelineStatusResponse
