@@ -315,12 +315,8 @@ func (rp *reverseGRPCProxy) getV2GRPCClient() v2.GRPCInferenceServiceClient {
 }
 
 func (rp *reverseGRPCProxy) createV2CRPCClients(backendGRPCServerHost string, backendGRPCServerPort int, size int) ([]*grpc.ClientConn, []v2.GRPCInferenceServiceClient, error) {
-	var err error
 	conns := make([]*grpc.ClientConn, size)
 	clients := make([]v2.GRPCInferenceServiceClient, size)
-	if err != nil {
-		return nil, nil, err
-	}
 	for i := 0; i < size; i++ {
 		conn, err := oip.CreateV2GrpcConnection(
 			oip.GetV2ConfigWithDefaults(backendGRPCServerHost, backendGRPCServerPort))
