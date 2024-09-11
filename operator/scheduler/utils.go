@@ -116,34 +116,27 @@ func handleLoadedModels(
 	}
 }
 
-// func handleRegisteredServers(
-// 	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
-// 	serverList := &v1alpha1.ServerList{}
-// 	// Get all servers in the namespace
-// 	err := s.List(
-// 		ctx,
-// 		serverList,
-// 		client.InNamespace(namespace),
-// 	)
-// 	if err != nil {
-// 		return
-// 	}
+func handleRegisteredServers(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	serverList := &v1alpha1.ServerList{}
+	// Get all servers in the namespace
+	err := s.List(
+		ctx,
+		serverList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
 
-// 	for _, server := range serverList.Items {
-// 		// servers that are not in the process of being deleted has DeletionTimestamp as zero
-// 		if server.ObjectMeta.DeletionTimestamp.IsZero() {
-// 			s.logger.V(1).Info("Sending server metadata (on reconnect)", "server", server.Name)
-// 			if _, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
-// 				// if this is a retryable error, we will retry on the next connection reconnect
-// 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
-// 			} else {
-// 				s.logger.V(1).Info("Load model called successfully", "model", model.Name)
-// 			}
-// 		} else {
-// 			s.logger.V(1).Info("Model is being deleted, not loading", "model", model.Name)
-// 		}
-// 	}
-// }
+	servers := []*v1alpha1.Server{}
+	for _, server := range serverList.Items {
+		servers = append(servers, &server)
+	}
+	if err := s.ServerNotify(ctx, grpcClient, servers); err != nil {
+		s.logger.Error(err, "Failed to notify servers", "servers", servers)
+	}
+}
 
 func handlePendingDeleteModels(
 	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
