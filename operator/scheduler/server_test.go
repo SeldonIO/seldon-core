@@ -15,10 +15,12 @@ import (
 
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
 func TestServerNotify(t *testing.T) {
@@ -167,6 +169,120 @@ func TestServerNotify(t *testing.T) {
 				g.Expect(grpcClient.requests_servers).To(Equal(test.expectedProtos))
 			} else {
 				g.Expect(len(grpcClient.requests_servers)).To(Equal(0))
+			}
+
+		})
+	}
+}
+
+func TestSubscribeServerEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name               string
+		existing_resources []client.Object
+		results            []*scheduler.ServerStatusResponse
+		noSchedulerState   bool
+	}
+
+	// note expected state is derived in the test, maybe we should be explictl about it in the future
+	tests := []test{
+		{
+			// no scheduler state means lost servers metadata
+			name: "servers - no scheduler state",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+			results: []*scheduler.ServerStatusResponse{
+				{
+					ServerName: "foo",
+					Resources: []*scheduler.ServerReplicaResources{
+						{
+							ReplicaIdx: 0,
+						},
+					},
+					AvailableReplicas:      1,
+					ExpectedReplicas:       1,
+					NumLoadedModelReplicas: 0, // no update
+				},
+			},
+			noSchedulerState: true,
+		},
+		{
+			name: "server - with scheduler state",
+			existing_resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "seldon",
+						Generation: 1,
+					},
+				},
+			},
+			results: []*scheduler.ServerStatusResponse{
+				{
+					ServerName: "foo",
+					Resources: []*scheduler.ServerReplicaResources{
+						{
+							ReplicaIdx: 0,
+						},
+					},
+					AvailableReplicas:      1,
+					ExpectedReplicas:       1,
+					NumLoadedModelReplicas: 2,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "seldon",
+						Generation: 1,
+					},
+				},
+			},
+			noSchedulerState: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// note that if responses_pipelines is nil -> scheduler state is not existing
+			var grpcClient mockSchedulerGrpcClient
+			if !test.noSchedulerState {
+				grpcClient = mockSchedulerGrpcClient{
+					responses_subscribe_servers: test.results,
+					responses_servers:           test.results,
+				}
+			} else {
+				grpcClient = mockSchedulerGrpcClient{
+					responses_subscribe_servers: test.results,
+				}
+			}
+			controller := newMockControllerClient(test.existing_resources...)
+			err := controller.SubscribeServerEvents(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
+
+			// check state is correct for each pipeline
+			for _, r := range test.results {
+
+				namespace := "default"
+				if r.KubernetesMeta != nil {
+					namespace = r.KubernetesMeta.Namespace
+				}
+				server := &mlopsv1alpha1.Server{}
+				err := controller.Get(
+					context.Background(),
+					client.ObjectKey{
+						Name:      r.ServerName,
+						Namespace: namespace,
+					},
+					server,
+				)
+				g.Expect(err).To(BeNil())
+				g.Expect(server.Status.LoadedModelReplicas).To(Equal(r.NumLoadedModelReplicas))
+
 			}
 
 		})
