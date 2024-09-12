@@ -20,6 +20,7 @@ import (
 
 const (
 	topicModelEvents      = "model.event"
+	topicServerEvents     = "server.event"
 	topicExperimentEvents = "experiment.event"
 	topicPipelineEvents   = "pipeline.event"
 )
@@ -39,6 +40,7 @@ type EventHub struct {
 	bus                            *busV3.Bus
 	logger                         log.FieldLogger
 	modelEventHandlerChannels      []chan ModelEventMsg
+	serverEventHandlerChannels     []chan ServerEventMsg
 	experimentEventHandlerChannels []chan ExperimentEventMsg
 	pipelineEventHandlerChannels   []chan PipelineEventMsg
 	lock                           sync.RWMutex
@@ -59,7 +61,7 @@ func NewEventHub(l log.FieldLogger) (*EventHub, error) {
 		bus:    bus,
 	}
 
-	hub.bus.RegisterTopics(topicModelEvents, topicExperimentEvents, topicPipelineEvents)
+	hub.bus.RegisterTopics(topicModelEvents, topicServerEvents, topicExperimentEvents, topicPipelineEvents)
 
 	return &hub, nil
 }
@@ -71,6 +73,10 @@ func (h *EventHub) Close() {
 	h.closed = true
 
 	for _, c := range h.modelEventHandlerChannels {
+		close(c)
+	}
+
+	for _, c := range h.serverEventHandlerChannels {
 		close(c)
 	}
 

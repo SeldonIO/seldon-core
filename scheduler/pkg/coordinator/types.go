@@ -11,6 +11,13 @@ package coordinator
 
 import "fmt"
 
+type ServerEventUpdateContext int
+
+const (
+	SERVER_STATUS_UPDATE ServerEventUpdateContext = iota
+	SERVER_REPLICA_CONNECTED
+)
+
 type ModelEventMsg struct {
 	ModelName    string
 	ModelVersion uint32
@@ -18,6 +25,16 @@ type ModelEventMsg struct {
 
 func (m ModelEventMsg) String() string {
 	return fmt.Sprintf("%s:%d", m.ModelName, m.ModelVersion)
+}
+
+type ServerEventMsg struct {
+	ServerName    string
+	Source        string
+	UpdateContext ServerEventUpdateContext
+}
+
+func (m ServerEventMsg) String() string {
+	return m.ServerName
 }
 
 type ExperimentEventMsg struct {
