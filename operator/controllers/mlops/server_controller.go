@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
@@ -89,7 +90,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, nil
 	}
 
-	err := r.Scheduler.ServerNotify(ctx, server)
+	err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server})
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err

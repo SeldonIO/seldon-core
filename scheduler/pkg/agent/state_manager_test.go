@@ -586,7 +586,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			// then do unload
 			wg.Add(test.numModels * numberOfVersionsToAdd)
 
-			checkerFn = func(wg *sync.WaitGroup, modelName string, memBytes uint64, modelVersion uint32) {
+			checkerFn = func(wg *sync.WaitGroup, modelName string, _ uint64, modelVersion uint32) {
 				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
 				if err != nil {
 					t.Logf("Error %s", err)

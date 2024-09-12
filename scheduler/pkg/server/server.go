@@ -229,13 +229,15 @@ func NewSchedulerServer(
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
 	logger := s.logger.WithField("func", "ServerNotify")
-	logger.Infof("Server notification %s expectedReplicas %d shared %v", req.GetName(), req.GetExpectedReplicas(), req.GetShared())
-	err := s.modelStore.ServerNotify(req)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
-	if req.ExpectedReplicas == 0 {
-		go s.rescheduleModels(req.GetName())
+	for _, server := range req.GetServers() {
+		logger.Infof("Server notification %s expectedReplicas %d shared %v", server.GetName(), server.GetExpectedReplicas(), server.GetShared())
+		err := s.modelStore.ServerNotify(server)
+		if err != nil {
+			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		}
+		if server.ExpectedReplicas == 0 {
+			go s.rescheduleModels(server.GetName())
+		}
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }

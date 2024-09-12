@@ -116,6 +116,24 @@ func handleLoadedModels(
 	}
 }
 
+func handleRegisteredServers(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	serverList := &v1alpha1.ServerList{}
+	// Get all servers in the namespace
+	err := s.List(
+		ctx,
+		serverList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	if err := s.ServerNotify(ctx, grpcClient, serverList.Items); err != nil {
+		s.logger.Error(err, "Failed to notify servers", "servers", serverList.Items)
+	}
+}
+
 func handlePendingDeleteModels(
 	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
 	modelList := &v1alpha1.ModelList{}

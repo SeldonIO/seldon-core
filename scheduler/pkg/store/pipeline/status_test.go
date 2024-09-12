@@ -80,7 +80,7 @@ func (f fakeModelStore) AddServerReplica(request *agent.AgentSubscribeRequest) e
 	panic("implement me")
 }
 
-func (f fakeModelStore) ServerNotify(request *scheduler.ServerNotifyRequest) error {
+func (f fakeModelStore) ServerNotify(request *scheduler.ServerNotify) error {
 	panic("implement me")
 }
 
