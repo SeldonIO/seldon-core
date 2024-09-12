@@ -262,7 +262,7 @@ func main() {
 			time.Duration(cli.MaxElapsedTimeReadySubServiceAfterStartSeconds)*time.Second,
 			time.Duration(cli.MaxElapsedTimeReadySubServiceBeforeStartMinutes)*time.Minute,
 			time.Duration(cli.MaxElapsedTimeReadySubServiceAfterStartSeconds)*time.Second,
-			time.Duration(cli.MaxLoadElapsedTimeMinute)*time.Second,
+			time.Duration(cli.MaxLoadElapsedTimeMinute)*time.Minute,
 			time.Duration(cli.MaxUnloadElapsedTimeMinute)*time.Minute,
 			uint8(cli.MaxLoadRetryCount),
 			uint8(cli.MaxUnloadRetryCount),
