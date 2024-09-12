@@ -31,6 +31,8 @@ import (
 	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
+// Experiment mock grpc client
+
 type mockSchedulerExperimentGrpcClient struct {
 	counter int
 	results []*scheduler.ExperimentStatusResponse
@@ -53,6 +55,8 @@ func (s *mockSchedulerExperimentGrpcClient) Recv() (*scheduler.ExperimentStatusR
 	}
 	return nil, io.EOF
 }
+
+// Pipeline subscribe mock grpc client
 
 type mockSchedulerPipelineSubscribeGrpcClient struct {
 	counter int
@@ -77,6 +81,8 @@ func (s *mockSchedulerPipelineSubscribeGrpcClient) Recv() (*scheduler.PipelineSt
 	return nil, io.EOF
 }
 
+// Server subscribe mock grpc client
+
 type mockSchedulerServerSubscribeGrpcClient struct {
 	counter int
 	results []*scheduler.ServerStatusResponse
@@ -99,6 +105,8 @@ func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatus
 	}
 	return nil, io.EOF
 }
+
+// Pipeline mock grpc client
 
 type mockSchedulerPipelineGrpcClient struct {
 	counter int
@@ -123,6 +131,8 @@ func (s *mockSchedulerPipelineGrpcClient) Recv() (*scheduler.PipelineStatusRespo
 	return nil, io.EOF
 }
 
+// Experiment subscribe mock grpc client
+
 type mockSchedulerExperimentSubscribeGrpcClient struct {
 	counter int
 	results []*scheduler.ExperimentStatusResponse
@@ -146,11 +156,15 @@ func (s *mockSchedulerExperimentSubscribeGrpcClient) Recv() (*scheduler.Experime
 	return nil, io.EOF
 }
 
+// Scheduler mock grpc client
+
 type mockSchedulerGrpcClient struct {
 	responses_experiments           []*scheduler.ExperimentStatusResponse
 	responses_subscribe_experiments []*scheduler.ExperimentStatusResponse
 	responses_pipelines             []*scheduler.PipelineStatusResponse
 	responses_subscribe_pipelines   []*scheduler.PipelineStatusResponse
+	responses_servers               []*scheduler.ServerStatusResponse
+	responses_subscribe_servers     []*scheduler.ServerStatusResponse
 	requests_experiments            []*scheduler.StartExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
@@ -209,7 +223,7 @@ func (s *mockSchedulerGrpcClient) SchedulerStatus(ctx context.Context, in *sched
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeServerStatus(ctx context.Context, in *scheduler.ServerSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeServerStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerServerSubscribeGrpcClient(s.responses_subscribe_servers), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeModelStatus(ctx context.Context, in *scheduler.ModelSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeModelStatusClient, error) {
 	return nil, nil
