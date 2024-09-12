@@ -69,6 +69,7 @@
     * [Ambassador](kubernetes/service-meshes/ambassador.md)
     * [Istio](kubernetes/service-meshes/istio.md)
     * [Traefik](kubernetes/service-meshes/traefik.md)
+* [Kubernetes resource allocation](kubernetes-resource-allocation.md)
 * [Models](models/README.md)
   * [Multi-Model Serving](models/mms.md)
   * [Inference Artifacts](models/inference-artifacts.md)
