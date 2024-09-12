@@ -388,7 +388,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 				}
 			}
 
-			// check that we have reloaded the correct resources if the stata of the scheduler is not correct
+			// check that we have reloaded the correct resources if the state of the scheduler is not correct
 			if test.noSchedulerState {
 				activeResources := 0
 				for idx, req := range test.existing_resources {
