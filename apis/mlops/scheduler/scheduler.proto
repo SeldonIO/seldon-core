@@ -186,6 +186,7 @@ message ModelStatusRequest {
 
 message ServerNotifyRequest {
   repeated ServerNotify servers = 1;
+  bool isFirstSync = 2;
 }
 
 message ServerNotify {
