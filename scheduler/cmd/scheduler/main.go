@@ -149,16 +149,8 @@ func main() {
 	defer eventHub.Close()
 	go makeSignalHandler(logger, done)
 
-	// Start xDS server
 	// Create a cache
 	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
-	ctx := context.Background()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
-	xdsServer := envoyServer.NewXDSServer(srv, logger)
-	err = xdsServer.StartXDSServer(envoyPort)
-	if err != nil {
-		log.WithError(err).Fatalf("Failed to start envoy xDS server")
-	}
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
@@ -232,6 +224,15 @@ func main() {
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
+	}
+
+	// Start xDS server
+	ctx := context.Background()
+	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
+	xdsServer := envoyServer.NewXDSServer(srv, logger)
+	err = xdsServer.StartXDSServer(envoyPort)
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to start envoy xDS server")
 	}
 
 	// Wait for completion
