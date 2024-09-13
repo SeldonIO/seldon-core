@@ -21,26 +21,32 @@ import (
 type Synchroniser interface {
 	IsReady() bool
 	WaitReady()
+	Start()
 }
 
 type SimpleSynchroniser struct {
 	isReady atomic.Bool
 	wg      sync.WaitGroup
+	timeout time.Duration
 }
 
 func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 	s := &SimpleSynchroniser{
 		isReady: atomic.Bool{},
 		wg:      sync.WaitGroup{},
+		timeout: timeout,
 	}
 	s.wg.Add(1)
 	s.isReady.Store(false)
-	time.AfterFunc(timeout, s.done)
 	return s
 }
 
 func (s *SimpleSynchroniser) IsReady() bool {
 	return s.isReady.Load()
+}
+
+func (s *SimpleSynchroniser) Start() {
+	time.AfterFunc(s.timeout, s.done)
 }
 
 func (s *SimpleSynchroniser) WaitReady() {

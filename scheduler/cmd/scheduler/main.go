@@ -212,7 +212,7 @@ func main() {
 	}
 
 	// Setup synchroniser
-	synchroniser := synchroniser.NewSimpleSynchroniser(time.Duration(500 * time.Second))
+	synchroniser := synchroniser.NewSimpleSynchroniser(time.Duration(120 * time.Second))
 
 	// scheduler scheduling models service
 	sched := scheduler.NewSimpleScheduler(
@@ -223,7 +223,7 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
+	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, synchroniser)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")

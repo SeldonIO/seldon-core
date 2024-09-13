@@ -31,6 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 const (
@@ -61,6 +62,7 @@ type SchedulerServer struct {
 	pipelineEventStream   PipelineEventStream
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
+	synchroniser          synchroniser.Synchroniser
 }
 
 type ModelEventStream struct {
@@ -173,6 +175,7 @@ func NewSchedulerServer(
 	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
+	synchroniser synchroniser.Synchroniser,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -195,7 +198,8 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
-		timeout: sendTimeout,
+		timeout:      sendTimeout,
+		synchroniser: synchroniser,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -238,6 +242,9 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		if server.ExpectedReplicas == 0 {
 			go s.rescheduleModels(server.GetName())
 		}
+	}
+	if req.IsFirstSync {
+		s.synchroniser.Start()
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }
