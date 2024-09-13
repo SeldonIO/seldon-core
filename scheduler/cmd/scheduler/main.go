@@ -159,6 +159,7 @@ func main() {
 		defer tracer.Stop()
 	}
 
+	// Create stores
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
@@ -170,19 +171,13 @@ func main() {
 		GrpcPort: pipelineGatewayGrpcPort,
 	}
 
+	// Create envoy incremental processor
 	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
 
-	sched := scheduler.NewSimpleScheduler(
-		logger,
-		ss,
-		scheduler.DefaultSchedulerConfig(ss),
-	)
-	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
-
+	// scheduler <-> dataflow grpc
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
@@ -215,18 +210,29 @@ func main() {
 		log.Warn("Not running with scheduler local DB")
 	}
 
+	// scheduler scheduling models service
+	sched := scheduler.NewSimpleScheduler(
+		logger,
+		ss,
+		scheduler.DefaultSchedulerConfig(ss),
+	)
+
+	// scheduler <-> controller grpc
 	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
 	}
 
+	// scheduler <-> agent  grpc
+	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
 	}
 
-	// Start xDS server
+	// Start envoy xDS server
 	ctx := context.Background()
 	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
 	xdsServer := envoyServer.NewXDSServer(srv, logger)
