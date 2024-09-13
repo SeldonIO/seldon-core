@@ -12,6 +12,7 @@ package scheduler
 import (
 	"sort"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 type mockStore struct {
@@ -498,7 +500,7 @@ func TestScheduler(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore))
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
 			err := scheduler.Schedule(test.model.Name)
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
@@ -561,7 +563,7 @@ func TestFailedModels(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockStore := newMockStore(test.models)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore))
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
 			failedMoels, err := scheduler.getFailedModels()
 			g.Expect(err).To(BeNil())
 			sort.Strings(failedMoels)

@@ -35,6 +35,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -210,11 +211,15 @@ func main() {
 		log.Warn("Not running with scheduler local DB")
 	}
 
+	// Setup synchroniser
+	synchroniser := synchroniser.NewSimpleSynchroniser(time.Duration(500 * time.Second))
+
 	// scheduler scheduling models service
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
+		synchroniser,
 	)
 
 	// scheduler <-> controller grpc
@@ -232,6 +237,9 @@ func main() {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
 	}
 
+	// wait for model servers to be ready
+	synchroniser.WaitReady()
+
 	// Start envoy xDS server
 	ctx := context.Background()
 	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
@@ -240,6 +248,8 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")
 	}
+
+	log.Info("Scheduler is ready")
 
 	// Wait for completion
 	<-done

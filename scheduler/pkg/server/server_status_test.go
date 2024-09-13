@@ -24,6 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 func TestModelsStatusStream(t *testing.T) {
@@ -431,6 +432,7 @@ func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
 		logger,
 		schedulerStore,
 		scheduler2.DefaultSchedulerConfig(schedulerStore),
+		synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
 	)
 	s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
 

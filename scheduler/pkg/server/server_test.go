@@ -29,6 +29,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 func stringPtr(s string) *string {
@@ -61,6 +62,7 @@ func TestLoadModel(t *testing.T) {
 			logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
 		)
 		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
 		mockAgent := &mockAgentHandler{}
@@ -336,7 +338,9 @@ func TestUnloadModel(t *testing.T) {
 		mockAgent := &mockAgentHandler{}
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
-			scheduler2.DefaultSchedulerConfig(schedulerStore))
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
+		)
 		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub)
 		return s, mockAgent, eventHub
 	}

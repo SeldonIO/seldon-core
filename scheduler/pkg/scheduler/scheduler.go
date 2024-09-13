@@ -21,12 +21,14 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 type SimpleScheduler struct {
 	muSortAndUpdate sync.Mutex
 	store           store.ModelStore
 	logger          log.FieldLogger
+	synchroniser    synchroniser.Synchroniser
 	SchedulerConfig
 }
 
@@ -48,20 +50,24 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 
 func NewSimpleScheduler(logger log.FieldLogger,
 	store store.ModelStore,
-	schedulerConfig SchedulerConfig) *SimpleScheduler {
+	schedulerConfig SchedulerConfig,
+	synchroniser synchroniser.Synchroniser) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
 		SchedulerConfig: schedulerConfig,
+		synchroniser:    synchroniser,
 	}
 	return s
 }
 
 func (s *SimpleScheduler) Schedule(modelKey string) error {
+	s.synchroniser.WaitReady()
 	return s.scheduleToServer(modelKey)
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
+	s.synchroniser.WaitReady()
 	failedModels, err := s.getFailedModels()
 	if err != nil {
 		return nil, err
