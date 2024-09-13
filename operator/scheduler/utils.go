@@ -129,7 +129,7 @@ func handleRegisteredServers(
 		return
 	}
 
-	if err := s.ServerNotify(ctx, grpcClient, serverList.Items); err != nil {
+	if err := s.ServerNotify(ctx, grpcClient, serverList.Items, true); err != nil {
 		s.logger.Error(err, "Failed to notify servers", "servers", serverList.Items)
 	}
 }
