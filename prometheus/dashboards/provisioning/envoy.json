@@ -31,7 +31,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -108,7 +108,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "sum by (pod) (rate(envoy_server_memory_heap_size{namespace=\"$namespace\"}[$interval]))",
           "hide": false,
@@ -122,7 +122,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -175,7 +175,7 @@
       "pluginVersion": "11.1.3",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "(sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_xx{namespace=\"$namespace\", envoy_response_code_class=\"5\"}[$interval]))\n/\nsum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\"}[$interval]))) * 100",
           "instant": false,
@@ -188,7 +188,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -241,7 +241,7 @@
       "pluginVersion": "11.1.3",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "envoy_server_concurrency{namespace=\"$namespace\", pod=\"$pod\"}",
           "instant": false,
@@ -267,7 +267,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -410,7 +410,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "sum by (pod, envoy_response_code_class) (rate(envoy_http_downstream_rq_xx{namespace=\"$namespace\", pod=\"$pod\", envoy_http_conn_manager_prefix=\"http\"}[$interval]))",
           "instant": false,
@@ -423,7 +423,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -468,7 +468,7 @@
       "pluginVersion": "11.1.3",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "envoy_http_downstream_rq_active{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\"}",
           "instant": false,
@@ -481,7 +481,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -557,7 +557,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\",envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval]))",
           "instant": false,
@@ -566,7 +566,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_tx_reset{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval]))",
           "hide": false,
@@ -580,7 +580,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -657,7 +657,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "histogram_quantile(0.99,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
           "format": "time_series",
@@ -667,7 +667,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "histogram_quantile(0.90,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\",  envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
           "hide": false,
@@ -677,7 +677,7 @@
           "refId": "B"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "expr": "histogram_quantile(0.50,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\",  envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
           "hide": false,
@@ -701,7 +701,7 @@
       "id": 9,
       "panels": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -778,7 +778,7 @@
           "pluginVersion": "10.1.5",
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_xx{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "instant": false,
@@ -791,7 +791,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -836,7 +836,7 @@
           "pluginVersion": "11.1.3",
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "envoy_cluster_upstream_cx_active{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}",
               "instant": false,
@@ -849,7 +849,7 @@
           "type": "gauge"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -925,7 +925,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_rq{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "instant": false,
@@ -938,7 +938,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1015,7 +1015,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.99,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
               "format": "time_series",
@@ -1025,7 +1025,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.90,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
               "hide": false,
@@ -1035,7 +1035,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.50,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
               "hide": false,
@@ -1049,7 +1049,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1125,7 +1125,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_destroy{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "instant": false,
@@ -1138,7 +1138,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1214,7 +1214,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_connect_timeout{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "instant": false,
@@ -1227,7 +1227,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1304,7 +1304,7 @@
           "pluginVersion": "10.1.5",
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "instant": false,
@@ -1313,7 +1313,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry_success{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
               "hide": false,
@@ -1341,7 +1341,7 @@
       "id": 16,
       "panels": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1468,7 +1468,7 @@
           "pluginVersion": "11.1.3",
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (envoy_cluster_membership_total{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
               "instant": false,
@@ -1477,7 +1477,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "exemplar": false,
               "expr": "sum (envoy_cluster_membership_healthy{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
@@ -1489,7 +1489,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "exemplar": false,
               "expr": "sum (envoy_cluster_membership_degraded{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
@@ -1506,7 +1506,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1586,7 +1586,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "format": "time_series",
@@ -1596,7 +1596,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -1606,7 +1606,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -1620,7 +1620,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1690,7 +1690,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_cluster_manager_cluster_added{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "instant": false,
@@ -1699,7 +1699,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_cluster_manager_cluster_modified{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -1709,7 +1709,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_cluster_manager_cluster_removed{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -1723,7 +1723,7 @@
           "type": "barchart"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1803,7 +1803,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "format": "time_series",
@@ -1813,7 +1813,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -1823,7 +1823,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -1837,7 +1837,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1907,7 +1907,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_listener_manager_lds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "instant": false,
@@ -1916,7 +1916,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_listener_manager_lds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -1926,7 +1926,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_listener_manager_lds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -1940,7 +1940,7 @@
           "type": "barchart"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2020,7 +2020,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "format": "time_series",
@@ -2030,7 +2030,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -2040,7 +2040,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
               "hide": false,
@@ -2054,7 +2054,7 @@
           "type": "timeseries"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2124,7 +2124,7 @@
           },
           "targets": [
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_http_rds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "instant": false,
@@ -2133,7 +2133,7 @@
               "refId": "A"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_http_rds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -2143,7 +2143,7 @@
               "refId": "B"
             },
             {
-              "datasource": "${DS_PROMETHEUS}",
+              "datasource": "",
               "editorMode": "code",
               "expr": "sum (increase(envoy_http_rds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
               "hide": false,
@@ -2172,7 +2172,7 @@
           "text": "seldon-mesh",
           "value": "seldon-mesh"
         },
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "",
         "definition": "label_values(namespace)",
         "hide": 0,
         "includeAll": false,
@@ -2249,7 +2249,7 @@
             "$__all"
           ]
         },
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "",
         "definition": "label_values(envoy_cluster_name)",
         "hide": 0,
         "includeAll": true,
@@ -2273,7 +2273,7 @@
           "text": "seldon-envoy-58f947767c-r4nv9",
           "value": "seldon-envoy-58f947767c-r4nv9"
         },
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "",
         "definition": "label_values(envoy_server_live{namespace=\"$namespace\"},pod)",
         "hide": 0,
         "includeAll": false,
