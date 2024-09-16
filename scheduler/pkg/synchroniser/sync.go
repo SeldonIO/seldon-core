@@ -21,7 +21,7 @@ import (
 type Synchroniser interface {
 	IsReady() bool
 	WaitReady()
-	Signal()
+	Signals(uint)
 }
 
 type SimpleSynchroniser struct {
@@ -36,7 +36,6 @@ func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 		wg:      sync.WaitGroup{},
 		timeout: timeout,
 	}
-	s.wg.Add(1)
 	s.isReady.Store(false)
 	return s
 }
@@ -45,7 +44,8 @@ func (s *SimpleSynchroniser) IsReady() bool {
 	return s.isReady.Load()
 }
 
-func (s *SimpleSynchroniser) Signal() {
+func (s *SimpleSynchroniser) Signals(numSignals uint) {
+	s.wg.Add(int(numSignals))
 	time.AfterFunc(s.timeout, s.done)
 }
 

@@ -233,6 +233,8 @@ func NewSchedulerServer(
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
 	logger := s.logger.WithField("func", "ServerNotify")
+	// numExpectedReplicas is only used when we are doing the first sync
+	numExpectedReplicas := uint(0)
 	for _, server := range req.GetServers() {
 		logger.Infof("Server notification %s expectedReplicas %d shared %v", server.GetName(), server.GetExpectedReplicas(), server.GetShared())
 		err := s.modelStore.ServerNotify(server)
@@ -242,9 +244,10 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		if server.ExpectedReplicas == 0 {
 			go s.rescheduleModels(server.GetName())
 		}
+		numExpectedReplicas += uint(server.ExpectedReplicas)
 	}
 	if req.IsFirstSync {
-		s.synchroniser.Signal()
+		s.synchroniser.Signals(numExpectedReplicas)
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }
