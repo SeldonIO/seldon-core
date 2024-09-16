@@ -23,8 +23,8 @@ To dedicate a set of nodes to run only a specific group of inference servers, yo
 
 1.  Add taint to the GPU node.\
     You can add the taint when you are creating the node or after the node has been provisioned. You can apply the same taint to multiple nodes, not just a single node. A common approach is to define the taint at the node pool level.\
-    In this example, the node includes several labels that can be used later for node affinity settings. You may need to specify some labels, while others are usually added by the cloud provider or a GPU operator installed in the cluster.\
     **Note:**  When you apply a `NoSchedule` taint to a node after it is created it may result in existing Pods that do not have a matching toleration to remain on the node without being evicted. To ensure that such Pods are removed, you can use the `NoExecute` taint effect instead. \
+    In this example, the node includes several labels that can be used later for node affinity settings. You may need to specify some labels, while others are usually added by the cloud provider or a GPU operator installed in the cluster.\
 
 
     ```yaml
