@@ -57,7 +57,7 @@ func TestLoadModel(t *testing.T) {
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond))
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(
 			logger,
 			schedulerStore,
@@ -337,7 +337,7 @@ func TestUnloadModel(t *testing.T) {
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
-		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond))
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
@@ -657,6 +657,106 @@ func TestPipelineStatus(t *testing.T) {
 				}
 				g.Expect(psr).To(Equal(test.statusRes))
 			}
+		})
+	}
+}
+
+func TestServerNotify(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	createTestScheduler := func() (*SchedulerServer, synchroniser.Synchroniser) {
+		logger := log.New()
+		log.SetLevel(log.DebugLevel)
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
+		scheduler := scheduler2.NewSimpleScheduler(logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			sync,
+		)
+		s := NewSchedulerServer(logger, schedulerStore, nil, nil, scheduler, eventHub, sync)
+		return s, sync
+	}
+
+	type test struct {
+		name                 string
+		req                  *pb.ServerNotifyRequest
+		expectedServerStates []*store.ServerSnapshot
+		signalTriggered      bool
+	}
+	tests := []test{
+		{
+			name: "Initial sync",
+			req: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "server1",
+						ExpectedReplicas: 2,
+						Shared:           true,
+					},
+					{
+						Name:             "server2",
+						ExpectedReplicas: 3,
+						Shared:           true,
+					},
+				},
+				IsFirstSync: true,
+			},
+			expectedServerStates: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					ExpectedReplicas: 2,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+				{
+					Name:             "server2",
+					ExpectedReplicas: 3,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+			},
+			signalTriggered: true,
+		},
+		{
+			// this should not trigger sync.Signal()
+			name: "normal sync",
+			req: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "server1",
+						ExpectedReplicas: 2,
+						Shared:           true,
+					},
+				},
+				IsFirstSync: false,
+			},
+			expectedServerStates: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					ExpectedReplicas: 2,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+			},
+			signalTriggered: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, sync := createTestScheduler()
+
+			s.ServerNotify(context.Background(), test.req)
+
+			time.Sleep(50 * time.Millisecond) // allwo events to be processed
+
+			actualServers, err := s.modelStore.GetServers(true, false)
+			g.Expect(err).To(BeNil())
+			g.Expect(actualServers).To(Equal(test.expectedServerStates))
+
+			g.Expect(sync.IsReady()).To(Equal(test.signalTriggered))
 		})
 	}
 }
