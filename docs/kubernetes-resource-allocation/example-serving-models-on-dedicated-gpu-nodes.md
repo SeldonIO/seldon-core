@@ -197,21 +197,21 @@ To apply the same settings across multiple servers without individually modifyin
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
-  name: mlserver-llm               **# <ServerConfig name>**
-  namespace: seldon-mesh           **# <seldon runtime namespace>**
+  name: mlserver-llm               # <ServerConfig name>**
+  namespace: seldon-mesh           # <seldon runtime namespace>**
 spec:
   podSpec:
-    **nodeSelector:**            # only run mlserver-llm-local-gpu pods on nodes that have all those labels  
-      **pool: infer-srv
-      cloud.google.com/gke-accelerator: nvidia-a100-80gb**  # example requesting specific GPU on GKE, not required
-      ****# cloud.google.com/gke-accelerator-count: 2   # also request node with label denoting a specific GPU count
-   **** ...
-    **tolerations:             #** allow mlserver-llm-local-gpu pods to be scheduled on nodes with the matching taint
-    **- effect: NoSchedule
+    nodeSelector:           # only run mlserver-llm-local-gpu pods on nodes that have all those labels  
+      pool: infer-srv
+      cloud.google.com/gke-accelerator: nvidia-a100-80gb# example requesting specific GPU on GKE, not required
+      # cloud.google.com/gke-accelerator-count: 2   # also request node with label denoting a specific GPU count
+   ...
+    tolerations:             #** allow mlserver-llm-local-gpu pods to be scheduled on nodes with the matching taint
+    - effect: NoSchedule
       key: seldon-gpu-srv
       operator: Equal
       value: "true"
-    ...**
+    ...
     containers:
 	  - name: mlserver
 		  env:
