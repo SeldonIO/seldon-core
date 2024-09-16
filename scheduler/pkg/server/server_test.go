@@ -57,14 +57,15 @@ func TestLoadModel(t *testing.T) {
 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(
 			logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
-			synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
+			sync,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		sync.Signal()
 		mockAgent := &mockAgentHandler{}
 
 		return s, mockAgent
@@ -336,12 +337,14 @@ func TestUnloadModel(t *testing.T) {
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
-			synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
+			sync,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
+		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		sync.Signal()
 		return s, mockAgent, eventHub
 	}
 
