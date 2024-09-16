@@ -50,4 +50,5 @@ To dedicate a set of nodes to run only a specific group of inference servers, yo
     		key: seldon-gpu-srv
     		value: "true"**
     ```
-
+2. Configure Seldon Server Custom Resource.\
+   To allow a specific inference server Pod to only run on the nodes that you configured, you need to set a `nodeSelector` and a toleration in the Seldon Server CR
