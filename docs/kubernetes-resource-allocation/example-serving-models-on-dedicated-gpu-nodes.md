@@ -12,7 +12,7 @@ description: >-
 
 Serving models on dedicated GPU nodes:
 
-1. Configuring inference servers&#x20;
+1. [Configuring inference servers ](example-serving-models-on-dedicated-gpu-nodes.md#configure-inference-servers)
 2. Configuring models&#x20;
 
 ## Configure inference servers
