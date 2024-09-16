@@ -244,7 +244,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		}
 	}
 	if req.IsFirstSync {
-		s.synchroniser.Start()
+		s.synchroniser.Signal()
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }

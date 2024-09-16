@@ -21,7 +21,7 @@ import (
 type Synchroniser interface {
 	IsReady() bool
 	WaitReady()
-	Start()
+	Signal()
 }
 
 type SimpleSynchroniser struct {
@@ -45,7 +45,7 @@ func (s *SimpleSynchroniser) IsReady() bool {
 	return s.isReady.Load()
 }
 
-func (s *SimpleSynchroniser) Start() {
+func (s *SimpleSynchroniser) Signal() {
 	time.AfterFunc(s.timeout, s.done)
 }
 
