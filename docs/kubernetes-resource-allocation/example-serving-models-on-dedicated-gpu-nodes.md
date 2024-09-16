@@ -21,6 +21,8 @@ Serving models on dedicated GPU nodes:
 **Note**: To dedicate a set of nodes to run only a specific group of inference servers, you must first provision an additional set of nodes within the Kubernetes cluster for the remaining Seldon Core 2 components. For more information about adding labels and taint to the GPU nodes in your Kubernetes cluster refer to the respective cloud provider documentation.
 {% endhint %}
 
+
+
 1.  Add taint to the GPU node.\
     You can add the taint when you are creating the node or after the node has been provisioned. You can apply the same taint to multiple nodes, not just a single node. A common approach is to define the taint at the node pool level. \
     **Note:**  When you apply a `NoSchedule` taint to a node after it is created it may result in existing Pods that do not have a matching toleration to remain on the node without being evicted. To ensure that such Pods are removed, you can use the `NoExecute` taint effect instead. \
@@ -50,5 +52,94 @@ Serving models on dedicated GPU nodes:
     		key: seldon-gpu-srv
     		value: "true"**
     ```
-2. Configure Seldon Server Custom Resource.\
-   To allow a specific inference server Pod to only run on the nodes that you configured, you need to set a `nodeSelector` and a toleration in the Seldon Server CR
+2.  Configure Seldon Server Custom Resource.\
+    To allow a specific inference server Pod to only run on the nodes that you configured, you need to set a `nodeSelector` and a `toleration` in the Seldon Server Custom Resource.\
+
+
+    ```yaml
+
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Server
+    metadata:
+      name: mlserver-llm-local-gpu     # <server name>
+      namespace: seldon-mesh           # <seldon runtime namespace>
+    spec:
+      replicas: 1
+      serverConfig: mlserver     # <reference Serverconfig CR>
+      extraCapabilities:
+        - model-on-gpu           # custom capability that can be used for matching Model to this server
+      podSpec:
+        nodeSelector:            # only run mlserver-llm-local-gpu pods on nodes that have all those labels  
+          pool: infer-srv
+          cloud.google.com/gke-accelerator: nvidia-a100-80gb  # example requesting specific GPU on GKE, not required
+          # cloud.google.com/gke-accelerator-count: 2   # also request node with label denoting a specific GPU count
+        ...
+        tolerations:             # allow mlserver-llm-local-gpu pods to be scheduled on nodes with the matching taint
+        - effect: NoSchedule
+          key: seldon-gpu-srv
+          operator: Equal
+          value: "true"
+        ...
+        containers:              # if needed, override settings from Serverconfig, for this specific Server
+    	  - name: mlserver
+    		  resources:
+    			  requests:
+    				  nvidia.com/gpu: 1  # in particular, have the mlserver container request a GPU
+    				  cpu: 40
+    				  memory: 360Gi
+    				  ephemeral-storage: 290Gi
+    				limits:
+    					nvidia.com/gpu: 2
+    					cpu: 40
+    					memory: 360Gi
+    					**nvidia.com/gpu.product: A100-SXM4-40GB-MIG-1g.5gb-SHARED** # sample label as added by gpu-feature-discovery when using the NVIDIA GPU Operator
+    		**cloud.google.com/gke-accelerator: nvidia-a100-80gb**  # GKE without NVIDIA GPU operator
+    		**cloud.google.com/gke-accelerator-count: 2**		
+    spec:
+    	...
+    	**taints:
+    	- effect: NoSchedule
+    		key: seldon-gpu-srv
+    		value: "true"**
+    ```
+
+    To apply the same settings across multiple servers without individually modifying each one, you can configure them directly in the `ServerConfig` custom resource. This automatically affects all servers using that `ServerConfig`, unless you specify server-specific overrides, which takes precedence.\
+
+
+    ```yaml
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: ServerConfig
+    metadata:
+      name: mlserver-llm               **# <ServerConfig name>**
+      namespace: seldon-mesh           **# <seldon runtime namespace>**
+    spec:
+      podSpec:
+        **nodeSelector:**            # only run mlserver-llm-local-gpu pods on nodes that have all those labels  
+          **pool: infer-srv
+          cloud.google.com/gke-accelerator: nvidia-a100-80gb**  # example requesting specific GPU on GKE, not required
+          ****# cloud.google.com/gke-accelerator-count: 2   # also request node with label denoting a specific GPU count
+       **** ...
+        **tolerations:             #** allow mlserver-llm-local-gpu pods to be scheduled on nodes with the matching taint
+        **- effect: NoSchedule
+          key: seldon-gpu-srv
+          operator: Equal
+          value: "true"
+        ...**
+        containers:
+    	  - name: mlserver
+    		  env:
+    			  ...
+    			image: ...
+    		  resources:
+    			  requests:
+    				  nvidia.com/gpu: 1
+    				  cpu: 40
+    				  memory: 360Gi
+    				  ephemeral-storage: 290Gi
+    				limits:
+    					nvidia.com/gpu: 2
+    					cpu: 40
+    					memory: 360Gi
+    		... # many other configs
+    ```
+
