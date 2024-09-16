@@ -51,9 +51,10 @@ Serving models on dedicated GPU nodes:
     		value: "true"
     ```
 2.  Configure Seldon Server Custom Resource. \
-    To allow a specific inference server Pod to only run on the nodes that you configured, you need to set a `nodeSelector` or `nodeAffinity` and a `toleration` in the Seldon Server Custom Resource.  When you set a `nodeSelector` it doesn’t provide the required level of control because the set of node labels need to match exactly for the Server Pods to choose that node. However, `nodeAffinity` offers significantly more flexibility.\
+    To ensure a specific inference server Pod runs only on the nodes you've configured, you need to set a `nodeSelector` or `nodeAffinity` with a `toleration`, in the Seldon Server Custom Resource. While `nodeSelector` requires an exact match of node labels for the server Pods to select that node, `nodeAffinity` provides flexibility.\
+    \
     **Using nodeSelector**\
-    &#x20;In this example, a `nodeSelector` and a `toleration` is set for the Seldon Server Custom Resource.\
+    In this example, a `nodeSelector` and a `toleration` is set for the Seldon Server Custom Resource.\
 
 
     ```yaml
@@ -171,7 +172,7 @@ Serving models on dedicated GPU nodes:
           key: seldon-gpu-srv
           operator: Equal
           value: "true"
-        ...**
+        ...
         containers:
     	  - name: mlserver
     		  env:
