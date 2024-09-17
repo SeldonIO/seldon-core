@@ -11,6 +11,8 @@ package store
 
 import (
 	"errors"
+	"fmt"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -1385,6 +1387,159 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			modelName := test.modelVersion.GetModel().GetMeta().GetName()
 			g.Expect(test.store.models[modelName].GetVersions()).To(Equal(test.expected))
 			g.Expect(test.store.models[modelName].Latest().version).To(Equal(test.latest))
+		})
+	}
+}
+
+func TestAddServerReplica(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                 string
+		store                *LocalSchedulerStore
+		req                  *agent.AgentSubscribeRequest
+		expectedSnapshot     []*ServerSnapshot
+		expectedModelEvents  int64
+		expectedServerEvents int64
+	}
+
+	tests := []test{
+		{
+			name: "AddServerReplica - existing server",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+						expectedReplicas: 3,
+						shared:           true,
+					},
+				},
+			},
+			req: &agent.AgentSubscribeRequest{
+				ServerName: "server1",
+				ReplicaIdx: 2,
+				Shared:     true,
+			},
+			expectedSnapshot: []*ServerSnapshot{
+				{
+					Name: "server1",
+					Replicas: map[int]*ServerReplica{
+						0: {},
+						1: {},
+						2: {},
+					},
+					ExpectedReplicas: 3,
+					Shared:           true,
+				},
+			},
+			expectedModelEvents:  0,
+			expectedServerEvents: 1,
+		},
+		{
+			name: "AddServerReplica - new server",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{},
+			},
+			req: &agent.AgentSubscribeRequest{
+				ServerName: "server1",
+				ReplicaIdx: 0,
+				Shared:     true,
+			},
+			expectedSnapshot: []*ServerSnapshot{
+				{
+					Name: "server1",
+					Replicas: map[int]*ServerReplica{
+						0: {},
+					},
+					ExpectedReplicas: -1, // expected replicas is not set
+					Shared:           true,
+				},
+			},
+			expectedModelEvents:  0,
+			expectedServerEvents: 1,
+		},
+		{
+			name: "AddServerReplica - with loaded models",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{},
+				models:  map[string]*Model{},
+			},
+			req: &agent.AgentSubscribeRequest{
+				ServerName: "server1",
+				ReplicaIdx: 0,
+				Shared:     true,
+				LoadedModels: []*agent.ModelVersion{
+					{
+						Model: &pb.Model{
+							Meta:      &pb.MetaData{Name: "model1"},
+							ModelSpec: &pb.ModelSpec{}},
+						Version: 1,
+					},
+					{
+						Model: &pb.Model{
+							Meta:      &pb.MetaData{Name: "model2"},
+							ModelSpec: &pb.ModelSpec{}},
+						Version: 1,
+					},
+				},
+			},
+			expectedSnapshot: []*ServerSnapshot{
+				{
+					Name: "server1",
+					Replicas: map[int]*ServerReplica{
+						0: {},
+					},
+					ExpectedReplicas: -1, // expected replicas is not set
+					Shared:           true,
+				},
+			},
+			expectedModelEvents:  2,
+			expectedServerEvents: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			ms := NewMemoryStore(logger, test.store, eventHub)
+
+			// register a callback to check if the event is triggered
+			serverEvents := int64(0)
+			eventHub.RegisterServerEventHandler(
+				fmt.Sprintf("handler-server"),
+				10,
+				logger,
+				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
+			)
+
+			modelEvents := int64(0)
+			eventHub.RegisterModelEventHandler(
+				fmt.Sprintf("handler-model"),
+				10,
+				logger,
+				func(event coordinator.ModelEventMsg) { atomic.AddInt64(&modelEvents, 1) },
+			)
+
+			err = ms.AddServerReplica(test.req)
+			g.Expect(err).To(BeNil())
+			actualSnapshot, err := ms.GetServers(true, false)
+			g.Expect(err).To(BeNil())
+			for idx, server := range actualSnapshot {
+				g.Expect(server.Name).To(Equal(test.expectedSnapshot[idx].Name))
+				g.Expect(server.Shared).To(Equal(test.expectedSnapshot[idx].Shared))
+				g.Expect(server.ExpectedReplicas).To(Equal(test.expectedSnapshot[idx].ExpectedReplicas))
+				g.Expect(len(server.Replicas)).To(Equal(len(test.expectedSnapshot[idx].Replicas)))
+			}
+
+			time.Sleep(10 * time.Millisecond)
+			g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(test.expectedServerEvents))
+			g.Expect(atomic.LoadInt64(&modelEvents)).To(Equal(test.expectedModelEvents))
 		})
 	}
 }

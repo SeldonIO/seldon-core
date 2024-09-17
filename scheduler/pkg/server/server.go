@@ -220,7 +220,6 @@ func NewSchedulerServer(
 		s.logger,
 		s.handleExperimentEvents,
 	)
-
 	eventHub.RegisterPipelineEventHandler(
 		pipelineEventHandlerName,
 		pendingEventsQueueSize,

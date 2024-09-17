@@ -29,12 +29,13 @@ func (m ModelEventMsg) String() string {
 
 type ServerEventMsg struct {
 	ServerName    string
+	ServerIdx     uint32
 	Source        string
 	UpdateContext ServerEventUpdateContext
 }
 
 func (m ServerEventMsg) String() string {
-	return m.ServerName
+	return fmt.Sprintf("%s:%d", m.ServerName, m.ServerIdx)
 }
 
 type ExperimentEventMsg struct {

@@ -566,7 +566,7 @@ func (m *MemoryStore) updateReservedMemory(
 }
 
 func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
-	evts, err := m.addServerReplicaImpl(request)
+	evts, serverEvt, err := m.addServerReplicaImpl(request)
 	if err != nil {
 		return err
 	}
@@ -577,11 +577,15 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 				evt,
 			)
 		}
+		m.eventHub.PublishServerEvent(
+			serverUpdateEventSource,
+			serverEvt,
+		)
 	}
 	return nil
 }
 
-func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, error) {
+func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, coordinator.ServerEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -615,7 +619,13 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 		})
 	}
 
-	return evts, nil
+	serverEvt := coordinator.ServerEventMsg{
+		ServerName:    request.ServerName,
+		ServerIdx:     uint32(request.ReplicaIdx),
+		UpdateContext: coordinator.SERVER_REPLICA_CONNECTED,
+	}
+
+	return evts, serverEvt, nil
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
