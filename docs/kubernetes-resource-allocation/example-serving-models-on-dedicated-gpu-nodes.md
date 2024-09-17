@@ -113,15 +113,21 @@ metadata:
   name: mlserver-llm-local-gpu     # <server name>
   namespace: seldon-mesh           # <seldon runtime namespace>
 spec:
-  replicas: 1
-  serverConfig: mlserver     # <reference Serverconfig CR>
-  extraCapabilities:
-    - model-on-gpu           # custom capability that can be used for matching Model to this server
+	...
   podSpec:
-    nodeSelector:            # only run mlserver-llm-local-gpu pods on nodes that have all those labels  
-      pool: infer-srv
-      cloud.google.com/gke-accelerator: nvidia-a100-80gb  # example requesting specific GPU on GKE, not required
-      # cloud.google.com/gke-accelerator-count: 2   # also request node with label denoting a specific GPU count
+	  affinity:
+		  nodeAffinity:
+			  requiredDuringSchedulingIgnoredDuringExecution:
+	        nodeSelectorTerms:
+	        - matchExpressions:
+	          - key: "pool"
+	            operator: In
+	            values:
+	            - infer-srv
+	          - key: "cloud.google.com/gke-accelerator"
+	            operator: In
+	            values:
+	            - nvidia-a100-80gb
     ...
     tolerations:             # allow mlserver-llm-local-gpu pods to be scheduled on nodes with the matching taint
     - effect: NoSchedule
