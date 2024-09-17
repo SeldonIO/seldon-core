@@ -50,7 +50,7 @@ Serving models on dedicated GPU nodes:
     		key: seldon-gpu-srv
     		value: "true"
     ```
-2. Configure inference servers. \
+2. Configure inference server custom resources. \
    To ensure a specific inference server Pod runs only on the nodes you've configured, you can modify one of these:\
    \- **Seldon Server custom resource**: using `nodeSelector` or `nodeAffinity` with `toleration` in each of the inference servers.\
    \- **ServerConfig custom resource**: using `nodeSelector` or `nodeAffinity` with `toleration` across multiple inference servers.
