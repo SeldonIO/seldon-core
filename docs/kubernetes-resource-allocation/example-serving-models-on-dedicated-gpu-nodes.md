@@ -13,7 +13,7 @@ description: >-
 Serving models on dedicated GPU nodes:
 
 1. [Configuring inference servers ](example-serving-models-on-dedicated-gpu-nodes.md#configure-inference-servers)
-2. Configuring models&#x20;
+2. [Configuring models ](example-serving-models-on-dedicated-gpu-nodes.md#configuring-models)
 
 ## Configure inference servers
 
@@ -236,4 +236,91 @@ spec:
 					memory: 360Gi
 		... # many other configs
 ```
+
+### Configuring models&#x20;
+
+When you have a set of inference servers running exclusively on GPU nodes, you can assign a model to one of those servers in two ways:
+
+* Custom model requirements (recommended)
+* Explicit server pinning
+
+Here's the distinction between the two methods of assigning models to servers.
+
+| Method                        | Behavior                                                                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Explicit pinning**          | If the specified server lacks sufficient memory or resources, the model load fails without trying another server.                               |
+| **Custom model requirements** | If the assigned server cannot load the model due to insufficient resources, another similarly-capable server can be selected to load the model. |
+
+{% tabs %}
+{% tab title="Custom model requirements" %}
+When you specify a requirement matching a server capability in the model custom resource it loads the model on any inference server with a capability matching the requirements.
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: llama3           # <model name>**
+  namespace: seldon-mesh # <seldon runtime namespace>**
+spec:
+  ...
+  requirements:
+  - model-on-gpu         # requirement matching a Server capability
+  ...
+
+```
+
+Ensure that the additional capability that matches the requirement label is added to the Server custom resource.&#x20;
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver-llm-local-gpu     # **<server name>**
+  namespace: seldon-mesh           # **<seldon runtime namespace>**
+spec:
+	serverConfig: mlserver     # **<reference Serverconfig CR>**
+  extraCapabilities:
+    - model-on-gpu           # custom capability that can be used for matching Model to this server
+  ...
+```
+
+Instead of adding a capability using `extraCapabilities` on a Server custom resource, you may also add to the list of capabilities in the associated ServerConfig custom resource. This applies to all servers referencing the configuration.
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: mlserver-llm               # **<ServerConfig name>**
+  namespace: seldon-mesh           # **<seldon runtime namespace>**
+spec:
+  podSpec:
+    ...
+    containers:
+	  - name: agent                  #** note the setting is applied to the **agent** container
+		  env:
+			- name: SELDON_SERVER_CAPABILITIES
+			  value: mlserver,alibi-detect,...,xgboost,model-on-gpu  #** add capability to the list
+			...  
+			image: ...
+		... # many other configs
+```
+{% endtab %}
+
+{% tab title="Explicit pinning" %}
+With these specifications, the model is loaded on replicas of inference servers created by the referenced Server custom resource.
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: llama3           # **<model name>**
+  namespace: seldon-mesh # **<seldon runtime namespace>**
+spec:
+  ...
+  server: mlserver-llm-local-gpu # **<reference Server CR>**
+  ...
+
+```
+{% endtab %}
+{% endtabs %}
 
