@@ -60,7 +60,7 @@ While `nodeSelector` requires an exact match of node labels for the server Pods 
 
 {% tabs %}
 {% tab title="nodeSelector" %}
-In this example, a `nodeAffinity` and a `toleration` is set for the Seldon Server custom resource.&#x20;
+In this example, a `nodeSelector` and a `toleration` is set for the Seldon Server custom resource.&#x20;
 
 ```yaml
 
