@@ -7,3 +7,5 @@ grafana_preloaded_dashboards:
     json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/seldon.json') }}"
   - name: perf
     json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/perf_and_scaling.json') }}"
+  - name: envoy
+    json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/envoy.json') }}"
