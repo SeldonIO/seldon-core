@@ -559,7 +559,7 @@
         {
           "datasource": "",
           "editorMode": "code",
-          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\",envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval]))",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
           "instant": false,
           "legendFormat": "{{pod}}-total",
           "range": true,
@@ -568,7 +568,7 @@
         {
           "datasource": "",
           "editorMode": "code",
-          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_tx_reset{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval]))",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_tx_reset{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
           "hide": false,
           "instant": false,
           "legendFormat": "{{pod}}-reset",
@@ -659,7 +659,7 @@
         {
           "datasource": "",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
+          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "p99",
@@ -669,7 +669,7 @@
         {
           "datasource": "",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.90,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\",  envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
+          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
           "hide": false,
           "instant": false,
           "legendFormat": "p90",
@@ -679,7 +679,7 @@
         {
           "datasource": "",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50,  sum by (le, envoy_cluster_name) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\",  envoy_cluster_name!=\"xds_cluster\"}[$interval])))",
+          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
           "hide": false,
           "instant": false,
           "legendFormat": "p50",
@@ -691,7 +691,7 @@
       "type": "timeseries"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -699,1466 +699,1465 @@
         "y": 31
       },
       "id": 9,
-      "panels": [
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "bars",
-                "fillOpacity": 100,
-                "gradientMode": "hue",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 32
-          },
-          "id": 7,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true,
-              "width": 200
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "10.1.5",
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_xx{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "{{envoy_response_code_class}}xx-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Upstream Request Response Codes",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 15,
-            "w": 6,
-            "x": 0,
-            "y": 40
-          },
-          "id": 1,
-          "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "sizing": "auto"
-          },
-          "pluginVersion": "11.1.3",
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "envoy_cluster_upstream_cx_active{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}",
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-{{pod}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Connections Active",
-          "type": "gauge"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 18,
-            "x": 6,
-            "y": 40
-          },
-          "id": 5,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_rq{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Upstream Request Count",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 7,
-            "w": 18,
-            "x": 6,
-            "y": 48
-          },
-          "id": 6,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.99,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
-              "format": "time_series",
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p99",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.90,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p90",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.50,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p50",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Cluster Upstream Request Time Milliseconds",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 55
-          },
-          "id": 3,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_destroy{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Upstream Connect Destroyed",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 55
-          },
-          "id": 2,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_connect_timeout{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Upstream Connect Timeouts",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "bars",
-                "fillOpacity": 100,
-                "gradientMode": "hue",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 63
-          },
-          "id": 23,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true,
-              "width": 200
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "10.1.5",
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "total-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry_success{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "success-{{envoy_cluster_name}}",
-              "range": true,
-              "refId": "B"
-            }
-          ],
-          "title": "Cluster Retry Stats",
-          "type": "timeseries"
-        }
-      ],
+      "panels": [],
       "title": "Cluster Stats",
       "type": "row"
     },
     {
-      "collapsed": true,
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 1,
+        "h": 8,
         "w": 24,
         "x": 0,
         "y": 32
       },
-      "id": 16,
-      "panels": [
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "width": 200
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
         {
           "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 54,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "dash": [
-                    0,
-                    10
-                  ],
-                  "fill": "dot"
-                },
-                "lineWidth": 2,
-                "pointSize": 11,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "normal"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": [
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_xx{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "{{envoy_response_code_class}}xx-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Upstream Request Response Codes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
               {
-                "matcher": {
-                  "id": "byName",
-                  "options": "degraded"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-red",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "total"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-blue",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "healthy"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-green",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
+                "color": "green",
+                "value": null
               }
             ]
           },
-          "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 72
-          },
-          "id": 24,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "11.1.3",
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (envoy_cluster_membership_total{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
-              "instant": false,
-              "legendFormat": "total",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "sum (envoy_cluster_membership_healthy{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "healthy",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "sum (envoy_cluster_membership_degraded{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\"})",
-              "format": "time_series",
-              "hide": false,
-              "instant": false,
-              "interval": "",
-              "legendFormat": "degraded",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Cluster Membership Stats",
-          "type": "timeseries"
+          "unit": "none"
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 6,
+        "x": 0,
+        "y": 40
+      },
+      "id": 1,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "11.1.3",
+      "targets": [
         {
           "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 79
-          },
-          "id": 4,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "format": "time_series",
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p99",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p90",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p50",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Cluster CDS Update Duration Milliseconds",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineWidth": 2,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 79
-          },
-          "id": 18,
-          "options": {
-            "barRadius": 0,
-            "barWidth": 0.97,
-            "fullHighlight": false,
-            "groupWidth": 0.7,
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "orientation": "auto",
-            "showValue": "auto",
-            "stacking": "normal",
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            },
-            "xTickLabelRotation": 0,
-            "xTickLabelSpacing": 100
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_cluster_manager_cluster_added{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "clusters-added",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_cluster_manager_cluster_modified{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "clusters-modified",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_cluster_manager_cluster_removed{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "clusters-removed",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "CDS Updates",
-          "type": "barchart"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 87
-          },
-          "id": 19,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "format": "time_series",
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p99",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p90",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p50",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Listener LDS Update Duration Milliseconds",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineWidth": 2,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 87
-          },
-          "id": 20,
-          "options": {
-            "barRadius": 0,
-            "barWidth": 0.97,
-            "fullHighlight": false,
-            "groupWidth": 0.7,
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "orientation": "auto",
-            "showValue": "auto",
-            "stacking": "normal",
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            },
-            "xTickLabelRotation": 0,
-            "xTickLabelSpacing": 100
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_listener_manager_lds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "update-success",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_listener_manager_lds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "update-failure",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_listener_manager_lds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "update-rejected",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "LDS Updates",
-          "type": "barchart"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 95
-          },
-          "id": 21,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "format": "time_series",
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p99",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p90",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\"}[$interval])))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{envoy_cluster_name}}-p50",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Route RDS Update Duration Milliseconds",
-          "type": "timeseries"
-        },
-        {
-          "datasource": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineWidth": 2,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 95
-          },
-          "id": 22,
-          "options": {
-            "barRadius": 0,
-            "barWidth": 0.97,
-            "fullHighlight": false,
-            "groupWidth": 0.7,
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "orientation": "auto",
-            "showValue": "auto",
-            "stacking": "normal",
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            },
-            "xTickLabelRotation": 0,
-            "xTickLabelSpacing": 100
-          },
-          "targets": [
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_http_rds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "instant": false,
-              "legendFormat": "update-success",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_http_rds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "update-failure",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": "",
-              "editorMode": "code",
-              "expr": "sum (increase(envoy_http_rds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "update-rejected",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "LDS Updates",
-          "type": "barchart"
+          "editorMode": "code",
+          "expr": "envoy_cluster_upstream_cx_active{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}",
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-{{pod}}",
+          "range": true,
+          "refId": "A"
         }
       ],
+      "title": "Cluster Connections Active",
+      "type": "gauge"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 40
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_rq{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Upstream Request Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 18,
+        "x": 6,
+        "y": 48
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval])))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p99",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50,  sum by (le, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_time_bucket{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p50",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Cluster Upstream Request Time Milliseconds",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_destroy{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Upstream Connect Destroyed",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 55
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_cluster_upstream_cx_connect_timeout{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "{{pod}}-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Upstream Connect Timeouts",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 63
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "width": 200
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "total-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum by (pod, envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_retry_success{namespace=\"$namespace\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "success-{{envoy_cluster_name}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Cluster Retry Stats",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 71
+      },
+      "id": 16,
+      "panels": [],
       "title": "xDS",
       "type": "row"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 54,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "dash": [
+                0,
+                10
+              ],
+              "fill": "dot"
+            },
+            "lineWidth": 2,
+            "pointSize": 11,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "degraded"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "healthy"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.1.3",
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (envoy_cluster_membership_total{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"})",
+          "instant": false,
+          "legendFormat": "total",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum (envoy_cluster_membership_healthy{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"})",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "healthy",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum (envoy_cluster_membership_degraded{namespace=\"$namespace\", pod=\"$pod\", envoy_cluster_name=~\"$envoy_cluster_name\", pod=\"$pod\"})",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "degraded",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Cluster Membership Stats",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 79
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p99",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_cluster_manager_cds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p50",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Cluster CDS Update Duration Milliseconds",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 79
+      },
+      "id": 18,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_cluster_manager_cluster_added{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "clusters-added",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_cluster_manager_cluster_modified{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "clusters-modified",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_cluster_manager_cluster_removed{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "clusters-removed",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "CDS Updates",
+      "type": "barchart"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 87
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p99",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_listener_manager_lds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p50",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Listener LDS Update Duration Milliseconds",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 87
+      },
+      "id": 20,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_listener_manager_lds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "update-success",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_listener_manager_lds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "update-failure",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_listener_manager_lds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "update-rejected",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "LDS Updates",
+      "type": "barchart"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 95
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "format": "time_series",
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p99",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p90",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_rds_update_duration_bucket{namespace=\"$namespace\", pod=\"$pod\"}[$interval])))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{envoy_cluster_name}}-p50",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Route RDS Update Duration Milliseconds",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 95
+      },
+      "id": 22,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_http_rds_update_success{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "instant": false,
+          "legendFormat": "update-success",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_http_rds_update_failure{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "update-failure",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": "",
+          "editorMode": "code",
+          "expr": "sum (increase(envoy_http_rds_update_rejected{namespace=\"$namespace\", pod=\"$pod\"}[$interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "update-rejected",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "RDS Updates",
+      "type": "barchart"
     }
   ],
   "refresh": "5s",
@@ -2168,7 +2167,7 @@
     "list": [
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "seldon-mesh",
           "value": "seldon-mesh"
         },
@@ -2250,7 +2249,7 @@
           ]
         },
         "datasource": "",
-        "definition": "label_values(envoy_cluster_name)",
+        "definition": "label_values(envoy_cluster_upstream_rq_total{pod=\"$pod\"},envoy_cluster_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Cluster",
@@ -2258,7 +2257,8 @@
         "name": "envoy_cluster_name",
         "options": [],
         "query": {
-          "query": "label_values(envoy_cluster_name)",
+          "qryType": 1,
+          "query": "label_values(envoy_cluster_upstream_rq_total{pod=\"$pod\"},envoy_cluster_name)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -2270,8 +2270,8 @@
       {
         "current": {
           "selected": true,
-          "text": "seldon-envoy-58f947767c-r4nv9",
-          "value": "seldon-envoy-58f947767c-r4nv9"
+          "text": "seldon-envoy-58f947767c-vvmpc",
+          "value": "seldon-envoy-58f947767c-vvmpc"
         },
         "datasource": "",
         "definition": "label_values(envoy_server_live{namespace=\"$namespace\"},pod)",
@@ -2294,13 +2294,13 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Seldon Envoy",
+  "title": "Envoy Gateway",
   "uid": "d615ae74-7ddd-4487-b040-bc0bddb95f4e",
-  "version": 9,
+  "version": 12,
   "weekStart": ""
 }
