@@ -51,7 +51,9 @@ func NewServerBasedSynchroniser(eventHub *coordinator.EventHub, logger log.Field
 		doneCh:             make(chan struct{}),
 	}
 	s.isReady.Store(false)
-	s.signalWg.Add(1) // wait for the first signal
+	s.signalWg.Add(1) // wait fist for signal before processing events
+
+	time.AfterFunc(s.timeout, s.timeoutFn)
 
 	eventHub.RegisterServerEventHandler(
 		serverEventHandlerName,
@@ -78,7 +80,6 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 	if !s.isReady.Load() {
 		atomic.AddUint64(&s.maxEvents, uint64(numSignals))
 		s.signalWg.Done()
-		time.AfterFunc(s.timeout, s.timeoutFn)
 	}
 }
 
