@@ -254,8 +254,8 @@ Here's the distinction between the two methods of assigning models to servers.
 
 | Method                        | Behavior                                                                                                                                        |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Explicit pinning**          | If the specified server lacks sufficient memory or resources, the model load fails without trying another server.                               |
 | **Custom model requirements** | If the assigned server cannot load the model due to insufficient resources, another similarly-capable server can be selected to load the model. |
+| **Explicit pinning**          | If the specified server lacks sufficient memory or resources, the model load fails without trying another server.                               |
 
 {% tabs %}
 {% tab title="Custom model requirements" %}
