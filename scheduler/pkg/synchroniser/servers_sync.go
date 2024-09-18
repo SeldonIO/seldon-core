@@ -84,6 +84,7 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 
 func (s *ServerBasedSynchroniser) timeoutFn() {
 	s.doneCh <- struct{}{}
+	s.logger.Warn("Timeout reached, signalling ready")
 }
 
 func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEventMsg) {
@@ -100,6 +101,7 @@ func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEve
 		if _, ok := s.connectedServers[serverNameWithIdx]; !ok {
 			s.connectedServers[serverNameWithIdx] = struct{}{}
 			if len(s.connectedServers) == int(s.maxEvents) {
+				s.logger.Infof("All (num: %d) servers connected, ready to serve", s.maxEvents)
 				s.doneCh <- struct{}{}
 			}
 		}
