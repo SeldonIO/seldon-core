@@ -56,7 +56,7 @@ Serving models on dedicated GPU nodes:
    \- **ServerConfig custom resource**:  Apply settings across multiple inference servers at once.
 
 **Configuring Seldon Server custom resource**\
-While `nodeSelector` requires an exact match of node labels for the server Pods to select that node, `nodeAffinity` provides flexibility.
+While `nodeSelector` requires an exact match of node labels for server Pods to select a node, `nodeAffinity` offers more fine-grained control. It enables a conditional approach by using logical operators in the node selection process.
 
 {% tabs %}
 {% tab title="nodeSelector" %}
