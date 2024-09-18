@@ -1,7 +1,7 @@
 ---
 description: >-
-  This example illustrates how to use taints, tolerations with node affinity or
-  node selector to assign GPU nodes to specific models.
+  This example illustrates how to use `taints`, `tolerations` with
+  `nodeAffinity` or `nodeSelector` to assign GPU nodes to specific models.
 ---
 
 # Example: Serving models on dedicated GPU nodes
