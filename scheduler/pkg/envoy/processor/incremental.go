@@ -196,7 +196,6 @@ func (p *IncrementalProcessor) setListeners() error {
 // newSnapshotVersion increments the current snapshotVersion
 // and returns as a string.
 func (p *IncrementalProcessor) newSnapshotVersion() string {
-
 	// Reset the snapshotVersion if it ever hits max size.
 	if p.snapshotVersion == math.MaxInt64 {
 		p.snapshotVersion = 0
@@ -256,7 +255,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		return
 	}
 
-	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
+	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
 	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
