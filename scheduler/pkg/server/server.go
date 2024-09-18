@@ -247,6 +247,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 	}
 	if req.IsFirstSync {
 		s.synchroniser.Signals(numExpectedReplicas)
+		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }
