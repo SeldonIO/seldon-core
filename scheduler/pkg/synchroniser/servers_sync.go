@@ -68,14 +68,18 @@ func (s *ServerBasedSynchroniser) IsReady() bool {
 }
 
 func (s *ServerBasedSynchroniser) WaitReady() {
-	<-s.doneCh
-	s.isReady.Store(true)
+	if !s.isReady.Load() {
+		<-s.doneCh
+		s.isReady.Store(true)
+	}
 }
 
 func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
-	atomic.AddUint64(&s.maxEvents, uint64(numSignals))
-	s.signalWg.Done()
-	time.AfterFunc(s.timeout, s.timeoutFn)
+	if !s.isReady.Load() {
+		atomic.AddUint64(&s.maxEvents, uint64(numSignals))
+		s.signalWg.Done()
+		time.AfterFunc(s.timeout, s.timeoutFn)
+	}
 }
 
 func (s *ServerBasedSynchroniser) timeoutFn() {

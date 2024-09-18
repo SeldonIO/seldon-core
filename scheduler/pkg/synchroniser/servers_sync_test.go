@@ -30,46 +30,67 @@ func TestServersSyncSynchroniser(t *testing.T) {
 		initialSignals   uint
 		isTimeout        bool
 		isDuplicateEvent bool
+		context          coordinator.ServerEventUpdateContext
 	}
 
 	tests := []test{
 		{
 			name:           "Simple",
-			timeout:        100 * time.Millisecond,
+			timeout:        200 * time.Millisecond,
 			signals:        5,
 			initialSignals: 0,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 		{
 			name:           "Events before signals",
-			timeout:        100 * time.Millisecond,
+			timeout:        200 * time.Millisecond,
 			signals:        5,
 			initialSignals: 5,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 		{
 			name:           "All events before signals",
-			timeout:        100 * time.Millisecond,
+			timeout:        200 * time.Millisecond,
 			signals:        0,
 			initialSignals: 5,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 		{
 			name:           "All events before signals",
-			timeout:        100 * time.Millisecond,
+			timeout:        200 * time.Millisecond,
 			signals:        0,
 			initialSignals: 5,
 			isTimeout:      true,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 		{
 			name:           "No signals",
-			timeout:        100 * time.Millisecond,
+			timeout:        200 * time.Millisecond,
 			signals:        0,
 			initialSignals: 0,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 		{
 			name:             "Duplicate events",
-			timeout:          100 * time.Millisecond,
+			timeout:          200 * time.Millisecond,
 			signals:          5,
 			initialSignals:   0,
 			isDuplicateEvent: true,
+			context:          coordinator.SERVER_REPLICA_CONNECTED,
+		},
+		{
+			name:           "wrong context",
+			timeout:        200 * time.Millisecond,
+			signals:        5,
+			initialSignals: 0,
+			context:        coordinator.SERVER_STATUS_UPDATE,
+		},
+		{
+			name:           "long timeout", // timeout will not be reached
+			timeout:        200 * time.Second,
+			signals:        5,
+			initialSignals: 0,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
 	}
 
@@ -86,11 +107,12 @@ func TestServersSyncSynchroniser(t *testing.T) {
 					if test.isDuplicateEvent {
 						idx = 0
 					}
-					eventHub.PublishServerEvent(
+					go eventHub.PublishServerEvent(
 						"test",
 						coordinator.ServerEventMsg{
-							ServerName: "test",
-							ServerIdx:  idx,
+							ServerName:    "test",
+							ServerIdx:     idx,
+							UpdateContext: test.context,
 						},
 					)
 				}
@@ -104,17 +126,32 @@ func TestServersSyncSynchroniser(t *testing.T) {
 					if test.isDuplicateEvent {
 						idx = 0
 					}
-					eventHub.PublishServerEvent(
+					go eventHub.PublishServerEvent(
 						"test",
 						coordinator.ServerEventMsg{
-							ServerName: "test",
-							ServerIdx:  idx,
+							ServerName:    "test",
+							ServerIdx:     idx,
+							UpdateContext: test.context,
 						},
 					)
 				}
 			}
 
+			time.Sleep(10 * time.Millisecond)
+
 			g.Expect(s.IsReady()).To(BeFalse())
+			s.WaitReady()
+			g.Expect(s.IsReady()).To(BeTrue())
+
+			if test.isTimeout || test.isDuplicateEvent || test.context != coordinator.SERVER_REPLICA_CONNECTED {
+				g.Expect(len(s.connectedServers)).Should(BeNumerically("<", test.signals+test.initialSignals))
+			} else {
+				g.Expect(len(s.connectedServers)).To(Equal(int(test.signals + test.initialSignals)))
+			}
+			// make sure we are graceful after this point
+
+			s.Signals(10)
+			g.Expect(s.IsReady()).To(BeTrue())
 			s.WaitReady()
 			g.Expect(s.IsReady()).To(BeTrue())
 		})
