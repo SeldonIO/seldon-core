@@ -212,7 +212,7 @@ func main() {
 	}
 
 	// Setup synchroniser
-	synchroniser := synchroniser.NewSimpleSynchroniser(time.Duration(120 * time.Second))
+	synchroniser := synchroniser.NewServerBasedSynchroniser(eventHub, logger, time.Duration(300*time.Second))
 
 	// scheduler scheduling models service
 	sched := scheduler.NewSimpleScheduler(
