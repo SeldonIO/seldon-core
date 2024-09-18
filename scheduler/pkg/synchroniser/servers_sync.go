@@ -84,7 +84,9 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 
 func (s *ServerBasedSynchroniser) timeoutFn() {
 	s.doneCh <- struct{}{}
-	s.logger.Warn("Timeout reached, signalling ready")
+	if !s.isReady.Load() {
+		s.logger.Warn("Timeout reached, signalling ready")
+	}
 }
 
 func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEventMsg) {
