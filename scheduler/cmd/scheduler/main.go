@@ -41,23 +41,24 @@ import (
 )
 
 var (
-	envoyPort               uint
-	agentPort               uint
-	agentMtlsPort           uint
-	schedulerPort           uint
-	schedulerMtlsPort       uint
-	chainerPort             uint
-	namespace               string
-	pipelineGatewayHost     string
-	pipelineGatewayHttpPort int
-	pipelineGatewayGrpcPort int
-	logLevel                string
-	tracingConfigPath       string
-	dbPath                  string
-	nodeID                  string
-	allowPlaintxt           bool //scheduler server
-	autoscalingDisabled     bool
-	kafkaConfigPath         string
+	envoyPort                    uint
+	agentPort                    uint
+	agentMtlsPort                uint
+	schedulerPort                uint
+	schedulerMtlsPort            uint
+	chainerPort                  uint
+	namespace                    string
+	pipelineGatewayHost          string
+	pipelineGatewayHttpPort      int
+	pipelineGatewayGrpcPort      int
+	logLevel                     string
+	tracingConfigPath            string
+	dbPath                       string
+	nodeID                       string
+	allowPlaintxt                bool //scheduler server
+	autoscalingDisabled          bool
+	kafkaConfigPath              string
+	schedulerReadyTimeoutSeconds uint
 )
 
 func init() {
@@ -105,6 +106,9 @@ func init() {
 		"/mnt/config/kafka.json",
 		"Path to kafka configuration file",
 	)
+
+	// timeout for scheduler to be ready
+	flag.UintVar(&schedulerReadyTimeoutSeconds, "scheduler-ready-timeout-seconds", 300, "Timeout for scheduler to be ready")
 }
 
 func getNamespace() string {
@@ -212,18 +216,25 @@ func main() {
 	}
 
 	// Setup synchroniser
-	synchroniser := synchroniser.NewServerBasedSynchroniser(eventHub, logger, time.Duration(300*time.Second))
+	var sync synchroniser.Synchroniser
+
+	if namespace == "" {
+		// running outside k8s
+		sync = synchroniser.NewSimpleSynchroniser(time.Duration(schedulerReadyTimeoutSeconds) * time.Second)
+	} else {
+		sync = synchroniser.NewServerBasedSynchroniser(eventHub, logger, time.Duration(schedulerReadyTimeoutSeconds)*time.Second)
+	}
 
 	// scheduler scheduling models service
 	sched := scheduler.NewSimpleScheduler(
 		logger,
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
-		synchroniser,
+		sync,
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, synchroniser)
+	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
@@ -238,7 +249,7 @@ func main() {
 	}
 
 	// wait for model servers to be ready
-	synchroniser.WaitReady()
+	sync.WaitReady()
 
 	// Start envoy xDS server
 	ctx := context.Background()
