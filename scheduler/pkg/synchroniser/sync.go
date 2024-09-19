@@ -25,9 +25,10 @@ type Synchroniser interface {
 }
 
 type SimpleSynchroniser struct {
-	isReady atomic.Bool
-	wg      sync.WaitGroup
-	timeout time.Duration
+	isReady   atomic.Bool
+	wg        sync.WaitGroup
+	timeout   time.Duration
+	triggered atomic.Bool
 }
 
 func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
@@ -37,6 +38,7 @@ func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 		timeout: timeout,
 	}
 	s.isReady.Store(false)
+	s.triggered.Store(false)
 	return s
 }
 
@@ -45,12 +47,19 @@ func (s *SimpleSynchroniser) IsReady() bool {
 }
 
 func (s *SimpleSynchroniser) Signals(numSignals uint) {
-	s.wg.Add(int(numSignals))
-	time.AfterFunc(s.timeout, s.done)
+	if !s.IsReady() {
+		swapped := s.triggered.CompareAndSwap(false, true) // make sure we run only once
+		if swapped {
+			s.wg.Add(int(numSignals))
+			time.AfterFunc(s.timeout, s.done)
+		}
+	}
 }
 
 func (s *SimpleSynchroniser) WaitReady() {
-	s.wg.Wait()
+	if !s.IsReady() {
+		s.wg.Wait()
+	}
 }
 
 func (s *SimpleSynchroniser) done() {

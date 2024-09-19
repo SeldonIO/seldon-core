@@ -36,6 +36,7 @@ type ServerBasedSynchroniser struct {
 	connectedServersMu sync.Mutex
 	timeout            time.Duration
 	doneCh             chan struct{}
+	triggered          atomic.Bool
 }
 
 func NewServerBasedSynchroniser(eventHub *coordinator.EventHub, logger log.FieldLogger, timeout time.Duration) *ServerBasedSynchroniser {
@@ -49,8 +50,10 @@ func NewServerBasedSynchroniser(eventHub *coordinator.EventHub, logger log.Field
 		connectedServersMu: sync.Mutex{},
 		timeout:            timeout,
 		doneCh:             make(chan struct{}),
+		triggered:          atomic.Bool{},
 	}
 	s.isReady.Store(false)
+	s.triggered.Store(false)
 	s.signalWg.Add(1) // wait fist for signal before processing events
 
 	time.AfterFunc(s.timeout, s.timeoutFn)
@@ -78,8 +81,11 @@ func (s *ServerBasedSynchroniser) WaitReady() {
 
 func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 	if !s.isReady.Load() {
-		atomic.AddUint64(&s.maxEvents, uint64(numSignals))
-		s.signalWg.Done()
+		swapped := s.triggered.CompareAndSwap(false, true) // make sure we run only once
+		if swapped {
+			atomic.AddUint64(&s.maxEvents, uint64(numSignals))
+			s.signalWg.Done()
+		}
 	}
 }
 
@@ -93,20 +99,26 @@ func (s *ServerBasedSynchroniser) timeoutFn() {
 func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvents")
 	logger.Debugf("Received sync for server %s", event.String())
-	s.connectedServersMu.Lock()
-	defer s.connectedServersMu.Unlock()
 
-	s.signalWg.Wait()
+	// we do not want to block the event handler while waiting for the signal to be fired as it may cause a deadlock with 
+	// other events handlers.
+	// we also do not care about order of events, so we can safely spawn a go routine to handle the signal
+	go func() {
+		s.connectedServersMu.Lock()
+		defer s.connectedServersMu.Unlock()
 
-	if event.UpdateContext == coordinator.SERVER_REPLICA_CONNECTED && !s.IsReady() {
-		serverNameWithIdx := fmt.Sprintf("%s-%d", event.ServerName, event.ServerIdx)
+		s.signalWg.Wait()
 
-		if _, ok := s.connectedServers[serverNameWithIdx]; !ok {
-			s.connectedServers[serverNameWithIdx] = struct{}{}
-			if len(s.connectedServers) == int(s.maxEvents) {
-				s.logger.Infof("All (num: %d) servers connected, ready to serve", s.maxEvents)
-				s.doneCh <- struct{}{}
+		if event.UpdateContext == coordinator.SERVER_REPLICA_CONNECTED && !s.IsReady() {
+			serverNameWithIdx := fmt.Sprintf("%s-%d", event.ServerName, event.ServerIdx)
+
+			if _, ok := s.connectedServers[serverNameWithIdx]; !ok {
+				s.connectedServers[serverNameWithIdx] = struct{}{}
+				if len(s.connectedServers) == int(s.maxEvents) {
+					s.logger.Infof("All (num: %d) servers connected, ready to serve", s.maxEvents)
+					s.doneCh <- struct{}{}
+				}
 			}
 		}
-	}
+	}()
 }

@@ -119,6 +119,8 @@ func TestServersSyncSynchroniser(t *testing.T) {
 			}
 
 			s.Signals(test.signals + test.initialSignals)
+			// this should have no effect
+			s.Signals(10000)
 
 			if !test.isTimeout {
 				for i := 0; i < int(test.signals); i++ {

@@ -34,13 +34,26 @@ func TestSimpleSynchroniser(t *testing.T) {
 			timeout: 100 * time.Millisecond,
 			signals: 1,
 		},
+		{
+			name:    "No timmer",
+			timeout: 0 * time.Millisecond,
+			signals: 1,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s := NewSimpleSynchroniser(test.timeout)
 			s.Signals(test.signals)
+			// this should have no effect
+			s.Signals(100000)
 			g.Expect(s.IsReady()).To(BeFalse())
+			s.WaitReady()
+			g.Expect(s.IsReady()).To(BeTrue())
+
+			// make sure we are graceful after this point
+			s.Signals(10)
+			g.Expect(s.IsReady()).To(BeTrue())
 			s.WaitReady()
 			g.Expect(s.IsReady()).To(BeTrue())
 		})
