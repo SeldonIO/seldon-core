@@ -1,6 +1,12 @@
+---
+description: >-
+  Learn more about using taints and tolerations with node affinity or node
+  selector to allocate resources in a Kubernetes cluster.
+---
+
 # Kubernetes resource allocation
 
-### Using taints and tolerations with node affinity or node selector to allocate resources
+###
 
 
 
