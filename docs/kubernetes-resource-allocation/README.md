@@ -20,8 +20,6 @@ To solve these problems, Kubernetes provides mechanisms such as **taints**, **to
 *   [Taints ](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/)are applied to nodes and [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to Pods to control which Pods can be scheduled on specific nodes within the Kubernetes cluster. Pods without a matching toleration for a node’s taint are scheduled on that node. For instance, if a node has GPUs or other specialized hardware, you can prevent Pods that don’t need these resources from running on that node to avoid unnecessary resource usage.\
 
 
-
-
     {% hint style="info" %}
     [Taints and tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) alone do not ensure that a Pod will run on a tainted node. Even if a Pod has the correct toleration, Kubernetes may still schedule it on other nodes without taints. To ensure a Pod runs on a specific node, you need to also use [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) and [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector) rules.
     {% endhint %}
@@ -30,4 +28,11 @@ To solve these problems, Kubernetes provides mechanisms such as **taints**, **to
 * [Node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) or [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector) is used to ensure that specific Pods are scheduled on particular nodes, typically to meet the unique requirements of their workloads.
 
 When used together, taints and tolerations with `nodeAffinity` or `nodeSelector` can effectively allocate certain Pods to specific nodes, while preventing other Pods from being scheduled on those nodes.
+
+In a Kubernetes cluster running Seldon Core 2, this involves two key configurations:
+
+1. Configuring servers with specific nodes using mechanisms like taints, tolerations, and `nodeAffinity` or `nodeSelector`.
+2. Configuring models with the appropriate servers by matching the tags defined in the respective Custom Resource Definitions (CRDs) for nodes, servers, and models.&#x20;
+
+This ensures that models are deployed on the optimal infrastructure and servers that meet their requirements.
 
