@@ -15,7 +15,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   labels:
-    sidecar.istio.io/inject: "false"
+    sidecar.istio.io/inject: "true"
   name: triton
 spec:
   replicas: 1
