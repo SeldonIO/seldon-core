@@ -18,8 +18,10 @@ create-helm-charts:
 	kustomize build kustomize/helm-servers/ > ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 	sed -i 's/\(.*\)\(imagePullSecrets:\).*/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed -i 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
-	sed 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
+	sed 's/HACK_REMOVE_ME_MLSERVER: HACK_REMOVE_ME_MLSERVER/{{.Values.mlserver.labels | toYaml }}/' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml \
 		> ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
+	sed -i 's/HACK_REMOVE_ME_TRITON: HACK_REMOVE_ME_TRITON/{{.Values.triton.labels | toYaml }}/' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
+	sed -i 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding.*ServiceAccount\n  name: seldon-v2-controller-manager\n  namespace:[^-]\{27\}\n\-\-\-\)#{{- if .Values.controller.clusterwide -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
