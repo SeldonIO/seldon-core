@@ -80,6 +80,8 @@ type TracingConfig struct {
 
 type ComponentDefn struct {
 	// +kubebuilder:validation:Required
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
 	Name                 string                  `json:"name"`
 	Replicas             *int32                  `json:"replicas,omitempty"`
 	PodSpec              *v1.PodSpec             `json:"podSpec,omitempty"`

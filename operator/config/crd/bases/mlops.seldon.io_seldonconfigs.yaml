@@ -38,6 +38,8 @@ spec:
               components:
                 items:
                   properties:
+                    metadata:
+                      type: object
                     name:
                       type: string
                     podSpec:
