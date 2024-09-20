@@ -1,6 +1,10 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  labels:
+{{- with .Values.mlserver.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   name: mlserver
   namespace: '{{ .Release.Namespace }}'
 spec:
@@ -11,6 +15,10 @@ spec:
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  labels:
+{{- with .Values.triton.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   name: triton
   namespace: '{{ .Release.Namespace }}'
 spec:

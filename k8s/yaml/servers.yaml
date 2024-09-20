@@ -3,6 +3,8 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  labels:
+    sidecar.istio.io/inject: "false"
   name: mlserver
 spec:
   replicas: 1
@@ -12,6 +14,8 @@ spec:
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  labels:
+    sidecar.istio.io/inject: "false"
   name: triton
 spec:
   replicas: 1
