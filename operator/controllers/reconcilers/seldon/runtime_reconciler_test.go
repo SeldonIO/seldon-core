@@ -53,7 +53,9 @@ func TestRuntimeReconcile(t *testing.T) {
 				Spec: mlopsv1alpha1.SeldonConfigSpec{
 					Components: []*mlopsv1alpha1.ComponentDefn{
 						{
-							Name: mlopsv1alpha1.SchedulerName,
+							Name:        mlopsv1alpha1.SchedulerName,
+							Labels:      map[string]string{"test-label": "123"},
+							Annotations: map[string]string{"test-annotation": "456"},
 							PodSpec: &v1.PodSpec{
 								Containers: []v1.Container{
 									{
@@ -94,7 +96,9 @@ func TestRuntimeReconcile(t *testing.T) {
 				Spec: mlopsv1alpha1.SeldonConfigSpec{
 					Components: []*mlopsv1alpha1.ComponentDefn{
 						{
-							Name: mlopsv1alpha1.PipelineGatewayName,
+							Name:        mlopsv1alpha1.PipelineGatewayName,
+							Labels:      map[string]string{"test-label": "123"},
+							Annotations: map[string]string{"test-annotation": "456"},
 							PodSpec: &v1.PodSpec{
 								Containers: []v1.Container{
 									{
