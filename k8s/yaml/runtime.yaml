@@ -24,22 +24,28 @@ spec:
   - name: hodometer
     disable: false
     replicas: 1
+    podSpec: null
   - name: seldon-scheduler
     disable: false
     serviceType: LoadBalancer
+    podSpec: null
   - name: seldon-envoy
     disable: false
     replicas: 1
     serviceType: LoadBalancer
+    podSpec: null
   - name: seldon-dataflow-engine
     disable: false
     replicas: 1
+    podSpec: null
   - name: seldon-modelgateway
     disable: false
     replicas: 1
+    podSpec: null
   - name: seldon-pipelinegateway
     disable: false
     replicas: 1
+    podSpec: null
   config:
     agentConfig:
       rclone:

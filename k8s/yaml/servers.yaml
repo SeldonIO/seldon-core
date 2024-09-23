@@ -5,6 +5,7 @@ kind: Server
 metadata:
   name: mlserver
 spec:
+  podSpec: null
   replicas: 1
   serverConfig: mlserver
 ---
@@ -14,5 +15,6 @@ kind: Server
 metadata:
   name: triton
 spec:
+  podSpec: null
   replicas: 1
   serverConfig: triton

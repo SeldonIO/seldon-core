@@ -255,9 +255,14 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 			}
 
 			// Set the total number of replicas targeted by this model
+			// The .status.replicas CRD field is used by HPA to determine the current
+			// number replicas that exist, irrespective of their state
 			latestModel.Status.Replicas = int32(
 				modelStatus.GetAvailableReplicas() +
 					modelStatus.GetUnavailableReplicas(),
+			)
+			latestModel.Status.AvailableReplicas = int32(
+				modelStatus.GetAvailableReplicas(),
 			)
 			return s.updateModelStatus(latestModel)
 		})
