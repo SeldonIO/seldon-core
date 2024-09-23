@@ -54,9 +54,10 @@ spec:
 ## Configure inference servers
 
 \
-To ensure a specific inference server Pod runs only on the nodes you've configured, you can use `nodeSelector` or `nodeAffinity` together with a `toleration` by modifying one of the following:\
-\- **Seldon Server custom resource**: Apply changes to each individual inference server..\
-\- **ServerConfig custom resource**:  Apply settings across multiple inference servers at once.
+To ensure a specific inference server Pod runs only on the nodes you've configured, you can use `nodeSelector` or `nodeAffinity` together with a `toleration` by modifying one of the following:
+
+* **Seldon Server custom resource**: Apply changes to each individual inference server.
+* **ServerConfig custom resource**:  Apply settings across multiple inference servers at once.
 
 **Configuring Seldon Server custom resource**\
 While `nodeSelector` requires an exact match of node labels for server Pods to select a node, `nodeAffinity` offers more fine-grained control. It enables a conditional approach by using logical operators in the node selection process. For more information, see [Affinity and anti-affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity).
