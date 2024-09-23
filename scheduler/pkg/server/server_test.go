@@ -748,7 +748,7 @@ func TestServerNotify(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s, sync := createTestScheduler()
 
-			s.ServerNotify(context.Background(), test.req)
+			_, _ = s.ServerNotify(context.Background(), test.req)
 
 			time.Sleep(50 * time.Millisecond) // allwo events to be processed
 

@@ -11,7 +11,6 @@ package store
 
 import (
 	"errors"
-	"fmt"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1512,7 +1511,7 @@ func TestAddServerReplica(t *testing.T) {
 			// register a callback to check if the event is triggered
 			serverEvents := int64(0)
 			eventHub.RegisterServerEventHandler(
-				fmt.Sprintf("handler-server"),
+				"handler-server",
 				10,
 				logger,
 				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
@@ -1520,7 +1519,7 @@ func TestAddServerReplica(t *testing.T) {
 
 			modelEvents := int64(0)
 			eventHub.RegisterModelEventHandler(
-				fmt.Sprintf("handler-model"),
+				"handler-model",
 				10,
 				logger,
 				func(event coordinator.ModelEventMsg) { atomic.AddInt64(&modelEvents, 1) },

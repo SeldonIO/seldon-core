@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
+	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
-	. "github.com/onsi/gomega"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 

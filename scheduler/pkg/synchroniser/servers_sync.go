@@ -16,8 +16,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 const (
