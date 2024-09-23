@@ -168,7 +168,7 @@ services:
       - "--kafka-config-path"
       - "/mnt/config/kafka-host.json"
       - "--scheduler-ready-timeout-seconds"
-      - 30
+      - ${SCHEDULER_READY_TIMEOUT_SECONDS}
     volumes:
       - type: bind
         source: ./config
