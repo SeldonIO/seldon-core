@@ -61,7 +61,7 @@ spec:
 ## Configure inference servers
 
 \
-To ensure a specific inference server Pod runs only on the nodes you've configured, you can use `nodeSelector` or `nodeAffinity` with `toleration` by modifying one of the following:\
+To ensure a specific inference server Pod runs only on the nodes you've configured, you can use `nodeSelector` or `nodeAffinity` together with a `toleration` by modifying one of the following:\
 \- **Seldon Server custom resource**: Apply changes to each individual inference server..\
 \- **ServerConfig custom resource**:  Apply settings across multiple inference servers at once.
 
