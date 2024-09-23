@@ -75,8 +75,6 @@ func (s *ServerBasedSynchroniser) IsReady() bool {
 func (s *ServerBasedSynchroniser) WaitReady() {
 	if !s.isReady.Load() {
 		s.doneWg.Wait()
-		s.isReady.Store(true)
-		s.logger.Debugf("Synchroniser is ready")
 	}
 }
 
@@ -93,7 +91,7 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 func (s *ServerBasedSynchroniser) doneFn() {
 	if s.isReady.CompareAndSwap(false, true) {
 		s.doneWg.Done()
-		s.logger.Warn("Timeout reached, Synchroniser is ready")
+		s.logger.Debugf("Synchroniser is ready")
 	}
 }
 
