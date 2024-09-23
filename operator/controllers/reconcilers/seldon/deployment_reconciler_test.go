@@ -124,6 +124,8 @@ func TestDeploymentReconcile(t *testing.T) {
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
 				test.podSpec,
+				make(map[string]string),
+				make(map[string]string),
 				test.override,
 				test.seldonConfigMeta,
 				annotator)
@@ -225,6 +227,8 @@ func TestDeploymentOverride(t *testing.T) {
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
 				test.podSpec,
+				make(map[string]string),
+				make(map[string]string),
 				test.override,
 				metav1.ObjectMeta{},
 				annotator)

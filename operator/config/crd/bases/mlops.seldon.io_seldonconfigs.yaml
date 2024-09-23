@@ -38,7 +38,13 @@ spec:
               components:
                 items:
                   properties:
-                    metadata:
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    labels:
+                      additionalProperties:
+                        type: string
                       type: object
                     name:
                       type: string

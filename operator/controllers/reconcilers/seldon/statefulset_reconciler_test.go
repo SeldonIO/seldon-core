@@ -34,13 +34,15 @@ func TestStatefulSetReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name             string
-		statefulSetName  string
-		podSpec          *v1.PodSpec
-		volumeClaims     []mlopsv1alpha1.PersistentVolumeClaim
-		override         *mlopsv1alpha1.OverrideSpec
-		seldonConfigMeta metav1.ObjectMeta
-		error            bool
+		name                 string
+		statefulSetName      string
+		podSpec              *v1.PodSpec
+		volumeClaims         []mlopsv1alpha1.PersistentVolumeClaim
+		componentLabels      map[string]string
+		componentAnnotations map[string]string
+		override             *mlopsv1alpha1.OverrideSpec
+		seldonConfigMeta     metav1.ObjectMeta
+		error                bool
 	}
 
 	tests := []test{
@@ -78,6 +80,8 @@ func TestStatefulSetReconcile(t *testing.T) {
 				meta,
 				test.podSpec,
 				test.volumeClaims,
+				test.componentLabels,
+				test.componentAnnotations,
 				test.override,
 				test.seldonConfigMeta,
 				annotator)

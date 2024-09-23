@@ -538,7 +538,11 @@ metadata:
   name: default
 spec:
   components:
-  - name: seldon-scheduler
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-scheduler
     podSpec:
       containers:
       - args:
@@ -648,7 +652,11 @@ spec:
         resources:
           requests:
             storage: '1Gi'
-  - name: seldon-pipelinegateway
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-pipelinegateway
     podSpec:
       containers:
       - args:
@@ -778,7 +786,11 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: seldon-modelgateway
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-modelgateway
     podSpec:
       containers:
       - args:
@@ -891,7 +903,11 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: hodometer
+  - annotations:
+        null
+    labels:
+        null
+    name: hodometer
     podSpec:
       containers:
       - env:
@@ -944,7 +960,13 @@ spec:
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-envoy
+  - annotations:
+        prometheus.io/path: stats/prometheus
+        prometheus.io/port: "9003"
+        prometheus.io/scrape: "true"
+    labels:
+        null
+    name: seldon-envoy
     podSpec:
       containers:
       - env:
@@ -996,7 +1018,11 @@ spec:
         runAsUser: 1000
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-dataflow-engine
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-dataflow-engine
     podSpec:
       containers:
       - env:

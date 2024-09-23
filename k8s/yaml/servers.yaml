@@ -7,6 +7,7 @@ metadata:
     sidecar.istio.io/inject: "false"
   name: mlserver
 spec:
+  podSpec: null
   replicas: 1
   serverConfig: mlserver
 ---
@@ -18,5 +19,6 @@ metadata:
     sidecar.istio.io/inject: "true"
   name: triton
 spec:
+  podSpec: null
   replicas: 1
   serverConfig: triton
