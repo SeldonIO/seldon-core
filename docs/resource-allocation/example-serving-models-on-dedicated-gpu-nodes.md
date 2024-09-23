@@ -31,7 +31,7 @@ You can add the taint when you are creating the node or after the node has been 
 **Note:**  When you apply a `NoSchedule` taint to a node after it is created it may result in existing Pods that do not have a matching toleration to remain on the node without being evicted. To ensure that such Pods are removed, you can use the `NoExecute` taint effect instead.&#x20;
 
 \
-In this example, the node includes several labels that are used later for node affinity settings. You may need to specify some labels, while others are usually added by the cloud provider or a GPU operator installed in the cluster. \
+In this example, the node includes several labels that are used later for node affinity settings. You may choose to specify some labels, while others are usually added by the cloud provider or a GPU operator installed in the cluster. \
 
 
 ```yaml
