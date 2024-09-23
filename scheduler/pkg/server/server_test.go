@@ -12,6 +12,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"sort"
 	"testing"
 	"time"
 
@@ -750,10 +751,16 @@ func TestServerNotify(t *testing.T) {
 
 			_, _ = s.ServerNotify(context.Background(), test.req)
 
-			time.Sleep(50 * time.Millisecond) // allwo events to be processed
+			time.Sleep(50 * time.Millisecond) // allow events to be processed
 
 			actualServers, err := s.modelStore.GetServers(true, false)
 			g.Expect(err).To(BeNil())
+			sort.Slice(actualServers, func(i, j int) bool {
+				return actualServers[i].Name < actualServers[j].Name
+			})
+			sort.Slice(test.expectedServerStates, func(i, j int) bool {
+				return test.expectedServerStates[i].Name < test.expectedServerStates[j].Name
+			})
 			g.Expect(actualServers).To(Equal(test.expectedServerStates))
 
 			g.Expect(sync.IsReady()).To(Equal(test.signalTriggered))
