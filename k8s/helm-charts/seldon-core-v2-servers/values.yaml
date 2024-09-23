@@ -1,9 +1,5 @@
 mlserver:
   replicas: 1
-  labels:
-    sidecar.istio.io/inject: "false"
 
 triton:
   replicas: 1
-  labels:
-    sidecar.istio.io/inject: "true" 

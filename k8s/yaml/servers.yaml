@@ -4,7 +4,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   labels:
-    sidecar.istio.io/inject: "false"
+    null
   name: mlserver
 spec:
   podSpec: null
@@ -16,7 +16,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   labels:
-    sidecar.istio.io/inject: "true"
+    null
   name: triton
 spec:
   podSpec: null
