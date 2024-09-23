@@ -27,8 +27,7 @@ To serve a model on a dedicated GPU node, you should follow these steps:
 \
 You can add the taint when you are creating the node or after the node has been provisioned. You can apply the same taint to multiple nodes, not just a single node. A common approach is to define the taint at the node pool level.&#x20;
 
-\
-**Note:**  When you apply a `NoSchedule` taint to a node after it is created it may result in existing Pods that do not have a matching toleration to remain on the node without being evicted. To ensure that such Pods are removed, you can use the `NoExecute` taint effect instead.&#x20;
+When you apply a `NoSchedule` taint to a node after it is created it may result in existing Pods that do not have a matching toleration to remain on the node without being evicted. To ensure that such Pods are removed, you can use the `NoExecute` taint effect instead.&#x20;
 
 \
 In this example, the node includes several labels that are used later for node affinity settings. You may choose to specify some labels, while others are usually added by the cloud provider or a GPU operator installed in the cluster. \
