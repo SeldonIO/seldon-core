@@ -27,7 +27,7 @@ When used together, taints and tolerations with `nodeAffinity` or `nodeSelector`
 
 In a Kubernetes cluster running Seldon Core 2, this involves two key configurations:
 
-1. Configuring servers with specific nodes using mechanisms like taints, tolerations, and `nodeAffinity` or `nodeSelector`.
+1. Configuring servers to run on specific nodes using mechanisms like taints, tolerations, and `nodeAffinity` or `nodeSelector`.
 2. Configuring models so that they are scheduled and loaded on the appropriate servers.&#x20;
 
 This ensures that models are deployed on the optimal infrastructure and servers that meet their requirements.
