@@ -1,6 +1,8 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  annotations:
+    {{ .Values.mlserver.annotations | toYaml }}
   labels:
     {{ .Values.mlserver.labels | toYaml }}
   name: mlserver
@@ -13,6 +15,8 @@ spec:
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  annotations:
+    {{ .Values.triton.annotations | toYaml }}
   labels:
     {{ .Values.triton.labels | toYaml }}
   name: triton

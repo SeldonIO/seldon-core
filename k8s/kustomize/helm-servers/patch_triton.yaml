@@ -3,6 +3,7 @@ kind: Server
 metadata:
   name: triton
   labelz: HACK_REMOVE_ME{{ .Values.triton.labels | toYaml }}
+  annotationz: HACK_REMOVE_ME{{ .Values.triton.annotations | toYaml }}
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.triton.replicas }}
   podSpec: HACK_REMOVE_ME{{ toJson .Values.triton.podSpec }}
