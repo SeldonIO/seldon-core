@@ -100,7 +100,7 @@ func init() {
 
 	// Whether to enable autoscaling, default is true
 	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
-	
+
 	// Kafka config path
 	flag.StringVar(
 		&kafkaConfigPath,
