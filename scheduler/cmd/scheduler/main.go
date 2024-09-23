@@ -100,6 +100,8 @@ func init() {
 
 	// Whether to enable autoscaling, default is true
 	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
+	
+	// Kafka config path
 	flag.StringVar(
 		&kafkaConfigPath,
 		"kafka-config-path",
@@ -107,7 +109,7 @@ func init() {
 		"Path to kafka configuration file",
 	)
 
-	// timeout for scheduler to be ready
+	// Timeout for scheduler to be ready
 	flag.UintVar(&schedulerReadyTimeoutSeconds, "scheduler-ready-timeout-seconds", 300, "Timeout for scheduler to be ready")
 }
 
