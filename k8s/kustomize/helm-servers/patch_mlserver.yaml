@@ -2,8 +2,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: mlserver
-  labels:
-    HACK_REMOVE_ME_MLSERVER: HACK_REMOVE_ME_MLSERVER
+  labelz: HACK_REMOVE_ME{{ .Values.mlserver.labels | toYaml }}
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.mlserver.replicas }}
   podSpec: HACK_REMOVE_ME{{ toJson .Values.mlserver.podSpec }}

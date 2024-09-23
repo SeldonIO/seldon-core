@@ -2,8 +2,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   name: triton
-  labels:
-    HACK_REMOVE_ME_TRITON: HACK_REMOVE_ME_TRITON
+  labelz: HACK_REMOVE_ME{{ .Values.triton.labels | toYaml }}
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.triton.replicas }}
   podSpec: HACK_REMOVE_ME{{ toJson .Values.triton.podSpec }}

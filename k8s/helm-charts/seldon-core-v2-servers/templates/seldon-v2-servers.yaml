@@ -2,7 +2,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   labels:
-    {{.Values.mlserver.labels | toYaml }}
+    {{ .Values.mlserver.labels | toYaml }}
   name: mlserver
   namespace: '{{ .Release.Namespace }}'
 spec:
@@ -14,7 +14,7 @@ apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
   labels:
-    {{.Values.triton.labels | toYaml }}
+    {{ .Values.triton.labels | toYaml }}
   name: triton
   namespace: '{{ .Release.Namespace }}'
 spec:
