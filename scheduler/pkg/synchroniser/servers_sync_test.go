@@ -11,6 +11,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package synchroniser
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -139,10 +140,22 @@ func TestServersSyncSynchroniser(t *testing.T) {
 				}
 			}
 
-			time.Sleep(10 * time.Millisecond)
-
 			g.Expect(s.IsReady()).To(BeFalse())
-			s.WaitReady()
+
+			time.Sleep(100 * time.Millisecond)
+
+			// simulate multiple events
+			numWaitReady := 10
+			waitReadyWg := sync.WaitGroup{}
+			waitReadyWg.Add(numWaitReady)
+			waitReadyFn := func() {
+				s.WaitReady()
+				waitReadyWg.Done()
+			}
+			for i := 0; i < numWaitReady; i++ {
+				go waitReadyFn()
+			}
+			waitReadyWg.Wait()
 			g.Expect(s.IsReady()).To(BeTrue())
 
 			if test.isTimeout || test.isDuplicateEvent || test.context != coordinator.SERVER_REPLICA_CONNECTED {

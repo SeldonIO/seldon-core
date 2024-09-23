@@ -35,7 +35,7 @@ type ServerBasedSynchroniser struct {
 	connectedServers   map[string]struct{}
 	connectedServersMu sync.Mutex
 	timeout            time.Duration
-	doneCh             chan struct{}
+	doneWg             sync.WaitGroup
 	triggered          atomic.Bool
 }
 
@@ -49,14 +49,14 @@ func NewServerBasedSynchroniser(eventHub *coordinator.EventHub, logger log.Field
 		connectedServers:   make(map[string]struct{}),
 		connectedServersMu: sync.Mutex{},
 		timeout:            timeout,
-		doneCh:             make(chan struct{}),
 		triggered:          atomic.Bool{},
 	}
 	s.isReady.Store(false)
 	s.triggered.Store(false)
 	s.signalWg.Add(1) // wait fist for signal before processing events
+	s.doneWg.Add(1)   // we wait for the timeout to be reached or all servers to connect
 
-	time.AfterFunc(s.timeout, s.timeoutFn)
+	time.AfterFunc(s.timeout, s.doneFn)
 
 	eventHub.RegisterServerEventHandler(
 		serverEventHandlerName,
@@ -74,8 +74,9 @@ func (s *ServerBasedSynchroniser) IsReady() bool {
 
 func (s *ServerBasedSynchroniser) WaitReady() {
 	if !s.isReady.Load() {
-		<-s.doneCh
+		s.doneWg.Wait()
 		s.isReady.Store(true)
+		s.logger.Debugf("Synchroniser is ready")
 	}
 }
 
@@ -89,10 +90,10 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 	}
 }
 
-func (s *ServerBasedSynchroniser) timeoutFn() {
-	s.doneCh <- struct{}{}
-	if !s.isReady.Load() {
-		s.logger.Warn("Timeout reached, signalling ready")
+func (s *ServerBasedSynchroniser) doneFn() {
+	if s.isReady.CompareAndSwap(false, true) {
+		s.doneWg.Done()
+		s.logger.Warn("Timeout reached, Synchroniser is ready")
 	}
 }
 
@@ -100,7 +101,7 @@ func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEve
 	logger := s.logger.WithField("func", "handleServerEvents")
 	logger.Debugf("Received sync for server %s", event.String())
 
-	// we do not want to block the event handler while waiting for the signal to be fired as it may cause a deadlock with 
+	// we do not want to block the event handler while waiting for the signal to be fired as it may cause a deadlock with
 	// other events handlers.
 	// we also do not care about order of events, so we can safely spawn a go routine to handle the signal
 	go func() {
@@ -115,8 +116,8 @@ func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEve
 			if _, ok := s.connectedServers[serverNameWithIdx]; !ok {
 				s.connectedServers[serverNameWithIdx] = struct{}{}
 				if len(s.connectedServers) == int(s.maxEvents) {
-					s.logger.Infof("All (num: %d) servers connected, ready to serve", s.maxEvents)
-					s.doneCh <- struct{}{}
+					s.doneFn()
+					s.logger.Infof("All (num: %d) servers connected", s.maxEvents)
 				}
 			}
 		}
