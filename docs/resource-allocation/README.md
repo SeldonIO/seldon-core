@@ -4,7 +4,7 @@ description: >-
   selector to allocate resources in a Kubernetes cluster.
 ---
 
-# Kubernetes resource allocation
+# Resource allocation
 
 When deploying machine learning models in Kubernetes, you may need to control which infrastructure resources these models use. This is especially important in environments where certain workloads, such as resource-intensive models, should be isolated from others or where specific hardware such as  GPUs, needs to be dedicated to particular tasks. Without fine-grained control over workload placement, models might end up running on suboptimal nodes, leading to inefficiencies or resource contention.
 
@@ -28,7 +28,7 @@ When used together, taints and tolerations with `nodeAffinity` or `nodeSelector`
 In a Kubernetes cluster running Seldon Core 2, this involves two key configurations:
 
 1. Configuring servers with specific nodes using mechanisms like taints, tolerations, and `nodeAffinity` or `nodeSelector`.
-2. Configuring models with the appropriate servers by matching the tags defined in the respective Custom Resource Definitions (CRDs) for nodes, servers, and models.&#x20;
+2. Configuring models so that they are scheduled and loaded on the appropriate servers.&#x20;
 
 This ensures that models are deployed on the optimal infrastructure and servers that meet their requirements.
 
