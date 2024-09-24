@@ -1,7 +1,7 @@
 ---
 description: >-
-  Learn about the Seldon command line tool that you can use to manage Seldon
-  Core 2 resources.
+  Learn about installing Seldon command line tool that you can use to manage
+  Seldon Core 2 resources.
 ---
 
 # Seldon CLI
