@@ -255,7 +255,8 @@ func main() {
 	// wait for model servers to be ready
 	sync.WaitReady()
 
-	// Start envoy xDS server
+	// Start envoy xDS server, this is done after the scheduler is ready
+	// so that the xDS server can start sending valid updates to envoy.
 	ctx := context.Background()
 	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
 	xdsServer := envoyServer.NewXDSServer(srv, logger)
