@@ -903,6 +903,7 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         command:
         - /bin/scheduler
         env:
@@ -949,6 +950,8 @@ spec:
           value: '{{ .Values.security.envoy.ssl.downstream.server.caPath }}'
         - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
           value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
+        - name: SCHEDULER_READY_TIMEOUT_SECONDS
+          value: '{{ .Values.scheduler.schedulerReadyTimeoutSeconds }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE

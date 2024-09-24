@@ -59,6 +59,8 @@ spec:
             value: '{{ .Values.security.envoy.ssl.downstream.server.caPath }}'
           - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
             value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
+          - name: SCHEDULER_READY_TIMEOUT_SECONDS
+            value: '{{ .Values.scheduler.schedulerReadyTimeoutSeconds }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

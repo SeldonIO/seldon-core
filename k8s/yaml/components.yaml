@@ -547,6 +547,7 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         command:
         - /bin/scheduler
         env:
@@ -590,6 +591,8 @@ spec:
           value: '/tmp/certs/dds/ca.crt'
         - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
           value: '/tmp/certs/ddc/ca.crt'
+        - name: SCHEDULER_READY_TIMEOUT_SECONDS
+          value: '600'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE

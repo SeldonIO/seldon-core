@@ -17,14 +17,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (h *EventHub) RegisterModelEventHandler(
+func (h *EventHub) RegisterServerEventHandler(
 	name string,
 	queueSize int,
 	logger log.FieldLogger,
-	handle func(event ModelEventMsg),
+	handle func(event ServerEventMsg),
 ) {
-	events := make(chan ModelEventMsg, queueSize)
-	h.addModelEventHandlerChannel(events)
+	events := make(chan ServerEventMsg, queueSize)
+	h.addServerEventHandlerChannel(events)
 
 	go func() {
 		for e := range events {
@@ -32,22 +32,22 @@ func (h *EventHub) RegisterModelEventHandler(
 		}
 	}()
 
-	handler := h.newModelEventHandler(logger, events)
+	handler := h.newServerEventHandler(logger, events)
 	h.bus.RegisterHandler(name, handler)
 }
 
-func (h *EventHub) newModelEventHandler(
+func (h *EventHub) newServerEventHandler(
 	logger log.FieldLogger,
-	events chan ModelEventMsg,
+	events chan ServerEventMsg,
 ) busV3.Handler {
-	handleModelEventMessage := func(_ context.Context, e busV3.Event) {
-		l := logger.WithField("func", "handleModelEventMessage")
+	handleServerEventMessage := func(_ context.Context, e busV3.Event) {
+		l := logger.WithField("func", "handleServerEventMessage")
 		l.Debugf("Received event on %s from %s (ID: %s, TxID: %s)", e.Topic, e.Source, e.ID, e.TxID)
 
-		me, ok := e.Data.(ModelEventMsg)
+		me, ok := e.Data.(ServerEventMsg)
 		if !ok {
 			l.Warnf(
-				"Event (ID %s, TxID %s) on topic %s from %s is not a ModelEventMsg: %s",
+				"Event (ID %s, TxID %s) on topic %s from %s is not a ServerEventMsg: %s",
 				e.ID,
 				e.TxID,
 				e.Topic,
@@ -61,35 +61,39 @@ func (h *EventHub) newModelEventHandler(
 		if h.closed {
 			return
 		}
+		// Propagate the busV3.Event source to the ServerEventMsg
+		// This is useful for logging, but also in case we want to distinguish
+		// the action to take based on where the event came from.
+		me.Source = e.Source
 		events <- me
 		h.lock.RUnlock()
 	}
 
 	return busV3.Handler{
-		Matcher: topicModelEvents,
-		Handle:  handleModelEventMessage,
+		Matcher: topicServerEvents,
+		Handle:  handleServerEventMessage,
 	}
 }
 
-func (h *EventHub) addModelEventHandlerChannel(c chan ModelEventMsg) {
+func (h *EventHub) addServerEventHandlerChannel(c chan ServerEventMsg) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	h.modelEventHandlerChannels = append(h.modelEventHandlerChannels, c)
+	h.serverEventHandlerChannels = append(h.serverEventHandlerChannels, c)
 }
 
-func (h *EventHub) PublishModelEvent(source string, event ModelEventMsg) {
+func (h *EventHub) PublishServerEvent(source string, event ServerEventMsg) {
 	err := h.bus.EmitWithOpts(
 		context.Background(),
-		topicModelEvents,
+		topicServerEvents,
 		event,
 		busV3.WithSource(source),
 	)
 	if err != nil {
 		h.logger.WithError(err).Errorf(
-			"unable to publish model event message from %s to %s",
+			"unable to publish server event message from %s to %s",
 			source,
-			topicModelEvents,
+			topicServerEvents,
 		)
 	}
 }

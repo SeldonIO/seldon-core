@@ -31,6 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 const (
@@ -61,6 +62,7 @@ type SchedulerServer struct {
 	pipelineEventStream   PipelineEventStream
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
+	synchroniser          synchroniser.Synchroniser
 }
 
 type ModelEventStream struct {
@@ -173,6 +175,7 @@ func NewSchedulerServer(
 	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
+	synchroniser synchroniser.Synchroniser,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -195,7 +198,8 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
-		timeout: sendTimeout,
+		timeout:      sendTimeout,
+		synchroniser: synchroniser,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -216,7 +220,6 @@ func NewSchedulerServer(
 		s.logger,
 		s.handleExperimentEvents,
 	)
-
 	eventHub.RegisterPipelineEventHandler(
 		pipelineEventHandlerName,
 		pendingEventsQueueSize,
@@ -229,6 +232,8 @@ func NewSchedulerServer(
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
 	logger := s.logger.WithField("func", "ServerNotify")
+	// numExpectedReplicas is only used when we are doing the first sync
+	numExpectedReplicas := uint(0)
 	for _, server := range req.GetServers() {
 		logger.Infof("Server notification %s expectedReplicas %d shared %v", server.GetName(), server.GetExpectedReplicas(), server.GetShared())
 		err := s.modelStore.ServerNotify(server)
@@ -238,6 +243,11 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		if server.ExpectedReplicas == 0 {
 			go s.rescheduleModels(server.GetName())
 		}
+		numExpectedReplicas += uint(server.ExpectedReplicas)
+	}
+	if req.IsFirstSync {
+		s.synchroniser.Signals(numExpectedReplicas)
+		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
 	return &pb.ServerNotifyResponse{}, nil
 }

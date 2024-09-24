@@ -390,7 +390,12 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	}
 	s.mutex.Unlock()
 
-	err := s.syncMessage(request)
+	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
+	err := s.store.AddServerReplica(request)
+	if err != nil {
+		return err
+	}
+	err = s.scheduleModelsFromRequest(request)
 	if err != nil {
 		return err
 	}
@@ -421,13 +426,7 @@ func (s *Server) StopAgentStreams() {
 	}
 }
 
-func (s *Server) syncMessage(request *pb.AgentSubscribeRequest) error {
-	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
-	err := s.store.AddServerReplica(request)
-	if err != nil {
-		return err
-	}
-
+func (s *Server) scheduleModelsFromRequest(request *pb.AgentSubscribeRequest) error {
 	// we have to reschedule models that are loaded on the incoming agent
 	// this is because we can have a network glitch that causes the communication between the agent and the scheduler
 	// to drop and the scheduler loading the models on other servers.
@@ -439,7 +438,7 @@ func (s *Server) syncMessage(request *pb.AgentSubscribeRequest) error {
 		}
 	}
 
-	_, err = s.scheduler.ScheduleFailedModels()
+	_, err := s.scheduler.ScheduleFailedModels()
 	if err != nil {
 		return err
 	}

@@ -90,7 +90,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, nil
 	}
 
-	err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server})
+	err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server}, false)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err

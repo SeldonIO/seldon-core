@@ -35,28 +35,34 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 var (
-	envoyPort               uint
-	agentPort               uint
-	agentMtlsPort           uint
-	schedulerPort           uint
-	schedulerMtlsPort       uint
-	chainerPort             uint
-	namespace               string
-	pipelineGatewayHost     string
-	pipelineGatewayHttpPort int
-	pipelineGatewayGrpcPort int
-	logLevel                string
-	tracingConfigPath       string
-	dbPath                  string
-	nodeID                  string
-	allowPlaintxt           bool //scheduler server
-	autoscalingDisabled     bool
-	kafkaConfigPath         string
+	envoyPort                    uint
+	agentPort                    uint
+	agentMtlsPort                uint
+	schedulerPort                uint
+	schedulerMtlsPort            uint
+	chainerPort                  uint
+	namespace                    string
+	pipelineGatewayHost          string
+	pipelineGatewayHttpPort      int
+	pipelineGatewayGrpcPort      int
+	logLevel                     string
+	tracingConfigPath            string
+	dbPath                       string
+	nodeID                       string
+	allowPlaintxt                bool //scheduler server
+	autoscalingDisabled          bool
+	kafkaConfigPath              string
+	schedulerReadyTimeoutSeconds uint
+)
+
+const (
+	xDSWaitTimeout = time.Duration(10 * time.Second)
 )
 
 func init() {
@@ -98,12 +104,17 @@ func init() {
 
 	// Whether to enable autoscaling, default is true
 	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
+
+	// Kafka config path
 	flag.StringVar(
 		&kafkaConfigPath,
 		"kafka-config-path",
 		"/mnt/config/kafka.json",
 		"Path to kafka configuration file",
 	)
+
+	// Timeout for scheduler to be ready
+	flag.UintVar(&schedulerReadyTimeoutSeconds, "scheduler-ready-timeout-seconds", 300, "Timeout for scheduler to be ready")
 }
 
 func getNamespace() string {
@@ -137,6 +148,8 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
+	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
+
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
@@ -149,16 +162,8 @@ func main() {
 	defer eventHub.Close()
 	go makeSignalHandler(logger, done)
 
-	// Start xDS server
 	// Create a cache
 	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
-	ctx := context.Background()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
-	xdsServer := envoyServer.NewXDSServer(srv, logger)
-	err = xdsServer.StartXDSServer(envoyPort)
-	if err != nil {
-		log.WithError(err).Fatalf("Failed to start envoy xDS server")
-	}
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
@@ -167,6 +172,7 @@ func main() {
 		defer tracer.Stop()
 	}
 
+	// Create stores
 	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
@@ -178,19 +184,13 @@ func main() {
 		GrpcPort: pipelineGatewayGrpcPort,
 	}
 
+	// Create envoy incremental processor
 	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
 
-	sched := scheduler.NewSimpleScheduler(
-		logger,
-		ss,
-		scheduler.DefaultSchedulerConfig(ss),
-	)
-	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
-
+	// scheduler <-> dataflow grpc
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
@@ -223,16 +223,56 @@ func main() {
 		log.Warn("Not running with scheduler local DB")
 	}
 
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub)
+	// Setup synchroniser
+	var sync synchroniser.Synchroniser
+
+	if namespace == "" {
+		// running outside k8s
+		sync = synchroniser.NewSimpleSynchroniser(time.Duration(schedulerReadyTimeoutSeconds) * time.Second)
+	} else {
+		sync = synchroniser.NewServerBasedSynchroniser(eventHub, logger, time.Duration(schedulerReadyTimeoutSeconds)*time.Second)
+	}
+
+	// scheduler scheduling models service
+	sched := scheduler.NewSimpleScheduler(
+		logger,
+		ss,
+		scheduler.DefaultSchedulerConfig(ss),
+		sync,
+	)
+
+	// scheduler <-> controller grpc
+	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
 	}
 
+	// scheduler <-> agent  grpc
+	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
 	}
+
+	// wait for model servers to be ready
+	sync.WaitReady()
+
+	// extra wait to allow routes state to get created
+	time.Sleep(xDSWaitTimeout)
+
+	// Start envoy xDS server, this is done after the scheduler is ready
+	// so that the xDS server can start sending valid updates to envoy.
+	ctx := context.Background()
+	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
+	xdsServer := envoyServer.NewXDSServer(srv, logger)
+	err = xdsServer.StartXDSServer(envoyPort)
+	if err != nil {
+		log.WithError(err).Fatalf("Failed to start envoy xDS server")
+	}
+
+	log.Info("Scheduler is ready")
 
 	// Wait for completion
 	<-done

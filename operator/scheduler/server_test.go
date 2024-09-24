@@ -161,7 +161,7 @@ func TestServerNotify(t *testing.T) {
 				requests_servers: []*scheduler.ServerNotify{},
 			}
 			controller := newMockControllerClient()
-			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers)
+			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers, false)
 			g.Expect(err).To(BeNil())
 
 			if len(test.servers) != 0 {
