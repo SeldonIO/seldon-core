@@ -21,8 +21,8 @@ including the ConfigMaps that are created for the Agent (rclone defaults), Kafka
 ```
 
 Some of these values can be overridden on a per namespace basis via the SeldonRuntime resource. Labels and annotations
-can also be set at the component level - these will be merged with labels and annotations from the `SeldonConfig` and
-will be added to the component's corresponding Deployment, or StatefulSet.
+can also be set at the component level - these will be merged with the labels and annotations from the SeldonConfig
+resource in which they are defined and added to the component's corresponding Deployment, or StatefulSet.
 
 The default configuration is shown below.
 
