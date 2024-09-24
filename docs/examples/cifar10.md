@@ -267,7 +267,7 @@ infer("cifar10-production.pipeline",20, "normal")
 ```
 
 ```
-![png](../images/infer_14_0.png)
+![png](../docs/images/infer_14_0.png)
 
 ```
 
