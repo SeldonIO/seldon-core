@@ -45,6 +45,10 @@ spec:
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy
     replicas: 1
+    annotations:
+        "prometheus.io/path": "/stats/prometheus"
+        "prometheus.io/port": "9003"
+        "prometheus.io/scrape": "true"
     podSpec:
       containers:
       - image: seldonio/seldon-envoy:latest
