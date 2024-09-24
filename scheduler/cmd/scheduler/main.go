@@ -144,6 +144,8 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
+	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
+
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
