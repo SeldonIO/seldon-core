@@ -32,14 +32,13 @@ func (h *EventHub) RegisterModelEventHandler(
 		}
 	}()
 
-	handler := h.newModelEventHandler(logger, events, handle)
+	handler := h.newModelEventHandler(logger, events)
 	h.bus.RegisterHandler(name, handler)
 }
 
 func (h *EventHub) newModelEventHandler(
 	logger log.FieldLogger,
 	events chan ModelEventMsg,
-	handle func(event ModelEventMsg),
 ) busV3.Handler {
 	handleModelEventMessage := func(_ context.Context, e busV3.Event) {
 		l := logger.WithField("func", "handleModelEventMessage")
