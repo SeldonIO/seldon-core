@@ -2,9 +2,9 @@
 
 The goal is to autoscale model and server replicas based on model inference RPS. This will require:
 
-- Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is installed in a separate namespace, `seldon-monitoring`
+- Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is already installed and configured in the `seldon-monitoring` namespace.
 - Installing and configuring [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), which allows prometheus queries on relevant metrics to be published as k8s custom metrics
-- Configuring HPA manifests to scale Models and the corresponding Server replicas
+- Configuring HPA manifests to scale Models and the corresponding Server replicas based on the custom metrics
 
 ### Installing and configuring the Prometheus Adapter
 
@@ -244,7 +244,9 @@ spec:
         averageValue: 3
 ```
 
-In the two HPA manifests above, the scaling metric is exactly the same, and uses the exact same parameters: this is to ensure that both the Models and the Servers are scaled up/down at approximately same time. Similarly, we will want to keep the number of minReplicas and maxReplicas in sync across the (Model, Server) pair.
+In the two HPA manifests above, the scaling metric is exactly the same, and uses the exact same parameters: this is to ensure that both the Models and the Servers are scaled up/down at approximately the same time. Small variations in the scale-up time are expected because each HPA samples the metrics independently, at regular intervals. If a Model gets scaled up slightly before its corresponding Server, the model is currently marked with the condition ModelReady "Status: False" with a "ScheduleFailed" message until new Server replicas become available. However, the existing replicas of that model remain available and will continue to serve inference load.
+
+In order to ensure similar scaling behaviour between Models and Servers, the number of minReplicas and maxReplicas defined in the HPA, as well as other scaling policies configured should be kept in sync across the HPA for the model and the server.
 
 Please note that you **must** use a `target.type` of `AverageValue`. The value given in
 `averageValue` is the threshold RPS per replica, and the new (scaled) number of replicas is computed by HPA according
