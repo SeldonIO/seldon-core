@@ -22,7 +22,7 @@
     * [Chainer](apis/internal/chainer.md)
     * [Agent](apis/internal/agent.md)
   * [Inference](apis/inference/README.md)
-    * [V2](apis/inference/v2.md)
+    * [Open Inference Protocol](apis/inference/v2.md)
   * [Scheduler](apis/scheduler.md)
 * [Architecture](architecture/README.md)
   * [DataFlow](architecture/dataflow.md)
