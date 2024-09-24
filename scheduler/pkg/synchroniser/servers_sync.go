@@ -127,13 +127,13 @@ func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEve
 	// we do not want to block the event handler while waiting for the signal to be fired as it may cause a deadlock with
 	// other events handlers.
 	// we also do not care about order of events, so we can safely spawn a go routine to handle the signal
-	go func() {
-		s.connectedServersMu.Lock()
-		defer s.connectedServersMu.Unlock()
+	if event.UpdateContext == coordinator.SERVER_REPLICA_CONNECTED && !s.isReady.Load() {
+		go func() {
+			s.signalWg.Wait()
 
-		s.signalWg.Wait()
+			s.connectedServersMu.Lock()
+			defer s.connectedServersMu.Unlock()
 
-		if event.UpdateContext == coordinator.SERVER_REPLICA_CONNECTED && !s.IsReady() {
 			serverNameWithIdx := fmt.Sprintf("%s-%d", event.ServerName, event.ServerIdx)
 
 			if _, ok := s.connectedServers[serverNameWithIdx]; !ok {
@@ -143,6 +143,7 @@ func (s *ServerBasedSynchroniser) handleServerEvents(event coordinator.ServerEve
 					s.logger.Infof("All (num: %d) servers connected", s.maxEvents)
 				}
 			}
-		}
-	}()
+
+		}()
+	}
 }
