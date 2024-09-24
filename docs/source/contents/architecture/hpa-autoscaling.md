@@ -190,7 +190,7 @@ spec:
   storageUri: gs://seldon-models/testing/iris1
 ```
 
-Let’s scale this model when it is deployed on a server named `mlserver`, with a target average RPS per replica of 3 RPS (higher RPS would trigger scale-up, lower would trigger scale-down):
+Let’s scale this model when it is deployed on a server named `mlserver`, with a target RPS **per replica** of 3 RPS (higher RPS would trigger scale-up, lower would trigger scale-down):
 
 ```yaml
 apiVersion: autoscaling/v2
@@ -246,9 +246,13 @@ spec:
 
 In the two HPA manifests above, the scaling metric is exactly the same, and uses the exact same parameters: this is to ensure that both the Models and the Servers are scaled up/down at approximately same time. Similarly, we will want to keep the number of minReplicas and maxReplicas in sync across the (Model, Server) pair.
 
-Please note that you **must** use a `target.type` of `AverageValue`.
+Please note that you **must** use a `target.type` of `AverageValue`. The value given in
+`averageValue` is the threshold RPS per replica, and the new (scaled) number of replicas is computed by HPA according
+to the following formula:
 
-Attempting other target types will not work under the current Seldon Core v2 setup, due to the way in which HPA works, requiring an unique mapping between CRs and actual underlying pods. This is not the case above as we would need to map both the Model CR and the Server CR to the same underlying pod.
+$$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}/\texttt{modelReplicas}}{\texttt{thresholdPerReplicaRPS}}$$
+
+Attempting other target types will not work under the current Seldon Core v2 setup, because they use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in the `targetReplicas` computation. However, this also means that this set of pods becomes "owned" by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use, so we would no longer be able to scale the Server CRs using HPA.
 
 
 **Advanced settings:**
