@@ -45,7 +45,7 @@ spec:
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy
     annotations:
-        prometheus.io/path: /stats/prometheus
+        prometheus.io/path: "/stats/prometheus"
         prometheus.io/port: "9003"
         prometheus.io/scrape: "true"
     replicas: 1
