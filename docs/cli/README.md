@@ -1,17 +1,19 @@
+---
+description: Learn more about using Seldon CLI commands
+---
+
 # CLI
 
-Seldon provides a CLI to allow easy management and testing of Model, Experiment, and Pipeline resources.
+Seldon provides a CLI for easy management and testing of model, experiment, and pipeline resources. You can use Seldon CLI in testing environments, while `kubectl` is recommended for managing Seldon Core 2 resources in a Kubernetes production environment. The following table provides more information about when and where to use these command line tools.
 
-At present this needs to be built by hand from the operator folder.
-
-```sh
-make build-seldon     # for linux/macOS amd64
-make build-seldon-arm # for macOS ARM
-```
-
-Then place the `bin/seldon` executable in your path.
-* [CLI docs](seldon.md)
-
+| Usage                    | Seldon CLI                                                                                                                   | kubectl                                                                                                        |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Production environment   | Not recommended for production environments in Kubernetes. Ideal for use outside Kubernetes.                                 | Recommended for production in Kubernetes, offering full control over resources and deployments.                |
+| Primary purpose          | Simplifies management for non-Kubernetes users, abstracting control plane operations like load, unload, status.              | Kubernetes-native, manages resources via Kubernetes Custom Resources (CRs) like Deployments, Pods, etc.        |
+| Control Plane Operations | Executes operations such as `load` and `unload`models through scheduler gRPC endpoints, without interaction with Kubernetes. | Interacts with Kubernetes, creating and managing CRs such as SeldonDeployments and other Kubernetes resources. |
+| Data Plane Operations    | Abstracts open inference protocol to issue `infer` or `inspect` requests for testing purposes.                               | Used indirectly for data plane operations by exposing Kubernetes services and interacting with them.           |
+| Scope of Operations      | Does not create or manage any Kubernetes resources or CRs; operates on internal scheduler state.                             | Manages and operates on actual Kubernetes resources, making it ideal for production use in Kubernetes.         |
+| Visibility of Resources  | Resources created using Seldon  CLI are internal to the scheduler and not visible as Kubernetes resources.                   | All resources that are created using `kubectl` are visible and manageable within the Kubernetes environment.   |
 
 ## Environment Variables and Services
 
