@@ -213,6 +213,7 @@ scheduler:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  schedulerReadyTimeoutSeconds: 600
 
 serverConfig:
   terminationGracePeriodSeconds: 120
