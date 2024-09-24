@@ -7,7 +7,31 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-// TODO: explain synchroniser logic here
+// This file includes the ServerBasedSynchroniser struct and its methods.
+// The ServerBasedSynchroniser struct is responsible for synchronising the starting up of the different components of the "scheduler".
+// It ensures that the time between the scheduler starting and the different model servers connecting does not affect the data plane (inferences).
+// In general terms, the synchroniser waits for all servers to connect before proceeding with processing events, especially those that are related to the servers connecting (i.e model scheduling).
+// Otherwise if we dont wait for all servers to connect, we may get 404s when the scheduler tries to schedule models on servers that have not connected yet.
+// The main trick is that the "controller" will send a number of expected servers to connect based on its etcd state, then the synchroniser will wait for all servers to connect before proceeding.
+// The synchroniser will also wait for a timeout to be reached before proceeding if not all servers connect in time.
+// the synchroniser subsribes to the server event handler and listens for SERVER_REPLICA_CONNECTED events, which are triggered when agents connect to the scheduler.
+// The struct implements the Synchroniser interface, which includes the IsReady, WaitReady, and Signals methods.
+// The struct also includes the handleServerEvents and doneFn methods.
+
+// The ServerBasedSynchroniser struct is defined as follows:
+// - It has the following fields:
+//   - isReady: an atomic boolean value that indicates whether the synchroniser is ready.
+//   - numEvents: an unsigned integer value that represents the number of events seen so far (connected servers).
+//   - maxEvents: an unsigned integer value that represents the maximum number of events (expected servers).
+//   - signalWg: a sync.WaitGroup value that is used to wait for the signal before processing events (controller to connect).
+//   - eventHub: a pointer to the EventHub struct that is used to handle events.
+//   - logger: a log.FieldLogger value that is used for logging.
+//   - connectedServers: a map of strings to empty structs that stores the names of connected servers.
+//   - connectedServersMu: a sync.Mutex value that is used to protect access to the connectedServers map.
+//   - timeout: a time.Duration value that represents the timeout duration.
+//   - doneWg: a sync.WaitGroup value that is used to wait for the timeout to be reached or all servers to connect.
+//   - triggered: an atomic boolean value that indicates whether the synchroniser has been triggered.
+
 package synchroniser
 
 import (
