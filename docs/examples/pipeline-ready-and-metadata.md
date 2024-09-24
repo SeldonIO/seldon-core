@@ -1,4 +1,4 @@
-# Pipeline Readiness Check and Metdata Calls
+# Checking Pipeline readiness
 
 Local example settings.
 
@@ -56,7 +56,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -99,7 +98,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -134,7 +132,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -169,7 +166,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -206,7 +202,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -251,7 +246,6 @@ curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
 ```
-
 ```
 
 ```bash
@@ -298,6 +292,10 @@ seldon pipeline unload tfsimples
 ```
 
 ### Kubernetes Resource Example
+
+{% hint style="info" %}
+**Note**: You can use Seldon CLI and `kubectl` for managing Seldon Core 2 resources. You can choose the appropriate command line tool based on how Seldon CLI and `kubectl` handle control plane and data plane operations. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
 
 ```python
 import os

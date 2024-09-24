@@ -1,4 +1,8 @@
-# Seldon V2 Kubernetes Custom Examples
+# Custom Servers
+
+{% hint style="info" %}
+**Note**: You can use Seldon CLI and `kubectl` for managing Seldon Core 2 resources. You can choose the appropriate command line tool based on how Seldon CLI and `kubectl` handle control plane and data plane operations. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
 
 ```python
 import os
@@ -272,5 +276,4 @@ server.mlops.seldon.io "mlserver-134" deleted
 ```
 
 ```python
-
 ```

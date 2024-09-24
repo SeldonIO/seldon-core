@@ -1,4 +1,10 @@
-## Seldon V2 Kubernetes Examples
+# Kubernetes examples
+
+{% hint style="info" %}
+**Note**: You can use Seldon CLI and `kubectl` for managing Seldon Core 2 resources. You can choose the appropriate command line tool based on how Seldon CLI and `kubectl` handle control plane and data plane operations. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
+
+### Seldon V2 Kubernetes Examples
 
 ```python
 import os
@@ -18,7 +24,7 @@ MESH_IP
 
 ```
 
-### Model
+#### Model
 
 ```bash
 cat ./models/sklearn-iris-gs.yaml
@@ -178,7 +184,7 @@ model.mlops.seldon.io "iris" deleted
 
 ```
 
-### Experiment
+#### Experiment
 
 ```bash
 cat ./models/sklearn1.yaml
@@ -293,7 +299,7 @@ model.mlops.seldon.io "iris2" deleted
 
 ```
 
-### Pipeline - model chain
+#### Pipeline - model chain
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -474,7 +480,7 @@ model.mlops.seldon.io "tfsimple2" deleted
 
 ```
 
-### Pipeline - model join
+#### Pipeline - model join
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -672,7 +678,7 @@ model.mlops.seldon.io "tfsimple3" deleted
 
 ```
 
-## Explainer
+### Explainer
 
 ```bash
 cat ./models/income.yaml

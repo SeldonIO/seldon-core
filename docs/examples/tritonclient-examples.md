@@ -1,13 +1,18 @@
-# Tritonclient Examples with Seldon Core V2
+# Tritonclient examples
+
+{% hint style="info" %}
+**Note**: You can use Seldon CLI and `kubectl` for managing Seldon Core 2 resources. You can choose the appropriate command line tool based on how Seldon CLI and `kubectl` handle control plane and data plane operations. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
 
 To install `tritonclient`
+
 ```bash
 pip install tritonclient[all]
 ```
 
 ## Tritonclient Examples with Seldon Core V2
 
-- Note: for compatibility of Tritonclient check [this issue](https://github.com/SeldonIO/seldon-core-v2/issues/471).
+* Note: for compatibility of Tritonclient check [this issue](https://github.com/SeldonIO/seldon-core-v2/issues/471).
 
 ```python
 import os
@@ -29,7 +34,7 @@ MESH_IP
 
 ## With MLServer
 
-- Note: binary data support in HTTP is blocked by [this issue](https://github.com/SeldonIO/MLServer/issues/324)
+* Note: binary data support in HTTP is blocked by [this issue](https://github.com/SeldonIO/MLServer/issues/324)
 
 ### Deploy Model and Pipeline
 
@@ -220,7 +225,7 @@ array([[2]])
 
 ## With Tritonserver
 
-- Note: binary data support in HTTP is blocked by https://github.com/SeldonIO/seldon-core-v2/issues/475
+* Note: binary data support in HTTP is blocked by https://github.com/SeldonIO/seldon-core-v2/issues/475
 
 ### Deploy Model and Pipeline
 
