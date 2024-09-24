@@ -61,6 +61,10 @@ var (
 	schedulerReadyTimeoutSeconds uint
 )
 
+const (
+	xDSWaitTimeout = time.Duration(10 * time.Second)
+)
+
 func init() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -254,6 +258,9 @@ func main() {
 
 	// wait for model servers to be ready
 	sync.WaitReady()
+
+	// extra wait to allow routes state to get created
+	time.Sleep(xDSWaitTimeout)
 
 	// Start envoy xDS server, this is done after the scheduler is ready
 	// so that the xDS server can start sending valid updates to envoy.
