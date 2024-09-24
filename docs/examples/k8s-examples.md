@@ -1,4 +1,10 @@
-## Seldon V2 Kubernetes Examples
+# Kubernetes examples
+
+{% hint style="info" %}
+**Note**:  The Seldon CLI allows you to view information about underlying Seldon resources and make changes to them through the scheduler in non-Kubernetes environments. However, it cannot modify underlying manifests within a Kubernetes cluster. Therefore, using the Seldon CLI for control plane operations in a Kubernetes environment is not recommended. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
+
+### Seldon V2 Kubernetes Examples
 
 ```python
 import os
@@ -18,7 +24,7 @@ MESH_IP
 
 ```
 
-### Model
+#### Model
 
 ```bash
 cat ./models/sklearn-iris-gs.yaml
@@ -178,7 +184,7 @@ model.mlops.seldon.io "iris" deleted
 
 ```
 
-### Experiment
+#### Experiment
 
 ```bash
 cat ./models/sklearn1.yaml
@@ -293,7 +299,7 @@ model.mlops.seldon.io "iris2" deleted
 
 ```
 
-### Pipeline - model chain
+#### Pipeline - model chain
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -474,7 +480,7 @@ model.mlops.seldon.io "tfsimple2" deleted
 
 ```
 
-### Pipeline - model join
+#### Pipeline - model join
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -672,7 +678,7 @@ model.mlops.seldon.io "tfsimple3" deleted
 
 ```
 
-## Explainer
+### Explainer
 
 ```bash
 cat ./models/income.yaml

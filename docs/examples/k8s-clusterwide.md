@@ -1,4 +1,4 @@
-# Seldon V2 Multi-Namespace Kubernetes Example
+# Multi-Namespace Kubernetes
 
 ```bash
 helm upgrade --install seldon-core-v2-crds  ../k8s/helm-charts/seldon-core-v2-crds -n seldon-mesh
@@ -15,10 +15,7 @@ TEST SUITE: None
 
 ```
 
-The below setup also illustrates using kafka specific prefixes for topics and consumerIds
-for isolation where the kafka cluster is shared with other applications and you want to
-enforce constraints. You would not strictly need this in this example as we install Kafka
-just for Seldon here.
+The below setup also illustrates using kafka specific prefixes for topics and consumerIds for isolation where the kafka cluster is shared with other applications and you want to enforce constraints. You would not strictly need this in this example as we install Kafka just for Seldon here.
 
 ```bash
 helm upgrade --install seldon-v2 ../k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
@@ -152,6 +149,10 @@ MESH_IP_NS2
 ```
 
 ### Run Models in Different Namespaces
+
+{% hint style="info" %}
+**Note**:  The Seldon CLI allows you to view information about underlying Seldon resources and make changes to them through the scheduler in non-Kubernetes environments. However, it cannot modify underlying manifests within a Kubernetes cluster. Therefore, using the Seldon CLI for control plane operations in a Kubernetes environment is not recommended. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
 
 ```bash
 cat ./models/sklearn-iris-gs.yaml
@@ -535,8 +536,7 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
 
 ```
 
-If you have installed Kafka via the ansible playbook setup-ecosystem then you can use the
-following command to see the consumer group ids which are reflecting the settings we created.
+If you have installed Kafka via the ansible playbook setup-ecosystem then you can use the following command to see the consumer group ids which are reflecting the settings we created.
 
 ```bash
 kubectl exec seldon-kafka-0 -n seldon-mesh -- bin/kafka-consumer-groups.sh --list --bootstrap-server localhost:9092

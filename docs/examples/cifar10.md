@@ -1,4 +1,4 @@
-# Production Image Classifier
+# Production image classifier with drift and outlier monitoring
 
 Run these examples from the `samples/examples/image_classifier` folder.
 
@@ -8,9 +8,9 @@ Run these examples from the `samples/examples/image_classifier` folder.
 
 We show an image classifier (CIFAR10) with associated outlier and drift detectors using a Pipeline.
 
-* The model is a tensorflow [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) image classfier
-* The outlier detector is created from the [CIFAR10 VAE Outlier example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/od_vae_cifar10.html).
-* The drift detector is created from the [CIFAR10 KS Drift example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/cd_ks_cifar10.html)
+* The model is a tensorflow [CIFAR10](https://www.cs.toronto.edu/\~kriz/cifar.html) image classfier
+* The outlier detector is created from the [CIFAR10 VAE Outlier example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/od\_vae\_cifar10.html).
+* The drift detector is created from the [CIFAR10 KS Drift example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/cd\_ks\_cifar10.html)
 
 ### Model Training (optional for notebook)
 
@@ -267,7 +267,7 @@ infer("cifar10-production.pipeline",20, "normal")
 ```
 
 ```
-![png](infer_files/infer_14_0.png)
+![png](../docs/images/infer_14_0.png)
 
 ```
 
@@ -530,8 +530,7 @@ infer("cifar10-production.pipeline",1, "ok")
 
 ```
 
-Use the seldon CLI to look at the outputs from the CIFAR10 model. It will decode the Triton
-binary outputs for us.
+Use the seldon CLI to look at the outputs from the CIFAR10 model. It will decode the Triton binary outputs for us.
 
 ```bash
 seldon pipeline inspect cifar10-production.cifar10.outputs

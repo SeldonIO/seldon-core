@@ -1,4 +1,4 @@
-# Batch Inference Examples
+# Batch Inference examples (kubernetes)
 
 Requires `mlserver` to be installed.
 
@@ -9,6 +9,10 @@ Deprecated: The MLServer CLI `infer` feature is experimental and will be removed
 ```bash
 pip install mlserver
 ```
+
+{% hint style="info" %}
+**Note**:  The Seldon CLI allows you to view information about underlying Seldon resources and make changes to them through the scheduler in non-Kubernetes environments. However, it cannot modify underlying manifests within a Kubernetes cluster. Therefore, using the Seldon CLI for control plane operations in a Kubernetes environment is not recommended. For more details, see [Seldon CLI](../cli/).
+{% endhint %}
 
 ### Seldon V2 Batch Examples
 
