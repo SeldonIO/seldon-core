@@ -1,10 +1,10 @@
-# Autoscaling single-model serving based on model RPS, using the HorizontalPodAutoscaler (HPA)
+# Autoscaling with HPA
 
 The goal is to autoscale model and server replicas based on model inference RPS. This will require:
 
-- Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is already installed and configured in the `seldon-monitoring` namespace.
-- Installing and configuring [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), which allows prometheus queries on relevant metrics to be published as k8s custom metrics
-- Configuring HPA manifests to scale Models and the corresponding Server replicas based on the custom metrics
+* Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is already installed and configured in the `seldon-monitoring` namespace.
+* Installing and configuring [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), which allows prometheus queries on relevant metrics to be published as k8s custom metrics
+* Configuring HPA manifests to scale Models and the corresponding Server replicas based on the custom metrics
 
 ### Installing and configuring the Prometheus Adapter
 
@@ -24,13 +24,13 @@ If running prometheus on a different port than the default 9090, you can also pa
 
 We now need to configure the adapter to look for the correct prometheus metrics and compute per-model RPS values. On install, the adapter has created a `ConfigMap` in the same namespace as itself, named `[helm_release_name]-prometheus-adapter`. In our case, it will be `hpa-metrics-prometheus-adapter`.
 
-We want to overwrite this ConfigMap with the content below (please change the name if your helm release has a different one). The manifest contains embedded documentation, highlighting how we match the `seldon_model_infer_total`  metric in Prometheus, compute a rate via a `metricsQuery` and expose this to k8s as the `infer_rps` metric, on a per (model, namespace) basis.
+We want to overwrite this ConfigMap with the content below (please change the name if your helm release has a different one). The manifest contains embedded documentation, highlighting how we match the `seldon_model_infer_total` metric in Prometheus, compute a rate via a `metricsQuery` and expose this to k8s as the `infer_rps` metric, on a per (model, namespace) basis.
 
 Other aggregations on per (server, namespace) and (pod, namespace) are also exposed and may be used in HPA, but we will focus on the (model, namespace) aggregation in the examples below.
 
 You may want to modify some of the settings to match the prometheus query that you typically use for RPS metrics. For example, the `metricsQuery` below computes the RPS by calling [`rate()`](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate) with a 1 minute window.
 
-```yaml
+````yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -122,7 +122,7 @@ data:
             <<.Series>>{<<.LabelMatchers>>}[1m]
           )
         )
-```
+````
 
 Apply the config, and restart the prometheus adapter deployment (this restart is required so that prometheus-adapter picks up the new config):
 
@@ -135,10 +135,9 @@ kubectl rollout restart deployment hpa-metrics-prometheus-adapter -n seldon-moni
 
 In order to test that the prometheus adapter config works and everything is set up correctly, you can issue raw kubectl requests against the custom metrics API, as described below.
 
-{% hint style="warn" %}
+{% hint style="info" %}
 If no inference requests were issued towards any model in the Seldon install, the metrics configured above will not be available in prometheus, and thus will also not appear when checking via the commands below. Therefore, please first run some inference requests towards a sample model to ensure that the metrics are available — this is only required for the testing of the install.
 {% endhint %}
-
 
 **Testing the prometheus-adapter install using the custom metrics API**
 
@@ -250,25 +249,22 @@ In the two HPA manifests above, the scaling metric is exactly the same, and uses
 
 In order to ensure similar scaling behaviour between Models and Servers, the number of minReplicas and maxReplicas defined in the HPA, as well as other scaling policies configured should be kept in sync across the HPA for the model and the server.
 
-Please note that you **must** use a `target.type` of `AverageValue`. The value given in
-`averageValue` is the threshold RPS per replica, and the new (scaled) number of replicas is computed by HPA according
-to the following formula:
+Please note that you **must** use a `target.type` of `AverageValue`. The value given in `averageValue` is the threshold RPS per replica, and the new (scaled) number of replicas is computed by HPA according to the following formula:
 
 $$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}/\texttt{modelReplicas}}{\texttt{thresholdPerReplicaRPS}}$$
 
-{% hint style="warn" %}
+{% hint style="info" %}
 Attempting other target types will not work under the current Seldon Core v2 setup, because they use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in the `targetReplicas` computation. However, this also means that this set of pods becomes "owned" by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use, so we would no longer be able to scale the Server CRs using HPA.
 {% endhint %}
 
-
 **Advanced settings:**
 
-- Filtering metrics by other labels on the prometheus metric
+*   Filtering metrics by other labels on the prometheus metric
 
     The prometheus metric from which the model RPS is computed has the following labels:
 
     ```yaml
-    seldon_model_infer_total{**code**="200", **container**="agent", **endpoint**="metrics", **instance**="10.244.0.39:9006", **job**="seldon-mesh/agent", **method_type**="rest", **model**="irisa0", **model_internal**="irisa0_1", **namespace**="seldon-mesh", **pod**="mlserver-0", **server**="mlserver", **server_replica**="0"}
+    seldon_model_infer_total{code="200", container="agent", endpoint="metrics", instance="10.244.0.39:9006", job="seldon-mesh/agent", method_type="rest", model="irisa0", model_internal="irisa0_1", namespace="seldon-mesh", pod="mlserver-0", server="mlserver", server_replica="0"}
     ```
 
     If we wanted the scaling metric to be computed based on inferences with a particular value for those metrics, we can add this in the HPA metric config, as in the example below (targeting `method_type="rest"`):
@@ -276,7 +272,7 @@ Attempting other target types will not work under the current Seldon Core v2 set
     ```yaml
       metrics:
       - type: Object
-    	  object:
+        object:
           describedObject:
             apiVersion: mlops.seldon.io/v1alpha1
             kind: Model
@@ -287,11 +283,9 @@ Attempting other target types will not work under the current Seldon Core v2 set
               matchLabels:
                 method_type: rest
           target:
-    	      type: AverageValue
+    	type: AverageValue
             averageValue: "3"
     ```
-
-
-- Customise scale-up / scale-down rate & properties by using scaling policies as described in the [HPA scaling policies docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
+*   Customise scale-up / scale-down rate & properties by using scaling policies as described in the [HPA scaling policies docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
 
     For more resources, please consult the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) and the [HPA walkthrough](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)
