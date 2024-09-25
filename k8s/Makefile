@@ -18,6 +18,7 @@ create-helm-charts:
 	kustomize build kustomize/helm-servers/ > ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 	sed -i 's/\(.*\)\(imagePullSecrets:\).*/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed -i 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	# kustomizse has builtin helper fuctions for meta.labels and metadata.annotations, so the field names are changed to escape kustomize's extra processing
 	sed 's/labelz:/labels:\n\ \ \ /' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml > ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -i 's/annotationz:/annotations:\n\ \ \ /' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -i 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
