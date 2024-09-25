@@ -1,4 +1,3 @@
-# Base config for a split xDS management server on 9002, admin port on 9003
 static_resources:
   clusters:
     - connect_timeout: 1s
@@ -53,4 +52,4 @@ admin:
   address:
     socket_address:
       address: 127.0.0.1
-      port_value: 9003
+      port_value: 9001
