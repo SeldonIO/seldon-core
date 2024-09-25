@@ -1,4 +1,3 @@
-# Base config for a split xDS management server on 9002, admin port on 9003
 static_resources:
   clusters:
     - connect_timeout: 1s
@@ -27,6 +26,49 @@ static_resources:
                name: validation_context_sds
                sds_config:
                  path: /etc/validation_context_sds_secret.yaml
+    - connect_timeout: 0.250s
+      type: LOGICAL_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: admin_interface_cluster
+        endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 127.0.0.1
+                    port_value: 9001
+      name: admin_interface_cluster
+  listeners:
+    - name: util_endpoint_listener
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9003
+      filter_chains:
+      - filters:
+        - name: envoy.http_connection_manager
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            stat_prefix: util_endpoint_http
+            http_filters:
+            - name: envoy.filters.http.router
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+            route_config:
+              name: local_admin_interface_route
+              virtual_hosts:
+              - name: admin_interface
+                domains: ["*"]
+                routes:
+                - match:
+                    prefix: /stats
+                  route:
+                    cluster: admin_interface_cluster
+                - match:
+                    prefix: /ready
+                  route:
+                    cluster: admin_interface_cluster
 dynamic_resources:
   cds_config:
     resource_api_version: V3
@@ -66,5 +108,5 @@ admin:
   access_log_path: /dev/null
   address:
     socket_address:
-      address: 0.0.0.0
-      port_value: 9003
+      address: 127.0.0.01
+      port_value: 9001
