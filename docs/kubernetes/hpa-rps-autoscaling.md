@@ -1,6 +1,10 @@
-# Autoscaling with HPA
+---
+hidden: true
+---
 
-The goal is to autoscale model and server replicas based on model inference RPS. This will require:
+# HPA Autoscaling in single-model serving
+
+We present an example of how to jointly autoscale model and server replicas based on a metric of inference requests per second (RPS) using HPA, when there is a one-to-one correspondence between models and servers (single-model serving). This will require:
 
 * Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is already installed and configured in the `seldon-monitoring` namespace.
 * Installing and configuring [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), which allows prometheus queries on relevant metrics to be published as k8s custom metrics
