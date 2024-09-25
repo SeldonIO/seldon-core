@@ -266,105 +266,66 @@ seldon pipeline status cifar10-production -w PipelineReady | jq -M .
 infer("cifar10-production.pipeline",20, "normal")
 ```
 
-```
-![png](../docs/images/infer_14_0.png)
 
-```
+![png](../images/infer_14_0.png)
 
-```
-![png](infer_files/infer_14_1.png)
 
-```
+![png](../images/infer_14_1.png)
 
-```
-![png](infer_files/infer_14_2.png)
 
-```
+![png](../images/infer_14_2.png)
 
-```
-![png](infer_files/infer_14_3.png)
 
-```
+![png](../images/infer_14_3.png)
 
-```
-![png](infer_files/infer_14_4.png)
 
-```
+![png](../images/infer_14_4.png)
 
-```
-![png](infer_files/infer_14_5.png)
 
-```
+![png](../images/infer_14_5.png)
 
-```
-![png](infer_files/infer_14_6.png)
 
-```
+![png](../images/infer_14_6.png)
 
-```
-![png](infer_files/infer_14_7.png)
 
-```
+![png](../images/infer_14_7.png)
 
-```
-![png](infer_files/infer_14_8.png)
 
-```
+![png](../images/infer_14_8.png)
 
-```
-![png](infer_files/infer_14_9.png)
 
-```
+![png](../images/infer_14_9.png)
 
-```
-![png](infer_files/infer_14_10.png)
 
-```
+![png](../images/infer_14_10.png)
 
-```
-![png](infer_files/infer_14_11.png)
 
-```
+![png](../images/infer_14_11.png)
 
-```
-![png](infer_files/infer_14_12.png)
 
-```
+![png](../images/infer_14_12.png)
 
-```
-![png](infer_files/infer_14_13.png)
 
-```
+![png](../images/infer_14_13.png)
 
-```
-![png](infer_files/infer_14_14.png)
 
-```
+![png](../images/infer_14_14.png)
 
-```
-![png](infer_files/infer_14_15.png)
 
-```
+![png](../images/infer_14_15.png)
 
-```
-![png](infer_files/infer_14_16.png)
 
-```
+![png](../images/infer_14_16.png)
 
-```
-![png](infer_files/infer_14_17.png)
 
-```
+![png](../images/infer_14_17.png)
 
-```
-![png](infer_files/infer_14_18.png)
 
-```
+![png](../images/infer_14_18.png)
 
-```
-![png](infer_files/infer_14_19.png)
 
-```
+![png](../images/infer_14_19.png)
+
 
 ```
 <Response [200]>
