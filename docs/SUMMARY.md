@@ -53,7 +53,7 @@
 * [Kubernetes](kubernetes/README.md)
   * [Scaling](kubernetes/scaling.md)
   * [Autoscaling](kubernetes/autoscaling.md)
-  * [Autoscaling with HPA](kubernetes/hpa-rps-autoscaling.md)
+  * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
   * [Tracing](kubernetes/tracing.md)
   * [Storage Secrets](kubernetes/storage-secrets.md)
   * [Kafka](kubernetes/kafka.md)
