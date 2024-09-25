@@ -41,6 +41,11 @@ For more details on HPA check this [Kubernetes walk-through](https://kubernetes.
 Autoscaling of inference servers via `seldon-scheduler` is under consideration for the roadmap. This allow for more fine grained interactions with model autoscaling.
 {% endhint %}
 
+Autoscaling both Models and Servers using HPA and custom metrics is possible for the special
+case of single model serving (i.e. single model per server). Check the detailed documentation
+[here](hpa-rps-autoscaling.md). For multi-model serving (MMS), a different solution is needed as
+discussed below.
+
 ## Model autoscaling
 
 As each model server can serve multiple models, models can scale across the available replicas of the
