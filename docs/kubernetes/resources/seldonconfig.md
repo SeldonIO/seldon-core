@@ -13,17 +13,18 @@ then use the SeldonRuntime with a few overrides for special customisation needed
 The specification contains core PodSpecs for each core component and a section for general configuration
 including the ConfigMaps that are created for the Agent (rclone defaults), Kafka and Tracing (open telemetry).
 
-
 ```go
 // operator/apis/mlops/v1alpha1/seldonconfig_types.go
 // :language: golang
 // :start-after: // SeldonConfigSpec
 // :end-before: // SeldonConfigStatus
 ```
-Some of these values can be overridden on a per namespace basis via the SeldonRuntime resource.
+
+Some of these values can be overridden on a per namespace basis via the SeldonRuntime resource. Labels and annotations
+can also be set at the component level - these will be merged with the labels and annotations from the SeldonConfig
+resource in which they are defined and added to the component's corresponding Deployment, or StatefulSet.
 
 The default configuration is shown below.
-
 
 ```yaml
 # operator/config/seldonconfigs/default.yaml
