@@ -20,6 +20,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 type MemoryStore struct {
@@ -105,6 +106,13 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	modelName := req.GetModel().GetMeta().GetName()
+	validName := utils.CheckName(modelName)
+	if !validName {
+		return fmt.Errorf(
+			"Model %s does not have a valid name - it must be alphanumeric and not contains dots (.)",
+			modelName,
+		)
+	}
 	model, ok := m.store.models[modelName]
 	if !ok {
 		model = &Model{}
@@ -150,7 +158,7 @@ func (m *MemoryStore) getModelImpl(key string) *ModelSnapshot {
 	if ok {
 		return &ModelSnapshot{
 			Name:     key,
-			Versions: model.versions, //TODO make a copy for safety?
+			Versions: model.versions, // TODO make a copy for safety?
 			Deleted:  model.IsDeleted(),
 		}
 	} else {
@@ -540,7 +548,8 @@ func (m *MemoryStore) updateModelStateImpl(
 }
 
 func (m *MemoryStore) updateReservedMemory(
-	modelReplicaState ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64) {
+	modelReplicaState ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64,
+) {
 	// update reserved memory that is being used for sorting replicas
 	// do we need to lock replica update?
 	server, ok := m.store.servers[serverKey]
@@ -557,7 +566,7 @@ func (m *MemoryStore) updateReservedMemory(
 }
 
 func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
-	evts, err := m.addServerReplicaImpl(request)
+	evts, serverEvt, err := m.addServerReplicaImpl(request)
 	if err != nil {
 		return err
 	}
@@ -568,11 +577,15 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 				evt,
 			)
 		}
+		m.eventHub.PublishServerEvent(
+			serverUpdateEventSource,
+			serverEvt,
+		)
 	}
 	return nil
 }
 
-func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, error) {
+func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, coordinator.ServerEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -606,11 +619,16 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 		})
 	}
 
-	return evts, nil
+	serverEvt := coordinator.ServerEventMsg{
+		ServerName:    request.ServerName,
+		ServerIdx:     uint32(request.ReplicaIdx),
+		UpdateContext: coordinator.SERVER_REPLICA_CONNECTED,
+	}
+
+	return evts, serverEvt, nil
 }
 
 func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
-
 	models, evts, err := m.removeServerReplicaImpl(serverName, replicaIdx)
 	if err != nil {
 		return nil, err
@@ -639,7 +657,7 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 		return nil, nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
 	}
 	delete(server.replicas, replicaIdx)
-	//TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
+	// TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
 	if len(server.replicas) == 0 {
 		delete(m.store.servers, serverName)
 	}
@@ -733,7 +751,7 @@ func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) 
 	return modelNames, nil
 }
 
-func (m *MemoryStore) ServerNotify(request *pb.ServerNotifyRequest) error {
+func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	logger := m.logger.WithField("func", "MemoryServerNotify")
 	m.mu.Lock()
 	defer m.mu.Unlock()

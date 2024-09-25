@@ -1,7 +1,11 @@
 ---
-grafana_chart_version: 7.3.9
-grafana_app_version: 10.4.2
+grafana_chart_version: 8.4.1
+grafana_app_version: 11.1.3
 
 grafana_preloaded_dashboards:
   - name: mms
     json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/seldon.json') }}"
+  - name: perf
+    json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/perf_and_scaling.json') }}"
+  - name: envoy
+    json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/envoy.json') }}"

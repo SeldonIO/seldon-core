@@ -1,4 +1,5 @@
 github.com/seldonio/seldon-core/scheduler/v2
+cel.dev/expr
 cloud.google.com/go
 cloud.google.com/go/bigquery
 cloud.google.com/go/compute
@@ -15,6 +16,11 @@ dario.cat/mergo
 dmitri.shuralyov.com/gpu/mtl
 github.com/AdaLogics/go-fuzz-headers
 github.com/AlecAivazis/survey/v2
+github.com/Azure/azure-sdk-for-go/sdk/azcore
+github.com/Azure/azure-sdk-for-go/sdk/azidentity
+github.com/Azure/azure-sdk-for-go/sdk/internal
+github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azkeys
+github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/internal
 github.com/Azure/go-ansiterm
 github.com/Azure/go-autorest
 github.com/Azure/go-autorest/autorest
@@ -23,6 +29,7 @@ github.com/Azure/go-autorest/autorest/date
 github.com/Azure/go-autorest/autorest/mocks
 github.com/Azure/go-autorest/logger
 github.com/Azure/go-autorest/tracing
+github.com/AzureAD/microsoft-authentication-library-for-go
 github.com/BurntSushi/toml
 github.com/BurntSushi/xgb
 github.com/Masterminds/semver/v3
@@ -35,6 +42,7 @@ github.com/PuerkitoBio/urlesc
 github.com/Shopify/sarama
 github.com/Shopify/toxiproxy
 github.com/Shopify/toxiproxy/v2
+github.com/acarl005/stripansi
 github.com/actgardner/gogen-avro/v10
 github.com/alecthomas/jsonschema
 github.com/alecthomas/kingpin/v2
@@ -42,6 +50,7 @@ github.com/alecthomas/template
 github.com/alecthomas/units
 github.com/antihax/optional
 github.com/antlr/antlr4/runtime/Go/antlr/v4
+github.com/antlr4-go/antlr/v4
 github.com/armon/circbuf
 github.com/armon/consul-api
 github.com/armon/go-metrics
@@ -55,11 +64,14 @@ github.com/aws/aws-sdk-go-v2/feature/ec2/imds
 github.com/aws/aws-sdk-go-v2/internal/configsources
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2
 github.com/aws/aws-sdk-go-v2/internal/ini
+github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url
+github.com/aws/aws-sdk-go-v2/service/kms
 github.com/aws/aws-sdk-go-v2/service/sso
 github.com/aws/aws-sdk-go-v2/service/ssooidc
 github.com/aws/aws-sdk-go-v2/service/sts
 github.com/aws/smithy-go
+github.com/bahlo/generic-list-go
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/bgentry/speakeasy
@@ -68,8 +80,11 @@ github.com/blang/semver
 github.com/blang/semver/v4
 github.com/blendle/zapdriver
 github.com/bmizerany/perks
+github.com/bufbuild/protocompile
 github.com/buger/goterm
+github.com/buger/jsonparser
 github.com/c2h5oh/datasize
+github.com/cenkalti/backoff/v3
 github.com/cenkalti/backoff/v4
 github.com/census-instrumentation/opencensus-proto
 github.com/cespare/xxhash
@@ -87,6 +102,7 @@ github.com/containerd/console
 github.com/containerd/containerd
 github.com/containerd/continuity
 github.com/containerd/log
+github.com/containerd/ttrpc
 github.com/containerd/typeurl/v2
 github.com/coreos/bbolt
 github.com/coreos/etcd
@@ -124,6 +140,7 @@ github.com/dustin/go-humanize
 github.com/eapache/go-resiliency
 github.com/eapache/go-xerial-snappy
 github.com/eapache/queue
+github.com/eiannone/keyboard
 github.com/elazarl/goproxy
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/v3
@@ -143,6 +160,7 @@ github.com/gabriel-vasile/mimetype
 github.com/ghodss/yaml
 github.com/go-gl/glfw
 github.com/go-gl/glfw/v3.3/glfw
+github.com/go-jose/go-jose/v3
 github.com/go-kit/kit
 github.com/go-kit/log
 github.com/go-logfmt/logfmt
@@ -162,10 +180,12 @@ github.com/go-stack/stack
 github.com/go-task/slim-sprig
 github.com/go-task/slim-sprig/v3
 github.com/gobuffalo/flect
+github.com/goccy/go-json
 github.com/gofrs/flock
 github.com/gogo/googleapis
 github.com/gogo/protobuf
 github.com/golang-jwt/jwt/v4
+github.com/golang-jwt/jwt/v5
 github.com/golang/glog
 github.com/golang/groupcache
 github.com/golang/mock
@@ -183,7 +203,6 @@ github.com/gonum/stat
 github.com/google/btree
 github.com/google/cel-go
 github.com/google/flatbuffers
-github.com/google/gnostic
 github.com/google/gnostic-models
 github.com/google/go-cmp
 github.com/google/go-github/v27
@@ -194,8 +213,10 @@ github.com/google/martian
 github.com/google/martian/v3
 github.com/google/pprof
 github.com/google/renameio
+github.com/google/s2a-go
 github.com/google/shlex
 github.com/google/uuid
+github.com/googleapis/enterprise-certificate-proxy
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gnostic
 github.com/gopherjs/gopherjs
@@ -209,6 +230,7 @@ github.com/grpc-ecosystem/go-grpc-middleware
 github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway
 github.com/grpc-ecosystem/grpc-gateway/v2
+github.com/hamba/avro/v2
 github.com/hashicorp/consul/api
 github.com/hashicorp/consul/sdk
 github.com/hashicorp/errwrap
@@ -216,7 +238,10 @@ github.com/hashicorp/go-cleanhttp
 github.com/hashicorp/go-immutable-radix
 github.com/hashicorp/go-msgpack
 github.com/hashicorp/go-multierror
+github.com/hashicorp/go-retryablehttp
 github.com/hashicorp/go-rootcerts
+github.com/hashicorp/go-secure-stdlib/parseutil
+github.com/hashicorp/go-secure-stdlib/strutil
 github.com/hashicorp/go-sockaddr
 github.com/hashicorp/go-syslog
 github.com/hashicorp/go-uuid
@@ -228,9 +253,9 @@ github.com/hashicorp/logutils
 github.com/hashicorp/mdns
 github.com/hashicorp/memberlist
 github.com/hashicorp/serf
+github.com/hashicorp/vault/api
 github.com/heetch/avro
 github.com/hpcloud/tail
-github.com/iancoleman/orderedmap
 github.com/iancoleman/strcase
 github.com/ianlancetaylor/demangle
 github.com/imdario/mergo
@@ -264,6 +289,7 @@ github.com/kr/logfmt
 github.com/kr/pretty
 github.com/kr/pty
 github.com/kr/text
+github.com/kylelemons/godebug
 github.com/leodido/go-urn
 github.com/lufia/plan9stats
 github.com/lyft/protoc-gen-star/v2
@@ -289,6 +315,7 @@ github.com/mitchellh/iochan
 github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 github.com/moby/buildkit
+github.com/moby/docker-image-spec
 github.com/moby/locker
 github.com/moby/patternmatcher
 github.com/moby/spdystream
@@ -324,8 +351,10 @@ github.com/pascaldekloe/goe
 github.com/pelletier/go-toml
 github.com/peterbourgon/diskv
 github.com/pierrec/lz4
+github.com/pkg/browser
 github.com/pkg/errors
 github.com/pkg/profile
+github.com/planetscale/vtprotobuf
 github.com/pmezard/go-difflib
 github.com/posener/complete
 github.com/power-devops/perfstat
@@ -337,6 +366,7 @@ github.com/prometheus/procfs
 github.com/prometheus/prom2json
 github.com/prometheus/statsd_exporter
 github.com/prometheus/tsdb
+github.com/r3labs/sse
 github.com/rabbitmq/amqp091-go
 github.com/rcrowley/go-metrics
 github.com/rivo/uniseg
@@ -346,6 +376,7 @@ github.com/rs/xid
 github.com/russross/blackfriday
 github.com/russross/blackfriday/v2
 github.com/ryanuber/columnize
+github.com/ryanuber/go-glob
 github.com/santhosh-tekuri/jsonschema/v5
 github.com/sean-/seed
 github.com/secure-systems-lab/go-securesystemslib
@@ -355,10 +386,12 @@ github.com/serialx/hashring
 github.com/shibumi/go-pathspec
 github.com/shirou/gopsutil/v3
 github.com/shoenig/go-m1cpu
+github.com/shopspring/decimal
 github.com/shurcooL/sanitized_anchor_name
 github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka
 github.com/signalfx/splunk-otel-go/instrumentation/internal
 github.com/sirupsen/logrus
+github.com/skratchdot/open-golang
 github.com/smartystreets/assertions
 github.com/smartystreets/goconvey
 github.com/soheilhy/cmux
@@ -379,6 +412,9 @@ github.com/testcontainers/testcontainers-go
 github.com/testcontainers/testcontainers-go/modules/compose
 github.com/theupdateframework/notary
 github.com/tilt-dev/fsnotify
+github.com/tink-crypto/tink-go-gcpkms/v2
+github.com/tink-crypto/tink-go-hcvault/v2
+github.com/tink-crypto/tink-go/v2
 github.com/tklauser/go-sysconf
 github.com/tklauser/numcpus
 github.com/tmc/grpc-websocket-proxy
@@ -390,6 +426,7 @@ github.com/tsenart/vegeta/v12
 github.com/ugorji/go/codec
 github.com/urfave/cli
 github.com/urfave/cli/v2
+github.com/wk8/go-ordered-map/v2
 github.com/xdg-go/pbkdf2
 github.com/xdg-go/scram
 github.com/xdg-go/stringprep
@@ -398,6 +435,7 @@ github.com/xeipuuv/gojsonreference
 github.com/xeipuuv/gojsonschema
 github.com/xhit/go-str2duration/v2
 github.com/xiang90/probing
+github.com/xiatechs/jsonata-go
 github.com/xordataexchange/crypt
 github.com/yuin/goldmark
 github.com/yusufpapurcu/wmi
@@ -459,6 +497,7 @@ google.golang.org/grpc
 google.golang.org/grpc/cmd/protoc-gen-go-grpc
 google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
+gopkg.in/cenkalti/backoff.v1
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
 gopkg.in/errgo.v2

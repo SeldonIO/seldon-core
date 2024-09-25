@@ -12,7 +12,13 @@
 
 # Overwrite by passing sd_user and/or sd_password variables when running the playbook
 seldon_admin_user: "admin"
-seldon_random_gen_password: "{{ lookup('password', '/dev/null chars=digits length=6') }}"
+seldon_random_gen_password: "r-{{ lookup('password', '/dev/null chars=digits length=6') }}"
+
+# KinD Configuration
+kind_local_mount: false
+kind_host_path: "/tmp/kind-cluster/"
+kind_container_path: "/host-mount"
+kind_config_template: "{{ lookup('template', 'default-kind-cluster-config.yaml.j2') | from_yaml }}"
 
 # Seldon Configuration
 seldon_mesh_namespace: seldon-mesh

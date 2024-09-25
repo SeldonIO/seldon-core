@@ -1,0 +1,10 @@
+---
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+  - role: control-plane
+{% if kind_local_mount %}
+    extraMounts:
+      - hostPath: {{ kind_host_path }}
+        containerPath: {{ kind_container_path }}
+{% endif %}

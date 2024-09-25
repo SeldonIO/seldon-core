@@ -88,6 +88,8 @@ type ClientSettings struct {
 	periodReadySubService                    time.Duration
 	maxElapsedTimeReadySubServiceBeforeStart time.Duration
 	maxElapsedTimeReadySubServiceAfterStart  time.Duration
+	maxLoadElapsedTime                       time.Duration
+	maxUnloadElapsedTime                     time.Duration
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
 }
@@ -100,7 +102,9 @@ func NewClientSettings(
 	schedulerTlsPort int,
 	periodReadySubService,
 	maxElapsedTimeReadySubServiceBeforeStart,
-	maxElapsedTimeReadySubServiceAfterStart time.Duration,
+	maxElapsedTimeReadySubServiceAfterStart,
+	maxLoadElapsedTime,
+	maxUnloadElapsedTime time.Duration,
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
 ) *ClientSettings {
@@ -113,6 +117,8 @@ func NewClientSettings(
 		periodReadySubService:                    periodReadySubService,
 		maxElapsedTimeReadySubServiceBeforeStart: maxElapsedTimeReadySubServiceBeforeStart,
 		maxElapsedTimeReadySubServiceAfterStart:  maxElapsedTimeReadySubServiceAfterStart,
+		maxLoadElapsedTime:                       maxLoadElapsedTime,
+		maxUnloadElapsedTime:                     maxUnloadElapsedTime,
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
 	}
@@ -141,7 +147,6 @@ func NewClient(
 	drainerService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 ) *Client {
-
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -277,7 +282,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 		logger.WithError(err).Errorf("Rclone not ready")
 	}
 
-	//TODO make retry configurable
+	// TODO make retry configurable
 	err := backoff.RetryNotify(c.ModelRepository.Ready, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for model repository to be ready")
@@ -407,7 +412,7 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 	}
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +438,7 @@ func (c *Client) StartService() error {
 			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
 		grpc_retry.WithMax(1),
-	) //TODO make configurable
+	) // TODO make configurable
 	if err != nil {
 		return err
 	}
@@ -554,7 +559,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 
 func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	if request == nil || request.ModelVersion == nil {
-		return fmt.Errorf("Empty request received for load model")
+		return fmt.Errorf("empty request received for load model")
 	}
 
 	logger := c.logger.WithField("func", "LoadModel")
@@ -585,6 +590,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	)
 	if err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
+		c.cleanup(modelWithVersion)
 		return err
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
@@ -598,8 +604,9 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, logger); err != nil {
+	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
+		c.cleanup(modelWithVersion)
 		return err
 	}
 
@@ -640,7 +647,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, logger); err != nil {
+	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, c.settings.maxUnloadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
@@ -664,6 +671,16 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+}
+
+func (c *Client) cleanup(modelWithVersion string) {
+	logger := c.logger.WithField("func", "cleanup")
+	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
+	if err != nil {
+		logger.Errorf("could not remove model %s - %v", modelWithVersion, err)
+		return
+	}
+	logger.Infof("removed model %s", modelWithVersion)
 }
 
 func (c *Client) sendModelEventError(

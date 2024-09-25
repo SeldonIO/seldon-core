@@ -40,12 +40,16 @@ func NewComponentDeploymentReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
+	componentLabels map[string]string,
+	componentAnnotations map[string]string,
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) (*ComponentDeploymentReconciler, error) {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
+	labels = utils.MergeMaps(componentLabels, labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
+	annotations = utils.MergeMaps(componentAnnotations, annotations)
 	deployment, err := toDeployment(name, meta, podSpec, override, labels, annotations)
 	if err != nil {
 		return nil, err
@@ -62,20 +66,14 @@ func (s *ComponentDeploymentReconciler) GetResources() []client.Object {
 	return []client.Object{s.Deployment}
 }
 
-func addEnvoyAnnotations(annotations map[string]string) map[string]string {
-	annotations["prometheus.io/path"] = "/stats/prometheus"
-	annotations["prometheus.io/scrape"] = "true"
-	annotations["prometheus.io/port"] = "9003"
-	return annotations
-}
-
 func toDeployment(
 	name string,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
-	annotations map[string]string) (*appsv1.Deployment, error) {
+	annotations map[string]string,
+) (*appsv1.Deployment, error) {
 	var replicas int32
 	if override != nil && override.Replicas != nil {
 		replicas = *override.Replicas
@@ -89,10 +87,6 @@ func toDeployment(
 		if err != nil {
 			return nil, err
 		}
-	}
-	// Envoy annotations
-	if name == mlopsv1alpha1.EnvoyName {
-		annotations = addEnvoyAnnotations(annotations)
 	}
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)

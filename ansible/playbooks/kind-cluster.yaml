@@ -11,3 +11,8 @@
     kind_image_version: kindest/node:v1.29.2@sha256:51a1434a5397193442f0be2a297b488b6c919ce8a3931be0ce822606ea5ca245
 
     kind_kubectl_default_namespace: seldon-mesh
+    vars_file: vars/default.yaml
+
+  pre_tasks:
+  - name: "Load vars from {{ vars_file }}"
+    include_vars: "{{ vars_file }}"

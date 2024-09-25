@@ -31,6 +31,8 @@ import (
 	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
+// Experiment mock grpc client
+
 type mockSchedulerExperimentGrpcClient struct {
 	counter int
 	results []*scheduler.ExperimentStatusResponse
@@ -53,6 +55,8 @@ func (s *mockSchedulerExperimentGrpcClient) Recv() (*scheduler.ExperimentStatusR
 	}
 	return nil, io.EOF
 }
+
+// Pipeline subscribe mock grpc client
 
 type mockSchedulerPipelineSubscribeGrpcClient struct {
 	counter int
@@ -77,6 +81,33 @@ func (s *mockSchedulerPipelineSubscribeGrpcClient) Recv() (*scheduler.PipelineSt
 	return nil, io.EOF
 }
 
+// Server subscribe mock grpc client
+
+type mockSchedulerServerSubscribeGrpcClient struct {
+	counter int
+	results []*scheduler.ServerStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeServerStatusClient = (*mockSchedulerServerSubscribeGrpcClient)(nil)
+
+func newMockSchedulerServerSubscribeGrpcClient(results []*scheduler.ServerStatusResponse) *mockSchedulerServerSubscribeGrpcClient {
+	return &mockSchedulerServerSubscribeGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
+// Pipeline mock grpc client
+
 type mockSchedulerPipelineGrpcClient struct {
 	counter int
 	results []*scheduler.PipelineStatusResponse
@@ -99,6 +130,8 @@ func (s *mockSchedulerPipelineGrpcClient) Recv() (*scheduler.PipelineStatusRespo
 	}
 	return nil, io.EOF
 }
+
+// Experiment subscribe mock grpc client
 
 type mockSchedulerExperimentSubscribeGrpcClient struct {
 	counter int
@@ -123,14 +156,19 @@ func (s *mockSchedulerExperimentSubscribeGrpcClient) Recv() (*scheduler.Experime
 	return nil, io.EOF
 }
 
+// Scheduler mock grpc client
+
 type mockSchedulerGrpcClient struct {
 	responses_experiments           []*scheduler.ExperimentStatusResponse
 	responses_subscribe_experiments []*scheduler.ExperimentStatusResponse
 	responses_pipelines             []*scheduler.PipelineStatusResponse
 	responses_subscribe_pipelines   []*scheduler.PipelineStatusResponse
+	responses_servers               []*scheduler.ServerStatusResponse
+	responses_subscribe_servers     []*scheduler.ServerStatusResponse
 	requests_experiments            []*scheduler.StartExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
+	requests_servers                []*scheduler.ServerNotify
 	errors                          map[string]error
 }
 
@@ -141,6 +179,7 @@ func (s *mockSchedulerGrpcClient) ExperimentStatus(ctx context.Context, in *sche
 }
 
 func (s *mockSchedulerGrpcClient) ServerNotify(ctx context.Context, in *scheduler.ServerNotifyRequest, opts ...grpc.CallOption) (*scheduler.ServerNotifyResponse, error) {
+	s.requests_servers = append(s.requests_servers, in.Servers...)
 	return nil, nil
 }
 
@@ -184,7 +223,7 @@ func (s *mockSchedulerGrpcClient) SchedulerStatus(ctx context.Context, in *sched
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeServerStatus(ctx context.Context, in *scheduler.ServerSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeServerStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerServerSubscribeGrpcClient(s.responses_subscribe_servers), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeModelStatus(ctx context.Context, in *scheduler.ModelSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeModelStatusClient, error) {
 	return nil, nil
@@ -655,6 +694,91 @@ func TestHandleDeletedModels(t *testing.T) {
 				}
 			}
 			g.Expect(len(actualResourcesList.Items)).To(Equal(activeResources))
+		})
+	}
+}
+
+func TestHandleRegisteredServers(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		resources []client.Object
+		expected  []*scheduler.ServerNotify
+	}
+
+	tests := []test{
+		{
+			name: "with 1 server",
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name: "with multiple servers",
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "bar",
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "bar",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name:      "no servers",
+			resources: []client.Object{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			grpcClient := mockSchedulerGrpcClient{}
+			client := newMockControllerClient(test.resources...)
+			handleRegisteredServers(context.Background(), "", client, &grpcClient)
+			g.Expect(grpcClient.requests_servers).To(Equal(test.expected))
 		})
 	}
 }

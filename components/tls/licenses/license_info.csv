@@ -11,7 +11,6 @@ blang/semver,https://github.com/blang/semver/blob/master/LICENSE,MIT License,htt
 cenkalti/backoff,https://github.com/cenkalti/backoff/blob/v4/LICENSE,MIT License,https://raw.githubusercontent.com/cenkalti/backoff/v4/LICENSE
 census-instrumentation/opencensus-proto,https://github.com/census-instrumentation/opencensus-proto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-instrumentation/opencensus-proto/master/LICENSE
 cespare/xxhash,https://github.com/cespare/xxhash/blob/main/LICENSE.txt,MIT License,https://raw.githubusercontent.com/cespare/xxhash/main/LICENSE.txt
-cncf/udpa,https://github.com/cncf/udpa/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/main/LICENSE
 cncf/xds,https://github.com/cncf/xds/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/xds/main/LICENSE
 coreos/go-semver,https://github.com/coreos/go-semver/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-semver/main/LICENSE
 coreos/go-systemd,https://github.com/coreos/go-systemd/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-systemd/main/LICENSE

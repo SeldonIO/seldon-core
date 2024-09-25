@@ -1,6 +1,6 @@
-FROM envoyproxy/envoy:v1.30.4 as envoy
+FROM envoyproxy/envoy:v1.31.2 as envoy
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-9
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-15
 
 COPY  --from=envoy /usr/local/bin/envoy /usr/local/bin/envoy
 

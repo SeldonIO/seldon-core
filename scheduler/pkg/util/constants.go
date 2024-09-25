@@ -27,7 +27,7 @@ const (
 	GRPCRetryMaxCount            = 5 // around 3.2s in total wait duration
 	GRPCMaxMsgSizeBytes          = 1000 * 1024 * 1024
 	EnvoyUpdateDefaultBatchWait  = 250 * time.Millisecond
-	GRPCModelServerLoadTimeout   = 30 * time.Minute // How long to wait for a model to load? think of LLM Load, maybe should be a config
+	GRPCModelServerLoadTimeout   = 60 * time.Minute // How long to wait for a model to load? think of LLM Load, maybe should be a config
 	GRPCModelServerUnloadTimeout = 2 * time.Minute
 	GRPCControlPlaneTimeout      = 1 * time.Minute // For control plane operations except load/unload
 )

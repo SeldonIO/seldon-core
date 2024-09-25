@@ -11,6 +11,8 @@ package pipeline
 
 import (
 	"strings"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 // Step inputs can be reference a previous step name and tensor output/input
@@ -27,6 +29,9 @@ const (
 )
 
 func validate(pv *PipelineVersion) error {
+	if err := checkName(pv); err != nil {
+		return err
+	}
 	if err := checkStepsExist(pv); err != nil {
 		return err
 	}
@@ -53,6 +58,13 @@ func validate(pv *PipelineVersion) error {
 	}
 	if err := checkPipelineInput(pv); err != nil {
 		return err
+	}
+	return nil
+}
+
+func checkName(pv *PipelineVersion) error {
+	if ok := utils.CheckName(pv.Name); !ok {
+		return &PipelineNameValidationErr{pipeline: pv.Name}
 	}
 	return nil
 }

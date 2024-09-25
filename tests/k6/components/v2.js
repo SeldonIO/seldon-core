@@ -21,7 +21,7 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         metadata['seldon-internal-model'] = modelName
     }
     const params = {
-        metadata:  metadata
+        headers:  metadata
     };
     //console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
     const response = http.post(url, payloadStr, params);

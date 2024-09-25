@@ -341,12 +341,17 @@ spec:
                 description: Total number of replicas targeted by this model
                 format: int32
                 type: integer
+              selector:
+                type: string
+            required:
+            - selector
             type: object
         type: object
     served: true
     storage: true
     subresources:
       scale:
+        labelSelectorPath: .status.selector
         specReplicasPath: .spec.replicas
         statusReplicasPath: .status.replicas
       status: {}
@@ -636,6 +641,14 @@ spec:
               components:
                 items:
                   properties:
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
                     name:
                       type: string
                     podSpec:

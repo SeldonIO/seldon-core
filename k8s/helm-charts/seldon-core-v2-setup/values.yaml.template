@@ -180,6 +180,10 @@ controller:
     runAsNonRoot: true
 
 envoy:
+  annotations:
+    "prometheus.io/path": "/stats/prometheus"
+    "prometheus.io/port": "9003"
+    "prometheus.io/scrape": "true"
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
@@ -213,6 +217,7 @@ scheduler:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  schedulerReadyTimeoutSeconds: 600
 
 serverConfig:
   terminationGracePeriodSeconds: 120
@@ -243,6 +248,13 @@ serverConfig:
     scalingStatsPeriodSeconds: "20"
     modelInferenceLagThreshold: "30"
     modelInactiveSecondsThreshold: "600"
+    maxElapsedTimeReadySubServiceAfterStartSeconds: "30"
+    maxElapsedTimeReadySubServiceBeforeStartMinutes: "15"
+    periodReadySubServiceSeconds: "60"
+    maxLoadElapsedTimeMinutes: "120"
+    maxUnloadElapsedTimeMinutes: "15"
+    maxLoadRetryCount: "5"
+    maxUnloadRetryCount: "1"
     resources:
       cpu: 200m
       memory: 1Gi

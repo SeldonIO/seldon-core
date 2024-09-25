@@ -206,6 +206,8 @@ services:
       - --disable-autoscaling
       - "--kafka-config-path"
       - "/mnt/config/kafka-internal.json"
+      - "--scheduler-ready-timeout-seconds"
+      - ${SCHEDULER_READY_TIMEOUT_SECONDS}
     volumes:
       - type: bind
         source: ./config

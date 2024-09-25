@@ -109,7 +109,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// client to proxy
-	conn, err := grpc.Dial(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Cannot connect to server (%s)", err)
 	}

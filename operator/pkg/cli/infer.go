@@ -216,7 +216,7 @@ func (ic *InferenceClient) newGRPCConnection(authority string, logOpts *LogOptio
 		),
 	}
 
-	conn, err := grpc.Dial(ic.host, opts...)
+	conn, err := grpc.NewClient(ic.host, opts...)
 	if err != nil {
 		return nil, err
 	}

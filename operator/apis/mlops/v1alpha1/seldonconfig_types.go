@@ -80,7 +80,10 @@ type TracingConfig struct {
 
 type ComponentDefn struct {
 	// +kubebuilder:validation:Required
+
 	Name                 string                  `json:"name"`
+	Labels               map[string]string       `json:"labels,omitempty"`
+	Annotations          map[string]string       `json:"annotations,omitempty"`
 	Replicas             *int32                  `json:"replicas,omitempty"`
 	PodSpec              *v1.PodSpec             `json:"podSpec,omitempty"`
 	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`

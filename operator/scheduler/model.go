@@ -259,6 +259,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				modelStatus.GetAvailableReplicas() +
 					modelStatus.GetUnavailableReplicas(),
 			)
+			latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
 			return s.updateModelStatus(latestModel)
 		})
 		if retryErr != nil {

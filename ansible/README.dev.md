@@ -246,6 +246,70 @@ stringData:
   client_id: a-secret-client-id
 ```
 
+## Mounting local (host) path into the rclone container of a Server pod
+
+For this, you first need to enable local mounts into kind (configuring the `kind_local_mount`,
+`kind_host_path` and `kind_container_path` variables). Then, you can use `custom_servers_values`
+to set-up the volume & volumeMounts for the inference server pod:
+
+```yaml
+helm_force_install: true
+
+kind_local_mount: true
+kind_host_path: "<local-path>"
+kind_container_path: "/host-models"
+
+seldon_dev:
+  install_kind_images: true
+
+custom_image_config:
+  - components:
+      - hodometer
+      - modelgateway
+      - pipelinegateway
+      - dataflow
+      - controller
+      - scheduler
+      - envoy
+      - rclone
+      - agent
+    image:
+      tag: 2.8.3
+  - components:
+      - mlserver
+    image:
+      tag: 1.6.0
+
+custom_servers_values:
+  mlserver:
+    replicas: 1
+    podSpec:
+      containers:
+        - name: rclone
+          volumeMounts:
+            - name: host-models
+              mountPath: "/mnt/local-models"
+      volumes:
+        - name: host-models
+          hostPath:
+            path: "{{ kind_container_path }}"
+```
+
+You can now load a model into kind with `storageUri` pointing to `/mnt/local-models/...`:
+
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+    name: iris
+    namespace: seldon-mesh
+spec:
+    storageUri: "/mnt/local-models/iris"
+    requirements:
+    - sklearn
+    memory: 100Ki
+```
+
 ## Complex component configurations
 
 Your config file may overwrite any of the playbook variables described in `README.md`, and use

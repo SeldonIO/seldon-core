@@ -45,6 +45,10 @@ spec:
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy
     replicas: 1
+    annotations:
+        "prometheus.io/path": "/stats/prometheus"
+        "prometheus.io/port": "9003"
+        "prometheus.io/scrape": "true"
     podSpec:
       containers:
       - image: seldonio/seldon-envoy:latest
@@ -214,11 +218,14 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         command:
         - /bin/scheduler
         env:
         - name: ALLOW_PLAINTXT
           value: "true"
+        - name: SCHEDULER_READY_TIMEOUT_SECONDS
+          value: 600
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

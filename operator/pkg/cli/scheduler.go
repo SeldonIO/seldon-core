@@ -118,7 +118,7 @@ func (sc *SchedulerClient) newConnection() (*grpc.ClientConn, error) {
 		grpc.WithAuthority(sc.authority),
 	}
 
-	conn, err := grpc.Dial(sc.schedulerHost, opts...)
+	conn, err := grpc.NewClient(sc.schedulerHost, opts...)
 	if err != nil {
 		return nil, err
 	}

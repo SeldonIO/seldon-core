@@ -1,3 +1,9 @@
 - op: replace
   path: /spec/components/5/podSpec/securityContext
   value: HACK_REMOVE_ME{{- toYaml .Values.dataflow.securityContext | nindent 8 }}
+- op: replace
+  path: /spec/components/5/labels
+  value: HACK_REMOVE_ME{{- toYaml .Values.dataflow.labels | nindent 8 }}
+- op: replace
+  path: /spec/components/5/annotations
+  value: HACK_REMOVE_ME{{- toYaml .Values.dataflow.annotations | nindent 8 }}

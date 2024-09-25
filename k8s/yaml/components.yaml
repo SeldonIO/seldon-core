@@ -538,7 +538,11 @@ metadata:
   name: default
 spec:
   components:
-  - name: seldon-scheduler
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-scheduler
     podSpec:
       containers:
       - args:
@@ -547,6 +551,7 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         command:
         - /bin/scheduler
         env:
@@ -590,6 +595,8 @@ spec:
           value: '/tmp/certs/dds/ca.crt'
         - name: ENVOY_DOWNSTREAM_CLIENT_TLS_CA_LOCATION
           value: '/tmp/certs/ddc/ca.crt'
+        - name: SCHEDULER_READY_TIMEOUT_SECONDS
+          value: '600'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -648,7 +655,11 @@ spec:
         resources:
           requests:
             storage: '1Gi'
-  - name: seldon-pipelinegateway
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-pipelinegateway
     podSpec:
       containers:
       - args:
@@ -778,7 +789,11 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: seldon-modelgateway
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-modelgateway
     podSpec:
       containers:
       - args:
@@ -891,7 +906,11 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: hodometer
+  - annotations:
+        null
+    labels:
+        null
+    name: hodometer
     podSpec:
       containers:
       - env:
@@ -944,7 +963,13 @@ spec:
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-envoy
+  - annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "9003"
+        prometheus.io/scrape: "true"
+    labels:
+        null
+    name: seldon-envoy
     podSpec:
       containers:
       - env:
@@ -996,7 +1021,11 @@ spec:
         runAsUser: 1000
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-dataflow-engine
+  - annotations:
+        null
+    labels:
+        null
+    name: seldon-dataflow-engine
     podSpec:
       containers:
       - env:
@@ -1157,6 +1186,20 @@ spec:
         value: '20'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '10'
+      - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
+        value: '30'
+      - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
+        value: '15'
+      - name: SELDON_PERIOD_READY_SUB_SERVICE_SECONDS
+        value: '60'
+      - name: SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES
+        value: '120'
+      - name: SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES
+        value: '15'
+      - name: SELDON_MAX_LOAD_RETRY_COUNT
+        value: '5'
+      - name: SELDON_MAX_UNLOAD_RETRY_COUNT
+        value: '1'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: 'PLAINTEXT'
       - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME

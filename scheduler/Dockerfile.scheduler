@@ -8,7 +8,7 @@ RUN apt-get install make
 RUN make -C scheduler -o test-go build-scheduler
 
 # Kafka dependencies necessitate leaving CGo enabled and using a base image with C dependencies
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-9
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-15
 COPY --from=builder /build/scheduler/bin/scheduler /bin/scheduler
 
 # Copy licenses

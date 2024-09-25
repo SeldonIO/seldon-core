@@ -24,39 +24,46 @@ func TestAgentCliArgsDefault(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                                  string
-		args                                  []string
-		envs                                  []string
-		expectedAgentHost                     string
-		expectedServerName                    string
-		expectedReplicaIdx                    uint
-		expectedSchedulerHost                 string
-		expectedSchedulerPort                 int
-		expectedSchedulerTlsPort              int
-		expectedRcloneHost                    string
-		expectedRclonePort                    int
-		expectedInferenceHost                 string
-		expectedInferenceHttpPort             int
-		expectedInferenceGrpcPort             int
-		expectedReverseProxyHttpPort          int
-		expectedReverseProxyGrpcPort          int
-		expectedDebugGrpcPort                 int
-		expectedMetricsPort                   int
-		expectedAgentFolder                   string
-		expectedReplicaConfigStr              string
-		expectedNamespace                     string
-		expectedConfigPath                    string
-		expectedLogLevel                      string
-		expectedServerType                    string
-		expectedMemoryRequest                 uint64
-		expectedCapabilities                  []string
-		expectedOverCommitPercentage          int
-		expectedEnvoyHost                     string
-		expectedEnvoyPort                     int
-		expectedDrainerPort                   int
-		expectedModelInferenceLagThreshold    int
-		expectedModelInactiveSecondsThreshold int
-		expectedScalingStatsPeriodSeconds     int
+		name                                                    string
+		args                                                    []string
+		envs                                                    []string
+		expectedAgentHost                                       string
+		expectedServerName                                      string
+		expectedReplicaIdx                                      uint
+		expectedSchedulerHost                                   string
+		expectedSchedulerPort                                   int
+		expectedSchedulerTlsPort                                int
+		expectedRcloneHost                                      string
+		expectedRclonePort                                      int
+		expectedInferenceHost                                   string
+		expectedInferenceHttpPort                               int
+		expectedInferenceGrpcPort                               int
+		expectedReverseProxyHttpPort                            int
+		expectedReverseProxyGrpcPort                            int
+		expectedDebugGrpcPort                                   int
+		expectedMetricsPort                                     int
+		expectedAgentFolder                                     string
+		expectedReplicaConfigStr                                string
+		expectedNamespace                                       string
+		expectedConfigPath                                      string
+		expectedLogLevel                                        string
+		expectedServerType                                      string
+		expectedMemoryRequest                                   uint64
+		expectedCapabilities                                    []string
+		expectedOverCommitPercentage                            int
+		expectedEnvoyHost                                       string
+		expectedEnvoyPort                                       int
+		expectedDrainerPort                                     int
+		expectedModelInferenceLagThreshold                      int
+		expectedModelInactiveSecondsThreshold                   int
+		expectedScalingStatsPeriodSeconds                       int
+		expectedMaxElapsedTimeReadySubServiceAfterStartSeconds  int
+		expectedMaxElapsedTimeReadySubServiceBeforeStartMinutes int
+		expectedPeriodReadySubServiceSeconds                    int
+		expectedMaxLoadElapsedTimeMinute                        int
+		expectedMaxUnloadElapsedTimeMinute                      int
+		expectedMaxLoadRetryCount                               int
+		expectedMaxUnloadRetryCount                             int
 	}
 	tests := []test{
 		{
@@ -93,6 +100,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedModelInferenceLagThreshold:    lagThresholdDefault,
 			expectedModelInactiveSecondsThreshold: lastUsedThresholdSecondsDefault,
 			expectedScalingStatsPeriodSeconds:     statsPeriodSecondsDefault,
+			expectedMaxElapsedTimeReadySubServiceAfterStartSeconds:  defaultMaxElapsedTimeReadySubServiceAfterStartSeconds,
+			expectedMaxElapsedTimeReadySubServiceBeforeStartMinutes: defaultMaxElapsedTimeReadySubServiceBeforeStartMinutes,
+			expectedPeriodReadySubServiceSeconds:                    defaultPeriodReadySubServiceSeconds,
+			expectedMaxLoadElapsedTimeMinute:                        defaultMaxLoadElapsedTimeMinute,
+			expectedMaxUnloadElapsedTimeMinute:                      defaultMaxUnloadElapsedTimeMinute,
+			expectedMaxLoadRetryCount:                               defaultMaxLoadRetryCount,
+			expectedMaxUnloadRetryCount:                             defaultMaxUnloadRetryCount,
 		},
 		{
 			name: "good args",
@@ -127,6 +141,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"--model-inference-lag-threshold=20",
 				"--model-inactive-seconds-threshold=30",
 				"--scaling-stats-period-seconds=40",
+				"--max-elapsed-time-ready-sub-service-after-start-seconds=30",
+				"--max-elapsed-time-ready-sub-service-before-start-minutes=15",
+				"--period-ready-sub-service-seconds=60",
+				"--max-load-elapsed-time-minutes=120",
+				"--max-unload-elapsed-time-minutes=15",
+				"--max-load-retry-count=5",
+				"--max-unload-retry-count=1",
 			},
 			envs:                                  []string{},
 			expectedAgentHost:                     "1.1.1.1",
@@ -159,6 +180,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedModelInferenceLagThreshold:    20,
 			expectedModelInactiveSecondsThreshold: 30,
 			expectedScalingStatsPeriodSeconds:     40,
+			expectedMaxElapsedTimeReadySubServiceAfterStartSeconds:  30,
+			expectedMaxElapsedTimeReadySubServiceBeforeStartMinutes: 15,
+			expectedPeriodReadySubServiceSeconds:                    60,
+			expectedMaxLoadElapsedTimeMinute:                        120,
+			expectedMaxUnloadElapsedTimeMinute:                      15,
+			expectedMaxLoadRetryCount:                               5,
+			expectedMaxUnloadRetryCount:                             1,
 		},
 		{
 			name: "good envs",
@@ -185,6 +213,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"SELDON_MODEL_INFERENCE_LAG_THRESHOLD=50",
 				"SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD=60",
 				"SELDON_SCALING_STATS_PERIOD_SECONDS=70",
+				"SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS=30",
+				"SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES=15",
+				"SELDON_PERIOD_READY_SUB_SERVICE_SECONDS=60",
+				"SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES=120",
+				"SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES=15",
+				"SELDON_MAX_LOAD_RETRY_COUNT=5",
+				"SELDON_MAX_UNLOAD_RETRY_COUNT=1",
 			},
 			expectedAgentHost:                     "0.0.0.0",
 			expectedServerName:                    "mlserver",
@@ -216,6 +251,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedModelInferenceLagThreshold:    50,
 			expectedModelInactiveSecondsThreshold: 60,
 			expectedScalingStatsPeriodSeconds:     70,
+			expectedMaxElapsedTimeReadySubServiceAfterStartSeconds:  30,
+			expectedMaxElapsedTimeReadySubServiceBeforeStartMinutes: 15,
+			expectedPeriodReadySubServiceSeconds:                    60,
+			expectedMaxLoadElapsedTimeMinute:                        120,
+			expectedMaxUnloadElapsedTimeMinute:                      15,
+			expectedMaxLoadRetryCount:                               5,
+			expectedMaxUnloadRetryCount:                             1,
 		},
 	}
 
@@ -264,7 +306,13 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			g.Expect(ModelInferenceLagThreshold).To(Equal(test.expectedModelInferenceLagThreshold))
 			g.Expect(ModelInactiveSecondsThreshold).To(Equal(test.expectedModelInactiveSecondsThreshold))
 			g.Expect(ScalingStatsPeriodSeconds).To(Equal(test.expectedScalingStatsPeriodSeconds))
-
+			g.Expect(MaxElapsedTimeReadySubServiceAfterStartSeconds).To(Equal(test.expectedMaxElapsedTimeReadySubServiceAfterStartSeconds))
+			g.Expect(MaxElapsedTimeReadySubServiceBeforeStartMinutes).To(Equal(test.expectedMaxElapsedTimeReadySubServiceBeforeStartMinutes))
+			g.Expect(PeriodReadySubServiceSeconds).To(Equal(test.expectedPeriodReadySubServiceSeconds))
+			g.Expect(MaxLoadElapsedTimeMinute).To(Equal(test.expectedMaxLoadElapsedTimeMinute))
+			g.Expect(MaxUnloadElapsedTimeMinute).To(Equal(test.expectedMaxUnloadElapsedTimeMinute))
+			g.Expect(MaxLoadRetryCount).To(Equal(test.expectedMaxLoadRetryCount))
+			g.Expect(MaxUnloadRetryCount).To(Equal(test.expectedMaxUnloadRetryCount))
 			// reset
 			flag.CommandLine = flag.NewFlagSet("cmd", flag.ExitOnError)
 			os.Clearenv()

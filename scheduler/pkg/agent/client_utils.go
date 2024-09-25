@@ -81,9 +81,8 @@ func isReadyChecker(
 	return nil
 }
 
-func backoffWithMaxNumRetry(fn func() error, count uint8, logger log.FieldLogger) error {
-	backoffWithMax := backoff.NewExponentialBackOff()
-	// Wait for model repo to be ready
+func backoffWithMaxNumRetry(fn func() error, count uint8, maxElapsedTime time.Duration, logger log.FieldLogger) error {
+	backoffWithMax := backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(maxElapsedTime))
 	i := 0
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Retry op #%d", i)
@@ -112,7 +111,7 @@ func (b *backOffWithMaxCount) Reset() {
 }
 
 func (b *backOffWithMaxCount) NextBackOff() time.Duration {
-	if b.currentCount >= b.maxCount {
+	if b.currentCount >= b.maxCount-1 {
 		return backoff.Stop
 	} else {
 		b.currentCount++

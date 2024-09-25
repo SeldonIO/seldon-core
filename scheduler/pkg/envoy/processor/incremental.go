@@ -196,7 +196,6 @@ func (p *IncrementalProcessor) setListeners() error {
 // newSnapshotVersion increments the current snapshotVersion
 // and returns as a string.
 func (p *IncrementalProcessor) newSnapshotVersion() string {
-
 	// Reset the snapshotVersion if it ever hits max size.
 	if p.snapshotVersion == math.MaxInt64 {
 		p.snapshotVersion = 0
@@ -256,7 +255,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		return
 	}
 
-	clusterNameBase := server.Name + "_" + computeHashKeyForList(assignment)
+	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
 	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
@@ -435,6 +434,13 @@ func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	routeName := fmt.Sprintf("%s.experiment", exp.Name)
+
+	// first clear any existing routes
+	if err := p.removeRouteForServerInEnvoyCache(routeName); err != nil {
+		logger.WithError(err).Errorf("Failed to remove traffic for experiment %s", routeName)
+		return err
+	}
+
 	if err := p.addTrafficForExperiment(routeName, exp); err != nil {
 		logger.WithError(err).Errorf("Failed to add traffic for experiment %s", routeName)
 		return err
@@ -640,8 +646,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
 	if routes, ok := p.xdsCache.Routes[modelName]; ok {
-		activeRoutes := len(routes.Clusters)
-		if activeRoutes == 1 && p.versionCleaner != nil {
+		logger.Debugf("routes for model %s %v", modelName, routes)
+		if p.versionCleaner != nil {
 			logger.Debugf("Calling cleanup for model %s", modelName)
 			p.versionCleaner.RunCleanup(modelName)
 		}

@@ -137,7 +137,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		),
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", host, port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
 		return nil, err
 	}

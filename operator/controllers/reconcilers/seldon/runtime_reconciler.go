@@ -29,8 +29,8 @@ type SeldonRuntimeReconciler struct {
 
 func NewSeldonRuntimeReconciler(
 	runtime *mlopsv1alpha1.SeldonRuntime,
-	commonConfig common.ReconcilerConfig) (common.Reconciler, error) {
-
+	commonConfig common.ReconcilerConfig,
+) (common.Reconciler, error) {
 	var err error
 
 	seldonConfig, err := mlopsv1alpha1.GetSeldonConfigForSeldonRuntime(runtime.Spec.SeldonConfig, commonConfig.Client)
@@ -58,6 +58,8 @@ func NewSeldonRuntimeReconciler(
 					runtime.ObjectMeta,
 					c.PodSpec,
 					c.VolumeClaimTemplates,
+					c.Labels,
+					c.Annotations,
 					overrides[c.Name],
 					seldonConfig.ObjectMeta,
 					annotator,
@@ -73,6 +75,8 @@ func NewSeldonRuntimeReconciler(
 					commonConfig,
 					runtime.ObjectMeta,
 					c.PodSpec,
+					c.Labels,
+					c.Annotations,
 					overrides[c.Name],
 					seldonConfig.ObjectMeta,
 					annotator,

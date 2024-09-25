@@ -197,7 +197,7 @@ func createInferWorkerWithMockConn(
 	serverConfig *InferenceServerConfig,
 	modelConfig *KafkaModelConfig,
 	g *WithT) (*InferKafkaHandler, *InferWorker) {
-	conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	conn, _ := grpc.NewClient("passthrough://", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
@@ -220,7 +220,7 @@ func createInferWorkerWithMockConn(
 
 func creatMockServerHealthFunc(grpcServer *mockGRPCMLServer) func() bool {
 	return func() bool {
-		conn, _ := grpc.DialContext(context.TODO(), "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+		conn, _ := grpc.NewClient("passthrough://", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return grpcServer.listener.Dial()
 		}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		client := grpc_health_v1.NewHealthClient(conn)

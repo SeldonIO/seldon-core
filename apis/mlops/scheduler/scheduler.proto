@@ -185,6 +185,11 @@ message ModelStatusRequest {
 }
 
 message ServerNotifyRequest {
+  repeated ServerNotify servers = 1;
+  bool isFirstSync = 2;
+}
+
+message ServerNotify {
   string name = 1;
   int32 expectedReplicas = 2;
   bool shared = 3;
@@ -192,7 +197,6 @@ message ServerNotifyRequest {
 }
 
 message ServerNotifyResponse {
-
 }
 
 message ServerSubscriptionRequest {

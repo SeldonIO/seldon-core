@@ -24,8 +24,8 @@ repositories {
 
 dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.klogging:klogging-jvm:0.5.11")
-    implementation("io.klogging:slf4j-klogging:0.5.11")
+    implementation("io.klogging:klogging-jvm:0.5.14")
+    implementation("io.klogging:slf4j-klogging:0.5.14")
 
     // Kafka
     implementation("org.apache.kafka:kafka-streams:7.6.1-ccs")
@@ -33,30 +33,31 @@ dependencies {
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.64.0")
-    implementation("io.grpc:grpc-protobuf:1.64.0")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.64.0")
-    implementation("com.google.protobuf:protobuf-java:3.25.3")
-    implementation("com.google.protobuf:protobuf-kotlin:3.25.3")
+    implementation("io.grpc:grpc-stub:1.65.0")
+    implementation("io.grpc:grpc-protobuf:1.65.0")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.65.0")
+    implementation("com.google.protobuf:protobuf-java") {
+        version {
+            strictly("[4.27.2,)")
+            prefer("4.27.2")
+        }
+    }
+    implementation("com.google.protobuf:protobuf-kotlin") {
+        version {
+            strictly("[4.27.2,)")
+            prefer("4.27.2")
+        }
+    }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
-    implementation("io.kubernetes:client-java:20.0.1") {
-        exclude("com.microsoft.azure", "adal4j")
-    }
+    implementation("io.kubernetes:client-java:21.0.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testImplementation("io.strikt:strikt-core:0.34.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // transitive dependencies constraints
-    constraints {
-        implementation("org.apache.commons:commons-compress:1.26.1") {
-            because("version 1.25.0 pulled by io.kubernetes:client-java contains high CVEs")
-        }
-    }
 }
 
 sourceSets {

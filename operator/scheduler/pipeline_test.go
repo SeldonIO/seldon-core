@@ -363,7 +363,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that responses_pipelines is nill -> scheduler state is not existing
+			// note that if responses_pipelines is nil -> scheduler state is not existing
 			var grpcClient mockSchedulerGrpcClient
 			if !test.noSchedulerState {
 				grpcClient = mockSchedulerGrpcClient{
@@ -388,7 +388,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 				}
 			}
 
-			// check that we have reloaded the correct resources if the stata of the scheduler is not correct
+			// check that we have reloaded the correct resources if the state of the scheduler is not correct
 			if test.noSchedulerState {
 				activeResources := 0
 				for idx, req := range test.existing_resources {

@@ -204,7 +204,7 @@ func TestStartExperiment(t *testing.T) {
 					// check db
 					experimentFromDB, _ := server.db.get(ea.experiment.Name)
 					g.Expect(experimentFromDB.Deleted).To(BeFalse())
-					g.Expect(experimentFromDB.Active).To(BeFalse())
+					g.Expect(experimentFromDB.Active).To(BeFalse()) // by default experiments are not active
 				}
 			}
 			g.Expect(len(server.experiments)).To(Equal(test.expectedNumExp))
@@ -497,7 +497,7 @@ func (f fakeModelStore) AddServerReplica(request *agent.AgentSubscribeRequest) e
 	panic("implement me")
 }
 
-func (f fakeModelStore) ServerNotify(request *scheduler.ServerNotifyRequest) error {
+func (f fakeModelStore) ServerNotify(request *scheduler.ServerNotify) error {
 	panic("implement me")
 }
 
