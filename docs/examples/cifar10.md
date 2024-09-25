@@ -424,7 +424,7 @@ seldon.default.model.cifar10-drift.outputs	cifeimgfh5ss738i5bpg	{"name":"is_drif
 infer("cifar10-production.pipeline",1, "outlier")
 ```
 
-![png](..images/infer_18_0.png)
+![png](../images/infer_18_0.png)
 
 
 ```
