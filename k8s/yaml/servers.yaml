@@ -3,6 +3,10 @@
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  annotations:
+    null
+  labels:
+    null
   name: mlserver
 spec:
   podSpec: null
@@ -13,6 +17,10 @@ spec:
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
+  annotations:
+    null
+  labels:
+    null
   name: triton
 spec:
   podSpec: null

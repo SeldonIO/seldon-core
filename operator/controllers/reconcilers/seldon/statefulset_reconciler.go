@@ -46,12 +46,16 @@ func NewComponentStatefulSetReconciler(
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
+	componentLabels map[string]string,
+	componentAnnotations map[string]string,
 	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) (*ComponentStatefulSetReconciler, error) {
 	labels := utils.MergeMaps(meta.Labels, seldonConfigMeta.Labels)
+	labels = utils.MergeMaps(componentLabels, labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
+	annotations = utils.MergeMaps(componentAnnotations, annotations)
 	statefulSet, err := toStatefulSet(name, meta, podSpec, volumeClaimTemplates, override, labels, annotations)
 	if err != nil {
 		return nil, err

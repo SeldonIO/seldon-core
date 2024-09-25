@@ -894,7 +894,10 @@ metadata:
   namespace: '{{ .Release.Namespace }}'
 spec:
   components:
-  - name: seldon-scheduler
+  - annotations: {{- toYaml .Values.scheduler.annotations | nindent
+      8 }}
+    labels: {{- toYaml .Values.scheduler.labels | nindent 8 }}
+    name: seldon-scheduler
     podSpec:
       containers:
       - args:
@@ -1012,7 +1015,10 @@ spec:
         resources:
           requests:
             storage: '{{ .Values.scheduler.resources.storage }}'
-  - name: seldon-pipelinegateway
+  - annotations: {{- toYaml .Values.pipelinegateway.annotations | nindent
+      8 }}
+    labels: {{- toYaml .Values.pipelinegateway.labels | nindent 8 }}
+    name: seldon-pipelinegateway
     podSpec:
       containers:
       - args:
@@ -1148,7 +1154,10 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: seldon-modelgateway
+  - annotations: {{- toYaml .Values.modelgateway.annotations | nindent
+      8 }}
+    labels: {{- toYaml .Values.modelgateway.labels | nindent 8 }}
+    name: seldon-modelgateway
     podSpec:
       containers:
       - args:
@@ -1266,7 +1275,10 @@ spec:
           name: seldon-tracing
         name: tracing-config-volume
     replicas: 1
-  - name: hodometer
+  - annotations: {{- toYaml .Values.hodometer.annotations | nindent
+      8 }}
+    labels: {{- toYaml .Values.hodometer.labels | nindent 8 }}
+    name: hodometer
     podSpec:
       containers:
       - env:
@@ -1322,7 +1334,9 @@ spec:
       serviceAccountName: hodometer
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-envoy
+  - annotations: {{- toYaml .Values.envoy.annotations | nindent 8 }}
+    labels: {{- toYaml .Values.envoy.labels | nindent 8 }}
+    name: seldon-envoy
     podSpec:
       containers:
       - env:
@@ -1377,7 +1391,10 @@ spec:
         8 }}
       terminationGracePeriodSeconds: 5
     replicas: 1
-  - name: seldon-dataflow-engine
+  - annotations: {{- toYaml .Values.dataflow.annotations | nindent 8
+      }}
+    labels: {{- toYaml .Values.dataflow.labels | nindent 8 }}
+    name: seldon-dataflow-engine
     podSpec:
       containers:
       - env:

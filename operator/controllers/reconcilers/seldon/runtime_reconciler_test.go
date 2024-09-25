@@ -53,7 +53,9 @@ func TestRuntimeReconcile(t *testing.T) {
 				Spec: mlopsv1alpha1.SeldonConfigSpec{
 					Components: []*mlopsv1alpha1.ComponentDefn{
 						{
-							Name: mlopsv1alpha1.SchedulerName,
+							Name:        mlopsv1alpha1.SchedulerName,
+							Labels:      map[string]string{"test-label": "123"},
+							Annotations: map[string]string{"test-annotation": "456"},
 							PodSpec: &v1.PodSpec{
 								Containers: []v1.Container{
 									{
@@ -94,7 +96,9 @@ func TestRuntimeReconcile(t *testing.T) {
 				Spec: mlopsv1alpha1.SeldonConfigSpec{
 					Components: []*mlopsv1alpha1.ComponentDefn{
 						{
-							Name: mlopsv1alpha1.PipelineGatewayName,
+							Name:        mlopsv1alpha1.PipelineGatewayName,
+							Labels:      map[string]string{"test-label": "123"},
+							Annotations: map[string]string{"test-annotation": "456"},
 							PodSpec: &v1.PodSpec{
 								Containers: []v1.Container{
 									{
@@ -105,7 +109,9 @@ func TestRuntimeReconcile(t *testing.T) {
 							},
 						},
 						{
-							Name: mlopsv1alpha1.ModelGatewayName,
+							Name:        mlopsv1alpha1.ModelGatewayName,
+							Labels:      map[string]string{"test-label": "123"},
+							Annotations: map[string]string{"test-annotation": "456"},
 							PodSpec: &v1.PodSpec{
 								Containers: []v1.Container{
 									{
@@ -172,6 +178,8 @@ func TestRuntimeReconcile(t *testing.T) {
 						Namespace: test.runtime.GetNamespace(),
 					}, ss)
 					g.Expect(err).To(BeNil())
+					g.Expect(ss.Labels["test-label"]).To(Equal("123"))
+					g.Expect(ss.Annotations["test-annotation"]).To(Equal("456"))
 				}
 				for _, depName := range test.expectedDeployments {
 					dep := &appsv1.Deployment{}
@@ -180,6 +188,8 @@ func TestRuntimeReconcile(t *testing.T) {
 						Namespace: test.runtime.GetNamespace(),
 					}, dep)
 					g.Expect(err).To(BeNil())
+					g.Expect(dep.Labels["test-label"]).To(Equal("123"))
+					g.Expect(dep.Annotations["test-annotation"]).To(Equal("456"))
 				}
 			}
 		})
