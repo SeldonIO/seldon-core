@@ -96,7 +96,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: seldonio/seldon-core-s2i-python37-ubi8:1.18.2
+        image: seldonio/seldon-core-s2i-python3:1.18.2
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
   security-image-python-sklearn:
