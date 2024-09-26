@@ -1,6 +1,3 @@
----
-hidden: true
----
 
 # HPA Autoscaling in single-model serving
 
