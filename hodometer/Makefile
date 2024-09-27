@@ -37,7 +37,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 .PHONY: build-hodometer
 build-hodometer: test-hodometer 
 	$(GO_ENV) \
-				go build \
+				go build -trimpath -ldflags="-s -w" \
 				-o bin/hodometer \
 				-ldflags=" \
 				-X '$(VERSION_PACKAGE).BuildVersion=$(BUILD_VERSION)' \
@@ -52,7 +52,7 @@ build-hodometer-local: copy-components build-hodometer
 
 .PHONY: build-receiver
 build-receiver: test-receiver
-	$(GO_ENV) go build -o bin/receiver ./cmd/receiver
+	$(GO_ENV) go build -trimpath -ldflags="-s -w" -o bin/receiver ./cmd/receiver
 
 .PHONY: build
 build: build-hodometer build-receiver

@@ -16,7 +16,7 @@ COPY operator/pkg/ pkg/
 COPY operator/main.go main.go
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -a -o manager main.go
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.4-15
 WORKDIR /
