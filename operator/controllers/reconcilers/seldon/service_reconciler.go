@@ -117,6 +117,12 @@ func getSeldonMeshService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.Se
 					Name:       fmt.Sprintf("%sdata", serviceConfig.GrpcServicePrefix),
 					Protocol:   v1.ProtocolTCP,
 				},
+				{
+					Port:       9003,
+					TargetPort: intstr.FromString("envoy-stats"),
+					Name:       "stats",
+					Protocol:   v1.ProtocolTCP,
+				},
 			},
 		},
 	}

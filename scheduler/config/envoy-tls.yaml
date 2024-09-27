@@ -37,7 +37,7 @@ static_resources:
                 address:
                   socket_address:
                     address: 127.0.0.1
-                    port_value: 9001
+                    port_value: 9901
       name: admin_interface_cluster
   listeners:
     - name: util_endpoint_listener
@@ -109,4 +109,4 @@ admin:
   address:
     socket_address:
       address: 127.0.0.1
-      port_value: 9001
+      port_value: 9901
