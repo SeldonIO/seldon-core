@@ -156,6 +156,31 @@ func (s *mockSchedulerExperimentSubscribeGrpcClient) Recv() (*scheduler.Experime
 	return nil, io.EOF
 }
 
+// Model subscribe mock grpc client
+
+type mockSchedulerModelSubscribeGrpcClient struct {
+	counter int
+	results []*scheduler.ModelStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeModelStatusClient = (*mockSchedulerModelSubscribeGrpcClient)(nil)
+
+func newMockSchedulerModelSubscribeGrpcClient(results []*scheduler.ModelStatusResponse) *mockSchedulerModelSubscribeGrpcClient {
+	return &mockSchedulerModelSubscribeGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerModelSubscribeGrpcClient) Recv() (*scheduler.ModelStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
 // Scheduler mock grpc client
 
 type mockSchedulerGrpcClient struct {
@@ -165,6 +190,8 @@ type mockSchedulerGrpcClient struct {
 	responses_subscribe_pipelines   []*scheduler.PipelineStatusResponse
 	responses_servers               []*scheduler.ServerStatusResponse
 	responses_subscribe_servers     []*scheduler.ServerStatusResponse
+	responses_models                []*scheduler.ModelStatusResponse
+	responses_subscribe_models      []*scheduler.ModelStatusResponse
 	requests_experiments            []*scheduler.StartExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
@@ -226,7 +253,7 @@ func (s *mockSchedulerGrpcClient) SubscribeServerStatus(ctx context.Context, in 
 	return newMockSchedulerServerSubscribeGrpcClient(s.responses_subscribe_servers), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeModelStatus(ctx context.Context, in *scheduler.ModelSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeModelStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerModelSubscribeGrpcClient(s.responses_subscribe_models), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeExperimentStatus(ctx context.Context, in *scheduler.ExperimentSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeExperimentStatusClient, error) {
 	return newMockSchedulerExperimentSubscribeGrpcClient(s.responses_subscribe_experiments), nil
