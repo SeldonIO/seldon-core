@@ -322,7 +322,9 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 				}
 			}
 			controller := newMockControllerClient(test.existing_resources...)
-			err := controller.SubscribeExperimentEvents(context.Background(), &grpcClient, "")
+			err := handleExperiments(context.Background(), "", controller, &grpcClient)
+			g.Expect(err).To(BeNil())
+			err = controller.SubscribeExperimentEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
 			isBeingDeleted := map[string]bool{}
