@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"math"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	backoff "github.com/cenkalti/backoff/v4"
@@ -75,6 +76,21 @@ func getSchedulerHost(namespace string) string {
 // note that when the scheduler is completely dead we will be not be able to reconnect and these go routines will retry forever
 // TODO: add a max retry count and report back to the caller.
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
+	// TODO add done for graceful shutdown otherwise these go routines will run forever
+	// TODO tidy up ctx from the different handlers, currently they are all context.Background()
+	s.logger.Info("Starting event handling", "namespace", namespace)
+
+	// internal sync betweeen the different event handlers
+	triggered := atomic.Bool{}
+	triggered.Store(false)
+	ch := make(chan struct{})
+	tryTriggerFn := func() {
+		swapped := triggered.CompareAndSwap(false, true) // make sure we run only once
+		if swapped {
+			ch <- struct{}{}
+		}
+	}
+
 	// Subscribe the event streams from scheduler
 	go func() {
 		for {
@@ -84,6 +100,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for model events", "namespace", namespace)
 			}
+			tryTriggerFn()
 		}
 	}()
 	go func() {
@@ -94,6 +111,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for server events", "namespace", namespace)
 			}
+			tryTriggerFn()
 		}
 	}()
 	go func() {
@@ -104,6 +122,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for pipeline events", "namespace", namespace)
 			}
+			tryTriggerFn()
 		}
 	}()
 	go func() {
@@ -114,8 +133,27 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for experiment events", "namespace", namespace)
 			}
+			tryTriggerFn()
 		}
 	}()
+
+	// these are the different states that we want to construct on scheduler reconnect
+	// we are not sure if the scheduler has the correct state so we will send the state to the scheduler
+	// they should be idempotent so if the scheduler already has the state it will not change anything
+	go func() {
+		for {
+			// wait for a trigger
+			<-ch
+			// absorbe signals from the same disconnected go routines
+			time.Sleep(1 * time.Second)
+			// on new reconnects we send a list of servers to the schedule
+			grpcClient := scheduler.NewSchedulerClient(conn)
+			handleRegisteredServers(context.Background(), namespace, s, grpcClient)
+			triggered.Store(false)
+		}
+	}()
+
+	ch <- struct{}{} // initial trigger
 }
 
 func (s *SchedulerClient) RemoveConnection(namespace string) {

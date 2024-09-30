@@ -126,6 +126,7 @@ func handleRegisteredServers(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
+		s.logger.Error(err, "Failed to list servers", "namespace", namespace)
 		return
 	}
 
