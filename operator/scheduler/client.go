@@ -148,7 +148,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			// absorb signals from the same disconnected go routines
 			time.Sleep(1 * time.Second)
 
-			s.handleReconnect(conn, namespace)
+			s.handleStateOnReconnect(conn, namespace)
 
 			triggered.Store(false)
 		}
@@ -157,7 +157,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	ch <- struct{}{} // initial trigger
 }
 
-func (s *SchedulerClient) handleReconnect(conn *grpc.ClientConn, namespace string) {
+func (s *SchedulerClient) handleStateOnReconnect(conn *grpc.ClientConn, namespace string) {
 	// on new reconnects we send a list of servers to the schedule
 	err := retryFn(s.handleRegisteredServers, conn, namespace, s.logger.WithName("handleRegisteredServers"))
 	if err != nil {
