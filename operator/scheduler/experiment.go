@@ -81,21 +81,6 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 		return err
 	}
 
-	// get experiments from the scheduler
-	// if there are no experiments in the scheduler state then we need to create them
-	// this is likely because of a restart of the scheduler that migrated the state
-	// to v2 (where we delete the experiments from the scheduler state)
-	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grpcClient)
-	if err != nil {
-		return err
-	}
-	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
-	// also remove finalizers from experiments that are being deleted
-	if numExperimentsFromScheduler == 0 {
-		handleLoadedExperiments(ctx, namespace, s, grpcClient)
-		handlePendingDeleteExperiments(ctx, namespace, s)
-	}
-
 	for {
 		event, err := stream.Recv()
 		if err != nil {

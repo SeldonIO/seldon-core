@@ -92,20 +92,6 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 		return err
 	}
 
-	// get pipelines from the scheduler
-	// if there are no pipelines in the scheduler state then we need to create them
-	// this is likely because of the scheduler state got deleted
-	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grpcClient)
-	if err != nil {
-		return err
-	}
-	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
-	// also remove finalizers from pipelines that are being deleted
-	if numPipelinesFromScheduler == 0 {
-		handleLoadedPipelines(ctx, namespace, s, grpcClient)
-		handlePendingDeletePipelines(ctx, namespace, s)
-	}
-
 	for {
 		event, err := stream.Recv()
 		if err != nil {

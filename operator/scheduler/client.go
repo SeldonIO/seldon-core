@@ -74,10 +74,11 @@ func getSchedulerHost(namespace string) string {
 // we also add a retry mechanism to reconnect if the connection is lost, this can happen if the scheduler is restarted
 // or if the network connection is lost. We use an exponential backoff to retry the connection.
 // note that when the scheduler is completely dead we will be not be able to reconnect and these go routines will retry forever
+// on reconnect we send the state of the different resources to the scheduler, this is to make sure that the scheduler has the correct state
 // TODO: add a max retry count and report back to the caller.
+// TODO add done for graceful shutdown otherwise these go routines will run forever
+// TODO tidy up ctx from the different handlers, currently they are all context.Background()
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
-	// TODO add done for graceful shutdown otherwise these go routines will run forever
-	// TODO tidy up ctx from the different handlers, currently they are all context.Background()
 	s.logger.Info("Starting event handling", "namespace", namespace)
 
 	// internal sync betweeen the different event handlers
@@ -151,6 +152,28 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			if err != nil {
 				s.logger.Error(err, "Failed to send registered server to scheduler")
 			}
+
+			if err == nil {
+				err = retryFnWithSchedulerState(handleExperiments, conn, namespace, s.logger.WithName("handleExperiments"), s)
+				if err != nil {
+					s.logger.Error(err, "Failed to send experiments to scheduler")
+				}
+			}
+
+			if err == nil {
+				err = retryFnWithSchedulerState(handlePipelines, conn, namespace, s.logger.WithName("handlePipelines"), s)
+				if err != nil {
+					s.logger.Error(err, "Failed to send pipelines to scheduler")
+				}
+			}
+
+			if err == nil {
+				err = retryFnWithSchedulerState(handleModels, conn, namespace, s.logger.WithName("handleModels"), s)
+				if err != nil {
+					s.logger.Error(err, "Failed to send models to scheduler")
+				}
+			}
+
 			triggered.Store(false)
 		}
 	}()

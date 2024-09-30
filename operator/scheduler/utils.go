@@ -26,7 +26,7 @@ import (
 // TODO: unify these helper functions as they do more or less the same thing
 
 func handleLoadedExperiments(
-	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all experiments in the namespace
 	err := s.List(
@@ -35,7 +35,7 @@ func handleLoadedExperiments(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	for _, experiment := range experimentList.Items {
@@ -45,15 +45,18 @@ func handleLoadedExperiments(
 			if _, err := s.StartExperiment(ctx, &experiment, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
+				return err
 			} else {
 				s.logger.V(1).Info("Start experiment called successfully", "experiment", experiment.Name)
 			}
 		}
 	}
+
+	return nil
 }
 
 func handlePendingDeleteExperiments(
-	ctx context.Context, namespace string, s *SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient) error {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -62,7 +65,7 @@ func handlePendingDeleteExperiments(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Check if any experiments are being deleted
@@ -80,15 +83,18 @@ func handlePendingDeleteExperiments(
 			})
 			if retryErr != nil {
 				s.logger.Error(err, "Failed to remove finalizer after retries", "experiment", experiment.Name)
+				return retryErr
 			}
 		}
 	}
+
+	return nil
 }
 
 // when need to reload the models that are marked in k8s as loaded, this is because there could be a
 // case where the scheduler has load the models state (if the scheduler and the model server restart at the same time)
 func handleLoadedModels(
-	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -97,7 +103,7 @@ func handleLoadedModels(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	for _, model := range modelList.Items {
@@ -107,13 +113,16 @@ func handleLoadedModels(
 			if _, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
+				return err
 			} else {
 				s.logger.V(1).Info("Load model called successfully", "model", model.Name)
 			}
 		} else {
-			s.logger.V(1).Info("Model is being deleted, not loading", "model", model.Name)
+			s.logger.V(1).Info("Model is being deleted, skip loading", "model", model.Name)
 		}
 	}
+
+	return nil
 }
 
 func handleRegisteredServers(
@@ -139,7 +148,7 @@ func handleRegisteredServers(
 }
 
 func handlePendingDeleteModels(
-	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -148,7 +157,7 @@ func handlePendingDeleteModels(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Check if any models are being deleted
@@ -159,10 +168,10 @@ func handlePendingDeleteModels(
 				if retryUnload {
 					// caller will retry as this method is called on connection reconnect
 					s.logger.Error(err, "Failed to call unload model", "model", model.Name)
-					continue
+					return err
 				} else {
 					// this is essentially a failed pre-condition (model does not exist in scheduler)
-					// we can remove
+					// we can remove the finalizer
 					// note that there is still the chance the model is not updated from the different model servers
 					// upon reconnection of the scheduler
 					retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
@@ -176,6 +185,7 @@ func handlePendingDeleteModels(
 					})
 					if retryErr != nil {
 						s.logger.Error(err, "Failed to remove finalizer after retries", "model", model.Name)
+						return retryErr
 					}
 				}
 			} else {
@@ -183,13 +193,15 @@ func handlePendingDeleteModels(
 				s.logger.Info("Unload model called successfully, not removing finalizer", "model", model.Name)
 			}
 		} else {
-			s.logger.V(1).Info("Model is not being deleted, not unloading", "model", model.Name)
+			s.logger.V(1).Info("Model is not being deleted, skip unloading", "model", model.Name)
 		}
 	}
+
+	return nil
 }
 
 func handleLoadedPipelines(
-	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
 	pipelineList := &v1alpha1.PipelineList{}
 	// Get all pipelines in the namespace
 	err := s.List(
@@ -198,7 +210,7 @@ func handleLoadedPipelines(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	for _, pipeline := range pipelineList.Items {
@@ -208,15 +220,18 @@ func handleLoadedPipelines(
 			if _, err := s.LoadPipeline(ctx, &pipeline, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load pipeline", "pipeline", pipeline.Name)
+				return err
 			} else {
 				s.logger.V(1).Info("Load pipeline called successfully", "pipeline", pipeline.Name)
 			}
 		}
 	}
+
+	return nil
 }
 
 func handlePendingDeletePipelines(
-	ctx context.Context, namespace string, s *SchedulerClient) {
+	ctx context.Context, namespace string, s *SchedulerClient) error {
 	pipelineList := &v1alpha1.PipelineList{}
 	// Get all models in the namespace
 	err := s.List(
@@ -225,7 +240,7 @@ func handlePendingDeletePipelines(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Check if any pipelines are being deleted
@@ -243,9 +258,12 @@ func handlePendingDeletePipelines(
 			})
 			if retryErr != nil {
 				s.logger.Error(err, "Failed to remove finalizer after retries", "pipeline", pipeline.Name)
+				return retryErr
 			}
 		}
 	}
+
+	return nil
 }
 
 func getNumExperimentsFromScheduler(ctx context.Context, grpcClient scheduler.SchedulerClient) (int, error) {
@@ -294,4 +312,67 @@ func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.Sche
 		numPipelinesFromScheduler++
 	}
 	return numPipelinesFromScheduler, nil
+}
+
+func handleExperiments(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
+	// get experiments from the scheduler
+	// if there are no experiments in the scheduler state then we need to create them
+	// this is likely because of a restart of the scheduler that migrated the state
+	// to v2 (where we delete the experiments from the scheduler state)
+	numExperimentsFromScheduler, err := getNumExperimentsFromScheduler(ctx, grpcClient)
+	if err != nil {
+		return err
+	}
+	// if there are no experiments in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from experiments that are being deleted
+	if numExperimentsFromScheduler == 0 {
+		if err := handleLoadedExperiments(ctx, namespace, s, grpcClient); err != nil {
+			return err
+		}
+		if err := handlePendingDeleteExperiments(ctx, namespace, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func handlePipelines(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
+	// get pipelines from the scheduler
+	// if there are no pipelines in the scheduler state then we need to create them
+	// this is likely because of a restart of the scheduler that migrated the state
+	// to v2 (where we delete the pipelines from the scheduler state)
+	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grpcClient)
+	if err != nil {
+		return err
+	}
+	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
+	// also remove finalizers from pipelines that are being deleted
+	if numPipelinesFromScheduler == 0 {
+		if err := handleLoadedPipelines(ctx, namespace, s, grpcClient); err != nil {
+			return err
+		}
+		if err := handlePendingDeletePipelines(ctx, namespace, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func handleModels(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error {
+
+	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
+	if err := handlePendingDeleteModels(ctx, namespace, s, grpcClient); err != nil {
+		return err
+	}
+	// on new reconnects we reload the models that are marked as loaded in k8s as the scheduler might have lost the state
+	if err := handleLoadedModels(ctx, namespace, s, grpcClient); err != nil {
+		return err
+	}
+
+	return nil
 }
