@@ -315,7 +315,7 @@ func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.Sche
 }
 
 func (s *SchedulerClient) handleExperiments(
-	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string,) error {
+	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	// get experiments from the scheduler
 	// if there are no experiments in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that migrated the state
@@ -339,7 +339,7 @@ func (s *SchedulerClient) handleExperiments(
 }
 
 func (s *SchedulerClient) handlePipelines(
-	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string, ) error {
+	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	// get pipelines from the scheduler
 	// if there are no pipelines in the scheduler state then we need to create them
 	// this is likely because of a restart of the scheduler that migrated the state

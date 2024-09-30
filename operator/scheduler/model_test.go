@@ -60,7 +60,7 @@ func TestSubscribeModelEvents(t *testing.T) {
 								Generation: 1,
 							},
 							State: &scheduler.ModelStatus{
-								State: scheduler.ModelStatus_ModelAvailable,
+								State:             scheduler.ModelStatus_ModelAvailable,
 								AvailableReplicas: 1,
 							},
 						},
@@ -92,8 +92,8 @@ func TestSubscribeModelEvents(t *testing.T) {
 								Generation: 1,
 							},
 							State: &scheduler.ModelStatus{
-								State: scheduler.ModelStatus_ModelProgressing,
-								AvailableReplicas: 0,
+								State:               scheduler.ModelStatus_ModelProgressing,
+								AvailableReplicas:   0,
 								UnavailableReplicas: 1,
 							},
 						},
@@ -160,7 +160,7 @@ func TestSubscribeModelEvents(t *testing.T) {
 								Generation: 1,
 							},
 							State: &scheduler.ModelStatus{
-								State: scheduler.ModelStatus_ModelTerminating,
+								State:             scheduler.ModelStatus_ModelTerminating,
 								AvailableReplicas: 1,
 							},
 						},
