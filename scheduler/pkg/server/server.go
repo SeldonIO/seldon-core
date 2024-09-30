@@ -245,7 +245,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		}
 		numExpectedReplicas += uint(server.ExpectedReplicas)
 	}
-	if req.IsFirstSync {
+	if req.IsFirstSync && !s.synchroniser.IsReady() {
 		s.synchroniser.Signals(numExpectedReplicas)
 		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
