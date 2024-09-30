@@ -85,7 +85,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	triggered := atomic.Bool{}
 	triggered.Store(false)
 	ch := make(chan struct{})
-	tryTriggerFn := func() {
+	tryTrigger := func() {
 		swapped := triggered.CompareAndSwap(false, true) // make sure we run only once
 		if swapped {
 			ch <- struct{}{}
@@ -101,7 +101,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for model events", "namespace", namespace)
 			}
-			tryTriggerFn()
+			tryTrigger()
 		}
 	}()
 	go func() {
@@ -112,7 +112,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for server events", "namespace", namespace)
 			}
-			tryTriggerFn()
+			tryTrigger()
 		}
 	}()
 	go func() {
@@ -123,7 +123,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for pipeline events", "namespace", namespace)
 			}
-			tryTriggerFn()
+			tryTrigger()
 		}
 	}()
 	go func() {
@@ -134,7 +134,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for experiment events", "namespace", namespace)
 			}
-			tryTriggerFn()
+			tryTrigger()
 		}
 	}()
 
