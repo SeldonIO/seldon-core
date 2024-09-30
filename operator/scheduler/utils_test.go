@@ -305,7 +305,7 @@ func TestHandleLoadedExperiments(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedExperiments(context.Background(), "", client, &grpcClient)
+			client.handleLoadedExperiments(context.Background(), &grpcClient, "")
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -375,7 +375,7 @@ func TestHandleLoadedModels(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedModels(context.Background(), "", client, &grpcClient)
+			client.handleLoadedModels(context.Background(), &grpcClient, "")
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -445,7 +445,7 @@ func TestHandleLoadedPipelines(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedPipelines(context.Background(), "", client, &grpcClient)
+			client.handleLoadedPipelines(context.Background(), &grpcClient, "")
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -514,7 +514,7 @@ func TestHandleDeletedExperiments(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeleteExperiments(context.Background(), "", s)
+			s.handlePendingDeleteExperiments(context.Background(), "")
 
 			actualResourcesList := &mlopsv1alpha1.ExperimentList{}
 			// Get all experiments in the namespace
@@ -592,7 +592,7 @@ func TestHandleDeletedPipelines(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeletePipelines(context.Background(), "", s)
+			s.handlePendingDeletePipelines(context.Background(), "")
 
 			actualResourcesList := &mlopsv1alpha1.PipelineList{}
 			// Get all pipelines in the namespace
@@ -675,7 +675,7 @@ func TestHandleDeletedModels(t *testing.T) {
 				},
 			}
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeleteModels(context.Background(), "", s, &grpcClient)
+			s.handlePendingDeleteModels(context.Background(), &grpcClient, "")
 
 			actualResourcesList := &mlopsv1alpha1.ModelList{}
 			// Get all models in the namespace
@@ -777,7 +777,7 @@ func TestHandleRegisteredServers(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleRegisteredServers(context.Background(), "", client, &grpcClient)
+			client.handleRegisteredServers(context.Background(), &grpcClient, "")
 			g.Expect(grpcClient.requests_servers).To(Equal(test.expected))
 		})
 	}
