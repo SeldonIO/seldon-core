@@ -147,38 +147,43 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			<-ch
 			// absorb signals from the same disconnected go routines
 			time.Sleep(1 * time.Second)
-			// on new reconnects we send a list of servers to the schedule
-			err := retryFn(s.handleRegisteredServers, conn, namespace, s.logger.WithName("handleRegisteredServers"))
-			if err != nil {
-				s.logger.Error(err, "Failed to send registered server to scheduler")
-			}
 
-			if err == nil {
-				err = retryFn(s.handleExperiments, conn, namespace, s.logger.WithName("handleExperiments"))
-				if err != nil {
-					s.logger.Error(err, "Failed to send experiments to scheduler")
-				}
-			}
-
-			if err == nil {
-				err = retryFn(s.handlePipelines, conn, namespace, s.logger.WithName("handlePipelines"))
-				if err != nil {
-					s.logger.Error(err, "Failed to send pipelines to scheduler")
-				}
-			}
-
-			if err == nil {
-				err = retryFn(s.handleModels, conn, namespace, s.logger.WithName("handleModels"))
-				if err != nil {
-					s.logger.Error(err, "Failed to send models to scheduler")
-				}
-			}
+			s.handleReconnect(conn, namespace)
 
 			triggered.Store(false)
 		}
 	}()
 
 	ch <- struct{}{} // initial trigger
+}
+
+func (s *SchedulerClient) handleReconnect(conn *grpc.ClientConn, namespace string) {
+	// on new reconnects we send a list of servers to the schedule
+	err := retryFn(s.handleRegisteredServers, conn, namespace, s.logger.WithName("handleRegisteredServers"))
+	if err != nil {
+		s.logger.Error(err, "Failed to send registered server to scheduler")
+	}
+
+	if err == nil {
+		err = retryFn(s.handleExperiments, conn, namespace, s.logger.WithName("handleExperiments"))
+		if err != nil {
+			s.logger.Error(err, "Failed to send experiments to scheduler")
+		}
+	}
+
+	if err == nil {
+		err = retryFn(s.handlePipelines, conn, namespace, s.logger.WithName("handlePipelines"))
+		if err != nil {
+			s.logger.Error(err, "Failed to send pipelines to scheduler")
+		}
+	}
+
+	if err == nil {
+		err = retryFn(s.handleModels, conn, namespace, s.logger.WithName("handleModels"))
+		if err != nil {
+			s.logger.Error(err, "Failed to send models to scheduler")
+		}
+	}
 }
 
 func (s *SchedulerClient) RemoveConnection(namespace string) {
