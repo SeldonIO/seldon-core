@@ -94,7 +94,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	// Subscribe the event streams from scheduler
 	go func() {
 		for {
-			err := retryFn(s.SubscribeModelEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeModelEvents, conn, namespace, s.logger.WithName("SubscribeModelEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for model events", "namespace", namespace)
 			} else {
@@ -105,7 +105,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribeServerEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeServerEvents, conn, namespace, s.logger.WithName("SubscribeServerEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for server events", "namespace", namespace)
 			} else {
@@ -116,7 +116,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribePipelineEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribePipelineEvents, conn, namespace, s.logger.WithName("SubscribePipelineEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for pipeline events", "namespace", namespace)
 			} else {
@@ -127,7 +127,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribeExperimentEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeExperimentEvents, conn, namespace, s.logger.WithName("SubscribeExperimentEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for experiment events", "namespace", namespace)
 			} else {
@@ -144,11 +144,13 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 		for {
 			// wait for a trigger
 			<-ch
-			// absorbe signals from the same disconnected go routines
+			// absorb signals from the same disconnected go routines
 			time.Sleep(1 * time.Second)
 			// on new reconnects we send a list of servers to the schedule
-			grpcClient := scheduler.NewSchedulerClient(conn)
-			handleRegisteredServers(context.Background(), namespace, s, grpcClient)
+			err := retryFnWithSchedulerState(handleRegisteredServers, conn, namespace, s.logger.WithName("handleRegisteredServers"), s)
+			if err != nil {
+				s.logger.Error(err, "Failed to send registered server to scheduler")
+			}
 			triggered.Store(false)
 		}
 	}()
@@ -291,7 +293,7 @@ func retryFn(
 	fn func(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
-	logger.Info("RetryFn", "namespace", namespace)
+	logger.Info("Retrying to connected", "namespace", namespace)
 	logFailure := func(err error, delay time.Duration) {
 		logger.Error(err, "Scheduler not ready")
 	}
@@ -299,6 +301,27 @@ func retryFn(
 	fnWithArgs := func() error {
 		grpcClient := scheduler.NewSchedulerClient(conn)
 		return fn(context.Background(), grpcClient, namespace)
+	}
+	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
+	if err != nil {
+		logger.Error(err, "Failed to connect to scheduler", "namespace", namespace)
+		return err
+	}
+	return nil
+}
+
+func retryFnWithSchedulerState(
+	fn func(ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) error,
+	conn *grpc.ClientConn, namespace string, logger logr.Logger, state *SchedulerClient,
+) error {
+	logger.Info("Retry sending initital state to scheduler", "namespace", namespace)
+	logFailure := func(err error, delay time.Duration) {
+		logger.Error(err, "Scheduler not ready")
+	}
+	backOffExp := backoff.NewExponentialBackOff()
+	fnWithArgs := func() error {
+		grpcClient := scheduler.NewSchedulerClient(conn)
+		return fn(context.Background(), namespace, state, grpcClient)
 	}
 	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 	if err != nil {
