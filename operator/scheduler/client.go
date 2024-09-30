@@ -316,7 +316,7 @@ func retryFn(
 	fn func(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
-	logger.Info("Retrying to connected", "namespace", namespace)
+	logger.Info("Retrying to connect", "namespace", namespace)
 	logFailure := func(err error, delay time.Duration) {
 		logger.Error(err, "Scheduler not ready")
 	}
