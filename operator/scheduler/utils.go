@@ -42,10 +42,15 @@ func (s *SchedulerClient) handleLoadedExperiments(
 		// experiments that are not in the process of being deleted has DeletionTimestamp as zero
 		if experiment.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling start experiment (on reconnect)", "experiment", experiment.Name)
-			if _, err := s.StartExperiment(ctx, &experiment, grpcClient); err != nil {
-				// if this is a retryable error, we will retry on the next connection reconnect
+			if retryable, err := s.StartExperiment(ctx, &experiment, grpcClient); err != nil {
 				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
-				return err
+				if retryable {
+					// if this is a retryable error, we will retry on the next connection reconnect
+					return err
+				} else {
+					// if it is not retryable then we continue to the next experiment
+					continue
+				}
 			} else {
 				s.logger.V(1).Info("Start experiment called successfully", "experiment", experiment.Name)
 			}
@@ -110,10 +115,15 @@ func (s *SchedulerClient) handleLoadedModels(
 		// models that are not in the process of being deleted has DeletionTimestamp as zero
 		if model.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling Load model (on reconnect)", "model", model.Name)
-			if _, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
+			if retryable, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
 				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
-				return err
+				if retryable {
+					return err
+				} else {
+					// if it is not retryable then we continue to the next model
+					continue
+				}
 			} else {
 				s.logger.V(1).Info("Load model called successfully", "model", model.Name)
 			}
@@ -217,10 +227,15 @@ func (s *SchedulerClient) handleLoadedPipelines(
 		// pipelines that are not in the process of being deleted has DeletionTimestamp as zero
 		if pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling load pipeline (on reconnect)", "pipeline", pipeline.Name)
-			if _, err := s.LoadPipeline(ctx, &pipeline, grpcClient); err != nil {
-				// if this is a retryable error, we will retry on the next connection reconnect
+			if retryable, err := s.LoadPipeline(ctx, &pipeline, grpcClient); err != nil {
 				s.logger.Error(err, "Failed to call load pipeline", "pipeline", pipeline.Name)
-				return err
+				if retryable {
+					// if this is a retryable error, we will retry on the next connection reconnect
+					return err
+				} else {
+					// if it is not retryable then we continue to the next pipeline
+					continue
+				}
 			} else {
 				s.logger.V(1).Info("Load pipeline called successfully", "pipeline", pipeline.Name)
 			}
