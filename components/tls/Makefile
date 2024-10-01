@@ -18,7 +18,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 
 .PHONY: build
 build: test
-	go build -trimpath -ldflags="-s -w" ./pkg/...
+	go build -trimpath -ldflags="-w" ./pkg/...
 
 .PHONY: licenses/dep.txt
 licenses/dep.txt:
