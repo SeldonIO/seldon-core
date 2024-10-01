@@ -41,14 +41,15 @@ func TestStatefulSetReconcile(t *testing.T) {
 	g.Expect(err).To(BeNil())
 
 	type test struct {
-		name                 string
-		metaServer           metav1.ObjectMeta
-		metaServerConfig     metav1.ObjectMeta
-		podSpec              *v1.PodSpec
-		volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim
-		scaling              *mlopsv1alpha1.ScalingSpec
-		existing             *appsv1.StatefulSet
-		expectedReconcileOp  constants.ReconcileOperation
+		name                                            string
+		metaServer                                      metav1.ObjectMeta
+		metaServerConfig                                metav1.ObjectMeta
+		podSpec                                         *v1.PodSpec
+		volumeClaimTemplates                            []mlopsv1alpha1.PersistentVolumeClaim
+		scaling                                         *mlopsv1alpha1.ScalingSpec
+		statefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
+		existing                                        *appsv1.StatefulSet
+		expectedReconcileOp                             constants.ReconcileOperation
 	}
 
 	getIntPtr := func(i int32) *int32 {
@@ -334,6 +335,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 				test.podSpec,
 				test.volumeClaimTemplates,
 				test.scaling,
+				test.statefulSetPersistentVolumeClaimRetentionPolicy,
 				test.metaServerConfig,
 				annotator)
 			rop, err := r.getReconcileOperation()
@@ -355,14 +357,15 @@ func TestToStatefulSet(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                 string
-		meta                 metav1.ObjectMeta
-		podSpec              *v1.PodSpec
-		labels               map[string]string
-		annotations          map[string]string
-		volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim
-		scaling              *mlopsv1alpha1.ScalingSpec
-		statefulSet          *appsv1.StatefulSet
+		name                                            string
+		meta                                            metav1.ObjectMeta
+		podSpec                                         *v1.PodSpec
+		labels                                          map[string]string
+		annotations                                     map[string]string
+		volumeClaimTemplates                            []mlopsv1alpha1.PersistentVolumeClaim
+		statefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
+		scaling                                         *mlopsv1alpha1.ScalingSpec
+		statefulSet                                     *appsv1.StatefulSet
 	}
 
 	getIntPtr := func(i int32) *int32 {
@@ -463,7 +466,13 @@ func TestToStatefulSet(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			statefulSet := toStatefulSet(test.meta, test.podSpec, test.volumeClaimTemplates, test.scaling, test.labels, test.annotations)
+			statefulSet := toStatefulSet(test.meta,
+				test.podSpec,
+				test.volumeClaimTemplates,
+				test.scaling,
+				test.statefulSetPersistentVolumeClaimRetentionPolicy,
+				test.labels,
+				test.annotations)
 			g.Expect(equality.Semantic.DeepEqual(statefulSet, test.statefulSet)).To(BeTrue())
 		})
 	}
@@ -523,6 +532,7 @@ func TestLabelsAnnotations(t *testing.T) {
 				&v1.PodSpec{},
 				[]mlopsv1alpha1.PersistentVolumeClaim{},
 				&mlopsv1alpha1.ScalingSpec{},
+				&appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{},
 				test.metaServerConfig,
 				annotator)
 			for k, v := range test.expectedLabels {
