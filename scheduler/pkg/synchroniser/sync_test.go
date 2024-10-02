@@ -25,24 +25,29 @@ func TestSimpleSynchroniser(t *testing.T) {
 	type test struct {
 		name    string
 		timeout time.Duration
-		signals uint
+		signal  bool
 	}
 
 	tests := []test{
 		{
 			name:    "Simple",
 			timeout: 100 * time.Millisecond,
-			signals: 1,
+			signal:  true,
 		},
 		{
 			name:    "Longer timeout",
 			timeout: 500 * time.Millisecond,
-			signals: 1,
+			signal:  true,
 		},
 		{
 			name:    "No timer",
 			timeout: 0 * time.Millisecond,
-			signals: 1,
+			signal:  true,
+		},
+		{
+			name:    "No signal",
+			timeout: 100 * time.Millisecond,
+			signal:  false,
 		},
 	}
 
@@ -51,14 +56,17 @@ func TestSimpleSynchroniser(t *testing.T) {
 			s := NewSimpleSynchroniser(test.timeout)
 			startTime := time.Now()
 			g.Expect(s.IsReady()).To(BeFalse())
-			s.Signals(test.signals)
-			// this should have no effect
-			s.Signals(100000)
+			if test.signal {
+				s.Signals(1)
+			}
 			s.WaitReady()
 			elapsed := time.Since(startTime)
 			g.Expect(s.IsReady()).To(BeTrue())
 			g.Expect(elapsed).To(BeNumerically(">", test.timeout))
 
+			// this should have no effect
+			s.Signals(100000)
+			g.Expect(s.IsReady()).To(BeTrue())
 			// make sure we are graceful after this point
 			s.Signals(10)
 			g.Expect(s.IsReady()).To(BeTrue())

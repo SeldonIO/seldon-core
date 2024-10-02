@@ -40,6 +40,7 @@ func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 	s.isReady.Store(false)
 	s.triggered.Store(false)
 	s.wg.Add(1)
+	time.AfterFunc(s.timeout, s.done)
 	return s
 }
 
@@ -48,12 +49,7 @@ func (s *SimpleSynchroniser) IsReady() bool {
 }
 
 func (s *SimpleSynchroniser) Signals(_ uint) {
-	if !s.IsReady() {
-		swapped := s.triggered.CompareAndSwap(false, true) // make sure we run only once
-		if swapped {
-			time.AfterFunc(s.timeout, s.done)
-		}
-	}
+	// pass
 }
 
 func (s *SimpleSynchroniser) WaitReady() {
