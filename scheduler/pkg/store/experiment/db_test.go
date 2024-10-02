@@ -324,84 +324,64 @@ func TestSaveAndRestore(t *testing.T) {
 func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name        string
-		experiments []*Experiment
-		withTTL     bool
+		name       string
+		experiment Experiment
+		withTTL    bool
 	}
 
 	getStrPtr := func(val string) *string { return &val }
 
+	createDeletedExperiment := func(name string) Experiment {
+		return Experiment{
+			Name:         name,
+			ResourceType: ModelResourceType,
+			Default:      getStrPtr("model1"),
+			Candidates: []*Candidate{
+				{
+					Name:   "model1",
+					Weight: 50,
+				},
+				{
+					Name:   "model2",
+					Weight: 50,
+				},
+			},
+			KubernetesMeta: &KubernetesMeta{
+				Namespace:  "default",
+				Generation: 2,
+			},
+			Deleted: true,
+		}
+	}
+
 	tests := []test{
 		{
-			name: "deleted experiment with ttl",
-			experiments: []*Experiment{
-				{
-					Name:         "test-with",
-					ResourceType: ModelResourceType,
-					Default:      getStrPtr("model1"),
-					Candidates: []*Candidate{
-						{
-							Name:   "model1",
-							Weight: 50,
-						},
-						{
-							Name:   "model2",
-							Weight: 50,
-						},
-					},
-					KubernetesMeta: &KubernetesMeta{
-						Namespace:  "default",
-						Generation: 2,
-					},
-					Deleted: true,
-				},
-			},
-			withTTL: true,
+			name:       "deleted experiment with ttl",
+			experiment: createDeletedExperiment("with-ttl"),
+			withTTL:    true,
 		},
 		{
-			name: "deleted experiment without ttl",
-			experiments: []*Experiment{
-				{
-					Name:         "test-without",
-					ResourceType: ModelResourceType,
-					Default:      getStrPtr("model1"),
-					Candidates: []*Candidate{
-						{
-							Name:   "model1",
-							Weight: 50,
-						},
-						{
-							Name:   "model2",
-							Weight: 50,
-						},
-					},
-					KubernetesMeta: &KubernetesMeta{
-						Namespace:  "default",
-						Generation: 2,
-					},
-					Deleted: true,
-				},
-			},
-			withTTL: false,
+			name:       "deleted experiment without ttl",
+			experiment: createDeletedExperiment("without-ttl"),
+			withTTL:    false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			g.Expect(test.experiment.Deleted).To(BeTrue(), "this is a test for deleted experiments")
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
 			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
-			for _, exp := range test.experiments {
-				if !test.withTTL {
-					err := edb.save(exp, nil)
-					g.Expect(err).To(BeNil())
-				} else {
-					ttl := time.Duration(time.Microsecond * 2)
-					err := edb.save(exp, &ttl)
-					time.Sleep(ttl * 2)
-					g.Expect(err).To(BeNil())
-				}
+			if !test.withTTL {
+				err := edb.save(&test.experiment, nil)
+				g.Expect(err).To(BeNil())
+			} else {
+				ttl := time.Duration(time.Microsecond * 2)
+				err := edb.save(&test.experiment, &ttl)
+				time.Sleep(ttl * 2)
+				g.Expect(err).To(BeNil())
 			}
 			err = edb.Stop()
 			g.Expect(err).To(BeNil())
@@ -410,18 +390,17 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			err = es.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 
-			for _, exp := range test.experiments {
-				if !test.withTTL {
-					var item *badger.Item
-					err = es.db.db.View(func(txn *badger.Txn) error {
-						item, err = txn.Get(([]byte(exp.Name)))
-						return err
-					})
-					g.Expect(err).To(BeNil())
-					g.Expect(item.ExpiresAt()).ToNot(BeZero())
-				} else {
-					g.Expect(es.experiments[exp.Name]).To(BeNil())
-				}
+			if !test.withTTL {
+				var item *badger.Item
+				err = es.db.db.View(func(txn *badger.Txn) error {
+					item, err = txn.Get(([]byte(test.experiment.Name)))
+					return err
+				})
+				g.Expect(err).To(BeNil())
+				g.Expect(item.ExpiresAt()).ToNot(BeZero())
+				g.Expect(es.experiments[test.experiment.Name]).ToNot(BeNil())
+			} else {
+				g.Expect(es.experiments[test.experiment.Name]).To(BeNil())
 			}
 		})
 	}

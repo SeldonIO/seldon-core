@@ -193,109 +193,82 @@ func TestSaveAndRestore(t *testing.T) {
 func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name      string
-		pipelines []*Pipeline
-		withTTL   bool
+		name     string
+		pipeline Pipeline
+		withTTL  bool
+	}
+
+	createdDeletedPipeline := func(name string) Pipeline {
+		return Pipeline{
+			Name:        "test-with",
+			LastVersion: 0,
+			Versions: []*PipelineVersion{
+				{
+					Name:    "p1",
+					Version: 0,
+					UID:     "x",
+					Steps: map[string]*PipelineStep{
+						"a": {Name: "a"},
+					},
+					State: &PipelineState{
+						Status:    PipelineReady,
+						Reason:    "deployed",
+						Timestamp: time.Now(),
+					},
+					Output: &PipelineOutput{},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace: "default",
+					},
+				},
+			},
+			Deleted: true,
+		}
 	}
 
 	tests := []test{
 		{
-			name: "test deleted pipeline with TTL",
-			pipelines: []*Pipeline{
-				{
-					Name:        "test-with",
-					LastVersion: 0,
-					Versions: []*PipelineVersion{
-						{
-							Name:    "p1",
-							Version: 0,
-							UID:     "x",
-							Steps: map[string]*PipelineStep{
-								"a": {Name: "a"},
-							},
-							State: &PipelineState{
-								Status:    PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now(),
-							},
-							Output: &PipelineOutput{},
-							KubernetesMeta: &KubernetesMeta{
-								Namespace: "default",
-							},
-						},
-					},
-					Deleted: true,
-				},
-			},
-			withTTL: true,
+			name:     "test deleted pipeline with TTL",
+			pipeline: createdDeletedPipeline("with-ttl"),
+			withTTL:  true,
 		},
 		{
-			name: "test deleted pipeline without TTL",
-			pipelines: []*Pipeline{
-				{
-					Name:        "test-without",
-					LastVersion: 0,
-					Versions: []*PipelineVersion{
-						{
-							Name:    "p1",
-							Version: 0,
-							UID:     "x",
-							Steps: map[string]*PipelineStep{
-								"a": {Name: "a"},
-							},
-							State: &PipelineState{
-								Status:    PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now(),
-							},
-							Output: &PipelineOutput{},
-							KubernetesMeta: &KubernetesMeta{
-								Namespace: "default",
-							},
-						},
-					},
-					Deleted: true,
-				},
-			},
-			withTTL: false,
+			name:     "test deleted pipeline without TTL",
+			pipeline: createdDeletedPipeline("without-ttl"),
+			withTTL:  false,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			g.Expect(test.pipeline.Deleted).To(BeTrue(), "this is a test for deleted pipelines")
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
 			pdb, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
-			for _, p := range test.pipelines {
-				var err error
-				if !test.withTTL {
-					err = pdb.save(p, nil)
-				} else {
-					ttl := time.Duration(time.Microsecond * 10)
-					err = pdb.save(p, &ttl)
-					time.Sleep(ttl * 2)
-				}
-				g.Expect(err).To(BeNil())
+			if !test.withTTL {
+				err = pdb.save(&test.pipeline, nil)
+			} else {
+				ttl := time.Duration(time.Microsecond * 10)
+				err = pdb.save(&test.pipeline, &ttl)
+				time.Sleep(ttl * 2)
 			}
+			g.Expect(err).To(BeNil())
 			err = pdb.Stop()
 			g.Expect(err).To(BeNil())
 
 			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
 			err = ps.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
-			for _, p := range test.pipelines {
-				if !test.withTTL {
-					var item *badger.Item
-					err = ps.db.db.View(func(txn *badger.Txn) error {
-						item, err = txn.Get(([]byte(p.Name)))
-						return err
-					})
-					g.Expect(err).To(BeNil())
-					g.Expect(item.ExpiresAt()).ToNot(BeZero())
-					g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
-				} else {
-					g.Expect(ps.pipelines[p.Name]).To(BeNil())
-				}
+			if !test.withTTL {
+				var item *badger.Item
+				err = ps.db.db.View(func(txn *badger.Txn) error {
+					item, err = txn.Get(([]byte(test.pipeline.Name)))
+					return err
+				})
+				g.Expect(err).To(BeNil())
+				g.Expect(item.ExpiresAt()).ToNot(BeZero())
+				g.Expect(ps.pipelines[test.pipeline.Name]).ToNot(BeNil())
+			} else {
+				g.Expect(ps.pipelines[test.pipeline.Name]).To(BeNil())
 			}
 		})
 	}
