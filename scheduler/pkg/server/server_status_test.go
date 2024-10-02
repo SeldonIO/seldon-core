@@ -96,58 +96,6 @@ func TestModelsStatusStream(t *testing.T) {
 	}
 }
 
-func TestStartServerStream(t *testing.T) {
-	g := NewGomegaWithT(t)
-	type test struct {
-		name   string
-		server *SchedulerServer
-		err    bool
-	}
-
-	tests := []test{
-		{
-			name: "ok",
-			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
-				logger:     log.New(),
-				timeout:    10 * time.Millisecond,
-			},
-		},
-		{
-			name: "timeout",
-			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
-				logger:     log.New(),
-				timeout:    1 * time.Millisecond,
-			},
-			err: true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			stream := newStubServerStatusServer(1, 5*time.Millisecond)
-			err := test.server.sendStartServerStreamMarker(stream)
-			if test.err {
-				g.Expect(err).ToNot(BeNil())
-			} else {
-				g.Expect(err).To(BeNil())
-
-				var msr *pb.ServerStatusResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
-
-				g.Expect(msr).ToNot(BeNil())
-				g.Expect(msr.ServerName).To(Equal(""))
-			}
-		})
-	}
-}
-
 func TestModelsStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 

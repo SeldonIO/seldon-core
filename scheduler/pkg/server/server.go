@@ -60,6 +60,7 @@ type SchedulerServer struct {
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
+	controlPlaneStream    ControlPlaneStream
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
@@ -89,6 +90,11 @@ type PipelineEventStream struct {
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 }
 
+type ControlPlaneStream struct {
+	mu      sync.Mutex
+	streams map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription
+}
+
 type ModelSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribeModelStatusServer
@@ -110,6 +116,12 @@ type ExperimentSubscription struct {
 type PipelineSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribePipelineStatusServer
+	fin    chan bool
+}
+
+type ControlPlaneSubsription struct {
+	name   string
+	stream pb.Scheduler_SubscribeControlPlaneServer
 	fin    chan bool
 }
 
@@ -197,6 +209,9 @@ func NewSchedulerServer(
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
+		},
+		controlPlaneStream: ControlPlaneStream{
+			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
 		},
 		timeout:      sendTimeout,
 		synchroniser: synchroniser,

@@ -831,6 +831,27 @@ func (s *stubServerStatusServer) Send(r *pb.ServerStatusResponse) error {
 	return nil
 }
 
+type stubControlPlaneServer struct {
+	msgs      chan *pb.ControlPlaneResponse
+	sleepTime time.Duration
+	grpc.ServerStream
+}
+
+var _ pb.Scheduler_SubscribeControlPlaneServer = (*stubControlPlaneServer)(nil)
+
+func newStubControlPlaneServer(capacity int, sleepTime time.Duration) *stubControlPlaneServer {
+	return &stubControlPlaneServer{
+		msgs:      make(chan *pb.ControlPlaneResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
+
+func (s *stubControlPlaneServer) Send(r *pb.ControlPlaneResponse) error {
+	time.Sleep(s.sleepTime)
+	s.msgs <- r
+	return nil
+}
+
 type stubExperimentStatusServer struct {
 	msgs      chan *pb.ExperimentStatusResponse
 	sleepTime time.Duration

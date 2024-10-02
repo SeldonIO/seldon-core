@@ -128,14 +128,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
-	err := s.sendStartServerStreamMarker(stream)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to send empty server status to %s", req.GetSubscriberName())
-		return err
-	}
-
-	err = s.sendCurrentServerStatuses(stream)
+	err := s.sendCurrentServerStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current server statuses to %s", req.GetSubscriberName())
 		return err
@@ -268,14 +261,3 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	return nil
 }
 
-// this is to mark the initial start of a new stream (at application level)
-// as otherwise the other side sometimes doesnt know if the scheduler has established a new stream explicitly
-func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_ServerStatusServer) error {
-	ssr := &pb.ServerStatusResponse{}
-	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
