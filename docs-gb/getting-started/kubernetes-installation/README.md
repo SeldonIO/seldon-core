@@ -2,9 +2,7 @@
 
 ## Prerequisites
 
-### A running Kubernetes Cluster
-
-You will need a running Kubernetes cluster or can create a local KinD one for testing via [Ansible](ansible.md).
+* Ensure that the version of the Kubernetes cluster is v1.27 or later. You can create a [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) cluster on your local computer for testing with [Ansible](ansible.md). 
 
 ### Install Ecosystem Components
 
