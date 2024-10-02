@@ -138,6 +138,9 @@ jobs:
           name: release-notes
           path: release-notes.txt
 
+      - name: Change GitBook URL tags pointing to source code.
+        run: make update-code-references
+          
       - name: Push new commits to repository
         run: git push
 
