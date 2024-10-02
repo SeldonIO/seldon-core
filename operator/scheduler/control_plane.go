@@ -12,10 +12,17 @@ package scheduler
 import (
 	"context"
 	"io"
+	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+)
+
+const (
+	execTimeOut = 5 * time.Minute
 )
 
 func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
@@ -40,13 +47,37 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 			logger.Error(err, "event recv failed")
 			return err
 		}
-		logger.Info("Received event", "event", event)
+		logger.Info("Received event to handle state", "event", event)
 
-		if err := s.handleStateOnReconnect(ctx, grpcClient, namespace); err != nil {
-			logger.Error(err, "failed to handle state reconstruction")
+		fn := func() error {
+			return s.handleStateOnReconnect(ctx, grpcClient, namespace)
+		}
+		_, err = execWithTimeout(fn, execTimeOut)
+		if err != nil {
+			logger.Error(err, "Failed to handle state on reconnect")
 			return err
 		}
 
+		logger.Info("Handled state on reconnect")
+
 	}
 	return nil
+}
+
+func execWithTimeout(f func() error, d time.Duration) (bool, error) {
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- f()
+		close(errChan)
+	}()
+	t := time.NewTimer(d)
+	select {
+	case <-t.C:
+		return true, status.Errorf(codes.DeadlineExceeded, "Failed to send event within timeout")
+	case err := <-errChan:
+		if !t.Stop() {
+			<-t.C
+		}
+		return false, err
+	}
 }
