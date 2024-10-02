@@ -261,6 +261,9 @@ func (s *mockSchedulerGrpcClient) SubscribeExperimentStatus(ctx context.Context,
 func (s *mockSchedulerGrpcClient) SubscribePipelineStatus(ctx context.Context, in *scheduler.PipelineSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribePipelineStatusClient, error) {
 	return newMockSchedulerPipelineSubscribeGrpcClient(s.responses_subscribe_pipelines), nil
 }
+func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in *scheduler.ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeControlPlaneClient, error) {
+	return nil, nil
+}
 
 // new mockSchedulerClient (not grpc)
 func newMockControllerClient(objs ...client.Object) *SchedulerClient {

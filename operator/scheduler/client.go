@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"math"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	backoff "github.com/cenkalti/backoff/v4"
@@ -81,17 +80,6 @@ func getSchedulerHost(namespace string) string {
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
 	s.logger.Info("Starting event handling", "namespace", namespace)
 
-	// internal sync betweeen the different event handlers
-	triggered := atomic.Bool{}
-	triggered.Store(false)
-	ch := make(chan struct{})
-	tryTrigger := func() {
-		swapped := triggered.CompareAndSwap(false, true) // make sure we run only once
-		if swapped {
-			ch <- struct{}{}
-		}
-	}
-
 	// Subscribe the event streams from scheduler
 	go func() {
 		for {
@@ -101,7 +89,6 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for model events", "namespace", namespace)
 			}
-			tryTrigger()
 		}
 	}()
 	go func() {
@@ -112,7 +99,6 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for server events", "namespace", namespace)
 			}
-			tryTrigger()
 		}
 	}()
 	go func() {
@@ -123,7 +109,6 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for pipeline events", "namespace", namespace)
 			}
-			tryTrigger()
 		}
 	}()
 	go func() {
@@ -134,56 +119,48 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			} else {
 				s.logger.Info("Subscribe ended for experiment events", "namespace", namespace)
 			}
-			tryTrigger()
 		}
 	}()
-
-	// these are the different states that we want to construct on scheduler reconnect
-	// we are not sure if the scheduler has the correct state so we will send the state to the scheduler
-	// they should be idempotent so if the scheduler already has the state it will not change anything
 	go func() {
 		for {
-			// wait for a trigger
-			<-ch
-			// absorb signals from the same disconnected go routines
-			time.Sleep(1 * time.Second)
-
-			s.handleStateOnReconnect(conn, namespace)
-
-			triggered.Store(false)
+			err := retryFn(s.SubscribeControlPlaneEvents, conn, namespace, s.logger.WithName("SubscribeControlPlaneEvents"))
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for control plane events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for control plane events", "namespace", namespace)
+			}
 		}
 	}()
-
-	ch <- struct{}{} // initial trigger
 }
 
-func (s *SchedulerClient) handleStateOnReconnect(conn *grpc.ClientConn, namespace string) {
+func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	// on new reconnects we send a list of servers to the schedule
-	err := retryFn(s.handleRegisteredServers, conn, namespace, s.logger.WithName("handleRegisteredServers"))
+	err := s.handleRegisteredServers(context, grpcClient, namespace)
 	if err != nil {
 		s.logger.Error(err, "Failed to send registered server to scheduler")
 	}
 
 	if err == nil {
-		err = retryFn(s.handleExperiments, conn, namespace, s.logger.WithName("handleExperiments"))
+		err = s.handleExperiments(context, grpcClient, namespace)
 		if err != nil {
 			s.logger.Error(err, "Failed to send experiments to scheduler")
 		}
 	}
 
 	if err == nil {
-		err = retryFn(s.handlePipelines, conn, namespace, s.logger.WithName("handlePipelines"))
+		err = s.handlePipelines(context, grpcClient, namespace)
 		if err != nil {
 			s.logger.Error(err, "Failed to send pipelines to scheduler")
 		}
 	}
 
 	if err == nil {
-		err = retryFn(s.handleModels, conn, namespace, s.logger.WithName("handleModels"))
+		err = s.handleModels(context, grpcClient, namespace)
 		if err != nil {
 			s.logger.Error(err, "Failed to send models to scheduler")
 		}
 	}
+	return err
 }
 
 func (s *SchedulerClient) RemoveConnection(namespace string) {

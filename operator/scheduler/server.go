@@ -102,16 +102,6 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 		}
 
 		logger.Info("Received event", "server", event.ServerName)
-		if event.ServerName == "" {
-			logger.Info("Received server event with no server name, start of a new stream")
-			go func() {
-				err := s.handleRegisteredServers(ctx, grpcClient, namespace)
-				if err != nil {
-					s.logger.Error(err, "Failed to send registered server to scheduler")
-				}
-			}()
-			continue
-		}
 
 		if event.GetKubernetesMeta() == nil {
 			logger.Info("Received server event with no k8s metadata so ignoring", "server", event.ServerName)
