@@ -76,7 +76,12 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
 
-	stream, err := grpcClient.SubscribeExperimentStatus(ctx, &scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
+	stream, err := grpcClient.SubscribeExperimentStatus(
+		ctx,
+		&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+	)
 	if err != nil {
 		return err
 	}
