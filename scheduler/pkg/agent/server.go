@@ -390,7 +390,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	}
 	s.mutex.Unlock()
 
-	err := s.syncMessage(request, stream)
+	err := s.syncMessage(request)
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func (s *Server) StopAgentStreams() {
 	}
 }
 
-func (s *Server) syncMessage(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
+func (s *Server) syncMessage(request *pb.AgentSubscribeRequest) error {
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
 	if err != nil {

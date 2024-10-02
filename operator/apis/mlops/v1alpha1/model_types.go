@@ -113,7 +113,10 @@ type ModelStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlm
-// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
+//+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas
+//+kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="ModelReady")].status`,description="Model ready status"
+//+kubebuilder:printcolumn:name="Replicas",type=integer,JSONPath=`.status.replicas`, description="Number of replicas"
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Model is the Schema for the models API
 type Model struct {

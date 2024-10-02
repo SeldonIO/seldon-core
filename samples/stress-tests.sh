@@ -182,10 +182,46 @@ function tfsimple_join_pipeline() {
       # unload model tfsimple3 ./models/tfsimple3.yaml
 }
 
+function iris_experiment() {
+      echo ${1}
+            echo '''
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Experiment
+metadata:
+  name: experiment-sample'${1}'
+spec:
+  candidates:
+  - name: iris
+    weight: 50
+  - name: iris2
+    weight: 50
+''' > /tmp/experiments/experiment-sample${1}.yaml
+      load model ./models/sklearn1.yaml
+      load model ./models/sklearn2.yaml
+      status model iris
+      status model iris2
+      load experiment /tmp/experiments/experiment-sample${1}.yaml
+      status experiment experiment-sample${1}
+      # REST and GRPC have a slightly different way of calling the infer command for experiments
+      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment -i 50 \
+      '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment --show-headers \
+      '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+      seldon model infer experiment-sample${1} --header seldon-model=experiment-sample${1}.experiment -s -i 50 \
+      '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
+      seldon model infer experiment-sample${1}.experiment --inference-mode grpc -s -i 50\
+      '{"model_name":"experiment-sample'${1}'.experiment","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
+      # we cant unload the models here as they are used by other experiments
+      unload experiment experiment-sample${1} /tmp/experiments/experiment-sample${1}.yaml
+      # unload model iris ./models/sklearn1.yaml
+      # unload model iris2 ./models/sklearn2.yaml
+}
+
 ############################################################################################################
 
 mkdir /tmp/models
 mkdir /tmp/pipelines
+mkdir /tmp/experiments
 for i in $(seq 1 $count);
 do
     $task $i &

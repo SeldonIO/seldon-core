@@ -11,8 +11,10 @@ package experiment
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
@@ -185,16 +187,24 @@ func TestStartExperiment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+
 			logger := logrus.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
 			server := NewExperimentServer(logger, eventHub, fakeModelStore{}, fakePipelineStore{})
+			// init db
+			_ = server.InitialiseOrRestoreDB(path)
 			for _, ea := range test.experiments {
 				err := server.StartExperiment(ea.experiment)
 				if ea.fail {
 					g.Expect(err).ToNot(BeNil())
 				} else {
 					g.Expect(err).To(BeNil())
+					// check db
+					experimentFromDB, _ := server.db.get(ea.experiment.Name)
+					g.Expect(experimentFromDB.Deleted).To(BeFalse())
+					g.Expect(experimentFromDB.Active).To(BeFalse()) // by default experiments are not active
 				}
 			}
 			g.Expect(len(server.experiments)).To(Equal(test.expectedNumExp))
@@ -217,7 +227,7 @@ func TestStopExperiment(t *testing.T) {
 			store: &ExperimentStore{
 				logger: logrus.New(),
 				experiments: map[string]*Experiment{
-					"a": {},
+					"a": {Name: "a"},
 				},
 			},
 			experimentName: "a",
@@ -227,7 +237,7 @@ func TestStopExperiment(t *testing.T) {
 			store: &ExperimentStore{
 				logger: logrus.New(),
 				experiments: map[string]*Experiment{
-					"b": {},
+					"b": {Name: "b"},
 				},
 			},
 			experimentName: "a",
@@ -238,8 +248,8 @@ func TestStopExperiment(t *testing.T) {
 			store: &ExperimentStore{
 				logger: logrus.New(),
 				experiments: map[string]*Experiment{
-					"a": {},
-					"b": {},
+					"a": {Name: "a"},
+					"b": {Name: "b"},
 				},
 			},
 			experimentName: "a",
@@ -248,15 +258,35 @@ func TestStopExperiment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := test.store.StopExperiment(test.experimentName)
+			path := fmt.Sprintf("%s/db", t.TempDir())
+
+			// init db
+			err := test.store.InitialiseOrRestoreDB(path)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.store.experiments {
+				err := test.store.db.save(p)
+				g.Expect(err).To(BeNil())
+			}
+
+			err = test.store.StopExperiment(test.experimentName)
 			if test.err != nil {
 				_, ok := err.(*ExperimentNotFound)
 				g.Expect(ok).To(BeTrue())
+
+				// check db
+				experimentFromDB, _ := test.store.db.get(test.experimentName)
+				g.Expect(experimentFromDB).To(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+
+				// check experiment in store marked as deleted
 				experiment, err := test.store.GetExperiment(test.experimentName)
 				g.Expect(err).To(BeNil())
 				g.Expect(experiment.Deleted).To(BeTrue())
+
+				// check db
+				experimentFromDB, _ := test.store.db.get(test.experimentName)
+				g.Expect(experimentFromDB.Deleted).To(BeTrue())
 			}
 		})
 	}
@@ -317,6 +347,93 @@ func TestGetExperiment(t *testing.T) {
 				test.store.experiments[test.experimentName].Name = newName
 				g.Expect(experiment.Name).ToNot(Equal(newName))
 			}
+		})
+	}
+}
+
+func TestRestoreExperiments(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name        string
+		experiments map[string]*Experiment
+	}
+
+	tests := []test{
+		{
+			name: "running experiment",
+			experiments: map[string]*Experiment{
+				"a": {
+					Name: "a",
+					Candidates: []*Candidate{
+						{
+							Name: "model1",
+						},
+						{
+							Name: "model2",
+						},
+					},
+					Deleted: false},
+			},
+		},
+		{
+			name: "deleted experiment",
+			experiments: map[string]*Experiment{
+				"b": {Name: "b", Deleted: true},
+			},
+		},
+		{
+			name: "mix of experiments",
+			experiments: map[string]*Experiment{
+				"a": {
+					Name: "a",
+					Candidates: []*Candidate{
+						{
+							Name: "model1",
+						},
+						{
+							Name: "model2",
+						},
+					},
+					Deleted: false},
+				"b": {Name: "b", Deleted: true},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+
+			store := &ExperimentStore{
+				logger:          logrus.New(),
+				modelReferences: make(map[string]map[string]*Experiment),
+				experiments:     make(map[string]*Experiment),
+			}
+			// init db
+			err := store.InitialiseOrRestoreDB(path)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.experiments {
+				err := store.db.save(p)
+				g.Expect(err).To(BeNil())
+			}
+			_ = store.db.Stop()
+
+			// restore from db now that we have state on disk
+			_ = store.InitialiseOrRestoreDB(path)
+
+			for _, p := range test.experiments {
+				experimentFromDB, _ := store.db.get(p.Name)
+				g.Expect(experimentFromDB.Deleted).To(Equal(p.Deleted))
+			}
+			// check store
+			for _, p := range store.experiments {
+				expectedExperiment, ok := test.experiments[p.Name]
+				g.Expect(ok).To(BeTrue())
+				g.Expect(expectedExperiment.Deleted).To(Equal(p.Deleted))
+				g.Expect(cmp.Equal(p, expectedExperiment)).To(BeTrue())
+			}
+
+			g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
 		})
 	}
 }

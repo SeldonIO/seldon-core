@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: add20
+spec:
+  storageUri: "gs://seldon-models/triton/add20"
+  requirements:
+  - triton
+  - python

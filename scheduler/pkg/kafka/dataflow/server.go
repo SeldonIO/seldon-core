@@ -358,8 +358,14 @@ func (c *ChainerServer) rebalance() {
 			for server, subscription := range c.streams {
 				if contains(servers, server) {
 					msg.Op = chainer.PipelineUpdateMessage_Create
-					if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "Rebalance", sourceChainerServer); err != nil {
-						logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+					// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
+					if pv.State.Status == pipeline.PipelineTerminating {
+						msg.Op = chainer.PipelineUpdateMessage_Delete
+					} else {
+						pipelineState := pipeline.PipelineCreating
+						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", sourceChainerServer); err != nil {
+							logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+						}
 					}
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())

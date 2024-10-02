@@ -7,7 +7,6 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-
 package io.seldon.mlops.chainer
 
 import io.grpc.CallOptions
@@ -18,7 +17,6 @@ import io.grpc.MethodDescriptor
 import io.grpc.ServerServiceDefinition
 import io.grpc.ServerServiceDefinition.builder
 import io.grpc.ServiceDescriptor
-import io.grpc.Status
 import io.grpc.Status.UNIMPLEMENTED
 import io.grpc.StatusException
 import io.grpc.kotlin.AbstractCoroutineServerImpl
@@ -39,21 +37,20 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Holder for Kotlin coroutine-based client and server APIs for seldon.mlops.chainer.Chainer.
  */
-object ChainerGrpcKt {
-  const val SERVICE_NAME: String = ChainerGrpc.SERVICE_NAME
+public object ChainerGrpcKt {
+  public const val SERVICE_NAME: String = ChainerGrpc.SERVICE_NAME
 
   @JvmStatic
-  val serviceDescriptor: ServiceDescriptor
-    get() = ChainerGrpc.getServiceDescriptor()
+  public val serviceDescriptor: ServiceDescriptor
+    get() = getServiceDescriptor()
 
-  val subscribePipelineUpdatesMethod:
-      MethodDescriptor<ChainerOuterClass.PipelineSubscriptionRequest,
-      ChainerOuterClass.PipelineUpdateMessage>
+  public val subscribePipelineUpdatesMethod:
+      MethodDescriptor<ChainerOuterClass.PipelineSubscriptionRequest, ChainerOuterClass.PipelineUpdateMessage>
     @JvmStatic
     get() = ChainerGrpc.getSubscribePipelineUpdatesMethod()
 
-  val pipelineUpdateEventMethod: MethodDescriptor<ChainerOuterClass.PipelineUpdateStatusMessage,
-      ChainerOuterClass.PipelineUpdateStatusResponse>
+  public val pipelineUpdateEventMethod:
+      MethodDescriptor<ChainerOuterClass.PipelineUpdateStatusMessage, ChainerOuterClass.PipelineUpdateStatusResponse>
     @JvmStatic
     get() = ChainerGrpc.getPipelineUpdateEventMethod()
 
@@ -61,9 +58,9 @@ object ChainerGrpcKt {
    * A stub for issuing RPCs to a(n) seldon.mlops.chainer.Chainer service as suspending coroutines.
    */
   @StubFor(ChainerGrpc::class)
-  class ChainerCoroutineStub @JvmOverloads constructor(
+  public class ChainerCoroutineStub @JvmOverloads constructor(
     channel: Channel,
-    callOptions: CallOptions = DEFAULT
+    callOptions: CallOptions = DEFAULT,
   ) : AbstractCoroutineStub<ChainerCoroutineStub>(channel, callOptions) {
     override fun build(channel: Channel, callOptions: CallOptions): ChainerCoroutineStub =
         ChainerCoroutineStub(channel, callOptions)
@@ -71,7 +68,7 @@ object ChainerGrpcKt {
     /**
      * Returns a [Flow] that, when collected, executes this RPC and emits responses from the
      * server as they arrive.  That flow finishes normally if the server closes its response with
-     * [`Status.OK`][Status], and fails by throwing a [StatusException] otherwise.  If
+     * [`Status.OK`][io.grpc.Status], and fails by throwing a [StatusException] otherwise.  If
      * collecting the flow downstream fails exceptionally (including via cancellation), the RPC
      * is cancelled with that exception as a cause.
      *
@@ -81,7 +78,7 @@ object ChainerGrpcKt {
      *
      * @return A flow that, when collected, emits the responses from the server.
      */
-    fun subscribePipelineUpdates(request: ChainerOuterClass.PipelineSubscriptionRequest,
+    public fun subscribePipelineUpdates(request: ChainerOuterClass.PipelineSubscriptionRequest,
         headers: Metadata = Metadata()): Flow<ChainerOuterClass.PipelineUpdateMessage> =
         serverStreamingRpc(
       channel,
@@ -90,9 +87,11 @@ object ChainerGrpcKt {
       callOptions,
       headers
     )
+
     /**
      * Executes this RPC and returns the response message, suspending until the RPC completes
-     * with [`Status.OK`][Status].  If the RPC completes with another status, a corresponding
+     * with [`Status.OK`][io.grpc.Status].  If the RPC completes with another status, a
+     * corresponding
      * [StatusException] is thrown.  If this coroutine is cancelled, the RPC is also cancelled
      * with the corresponding exception as a cause.
      *
@@ -102,27 +101,28 @@ object ChainerGrpcKt {
      *
      * @return The single response from the server.
      */
-    suspend fun pipelineUpdateEvent(request: ChainerOuterClass.PipelineUpdateStatusMessage,
+    public suspend fun pipelineUpdateEvent(request: ChainerOuterClass.PipelineUpdateStatusMessage,
         headers: Metadata = Metadata()): ChainerOuterClass.PipelineUpdateStatusResponse = unaryRpc(
       channel,
       ChainerGrpc.getPipelineUpdateEventMethod(),
       request,
       callOptions,
       headers
-    )}
+    )
+  }
 
   /**
    * Skeletal implementation of the seldon.mlops.chainer.Chainer service based on Kotlin coroutines.
    */
-  abstract class ChainerCoroutineImplBase(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
+  public abstract class ChainerCoroutineImplBase(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
   ) : AbstractCoroutineServerImpl(coroutineContext) {
     /**
      * Returns a [Flow] of responses to an RPC for
      * seldon.mlops.chainer.Chainer.SubscribePipelineUpdates.
      *
      * If creating or collecting the returned flow fails with a [StatusException], the RPC
-     * will fail with the corresponding [Status].  If it fails with a
+     * will fail with the corresponding [io.grpc.Status].  If it fails with a
      * [java.util.concurrent.CancellationException], the RPC will fail with status
      * `Status.CANCELLED`.  If creating
      * or collecting the returned flow fails for any other reason, the RPC will fail with
@@ -130,7 +130,8 @@ object ChainerGrpcKt {
      *
      * @param request The request from the client.
      */
-    open fun subscribePipelineUpdates(request: ChainerOuterClass.PipelineSubscriptionRequest):
+    public open
+        fun subscribePipelineUpdates(request: ChainerOuterClass.PipelineSubscriptionRequest):
         Flow<ChainerOuterClass.PipelineUpdateMessage> = throw
         StatusException(UNIMPLEMENTED.withDescription("Method seldon.mlops.chainer.Chainer.SubscribePipelineUpdates is unimplemented"))
 
@@ -138,14 +139,15 @@ object ChainerGrpcKt {
      * Returns the response to an RPC for seldon.mlops.chainer.Chainer.PipelineUpdateEvent.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
-     * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
-     * will fail
+     * [io.grpc.Status].  If this method fails with a [java.util.concurrent.CancellationException],
+     * the RPC will fail
      * with status `Status.CANCELLED`.  If this method fails for any other reason, the RPC will
      * fail with `Status.UNKNOWN` with the exception as a cause.
      *
      * @param request The request from the client.
      */
-    open suspend fun pipelineUpdateEvent(request: ChainerOuterClass.PipelineUpdateStatusMessage):
+    public open suspend
+        fun pipelineUpdateEvent(request: ChainerOuterClass.PipelineUpdateStatusMessage):
         ChainerOuterClass.PipelineUpdateStatusResponse = throw
         StatusException(UNIMPLEMENTED.withDescription("Method seldon.mlops.chainer.Chainer.PipelineUpdateEvent is unimplemented"))
 

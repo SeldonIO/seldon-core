@@ -10,11 +10,11 @@ For production use cases follow [Helm installation](https://docs.seldon.io/proje
 Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
 Check Ansible [documentation] for further information.
 
+We provide a make target to install Ansible together with dependencies and any required collections.
+Run the following from the `ansible` directory:
 
-To install Ansible and required collections
 ```bash
-pip install ansible openshift kubernetes docker
-ansible-galaxy collection install kubernetes.core
+make install_deps_stable
 ```
 
 We have tested provided instructions on Python 3.8 - 3.11 with following version of Python libraries

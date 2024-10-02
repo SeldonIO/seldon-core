@@ -431,29 +431,35 @@ func (s *SchedulerServer) ServerStatus(
 }
 
 func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+	// note we dont count draining replicas in available replicas
+
 	resp := &pb.ServerStatusResponse{
-		ServerName:        s.Name,
-		AvailableReplicas: int32(len(s.Replicas)),
-		ExpectedReplicas:  int32(s.ExpectedReplicas),
-		KubernetesMeta:    s.KubernetesMeta,
+		ServerName:       s.Name,
+		ExpectedReplicas: int32(s.ExpectedReplicas),
+		KubernetesMeta:   s.KubernetesMeta,
 	}
 
-	var totalModels int32
+	totalModels := int32(0)
+	numAvailableServerReplicas := int32(0)
 	for _, replica := range s.Replicas {
-		numLoadedModelsOnReplica := int32(replica.GetNumLoadedModels())
-		resp.Resources = append(
-			resp.Resources,
-			&pb.ServerReplicaResources{
-				ReplicaIdx:           uint32(replica.GetReplicaIdx()),
-				TotalMemoryBytes:     replica.GetMemory(),
-				AvailableMemoryBytes: replica.GetAvailableMemory(),
-				NumLoadedModels:      numLoadedModelsOnReplica,
-				OverCommitPercentage: replica.GetOverCommitPercentage(),
-			},
-		)
-		totalModels += numLoadedModelsOnReplica
+		if !replica.GetIsDraining() {
+			numLoadedModelsOnReplica := int32(replica.GetNumLoadedModels())
+			resp.Resources = append(
+				resp.Resources,
+				&pb.ServerReplicaResources{
+					ReplicaIdx:           uint32(replica.GetReplicaIdx()),
+					TotalMemoryBytes:     replica.GetMemory(),
+					AvailableMemoryBytes: replica.GetAvailableMemory(),
+					NumLoadedModels:      numLoadedModelsOnReplica,
+					OverCommitPercentage: replica.GetOverCommitPercentage(),
+				},
+			)
+			totalModels += numLoadedModelsOnReplica
+			numAvailableServerReplicas++
+		}
 	}
 	resp.NumLoadedModelReplicas = totalModels
+	resp.AvailableReplicas = numAvailableServerReplicas
 
 	return resp
 }

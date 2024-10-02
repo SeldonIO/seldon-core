@@ -5,14 +5,14 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 /**
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.45.1)",
+    value = "by gRPC proto compiler (version 1.65.1)",
     comments = "Source: chainer.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class ChainerGrpc {
 
   private ChainerGrpc() {}
 
-  public static final String SERVICE_NAME = "seldon.mlops.chainer.Chainer";
+  public static final java.lang.String SERVICE_NAME = "seldon.mlops.chainer.Chainer";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest,
@@ -123,45 +123,39 @@ public final class ChainerGrpc {
 
   /**
    */
-  public static abstract class ChainerImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      */
-    public void subscribePipelineUpdates(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest request,
+    default void subscribePipelineUpdates(io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSubscribePipelineUpdatesMethod(), responseObserver);
     }
 
     /**
      */
-    public void pipelineUpdateEvent(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage request,
+    default void pipelineUpdateEvent(io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage request,
         io.grpc.stub.StreamObserver<io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPipelineUpdateEventMethod(), responseObserver);
-    }
-
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-            getSubscribePipelineUpdatesMethod(),
-            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
-              new MethodHandlers<
-                io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest,
-                io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage>(
-                  this, METHODID_SUBSCRIBE_PIPELINE_UPDATES)))
-          .addMethod(
-            getPipelineUpdateEventMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage,
-                io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse>(
-                  this, METHODID_PIPELINE_UPDATE_EVENT)))
-          .build();
     }
   }
 
   /**
+   * Base class for the server implementation of the service Chainer.
    */
-  public static final class ChainerStub extends io.grpc.stub.AbstractAsyncStub<ChainerStub> {
+  public static abstract class ChainerImplBase
+      implements io.grpc.BindableService, AsyncService {
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+      return ChainerGrpc.bindService(this);
+    }
+  }
+
+  /**
+   * A stub to allow clients to do asynchronous rpc calls to service Chainer.
+   */
+  public static final class ChainerStub
+      extends io.grpc.stub.AbstractAsyncStub<ChainerStub> {
     private ChainerStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -191,8 +185,10 @@ public final class ChainerGrpc {
   }
 
   /**
+   * A stub to allow clients to do synchronous rpc calls to service Chainer.
    */
-  public static final class ChainerBlockingStub extends io.grpc.stub.AbstractBlockingStub<ChainerBlockingStub> {
+  public static final class ChainerBlockingStub
+      extends io.grpc.stub.AbstractBlockingStub<ChainerBlockingStub> {
     private ChainerBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -221,8 +217,10 @@ public final class ChainerGrpc {
   }
 
   /**
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service Chainer.
    */
-  public static final class ChainerFutureStub extends io.grpc.stub.AbstractFutureStub<ChainerFutureStub> {
+  public static final class ChainerFutureStub
+      extends io.grpc.stub.AbstractFutureStub<ChainerFutureStub> {
     private ChainerFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -251,10 +249,10 @@ public final class ChainerGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final ChainerImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(ChainerImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -287,6 +285,25 @@ public final class ChainerGrpc {
     }
   }
 
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+          getSubscribePipelineUpdatesMethod(),
+          io.grpc.stub.ServerCalls.asyncServerStreamingCall(
+            new MethodHandlers<
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest,
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage>(
+                service, METHODID_SUBSCRIBE_PIPELINE_UPDATES)))
+        .addMethod(
+          getPipelineUpdateEventMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage,
+              io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusResponse>(
+                service, METHODID_PIPELINE_UPDATE_EVENT)))
+        .build();
+  }
+
   private static abstract class ChainerBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     ChainerBaseDescriptorSupplier() {}
@@ -310,9 +327,9 @@ public final class ChainerGrpc {
   private static final class ChainerMethodDescriptorSupplier
       extends ChainerBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    ChainerMethodDescriptorSupplier(String methodName) {
+    ChainerMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 

@@ -1,0 +1,8 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: mnist-onnx
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/mnist-onnx"
+  requirements:
+  - onnx
