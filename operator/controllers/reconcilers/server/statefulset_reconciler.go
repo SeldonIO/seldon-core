@@ -203,11 +203,19 @@ func (s *ServerStatefulSetReconciler) Reconcile() error {
 const (
 	StatefulSetReadyReason    = "StatefulSet replicas matches desired replicas"
 	StatefulSetNotReadyReason = "StatefulSet replicas does not match desired replicas"
+	StatefulSetReplicasNil    = "[BUG] StatefulSet replicas is nil"
 )
 
 func (s *ServerStatefulSetReconciler) GetConditions() []*apis.Condition {
-	ready := s.StatefulSet.Status.ReadyReplicas >= s.StatefulSet.Status.Replicas
-	s.Logger.Info("Checking conditions for stateful set", "ready", ready, "replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
+	// Replicas should never be nil as it is set to a default when not given explicitly
+	// Check to defend against programmatic setting to nil (i.e a bug in the code)
+	if s.StatefulSet.Spec.Replicas == nil {
+		s.Logger.Info(StatefulSetReplicasNil)
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, false, StatefulSetReplicasNil)}
+	}
+
+	ready := s.StatefulSet.Status.ReadyReplicas >= *s.StatefulSet.Spec.Replicas
+	s.Logger.Info("Checking conditions for stateful set", "ready", ready, ".spec.replicas", *s.StatefulSet.Spec.Replicas, ".status.replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
 	if ready {
 		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, ready, StatefulSetReadyReason)}
 	} else {
