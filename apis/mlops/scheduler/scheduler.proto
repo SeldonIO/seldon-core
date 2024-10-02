@@ -385,6 +385,14 @@ message SchedulerStatusResponse {
   string applicationVersion = 1;
 }
 
+message ControlPlaneSubscriptionRequest {
+  string subscriberName = 1; //Name of the subscription caller
+}
+
+message ControlPlaneResponse {
+
+}
+
 // [END Messages]
 
 
@@ -412,6 +420,9 @@ service Scheduler {
   rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
   rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
+
+  // control plane stream with controller
+  rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};
 }
 
 // [END Services]
