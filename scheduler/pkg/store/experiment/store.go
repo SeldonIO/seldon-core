@@ -357,7 +357,7 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 				ModelName: *resourceName,
 			}
 		default:
-			return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+			return nil, nil, nil, fmt.Errorf("unknown resource type %v", experiment.ResourceType)
 		}
 	}
 	es.updateExperimentState(experiment)
@@ -381,8 +381,7 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 			es.eventHub.PublishModelEvent(experimentStopEventSource, *modelEvt)
 		}
 		if pipelineEvt != nil {
-			// TODO: is this a bug?
-			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
+			es.eventHub.PublishPipelineEvent(experimentStopEventSource, *pipelineEvt)
 		}
 		if expEvt != nil {
 			es.eventHub.PublishExperimentEvent(experimentStopEventSource, *expEvt)
