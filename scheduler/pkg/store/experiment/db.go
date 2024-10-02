@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package experiment
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -60,16 +62,26 @@ func (edb *ExperimentDBManager) Stop() error {
 	return utils.Stop(edb.db)
 }
 
-func (edb *ExperimentDBManager) save(experiment *Experiment) error {
+// a nil ttl will save the experiment indefinitely
+func (edb *ExperimentDBManager) save(experiment *Experiment, ttl *time.Duration) error {
 	experimentProto := CreateExperimentSnapshotProto(experiment)
 	experimentBytes, err := proto.Marshal(experimentProto)
 	if err != nil {
 		return err
 	}
-	return edb.db.Update(func(txn *badger.Txn) error {
-		err = txn.Set([]byte(experiment.Name), experimentBytes)
-		return err
-	})
+
+	if ttl == nil {
+		return edb.db.Update(func(txn *badger.Txn) error {
+			err = txn.Set([]byte(experiment.Name), experimentBytes)
+			return err
+		})
+	} else {
+		return edb.db.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(experiment.Name), experimentBytes).WithTTL(*ttl)
+			err = txn.SetEntry(e)
+			return err
+		})
+	}
 }
 
 func (edb *ExperimentDBManager) saveVersion() error {
@@ -88,7 +100,8 @@ func (edb *ExperimentDBManager) delete(name string) error {
 }
 
 func (edb *ExperimentDBManager) restore(
-	startExperimentCb func(*Experiment) error, stopExperimentCb func(*Experiment) error) error {
+	startExperimentCb func(*Experiment) error, stopExperimentCb func(*Experiment) error,
+) error {
 	return edb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -107,6 +120,13 @@ func (edb *ExperimentDBManager) restore(
 					return err
 				}
 				experiment := CreateExperimentFromSnapshot(&snapshot)
+				if experiment.Deleted && item.ExpiresAt() == 0 {
+					ttl := deletedExperimentTTL
+					err = edb.save(experiment, &ttl)
+					if err != nil {
+						edb.logger.WithError(err).Warnf("failed to set ttl for experiment %s", experiment.Name)
+					}
+				}
 				if experiment.Deleted {
 					err = stopExperimentCb(experiment)
 				} else {

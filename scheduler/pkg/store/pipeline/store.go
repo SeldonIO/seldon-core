@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/mitchellh/copystructure"
 	"github.com/sirupsen/logrus"
@@ -24,13 +25,14 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize             int = 1000
-	addPipelineEventSource                = "pipeline.store.addpipeline"
-	removePipelineEventSource             = "pipeline.store.removepipeline"
-	setStatusPipelineEventSource          = "pipeline.store.setstatus"
-	SetModelStatusPipelineEventSource     = "pipeline.store.setmodelstatus"
-	pipelineDbFolder                      = "pipelinedb"
-	modelEventHandlerName                 = "pipeline.store.models"
+	deletedPipelineTTL                time.Duration = time.Duration(time.Hour * 24)
+	pendingSyncsQueueSize             int           = 1000
+	addPipelineEventSource                          = "pipeline.store.addpipeline"
+	removePipelineEventSource                       = "pipeline.store.removepipeline"
+	setStatusPipelineEventSource                    = "pipeline.store.setstatus"
+	SetModelStatusPipelineEventSource               = "pipeline.store.setmodelstatus"
+	pipelineDbFolder                                = "pipelinedb"
+	modelEventHandlerName                           = "pipeline.store.models"
 )
 
 type PipelineHandler interface {
@@ -191,7 +193,7 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 	}
 	ps.pipelines[req.Name] = pipeline
 	if ps.db != nil {
-		err = ps.db.save(pipeline)
+		err = ps.db.save(pipeline, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -234,7 +236,8 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		default:
 			pipeline.Deleted = true
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
-			if err := ps.db.save(pipeline); err != nil {
+			ttl := deletedPipelineTTL
+			if err := ps.db.save(pipeline, &ttl); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
 				return nil, err
 			}
@@ -376,7 +379,7 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
 				if !pipeline.Deleted && ps.db != nil {
-					err := ps.db.save(pipeline)
+					err := ps.db.save(pipeline, nil)
 					if err != nil {
 						return evts, err
 					}

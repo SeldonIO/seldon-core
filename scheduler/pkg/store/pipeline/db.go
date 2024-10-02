@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -25,7 +27,8 @@ const (
 )
 
 type PipelineDBManager struct {
-	db *badger.DB
+	db     *badger.DB
+	logger logrus.FieldLogger
 }
 
 func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBManager, error) {
@@ -35,7 +38,8 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 	}
 
 	pdb := &PipelineDBManager{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 
 	version, err := pdb.getVersion()
@@ -54,24 +58,33 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 	return pdb, nil
 }
 
-func save(pipeline *Pipeline, db *badger.DB) error {
+// a nil ttl will save the pipeline indefinitely
+func save(pipeline *Pipeline, db *badger.DB, ttl *time.Duration) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
 		return err
 	}
-	return db.Update(func(txn *badger.Txn) error {
-		err = txn.Set([]byte(pipeline.Name), pipelineBytes)
-		return err
-	})
+	if ttl == nil {
+		return db.Update(func(txn *badger.Txn) error {
+			err = txn.Set([]byte(pipeline.Name), pipelineBytes)
+			return err
+		})
+	} else {
+		return db.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(*ttl)
+			err = txn.SetEntry(e)
+			return err
+		})
+	}
 }
 
 func (pdb *PipelineDBManager) Stop() error {
 	return utils.Stop(pdb.db)
 }
 
-func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
-	return save(pipeline, pdb.db)
+func (pdb *PipelineDBManager) save(pipeline *Pipeline, ttl *time.Duration) error {
+	return save(pipeline, pdb.db, ttl)
 }
 
 // TODO: delete unused pipelines from the store as for now it increases indefinitely
@@ -108,6 +121,14 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				pipeline, err := CreatePipelineFromSnapshot(&snapshot)
 				if err != nil {
 					return err
+				}
+
+				if pipeline.Deleted && item.ExpiresAt() == 0 {
+					ttl := time.Duration(time.Hour * 24)
+					err = pdb.save(pipeline, &ttl)
+					if err != nil {
+						pdb.logger.WithError(err).Warnf("failed to set ttl for pipeline %s", pipeline.Name)
+					}
 				}
 				createPipelineCb(pipeline)
 				return nil

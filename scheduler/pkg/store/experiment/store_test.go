@@ -264,7 +264,7 @@ func TestStopExperiment(t *testing.T) {
 			err := test.store.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.store.experiments {
-				err := test.store.db.save(p)
+				err := test.store.db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -372,7 +372,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 			},
 		},
 		{
@@ -394,7 +395,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 				"b": {Name: "b", Deleted: true},
 			},
 		},
@@ -413,7 +415,7 @@ func TestRestoreExperiments(t *testing.T) {
 			err := store.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := store.db.save(p)
+				err := store.db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 			_ = store.db.Stop()

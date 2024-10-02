@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -124,7 +125,7 @@ func TestSaveAndRestore(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Stop()
@@ -135,6 +136,117 @@ func TestSaveAndRestore(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
+			}
+		})
+	}
+}
+
+func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name      string
+		pipelines []*Pipeline
+		withTTL   bool
+	}
+
+	tests := []test{
+		{
+			name: "test deleted pipeline with TTL",
+			pipelines: []*Pipeline{
+				{
+					Name:        "test-with",
+					LastVersion: 0,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "p1",
+							Version: 0,
+							UID:     "x",
+							Steps: map[string]*PipelineStep{
+								"a": {Name: "a"},
+							},
+							State: &PipelineState{
+								Status:    PipelineReady,
+								Reason:    "deployed",
+								Timestamp: time.Now(),
+							},
+							Output: &PipelineOutput{},
+							KubernetesMeta: &KubernetesMeta{
+								Namespace: "default",
+							},
+						},
+					},
+					Deleted: true,
+				},
+			},
+			withTTL: true,
+		},
+		{
+			name: "test deleted pipeline without TTL",
+			pipelines: []*Pipeline{
+				{
+					Name:        "test-without",
+					LastVersion: 0,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "p1",
+							Version: 0,
+							UID:     "x",
+							Steps: map[string]*PipelineStep{
+								"a": {Name: "a"},
+							},
+							State: &PipelineState{
+								Status:    PipelineReady,
+								Reason:    "deployed",
+								Timestamp: time.Now(),
+							},
+							Output: &PipelineOutput{},
+							KubernetesMeta: &KubernetesMeta{
+								Namespace: "default",
+							},
+						},
+					},
+					Deleted: true,
+				},
+			},
+			withTTL: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			logger := log.New()
+			pdb, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.pipelines {
+				var err error
+				if !test.withTTL {
+					err = pdb.save(p, nil)
+				} else {
+					ttl := time.Duration(time.Microsecond * 10)
+					err = pdb.save(p, &ttl)
+					time.Sleep(ttl * 2)
+				}
+				g.Expect(err).To(BeNil())
+			}
+			err = pdb.Stop()
+			g.Expect(err).To(BeNil())
+
+			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			err = ps.InitialiseOrRestoreDB(path)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.pipelines {
+				if !test.withTTL {
+					var item *badger.Item
+					err = ps.db.db.View(func(txn *badger.Txn) error {
+						item, err = txn.Get(([]byte(p.Name)))
+						return err
+					})
+					g.Expect(err).To(BeNil())
+					g.Expect(item.ExpiresAt()).ToNot(BeZero())
+					g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
+				} else {
+					g.Expect(ps.pipelines[p.Name]).To(BeNil())
+				}
 			}
 		})
 	}
@@ -190,7 +302,7 @@ func TestGetPipelineFromDB(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(err).To(BeNil())
@@ -265,7 +377,7 @@ func TestDeletePipelineFromDB(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(err).To(BeNil())
@@ -384,7 +496,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			db, err := utils.Open(getPipelineDbFolder(path), logger, "pipelineDb")
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := save(p, db)
+				err := save(p, db, nil)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Close()
@@ -403,7 +515,6 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			version, err := ps.db.getVersion()
 			g.Expect(err).To(BeNil())
 			g.Expect(version).To(Equal(currentPipelineSnapshotVersion))
-
 		})
 	}
 }

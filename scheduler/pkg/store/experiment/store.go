@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/mitchellh/copystructure"
 	"github.com/sirupsen/logrus"
@@ -24,12 +25,13 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize      int = 1000
-	experimentStartEventSource     = "experiment.store.start"
-	experimentStopEventSource      = "experiment.store.stop"
-	modelEventHandlerName          = "experiment.store.models"
-	pipelineEventHandlerName       = "experiment.store.pipelines"
-	experimentDbFolder             = "experimentdb"
+	deletedExperimentTTL       time.Duration = time.Duration(time.Hour * 24)
+	pendingSyncsQueueSize      int           = 1000
+	experimentStartEventSource               = "experiment.store.start"
+	experimentStopEventSource                = "experiment.store.stop"
+	modelEventHandlerName                    = "experiment.store.models"
+	pipelineEventHandlerName                 = "experiment.store.pipelines"
+	experimentDbFolder                       = "experimentdb"
 )
 
 type ExperimentServer interface {
@@ -57,7 +59,6 @@ type ExperimentStore struct {
 }
 
 func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
-
 	es := &ExperimentStore{
 		logger:             logger.WithField("source", "experimentServer"),
 		experiments:        make(map[string]*Experiment),
@@ -302,7 +303,7 @@ func (es *ExperimentStore) setStatusImpl(experimentName string, active bool, rea
 	if experiment, ok := es.experiments[experimentName]; !ok {
 		return nil, &ExperimentNotFound{experimentName: experimentName}
 	} else {
-		if !experiment.Deleted || !active { //can't reactivate a deleted experiment
+		if !experiment.Deleted || !active { // can't reactivate a deleted experiment
 			currentActive := experiment.Active
 			experiment.Active = active
 			experiment.StatusDescription = reason
@@ -358,11 +359,10 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 		default:
 			return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
 		}
-
 	}
 	es.updateExperimentState(experiment)
 	if es.db != nil {
-		err := es.db.save(experiment)
+		err := es.db.save(experiment, nil)
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -381,6 +381,7 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 			es.eventHub.PublishModelEvent(experimentStopEventSource, *modelEvt)
 		}
 		if pipelineEvt != nil {
+			// TODO: is this a bug?
 			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
 		}
 		if expEvt != nil {
@@ -413,11 +414,12 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 					ModelName: *experiment.Default,
 				}
 			default:
-				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+				return nil, nil, nil, fmt.Errorf("unknown resource type %v", experiment.ResourceType)
 			}
 		}
 		if es.db != nil {
-			err := es.db.save(experiment)
+			ttl := deletedExperimentTTL
+			err := es.db.save(experiment, &ttl)
 			if err != nil {
 				return nil, nil, nil, err
 			}

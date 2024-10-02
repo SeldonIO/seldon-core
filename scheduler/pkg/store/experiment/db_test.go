@@ -12,6 +12,7 @@ package experiment
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
@@ -69,6 +70,58 @@ func createExperimentProto(experiment *Experiment) *scheduler.Experiment {
 		Config:         config,
 		KubernetesMeta: k8sMeta,
 	}
+}
+
+func TestSaveWithTTL(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	experiment := &Experiment{
+		Name: "test1",
+		Candidates: []*Candidate{
+			{
+				Name:   "model1",
+				Weight: 50,
+			},
+			{
+				Name:   "model2",
+				Weight: 50,
+			},
+		},
+		Mirror: &Mirror{
+			Name:    "model3",
+			Percent: 90,
+		},
+		Config: &Config{
+			StickySessions: true,
+		},
+		KubernetesMeta: &KubernetesMeta{
+			Namespace:  "default",
+			Generation: 2,
+		},
+		Deleted: true,
+	}
+
+	ttl := time.Duration(time.Second)
+
+	path := fmt.Sprintf("%s/db", t.TempDir())
+	logger := log.New()
+	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+	g.Expect(err).To(BeNil())
+	err = db.save(experiment, &ttl)
+	g.Expect(err).To(BeNil())
+
+	persistedExp, err := db.get(experiment.Name)
+	g.Expect(err).To(BeNil())
+	g.Expect(persistedExp).NotTo(BeNil())
+
+	time.Sleep(ttl * 2)
+
+	persistedExp, err = db.get(experiment.Name)
+	g.Expect(err).ToNot(BeNil())
+	g.Expect(persistedExp).To(BeNil())
+
+	err = db.Stop()
+	g.Expect(err).To(BeNil())
 }
 
 func TestSaveAndRestore(t *testing.T) {
@@ -250,7 +303,7 @@ func TestSaveAndRestore(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Stop()
@@ -262,6 +315,112 @@ func TestSaveAndRestore(t *testing.T) {
 			for idx, p := range test.experiments {
 				if !test.errors[idx] {
 					g.Expect(cmp.Equal(p, es.experiments[p.Name])).To(BeTrue())
+				}
+			}
+		})
+	}
+}
+
+func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name        string
+		experiments []*Experiment
+		withTTL     bool
+	}
+
+	getStrPtr := func(val string) *string { return &val }
+
+	tests := []test{
+		{
+			name: "deleted experiment with ttl",
+			experiments: []*Experiment{
+				{
+					Name:         "test-with",
+					ResourceType: ModelResourceType,
+					Default:      getStrPtr("model1"),
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Deleted: true,
+				},
+			},
+			withTTL: true,
+		},
+		{
+			name: "deleted experiment without ttl",
+			experiments: []*Experiment{
+				{
+					Name:         "test-without",
+					ResourceType: ModelResourceType,
+					Default:      getStrPtr("model1"),
+					Candidates: []*Candidate{
+						{
+							Name:   "model1",
+							Weight: 50,
+						},
+						{
+							Name:   "model2",
+							Weight: 50,
+						},
+					},
+					KubernetesMeta: &KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Deleted: true,
+				},
+			},
+			withTTL: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			logger := log.New()
+			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			g.Expect(err).To(BeNil())
+			for _, exp := range test.experiments {
+				if !test.withTTL {
+					err := edb.save(exp, nil)
+					g.Expect(err).To(BeNil())
+				} else {
+					ttl := time.Duration(time.Microsecond * 2)
+					err := edb.save(exp, &ttl)
+					time.Sleep(ttl * 2)
+					g.Expect(err).To(BeNil())
+				}
+			}
+			err = edb.Stop()
+			g.Expect(err).To(BeNil())
+
+			es := NewExperimentServer(log.New(), nil, nil, nil)
+			err = es.InitialiseOrRestoreDB(path)
+			g.Expect(err).To(BeNil())
+
+			for _, exp := range test.experiments {
+				if !test.withTTL {
+					var item *badger.Item
+					err = es.db.db.View(func(txn *badger.Txn) error {
+						item, err = txn.Get(([]byte(exp.Name)))
+						return err
+					})
+					g.Expect(err).To(BeNil())
+					g.Expect(item.ExpiresAt()).ToNot(BeZero())
+				} else {
+					g.Expect(es.experiments[exp.Name]).To(BeNil())
 				}
 			}
 		})
@@ -385,7 +544,7 @@ func TestGetExperimentFromDB(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -525,7 +684,7 @@ func TestDeleteExperimentFromDB(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p)
+				err := db.save(p, nil)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -703,7 +862,6 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			err = es.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			g.Expect(len(es.experiments)).To(Equal(0))
-
 		})
 	}
 }
