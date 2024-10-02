@@ -23,6 +23,55 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
+func TestSaveWithTTL(t *testing.T) {
+	g := NewGomegaWithT(t)
+	pipeline := &Pipeline{
+		Name:        "test",
+		LastVersion: 0,
+		Versions: []*PipelineVersion{
+			{
+				Name:    "p1",
+				Version: 0,
+				UID:     "x",
+				Steps: map[string]*PipelineStep{
+					"a": {Name: "a"},
+				},
+				State: &PipelineState{
+					Status:    PipelineReady,
+					Reason:    "deployed",
+					Timestamp: time.Now(),
+				},
+				Output: &PipelineOutput{},
+				KubernetesMeta: &KubernetesMeta{
+					Namespace: "default",
+				},
+			},
+		},
+		Deleted: false,
+	}
+	ttl := time.Duration(time.Second)
+
+	path := fmt.Sprintf("%s/db", t.TempDir())
+	logger := log.New()
+	db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+	g.Expect(err).To(BeNil())
+	err = db.save(pipeline, &ttl)
+	g.Expect(err).To(BeNil())
+
+	persistedExp, err := db.get(pipeline.Name)
+	g.Expect(err).To(BeNil())
+	g.Expect(persistedExp).NotTo(BeNil())
+
+	time.Sleep(ttl * 2)
+
+	persistedExp, err = db.get(pipeline.Name)
+	g.Expect(err).ToNot(BeNil())
+	g.Expect(persistedExp).To(BeNil())
+
+	err = db.Stop()
+	g.Expect(err).To(BeNil())
+}
+
 func TestSaveAndRestore(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
