@@ -51,6 +51,14 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 	}
 }
 
+func (s *SchedulerServer) StopSendControlPlaneEvents() {
+	s.controlPlaneStream.mu.Lock()
+	defer s.controlPlaneStream.mu.Unlock()
+	for _, subscription := range s.controlPlaneStream.streams {
+		close(subscription.fin)
+	}
+}
+
 // this is to mark the initial start of a new stream (at application level)
 // as otherwise the other side sometimes doesnt know if the scheduler has established a new stream explicitly
 func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {

@@ -283,6 +283,7 @@ func main() {
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
+	s.StopSendControlPlaneEvents()
 	cs.StopSendPipelineEvents()
 	as.StopAgentStreams()
 
