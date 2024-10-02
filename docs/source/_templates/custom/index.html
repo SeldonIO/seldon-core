@@ -1,0 +1,123 @@
+<style>
+   
+   body {
+     height: 100%;
+     background: url(_static/images/header-gradient-core-v2.png);
+     background-size: cover;
+   }
+  .mdx-container {
+  height: 100%;
+  }
+  
+  .md-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 2.4rem;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    box-shadow: none;
+    z-index: 2;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .md-hero {
+    transition: background .25s;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    font-size: 1rem;
+    overflow: hidden;
+  }
+  .mdx-hero {
+  padding-top: 50px;
+  display: flex;
+  }
+  
+  .md-tabs {
+    width: 100%;
+    transition: background .25s;
+    background-color: rgba(63, 81, 181, 1)!important;
+    color: #fff;
+    overflow: auto;
+  }
+  
+  .md-hero__inner {
+    margin-top: 1rem!important;
+    margin-bottom: 1.2rem!important;
+  }
+  .mdx-hero__image {
+    padding-top: 50px;
+    color: #ffffff;
+    width: 50%;
+  }
+  .mdx-hero-content {
+  padding-top: 50px;
+  color: #ffffff;
+  width: 50%;
+  }
+
+  .mdx-hero-content > h1 {
+  color: currentColor;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  }
+  .mdx-hero-content > div {
+  margin-top: 30px;
+  }
+
+  .md-button {
+  background-color: #fff;
+  border-color: #fff;
+  color: #894da8;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  font-weight: 700;
+  padding: 0.625em 2em;
+  }
+  @media only screen and (min-width:76.25em){
+  .md-icon-home {
+    display: none;
+  }
+  }
+</style>
+
+<div class="mdx-container">
+  <div class="md-grid md-typeset">
+    <div class="mdx-hero">
+      <div class="mdx-hero__image">
+        <img
+          src="_static/images/illustration-core-v2.png"
+          draggable="false"
+        />
+      </div>
+      <div class="mdx-hero-content">
+        <h1>Data-centric MLOps: Seldon Core V2</h1>
+        <p>
+          Deploy machine learning locally with Docker or to a Kubernetes cluster.
+	  Scale to 1000s of models. Run data pipelines for models 
+	  containing outlier and drift detection along with model explainers. Comes with tracing, metrics and a CLI.
+	  Supports tensorflow, pytorch, sklearn, ONNX, custom python models and many more ML artifacts.
+	  Run experiments to test new models and combine with any Kubernetes service mesh. Create synchronous and asynchronous inference pipelines backed by Kafka.
+        </p>
+        <div>
+          <a
+            href="contents/getting-started/"
+            title="Get started"
+            class="md-button"
+          >
+            Get started
+          </a>
+          <a
+            href="contents/about/"
+            title="About"
+            class="md-button"
+          >
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
