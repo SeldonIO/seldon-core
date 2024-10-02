@@ -21,6 +21,8 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentModelStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
@@ -260,4 +262,3 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	}
 	return nil
 }
-
