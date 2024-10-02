@@ -42,8 +42,9 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		}
 		logger.Info("Received event", "event", event)
 
-		if err := s.handleRegisteredServers(ctx, grpcClient, namespace); err != nil {
-			logger.Error(err, "failed to handle registered servers")
+		if err := s.handleStateOnReconnect(ctx, grpcClient, namespace); err != nil {
+			logger.Error(err, "failed to handle state reconstruction")
+			return err
 		}
 
 	}
