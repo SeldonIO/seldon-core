@@ -14,7 +14,7 @@ import (
 )
 
 func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscriptionRequest, stream pb.Scheduler_SubscribeControlPlaneServer) error {
-	logger := s.logger.WithField("func", "SubscribeServerStatus")
+	logger := s.logger.WithField("func", "SubscribeControlPlane")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
 	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
