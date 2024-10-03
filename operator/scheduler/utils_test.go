@@ -214,8 +214,11 @@ type mockSchedulerGrpcClient struct {
 	responses_models                []*scheduler.ModelStatusResponse
 	responses_subscribe_models      []*scheduler.ModelStatusResponse
 	requests_experiments            []*scheduler.StartExperimentRequest
+	requests_experiments_unload     []*scheduler.StopExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
+	requests_pipelines_unload       []*scheduler.UnloadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
+	requests_models_unload          []*scheduler.UnloadModelRequest
 	requests_servers                []*scheduler.ServerNotify
 	errors                          map[string]error
 }
@@ -240,6 +243,7 @@ func (s *mockSchedulerGrpcClient) UnloadModel(ctx context.Context, in *scheduler
 	if ok {
 		return nil, err
 	} else {
+		s.requests_models_unload = append(s.requests_models_unload, in)
 		return nil, nil
 	}
 }
@@ -248,6 +252,7 @@ func (s *mockSchedulerGrpcClient) LoadPipeline(ctx context.Context, in *schedule
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) UnloadPipeline(ctx context.Context, in *scheduler.UnloadPipelineRequest, opts ...grpc.CallOption) (*scheduler.UnloadPipelineResponse, error) {
+	s.requests_pipelines_unload = append(s.requests_pipelines_unload, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StartExperiment(ctx context.Context, in *scheduler.StartExperimentRequest, opts ...grpc.CallOption) (*scheduler.StartExperimentResponse, error) {
@@ -255,6 +260,7 @@ func (s *mockSchedulerGrpcClient) StartExperiment(ctx context.Context, in *sched
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StopExperiment(ctx context.Context, in *scheduler.StopExperimentRequest, opts ...grpc.CallOption) (*scheduler.StopExperimentResponse, error) {
+	s.requests_experiments_unload = append(s.requests_experiments_unload, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) ServerStatus(ctx context.Context, in *scheduler.ServerStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_ServerStatusClient, error) {

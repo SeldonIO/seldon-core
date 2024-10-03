@@ -63,7 +63,7 @@ func (s *SchedulerClient) handleLoadedExperiments(
 func (s *SchedulerClient) handlePendingDeleteExperiments(
 	ctx context.Context, namespace string) error {
 	experimentList := &v1alpha1.ExperimentList{}
-	// Get all models in the namespace
+	// Get all experiments in the namespace
 	err := s.List(
 		ctx,
 		experimentList,

@@ -22,6 +22,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 
 	. "github.com/onsi/gomega"
 )
@@ -85,25 +86,36 @@ func TestControlPlaneEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                          string
-		existing_resources            []client.Object
-		expected_requests_pipelines   []*scheduler.LoadPipelineRequest
-		expected_requests_models      []*scheduler.LoadModelRequest
-		expected_requests_servers     []*scheduler.ServerNotify
-		expected_requests_experiments []*scheduler.StartExperimentRequest
+		name                            string
+		existing_resources              []client.Object
+		expected_requests_pipelines     []*scheduler.LoadPipelineRequest
+		expected_requests_models        []*scheduler.LoadModelRequest
+		expected_requests_models_unload []*scheduler.UnloadModelRequest
+		expected_requests_servers       []*scheduler.ServerNotify
+		expected_requests_experiments   []*scheduler.StartExperimentRequest
 	}
-	//now := metav1.Now()
+	now := metav1.Now()
 
 	// note expected state is derived in the test, maybe we should be explictl about it in the future
 	tests := []test{
 		{
-			name: "with no deleting resources",
+			name: "with no deleted resources",
 			existing_resources: []client.Object{
 				&mlopsv1alpha1.Pipeline{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
 						Namespace:  "default",
 						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.PipelineSpec{},
+				},
+				&mlopsv1alpha1.Pipeline{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.PipelineFinalizerName},
 					},
 					Spec: mlopsv1alpha1.PipelineSpec{},
 				},
@@ -115,11 +127,31 @@ func TestControlPlaneEvents(t *testing.T) {
 					},
 					Spec: mlopsv1alpha1.ModelSpec{},
 				},
+				&mlopsv1alpha1.Model{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.ModelFinalizerName},
+					},
+					Spec: mlopsv1alpha1.ModelSpec{},
+				},
 				&mlopsv1alpha1.Experiment{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
 						Namespace:  "default",
 						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ExperimentSpec{},
+				},
+				&mlopsv1alpha1.Experiment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						Generation:        1,
+						DeletionTimestamp: &now,
+						Finalizers:        []string{constants.ExperimentFinalizerName},
 					},
 					Spec: mlopsv1alpha1.ExperimentSpec{},
 				},
@@ -171,6 +203,17 @@ func TestControlPlaneEvents(t *testing.T) {
 					},
 				},
 			},
+			expected_requests_models_unload: []*scheduler.UnloadModelRequest{
+				{
+					Model: &scheduler.ModelReference{
+						Name: "bar",
+					},
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
 			expected_requests_servers: []*scheduler.ServerNotify{
 				{
 					Name: "foo",
@@ -197,15 +240,50 @@ func TestControlPlaneEvents(t *testing.T) {
 			for _, r := range test.expected_requests_pipelines {
 				g.Expect(grpcClient.requests_pipelines).To(ContainElement(r))
 			}
+			g.Expect(len(grpcClient.requests_pipelines)).To(Equal(len(test.expected_requests_pipelines)))
 			for _, r := range test.expected_requests_experiments {
 				g.Expect(grpcClient.requests_experiments).To(ContainElement(r))
 			}
+			g.Expect(len(grpcClient.requests_experiments)).To(Equal(len(test.expected_requests_experiments)))
+			for _, r := range test.expected_requests_models_unload {
+				g.Expect(grpcClient.requests_models_unload).To(ContainElement(r))
+			}
+			g.Expect(len(grpcClient.requests_models_unload)).To(Equal(len(test.expected_requests_models_unload)))
 			for _, r := range test.expected_requests_models {
 				g.Expect(grpcClient.requests_models).To(ContainElement(r))
 			}
+			g.Expect(len(grpcClient.requests_models)).To(Equal(len(test.expected_requests_models)))
 			for _, r := range test.expected_requests_servers {
 				g.Expect(grpcClient.requests_servers).To(ContainElement(r))
 			}
+			g.Expect(len(grpcClient.requests_servers)).To(Equal(len(test.expected_requests_servers)))
+
+			// should have no pipelines or experiments as they are just removed from k8s
+			g.Expect(len(grpcClient.requests_pipelines_unload)).To(Equal(0))
+			g.Expect(len(grpcClient.requests_experiments_unload)).To(Equal(0))
+
+			// we should have removed the pipeline and experiment from the controller
+			experiment := &mlopsv1alpha1.Experiment{}
+			err = controller.Get(
+				context.Background(),
+				client.ObjectKey{
+					Name:      "bar",
+					Namespace: "default",
+				},
+				experiment,
+			)
+			g.Expect(err).ToNot(BeNil())
+
+			pipeline := &mlopsv1alpha1.Pipeline{}
+			err = controller.Get(
+				context.Background(),
+				client.ObjectKey{
+					Name:      "bar",
+					Namespace: "default",
+				},
+				pipeline,
+			)
+			g.Expect(err).ToNot(BeNil())
 
 		})
 	}
