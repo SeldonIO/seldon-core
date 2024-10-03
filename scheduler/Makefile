@@ -24,7 +24,7 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
-GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
+GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #####################################
 # Build

@@ -1,4 +1,4 @@
-GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
+GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: test
 test:
