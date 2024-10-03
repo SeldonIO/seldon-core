@@ -88,20 +88,20 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	go build -trimpath -ldflags="-w" -o bin/manager main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 build-seldon: generate fmt vet
-	go build -o bin/seldon -v ./cmd/seldon
+	go build -trimpath -ldflags="-w" -o bin/seldon -v ./cmd/seldon
 
 build-seldon-arm: generate fmt vet
-	GOOS=darwin GOARCH=arm64 go build -tags dynamic -o bin/seldon -v ./cmd/seldon
+	GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-w" -tags dynamic -o bin/seldon -v ./cmd/seldon
 
 build-seldon-docgen:
-	go build -o bin/seldon-gendocs -v ./cmd/seldon/docs
+	go build -trimpath -ldflags="-w" -o bin/seldon-gendocs -v ./cmd/seldon/docs
 
 generate-cli-docs:
 	./bin/seldon-gendocs --out ../docs/source/contents/cli/docs

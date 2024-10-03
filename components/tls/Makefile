@@ -1,4 +1,4 @@
-GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
+GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: test
 test:
@@ -18,7 +18,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 
 .PHONY: build
 build: test
-	go build ./pkg/...
+	go build -trimpath -ldflags="-w" ./pkg/...
 
 .PHONY: licenses/dep.txt
 licenses/dep.txt:
