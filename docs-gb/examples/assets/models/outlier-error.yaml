@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: outlier-error
+spec:
+  storageUri: "gs://seldon-models/triton/outlier"
+  requirements:
+  - triton
+  - python
