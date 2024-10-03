@@ -10,12 +10,12 @@ the Change License after the Change Date as each is defined in accordance with t
 package scheduler
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
-	"context"
-
+	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -23,8 +23,6 @@ import (
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-
-	. "github.com/onsi/gomega"
 )
 
 func TestSendWithTimeout(t *testing.T) {
