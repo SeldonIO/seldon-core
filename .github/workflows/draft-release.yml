@@ -118,20 +118,11 @@ jobs:
         run: |
           git commit -m "Generating changelog for ${RELEASE_TAG}" --allow-empty
           if ${IS_RELEASE_CORE_VERSION}; then
-            auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --starting-version v2.0.0 --ending-version ${RELEASE_TAG} -l 5
+            git tag "${RELEASE_TAG}" --force && auto-changelog --tag-pattern ^v\([0-9]\+\.\){2}[0-9]\+$ --starting-version v2.0.0 --ending-version ${RELEASE_TAG} -l 5
           else
             git tag "${RELEASE_TAG}" --force && auto-changelog -l 5 --starting-version v2.0.0 --ending-version ${RELEASE_TAG}
           fi
           git add CHANGELOG.md && git commit --amend --no-edit || echo "Nothing to commit"
-          if ${IS_RELEASE_CORE_VERSION}; then
-            git commit -m "Update docs-gitbook code references for ${RELEASE_TAG}" --allow-empty
-            # Update GitBook URL tags pointing to source code
-            git tag "${RELEASE_TAG}" --force && make docs-gitbook-update-code-references
-            git add -A && git commit --amend --no-edit || echo "Nothing to commit"
-            # Revert GitBook URL tags to point back to the files in the v2 branch for commits
-            # after the release tag
-            git revert HEAD --no-commit && git commit --amend -m "Restore docs-gitbook code references for updates after ${RELEASE_TAG}" || echo "Nothing to commit"
-          fi
 
       - name: Generate release-notes.txt
         run: |
