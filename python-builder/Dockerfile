@@ -33,7 +33,7 @@ RUN apt-get upgrade -y && \
 
 
 # This is to install desired version of Python without updating conda version
-ENV PYTHON_VERSION "3.7.10"
+ENV PYTHON_VERSION "3.10.15"
 ENV CONDA_VERSION "4.7.12"
 RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION
 

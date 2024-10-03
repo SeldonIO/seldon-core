@@ -130,9 +130,9 @@ jobs:
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push PYTHON_VERSION=3.8.10
-          make docker-tag-base-python docker-push-base-python PYTHON_VERSION=3.8.10
-          docker save -o /tmp/base-wrapper.tar seldonio/seldon-core-s2i-python38:${VERSION}
+          make docker-build docker-push PYTHON_VERSION=3.10.15
+          make docker-tag-base-python docker-push-base-python PYTHON_VERSION=3.10.15
+          docker save -o /tmp/base-wrapper.tar seldonio/seldon-core-s2i-python310:${VERSION}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
