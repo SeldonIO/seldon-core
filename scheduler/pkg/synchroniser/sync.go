@@ -19,6 +19,8 @@ import (
 )
 
 type Synchroniser interface {
+	// mainly for testing
+	IsTriggered() bool
 	IsReady() bool
 	WaitReady()
 	Signals(uint)
@@ -44,12 +46,16 @@ func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 	return s
 }
 
+func (s *SimpleSynchroniser) IsTriggered() bool {
+	return s.triggered.Load()
+}
+
 func (s *SimpleSynchroniser) IsReady() bool {
 	return s.isReady.Load()
 }
 
 func (s *SimpleSynchroniser) Signals(_ uint) {
-	// pass
+	s.triggered.Store(true)
 }
 
 func (s *SimpleSynchroniser) WaitReady() {

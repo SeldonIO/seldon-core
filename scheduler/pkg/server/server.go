@@ -295,10 +295,12 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s", req.GetModel().GetMeta().GetName())
+		}
+	}()
 	return &pb.LoadModelResponse{}, nil
 }
 
@@ -309,10 +311,12 @@ func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRe
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().Name)
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s (for unload)", req.GetModel().GetName())
+		}
+	}()
 	return &pb.UnloadModelResponse{}, nil
 }
 

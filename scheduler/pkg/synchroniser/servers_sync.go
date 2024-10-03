@@ -113,6 +113,11 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 	}
 }
 
+// this is for testing and should not be used in production
+func (s *ServerBasedSynchroniser) IsTriggered() bool {
+	return s.triggered.Load()
+}
+
 func (s *ServerBasedSynchroniser) doneFn() {
 	if s.isReady.CompareAndSwap(false, true) {
 		s.doneWg.Done()

@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -48,7 +49,7 @@ func (m *mockAgentHandler) SendAgentSync(modelName string) {
 func TestLoadModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler) {
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
 		logger := log.New()
 		logger.SetLevel(log.WarnLevel)
 
@@ -69,17 +70,17 @@ func TestLoadModel(t *testing.T) {
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
-		return s, mockAgent
+		return s, mockAgent, eventHub
 	}
 
 	smallMemory := uint64(100)
 	largeMemory := uint64(2000)
 
 	type test struct {
-		name  string
-		req   []*pba.AgentSubscribeRequest
-		model *pb.Model
-		code  codes.Code
+		name           string
+		req            []*pba.AgentSubscribeRequest
+		model          *pb.Model
+		scheduleFailed bool
 	}
 
 	tests := []test{
@@ -108,7 +109,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
 			},
-			code: codes.OK,
+			scheduleFailed: false,
 		},
 		{
 			name: "TooManyReplicas",
@@ -134,7 +135,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
 			},
-			code: codes.FailedPrecondition,
+			scheduleFailed: true,
 		},
 		{
 			name: "TooMuchMemory",
@@ -161,7 +162,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
 			},
-			code: codes.FailedPrecondition,
+			scheduleFailed: true,
 		},
 		{
 			name: "FailedRequirements",
@@ -188,7 +189,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
 			},
-			code: codes.FailedPrecondition,
+			scheduleFailed: true,
 		},
 		{
 			name: "MultipleRequirements",
@@ -215,7 +216,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
 			},
-			code: codes.OK,
+			scheduleFailed: false,
 		},
 		{
 			name: "TwoReplicas",
@@ -254,7 +255,7 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
 			},
-			code: codes.OK,
+			scheduleFailed: false,
 		},
 		{
 			name: "TwoReplicasFail",
@@ -293,18 +294,39 @@ func TestLoadModel(t *testing.T) {
 				},
 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
 			},
-			code: codes.FailedPrecondition,
+			scheduleFailed: true,
 		}, // schedule to 2 replicas but 1 fails
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Given
-			s, _ := createTestScheduler()
+			s, _, h := createTestScheduler()
 			for _, repReq := range test.req {
 				err := s.modelStore.AddServerReplica(repReq)
 				g.Expect(err).To(BeNil())
 			}
+
+			scheduledFailed := atomic.Bool{}
+
+			// Subscrone to model events
+			h.RegisterModelEventHandler(
+				"handler-model",
+				10,
+				log.New(),
+				func(event coordinator.ModelEventMsg) {
+					if event.ModelName != test.model.Meta.Name {
+						return
+					}
+					model, _ := s.modelStore.GetModel(event.ModelName)
+					latest := model.GetLatest()
+					if latest.ModelState().State == store.ScheduleFailed {
+						scheduledFailed.Store(true)
+					} else {
+						scheduledFailed.Store(false)
+					}
+				},
+			)
 
 			// When
 			lm := pb.LoadModelRequest{
@@ -312,15 +334,15 @@ func TestLoadModel(t *testing.T) {
 			}
 			r, err := s.LoadModel(context.Background(), &lm)
 
+			time.Sleep(100 * time.Millisecond)
+
 			// Then
-			if test.code != codes.OK {
-				g.Expect(err).ToNot(BeNil())
-				e, ok := status.FromError(err)
-				g.Expect(ok).To(BeTrue())
-				g.Expect(e.Code()).To(Equal(test.code))
+			g.Expect(r).ToNot(BeNil())
+			g.Expect(err).To(BeNil())
+			if test.scheduleFailed {
+				g.Expect(scheduledFailed.Load()).To(BeTrueBecause("schedule failed"))
 			} else {
-				g.Expect(err).To(BeNil())
-				g.Expect(r).ToNot(BeNil())
+				g.Expect(scheduledFailed.Load()).To(BeFalseBecause("schedule ok"))
 			}
 		})
 	}
@@ -350,11 +372,11 @@ func TestUnloadModel(t *testing.T) {
 	}
 
 	type test struct {
-		name               string
-		req                []*pba.AgentSubscribeRequest
-		model              *pb.Model
-		code               codes.Code
-		modelReplicaStates map[int]store.ModelReplicaState
+		name       string
+		req        []*pba.AgentSubscribeRequest
+		model      *pb.Model
+		code       codes.Code
+		modelState store.ModelState
 	}
 	modelName := "model1"
 	smallMemory := uint64(100)
@@ -366,7 +388,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested},
+			modelState: store.ModelTerminated,
 		},
 		{
 			name: "Multiple",
@@ -375,7 +397,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn", "xgboost"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested},
+			modelState: store.ModelTerminated,
 		},
 		{
 			name: "TwoReplicas",
@@ -386,7 +408,7 @@ func TestUnloadModel(t *testing.T) {
 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
 			model:              &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
 			code:               codes.OK,
-			modelReplicaStates: map[int]store.ModelReplicaState{0: store.UnloadEnvoyRequested, 1: store.UnloadEnvoyRequested},
+			modelState: store.ModelTerminated,
 		},
 		{
 			name: "NotExist",
@@ -417,6 +439,7 @@ func TestUnloadModel(t *testing.T) {
 			}
 			rm := &pb.UnloadModelRequest{Model: &pb.ModelReference{Name: modelName}}
 			r, err := s.UnloadModel(context.Background(), rm)
+
 			if test.code != codes.OK {
 				g.Expect(err).ToNot(BeNil())
 				e, ok := status.FromError(err)
@@ -427,9 +450,8 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(r).ToNot(BeNil())
 				ms, err := s.modelStore.GetModel(modelName)
 				g.Expect(err).To(BeNil())
-				for replicaIdx, state := range test.modelReplicaStates {
-					g.Expect(ms.GetLatest().GetModelReplicaState(replicaIdx)).To(Equal(state))
-				}
+				g.Expect(ms.GetLatest().ModelState().State).To(Equal(test.modelState))
+				
 			}
 		})
 	}
@@ -763,7 +785,7 @@ func TestServerNotify(t *testing.T) {
 			})
 			g.Expect(actualServers).To(Equal(test.expectedServerStates))
 
-			g.Expect(sync.IsReady()).To(Equal(test.signalTriggered))
+			g.Expect(sync.IsTriggered()).To(Equal(test.signalTriggered))
 		})
 	}
 }
