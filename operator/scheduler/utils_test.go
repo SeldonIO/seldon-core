@@ -106,6 +106,27 @@ func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatus
 	return nil, io.EOF
 }
 
+// Control Plane subscribe mock grpc client
+
+type mockControlPlaneSubscribeGrpcClient struct {
+	sent bool
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeControlPlaneClient = (*mockControlPlaneSubscribeGrpcClient)(nil)
+
+func newMockControlPlaneSubscribeGrpcClient() *mockControlPlaneSubscribeGrpcClient {
+	return &mockControlPlaneSubscribeGrpcClient{}
+}
+
+func (s *mockControlPlaneSubscribeGrpcClient) Recv() (*scheduler.ControlPlaneResponse, error) {
+	if !s.sent {
+		s.sent = true
+		return &scheduler.ControlPlaneResponse{}, nil
+	}
+	return nil, io.EOF
+}
+
 // Pipeline mock grpc client
 
 type mockSchedulerPipelineGrpcClient struct {
@@ -262,7 +283,7 @@ func (s *mockSchedulerGrpcClient) SubscribePipelineStatus(ctx context.Context, i
 	return newMockSchedulerPipelineSubscribeGrpcClient(s.responses_subscribe_pipelines), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in *scheduler.ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeControlPlaneClient, error) {
-	return nil, nil
+	return newMockControlPlaneSubscribeGrpcClient(), nil
 }
 
 // new mockSchedulerClient (not grpc)
