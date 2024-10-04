@@ -17,7 +17,6 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 	logger := s.logger.WithField("func", "SubscribeControlPlane")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
 	err := s.sendStartServerStreamMarker(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send start marker to %s", req.GetSubscriberName())
