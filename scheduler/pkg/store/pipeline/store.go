@@ -22,17 +22,17 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
-	deletedPipelineTTL                time.Duration = time.Duration(time.Hour * 24)
-	pendingSyncsQueueSize             int           = 1000
-	addPipelineEventSource                          = "pipeline.store.addpipeline"
-	removePipelineEventSource                       = "pipeline.store.removepipeline"
-	setStatusPipelineEventSource                    = "pipeline.store.setstatus"
-	SetModelStatusPipelineEventSource               = "pipeline.store.setmodelstatus"
-	pipelineDbFolder                                = "pipelinedb"
-	modelEventHandlerName                           = "pipeline.store.models"
+	pendingSyncsQueueSize             int = 1000
+	addPipelineEventSource                = "pipeline.store.addpipeline"
+	removePipelineEventSource             = "pipeline.store.removepipeline"
+	setStatusPipelineEventSource          = "pipeline.store.setstatus"
+	SetModelStatusPipelineEventSource     = "pipeline.store.setmodelstatus"
+	pipelineDbFolder                      = "pipelinedb"
+	modelEventHandlerName                 = "pipeline.store.models"
 )
 
 type PipelineHandler interface {
@@ -105,6 +105,15 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 // note: we do not validate the pipeline when we restore it from the db as we assume it was validated when it was added
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
+
+	// ensure a ttl is set for deleted pipelines
+	if pipeline.Deleted && time.Now().After(pipeline.DeletesAt) {
+		logger.Infof("updating ttl for pipeline %s", pipeline.Name)
+		ttl := utils.DeletedResourceTTL
+		pipeline.DeletesAt = time.Now().Add(ttl)
+		ps.db.save(pipeline)
+	}
+
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
 	ps.mu.Lock()
 	err := ps.modelStatusHandler.addPipelineModelStatus(pipeline)
@@ -193,7 +202,7 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 	}
 	ps.pipelines[req.Name] = pipeline
 	if ps.db != nil {
-		err = ps.db.save(pipeline, nil)
+		err = ps.db.save(pipeline)
 		if err != nil {
 			return nil, err
 		}
@@ -235,9 +244,9 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
 			pipeline.Deleted = true
+			pipeline.DeletesAt = time.Now().Add(utils.DeletedResourceTTL)
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
-			ttl := deletedPipelineTTL
-			if err := ps.db.save(pipeline, &ttl); err != nil {
+			if err := ps.db.save(pipeline); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
 				return nil, err
 			}
@@ -379,7 +388,7 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
 				if !pipeline.Deleted && ps.db != nil {
-					err := ps.db.save(pipeline, nil)
+					err := ps.db.save(pipeline)
 					if err != nil {
 						return evts, err
 					}

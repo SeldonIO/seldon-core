@@ -47,15 +47,16 @@ func TestSaveWithTTL(t *testing.T) {
 				},
 			},
 		},
-		Deleted: false,
+		Deleted: true,
 	}
 	ttl := time.Duration(time.Second)
+	pipeline.DeletesAt = time.Now().Add(ttl)
 
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
 	db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 	g.Expect(err).To(BeNil())
-	err = db.save(pipeline, &ttl)
+	err = db.save(pipeline)
 	g.Expect(err).To(BeNil())
 
 	persistedExp, err := db.get(pipeline.Name)
@@ -174,7 +175,7 @@ func TestSaveAndRestore(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Stop()
@@ -245,11 +246,11 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			pdb, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			if !test.withTTL {
-				err = pdb.save(&test.pipeline, nil)
+				err = pdb.save(&test.pipeline)
 			} else {
 				ttl := time.Duration(time.Microsecond * 10)
-				err = pdb.save(&test.pipeline, &ttl)
-				time.Sleep(ttl * 2)
+				test.pipeline.DeletesAt = time.Now().Add(-ttl)
+				err = pdb.save(&test.pipeline)
 			}
 			g.Expect(err).To(BeNil())
 			err = pdb.Stop()
@@ -324,7 +325,7 @@ func TestGetPipelineFromDB(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(err).To(BeNil())
@@ -399,7 +400,7 @@ func TestDeletePipelineFromDB(t *testing.T) {
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(err).To(BeNil())
@@ -518,7 +519,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			db, err := utils.Open(getPipelineDbFolder(path), logger, "pipelineDb")
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := save(p, db, nil)
+				err := save(p, db)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Close()

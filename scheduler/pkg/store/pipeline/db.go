@@ -59,20 +59,21 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 }
 
 // a nil ttl will save the pipeline indefinitely
-func save(pipeline *Pipeline, db *badger.DB, ttl *time.Duration) error {
+func save(pipeline *Pipeline, db *badger.DB) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
 		return err
 	}
-	if ttl == nil {
+	if !pipeline.Deleted {
 		return db.Update(func(txn *badger.Txn) error {
 			err = txn.Set([]byte(pipeline.Name), pipelineBytes)
 			return err
 		})
 	} else {
+		ttl := time.Until(pipeline.DeletesAt)
 		return db.Update(func(txn *badger.Txn) error {
-			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(*ttl)
+			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(ttl)
 			err = txn.SetEntry(e)
 			return err
 		})
@@ -83,8 +84,8 @@ func (pdb *PipelineDBManager) Stop() error {
 	return utils.Stop(pdb.db)
 }
 
-func (pdb *PipelineDBManager) save(pipeline *Pipeline, ttl *time.Duration) error {
-	return save(pipeline, pdb.db, ttl)
+func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
+	return save(pipeline, pdb.db)
 }
 
 // TODO: delete unused pipelines from the store as for now it increases indefinitely
@@ -118,18 +119,16 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				if err != nil {
 					return err
 				}
+
 				pipeline, err := CreatePipelineFromSnapshot(&snapshot)
 				if err != nil {
 					return err
 				}
 
-				if pipeline.Deleted && item.ExpiresAt() == 0 {
-					ttl := time.Duration(time.Hour * 24)
-					err = pdb.save(pipeline, &ttl)
-					if err != nil {
-						pdb.logger.WithError(err).Warnf("failed to set ttl for pipeline %s", pipeline.Name)
-					}
+				if pipeline.Deleted {
+					pipeline.DeletesAt = utils.GetDeletesAt(item)
 				}
+
 				createPipelineCb(pipeline)
 				return nil
 			})
