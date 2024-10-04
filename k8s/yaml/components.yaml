@@ -1184,8 +1184,6 @@ spec:
         value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
-      - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '10'
       - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
         value: '30'
       - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
@@ -1200,6 +1198,8 @@ spec:
         value: '5'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '1'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: 'PLAINTEXT'
       - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -1438,6 +1438,20 @@ spec:
         value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
+      - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
+        value: '30'
+      - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
+        value: '15'
+      - name: SELDON_PERIOD_READY_SUB_SERVICE_SECONDS
+        value: '60'
+      - name: SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES
+        value: '120'
+      - name: SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES
+        value: '15'
+      - name: SELDON_MAX_LOAD_RETRY_COUNT
+        value: '5'
+      - name: SELDON_MAX_UNLOAD_RETRY_COUNT
+        value: '1'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
