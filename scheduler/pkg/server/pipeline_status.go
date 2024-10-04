@@ -23,6 +23,8 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentPipelineStatuses(stream, false)
 	if err != nil {
 		return err

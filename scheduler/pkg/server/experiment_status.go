@@ -23,6 +23,8 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 	logger := s.logger.WithField("func", "SubscribeExperimentStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentExperimentStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current experiment statuses to %s", req.GetSubscriberName())
