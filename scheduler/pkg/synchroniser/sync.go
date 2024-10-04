@@ -19,7 +19,8 @@ import (
 )
 
 type Synchroniser interface {
-	// mainly for testing
+	// mainly for testing, this api should mean little in production as the synchroniser should be
+	// rely on the other methods to determine if it is ready.
 	IsTriggered() bool
 	IsReady() bool
 	WaitReady()

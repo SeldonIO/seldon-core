@@ -113,7 +113,6 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 	}
 }
 
-// this is for testing and should not be used in production
 func (s *ServerBasedSynchroniser) IsTriggered() bool {
 	return s.triggered.Load()
 }
