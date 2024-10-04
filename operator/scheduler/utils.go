@@ -45,7 +45,7 @@ func (s *SchedulerClient) handleLoadedExperiments(
 			if retryable, err := s.StartExperiment(ctx, &experiment, grpcClient); err != nil {
 				s.logger.Error(err, "Failed to call start experiment", "experiment", experiment.Name)
 				if retryable {
-					// if this is a retryable error, we will retry on the next connection reconnect
+					// if this is a retryable error, we break (caller will also stop sync process and force a reconnect to the scheduler)
 					return err
 				} else {
 					// if it is not retryable then we continue to the next experiment
@@ -116,9 +116,9 @@ func (s *SchedulerClient) handleLoadedModels(
 		if model.ObjectMeta.DeletionTimestamp.IsZero() {
 			s.logger.V(1).Info("Calling Load model (on reconnect)", "model", model.Name)
 			if retryable, err := s.LoadModel(ctx, &model, grpcClient); err != nil {
-				// if this is a retryable error, we will retry on the next connection reconnect
 				s.logger.Error(err, "Failed to call load model", "model", model.Name)
 				if retryable {
+					// if this is a retryable error, we break (caller will also stop sync process and force a reconnect to the scheduler)
 					return err
 				} else {
 					// if it is not retryable then we continue to the next model
@@ -230,7 +230,7 @@ func (s *SchedulerClient) handleLoadedPipelines(
 			if retryable, err := s.LoadPipeline(ctx, &pipeline, grpcClient); err != nil {
 				s.logger.Error(err, "Failed to call load pipeline", "pipeline", pipeline.Name)
 				if retryable {
-					// if this is a retryable error, we will retry on the next connection reconnect
+					// if this is a retryable error, we break (caller will also stop sync process and force a reconnect to the scheduler)
 					return err
 				} else {
 					// if it is not retryable then we continue to the next pipeline
