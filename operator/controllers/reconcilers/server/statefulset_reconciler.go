@@ -41,7 +41,7 @@ func NewServerStatefulSetReconciler(
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
-	policy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
+	volumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) *ServerStatefulSetReconciler {
@@ -49,7 +49,7 @@ func NewServerStatefulSetReconciler(
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerStatefulSetReconciler{
 		ReconcilerConfig: common,
-		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, policy, labels, annotations),
+		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, volumeClaimRetentionPolicy, labels, annotations),
 		Annotator:        annotator,
 	}
 }
@@ -62,7 +62,7 @@ func toStatefulSet(meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
-	policy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
+	volumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
 	labels map[string]string,
 	annotations map[string]string) *appsv1.StatefulSet {
 	labels[constants.KubernetesNameLabelKey] = constants.ServerLabelValue
@@ -91,7 +91,7 @@ func toStatefulSet(meta metav1.ObjectMeta,
 				Spec: *podSpec,
 			},
 			PodManagementPolicy:                  appsv1.ParallelPodManagement,
-			PersistentVolumeClaimRetentionPolicy: policy,
+			PersistentVolumeClaimRetentionPolicy: volumeClaimRetentionPolicy,
 		},
 	}
 

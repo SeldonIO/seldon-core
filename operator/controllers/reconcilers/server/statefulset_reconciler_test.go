@@ -462,6 +462,102 @@ func TestToStatefulSet(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Basic",
+			meta: metav1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "default",
+			},
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+					},
+				},
+				NodeName: "node",
+			},
+			labels:      map[string]string{"l1": "l1val"},
+			annotations: map[string]string{"a1": "a1val"},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
+			scaling: &mlopsv1alpha1.ScalingSpec{
+				Replicas: getIntPtr(2),
+			},
+			statefulSetPersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenDeleted: "Delete",
+				WhenScaled:  "Delete",
+			},
+			statefulSet: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "default",
+					Labels: map[string]string{
+						constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+						"l1":                             "l1val"},
+					Annotations: map[string]string{"a1": "a1val"},
+				},
+				Spec: appsv1.StatefulSetSpec{
+					ServiceName: "foo",
+					Replicas:    getIntPtr(2),
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
+					},
+					Template: v1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{constants.ServerLabelNameKey: "foo",
+								constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+								"l1":                             "l1val"},
+							Annotations: map[string]string{"a1": "a1val"},
+							Name:        "foo",
+							Namespace:   "default",
+						},
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Name:    "c1",
+									Image:   "myimagec1:1",
+									Command: []string{"cmd"},
+								},
+							},
+							NodeName: "node",
+						},
+					},
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "model-repository",
+							},
+							Spec: v1.PersistentVolumeClaimSpec{
+								AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+								Resources: v1.VolumeResourceRequirements{
+									Requests: v1.ResourceList{
+										v1.ResourceStorage: oneG,
+									},
+								},
+							},
+						},
+					},
+					PersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+						WhenDeleted: "Delete",
+						WhenScaled:  "Delete",
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
