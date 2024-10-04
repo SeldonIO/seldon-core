@@ -94,7 +94,6 @@ func TestControlPlaneEvents(t *testing.T) {
 	}
 	now := metav1.Now()
 
-	// note expected state is derived in the test, maybe we should be explictl about it in the future
 	tests := []test{
 		{
 			name: "with no deleted resources",
