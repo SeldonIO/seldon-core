@@ -308,7 +308,7 @@ Adapter ConfigMap. The prometheus metric name is then used to fill in the `<<.Se
 in the query (`metricsQuery` in the same ConfigMap).
 
 Then, the information provided in the `describedObject` is used within the Prometheus query to
-select the right aggregations of the metric. For the RPS metric we have used to scale the Model
+select the right aggregations of the metric. For the RPS metric used to scale the Model
 (and the Server because of the 1-1 mapping), it makes sense to compute the aggregate RPS across
 all the replicas of a given model, so the `describedObject` references a specific Model CR.
 
