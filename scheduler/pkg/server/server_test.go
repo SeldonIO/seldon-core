@@ -309,7 +309,7 @@ func TestLoadModel(t *testing.T) {
 
 			scheduledFailed := atomic.Bool{}
 
-			// Subscrone to model events
+			// Subscribe to model events
 			h.RegisterModelEventHandler(
 				"handler-model",
 				10,
