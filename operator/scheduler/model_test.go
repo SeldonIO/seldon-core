@@ -237,7 +237,7 @@ func TestSubscribeModelEvents(t *testing.T) {
 					g.Expect(uint32(model.Status.Replicas)).To(Equal(r.Versions[0].State.GetAvailableReplicas() + r.Versions[0].State.GetUnavailableReplicas()))
 					g.Expect(model.Status.Selector).To(Equal("server=" + r.Versions[0].ServerName))
 				} else {
-					model := &mlopsv1alpha1.Pipeline{}
+					model := &mlopsv1alpha1.Model{}
 					err := controller.Get(
 						context.Background(),
 						client.ObjectKey{
