@@ -276,7 +276,7 @@ spec:
         averageValue: 3
 ```
 
-In the two HPA manifests above, the scaling metric is exactly the same, and uses the exact same
+In the preceding HPA manifests, the scaling metric is exactly the same, and uses the exact same
 parameters: this is to ensure that both the Models and the Servers are scaled up/down at
 approximately the same time. Small variations in the scale-up time are expected because each HPA
 samples the metrics independently, at regular intervals.
@@ -294,10 +294,10 @@ in sync across the HPA for the model and the server.
 
 #### Details on custom metrics of type Object
 
-The HPA manifests above use metrics of type "Object" that fetch the data used in scaling
+The HPA manifests use metrics of type "Object" that fetch the data used in scaling
 decisions by querying k8s metrics associated with a particular k8s object.  The endpoints that
-HPA uses for fetching those metrics are the same ones that we tested in the previous section
-using `kubectl get --raw ...`. Because we have configured the Prometheus Adapter to expose those
+HPA uses for fetching those metrics are the same ones that were tested in the previous section
+using `kubectl get --raw ...`. Because you have configured the Prometheus Adapter to expose those
 k8s metrics based on queries to Prometheus, a mapping exists between the information contained
 in the HPA Object metric definition and the actual query that is executed against Prometheus.
 This section aims to give more details on how this mapping works.
@@ -348,7 +348,7 @@ computed by HPA according to the following formula:
 $$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}}{\texttt{thresholdPerReplicaRPS}}$$
 
 {% hint style="info" %}
-Attempting other target types will not work under the current Seldon Core v2 setup, because they
+Attempting other target types does not work under the current Seldon Core 2 setup, because they
 use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in
 the `targetReplicas` computation. However, this also means that this set of pods becomes "owned"
 by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use,
@@ -378,8 +378,8 @@ so we would no longer be able to scale the Server CRs using HPA.
     }
     ```
 
-    If we wanted the scaling metric to be computed based on inferences with a particular value
-    for any of those labels, we can add this in the HPA metric config, as in the example below
+    If you want the scaling metric to be computed based on inferences with a particular value
+    for any of those labels, you can add this in the HPA metric config, as in the example
     (targeting `method_type="rest"`):
 
     ```yaml
